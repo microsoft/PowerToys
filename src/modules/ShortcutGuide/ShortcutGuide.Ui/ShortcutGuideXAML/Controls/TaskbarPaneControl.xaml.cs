@@ -92,8 +92,6 @@ namespace ShortcutGuide.Controls
             double indicatorBodyDip = Math.Clamp((minSlotPhysical / dpi) - IndicatorGapDip, MinBodyDip, MaxBodyDip);
             double indicatorThicknessDip = indicatorBodyDip + TriangleTailDip;
 
-            this.KeyHolder.Children.Clear();
-
             IndicatorTailDirection tail = edge switch
             {
                 TaskbarEdge.Bottom => IndicatorTailDirection.Down,
@@ -101,6 +99,12 @@ namespace ShortcutGuide.Controls
                 TaskbarEdge.Left => IndicatorTailDirection.Left,
                 _ => IndicatorTailDirection.Right,
             };
+
+            // Pool the indicators across opens instead of clearing and
+            // recreating them every time: keep the existing children, grow or
+            // shrink only by the delta, and reconfigure each in place. Each
+            // indicator's entrance is replayed explicitly below.
+            EnsureIndicatorCount(buttons.Length);
 
             if (horizontal)
             {
@@ -112,16 +116,18 @@ namespace ShortcutGuide.Controls
                     rightmostPhysicalX = Math.Max(rightmostPhysicalX, b.X + b.Width);
                 }
 
-                foreach (TasklistButton b in buttons)
+                for (int i = 0; i < buttons.Length; i++)
                 {
-                    TaskbarIndicator indicator = CreateIndicator(b, tail, indicatorBodyDip);
-                    this.KeyHolder.Children.Add(indicator);
+                    TasklistButton b = buttons[i];
+                    TaskbarIndicator indicator = (TaskbarIndicator)this.KeyHolder.Children[i];
+                    ConfigureIndicator(indicator, b, tail, indicatorBodyDip);
 
                     // Center each indicator's body over its button along the X axis.
                     double buttonCenterPhysical = b.X + (b.Width / 2.0);
                     double indicatorLeftDip = ((buttonCenterPhysical - leftmostPhysicalX) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetLeft(indicator, indicatorLeftDip);
                     Canvas.SetTop(indicator, 0);
+                    indicator.PlayEntrance();
                 }
 
                 // Anchor the strip just inside the taskbar edge: the tail tip
@@ -146,16 +152,18 @@ namespace ShortcutGuide.Controls
                     bottommostPhysicalY = Math.Max(bottommostPhysicalY, b.Y + b.Height);
                 }
 
-                foreach (TasklistButton b in buttons)
+                for (int i = 0; i < buttons.Length; i++)
                 {
-                    TaskbarIndicator indicator = CreateIndicator(b, tail, indicatorBodyDip);
-                    this.KeyHolder.Children.Add(indicator);
+                    TasklistButton b = buttons[i];
+                    TaskbarIndicator indicator = (TaskbarIndicator)this.KeyHolder.Children[i];
+                    ConfigureIndicator(indicator, b, tail, indicatorBodyDip);
 
                     // Center each indicator's body over its button along the Y axis.
                     double buttonCenterPhysical = b.Y + (b.Height / 2.0);
                     double indicatorTopDip = ((buttonCenterPhysical - topmostPhysicalY) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetTop(indicator, indicatorTopDip);
                     Canvas.SetLeft(indicator, 0);
+                    indicator.PlayEntrance();
                 }
 
                 // Anchor the strip just inside the taskbar edge: the tail tip
@@ -172,15 +180,28 @@ namespace ShortcutGuide.Controls
             }
         }
 
-        private static TaskbarIndicator CreateIndicator(TasklistButton button, IndicatorTailDirection tail, double bodyDip)
+        /// <summary>
+        /// Grows or shrinks the pooled indicator children so there are exactly
+        /// <paramref name="count"/> of them, reusing existing instances.
+        /// </summary>
+        private void EnsureIndicatorCount(int count)
         {
-            TaskbarIndicator indicator = new()
+            while (this.KeyHolder.Children.Count > count)
             {
-                Label = button.Keynum >= 10 ? "0" : button.Keynum.ToString(CultureInfo.InvariantCulture),
-            };
+                this.KeyHolder.Children.RemoveAt(this.KeyHolder.Children.Count - 1);
+            }
+
+            while (this.KeyHolder.Children.Count < count)
+            {
+                this.KeyHolder.Children.Add(new TaskbarIndicator());
+            }
+        }
+
+        private static void ConfigureIndicator(TaskbarIndicator indicator, TasklistButton button, IndicatorTailDirection tail, double bodyDip)
+        {
+            indicator.Label = button.Keynum >= 10 ? "0" : button.Keynum.ToString(CultureInfo.InvariantCulture);
             indicator.SetBodySize(bodyDip);
             indicator.ApplyTailDirection(tail);
-            return indicator;
         }
     }
 }

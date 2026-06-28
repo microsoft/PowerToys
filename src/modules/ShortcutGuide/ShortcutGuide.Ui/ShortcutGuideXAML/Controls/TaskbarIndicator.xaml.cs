@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Numerics;
 using CommunityToolkit.WinUI.Animations;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,6 +27,15 @@ internal enum IndicatorTailDirection
 public sealed partial class TaskbarIndicator : UserControl
 {
     public static readonly DependencyProperty LabelProperty = DependencyProperty.Register(nameof(Label), typeof(string), typeof(TaskbarIndicator), new PropertyMetadata(default(string)));
+
+    // The layout currently applied to the grid. Indicators are pooled and
+    // reused across opens, so we only rebuild the row/column layout when the
+    // taskbar edge (and therefore the tail direction) actually changes.
+    private IndicatorTailDirection? _appliedDirection;
+
+    // The most recently requested direction; drives the one-shot entrance
+    // animation even when the layout did not need rebuilding.
+    private IndicatorTailDirection _currentDirection = IndicatorTailDirection.Down;
 
     public TaskbarIndicator()
     {
@@ -55,14 +65,23 @@ public sealed partial class TaskbarIndicator : UserControl
     }
 
     /// <summary>
-    /// Reflows the body and triangle tail and (re)configures the slide-in /
-    /// slide-out animation so the tail points toward <paramref name="direction"/>
-    /// and the indicator animates in from that same edge. Replaces the previously
-    /// hard-coded "tail points down" layout so the control works for a taskbar on
-    /// any screen edge.
+    /// Reflows the body and triangle tail so the tail points toward
+    /// <paramref name="direction"/>. Indicators are pooled and reused across
+    /// opens, so the (relatively expensive) grid rebuild is skipped when the
+    /// direction is unchanged. Replaces the previously hard-coded "tail points
+    /// down" layout so the control works for a taskbar on any screen edge.
     /// </summary>
     internal void ApplyTailDirection(IndicatorTailDirection direction)
     {
+        _currentDirection = direction;
+
+        if (_appliedDirection == direction)
+        {
+            return;
+        }
+
+        _appliedDirection = direction;
+
         RootGrid.RowDefinitions.Clear();
         RootGrid.ColumnDefinitions.Clear();
 
@@ -115,50 +134,42 @@ public sealed partial class TaskbarIndicator : UserControl
                 Tail.Data = ParseGeometry("M 0,0 L 6,6 L 0,12");
                 break;
         }
-
-        ApplySlideAnimations(direction);
     }
 
     private static Geometry ParseGeometry(string path) =>
         (Geometry)Microsoft.UI.Xaml.Markup.XamlBindingHelper.ConvertValue(typeof(Geometry), path);
 
-    private void ApplySlideAnimations(IndicatorTailDirection direction)
+    /// <summary>
+    /// Plays the Windows 11 system-flyout entrance motion (slide in from the
+    /// taskbar edge + fade, ~367ms, no scale) as a one-shot animation. This
+    /// replaces the previous CommunityToolkit <c>Implicit</c> show/hide
+    /// animations: those attach persistent composition
+    /// <c>ImplicitAnimationCollection</c>s to the element's visual, which —
+    /// because indicators used to be recreated on every open — accumulated
+    /// composition resources that managed GC never reclaimed. Indicators are
+    /// now pooled, and the entrance is replayed explicitly on each open via a
+    /// transient <see cref="AnimationBuilder"/> batch that completes and frees
+    /// itself.
+    /// </summary>
+    internal void PlayEntrance()
     {
-        // Windows 11 system-flyout motion: slide in from the taskbar edge + fade
-        // (~367ms entrance, ~200ms exit, no scale). The slide offset points away
-        // from the taskbar (the same edge the tail points to).
-        string slideFrom = direction switch
+        Vector3 from = _currentDirection switch
         {
-            IndicatorTailDirection.Down => "0,12,0",
-            IndicatorTailDirection.Up => "0,-12,0",
-            IndicatorTailDirection.Left => "-12,0,0",
-            IndicatorTailDirection.Right => "12,0,0",
-            _ => "0,12,0",
+            IndicatorTailDirection.Down => new Vector3(0, 12, 0),
+            IndicatorTailDirection.Up => new Vector3(0, -12, 0),
+            IndicatorTailDirection.Left => new Vector3(-12, 0, 0),
+            IndicatorTailDirection.Right => new Vector3(12, 0, 0),
+            _ => new Vector3(0, 12, 0),
         };
 
-        var showAnimations = new ImplicitAnimationSet();
-        showAnimations.Add(new OpacityAnimation { From = 0, To = 1.0, Duration = TimeSpan.FromMilliseconds(367) });
-        showAnimations.Add(new TranslationAnimation
-        {
-            From = slideFrom,
-            To = "0,0,0",
-            Duration = TimeSpan.FromMilliseconds(367),
-            EasingType = EasingType.Cubic,
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
-        });
-
-        var hideAnimations = new ImplicitAnimationSet();
-        hideAnimations.Add(new OpacityAnimation { From = 1.0, To = 0, Duration = TimeSpan.FromMilliseconds(200) });
-        hideAnimations.Add(new TranslationAnimation
-        {
-            From = "0,0,0",
-            To = slideFrom,
-            Duration = TimeSpan.FromMilliseconds(200),
-            EasingType = EasingType.Cubic,
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
-        });
-
-        Implicit.SetShowAnimations(RootGrid, showAnimations);
-        Implicit.SetHideAnimations(RootGrid, hideAnimations);
+        AnimationBuilder.Create()
+            .Opacity(to: 1.0, from: 0.0, duration: TimeSpan.FromMilliseconds(367))
+            .Translation(
+                to: Vector3.Zero,
+                from: from,
+                duration: TimeSpan.FromMilliseconds(367),
+                easingType: EasingType.Cubic,
+                easingMode: Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut)
+            .Start(this);
     }
 }
