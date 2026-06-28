@@ -5,8 +5,6 @@
 using System;
 using System.IO;
 
-using WorkspacesCsharpLibrary.SettingsService;
-
 namespace WorkspacesCsharpLibrary.Utils;
 
 public class FolderUtils
@@ -21,18 +19,21 @@ public class FolderUtils
         return Path.GetTempPath();
     }
 
-    // v6: settings live in the service-managed per-user folder under
-    // %ProgramData% (ACL'd so only PTWorkspacesSvc can write).  Callers
-    // that just want to *read* (Launcher, Editor's initial load) can still
-    // use this path directly — the user has Read+Execute via the DACL.
-    // Writers must round-trip through WorkspacesSvcClient.PutSettings.
+    // User-writable working folder for the Editor's transient files (icons,
+    // temp-project handoff) AND the legacy / no-service fallback store.
+    //
+    // v6 note: the *protected* settings store does NOT live here — it is the
+    // service-managed blob under %ProgramData% (see SettingsPaths / §9).  The
+    // Editor reads/writes the real settings through PTSettingsClient
+    // (GetBlob / PutBlob); this %LocalAppData% path is only the working dir and
+    // the no-service fallback, both of which must stay user-writable.
     public static string DataFolder()
     {
-        return SettingsPaths.CurrentUserFolder();
+        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\Workspaces";
     }
 
-    // The pre-v6 location.  Exposed only for the one-shot migration; nothing
-    // else should be using it.
+    // The pre-v6 location.  Same as DataFolder() now; kept as a distinct name
+    // for the one-shot migration source and the no-service fallback.
     public static string LegacyDataFolder()
     {
         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\Workspaces";

@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using ManagedCommon;
 using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.SettingsService;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.ViewModels;
@@ -24,14 +26,45 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
+                // Deferred per-user service init + legacy migration (Design §11 / §14.1).
+                // On a per-machine install the service is already up (no-op); on a
+                // per-user install with no service yet, this performs the one-time
+                // elevation to register + harden it, then migrates the legacy file.
+                TryBootstrapSettings();
+
                 WorkspacesData parser = new();
-                if (!File.Exists(parser.File))
+                WorkspacesData.WorkspacesListWrapper workspaces;
+
+                // v6: read the settings through the service (GetBlob).  Fall back to
+                // the legacy %LocalAppData% file only when no service is installed
+                // (no-admin / declined-UAC), per §10.
+                var rc = PTSettingsClient.GetBlob(out var blob);
+                switch (rc)
                 {
-                    Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
-                    return new ParsingResult(true);
+                    case PTSettingsClient.Result.Ok:
+                        workspaces = parser.Deserialize(Encoding.UTF8.GetString(blob));
+                        break;
+
+                    case PTSettingsClient.Result.NotFound:
+                        // Service is up but this user has no blob yet (first run).
+                        return new ParsingResult(true);
+
+                    case PTSettingsClient.Result.Unavailable:
+                        if (!File.Exists(parser.File))
+                        {
+                            Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
+                            return new ParsingResult(true);
+                        }
+
+                        workspaces = parser.Read(parser.File);
+                        break;
+
+                    default:
+                        // AuthRejected / Protocol / IoError → fail safe to empty.
+                        Logger.LogWarning($"GetBlob returned {rc}; treating workspaces as empty.");
+                        return new ParsingResult(true);
                 }
 
-                WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
                 if (workspaces.Workspaces == null)
                 {
                     return new ParsingResult(true);
@@ -49,6 +82,23 @@ namespace WorkspacesEditor.Utils
             {
                 Logger.LogError($"Exception while parsing storage file: {e.Message}");
                 return new ParsingResult(false, e.Message);
+            }
+        }
+
+        private static void TryBootstrapSettings()
+        {
+            try
+            {
+                SettingsBootstrapper.EnsureInitialized(new BootstrapRequest
+                {
+                    Reason = SettingsBootstrapper.TriggerReason.EditorOpened,
+                    InstallFolder = PowerToysPathResolver.GetPowerToysInstallPath(),
+                });
+            }
+            catch (Exception e)
+            {
+                // Best-effort: on failure reads/writes fall back to the legacy file.
+                Logger.LogWarning($"Settings bootstrap failed (continuing with fallback): {e.Message}");
             }
         }
 
@@ -151,8 +201,35 @@ namespace WorkspacesEditor.Utils
 
             try
             {
-                IOUtils ioUtils = new();
-                ioUtils.WriteFile(useTempFile ? TempProjectData.File : serializer.File, serializer.Serialize(workspacesWrapper));
+                string json = serializer.Serialize(workspacesWrapper);
+
+                if (useTempFile)
+                {
+                    // Transient snapshot→editor handoff stays a direct user-writable
+                    // file (not the protected store).
+                    IOUtils ioUtils = new();
+                    ioUtils.WriteFile(TempProjectData.File, json);
+                    return;
+                }
+
+                // v6: persist the settings through the service (PutBlob).  Fall back
+                // to the legacy %LocalAppData% file only when no service is installed
+                // (no-admin / declined-UAC), per §10.
+                var rc = PTSettingsClient.PutBlob(Encoding.UTF8.GetBytes(json));
+                switch (rc)
+                {
+                    case PTSettingsClient.Result.Ok:
+                        break;
+
+                    case PTSettingsClient.Result.Unavailable:
+                        IOUtils fallback = new();
+                        fallback.WriteFile(serializer.File, json);
+                        break;
+
+                    default:
+                        Logger.LogError($"Failed to save workspaces through the settings service: {rc}");
+                        break;
+                }
             }
             catch (Exception e)
             {
