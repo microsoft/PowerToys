@@ -96,6 +96,10 @@ namespace ColorPicker
             var mainViewModel = GetService<ColorPicker.ViewModelContracts.IMainViewModel>();
             overlay.MainViewControl.DataContext = mainViewModel;
             mainViewModel.RegisterWindowHandle(hwnd);
+
+            // Make the overlay size to the tooltip and follow the cursor while shown (the
+            // IMouseInfoProvider singleton is the same one the MainViewModel reads).
+            overlay.InitializeCursorFollow(GetService<ColorPicker.Mouse.IMouseInfoProvider>());
         }
 
         /// <summary>
