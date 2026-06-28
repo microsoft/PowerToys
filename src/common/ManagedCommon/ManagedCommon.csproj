@@ -6,10 +6,6 @@
   <PropertyGroup>
     <Description>PowerToys ManagedCommon</Description>
     <AssemblyName>PowerToys.ManagedCommon</AssemblyName>
-    <!-- Required by [LibraryImport] source-generated P/Invoke (SYSLIB1062). Otherwise only
-         set implicitly by the CsWinRT/WindowsAppSDK targets; make it explicit so the
-         LibraryImport in ThemeListener keeps compiling regardless of those targets. -->
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
@@ -18,6 +14,10 @@
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\interop\PowerToys.Interop.vcxproj" />

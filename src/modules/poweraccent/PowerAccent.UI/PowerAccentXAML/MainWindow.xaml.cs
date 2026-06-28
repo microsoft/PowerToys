@@ -8,7 +8,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using CoreSize = PowerAccent.Core.Size;
 
@@ -29,7 +28,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
 
     private readonly Core.PowerAccent _powerAccent;
-    private readonly ThemeListener _themeListener;
     private int _selectedIndex = -1;
     private bool _active;
 
@@ -75,22 +73,10 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
         _powerAccent.OnSelectCharacter += PowerAccent_OnSelectCharacter;
 
-        // The accent popup is a long-lived, never-activated SW_SHOWNA overlay, so it does not get
-        // WinUI 3's automatic runtime theme switching the way an activated window would. Mirror the
-        // WPF original's ThemeMode="System" by following the system app theme explicitly: apply it
-        // now and on every change. ThemeListener raises ThemeChanged from a registry-watcher
-        // background thread, so the handler marshals back to the UI thread before touching XAML.
-        try
-        {
-            _themeListener = new ThemeListener();
-            _themeListener.ThemeChanged += (_) => DispatcherQueue.TryEnqueue(ApplyTheme);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Quick Accent could not start the theme listener; the accent popup will not follow live system theme changes.", ex);
-        }
-
-        ApplyTheme();
+        // Theme is handled automatically: App.xaml leaves Application.RequestedTheme unset, so WinUI
+        // follows the system app theme and re-resolves the {ThemeResource} brushes on a live light/dark
+        // switch - including for this never-activated SW_SHOWNA overlay - so no manual theme code is
+        // needed (the ActualThemeChanged that drives the acrylic retint fires off the same update).
     }
 
     // Marshals the keyboard-hook callbacks (ShowToolbar / HideToolbar / NextChar) onto the UI
@@ -111,16 +97,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         {
             DispatcherQueue.TryEnqueue(() => action());
         }
-    }
-
-    private void ApplyTheme()
-    {
-        // Drive the whole surface (border + acrylic + inner content) from the system app theme.
-        // Surface is the window's root content (xamlRoot.Content), so setting RequestedTheme flips
-        // its ActualTheme, which re-resolves {ThemeResource} brushes and fires ActualThemeChanged -
-        // the signal AlwaysActiveDesktopAcrylicBackdrop uses to retint. High-contrast resources still
-        // win automatically, so only the Light/Dark axis is set here.
-        Surface.RequestedTheme = ThemeHelpers.GetAppTheme() == AppTheme.Light ? ElementTheme.Light : ElementTheme.Dark;
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
@@ -223,7 +199,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
     public void Dispose()
     {
-        _themeListener?.Dispose();
         _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         GC.SuppressFinalize(this);
