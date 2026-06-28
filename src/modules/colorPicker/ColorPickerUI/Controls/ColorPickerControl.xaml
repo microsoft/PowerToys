@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="ColorPicker.Controls.ColorPickerControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,9 +6,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <!--  Approach A: keep the native WinUI Slider, but make its track transparent so the
-              gradient Border behind each slider shows through. These keyed brushes override the
-              default slider track theme brushes for every Slider inside this control.  -->
+        <!--
+            Approach A: keep the native WinUI Slider, but make its track transparent so the
+            gradient Border behind each slider shows through. These keyed brushes override the
+            default slider track theme brushes for every Slider inside this control.
+        -->
         <SolidColorBrush x:Key="SliderTrackFill" Color="Transparent" />
         <SolidColorBrush x:Key="SliderTrackFillPointerOver" Color="Transparent" />
         <SolidColorBrush x:Key="SliderTrackFillPressed" Color="Transparent" />
@@ -107,10 +109,10 @@
                                 VerticalAlignment="Center">
                                 <Border
                                     x:Name="HueGradientBorder"
-                                    Height="8"
+                                    Height="16"
                                     Margin="8,0"
                                     VerticalAlignment="Center"
-                                    CornerRadius="4" />
+                                    CornerRadius="8" />
                                 <Slider
                                     x:Name="HueGradientSlider"
                                     VerticalAlignment="Center"
@@ -132,10 +134,10 @@
                                 Grid.ColumnSpan="3"
                                 VerticalAlignment="Center">
                                 <Border
-                                    Height="8"
+                                    Height="16"
                                     Margin="8,0"
                                     VerticalAlignment="Center"
-                                    CornerRadius="4">
+                                    CornerRadius="8">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                                             <GradientStop x:Name="SaturationStartColor" Color="Black" />
@@ -164,10 +166,10 @@
                                 Grid.ColumnSpan="3"
                                 VerticalAlignment="Center">
                                 <Border
-                                    Height="8"
+                                    Height="16"
                                     Margin="8,0"
                                     VerticalAlignment="Center"
-                                    CornerRadius="4">
+                                    CornerRadius="8">
                                     <Border.Background>
                                         <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
                                             <GradientStop x:Name="ValueStartColor" Color="Black" />

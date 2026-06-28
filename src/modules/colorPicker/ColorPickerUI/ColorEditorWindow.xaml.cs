@@ -5,6 +5,7 @@
 using ColorPicker.Helpers;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
 namespace ColorPicker
@@ -26,6 +27,16 @@ namespace ColorPicker
             var title = ResourceLoaderInstance.GetString("CP_Title");
             Title = title;
             AppWindow.Title = title;
+
+            // The native title bar / taskbar otherwise shows the generic WinUI placeholder icon;
+            // point it at the ColorPicker app icon (copied next to the exe by the csproj).
+            AppWindow.SetIcon("Assets/ColorPicker/icon.ico");
+
+            // Without a backdrop the window's uncovered areas (the header above the content card)
+            // render black, which reads as a bold black bar at the header/content divider. Mica
+            // gives the whole window the standard WinUI material so the header is no longer black.
+            SystemBackdrop = new MicaBackdrop();
+
             this.SetWindowSize(440, 380);
 
             if (AppWindow.Presenter is OverlappedPresenter presenter)

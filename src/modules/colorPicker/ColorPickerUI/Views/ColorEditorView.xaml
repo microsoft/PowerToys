@@ -48,7 +48,7 @@
                 BorderBrush="Transparent"
                 ItemsSource="{Binding ColorsHistory}"
                 PointerWheelChanged="HistoryColors_OnPointerWheelChanged"
-                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                 SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}"
                 SelectionMode="Extended">
                 <ListView.ItemsPanel>
