@@ -178,6 +178,20 @@ namespace PTSettingsSvc
             imageErr = gotImage ? ERROR_SUCCESS : GetLastError();
         }
 
+        // The caller binary often lives under %LocalAppData% (per-user install),
+        // which is ACL'd to the user only.  The service account cannot read it,
+        // so canonicalization and the signature/version checks MUST run while we
+        // are still impersonating the client (which can read its own image).
+        std::wstring canonical;
+        bool sigMicrosoft = false;
+        unsigned long long callerVersion = 0;
+        if (gotImage)
+        {
+            canonical = CanonicalizePath(exePath);
+            sigMicrosoft = VerifyMicrosoftSignature(canonical);
+            callerVersion = GetBinaryVersion(canonical);
+        }
+
         // Revert before we touch any service-side resources (file IO etc).
         RevertToSelf();
 
@@ -192,7 +206,6 @@ namespace PTSettingsSvc
             return HRESULT_FROM_WIN32(imageErr);
         }
 
-        std::wstring canonical = CanonicalizePath(exePath);
         outIdentity.imagePath = canonical;
 
         // 4) Caller-image trust anchor.  This is ONE pipeline with a branch
@@ -248,12 +261,14 @@ namespace PTSettingsSvc
         {
             // Per-user fallback: signature pinned to Microsoft AND version equal
             // to the service's own.  The signature is what makes the version
-            // trustworthy; version comparison alone would be forgeable.
+            // trustworthy; version comparison alone would be forgeable.  Both
+            // facts were captured above under impersonation so a user-profile
+            // image is readable.
             const unsigned long long serviceVersion = GetServiceOwnVersion();
             accepted =
                 serviceVersion != 0 &&
-                VerifyMicrosoftSignature(canonical) &&
-                GetBinaryVersion(canonical) == serviceVersion;
+                sigMicrosoft &&
+                callerVersion == serviceVersion;
         }
 
         if (!accepted)
@@ -281,3 +296,4 @@ namespace PTSettingsSvc
         return S_OK;
     }
 }
+
