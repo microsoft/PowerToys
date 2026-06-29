@@ -1,0 +1,30 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip_plan_light)">
+<path d="M1 2.5C1 1.67157 1.67157 1 2.5 1H13.5C14.3284 1 15 1.67157 15 2.5V13.5C15 14.3284 14.3284 15 13.5 15H2.5C1.67157 15 1 14.3284 1 13.5V2.5Z" fill="url(#paint_tile_plan_light)"/>
+<g filter="url(#filter_glyph_plan_light)">
+<rect x="6" y="3" width="1.15" height="3.1" rx="0.35" fill="white"/>
+<rect x="8.85" y="3" width="1.15" height="3.1" rx="0.35" fill="white"/>
+<rect x="5.15" y="5.85" width="5.7" height="4.1" rx="0.85" fill="white"/>
+<path d="M5.85 7.35H10.15" stroke="#CFE8FF" stroke-width="0.75" stroke-linecap="round"/>
+<rect x="7.425" y="9.95" width="1.15" height="2.35" rx="0.575" fill="white"/>
+</g>
+</g>
+<defs>
+<filter id="filter_glyph_plan_light" x="4.15" y="2.5" width="7.7" height="10.3" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.2"/>
+<feGaussianBlur stdDeviation="0.25"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+</filter>
+<linearGradient id="paint_tile_plan_light" x1="3" y1="1" x2="12.5" y2="15.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0669BC"/>
+<stop offset="1" stop-color="#243A5F"/>
+</linearGradient>
+<clipPath id="clip_plan_light">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

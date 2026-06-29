@@ -79,6 +79,42 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Power mode.
+        /// </summary>
+        public static string power_mode_dock_band_title {
+            get {
+                return ResourceManager.GetString("power_mode_dock_band_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power mode.
+        /// </summary>
+        public static string power_mode_dock_item_subtitle {
+            get {
+                return ResourceManager.GetString("power_mode_dock_item_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        public static string power_plan_dock_band_title {
+            get {
+                return ResourceManager.GetString("power_plan_dock_band_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        public static string power_plan_dock_item_subtitle {
+            get {
+                return ResourceManager.GetString("power_plan_dock_item_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to power;powermode;power mode;best performance;best efficiency;balanced;performance mode;efficiency mode;energy saver;power plan;powercfg;ultimate performance;high performance.
         /// </summary>
         public static string power_fallback_search_tags {
@@ -507,6 +543,51 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         public static string power_plan_current {
             get {
                 return ResourceManager.GetString("power_plan_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Balanced.
+        /// </summary>
+        public static string power_plan_balanced_short {
+            get {
+                return ResourceManager.GetString("power_plan_balanced_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to High perf.
+        /// </summary>
+        public static string power_plan_high_performance_short {
+            get {
+                return ResourceManager.GetString("power_plan_high_performance_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power saver.
+        /// </summary>
+        public static string power_plan_power_saver_short {
+            get {
+                return ResourceManager.GetString("power_plan_power_saver_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ultimate.
+        /// </summary>
+        public static string power_plan_ultimate_performance_short {
+            get {
+                return ResourceManager.GetString("power_plan_ultimate_performance_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown.
+        /// </summary>
+        public static string power_plan_unknown_short {
+            get {
+                return ResourceManager.GetString("power_plan_unknown_short", resourceCulture);
             }
         }
         

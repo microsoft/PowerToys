@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using System.Threading.Channels;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
@@ -159,9 +160,22 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 
         if (!string.IsNullOrEmpty(iconString))
         {
-            return await _dispatcherQueue
+            var result = await _dispatcherQueue
                 .EnqueueAsync(() => GetStringIconSource(iconString, fontFamily, scaledSize), LoadingPriorityOnDispatcher)
                 .ConfigureAwait(false);
+
+            if (result == null)
+            {
+                var pngFallbackPath = TryGetPngFallbackPath(iconString);
+                if (pngFallbackPath is not null)
+                {
+                    result = await _dispatcherQueue
+                        .EnqueueAsync(() => GetStringIconSource(pngFallbackPath, fontFamily, scaledSize), LoadingPriorityOnDispatcher)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            return result;
         }
 
         if (streamRef != null)
@@ -217,5 +231,16 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     {
         var iconSize = (int)Math.Max(size.Width, size.Height);
         return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
+    }
+
+    private static string? TryGetPngFallbackPath(string iconPath)
+    {
+        if (!iconPath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var pngPath = string.Concat(iconPath.AsSpan(0, iconPath.Length - 4), ".png");
+        return File.Exists(pngPath) ? pngPath : null;
     }
 }

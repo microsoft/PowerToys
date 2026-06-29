@@ -8,9 +8,18 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Power;
 
-internal sealed class Icons
+internal static class Icons
 {
-    internal static IconInfo PowerIcon { get; } = new IconInfo("\uE7E8");
+    internal static IconInfo PowerExtensionIcon { get; } = ThemedBandIcon("Power");
+
+    internal static IconInfo PowerModeBandIcon { get; } = ThemedBandIcon("PowerMode");
+
+    internal static IconInfo PowerPlanBandIcon { get; } = ThemedBandIcon("PowerPlan");
+
+    private static IconInfo ThemedBandIcon(string assetName) =>
+        IconHelpers.FromRelativePaths(
+            $"Assets\\{assetName}.light.svg",
+            $"Assets\\{assetName}.dark.svg");
 
     internal static IconInfo EfficiencyIcon { get; } = new IconInfo("\uE8BE");
 
@@ -21,8 +30,6 @@ internal sealed class Icons
     internal static IconInfo UnknownIcon { get; } = new IconInfo("\uE783");
 
     internal static IconInfo EnergySaverIcon { get; } = new IconInfo("\uEC0A");
-
-    internal static IconInfo PowerPlanIcon { get; } = new IconInfo("\uE1EC");
 
     internal static IconInfo PowerPlanSaverIcon { get; } = new IconInfo("\uEC48");
 
@@ -62,11 +69,11 @@ internal sealed class Icons
             return PowerPlanUltimatePerformanceIcon;
         }
 
-        return PowerPlanIcon;
+        return PowerPlanBandIcon;
     }
 
     internal static IconInfo PlanGlyph(PowerPlanSnapshot snapshot) =>
         snapshot.ActivePlan is { } activePlan
             ? PlanGlyph(activePlan.SchemeGuid)
-            : PowerPlanIcon;
+            : PowerPlanBandIcon;
 }

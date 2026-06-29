@@ -16,17 +16,20 @@ internal sealed partial class SetPowerPlanCommand : InvokableCommand
     private readonly Guid _schemeGuid;
     private readonly string _displayName;
     private readonly Action _onChanged;
+    private readonly bool _dismissOnSuccess;
 
     internal SetPowerPlanCommand(
         PowerPlanService service,
         Guid schemeGuid,
         string displayName,
-        Action onChanged)
+        Action onChanged,
+        bool dismissOnSuccess = false)
     {
         _service = service;
         _schemeGuid = schemeGuid;
         _displayName = displayName;
         _onChanged = onChanged;
+        _dismissOnSuccess = dismissOnSuccess;
         Id = $"com.microsoft.cmdpal.power.setPlan.{schemeGuid:B}";
         Name = PowerPlanDisplayHelper.GetPlanTitle(schemeGuid, displayName);
         Icon = Icons.PlanGlyph(schemeGuid);
@@ -41,15 +44,18 @@ internal sealed partial class SetPowerPlanCommand : InvokableCommand
 
         _onChanged();
 
-        return ShowToastKeepOpen(Resources.power_plan_set_toast_prefix + PowerPlanDisplayHelper.GetPlanTitle(_schemeGuid, _displayName));
+        var message = Resources.power_plan_set_toast_prefix + PowerPlanDisplayHelper.GetPlanTitle(_schemeGuid, _displayName);
+        return ShowToast(message, _dismissOnSuccess);
     }
 
-    private static CommandResult ShowToastKeepOpen(string message)
+    private static CommandResult ShowToastKeepOpen(string message) => ShowToast(message, dismissOnSuccess: false);
+
+    private static CommandResult ShowToast(string message, bool dismissOnSuccess)
     {
         return CommandResult.ShowToast(new ToastArgs()
         {
             Message = message,
-            Result = CommandResult.KeepOpen(),
+            Result = dismissOnSuccess ? CommandResult.Dismiss() : CommandResult.KeepOpen(),
         });
     }
 }

@@ -16,17 +16,20 @@ internal sealed partial class SetPowerModeCommand : InvokableCommand
     private readonly UserPowerMode _mode;
     private readonly string _successToast;
     private readonly Action _onChanged;
+    private readonly bool _dismissOnSuccess;
 
     internal SetPowerModeCommand(
         PowerModeService service,
         UserPowerMode mode,
         string successToast,
-        Action onChanged)
+        Action onChanged,
+        bool dismissOnSuccess = false)
     {
         _service = service;
         _mode = mode;
         _successToast = successToast;
         _onChanged = onChanged;
+        _dismissOnSuccess = dismissOnSuccess;
         Id = mode switch
         {
             UserPowerMode.BestEfficiency => "com.microsoft.cmdpal.power.setEfficiency",
@@ -47,17 +50,22 @@ internal sealed partial class SetPowerModeCommand : InvokableCommand
 
         _onChanged();
 
-        return string.IsNullOrWhiteSpace(_successToast)
-            ? CommandResult.KeepOpen()
-            : ShowToastKeepOpen(_successToast);
+        if (string.IsNullOrWhiteSpace(_successToast))
+        {
+            return _dismissOnSuccess ? CommandResult.Dismiss() : CommandResult.KeepOpen();
+        }
+
+        return ShowToast(_successToast, _dismissOnSuccess);
     }
 
-    private static CommandResult ShowToastKeepOpen(string message)
+    private static CommandResult ShowToastKeepOpen(string message) => ShowToast(message, dismissOnSuccess: false);
+
+    private static CommandResult ShowToast(string message, bool dismissOnSuccess)
     {
         return CommandResult.ShowToast(new ToastArgs()
         {
             Message = message,
-            Result = CommandResult.KeepOpen(),
+            Result = dismissOnSuccess ? CommandResult.Dismiss() : CommandResult.KeepOpen(),
         });
     }
 }

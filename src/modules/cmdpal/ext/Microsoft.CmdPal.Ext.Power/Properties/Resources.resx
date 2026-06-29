@@ -61,6 +61,10 @@
   <data name="power_display_name" xml:space="preserve"><value>Power</value></data>
   <data name="power_page_title" xml:space="preserve"><value>Power</value></data>
   <data name="power_dock_band_title" xml:space="preserve"><value>Power</value></data>
+  <data name="power_mode_dock_band_title" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_plan_dock_band_title" xml:space="preserve"><value>Power plan</value></data>
+  <data name="power_mode_dock_item_subtitle" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_plan_dock_item_subtitle" xml:space="preserve"><value>Power plan</value></data>
   <data name="power_mode_status_title" xml:space="preserve"><value>Current status</value></data>
   <data name="power_mode_status_command_name" xml:space="preserve"><value>Refresh power mode status</value></data>
   <data name="power_mode_set_efficiency_title" xml:space="preserve"><value>Best power efficiency</value></data>
@@ -112,6 +116,11 @@
   <data name="power_plan_status_unavailable" xml:space="preserve"><value>Power plans are not available on this device.</value></data>
   <data name="power_plan_status_unknown" xml:space="preserve"><value>Active power plan unknown</value></data>
   <data name="power_plan_current" xml:space="preserve"><value>Current</value></data>
+  <data name="power_plan_power_saver_short" xml:space="preserve"><value>Power saver</value></data>
+  <data name="power_plan_balanced_short" xml:space="preserve"><value>Balanced</value></data>
+  <data name="power_plan_high_performance_short" xml:space="preserve"><value>High perf</value></data>
+  <data name="power_plan_ultimate_performance_short" xml:space="preserve"><value>Ultimate</value></data>
+  <data name="power_plan_unknown_short" xml:space="preserve"><value>Unknown</value></data>
   <data name="power_list_current" xml:space="preserve"><value>Current</value></data>
   <data name="power_section_energy_saver" xml:space="preserve"><value>Energy saver</value></data>
   <data name="power_section_power_mode" xml:space="preserve"><value>Power mode</value></data>

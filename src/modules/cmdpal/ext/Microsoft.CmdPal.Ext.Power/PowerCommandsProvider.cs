@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Pages;
 using Microsoft.CmdPal.Ext.Power.Properties;
@@ -17,52 +18,123 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
     private readonly EnergySaverService _energySaverService = new();
     private readonly PowerPlanService _powerPlanService = new();
     private readonly PowerModeDataManager _dataManager;
+    private readonly PowerListItemBuilder _itemBuilder;
     private readonly CommandItem _command;
-    private readonly CommandItem _dockBand;
     private readonly PowerListPage _listPage;
+    private readonly PowerModePickerPage _modePickerPage;
+    private readonly PowerPlanPickerPage _planPickerPage;
+    private readonly PowerDockPage _fullDockPage;
+    private readonly PowerDockPage _modeDockPage;
+    private readonly PowerDockPage _planDockPage;
     private readonly FallbackPowerItem _fallback;
 
     public PowerCommandsProvider()
     {
         DisplayName = Resources.power_display_name;
         Id = "com.microsoft.cmdpal.builtin.power";
-        Icon = Icons.PowerIcon;
+        Icon = Icons.PowerExtensionIcon;
+
+        _itemBuilder = new PowerListItemBuilder(_powerModeService, _powerPlanService);
 
         PowerListPage? listPage = null;
+        PowerModePickerPage? modePickerPage = null;
+        PowerPlanPickerPage? planPickerPage = null;
+        PowerDockPage? fullDockPage = null;
+        PowerDockPage? modeDockPage = null;
+        PowerDockPage? planDockPage = null;
+
         _dataManager = new PowerModeDataManager(
             _powerModeService,
             _energySaverService,
-            () => listPage!.HandleLiveStateChanged());
-        listPage = new PowerListPage(_powerModeService, _energySaverService, _powerPlanService, _dataManager);
+            HandleLiveStateChanged);
+
+        listPage = new PowerListPage(_powerModeService, _energySaverService, _powerPlanService, _dataManager, _itemBuilder);
         _listPage = listPage;
-        _listPage.LiveStateChanged += UpdateDockPresentation;
+
+        modePickerPage = new PowerModePickerPage(_powerModeService, _dataManager, _itemBuilder, HandleLiveStateChanged);
+        _modePickerPage = modePickerPage;
+
+        planPickerPage = new PowerPlanPickerPage(_powerPlanService, _dataManager, _itemBuilder, HandleLiveStateChanged);
+        _planPickerPage = planPickerPage;
+
+        fullDockPage = new PowerDockPage(
+            PowerDockScope.All,
+            _powerModeService,
+            _powerPlanService,
+            modePickerPage,
+            planPickerPage,
+            _dataManager);
+        _fullDockPage = fullDockPage;
+
+        modeDockPage = new PowerDockPage(
+            PowerDockScope.Mode,
+            _powerModeService,
+            _powerPlanService,
+            modePickerPage,
+            planPickerPage,
+            _dataManager);
+        _modeDockPage = modeDockPage;
+
+        planDockPage = new PowerDockPage(
+            PowerDockScope.Plan,
+            _powerModeService,
+            _powerPlanService,
+            modePickerPage,
+            planPickerPage,
+            _dataManager);
+        _planDockPage = planDockPage;
+
         _fallback = new FallbackPowerItem(_listPage);
 
         _command = new CommandItem(_listPage)
         {
             Title = Resources.power_page_title,
-            Icon = Icons.PowerIcon,
-        };
-
-        _dockBand = new CommandItem(_listPage)
-        {
-            Title = Resources.power_dock_band_title,
-            Icon = Icons.PowerIcon,
+            Icon = Icons.PowerExtensionIcon,
         };
 
         _dataManager.PushActivate();
-        UpdateDockPresentation();
     }
 
     public override ICommandItem[] TopLevelCommands() => [_command];
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
 
-    public override ICommandItem[]? GetDockBands() => [_dockBand];
+    public override ICommandItem[]? GetDockBands()
+    {
+        var bands = new List<ICommandItem>();
+
+        if (_powerModeService.SupportsPowerModeControl() || _powerPlanService.GetSnapshot().CanReadPlans)
+        {
+            bands.Add(new CommandItem(_fullDockPage)
+            {
+                Title = Resources.power_dock_band_title,
+                Icon = Icons.PowerExtensionIcon,
+            });
+        }
+
+        if (_powerModeService.SupportsPowerModeControl())
+        {
+            bands.Add(new CommandItem(_modeDockPage)
+            {
+                Title = Resources.power_mode_dock_band_title,
+                Icon = Icons.PowerModeBandIcon,
+            });
+        }
+
+        if (_powerPlanService.GetSnapshot().CanReadPlans)
+        {
+            bands.Add(new CommandItem(_planDockPage)
+            {
+                Title = Resources.power_plan_dock_band_title,
+                Icon = Icons.PowerPlanBandIcon,
+            });
+        }
+
+        return bands.Count > 0 ? bands.ToArray() : null;
+    }
 
     public override void Dispose()
     {
-        _listPage.LiveStateChanged -= UpdateDockPresentation;
         _dataManager.PopActivate();
         _dataManager.Dispose();
         _energySaverService.Dispose();
@@ -71,10 +143,13 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
         base.Dispose();
     }
 
-    private void UpdateDockPresentation()
+    private void HandleLiveStateChanged()
     {
-        _dockBand.Title = _listPage.GetDockTitle();
-        _dockBand.Subtitle = _listPage.GetDockSubtitle();
-        _dockBand.Icon = _listPage.GetDockIcon();
+        _listPage.HandleLiveStateChanged();
+        _modePickerPage.HandleLiveStateChanged();
+        _planPickerPage.HandleLiveStateChanged();
+        _fullDockPage.HandleLiveStateChanged();
+        _modeDockPage.HandleLiveStateChanged();
+        _planDockPage.HandleLiveStateChanged();
     }
 }

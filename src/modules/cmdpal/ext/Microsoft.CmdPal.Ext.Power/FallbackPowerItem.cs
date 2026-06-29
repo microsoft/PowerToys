@@ -23,7 +23,7 @@ internal sealed partial class FallbackPowerItem : FallbackCommandItem
         _listPage = listPage;
         Title = string.Empty;
         Subtitle = string.Empty;
-        Icon = Icons.PowerIcon;
+        Icon = Icons.PowerExtensionIcon;
         _queryTerms = Resources.power_fallback_search_tags
             .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
     }
@@ -56,6 +56,6 @@ internal sealed partial class FallbackPowerItem : FallbackCommandItem
         Command = _listPage;
         Title = Resources.power_fallback_title;
         Subtitle = Resources.power_fallback_subtitle;
-        Icon = Icons.PowerIcon;
+        Icon = Icons.PowerExtensionIcon;
     }
 }

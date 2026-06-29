@@ -21,6 +21,7 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     private readonly EnergySaverService _energySaverService;
     private readonly PowerPlanService _powerPlanService;
     private readonly PowerModeDataManager _dataManager;
+    private readonly PowerListItemBuilder _itemBuilder;
     private readonly ListItem _energySaverItem;
 
     private ListItem? _efficiencyItem;
@@ -33,21 +34,21 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     private bool _itemsIncludePowerPlans;
     private bool _itemsInitialized;
 
-    internal event Action? LiveStateChanged;
-
     internal PowerListPage(
         PowerModeService powerModeService,
         EnergySaverService energySaverService,
         PowerPlanService powerPlanService,
-        PowerModeDataManager dataManager)
+        PowerModeDataManager dataManager,
+        PowerListItemBuilder itemBuilder)
     {
         _powerModeService = powerModeService;
         _energySaverService = energySaverService;
         _powerPlanService = powerPlanService;
         _dataManager = dataManager;
+        _itemBuilder = itemBuilder;
         Title = Resources.power_page_title;
         Name = Resources.power_page_title;
-        Icon = Icons.PowerIcon;
+        Icon = Icons.PowerExtensionIcon;
         ShowDetails = true;
 
         _energySaverItem = new ListItem(new ToggleEnergySaverCommand(_energySaverService, RefreshPresentation))
@@ -64,27 +65,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     {
         RebuildItemListIfNeeded(force: false);
         return _items;
-    }
-
-    internal string GetDockTitle()
-    {
-        var snapshot = _powerModeService.GetSnapshot();
-        if (!snapshot.CanReadUserMode)
-        {
-            return Resources.power_dock_band_title;
-        }
-
-        return PowerModeDisplayHelper.GetUserModeShortLabel(snapshot.UserMode);
-    }
-
-    internal string GetDockSubtitle() => string.Empty;
-
-    internal IconInfo GetDockIcon()
-    {
-        var snapshot = _powerModeService.GetSnapshot();
-        return snapshot.CanReadUserMode
-            ? Icons.Glyph(snapshot.UserMode)
-            : Icons.PowerIcon;
     }
 
     protected override void Loaded()
@@ -120,18 +100,21 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
         if (supportsControl)
         {
-            _efficiencyItem = CreateModeItem(
+            _efficiencyItem = _itemBuilder.CreateModeItem(
                 UserPowerMode.BestEfficiency,
                 Resources.power_mode_set_efficiency_title,
-                Resources.power_mode_set_efficiency_toast);
-            _balancedItem = CreateModeItem(
+                Resources.power_mode_set_efficiency_toast,
+                RefreshPresentation);
+            _balancedItem = _itemBuilder.CreateModeItem(
                 UserPowerMode.Balanced,
                 Resources.power_mode_set_balanced_title,
-                Resources.power_mode_set_balanced_toast);
-            _performanceItem = CreateModeItem(
+                Resources.power_mode_set_balanced_toast,
+                RefreshPresentation);
+            _performanceItem = _itemBuilder.CreateModeItem(
                 UserPowerMode.BestPerformance,
                 Resources.power_mode_set_performance_title,
-                Resources.power_mode_set_performance_toast);
+                Resources.power_mode_set_performance_toast,
+                RefreshPresentation);
 
             AddSection(
                 list,
@@ -204,38 +187,15 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
         _cachedPlanGuids = planGuids;
         _powerPlanItems = snapshot.AvailablePlans
-            .Select(plan => CreatePlanItem(plan, snapshot))
+            .Select(plan => _itemBuilder.CreatePlanItem(plan, snapshot, RefreshPresentation))
             .ToList();
-    }
-
-    private ListItem CreateModeItem(UserPowerMode mode, string title, string successToast)
-    {
-        var snapshot = _powerModeService.GetSnapshot();
-        return new ListItem(new SetPowerModeCommand(_powerModeService, mode, successToast, RefreshPresentation))
-        {
-            Title = title,
-            Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(mode, snapshot),
-            Icon = Icons.Glyph(mode),
-        };
-    }
-
-    private ListItem CreatePlanItem(PowerPlanInfo plan, PowerPlanSnapshot snapshot)
-    {
-        return new ListItem(new SetPowerPlanCommand(_powerPlanService, plan.SchemeGuid, plan.DisplayName, RefreshPresentation))
-        {
-            Title = PowerPlanDisplayHelper.GetPlanTitle(plan),
-            Subtitle = PowerPlanDisplayHelper.GetPlanItemSubtitle(plan, snapshot),
-            Icon = Icons.PlanGlyph(plan.SchemeGuid),
-        };
     }
 
     private void RefreshPowerPlanItemSubtitles(PowerPlanSnapshot snapshot)
     {
         for (var i = 0; i < _powerPlanItems.Count && i < snapshot.AvailablePlans.Count; i++)
         {
-            var plan = snapshot.AvailablePlans[i];
-            _powerPlanItems[i].Subtitle = PowerPlanDisplayHelper.GetPlanItemSubtitle(plan, snapshot);
-            _powerPlanItems[i].Icon = Icons.PlanGlyph(plan.SchemeGuid);
+            _itemBuilder.RefreshPlanItem(_powerPlanItems[i], snapshot.AvailablePlans[i], snapshot);
         }
     }
 
@@ -252,20 +212,18 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
         if (_efficiencyItem is not null)
         {
-            _efficiencyItem.Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.BestEfficiency, snapshot);
+            _itemBuilder.RefreshModeItem(_efficiencyItem, UserPowerMode.BestEfficiency);
         }
 
         if (_balancedItem is not null)
         {
-            _balancedItem.Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.Balanced, snapshot);
+            _itemBuilder.RefreshModeItem(_balancedItem, UserPowerMode.Balanced);
         }
 
         if (_performanceItem is not null)
         {
-            _performanceItem.Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.BestPerformance, snapshot);
+            _itemBuilder.RefreshModeItem(_performanceItem, UserPowerMode.BestPerformance);
         }
-
-        LiveStateChanged?.Invoke();
     }
 
     internal void HandleLiveStateChanged()

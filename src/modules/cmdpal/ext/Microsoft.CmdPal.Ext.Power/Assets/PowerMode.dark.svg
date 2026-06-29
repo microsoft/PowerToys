@@ -1,0 +1,31 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip_mode_dark)">
+<path d="M1 2.5C1 1.67157 1.67157 1 2.5 1H13.5C14.3284 1 15 1.67157 15 2.5V13.5C15 14.3284 14.3284 15 13.5 15H2.5C1.67157 15 1 14.3284 1 13.5V2.5Z" fill="url(#paint_tile_mode_dark)"/>
+<g filter="url(#filter_glyph_mode_dark)">
+<path d="M4.25 5.25H11.75" stroke="#243A5F" stroke-width="1.1" stroke-linecap="round"/>
+<path d="M4.25 8H11.75" stroke="#243A5F" stroke-width="1.1" stroke-linecap="round"/>
+<path d="M4.25 10.75H11.75" stroke="#243A5F" stroke-width="1.1" stroke-linecap="round"/>
+<circle cx="9.25" cy="5.25" r="1.15" fill="#FFB900" stroke="#243A5F" stroke-width="0.35"/>
+<circle cx="6.25" cy="8" r="1.15" fill="#7FBA00" stroke="#243A5F" stroke-width="0.35"/>
+<circle cx="10.25" cy="10.75" r="1.15" fill="#00A4EF" stroke="#243A5F" stroke-width="0.35"/>
+</g>
+</g>
+<defs>
+<filter id="filter_glyph_mode_dark" x="3.5" y="3.75" width="9.25" height="8.75" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="0.2"/>
+<feGaussianBlur stdDeviation="0.25"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+</filter>
+<linearGradient id="paint_tile_mode_dark" x1="3.40909" y1="0.5" x2="6.52747" y2="14.4721" gradientUnits="userSpaceOnUse">
+<stop offset="0.270833" stop-color="white"/>
+<stop offset="1" stop-color="#DFDFDF"/>
+</linearGradient>
+<clipPath id="clip_mode_dark">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>
