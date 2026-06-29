@@ -39,6 +39,10 @@ namespace ColorPicker
 
             this.SetWindowSize(440, 380);
 
+            // Port of the WPF WindowStartupLocation="CenterScreen": WinUI windows open at the OS
+            // default (cascade near the top-left), so center the fixed-size editor on the display.
+            this.CenterOnScreen();
+
             if (AppWindow.Presenter is OverlappedPresenter presenter)
             {
                 presenter.IsResizable = false;

@@ -11,6 +11,7 @@ using ColorPicker.Mouse;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 
 namespace ColorPicker
@@ -45,6 +46,7 @@ namespace ColorPicker
         private readonly nint _hwnd;
 
         private IMouseInfoProvider _mouseInfoProvider;
+        private Storyboard _appearStoryboard;
         private Point _lastCursor;
         private double _scale = 1.0;
         private Rect[] _monitors = Array.Empty<Rect>();
@@ -90,6 +92,7 @@ namespace ColorPicker
         public new void Show()
         {
             base.Show();
+            PlayAppearAnimation();
 
             if (_mouseInfoProvider != null)
             {
@@ -100,6 +103,35 @@ namespace ColorPicker
                 var position = _mouseInfoProvider.CurrentPosition;
                 DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => MoveToCursor(position, resize: true));
             }
+        }
+
+        /// <summary>
+        /// Port of the WPF <c>AppearAnimationBehavior</c>: fade the tooltip in over 250ms
+        /// (CubicEase) every time the overlay is shown. WPF animated <c>Window.Opacity</c>; a WinUI
+        /// <see cref="Window"/> has no Opacity, so the hosted content element is animated instead —
+        /// visually identical since it fills the whole tooltip. (WPF's 1ms hide fade was effectively
+        /// instant, so no hide animation is needed.)
+        /// </summary>
+        private void PlayAppearAnimation()
+        {
+            if (_appearStoryboard == null)
+            {
+                var fadeIn = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 1,
+                    Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+                };
+                Storyboard.SetTarget(fadeIn, MainViewControl);
+                Storyboard.SetTargetProperty(fadeIn, "Opacity");
+                _appearStoryboard = new Storyboard();
+                _appearStoryboard.Children.Add(fadeIn);
+            }
+
+            _appearStoryboard.Stop();
+            MainViewControl.Opacity = 0;
+            _appearStoryboard.Begin();
         }
 
         private void RefreshEnvironment()
