@@ -81,13 +81,11 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!--
-    Pack the service into an unsigned MSIX next to the exe (Design §12.1).  The
-    signed build pipeline signs all *.msix with the Microsoft cert; the installer
-    ships it as the per-user payload.  x64 only (manifest is x64); guarded so a
-    missing SDK doesn't fail the core build.
+    NOTE: the signed MSIX (PTSettingsSvc.msix) is NOT packed here.  It must be
+    built from the SIGNED service binary and then signed itself, which happens
+    in the installer pipeline (steps-build-installer-vnext.yml) AFTER core ESRP
+    signing and BEFORE the MSI build.  Packing it at compile time would capture
+    the unsigned exe and ship an unsigned package (Design §12.1).  For local dev
+    builds, run devtools\build-msix.ps1 manually.
   -->
-  <Target Name="PackPTSettingsSvcMsix" AfterTargets="Build" Condition="'$(Platform)'=='x64' Or '$(Platform)'=='ARM64'">
-    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)devtools\build-msix.ps1&quot; -Config $(Configuration) -Arch $(Platform) -ExePath &quot;$(OutDir)PowerToys.PTSettingsSvc.exe&quot; -OutMsix &quot;$(OutDir)PTSettingsSvc.msix&quot;"
-          ContinueOnError="true" />
-  </Target>
 </Project>

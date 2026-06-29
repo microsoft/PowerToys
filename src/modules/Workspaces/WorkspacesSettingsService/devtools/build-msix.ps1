@@ -40,16 +40,18 @@ Copy-Item $logo $staging
 Copy-Item $ExePath $staging
 
 # Stamp the package version (must be 4-part) to keep it in lockstep with the build.
+# Use case-sensitive -creplace so the lowercase `version` in the XML declaration
+# is left untouched (only the Identity's `Version` attribute is replaced).
 if ($Version) {
     $v = if (($Version -split '\.').Count -eq 3) { "$Version.0" } else { $Version }
     $mf = Join-Path $staging 'AppxManifest.xml'
-    (Get-Content $mf -Raw) -replace 'Version="[0-9.]+"', "Version=`"$v`"" | Set-Content $mf
+    (Get-Content $mf -Raw) -creplace 'Version="[0-9.]+"', "Version=`"$v`"" | Set-Content $mf -Encoding utf8
 }
 
 # Stamp the package architecture (MSIX uses lowercase x64/arm64).
 $arch = $Arch.ToLowerInvariant()
 $mf = Join-Path $staging 'AppxManifest.xml'
-(Get-Content $mf -Raw) -replace 'ProcessorArchitecture="[a-zA-Z0-9]+"', "ProcessorArchitecture=`"$arch`"" | Set-Content $mf
+(Get-Content $mf -Raw) -creplace 'ProcessorArchitecture="[a-zA-Z0-9]+"', "ProcessorArchitecture=`"$arch`"" | Set-Content $mf -Encoding utf8
 
 & "$sdkBin\makeappx.exe" pack /d $staging /p $OutMsix /o | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed ($LASTEXITCODE)." }
