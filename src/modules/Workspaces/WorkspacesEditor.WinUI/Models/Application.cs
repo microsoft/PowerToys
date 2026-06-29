@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
@@ -146,7 +145,7 @@ namespace WorkspacesEditor.Models
             {
                 Maximized = value == (int)WindowPositionKind.Maximized;
                 Minimized = value == (int)WindowPositionKind.Minimized;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(EditPositionEnabled)));
+                OnPropertyChanged(nameof(EditPositionEnabled));
                 RedrawPreviewImage();
             }
         }
@@ -277,8 +276,8 @@ namespace WorkspacesEditor.Models
         internal void CommandLineTextChanged(string newCommandLineValue)
         {
             CommandLineArguments = newCommandLineValue;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsAppMainParamVisible)));
+            OnPropertyChanged(nameof(AppMainParams));
+            OnPropertyChanged(nameof(IsAppMainParamVisible));
         }
 
         public string Version { get; set; }
