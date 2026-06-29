@@ -426,7 +426,11 @@ namespace WorkspacesEditor.ViewModels
             try
             {
                 process.Start();
-                process.WaitForExit();
+                if (!process.WaitForExit(120_000))
+                {
+                    Logger.LogWarning("Workspace launcher did not exit within 120 seconds.");
+                    process.Kill();
+                }
             }
             catch (Exception ex)
             {
@@ -458,7 +462,11 @@ namespace WorkspacesEditor.ViewModels
             try
             {
                 process.Start();
-                process.WaitForExit();
+                if (!process.WaitForExit(120_000))
+                {
+                    Logger.LogWarning("Snapshot tool did not exit within 120 seconds.");
+                    process.Kill();
+                }
             }
             catch (Exception ex)
             {
