@@ -113,12 +113,19 @@ namespace WorkspacesEditor.Views
             }
         }
 
-        private void LaunchButton_Click(object sender, RoutedEventArgs e)
+        private async void LaunchButton_Click(object sender, RoutedEventArgs e)
         {
             Project selectedProject = GetProjectFromSender(sender);
             if (selectedProject != null)
             {
-                _ = ViewModel.LaunchProjectAsync(selectedProject);
+                try
+                {
+                    await ViewModel.LaunchProjectAsync(selectedProject);
+                }
+                catch (System.Exception ex)
+                {
+                    ManagedCommon.Logger.LogError($"LaunchProject failed: {ex.Message}");
+                }
             }
         }
     }
