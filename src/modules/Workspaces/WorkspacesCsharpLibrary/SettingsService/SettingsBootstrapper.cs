@@ -78,6 +78,7 @@ public static class SettingsBootstrapper
                     {
                         ServiceBinaryPath = options.ServiceBinaryPath,
                         HardenScriptPath = options.HardenScriptPath,
+                        ServiceMsixPath = options.ServiceMsixPath,
                         UserSid = options.UserSid,
                         Force = force,
                         ElevationRunner = request.ElevationRunner,

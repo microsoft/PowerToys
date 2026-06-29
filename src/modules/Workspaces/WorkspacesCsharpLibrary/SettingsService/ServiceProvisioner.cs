@@ -132,12 +132,10 @@ public static class ServiceProvisioner
             return Outcome.AlreadyAttempted;
         }
 
-        var serviceBinary = options.ServiceBinaryPath;
-        var hardenScript = options.HardenScriptPath;
-        if (string.IsNullOrEmpty(serviceBinary) || string.IsNullOrEmpty(hardenScript)
-            || !File.Exists(serviceBinary) || !File.Exists(hardenScript))
+        var serviceMsix = options.ServiceMsixPath;
+        if (string.IsNullOrEmpty(serviceMsix) || !File.Exists(serviceMsix))
         {
-            // No payload to register from (e.g. a no-admin xcopy deployment).
+            // No package to install from (e.g. a no-admin xcopy deployment).
             // Don't write the sentinel: a later install that adds the payload
             // should still be allowed to try.
             return Outcome.PayloadMissing;
@@ -156,7 +154,7 @@ public static class ServiceProvisioner
         TryWriteAttemptSentinel();
 
         var runner = options.ElevationRunner ?? RunElevatedPowerShell;
-        var arguments = BuildHardenArguments(hardenScript, serviceBinary, userSid);
+        var arguments = BuildInstallArguments(serviceMsix);
 
         var elevation = runner("powershell.exe", arguments);
         switch (elevation)
@@ -173,11 +171,19 @@ public static class ServiceProvisioner
         }
     }
 
-    /// <summary>Builds the PowerShell argument string that runs the hardening script.</summary>
-    public static string BuildHardenArguments(string hardenScript, string serviceBinary, string userSid)
+    /// <summary>
+    /// Builds the elevated install command. Deploys the SIGNED service MSIX via
+    /// <c>Add-AppxPackage</c> — an inline command (in our signed binary, NOT a
+    /// user-writable script) whose only payload is the signed .msix; the OS
+    /// verifies its signature on deploy, so this cannot run attacker code. The
+    /// packaged windows.service extension auto-registers PTSettingsSvc; DACL and
+    /// migration are then done by the LocalSystem service (Design §12.1) — no
+    /// extra elevation. Replaces the retired user-writable Harden-PtSettings ps1.
+    /// </summary>
+    public static string BuildInstallArguments(string serviceMsix)
     {
-        return $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{hardenScript}\" "
-             + $"-ServiceBinary \"{serviceBinary}\" -UserSid {userSid}";
+        return "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
+             + "\"Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion\"";
     }
 
     /// <summary>

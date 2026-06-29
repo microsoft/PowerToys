@@ -24,29 +24,22 @@ namespace PTSettingsSvc
 
         HRESULT GetServiceSid(PSID& outSid)
         {
-            // "NT SERVICE\PTSettingsSvc" virtual account.  Resolved via
-            // LookupAccountName since we have a name, not a SID.
-            wchar_t name[] = L"NT SERVICE\\PTSettingsSvc";
-            DWORD sidLen = 0;
-            DWORD domLen = 0;
-            SID_NAME_USE use{};
-            LookupAccountNameW(nullptr, name, nullptr, &sidLen, nullptr, &domLen, &use);
-            if (sidLen == 0)
+            // The service runs as LocalSystem (S-1-5-18) under MSIX, whose
+            // windows.service extension only allows LocalSystem/LocalService/
+            // NetworkService start accounts (no virtual NT SERVICE\<name>
+            // account — Design §12.1).  Grant the writer ACE to SYSTEM.
+            BYTE buf[SECURITY_MAX_SID_SIZE];
+            DWORD cb = sizeof(buf);
+            if (!CreateWellKnownSid(WinLocalSystemSid, nullptr, buf, &cb))
             {
                 return HRESULT_FROM_WIN32(GetLastError());
             }
-            outSid = static_cast<PSID>(LocalAlloc(LMEM_FIXED, sidLen));
+            outSid = static_cast<PSID>(LocalAlloc(LMEM_FIXED, cb));
             if (!outSid)
             {
                 return E_OUTOFMEMORY;
             }
-            std::vector<wchar_t> domain(static_cast<size_t>(domLen) + 1);
-            if (!LookupAccountNameW(nullptr, name, outSid, &sidLen, domain.data(), &domLen, &use))
-            {
-                LocalFree(outSid);
-                outSid = nullptr;
-                return HRESULT_FROM_WIN32(GetLastError());
-            }
+            CopySid(cb, outSid, buf);
             return S_OK;
         }
 
@@ -125,6 +118,81 @@ namespace PTSettingsSvc
                                        nullptr, nullptr, acl, nullptr);
             return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
         }
+    }
+
+    HRESULT EnsureStoreRoot(const std::wstring& root)
+    {
+        if (!CreateDirectoryW(root.c_str(), nullptr))
+        {
+            DWORD err = GetLastError();
+            if (err != ERROR_ALREADY_EXISTS)
+            {
+                return HRESULT_FROM_WIN32(err);
+            }
+        }
+
+        PSID adminSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-32-544", &adminSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> adminGuard(adminSid);
+
+        PSID systemSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-18", &systemSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> systemGuard(systemSid);
+
+        PSID authUsersSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-11", &authUsersSid)) // Authenticated Users
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> authUsersGuard(authUsersSid);
+
+        // Root: SYSTEM/Admins Full, Authenticated Users RX (traverse only).  Not
+        // protected — each <sid> node below protects itself; the blanket RX here
+        // lets every user reach their own node but the protected child DACL
+        // stops A reading B.
+        EXPLICIT_ACCESS_W ea[3] = {};
+        ea[0].grfAccessPermissions = GENERIC_ALL;
+        ea[0].grfAccessMode = SET_ACCESS;
+        ea[0].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
+        ea[0].Trustee.ptstrName = static_cast<LPWSTR>(systemSid);
+
+        ea[1].grfAccessPermissions = GENERIC_ALL;
+        ea[1].grfAccessMode = SET_ACCESS;
+        ea[1].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[1].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea[1].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
+
+        ea[2].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+        ea[2].grfAccessMode = SET_ACCESS;
+        ea[2].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[2].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[2].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea[2].Trustee.ptstrName = static_cast<LPWSTR>(authUsersSid);
+
+        PACL acl = nullptr;
+        DWORD rc = SetEntriesInAclW(ARRAYSIZE(ea), ea, nullptr, &acl);
+        if (rc != ERROR_SUCCESS)
+        {
+            return HRESULT_FROM_WIN32(rc);
+        }
+        std::unique_ptr<void, LocalFreeDeleter> aclGuard(acl);
+
+        std::vector<wchar_t> mutableName(root.begin(), root.end());
+        mutableName.push_back(L'\0');
+        rc = SetNamedSecurityInfoW(mutableName.data(),
+                                   SE_FILE_OBJECT,
+                                   DACL_SECURITY_INFORMATION,
+                                   nullptr, nullptr, acl, nullptr);
+        return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
     }
 
     HRESULT EnsureUserFolder(const std::wstring& folder,

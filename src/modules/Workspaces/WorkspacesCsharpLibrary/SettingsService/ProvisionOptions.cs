@@ -19,6 +19,9 @@ public sealed class ProvisionOptions
     /// <summary>Full path to the per-user hardening script to run elevated.</summary>
     public string? HardenScriptPath { get; init; }
 
+    /// <summary>Full path to the signed service MSIX to deploy (deferred install).</summary>
+    public string? ServiceMsixPath { get; init; }
+
     /// <summary>SID of the user to harden; defaults to the current user when null/empty.</summary>
     public string? UserSid { get; init; }
 
@@ -42,6 +45,7 @@ public sealed class ProvisionOptions
         {
             ServiceBinaryPath = SettingsPaths.ServiceBinaryPath(installFolder),
             HardenScriptPath = SettingsPaths.HardenScriptPath(installFolder),
+            ServiceMsixPath = SettingsPaths.ServiceMsixPath(installFolder),
             Force = force,
         };
     }

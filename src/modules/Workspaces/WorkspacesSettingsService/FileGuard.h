@@ -9,6 +9,13 @@
 
 namespace PTSettingsSvc
 {
+    // Creates the store root (<ProgramData>\Microsoft\PowerToys\Settings) if it
+    // doesn't exist and applies the root DACL: SYSTEM/Admins Full, Authenticated
+    // Users RX (traverse so each user reaches their own <sid> node).  Idempotent;
+    // the per-user MSIX install has no installer step so the LocalSystem service
+    // creates the root lazily on first PutBlob (Design §12.1).
+    HRESULT EnsureStoreRoot(const std::wstring& root);
+
     // Creates `folder` if it doesn't exist and applies the DACL that locks
     // the directory to:
     //   * the service account             — Full Control

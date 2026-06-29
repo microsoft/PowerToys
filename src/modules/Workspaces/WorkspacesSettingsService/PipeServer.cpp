@@ -116,13 +116,22 @@ namespace PTSettingsSvc
             // payload-agnostic; the caller is responsible for whatever
             // shape it wants on disk.  See Design-v6-Final.md §4.
 
+            // Ensure the store root exists with the traverse DACL (no installer
+            // creates it in the per-user MSIX case; LocalSystem does it lazily).
+            HRESULT hr = EnsureStoreRoot(GetSettingsRoot());
+            if (FAILED(hr))
+            {
+                SendStatus(pipe, Status::IoError);
+                return;
+            }
+
             // Ensure the per-user node <storeRoot>\<sid> exists and carries the
             // PROTECTED, user-isolating DACL (svc:F, admin:F, this-user:RX).
             // It is applied once here and inherited by the namespace folder and
             // the file below — that single tightening is what stops user A from
             // reading user B's data (Design §9).
-            HRESULT hr = EnsureUserFolder(GetUserFolder(id.userSidString),
-                                          id.userSidString);
+            hr = EnsureUserFolder(GetUserFolder(id.userSidString),
+                                  id.userSidString);
             if (FAILED(hr))
             {
                 SendStatus(pipe, Status::IoError);
