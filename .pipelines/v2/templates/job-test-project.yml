@@ -90,15 +90,26 @@ jobs:
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
 
-  - ${{ if ne(parameters.platform, 'arm64') }}:
-      - download: current
-        displayName: Download artifacts
-        artifact: $(TestArtifactsName)
-        patterns: |-
-          **
-          !**\*.pdb
-          !**\*.lib
+  - ${{ if eq(parameters.buildSource, 'buildNowSlim') }}:
+      # buildNowSlim: the full build publishes the entire ~14 GB tree, but slim runs against the
+      # installed product, so fetch only the installer + the staged test binaries from this run's
+      # full-build artifact. The filtered set is small, so the pipeline task is fine on every arch.
+      - task: DownloadPipelineArtifact@2
+        displayName: Download artifacts (slim)
+        inputs:
+          buildType: 'current'
+          artifactName: $(TestArtifactsName)
+          targetPath: '$(Pipeline.Workspace)/$(TestArtifactsName)'
+          patterns: |
+            **/PowerToysSetup*.exe
+            **/tests/**
+            !**/*.pdb
+            !**/*.lib
   - ${{ else }}:
+      # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
+      # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
+      # x64 CLI zip runs natively on x64 and under emulation on arm64, so one path serves every arch
+      # and avoids the arm64 OOM the pipeline task hits on the large full-build artifact.
       - template: steps-download-artifacts-with-azure-cli.yml
         parameters:
           artifactName: $(TestArtifactsName)
@@ -119,7 +130,7 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppCli.ps1' -Platform '$(BuildPlatform)'
     displayName: Download and install winappcli (winapp.exe)
 
-  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+  - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'specific'
@@ -140,7 +151,7 @@ jobs:
           patterns: |
             **/PowerToysSetup*.exe
 
-  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+  - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
     - ${{ if eq(parameters.installMode, 'peruser') }}:
       - pwsh: |-
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
@@ -150,6 +161,14 @@ jobs:
       - pwsh: |-
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
         displayName: Install PowerToys (Machine-Level)
+
+  # buildNowSlim: the full build's installer was pulled into the test-artifact folder above (instead
+  # of the whole ~14 GB tree), so install it and run the tests against the installed product — the
+  # same model as the official path. Available on every arch.
+  - ${{ if eq(parameters.buildSource, 'buildNowSlim') }}:
+    - pwsh: |-
+        & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine" -ArtifactPath "$(Pipeline.Workspace)\$(TestArtifactsName)"
+      displayName: Install PowerToys (Machine-Level)
 
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
