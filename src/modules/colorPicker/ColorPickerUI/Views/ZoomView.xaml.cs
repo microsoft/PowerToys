@@ -18,8 +18,8 @@ namespace ColorPicker.Views
 {
     /// <summary>
     /// The zoom magnifier surface. A single Win2D <see cref="CanvasControl"/> draws the captured
-    /// screen region scaled with nearest-neighbor filtering, then overlays the pixel grid -- the
-    /// WinUI 3 replacement for the WPF GridShaderEffect (see GridShader.fx for the original spec).
+    /// screen region scaled with nearest-neighbor filtering, then overlays a brightness-adaptive
+    /// pixel grid + center-pixel highlight -- the WinUI 3 replacement for the WPF GridShaderEffect.
     /// </summary>
     public sealed partial class ZoomView : UserControl
     {
@@ -30,6 +30,7 @@ namespace ColorPicker.Views
         private static readonly TimeSpan ResizeDuration = TimeSpan.FromMilliseconds(200);
 
         private CanvasBitmap _zoomBitmap;
+        private Color[] _zoomPixels;
         private double _zoomFactor = 1;
 
         private Visual _cardVisual;
@@ -47,6 +48,10 @@ namespace ColorPicker.Views
         public void SetZoom(CanvasBitmap bitmap, double zoomFactor)
         {
             _zoomBitmap = bitmap;
+
+            // Cache the source pixels once per capture so the brightness-adaptive grid does not
+            // read back from the GPU on every draw.
+            _zoomPixels = bitmap?.GetPixelColors();
             _zoomFactor = zoomFactor;
 
             var size = BaseZoomImageSize * zoomFactor;
@@ -120,6 +125,7 @@ namespace ColorPicker.Views
         public void ClearBitmap()
         {
             _zoomBitmap = null;
+            _zoomPixels = null;
         }
 
         /// <summary>Cancels any in-flight scale and snaps the card to its natural size.</summary>
@@ -151,25 +157,53 @@ namespace ColorPicker.Views
                 1f,
                 CanvasImageInterpolation.NearestNeighbor);
 
-            // Pixel grid + center highlight, only at high zoom (matches the shader's zoomFactor >= 4 gate).
-            if (_zoomFactor < 4)
+            // Brightness-adaptive pixel grid + center highlight, only at high zoom (matches the
+            // original shader's zoomFactor >= 4 gate — 方案2). Each grid segment is drawn dark over a
+            // light cell and light over a dark cell (a flat gray grid loses contrast on both very
+            // light and very dark regions), and faded toward the magnifier edge so the cursor area
+            // reads clearest (the shader's radius reveal). The center cursor pixel gets an adaptive
+            // (dark-or-light) highlight so it stays visible even on a white pixel.
+            if (_zoomFactor < 4 || _zoomPixels == null)
             {
                 return;
             }
 
-            float cell = w / BaseZoomImageSize;
-            var gridColor = new Color { A = 120, R = 128, G = 128, B = 128 };
-            for (int i = 1; i < BaseZoomImageSize; i++)
+            const int n = BaseZoomImageSize;
+            float cell = w / n;
+            var center = new Vector2(w * 0.5f, h * 0.5f);
+            float maxDist = center.Length();
+
+            for (int j = 0; j < n; j++)
             {
-                float p = i * cell;
-                ds.DrawLine(p, 0, p, h, gridColor, 1f);
-                ds.DrawLine(0, p, w, p, gridColor, 1f);
+                for (int i = 0; i < n; i++)
+                {
+                    float midDist = Vector2.Distance(new Vector2((i + 0.5f) * cell, (j + 0.5f) * cell), center);
+                    float fade = 1f - (midDist / maxDist);
+                    if (fade <= 0.05f)
+                    {
+                        continue;
+                    }
+
+                    byte alpha = (byte)(Math.Clamp(fade, 0f, 1f) * 160f);
+                    var line = IsLight(_zoomPixels[(j * n) + i]) ? Colors.Black : Colors.White;
+                    var seg = Color.FromArgb(alpha, line.R, line.G, line.B);
+
+                    float x = i * cell;
+                    float y = j * cell;
+                    ds.DrawLine(x, y, x, y + cell, seg, 1f); // left edge of the cell
+                    ds.DrawLine(x, y, x + cell, y, seg, 1f); // top edge of the cell
+                }
             }
 
-            // The cursor sits at the centre of the captured region; highlight that pixel.
-            int centerIndex = BaseZoomImageSize / 2;
-            float c = centerIndex * cell;
-            ds.DrawRectangle(new Rect(c, c, cell, cell), Colors.White, 2f);
+            // The cursor sits at the centre of the captured region; highlight that pixel with a
+            // dark-or-light border chosen from its own brightness so it never disappears.
+            int centerIndex = n / 2;
+            float cc = centerIndex * cell;
+            var highlight = IsLight(_zoomPixels[(centerIndex * n) + centerIndex]) ? Colors.Black : Colors.White;
+            ds.DrawRectangle(new Rect(cc, cc, cell, cell), highlight, 2f);
         }
+
+        // Perceived luminance (Rec. 601) above ~55% — used to pick a contrasting grid/highlight color.
+        private static bool IsLight(Color c) => ((0.299 * c.R) + (0.587 * c.G) + (0.114 * c.B)) > 140.0;
     }
 }

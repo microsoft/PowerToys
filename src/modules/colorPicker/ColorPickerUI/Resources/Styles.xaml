@@ -8,8 +8,6 @@
     <!--  CONVERTERS  -->
     <converters:BoolToVisibilityConverter x:Key="bool2VisibilityConverter" />
     <converters:BoolToInvertedVisibilityConverter x:Key="bool2InvertedVisibilityConverter" />
-    <converters:ColorToBrushConverter x:Key="colorToBrushConverter" />
-    <converters:ColorToStringConverter x:Key="colorToStringConverter" />
     <converters:NumberToVisibilityConverter x:Key="numberToVisibilityConverter" />
     <converters:NumberToInvertedVisibilityConverter x:Key="numberToInvertedVisibilityConverter" />
 
@@ -24,18 +22,6 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="1" />
-    </Style>
-
-    <!--
-        Editor title-bar close button: subtle by default. (The legacy WPF red-on-hover
-        fill is dropped for the WinUI built-in hover; revisit during editor visual polish.)
-    -->
-    <Style
-        x:Key="TitleBarCloseButtonStyle"
-        BasedOn="{StaticResource DefaultButtonStyle}"
-        TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
     </Style>
 
     <!--

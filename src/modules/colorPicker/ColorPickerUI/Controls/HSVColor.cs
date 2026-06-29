@@ -12,18 +12,6 @@ namespace ColorPicker.Controls
     {
         private static Color FromRgb(byte r, byte g, byte b) => new() { A = 255, R = r, G = g, B = b };
 
-        public static Color[] GetSpectrum()
-        {
-            var rgbs = new Color[360];
-
-            for (int h = 0; h < 360; h++)
-            {
-                rgbs[h] = RGBFromHSV(h, 1f, 1f);
-            }
-
-            return rgbs;
-        }
-
         public static Color[] HueSpectrum(double saturation, double value)
         {
             var rgbs = new Color[7];

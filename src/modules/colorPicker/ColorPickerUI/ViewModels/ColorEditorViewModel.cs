@@ -72,8 +72,6 @@ namespace ColorPicker.ViewModels
 
         public ICommand SelectedColorChangedCommand { get; }
 
-        public ICommand HideColorFormatCommand { get; }
-
         /// <summary>
         /// Gets or sets the editor window's native handle, used to anchor the WinUI
         /// <see cref="FileSavePicker"/> raised by the export commands (a desktop-app

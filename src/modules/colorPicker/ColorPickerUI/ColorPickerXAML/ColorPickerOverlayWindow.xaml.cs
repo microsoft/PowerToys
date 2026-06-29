@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
+using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -46,6 +47,9 @@ namespace ColorPicker
 
         private const uint MonitorDefaultToNearest = 0x00000002;
         private const int MdtEffectiveDpi = 0;
+
+        private const int SmCxScreen = 0;
+        private const int SmCyScreen = 1;
 
         private readonly nint _hwnd;
 
@@ -95,18 +99,25 @@ namespace ColorPicker
         /// </summary>
         public new void Show()
         {
+            // Present the card transparent first (so there is no flash), then start the 250ms fade
+            // and the initial positioning together at Low priority — after base TransparentWindow.Show()
+            // has pumped its deferred SW_SHOWNA, so the fade clock begins when the window is actually
+            // on screen and the card is laid out before it is sized to the cursor.
+            MainViewControl.Opacity = 0;
             base.Show();
-            PlayAppearAnimation();
 
-            if (_mouseInfoProvider != null)
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
             {
-                // Cache the monitor bounds for this pick session (the DPI scale is re-queried per
-                // move so a tooltip crossing into a different-DPI monitor re-sizes correctly).
-                RefreshEnvironment();
+                PlayAppearAnimation();
 
-                var position = _mouseInfoProvider.CurrentPosition;
-                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => MoveToCursor(position, resize: true));
-            }
+                if (_mouseInfoProvider != null)
+                {
+                    // Cache the monitor bounds for this pick session (the DPI scale is re-queried per
+                    // move so a tooltip crossing into a different-DPI monitor re-sizes correctly).
+                    RefreshEnvironment();
+                    MoveToCursor(_mouseInfoProvider.CurrentPosition, resize: true);
+                }
+            });
         }
 
         /// <summary>
@@ -220,7 +231,18 @@ namespace ColorPicker
                 }
             }
 
-            return _monitors.Length > 0 ? _monitors[0] : new Rect(0, 0, double.MaxValue, double.MaxValue);
+            if (_monitors.Length > 0)
+            {
+                // Cursor not inside any enumerated monitor (rare; e.g. just outside the work area):
+                // fall back to the first monitor so the edge-flip math still applies.
+                return _monitors[0];
+            }
+
+            // No monitors enumerated at all (degenerate, e.g. a transient no-display state). Log it
+            // and fall back to the primary screen bounds so the tooltip still edge-flips instead of
+            // being placed against an unbounded rect.
+            Logger.LogWarning("ColorPicker overlay: no monitors enumerated; falling back to primary screen bounds.");
+            return new Rect(0, 0, GetSystemMetrics(SmCxScreen), GetSystemMetrics(SmCyScreen));
         }
 
         // Effective DPI scale of the monitor the cursor is on (1.0 == 96 DPI). Falls back to the
@@ -248,6 +270,9 @@ namespace ColorPicker
 
         [DllImport("shcore.dll")]
         private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int nIndex);
 
         [DllImport("user32.dll")]
         private static extern uint GetDpiForWindow(nint hwnd);

@@ -8,10 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="64"
     mc:Ignorable="d">
-    <UserControl.Resources>
-        <converters:BoolToInvertedVisibilityConverter x:Key="bool2InvertedVisibilityConverter" />
-        <converters:BoolToVisibilityConverter x:Key="bool2VisibilityConverter" />
-    </UserControl.Resources>
     <Grid Background="Transparent">
 
         <Border

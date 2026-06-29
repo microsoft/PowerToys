@@ -181,16 +181,6 @@ namespace ColorPicker.Settings
 
                             retry = false;
                         }
-                        catch (IOException ex)
-                        {
-                            if (retryCount > MaxNumberOfRetry)
-                            {
-                                retry = false;
-                            }
-
-                            Logger.LogError("Failed to read changed settings", ex);
-                            Thread.Sleep(500);
-                        }
                         catch (Exception ex)
                         {
                             if (retryCount > MaxNumberOfRetry)

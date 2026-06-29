@@ -16,10 +16,9 @@
         BorderThickness="1"
         CornerRadius="{ThemeResource ControlCornerRadius}">
         <!--
-            Approach A / 方案1: a single Win2D CanvasControl draws the zoomed (nearest-neighbor)
-            capture plus the pixel grid, replacing the WPF ShaderEffect. See GridShader.fx for
-            the original grid spec; the brightness-adaptive color + radius reveal are simplified
-            here and can be refined (or escalated to 方案2) after desktop verification.
+            A single Win2D CanvasControl draws the zoomed (nearest-neighbor) capture plus a
+            brightness-adaptive pixel grid + center highlight, replacing the WPF ShaderEffect
+            (方案2: the grid color adapts to local pixel brightness and fades toward the edges).
         -->
         <canvas:CanvasControl
             x:Name="ZoomCanvas"
