@@ -21,10 +21,8 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     private readonly EnergySaverService _energySaverService;
     private readonly PowerPlanService _powerPlanService;
     private readonly PowerModeDataManager _dataManager;
-    private readonly ListItem _statusItem;
     private readonly ListItem _batteryStatusItem;
     private readonly ListItem _energySaverItem;
-    private readonly ListItem _powerPlanStatusItem;
 
     private ListItem? _efficiencyItem;
     private ListItem? _balancedItem;
@@ -53,16 +51,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         Icon = Icons.PowerIcon;
         ShowDetails = true;
 
-        var refreshCommand = new RefreshPowerModeStatusCommand(RefreshPresentation)
-        {
-            Id = "com.microsoft.cmdpal.power.status",
-        };
-        _statusItem = new ListItem(new CommandItem(refreshCommand))
-        {
-            Title = Resources.power_mode_status_title,
-            Icon = Icons.PowerIcon,
-        };
-
         _batteryStatusItem = new ListItem(new NoOpCommand())
         {
             Title = Resources.power_mode_battery_status_title,
@@ -73,16 +61,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         {
             Title = Resources.power_mode_energy_saver_title,
             Icon = Icons.EnergySaverIcon,
-        };
-
-        var refreshPlanCommand = new RefreshPowerPlanStatusCommand(RefreshPresentation)
-        {
-            Id = "com.microsoft.cmdpal.power.planStatus",
-        };
-        _powerPlanStatusItem = new ListItem(new CommandItem(refreshPlanCommand))
-        {
-            Title = Resources.power_plan_status_title,
-            Icon = Icons.PowerPlanIcon,
         };
 
         RebuildItemListIfNeeded(force: true);
@@ -171,7 +149,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
             AddSection(
                 list,
                 Resources.power_section_power_mode,
-                _statusItem,
                 _efficiencyItem,
                 _balancedItem,
                 _performanceItem);
@@ -185,10 +162,7 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
         if (supportsPlans)
         {
-            AddSection(
-                list,
-                Resources.power_section_power_plan,
-                [_powerPlanStatusItem, .. _powerPlanItems]);
+            AddSection(list, Resources.power_section_power_plan, _powerPlanItems);
         }
 
         var structureChanged = _itemsInitialized
@@ -284,16 +258,12 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         var energySaverSnapshot = _energySaverService.GetSnapshot();
         var planSnapshot = _powerPlanService.GetSnapshot();
 
-        _statusItem.Subtitle = PowerModeDisplayHelper.GetStatusSubtitle(snapshot);
-        _statusItem.Icon = Icons.Glyph(snapshot.UserMode);
         _batteryStatusItem.Subtitle = PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot);
         _batteryStatusItem.Icon = Icons.BatteryStatusGlyph(snapshot);
 
         _energySaverItem.Subtitle = PowerModeDisplayHelper.GetEnergySaverStatusLabel(energySaverSnapshot);
         _energySaverItem.Icon = Icons.EnergySaverIcon;
 
-        _powerPlanStatusItem.Subtitle = PowerPlanDisplayHelper.GetStatusSubtitle(planSnapshot);
-        _powerPlanStatusItem.Icon = Icons.PlanGlyph(planSnapshot);
         RefreshPowerPlanItemSubtitles(planSnapshot);
 
         if (_efficiencyItem is not null)
