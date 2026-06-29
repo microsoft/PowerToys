@@ -24,27 +24,6 @@ internal static class PowerModeDisplayHelper
         _ => Resources.power_mode_unknown_short,
     };
 
-    internal static string GetPowerSourceLabel(PowerModeSnapshot snapshot) => snapshot.PowerSourceKind switch
-    {
-        PowerSourceKind.NoBattery => Resources.power_mode_no_battery,
-        PowerSourceKind.OnBattery => Resources.power_mode_on_battery,
-        PowerSourceKind.PluggedIn when snapshot.IsCharging => Resources.power_mode_plugged_in_charging,
-        PowerSourceKind.PluggedIn => Resources.power_mode_on_ac,
-        _ => Resources.power_mode_power_source_unknown,
-    };
-
-    internal static string GetBatteryStatusLabel(PowerModeSnapshot snapshot)
-    {
-        if (!snapshot.HasBattery)
-        {
-            return Resources.power_mode_battery_nonexistent;
-        }
-
-        return snapshot.IsCharging
-            ? Resources.power_mode_battery_charging
-            : Resources.power_mode_battery_not_charging;
-    }
-
     internal static string GetStatusSubtitle(PowerModeSnapshot snapshot)
     {
         if (!snapshot.CanReadUserMode)

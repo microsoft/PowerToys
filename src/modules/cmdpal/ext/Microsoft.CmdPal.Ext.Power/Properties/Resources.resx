@@ -62,10 +62,6 @@
   <data name="power_page_title" xml:space="preserve"><value>Power</value></data>
   <data name="power_dock_band_title" xml:space="preserve"><value>Power</value></data>
   <data name="power_mode_status_title" xml:space="preserve"><value>Current status</value></data>
-  <data name="power_mode_battery_status_title" xml:space="preserve"><value>Status</value></data>
-  <data name="power_mode_battery_charging" xml:space="preserve"><value>Charging</value></data>
-  <data name="power_mode_battery_not_charging" xml:space="preserve"><value>Not charging</value></data>
-  <data name="power_mode_battery_nonexistent" xml:space="preserve"><value>No battery</value></data>
   <data name="power_mode_status_command_name" xml:space="preserve"><value>Refresh power mode status</value></data>
   <data name="power_mode_set_efficiency_title" xml:space="preserve"><value>Best power efficiency</value></data>
   <data name="power_mode_set_balanced_title" xml:space="preserve"><value>Balanced</value></data>
@@ -84,11 +80,6 @@
   <data name="power_mode_best_performance_short" xml:space="preserve"><value>Performance</value></data>
   <data name="power_mode_unknown" xml:space="preserve"><value>Unknown power mode</value></data>
   <data name="power_mode_unknown_short" xml:space="preserve"><value>Unknown</value></data>
-  <data name="power_mode_no_battery" xml:space="preserve"><value>No battery</value></data>
-  <data name="power_mode_on_ac" xml:space="preserve"><value>Plugged in</value></data>
-  <data name="power_mode_plugged_in_charging" xml:space="preserve"><value>Plugged in (charging)</value></data>
-  <data name="power_mode_on_battery" xml:space="preserve"><value>On battery</value></data>
-  <data name="power_mode_power_source_unknown" xml:space="preserve"><value>Power source unknown</value></data>
   <data name="power_mode_profile_plugged_in" xml:space="preserve"><value>Plugged-in profile</value></data>
   <data name="power_mode_profile_on_battery" xml:space="preserve"><value>On-battery profile</value></data>
   <data name="power_mode_set_failed" xml:space="preserve"><value>Failed to change power mode.</value></data>
@@ -122,7 +113,6 @@
   <data name="power_plan_status_unknown" xml:space="preserve"><value>Active power plan unknown</value></data>
   <data name="power_plan_current" xml:space="preserve"><value>Current</value></data>
   <data name="power_list_current" xml:space="preserve"><value>Current</value></data>
-  <data name="power_section_battery" xml:space="preserve"><value>Battery</value></data>
   <data name="power_section_energy_saver" xml:space="preserve"><value>Energy saver</value></data>
   <data name="power_section_power_mode" xml:space="preserve"><value>Power mode</value></data>
   <data name="power_section_power_plan" xml:space="preserve"><value>Power plan</value></data>

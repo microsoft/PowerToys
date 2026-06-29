@@ -21,7 +21,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     private readonly EnergySaverService _energySaverService;
     private readonly PowerPlanService _powerPlanService;
     private readonly PowerModeDataManager _dataManager;
-    private readonly ListItem _batteryStatusItem;
     private readonly ListItem _energySaverItem;
 
     private ListItem? _efficiencyItem;
@@ -51,12 +50,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         Icon = Icons.PowerIcon;
         ShowDetails = true;
 
-        _batteryStatusItem = new ListItem(new NoOpCommand())
-        {
-            Title = Resources.power_mode_battery_status_title,
-            Icon = Icons.BatteryUnknownIcon,
-        };
-
         _energySaverItem = new ListItem(new ToggleEnergySaverCommand(_energySaverService, RefreshPresentation))
         {
             Title = Resources.power_mode_energy_saver_title,
@@ -84,11 +77,7 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         return PowerModeDisplayHelper.GetUserModeShortLabel(snapshot.UserMode);
     }
 
-    internal string GetDockSubtitle()
-    {
-        var snapshot = _powerModeService.GetSnapshot();
-        return PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot);
-    }
+    internal string GetDockSubtitle() => string.Empty;
 
     internal IconInfo GetDockIcon()
     {
@@ -126,8 +115,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         }
 
         var list = new List<IListItem>();
-
-        AddSection(list, Resources.power_section_battery, _batteryStatusItem);
 
         AddSection(list, Resources.power_section_energy_saver, _energySaverItem);
 
@@ -257,9 +244,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         var snapshot = _powerModeService.GetSnapshot();
         var energySaverSnapshot = _energySaverService.GetSnapshot();
         var planSnapshot = _powerPlanService.GetSnapshot();
-
-        _batteryStatusItem.Subtitle = PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot);
-        _batteryStatusItem.Icon = Icons.BatteryStatusGlyph(snapshot);
 
         _energySaverItem.Subtitle = PowerModeDisplayHelper.GetEnergySaverStatusLabel(energySaverSnapshot);
         _energySaverItem.Icon = Icons.EnergySaverIcon;

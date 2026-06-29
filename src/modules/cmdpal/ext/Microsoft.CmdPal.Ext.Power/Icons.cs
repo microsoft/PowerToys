@@ -20,12 +20,6 @@ internal sealed class Icons
 
     internal static IconInfo UnknownIcon { get; } = new IconInfo("\uE783");
 
-    internal static IconInfo BatteryUnknownIcon { get; } = new IconInfo("\uEC02");
-
-    internal static IconInfo BatteryDischargingIcon { get; } = new IconInfo("\uEBA0");
-
-    internal static IconInfo BatteryChargingIcon { get; } = new IconInfo("\uEBAB");
-
     internal static IconInfo EnergySaverIcon { get; } = new IconInfo("\uEC0A");
 
     internal static IconInfo PowerPlanIcon { get; } = new IconInfo("\uE1EC");

@@ -79,42 +79,6 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Charging.
-        /// </summary>
-        public static string power_mode_battery_charging {
-            get {
-                return ResourceManager.GetString("power_mode_battery_charging", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to No battery.
-        /// </summary>
-        public static string power_mode_battery_nonexistent {
-            get {
-                return ResourceManager.GetString("power_mode_battery_nonexistent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Not charging.
-        /// </summary>
-        public static string power_mode_battery_not_charging {
-            get {
-                return ResourceManager.GetString("power_mode_battery_not_charging", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Battery status.
-        /// </summary>
-        public static string power_mode_battery_status_title {
-            get {
-                return ResourceManager.GetString("power_mode_battery_status_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Best power efficiency.
         /// </summary>
         public static string power_mode_best_efficiency {
@@ -196,15 +160,6 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No battery.
-        /// </summary>
-        public static string power_mode_no_battery {
-            get {
-                return ResourceManager.GetString("power_mode_no_battery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Power mode control is not available on this device..
         /// </summary>
         public static string power_mode_not_supported {
@@ -214,47 +169,11 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugged in.
-        /// </summary>
-        public static string power_mode_on_ac {
-            get {
-                return ResourceManager.GetString("power_mode_on_ac", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to On battery.
-        /// </summary>
-        public static string power_mode_on_battery {
-            get {
-                return ResourceManager.GetString("power_mode_on_battery", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Power mode.
         /// </summary>
         public static string power_page_title {
             get {
                 return ResourceManager.GetString("power_page_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Plugged in (charging).
-        /// </summary>
-        public static string power_mode_plugged_in_charging {
-            get {
-                return ResourceManager.GetString("power_mode_plugged_in_charging", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Power source unknown.
-        /// </summary>
-        public static string power_mode_power_source_unknown {
-            get {
-                return ResourceManager.GetString("power_mode_power_source_unknown", resourceCulture);
             }
         }
         
@@ -555,12 +474,6 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         public static string power_list_current {
             get {
                 return ResourceManager.GetString("power_list_current", resourceCulture);
-            }
-        }
-
-        public static string power_section_battery {
-            get {
-                return ResourceManager.GetString("power_section_battery", resourceCulture);
             }
         }
 
