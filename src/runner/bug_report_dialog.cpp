@@ -476,18 +476,20 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
 
     g_dialogWnd.store(nullptr);
 
-    // If the window was closed before the tool finished, let it keep running
-    // in the background and make sure the running state is still cleared.
+    // If the window was closed before the tool finished, keep waiting for the tool
+    // so we only clear the "running" state once the process actually exits.
     if (pi.hProcess)
     {
+        WaitForSingleObject(pi.hProcess, INFINITE);
         CloseHandle(pi.hProcess);
+        pi.hProcess = nullptr;
     }
     if (pi.hThread)
     {
         CloseHandle(pi.hThread);
+        pi.hThread = nullptr;
     }
     notifyFinished();
-
     if (st.hFont)
     {
         DeleteObject(st.hFont);
