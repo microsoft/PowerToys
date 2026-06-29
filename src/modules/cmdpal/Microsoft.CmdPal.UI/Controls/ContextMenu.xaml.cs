@@ -125,15 +125,13 @@ public sealed partial class ContextMenu : UserControl,
 
     /// <summary>
     /// Fires a single consolidated Narrator announcement.
-    /// Call this after the flyout is opened.
+    /// Call this after the flyout is opened and focus has been set.
     /// </summary>
     internal void AnnounceOpened()
     {
-        // Focus the search box immediately so the flyout captures keyboard input.
-        FocusSearchBox();
-
         // Defer the announcement to the next dispatcher cycle. This ensures
-        // any pending FilteredItems updates have completed.
+        // any pending FilteredItems updates have completed and the flyout
+        // content is fully materialized in the UIA tree.
         DispatcherQueue.TryEnqueue(() =>
         {
             _isOpening = false;
@@ -151,12 +149,8 @@ public sealed partial class ContextMenu : UserControl,
                 selectedName,
                 selectedIndex);
 
-            // Raise from the dedicated announcer element which is
-            // Content-visible in UIA but has no visual presence.
-            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
-            peer?.RaiseNotificationEvent(
+            RaiseNarratorNotification(
                 AutomationNotificationKind.ActionCompleted,
-                AutomationNotificationProcessing.ImportantMostRecent,
                 announcement,
                 "ContextMenuOpened");
         });
@@ -414,12 +408,32 @@ public sealed partial class ContextMenu : UserControl,
         var total = commandItems.Count;
         var announcement = $"{selected.Title}, {position} of {total}";
 
-        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
-        peer?.RaiseNotificationEvent(
+        RaiseNarratorNotification(
             AutomationNotificationKind.ItemAdded,
-            AutomationNotificationProcessing.ImportantMostRecent,
             announcement,
             "ContextMenuSelectionChanged");
+    }
+
+    /// <summary>
+    /// Raises a UIA notification via the dedicated NarratorAnnouncer element.
+    /// Ensures the element has a peer (forcing layout if needed on first use).
+    /// </summary>
+    private void RaiseNarratorNotification(AutomationNotificationKind kind, string announcement, string activityId)
+    {
+        // On first flyout open the announcer may not have a peer yet.
+        // UpdateLayout ensures the element is materialized in the UIA tree.
+        var peer = FrameworkElementAutomationPeer.FromElement(NarratorAnnouncer);
+        if (peer is null)
+        {
+            NarratorAnnouncer.UpdateLayout();
+            peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
+        }
+
+        peer?.RaiseNotificationEvent(
+            kind,
+            AutomationNotificationProcessing.ImportantMostRecent,
+            announcement,
+            activityId);
     }
 
     private void UpdateUiForStackChange()

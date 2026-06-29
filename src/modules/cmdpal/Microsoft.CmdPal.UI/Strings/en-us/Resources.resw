@@ -560,7 +560,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Navigated to {0} page</value>
   </data>
   <data name="ScreenReader_Announcement_ContextMenuOpened" xml:space="preserve">
-    <value>More actions, {0} commands. {1}, {2} of {0}.</value>
+    <value>Menu, {0} commands. {1}, {2} of {0}.</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings (Ctrl+,)</value>

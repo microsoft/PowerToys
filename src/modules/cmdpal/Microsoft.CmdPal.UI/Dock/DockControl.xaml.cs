@@ -500,8 +500,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // Focus the filter box and fire a single consolidated Narrator
-        // announcement replacing the default cascade of UIA events.
+        // Focus the filter box so the flyout captures keyboard input,
+        // then fire a single consolidated Narrator announcement.
+        ContextControl.FocusSearchBox();
         ContextControl.AnnounceOpened();
     }
 
