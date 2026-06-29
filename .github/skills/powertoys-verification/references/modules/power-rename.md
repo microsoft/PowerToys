@@ -91,7 +91,7 @@ In a workspace `fixtures/` folder:
 
 Always copy fixtures to a disposable temp folder before running actual rename operations.
 
-## Gotchas
+## BLOCKED traps
 
 - **TWO settings files — PR reads `power-rename-settings.json`, NOT `settings.json`** (verified 2026-06-10). `%LOCALAPPDATA%\Microsoft\PowerToys\PowerRename\` holds both: (1) `settings.json` = PT-store, keys `bool_mru_enabled`/`bool_persist_input`/`bool_show_icon_on_menu`/`bool_show_extended_menu`/`bool_use_boost_lib`/`int_max_mru_size` (what `Get-PtModuleSettings` + the Settings UI bind to); (2) `power-rename-settings.json` = the module's own store, keys `ShowIcon`/`ExtendedContextMenuOnly`/`PersistState`/`MRUEnabled`/`MaxMRUSize`/`UseBoostLib` — **this is the file the PR UI exe and the context-menu COM handlers actually read at launch** (`lib/Settings.cpp` `CSettings::Load→ParseJson`). The runner (`dll/dllmain.cpp:301-307`) syncs PT-store→module-store only on a Settings-UI *change event*; the PT-store file can sit stale for days. **To drive ShowIcon / ExtendedContextMenuOnly / MRUEnabled / PersistState / UseBoostLib deterministically, edit `power-rename-settings.json` directly + relaunch PR (or restart runner+Explorer for the menu handlers), then restore.** Map (settings.json key → user-facing toggle): ShowIcon→"Show icon on context menu", ExtendedContextMenuOnly→"Appear only in extended menu", MRUEnabled→autocomplete, PersistState→"Show values from last use", UseBoostLib→"Use Boost library". MRU values live in `search-mru.json`/`replace-mru.json`; last-used (persist) in `power-rename-last-run-data.json`.
 - **"Show icon on context menu" has no Settings-UI toggle in current builds** — drive it via `power-rename-settings.json` `ShowIcon`. Behavior is observable on the synthetic menu (icon vs text-only); source `PowerRenameContextMenu/dllmain.cpp:73` (`GetIcon→null`).
@@ -103,20 +103,11 @@ Always copy fixtures to a disposable temp folder before running actual rename op
 - **Icon-on-menu and extended-only checks prefer registry over screenshot** — read HKCR `Extended` / `Icon` REG_SZ; more reliable + locale-independent.
 - **Disk mutation is real** — run renames against `$env:TEMP\pr-test-<random>`, not real fixtures.
 - **COM cache staleness** when re-checking verbs after enable/disable — call `Reset-PtShellComCache` from `scripts/pt-shell-verbs.ps1`.
+- **Don't** try `Invoke-PtShellVerb 'PowerRename'` — returns False on Win11 (no classic registration). Use synthetic menu via `Invoke-PtContextMenuItem` or direct-CLI.
+- **Don't** run renames against reusable fixtures — copy to a disposable temp folder. Don't trust screenshot-only for icon/extended checks (use registry). Don't skip the synthetic-menu test for menu-presence — CLI back-door false-PASSes when the entry is correctly hidden (see `references/explorer-context-menu-flow.md`).
 
 ## Source citations
 
-- `<PT-repo>\src\modules\PowerRename\dllmain.cpp` — IExplorerCommand registration (no classic HKCR shadow on Win11).
-- `<PT-repo>\src\modules\PowerRename\PowerRenameUILib\` — XAML for main PR window (toggle/checkbox AutomationIds).
-- `<PT-repo>\src\modules\PowerRename\PowerRenameLib\Settings.cpp` — settings.json schema canonical property names.
-
-## Ceiling
-
-Expected **18/18 = 100%** from an interactive admin console session. Direct-CLI (#1) covers UI-driven items; synthetic-menu (#2) covers menu-presence assertions.
-
-## Don'ts
-
-- **Don't** try `Invoke-PtShellVerb 'PowerRename'` — returns False on Win11 (no classic registration). Use synthetic menu via `Invoke-PtContextMenuItem` or direct-CLI.
-- **Don't** run rename operations against reusable fixtures — copy to a disposable temp folder.
-- **Don't** trust screenshot-only for icon-on-menu or extended-only checks — registry inspection is faster + locale-independent.
-- **Don't** skip the synthetic-menu test for the menu-presence assertion — CLI back-door PASSes even when the menu entry is correctly hidden (false-positive trap described in `references/explorer-context-menu-flow.md`).
+- `src\modules\PowerRename\dllmain.cpp` — IExplorerCommand registration (no classic HKCR shadow on Win11).
+- `src\modules\PowerRename\PowerRenameUILib\` — XAML for main PR window (toggle/checkbox AutomationIds).
+- `src\modules\PowerRename\PowerRenameLib\Settings.cpp` — settings.json schema canonical property names.

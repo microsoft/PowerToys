@@ -63,6 +63,7 @@ Shares the exact `ResizeBatch.FromCliOptions` → `ResizeBatch.ProcessAsync` →
 - **cm/inch outputs depend on the fixture's DPI, not 96.** System.Drawing saves at the session display DPI (here 120). Compute expectations from the actual DPI.
 - **Caption is "Resize with Image Resizer", not the checklist's "Resize images"** (both menus). Hard-match the real caption.
 - **Idle auto-lock = BLK-ENV for the disabled-absent + enabled-present items (Recipes 1-2)** (synthetic right-click needs foreground). Disable lock/sleep before the run (`references/environment-setup.md`).
+- Don't expect `Shell.Application.Verbs()` to list the entry — Win11 packaged command (`CoCreate` → `REGDB_E_CLASSNOTREGISTERED`). Kill by `-Id <pid>` not name. Restore `enabled."Image Resizer"=true` + restart runner; revert any `settings.json`/`sizes.json` edits.
 
 ## Fixture files needed
 None pre-canned. Generate with `System.Drawing`: a landscape (e.g. 1200×800) and portrait (800×1200) JPEG, a small (100×100) PNG, a square (400×400) PNG, a `.gif` (single frame is fine — the warning is extension-based), and 3 identical images for the multi-file batch.
@@ -75,13 +76,3 @@ None pre-canned. Generate with `System.Drawing`: a landscape (e.g. 1200×800) an
 - `ImageResizerContextMenu/dllmain.cpp:49,79-133,219-245,284` — modern menu title, enable+image gate, launch, caption.
 - `dll/ContextMenuHandler.cpp:21,46-48,70-71,383-385` — classic menu caption + enable gate.
 - `ui/ViewModels/InputViewModel.cs:76,143`, `ImageResizerXAML/Views/InputPage.xaml:293-299`, `Strings/en-us/Resources.resw:148-149` — gif warning.
-
-## Ceiling
-**18/18 PASS** observed (2026-06-09). All 14 resize-behavior items + the enabled-entry-present-in-both-menus + the remove-size + the gif-warning items cleanly driven via CLI/GUI. The disabled-entry-absent case (in both modern + classic menus, with sibling entries remaining and the entry returning on re-enable) verified live once the desktop was unlocked. NB: an idle auto-lock will turn the menu-presence Recipes 1-2 into BLK-ENV — disable lock/sleep up front (`references/environment-setup.md`).
-
-## Don'ts
-- Don't expect `Shell.Application.Verbs()` to list the entry — it's a Win11 packaged command (classic verbs are blind; `CoCreate` → `REGDB_E_CLASSNOTREGISTERED`).
-- Don't hardcode 96 DPI for cm/inch math.
-- Don't write preset Ids as JSON doubles.
-- Don't kill processes by name; use `Stop-Process -Id <pid>`.
-- Don't forget to restore `enabled."Image Resizer"=true` + restart runner, and revert any `settings.json`/`sizes.json` edits.

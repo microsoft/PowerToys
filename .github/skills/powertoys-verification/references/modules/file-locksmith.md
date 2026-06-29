@@ -82,22 +82,12 @@ None pre-canned. Create a temp file and lock it with a helper process (pwsh hold
 - `FileLocksmithUI\…\MainPage.xaml` — control layout + RestartAsAdminBtn visibility.
 - `FileLocksmithExt\ExplorerCommand.cpp`, `FileLocksmithContextMenu\dllmain.cpp`, `FileLocksmithLib\Settings.cpp` — enable gate.
 
-## Ceiling
-10/10 PASS observed (2026-06-08). The lock-detection / End-task / refresh / drive-scroll items cleanly driven; the Restart-as-admin item PASS-with-caveat (UAC consent click not automatable; outcome verified). **The disable-removes-menu item PASS — behaviorally verified** by a real Explorer right-click: with FL enabled the Win11 menu shows `MenuItem "Unlock with File Locksmith"`; after disabling in Settings the same right-click menu no longer shows it (no Explorer restart needed — `GetState` re-reads `enabled."File Locksmith"` live). NB the **shipped caption is "Unlock with File Locksmith"**, not the checklist's "What's using this file?". The right-click test needs an **unlocked interactive desktop** (a 4-hour idle auto-lock makes `GetForegroundWindow()=0` → `BLK-ENV`).
-
 ## Real right-click verification (Recipe 10) — works on an unlocked desktop
-**Use the shared flow: `references/explorer-context-menu-flow.md` + `scripts/pt-explorer-contextmenu.ps1`.** FL's caption is **"Unlock with File Locksmith"**. Quick version:
+**Use the shared flow: `references/explorer-context-menu-flow.md` + `scripts/pt-explorer-contextmenu.ps1`.** FL's shipped caption is **"Unlock with File Locksmith"** (not the checklist's "What's using this file?"). The disable-removes-menu item is behaviorally verifiable; `GetState` re-reads `enabled."File Locksmith"` live (no Explorer restart). The right-click test needs an unlocked interactive desktop (idle auto-lock → `GetForegroundWindow()=0` → BLK-ENV).
 ```powershell
 . "$skill\scripts\pt-explorer-contextmenu.ps1"
 $menu = Open-PtExplorerContextMenu -ExplorerHwnd $hwnd -FileName 'target.txt'   # synthetic right-click (+retry)
-# present/absent assertion:
 (Get-PtContextMenuItems -MenuHwnd $menu) -contains 'Unlock with File Locksmith'  # true enabled / false disabled
-# real launch (UIA invoke by name):
-Invoke-PtContextMenuItem -MenuHwnd $menu -ItemName 'Unlock with File Locksmith'  # -> launches PowerToys.FileLocksmithUI.exe (non-elevated)
-# Toggle FL off in Settings, re-open menu, assert the caption is gone. No Explorer restart needed (GetState re-reads live).
+Invoke-PtContextMenuItem -MenuHwnd $menu -ItemName 'Unlock with File Locksmith'  # launches PowerToys.FileLocksmithUI.exe (non-elevated)
 ```
-
-## Don'ts
-- Don't expect `Shell.Application.Verbs()` to show the FL entry — it's a Win11 packaged command, invisible to classic verbs.
-- Don't kill processes by name; use `Stop-Process -Id <pid>`.
-- Don't forget to restore `enabled."File Locksmith"=true` and close test-spawned UI/Settings after the disable-removes-menu test.
+- Don't expect `Shell.Application.Verbs()` to show the FL entry — Win11 packaged command, invisible to classic verbs. Don't kill by name (`Stop-Process -Id <pid>`). Restore `enabled."File Locksmith"=true` + close spawned UI after the disable test.

@@ -22,32 +22,26 @@ Each item is annotated with two metadata tags:
 
 ---
 
-## Advanced Paste (41 items)
+## Advanced Paste (32 items)
 
 ### Plain text / Markdown / JSON (baseline)
 
-- [ ] **[ADMIN: NO]** (L865) Copy some rich text (e.g. mixed colors, bold, underlined)
-- [ ] **[ADMIN: NO]** (L866) Paste with Ctrl+V - rich text pasted (with colors, formatting)
-- [ ] **[ADMIN: NO]** (L867) Paste with Paste as Plain Text hotkey - plain text pasted
-- [ ] **[ADMIN: NO]** (L868) Paste again with Ctrl+V - text is now pasted plain (clipboard preserved as plain)
-- [ ] **[ADMIN: NO]** (L869) Copy some rich text again
-- [ ] **[ADMIN: NO]** (L870) Open AP, click Paste as Plain Text button - plain text pasted
-- [ ] **[ADMIN: NO]** (L871) Copy some rich text again
-- [ ] **[ADMIN: NO]** (L872) Open AP, press Ctrl+1 - plain text pasted
-- [ ] **[ADMIN: NO]** (L874) Open Settings and set Paste as Markdown directly hotkey
-- [ ] **[ADMIN: NO]** (L875) Copy some text (e.g. HTML text - convertible to Markdown)
-- [ ] **[ADMIN: NO]** (L876) Paste with set hotkey - text converted to markdown
-- [ ] **[ADMIN: NO]** (L877) Copy some text again
-- [ ] **[ADMIN: NO]** (L878) Open AP, click Paste as markdown button - text converted to markdown
-- [ ] **[ADMIN: NO]** (L879) Copy some text again
-- [ ] **[ADMIN: NO]** (L880) Open AP, press Ctrl+2 - text converted to markdown
-- [ ] **[ADMIN: NO]** (L882) Open Settings and set Paste as JSON directly hotkey
-- [ ] **[ADMIN: NO]** (L883) Copy some XML or CSV text
-- [ ] **[ADMIN: NO]** (L884) Paste with set hotkey - text converted to JSON
-- [ ] **[ADMIN: NO]** (L885) Copy some text again
-- [ ] **[ADMIN: NO]** (L886) Open AP, click Paste as markdown button - JSON test path
-- [ ] **[ADMIN: NO]** (L887) Copy some text again
-- [ ] **[ADMIN: NO]** (L888) Open AP, press Ctrl+3 - text converted via JSON path
+> Fixture: each paste test below begins by copying source content. Re-copy fresh source before each
+> paste so the source format is on the clipboard; the asserts are the "paste …" lines.
+
+- [ ] **[ADMIN: NO]** (L866) Copy rich text (mixed colors, bold, underline); paste with Ctrl+V into a rich editor - rich text pasted with colors/formatting intact
+- [ ] **[ADMIN: NO]** (L867) Copy rich text; paste with the Paste-as-Plain-Text hotkey - plain text pasted, formatting stripped
+- [ ] **[ADMIN: NO]** (L868) Paste again with Ctrl+V - still plain (Paste-as-Plain leaves the clipboard as plain UnicodeText, HTML/RTF removed)
+- [ ] **[ADMIN: NO]** (L870) Copy rich text; open AP, click "Paste as plain text" - plain text pasted, formatting stripped
+- [ ] **[ADMIN: NO]** (L872) Copy rich text; open AP, press Ctrl+1 - plain text pasted, formatting stripped
+- [ ] **[ADMIN: NO]** (L874) Open Settings, set the Paste-as-Markdown direct hotkey - chord saved to settings.json
+- [ ] **[ADMIN: NO]** (L876) Copy HTML (Markdown-convertible); paste with the set hotkey - converted to Markdown
+- [ ] **[ADMIN: NO]** (L878) Copy HTML; open AP, click "Paste as markdown" - converted to Markdown
+- [ ] **[ADMIN: NO]** (L880) Copy HTML; open AP, press Ctrl+2 - converted to Markdown
+- [ ] **[ADMIN: NO]** (L882) Open Settings, set the Paste-as-JSON direct hotkey - chord saved to settings.json
+- [ ] **[ADMIN: NO]** (L884) Copy XML or CSV; paste with the set hotkey - converted to JSON
+- [ ] **[ADMIN: NO]** (L886) Copy XML or CSV; open AP, click "Paste as JSON" - converted to JSON
+- [ ] **[ADMIN: NO]** (L888) Copy XML or CSV; open AP, press Ctrl+3 - converted to JSON
 
 ### AI custom format (baseline)
 
@@ -62,8 +56,8 @@ Each item is annotated with two metadata tags:
 
 - [ ] **[ADMIN: NO]** (L898) Open AP, click Clipboard history, delete entry, verify gone from Win+V
 - [ ] **[ADMIN: NO]** (L899) Open AP, click Clipboard history, click entry, verify put on top of Win+V
-- [ ] **[ADMIN: NO]** (L900) Disable clipboard history - Clipboard history button disabled in AP
-- [ ] **[ADMIN: NO]** (L901) Disable Advanced Paste, try hotkeys - confirm nothing happens
+- [ ] **[ADMIN: NO]** (L900) Disable Windows clipboard history (Settings > System > Clipboard) - the Clipboard history button in AP is disabled/hidden
+- [ ] **[ADMIN: NO]** (L901) Disable Advanced Paste, then press its hotkeys - nothing happens (AP window does not open; no process spawned)
 
 ### New / updated since v0.96 (PR-derived)
 
@@ -71,8 +65,8 @@ Each item is annotated with two metadata tags:
 - [ ] **[ADMIN: NO]** (#44021) Copy an image to the clipboard, open AP - image is accepted as input (image-input handling); a custom/AI action can run on it (image preview shown, no error)
 - [ ] **[ADMIN: NO]** (#44767) Select text in an editor and invoke a custom-action hotkey WITHOUT pressing Ctrl+C first - AP auto-copies the selection and acts on it; clipboard is preserved
 - [ ] **[ADMIN: NO]** (#46486) Repeat the auto-copy custom-action hotkey in an Electron/Chromium app (VS Code / Chrome) - selection is still auto-copied (no longer fails on those apps)
-- [ ] **[ADMIN: NO]** (#45242) Settings: toggle "show/hide AI paste section" - the AI paste section appears/disappears in the AP window accordingly
+- [ ] **[ADMIN: NO]** (#45242) Settings > Advanced Paste: toggle "Enable Paste with AI" off/on - the AI paste section (custom-input text box + provider selector) hides/appears in the AP window accordingly
 - [ ] **[ADMIN: NO]** [EXTERNAL: API-KEY] (#44293, #45362, #43716) Settings: switch AI provider (OpenAI / Azure OpenAI / Gemini / Foundry Local) - the configured endpoint persists per provider (Gemini does not keep an Azure placeholder; Foundry local port change is picked up on the fly)
 - [ ] **[ADMIN: NO]** (#44862, #45207, #45699) Open the Advanced Paste Settings page after upgrading from an older settings.json - page loads without crashing (settings upgraded safely)
 - [ ] **[ADMIN: NO]** (#44212) Clipboard history: select the same item twice - no duplicate entry is created
-- [ ] **[ADMIN: NO]** [CLARITY: VAGUE-NO-ASSERT] (#48124) Paste as JSON with an unreadable/locked clipboard - conversion fails gracefully (no crash); copy convertible XML/CSV again and confirm JSON still works
+- [ ] **[ADMIN: NO]** (#48124) With an unreadable/locked clipboard (e.g. another app holds an open clipboard handle), trigger Paste as JSON - AP fails gracefully (no crash, error toast/no-op); then copy valid XML/CSV and confirm Paste as JSON converts correctly again

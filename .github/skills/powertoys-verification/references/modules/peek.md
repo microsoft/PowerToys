@@ -74,13 +74,18 @@ Wakes the resident Peek process (different from CLI back-door — respects curre
 
 
 
-## BLOCKED triage (single source of truth)
+## BLOCKED traps (single source of truth)
 
 If the agent only tried the CLI back-door and marked the pin / navigation tests BLOCKED → **misdiagnosis**, try entry-path #2 (Shell.Application COM + Ctrl+Space).
 
-If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver, etc.). See `SKILL.md` pitfall #13 and `references/environment-setup.md` for the per-scenario table + powercfg setup commands. Mark BLK-ENV with mitigation citation.
+If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver). See `SKILL.md` pitfall #13 and `references/environment-setup.md`. Mark BLK-ENV with mitigation citation.
 
-Both traps were observed in 2026-06-08 sign-off runs; preventing both is now the agent's pre-flight job (`pt-session-diagnose.ps1`).
+Module quirks that mislead driving:
+- **Activation-shortcut is NOT hot-reloaded.** Editing `Peek\settings.json` `ActivationShortcut` does nothing until `Restart-PtRunner`. Restart after the change AND after restoring.
+- **PinButton spawns a `PopupHost` teaching-tip** (~192x63) that surfaces first in `list-windows`. Match by title suffix `- Peek`, or cache the Peek HWND before invoking PinButton.
+- **Win11 Notepad tabs/session-restore** muddy open-with-default tests: spawned Notepad restores prior tabs. Match `"<file> - Notepad"` explicitly.
+- **Don't `Stop-Process PowerToys.Peek.UI`** to close between iterations — bypasses the pin-save handler. Use Esc / `winapp ui invoke CloseButton`.
+- CLI back-door does NOT support navigation (`_isFromCli` guard); use Shell COM + Ctrl+Space for nav. Don't OCR when UIA exposes `ImagePreview`/`PreviewBrowser`/`PinButton`.
 
 ## Fixture files needed
 
@@ -96,22 +101,6 @@ Put these in a workspace `fixtures/` folder before starting:
 
 ## Source citations
 
-- `<PT-repo>\src\modules\Peek\Peek.UI\PeekXAML\App.xaml.cs:106-134` — CLI arg parsing, `_isFromCli` flag, OnShowPeek call.
-- `<PT-repo>\src\modules\Peek\Peek.UI\PeekXAML\Models\NavigationManager.cs` — `// TODO: implement navigation` + `if (_isFromCli) return;` guards.
-- `<PT-repo>\src\common\interop\shared_constants.h` — `ShowPeekEvent` name.
-
-## Ceiling
-
-**18/18 = 100%** achievable from a normal interactive admin console session (verified 2026-06-08). The change-shortcut item is PASS-able via the settings.json + runner-restart path — see Recipe 12.
-
-## Peek-specific gotchas
-
-- **Activation-shortcut is NOT hot-reloaded.** Editing `Peek\settings.json` `ActivationShortcut` and waiting for the file-watcher debounce does nothing — the centralized keyboard hook only re-registers the chord after `Restart-PtRunner`. Restart after the change AND again after restoring.
-- **PinButton spawns a `PopupHost` teaching-tip.** Invoking `PinButton` pops a small confirmation flyout (≈192x63) titled `PopupHost` that surfaces *first* in `winapp ui list-windows`. A naive "first HWND" regex grabs the popup, not Peek. Match by title suffix `- Peek` (regex like `HWND (\d+): "([^"]*- Peek)"`) and/or cache the original Peek HWND before invoking PinButton.
-- **Win11 Notepad tabs/session-restore** muddy the "open-with-default-app" tests (Recipes 2-3): the spawned Notepad restores prior tabs, so the foreground Notepad's title may not show your file. Enumerate all Notepad windows and match `"<file> - Notepad"` explicitly.
-
-## Don'ts
-
-- **Don't `Stop-Process PowerToys.Peek.UI -Force`** to close Peek between iterations — bypasses the save handler, breaks the pin-state-persistence tests (Recipes 5, 7). Use Esc / `winapp ui invoke CloseButton`.
-- **Don't assume CLI back-door supports navigation** — it doesn't (`_isFromCli` guard). For nav tests use Shell COM + Ctrl+Space.
-- **Don't OCR the previewer surface** when UIA already exposes the correct nodes (`ImagePreview`, `PreviewBrowser`, `LaunchAppButton`, `PinButton`). UIA is more reliable than OCR.
+- `src\modules\Peek\Peek.UI\PeekXAML\App.xaml.cs:106-134` — CLI arg parsing, `_isFromCli` flag, OnShowPeek call.
+- `src\modules\Peek\Peek.UI\PeekXAML\Models\NavigationManager.cs` — `if (_isFromCli) return;` guards.
+- `src\common\interop\shared_constants.h` — `ShowPeekEvent` name.

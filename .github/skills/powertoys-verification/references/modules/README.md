@@ -50,67 +50,47 @@ Your module profile then only documents the **module-specific** quirks: settings
 
 ## Profile template
 
-When writing a new profile, use this skeleton:
+A profile holds **only module-specific logic** an agent can't infer from the SKILL engine. It has **4 required sections + 2 optional**. Do NOT pad it with sections that have no content — omit them. No Ceiling/Don'ts sections: a PASS-rate number drifts every release, and "don'ts" are just traps phrased negatively (put them in BLOCKED traps).
+
+**Required (always):** ① metadata header · ② Entry-paths · ③ Recipes · ④ BLOCKED traps.
+**Optional (include only if non-empty):** Fixtures · Source citations.
 
 ```markdown
 # <Module> — module verification profile
 
+# ① metadata header (REQUIRED) — bootstrap facts. Drop any line that doesn't apply.
 **PT module**: `<ModuleKey>` (one-line description)
-**Source**: `<PT-repo>\src\modules\<dir>\` (PT repo)
+**Source**: `src\modules\<dir>\`
 **Settings file**: `%LOCALAPPDATA%\Microsoft\PowerToys\<dir>\settings.json`
-**Logs**: `%LOCALAPPDATA%\Microsoft\PowerToys\<dir>\Logs\v<ver>\log_<date>.log`
-**Exes**: `<full path>`
-**Default hotkey**: `<keys>` (modifiers + code, plus path to ActivationShortcut in settings)
+**Exe**: `<full path>`
+**Default hotkey**: `<keys>` (+ settings ActivationShortcut path)
 **Named Event**: `Local\<name>` (friendly name in pt-shared-events.ps1 catalog)
 **DSC resource**: `Microsoft.PowerToys/<Name>Settings`
 
-## Entry-paths (try in order)
-
-### 1. <fastest path>
-<powershell code + when to use + source citation>
-
+## Entry-paths (try in order)        # ② REQUIRED — how to launch & reach the UI, fastest first
+### 1. <fastest path>  <code + when to use + source citation>
 ### 2. <alternate path>
-<...>
-
 ### 3. <last-resort path>
-<...>
 
-## Recipes — a control/observation map, NOT a per-test-case answer key
-
-| # | Capability | Drive (control / settings key) | Observe (where the result shows) |
+## Recipes — control/observation map, NOT an answer key   # ③ REQUIRED
+| # | Capability | Drive (control / settings key) | Observe (where result shows) |
 |---|---|---|---|
-| 1 | <a module capability, e.g. "context-menu entry present when enabled"> | <which AutomationId / control / settings key drives it> | <where the result is visible: preview column, settings.json, disk, log, menu> |
-| 2 | <next capability> | <...> | <...> |
+| 1 | <module capability> | <AutomationId / control / settings key> | <preview / settings.json / disk / log / menu> |
 
-> **Mapping process** (agent at runtime): read the actual checklist item → identify the capability → find its row → drive the named control and **design your own inputs + assertions for that item**. If no row matches, it's a NEW capability — drive ad-hoc and add a row (capability + control + observation point; no canned inputs).
+> Mapping: read item → find capability row → drive the control, design your OWN inputs+assertions. No canned inputs/expected values (they go stale + invite copying). New capability ⇒ add a row.
 
-> **Why a map, not an answer key**: the table must carry only **durable module knowledge** — which control drives a capability and where to observe the result. Concrete Search/Replace inputs and expected-output assertions are *per-test-case answers*; baking them in turns the profile into a cheat sheet that (a) lets the agent copy answers without understanding and (b) goes stale the moment a checklist item changes its wording or values. Keep inputs + assertions OUT. Only a real UI redesign (a renamed/moved/removed control) should force an edit to this table.
+## BLOCKED traps                      # ④ REQUIRED — false-block + gotcha prevention (absorbs old "Don'ts"/"gotchas")
+- <mistake prior agents made → the fix>; <module quirk that misleads driving>
 
-## Common BLOCKED traps
-
-<list of mistakes prior agents made + how to avoid them>
-
-## Fixture files needed
-
-<list of pre-canned files the verification expects>
-
-## Source citations
-
-<paths in PT repo that explain module behavior or guards>
-
-## Ceiling
-
-<observed PASS rate / total>
-
-## Don'ts
-
-<list of common mistakes>
+## Fixtures                           # OPTIONAL — only if the module needs canned files (else omit)
+## Source citations                   # OPTIONAL — PT-repo file:line for surprising behavior (else inline in traps)
 ```
 
 ## Hygiene
 
+- **4 required + 2 optional sections only** (header · entry-paths · recipes · BLOCKED traps; fixtures + source citations if non-empty). No Ceiling, no Don'ts — fold negative guidance into BLOCKED traps. Omit empty sections rather than writing "None".
 - **Keep each profile under ~10 KB.** If it grows beyond that, the module has too many quirks — escalate to maintainer review of the upstream checklist.
-- **The recipe table is a control/observation MAP, not an answer key.** Columns are *Capability → Drive (control/key) → Observe*. **Do NOT bake in concrete Search/Replace inputs or expected-output assertions** — those are per-test-case answers that go stale when a checklist item changes and let the agent copy without understanding. The agent designs inputs + assertions at runtime from the actual checklist item.
-- **Tables are capability-keyed, NOT line-keyed.** Upstream checklist line numbers (`L<n>`) **must not appear** in the profile — they drift between releases (items added/removed/reordered) and turn the table into a silent mismatch trap. PT-source-code file:line citations (e.g. `dllmain.cpp:73`) ARE allowed; they're version-pinned and serve a different purpose.
-- **Cite source-code line numbers** where module behavior surprises (e.g. CLI guards, debounce timings, fallback chains). Reviewers can verify your claims by reading those lines.
+- **The recipe table is a control/observation MAP, not an answer key.** Columns are *Capability → Drive (control/key) → Observe*. **Do NOT bake in concrete inputs or expected-output assertions** — they go stale when a checklist item changes and let the agent copy without understanding. The agent designs inputs + assertions at runtime from the actual checklist item.
+- **Tables are capability-keyed, NOT line-keyed.** Upstream checklist line numbers (`L<n>`) **must not appear** — they drift between releases. PT-source-code file:line citations (e.g. `dllmain.cpp:73`) ARE allowed; version-pinned, different purpose.
+- **Cite source-code line numbers** where module behavior surprises (CLI guards, debounce timings, fallback chains) so reviewers can verify.
 - **Update the profile after every verification round**; promote any new technique into the right helper script if it generalizes beyond this module.

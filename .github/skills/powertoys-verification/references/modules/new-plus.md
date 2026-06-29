@@ -54,6 +54,8 @@ Template items render with **caption transforms applied** (HideFileExtension str
 - **Master-flip + runner restart does not copy default templates** — that's a Settings-UI action (`NewPlusViewModel.IsEnabled`). Use the UIA toggle for any template-auto-copy item.
 - **Menu render is invisible without a real right-click** — packaged command is not `CoCreate`-able (`REGDB_E_CLASSNOTREGISTERED`) and not in classic `Shell.Application.Verbs()`. Locked desktop ⇒ BLK-ENV; do not substitute a CLI/back-door (there isn't one, and it'd be a false PASS).
 - **No template-count observable** — `saved_number_of_templates` is an in-memory static (`new_utilities.cpp`), not registry/log.
+- Don't edit `…\PowerToys\New\settings.json` — wrong path; the file is under `NewPlus\`. Re-reads per menu build, so don't restart Explorer to apply a setting.
+- Use the folder **background** ("New") menu, not `Open-PtExplorerContextMenu`; **expand the `New+` submenu** before enumerating templates. Locked desktop ⇒ menu-render items are BLK-ENV, not product FAIL.
 
 ## Fixture files needed
 - A plain file (e.g. `test.txt`) and a folder-with-files to drop into Templates (template-appears items).
@@ -64,14 +66,3 @@ Template items render with **caption transforms applied** (HideFileExtension str
 - `src/modules/NewPlus/NewShellExtensionContextMenu/new_utilities.h` — `copy_template`, `create_folder_if_not_exist`, `get_newplus_setting_hide_*`, `register_msix_package`.
 - `src/modules/NewPlus/NewShellExtensionContextMenu/shell_context_sub_menu.cpp` — `create_folder_if_not_exist(root)` + template enumeration.
 - `src/settings-ui/Settings.UI/ViewModels/NewPlusViewModel.cs` — `CopyTemplateExamples` (creates dir; copies examples only when files==0 && dirs==0), called from `IsEnabled` setter / `OpenNewTemplateFolder` / `DashboardViewModel`.
-
-## Ceiling
-- Unlocked interactive desktop: **9/9 PASS** (verified 2026-06-18 via background-menu synthetic right-click + submenu expansion).
-- Locked/non-interactive desktop: ~3/9 (registration-gate present/absent + template auto-copy); menu-render/select items fall to BLK-ENV/BLK-VISUAL-RENDER — re-run after unlocking.
-
-## Don'ts
-- Don't edit `…\PowerToys\New\settings.json` — wrong path; the file is under `NewPlus\`.
-- Don't use `Open-PtExplorerContextMenu` (file-item right-click) for New+ — it's the folder **background** ("New") menu; right-click empty list space instead.
-- Don't forget to **expand the `New+` submenu** (invoke it) before enumerating templates — they live one popup deeper than the main menu.
-- Don't mark menu-render items as product FAIL on a locked desktop — it's BLK-ENV.
-- Don't restart Explorer to apply a setting change — the handler re-reads `NewPlus\settings.json` per menu build.
