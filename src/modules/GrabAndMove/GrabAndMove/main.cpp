@@ -373,6 +373,13 @@ static int g_overlayRenderedH = 0;
 // Always On Top (WindowCornerUtils::CornersRadius).
 static int CornerRadiusForWindow(HWND hwnd)
 {
+    // Remote sessions draw square windows even on Win11, yet still report DWMWCP_DEFAULT. Match the
+    // window: a remote session gets square (radius 0) so the overlay border doesn't round off the corner.
+    if (GetSystemMetrics(SM_REMOTESESSION))
+    {
+        return 0;
+    }
+
     int pref = 0; // DWMWCP_DEFAULT
     if (DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref)) != S_OK)
     {
