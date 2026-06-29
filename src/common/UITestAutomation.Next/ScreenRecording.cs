@@ -38,7 +38,7 @@ internal sealed class ScreenRecording : IDisposable
     private const int DESKTOPHORZRES = 118;
     private const int DESKTOPVERTRES = 117;
     private const int DINORMAL = 0x0003;
-    private const int TargetFps = 15; // Balance of quality and size.
+    private const int TargetFps = 30;
 
     private readonly string outputDirectory;
     private readonly string framesDirectory;

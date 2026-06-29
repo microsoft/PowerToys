@@ -42,9 +42,7 @@ public class UITestBase : IDisposable
     private readonly bool isInPipeline = EnvironmentConfig.IsInPipeline;
 
     private SessionHelper? sessionHelper;
-    private System.Threading.Timer? screenshotTimer;
     private ScreenRecording? screenRecording;
-    private string? screenshotDirectory;
     private string? recordingDirectory;
     private bool artifactsCaptured;
     private bool disposed;
@@ -247,7 +245,6 @@ public class UITestBase : IDisposable
         {
             try
             {
-                AddScreenshotsToTestResults();
                 AddRecordingsToTestResults();
                 AddLogFilesToTestResults();
             }
@@ -375,17 +372,12 @@ public class UITestBase : IDisposable
 
     // ----- Pipeline diagnostics (CI only) ---------------------------------------------------
 
-    /// <summary>Start the 1s screenshot timer and FFmpeg screen recording. Best-effort.</summary>
+    /// <summary>Start the FFmpeg screen recording. Best-effort.</summary>
     private void StartPipelineCapture()
     {
         try
         {
             var baseDirectory = TestContext.TestResultsDirectory ?? Path.GetTempPath();
-
-            screenshotDirectory = Path.Combine(baseDirectory, "UITestScreenshots_" + Guid.NewGuid());
-            Directory.CreateDirectory(screenshotDirectory);
-            screenshotTimer = new System.Threading.Timer(
-                ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
             recordingDirectory = Path.Combine(baseDirectory, "UITestRecordings_" + Guid.NewGuid());
             Directory.CreateDirectory(recordingDirectory);
@@ -412,17 +404,9 @@ public class UITestBase : IDisposable
         }
     }
 
-    /// <summary>Stop the screenshot timer and finalize the recording. Best-effort.</summary>
+    /// <summary>Finalize the recording. Best-effort.</summary>
     private async Task StopPipelineCaptureAsync()
     {
-        try
-        {
-            screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-        catch
-        {
-        }
-
         if (screenRecording is not null)
         {
             try
@@ -431,17 +415,6 @@ public class UITestBase : IDisposable
             }
             catch
             {
-            }
-        }
-    }
-
-    private void AddScreenshotsToTestResults()
-    {
-        if (screenshotDirectory is not null && Directory.Exists(screenshotDirectory))
-        {
-            foreach (var file in Directory.GetFiles(screenshotDirectory))
-            {
-                TestContext.AddResultFile(file);
             }
         }
     }
@@ -542,7 +515,6 @@ public class UITestBase : IDisposable
         }
 
         disposed = true;
-        screenshotTimer?.Dispose();
         screenRecording?.Dispose();
         GC.SuppressFinalize(this);
     }

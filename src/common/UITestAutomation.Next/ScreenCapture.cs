@@ -57,25 +57,6 @@ internal static class ScreenCapture
     }
 
     /// <summary>
-    /// Timer callback: capture one screenshot into the directory passed as <paramref name="state"/>.
-    /// Tolerant — a capture failure must never crash the timer thread.
-    /// </summary>
-    public static void TimerCallback(object? state)
-    {
-        try
-        {
-            if (state is string directory)
-            {
-                CaptureScreenshot(directory);
-            }
-        }
-        catch
-        {
-            // Best-effort capture; swallow so the timer keeps firing.
-        }
-    }
-
-    /// <summary>
     /// Capture the full (primary) desktop to <paramref name="filePath"/> as a PNG. Pure GDI, so
     /// unlike winappcli's <c>--capture-screen</c> (which needs a live target window) this works even
     /// when the test window was already closed or never appeared — the reliable failure-screenshot
@@ -92,12 +73,6 @@ internal static class ScreenCapture
         {
             return false;
         }
-    }
-
-    private static void CaptureScreenshot(string directory)
-    {
-        var filePath = Path.Combine(directory, $"screenshot_{DateTime.Now:yyyyMMdd_HHmmssfff}.png");
-        CaptureScreenWithMouse(filePath);
     }
 
     private static void CaptureScreenWithMouse(string filePath)
