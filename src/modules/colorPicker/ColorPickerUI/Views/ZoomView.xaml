@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Border
+        x:Name="ZoomCard"
         Margin="12"
         HorizontalAlignment="Center"
         VerticalAlignment="Center"

@@ -30,6 +30,12 @@ namespace ColorPicker.Helpers
         private const int MinZoomLevel = 0;
         private const int WindowChrome = 30; // Border (12) + canvas (3) margins on each side.
 
+        // ALT-1: the magnifier window is a constant size for the whole session — the level-4
+        // (factor 8) bounding box — so the centred card always fits and never clips. Only the inner
+        // card animates its size (Composition scale in ZoomView), so there is no per-step window
+        // resize and no shrink-trim bookkeeping.
+        private const int MaxWindowSize = (BaseZoomImageSize * 8) + WindowChrome; // 50*8 + 30 = 430
+
         private static readonly Bitmap _bmp = new Bitmap(BaseZoomImageSize, BaseZoomImageSize, PixelFormat.Format32bppArgb);
         private static readonly Graphics _graphics = Graphics.FromImage(_bmp);
 
@@ -41,6 +47,7 @@ namespace ColorPicker.Helpers
         private ZoomWindow _zoomWindow;
         private CanvasBitmap _capturedBitmap;
         private double _zoomFactorValue = 1;
+        private bool _zoomWindowVisible;
 
         public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler)
         {
@@ -74,6 +81,8 @@ namespace ColorPicker.Helpers
         {
             _currentZoomLevel = 0;
             _previousZoomLevel = 0;
+            _zoomWindowVisible = false;
+            _zoomWindow?.ZoomViewControl.ResetScale();
             _zoomWindow?.Hide();
         }
 
@@ -81,6 +90,8 @@ namespace ColorPicker.Helpers
         {
             if (_currentZoomLevel == 0)
             {
+                _zoomWindowVisible = false;
+                _zoomWindow?.ZoomViewControl.ResetScale();
                 _zoomWindow?.Hide();
                 return;
             }
@@ -113,7 +124,11 @@ namespace ColorPicker.Helpers
 
             _zoomFactorValue = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
             _zoomViewModel.ZoomFactor = _zoomFactorValue;
-            ShowZoomWindow(point);
+
+            // The size the card is animating FROM: the previous level's factor (or the current one
+            // on first appearance, which makes the scale a no-op snap).
+            double previousFactor = _previousZoomLevel >= 1 ? Math.Pow(ZoomFactor, _previousZoomLevel - 1) : _zoomFactorValue;
+            ShowZoomWindow(point, previousFactor);
         }
 
         private static CanvasBitmap BitmapToCanvasBitmap(Bitmap bitmap)
@@ -133,7 +148,7 @@ namespace ColorPicker.Helpers
             }
         }
 
-        private void ShowZoomWindow(Point point)
+        private void ShowZoomWindow(Point point, double previousFactor)
         {
             if (_capturedBitmap == null)
             {
@@ -141,17 +156,34 @@ namespace ColorPicker.Helpers
             }
 
             _zoomWindow ??= new ZoomWindow();
+
+            // The window is a constant max size; only set it on first show. Win2D is drawn at the
+            // FINAL factor now — the compositor scales that crisp texture during the tween.
+            if (!_zoomWindowVisible)
+            {
+                _zoomWindow.SetWindowSize(MaxWindowSize, MaxWindowSize);
+            }
+
             _zoomWindow.ZoomViewControl.SetZoom(_capturedBitmap, _zoomFactorValue);
 
-            var winSize = (BaseZoomImageSize * _zoomFactorValue) + WindowChrome;
-            _zoomWindow.SetWindowSize(winSize, winSize);
-
-            // Center the magnifier on the cursor (both AppWindow.Position/Size and the cursor are
-            // in physical pixels).
+            // Re-center the fixed-size window on the cursor every step (AppWindow.Size and the cursor
+            // are both physical pixels). The card is centred inside, so it stays on the cursor.
             var appWindow = _zoomWindow.AppWindow;
             appWindow.Move(new PointInt32((int)point.X - (appWindow.Size.Width / 2), (int)point.Y - (appWindow.Size.Height / 2)));
 
-            _zoomWindow.Show();
+            if (!_zoomWindowVisible)
+            {
+                // First appearance this session: the card shows directly at the current size (no
+                // tween), so there is no scale animation to race against the async Show().
+                _zoomWindow.ZoomViewControl.ResetScale();
+                _zoomWindow.Show();
+                _zoomWindowVisible = true;
+            }
+            else
+            {
+                // Same already-shown, laid-out window: animate the card between the old and new size.
+                _zoomWindow.ZoomViewControl.AnimateResize(previousFactor, _zoomFactorValue);
+            }
         }
     }
 }
