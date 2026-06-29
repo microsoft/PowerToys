@@ -14,6 +14,7 @@ param(
     [string]$ExePath  = "$PSScriptRoot\..\x64\$Config\WorkspacesSettingsService\PowerToys.PTSettingsSvc.exe",
     [string]$OutMsix  = "$PSScriptRoot\..\package\PTSettingsSvc.msix",
     [string]$Version  = '',
+    [string]$Arch     = 'x64',
     [string]$PfxPath  = '',
     [string]$PfxPass  = ''
 )
@@ -44,6 +45,11 @@ if ($Version) {
     $mf = Join-Path $staging 'AppxManifest.xml'
     (Get-Content $mf -Raw) -replace 'Version="[0-9.]+"', "Version=`"$v`"" | Set-Content $mf
 }
+
+# Stamp the package architecture (MSIX uses lowercase x64/arm64).
+$arch = $Arch.ToLowerInvariant()
+$mf = Join-Path $staging 'AppxManifest.xml'
+(Get-Content $mf -Raw) -replace 'ProcessorArchitecture="[a-zA-Z0-9]+"', "ProcessorArchitecture=`"$arch`"" | Set-Content $mf
 
 & "$sdkBin\makeappx.exe" pack /d $staging /p $OutMsix /o | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed ($LASTEXITCODE)." }
