@@ -41,48 +41,55 @@ namespace WorkspacesEditor.ViewModels
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
+        private List<Project> _workspacesView = new();
+
         public List<Project> WorkspacesView
         {
-            get
+            get => _workspacesView;
+            private set => SetProperty(ref _workspacesView, value);
+        }
+
+        [ObservableProperty]
+        private bool _isWorkspacesViewEmpty;
+
+        [ObservableProperty]
+        private string _emptyWorkspacesViewMessage;
+
+        public void RefreshWorkspacesView()
+        {
+            IEnumerable<Project> workspaces = GetFilteredWorkspaces();
+            bool isEmpty = !(workspaces != null && workspaces.Any());
+            IsWorkspacesViewEmpty = isEmpty;
+
+            if (isEmpty)
             {
-                IEnumerable<Project> workspaces = GetFilteredWorkspaces();
-                IsWorkspacesViewEmpty = !(workspaces != null && workspaces.Any());
-                OnPropertyChanged(nameof(IsWorkspacesViewEmpty));
-                if (IsWorkspacesViewEmpty)
+                if (Workspaces != null && Workspaces.Any())
                 {
-                    if (Workspaces != null && Workspaces.Any())
-                    {
-                        EmptyWorkspacesViewMessage = GetString("NoWorkspacesMatch");
-                    }
-                    else
-                    {
-                        EmptyWorkspacesViewMessage = GetString("No_Workspaces_Message");
-                    }
-
-                    OnPropertyChanged(nameof(EmptyWorkspacesViewMessage));
-
-                    return new List<Project>();
-                }
-
-                WorkspacesData.OrderBy orderBy = (WorkspacesData.OrderBy)OrderByIndex;
-                if (orderBy == WorkspacesData.OrderBy.LastViewed)
-                {
-                    return workspaces.OrderByDescending(x => x.LastLaunchedTime).ToList();
-                }
-                else if (orderBy == WorkspacesData.OrderBy.Created)
-                {
-                    return workspaces.OrderByDescending(x => x.CreationTime).ToList();
+                    EmptyWorkspacesViewMessage = GetString("NoWorkspacesMatch");
                 }
                 else
                 {
-                    return workspaces.OrderBy(x => x.Name).ToList();
+                    EmptyWorkspacesViewMessage = GetString("No_Workspaces_Message");
                 }
+
+                WorkspacesView = new List<Project>();
+                return;
+            }
+
+            WorkspacesData.OrderBy orderBy = (WorkspacesData.OrderBy)OrderByIndex;
+            if (orderBy == WorkspacesData.OrderBy.LastViewed)
+            {
+                WorkspacesView = workspaces.OrderByDescending(x => x.LastLaunchedTime).ToList();
+            }
+            else if (orderBy == WorkspacesData.OrderBy.Created)
+            {
+                WorkspacesView = workspaces.OrderByDescending(x => x.CreationTime).ToList();
+            }
+            else
+            {
+                WorkspacesView = workspaces.OrderBy(x => x.Name).ToList();
             }
         }
-
-        public bool IsWorkspacesViewEmpty { get; set; }
-
-        public string EmptyWorkspacesViewMessage { get; set; }
 
         private IEnumerable<Project> GetFilteredWorkspaces()
         {
@@ -108,17 +115,21 @@ namespace WorkspacesEditor.ViewModels
         }
 
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(WorkspacesView))]
         private string _searchTerm;
 
+        partial void OnSearchTermChanged(string value)
+        {
+            RefreshWorkspacesView();
+        }
+
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(WorkspacesView))]
         private int _orderByIndex;
 
         partial void OnOrderByIndexChanged(int value)
         {
             _settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
             _settings.Save(SettingsUtils.Default);
+            RefreshWorkspacesView();
         }
 
         [ObservableProperty]
@@ -152,7 +163,7 @@ namespace WorkspacesEditor.ViewModels
             _lastUpdatedTimer.Tick += LastUpdatedTimerTick;
             _lastUpdatedTimer.Start();
 
-            OnPropertyChanged(nameof(WorkspacesView));
+            RefreshWorkspacesView();
         }
 
         public void SaveProject(Project projectToSave)
@@ -227,7 +238,7 @@ namespace WorkspacesEditor.ViewModels
             Workspaces.Add(project);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();
-            OnPropertyChanged(nameof(WorkspacesView));
+            RefreshWorkspacesView();
             ApplyShortcut(project);
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
@@ -246,7 +257,7 @@ namespace WorkspacesEditor.ViewModels
             Workspaces.Remove(selectedProject);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             RemoveShortcut(selectedProject);
-            OnPropertyChanged(nameof(WorkspacesView));
+            RefreshWorkspacesView();
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
         }
@@ -271,7 +282,7 @@ namespace WorkspacesEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
-                OnPropertyChanged(nameof(WorkspacesView));
+                RefreshWorkspacesView();
             }
         }
 
@@ -285,7 +296,7 @@ namespace WorkspacesEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
-                OnPropertyChanged(nameof(WorkspacesView));
+                RefreshWorkspacesView();
             }
 
             Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");

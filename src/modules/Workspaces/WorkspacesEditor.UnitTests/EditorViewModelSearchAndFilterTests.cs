@@ -45,6 +45,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = null;
+            vm.RefreshWorkspacesView();
             Assert.AreEqual(2, vm.WorkspacesView.Count);
         }
 
@@ -156,11 +157,11 @@ namespace WorkspacesEditor.UnitTests
                 TestHelpers.CreateProject("Test", 0, 0, "App"),
             };
 
-            string changedProp = null;
-            vm.PropertyChanged += (s, e) => changedProp = e.PropertyName;
+            var changedProps = new System.Collections.Generic.List<string>();
+            vm.PropertyChanged += (s, e) => changedProps.Add(e.PropertyName);
 
             vm.SearchTerm = "Test";
-            Assert.AreEqual("WorkspacesView", changedProp);
+            Assert.IsTrue(changedProps.Contains("WorkspacesView"), $"Expected WorkspacesView in [{string.Join(", ", changedProps)}]");
         }
 
         [TestMethod]

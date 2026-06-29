@@ -30,6 +30,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.OrderByIndex = 2; // Name
+            vm.RefreshWorkspacesView();
             var results = vm.WorkspacesView.ToList();
 
             Assert.AreEqual("Alpha", results[0].Name);
@@ -50,6 +51,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.OrderByIndex = 1; // Created (descending)
+            vm.RefreshWorkspacesView();
             var results = vm.WorkspacesView.ToList();
 
             Assert.AreEqual("Newest", results[0].Name);
@@ -70,6 +72,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.OrderByIndex = 0; // LastViewed (descending)
+            vm.RefreshWorkspacesView();
             var results = vm.WorkspacesView.ToList();
 
             Assert.AreEqual("MostRecent", results[0].Name);
@@ -84,11 +87,11 @@ namespace WorkspacesEditor.UnitTests
             var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>();
 
-            string changedProp = null;
-            vm.PropertyChanged += (s, e) => changedProp = e.PropertyName;
+            var changedProps = new System.Collections.Generic.List<string>();
+            vm.PropertyChanged += (s, e) => changedProps.Add(e.PropertyName);
 
             vm.OrderByIndex = 1;
-            Assert.AreEqual("WorkspacesView", changedProp);
+            Assert.IsTrue(changedProps.Contains("WorkspacesView"), $"Expected WorkspacesView in [{string.Join(", ", changedProps)}]");
         }
 
         [TestMethod]
