@@ -25,6 +25,25 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
   </Target>
 
+  <!--
+    The Microsoft.Web.WebView2 package's managed .targets unconditionally references the WPF
+    wrapper (Microsoft.Web.WebView2.Wpf.dll) for every non-WinRT .NET project. That wrapper
+    depends on WPF's WindowsBase, which only ships in the WPF profile of the WindowsDesktop
+    reference pack. WinForms-only or plain projects therefore resolve WindowsBase to the
+    4.0.0.0 facade from Microsoft.NETCore.App, producing an MSB3277 conflict against the
+    wrapper's 5.0.0.0 reference. A project that doesn't enable WPF can't use the WPF WebView2
+    control anyway, so drop that unused reference before RAR runs (WPF projects keep it).
+    WinUI/WinAppSDK projects use the CsWinRT projection and never get this reference, so this
+    is a no-op for them.
+  -->
+  <Target Name="RemoveUnusedWebView2WpfReference"
+          BeforeTargets="ResolveAssemblyReferences"
+          Condition="'$(UseWPF)' != 'true'">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup Condition="'$(IgnoreExperimentalWarnings)' == 'true'">
     <NoWarn>$(NoWarn);CS8305;SA1500;CA1852</NoWarn>
   </PropertyGroup>
