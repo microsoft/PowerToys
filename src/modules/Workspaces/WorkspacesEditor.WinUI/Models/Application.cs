@@ -114,6 +114,7 @@ namespace WorkspacesEditor.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AppMainParams))]
+        [NotifyPropertyChangedFor(nameof(IsAppMainParamVisible))]
         private bool _isElevated;
 
         public bool CanLaunchElevated { get; set; }
@@ -150,8 +151,6 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        private string _appMainParams;
-
         public string AppMainParams
         {
             get
@@ -159,18 +158,17 @@ namespace WorkspacesEditor.Models
                 string adminStr = ResourceLoaderInstance.ResourceLoader?.GetString("Admin") ?? "Admin";
                 string argsStr = ResourceLoaderInstance.ResourceLoader?.GetString("Args") ?? "Args";
 
-                _appMainParams = IsElevated ? adminStr : string.Empty;
+                string result = IsElevated ? adminStr : string.Empty;
                 if (!string.IsNullOrWhiteSpace(CommandLineArguments))
                 {
-                    _appMainParams += (_appMainParams == string.Empty ? string.Empty : " | ") + argsStr + ": " + CommandLineArguments;
+                    result += (result == string.Empty ? string.Empty : " | ") + argsStr + ": " + CommandLineArguments;
                 }
 
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsAppMainParamVisible)));
-                return _appMainParams;
+                return result;
             }
         }
 
-        public bool IsAppMainParamVisible => !string.IsNullOrWhiteSpace(_appMainParams);
+        public bool IsAppMainParamVisible => !string.IsNullOrWhiteSpace(AppMainParams);
 
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
@@ -278,6 +276,7 @@ namespace WorkspacesEditor.Models
         {
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsAppMainParamVisible)));
         }
 
         public string Version { get; set; }
