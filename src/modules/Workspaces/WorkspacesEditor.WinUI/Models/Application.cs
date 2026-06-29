@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
 
+using CommunityToolkit.Mvvm.ComponentModel;
+
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using WorkspacesCsharpLibrary.Models;
@@ -110,17 +112,9 @@ namespace WorkspacesEditor.Models
 
         public string CommandLineArguments { get; set; }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(AppMainParams))]
         private bool _isElevated;
-
-        public bool IsElevated
-        {
-            get => _isElevated;
-            set
-            {
-                _isElevated = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppMainParams)));
-            }
-        }
 
         public bool CanLaunchElevated { get; set; }
 
@@ -165,7 +159,7 @@ namespace WorkspacesEditor.Models
                 string adminStr = ResourceLoaderInstance.ResourceLoader?.GetString("Admin") ?? "Admin";
                 string argsStr = ResourceLoaderInstance.ResourceLoader?.GetString("Args") ?? "Args";
 
-                _appMainParams = _isElevated ? adminStr : string.Empty;
+                _appMainParams = IsElevated ? adminStr : string.Empty;
                 if (!string.IsNullOrWhiteSpace(CommandLineArguments))
                 {
                     _appMainParams += (_appMainParams == string.Empty ? string.Empty : " | ") + argsStr + ": " + CommandLineArguments;
@@ -240,20 +234,8 @@ namespace WorkspacesEditor.Models
             _isInitialized = true;
         }
 
+        [ObservableProperty]
         private bool _isExpanded;
-
-        public bool IsExpanded
-        {
-            get => _isExpanded;
-            set
-            {
-                if (_isExpanded != value)
-                {
-                    _isExpanded = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsExpanded)));
-                }
-            }
-        }
 
         public string DeleteButtonContent
         {
@@ -261,27 +243,19 @@ namespace WorkspacesEditor.Models
             {
                 string deleteStr = ResourceLoaderInstance.ResourceLoader?.GetString("Delete") ?? "Remove";
                 string addBackStr = ResourceLoaderInstance.ResourceLoader?.GetString("AddBack") ?? "Add back";
-                return _isIncluded ? deleteStr : addBackStr;
+                return IsIncluded ? deleteStr : addBackStr;
             }
         }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DeleteButtonContent))]
         private bool _isIncluded = true;
 
-        public bool IsIncluded
+        partial void OnIsIncludedChanged(bool value)
         {
-            get => _isIncluded;
-            set
+            if (!value)
             {
-                if (_isIncluded != value)
-                {
-                    _isIncluded = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsIncluded)));
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(DeleteButtonContent)));
-                    if (!_isIncluded)
-                    {
-                        IsExpanded = false;
-                    }
-                }
+                IsExpanded = false;
             }
         }
 
