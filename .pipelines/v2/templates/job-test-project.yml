@@ -93,7 +93,11 @@ jobs:
   - ${{ if eq(parameters.buildSource, 'buildNowSlim') }}:
       # buildNowSlim: the full build publishes the entire ~14 GB tree, but slim runs against the
       # installed product, so fetch only the installer + the staged test binaries from this run's
-      # full-build artifact. The filtered set is small, so the pipeline task is fine on every arch.
+      # full-build artifact.
+      # IMPORTANT: DownloadPipelineArtifact's itemPattern downloads a file that matches ANY pattern,
+      # and '!' lines do NOT exclude. Per the task docs they "include files that don't match any
+      # include pattern", so a '!**/*.pdb' line pulls in every non-pdb file — i.e. the whole product
+      # tree (~14 GB). Use INCLUDE-ONLY patterns so only the installer + tests folder transfer.
       - task: DownloadPipelineArtifact@2
         displayName: Download artifacts (slim)
         inputs:
@@ -103,8 +107,6 @@ jobs:
           patterns: |
             **/PowerToysSetup*.exe
             **/tests/**
-            !**/*.pdb
-            !**/*.lib
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
