@@ -35,15 +35,15 @@ internal sealed class SettingsManager : JsonSettingsManager
         Resources.GetResource("Disk_Speed_Unit_Setting_Title"),
         Resources.GetResource("Disk_Speed_Unit_Setting_Description"),
         [
-            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BitsPerSec"), DiskSpeedUnit.BitsPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BytesPerSec"), DiskSpeedUnit.BytesPerSecond.ToString("G")),
-            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BinaryBytesPerSec"), DiskSpeedUnit.BinaryBytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BitsPerSec"), SpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BytesPerSec"), SpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BinaryBytesPerSec"), SpeedUnit.BinaryBytesPerSecond.ToString("G")),
         ]);
 
-    public DiskSpeedUnit DiskSpeedUnit =>
-        Enum.TryParse<DiskSpeedUnit>(_diskSpeedUnit.Value, out var unit)
+    public SpeedUnit DiskSpeedUnit =>
+        Enum.TryParse<SpeedUnit>(_diskSpeedUnit.Value, out var unit)
             ? unit
-            : DiskSpeedUnit.BytesPerSecond;
+            : SpeedUnit.BytesPerSecond;
 
     private static string SettingsJsonPath()
     {

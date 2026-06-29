@@ -825,8 +825,8 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     {
         return _settingsManager.DiskSpeedUnit switch
         {
-            DiskSpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
-            DiskSpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
+            SpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
+            SpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
             _ => FormatIncomingData.AsBitsPerSecString(bytesPerSec),
         };
     }
