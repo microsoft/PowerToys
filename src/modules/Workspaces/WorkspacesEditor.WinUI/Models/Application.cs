@@ -232,6 +232,16 @@ namespace WorkspacesEditor.Models
         public void InitializationFinished()
         {
             _isInitialized = true;
+            LoadIcon();
+        }
+
+        private void LoadIcon()
+        {
+            _iconImage = IconHelper.TryGetExecutableIcon(AppPath);
+            if (_iconImage == null && !string.IsNullOrEmpty(AppPath))
+            {
+                IsNotFound = true;
+            }
         }
 
         [ObservableProperty]
@@ -262,22 +272,7 @@ namespace WorkspacesEditor.Models
         private BitmapImage _iconImage;
 
         [JsonIgnore]
-        public BitmapImage IconImage
-        {
-            get
-            {
-                if (_iconImage == null)
-                {
-                    _iconImage = IconHelper.TryGetExecutableIcon(AppPath);
-                    if (_iconImage == null && !string.IsNullOrEmpty(AppPath))
-                    {
-                        IsNotFound = true;
-                    }
-                }
-
-                return _iconImage;
-            }
-        }
+        public BitmapImage IconImage => _iconImage;
 
         internal void CommandLineTextChanged(string newCommandLineValue)
         {
