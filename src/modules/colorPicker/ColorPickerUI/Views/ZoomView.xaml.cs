@@ -112,6 +112,16 @@ namespace ColorPicker.Views
             _cardVisual.StartAnimation("Scale", anim);
         }
 
+        /// <summary>
+        /// Drops the cached captured bitmap so its owner (<see cref="Helpers.ZoomWindowHelper"/>) can
+        /// dispose the Win2D surface without the canvas drawing a released bitmap. Called while the
+        /// magnifier window is hidden (between zoom sessions), so no redraw is in flight.
+        /// </summary>
+        public void ClearBitmap()
+        {
+            _zoomBitmap = null;
+        }
+
         /// <summary>Cancels any in-flight scale and snaps the card to its natural size.</summary>
         public void ResetScale()
         {

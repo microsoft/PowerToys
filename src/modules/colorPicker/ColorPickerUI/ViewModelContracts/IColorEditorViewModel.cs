@@ -35,6 +35,11 @@ namespace ColorPicker.ViewModelContracts
 
         int SelectedColorIndex { get; set; }
 
+        // HWND of the host ColorEditorWindow, assigned by AppStateHandler once the window exists.
+        // The WinUI FileSavePicker used by the export commands must be initialized with a valid
+        // owner window handle (InitializeWithWindow) on an unpackaged desktop app.
+        IntPtr WindowHandle { get; set; }
+
         void Initialize();
     }
 }

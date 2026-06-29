@@ -15,8 +15,6 @@ namespace ColorPicker
     // will have to rename
     public static class NativeMethods
     {
-        private const int GWL_EX_STYLE = -20;
-        private const int WS_EX_TOOLWINDOW = 0x00000080;
         public const int WH_KEYBOARD_LL = 13;
         public const int VkSnapshot = 0x2c;
         public const int KfAltdown = 0x2000;
@@ -219,19 +217,6 @@ namespace ColorPicker
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int GetWindowText(int hwnd, StringBuilder text, int count);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        // WinUI 3 has no WindowInteropHelper; the caller (sub-project C overlay window)
-        // obtains the HWND via WinRT.Interop.WindowNative.GetWindowHandle(window) and passes it.
-        internal static void SetToolWindowStyle(IntPtr hwnd)
-        {
-            _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
-        }
 
         /// <summary>
         /// Sets the display affinity of a window, which controls how the window is

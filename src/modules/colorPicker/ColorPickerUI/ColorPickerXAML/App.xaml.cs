@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 
 namespace ColorPicker
@@ -21,6 +22,11 @@ namespace ColorPicker
         private static IServiceProvider _serviceProvider;
 
         public static Window Window { get; private set; }
+
+        // ETW diagnostic trace session (matches the WPF original and the WinUI 3 sibling modules,
+        // e.g. EnvironmentVariables/AdvancedPaste). Constructed once; the session is torn down on
+        // process exit, so no explicit Dispose is required (siblings follow the same pattern).
+        public ETWTrace EtwTrace { get; } = new ETWTrace();
 
         public App(string[] args)
         {
@@ -40,15 +46,18 @@ namespace ColorPicker
                 Logger.LogError("Language initialization error: " + ex.Message);
             }
 
-            // DI container is configured in Task 3; for now an empty provider.
             _serviceProvider = ConfigureServices();
+
+            // Environment.Exit on the runner-exit / terminate / single-instance paths raises no
+            // Window.Closed, so the cursor-restore in MouseInfoProvider.DisposeHook never runs.
+            // Restore the system cursors on any process exit (idempotent) so an abnormal exit while
+            // a pick is active with ChangeCursor enabled does not leave the crosshair as the
+            // system-wide cursor — parity with the WPF App.OnExit.
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
             InitializeComponent();
             UnhandledException += App_UnhandledException;
         }
-
-        /// <summary>Gets the runner PID, or -1 when running detached from PowerToys.</summary>
-        public int RunnerPid => _powerToysRunnerPid;
 
         public bool IsRunningDetachedFromPowerToys() => _powerToysRunnerPid == -1;
 
@@ -76,7 +85,7 @@ namespace ColorPicker
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
-                    GetService<System.Threading.CancellationTokenSource>()?.Cancel();
+                    GetService<CancellationTokenSource>()?.Cancel();
                     Environment.Exit(0);
                 });
             }
@@ -102,15 +111,6 @@ namespace ColorPicker
             overlay.InitializeCursorFollow(GetService<ColorPicker.Mouse.IMouseInfoProvider>());
         }
 
-        /// <summary>
-        /// Gets the application-wide cancellation token (replaces the WPF
-        /// <c>[Export] ExitToken</c>). Valid only after the <see cref="App"/> has been
-        /// constructed (the DI provider is built in the constructor); do not read it
-        /// from a static initializer.
-        /// </summary>
-        public static System.Threading.CancellationToken ExitToken =>
-            GetService<System.Threading.CancellationTokenSource>().Token;
-
         private static IServiceProvider ConfigureServices()
             => ColorPicker.Foundation.AppServices.Configure();
 
@@ -119,17 +119,28 @@ namespace ColorPicker
             Logger.LogError("Unhandled exception", e.Exception);
         }
 
+        private void OnProcessExit(object sender, EventArgs e)
+        {
+            // Environment.Exit and normal shutdown both raise ProcessExit; run the deterministic
+            // cleanup here since the WinUI Application model never calls Dispose() on the App.
+            Mouse.CursorManager.RestoreOriginalCursors();
+            Dispose();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (_disposed)
             {
-                if (disposing)
-                {
-                    _instanceMutex?.Dispose();
-                }
-
-                _disposed = true;
+                return;
             }
+
+            if (disposing)
+            {
+                _instanceMutex?.Dispose();
+                _instanceMutex = null;
+            }
+
+            _disposed = true;
         }
 
         public void Dispose()

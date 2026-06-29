@@ -113,12 +113,6 @@ namespace ColorPicker.Helpers
             ShowColorPickerEditor();
         }
 
-        public static void SetTopMost()
-        {
-            // The picking overlay is kept always-on-top by its OverlappedPresenter, so there is
-            // nothing to re-assert here (the WPF version toggled Window.Topmost).
-        }
-
         private void ShowColorPicker()
         {
             if (!_colorPickerShown)
@@ -144,6 +138,10 @@ namespace ColorPicker.Helpers
             if (_colorEditorWindow == null)
             {
                 _colorEditorWindow = new ColorEditorWindow(this);
+
+                // The export commands' FileSavePicker needs the editor window's HWND
+                // (InitializeWithWindow); assign it here, once the window exists.
+                _colorEditorViewModel.WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_colorEditorWindow);
                 _colorEditorWindow.ContentPresenter.Content = new Views.ColorEditorView { DataContext = _colorEditorViewModel };
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;

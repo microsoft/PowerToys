@@ -50,7 +50,6 @@ namespace ColorPicker.Foundation
             // and AppStateHandler -> IColorEditorViewModel. AppStateHandler reads App.Window, which
             // App.OnLaunched assigns before resolving IMainViewModel.
             services.AddSingleton<ColorPicker.ViewModelContracts.IColorEditorViewModel, ColorPicker.ViewModels.ColorEditorViewModel>();
-            services.AddSingleton<ColorPicker.ViewModelContracts.IZoomViewModel, ColorPicker.ViewModels.ZoomViewModel>();
             services.AddSingleton<AppStateHandler>();
             services.AddSingleton<ZoomWindowHelper>();
             services.AddSingleton<ColorPicker.Mouse.IMouseInfoProvider, ColorPicker.Mouse.MouseInfoProvider>();

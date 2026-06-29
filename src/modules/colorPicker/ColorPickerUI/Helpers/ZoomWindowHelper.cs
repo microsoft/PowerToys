@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-using ColorPicker.ViewModelContracts;
 using Microsoft.Graphics.Canvas;
 using Windows.Graphics;
 using Windows.Graphics.DirectX;
@@ -39,7 +38,6 @@ namespace ColorPicker.Helpers
         private static readonly Bitmap _bmp = new Bitmap(BaseZoomImageSize, BaseZoomImageSize, PixelFormat.Format32bppArgb);
         private static readonly Graphics _graphics = Graphics.FromImage(_bmp);
 
-        private readonly IZoomViewModel _zoomViewModel;
         private readonly AppStateHandler _appStateHandler;
 
         private int _currentZoomLevel;
@@ -49,9 +47,8 @@ namespace ColorPicker.Helpers
         private double _zoomFactorValue = 1;
         private bool _zoomWindowVisible;
 
-        public ZoomWindowHelper(IZoomViewModel zoomViewModel, AppStateHandler appStateHandler)
+        public ZoomWindowHelper(AppStateHandler appStateHandler)
         {
-            _zoomViewModel = zoomViewModel;
             _appStateHandler = appStateHandler;
             _appStateHandler.AppClosed += (s, e) => CloseZoomWindow();
             _appStateHandler.AppHidden += (s, e) => CloseZoomWindow();
@@ -83,7 +80,13 @@ namespace ColorPicker.Helpers
             _previousZoomLevel = 0;
             _zoomWindowVisible = false;
             _zoomWindow?.ZoomViewControl.ResetScale();
+            _zoomWindow?.ZoomViewControl.ClearBitmap();
             _zoomWindow?.Hide();
+
+            // Release this session's captured GPU surface (the ZoomView reference is cleared above
+            // so the canvas will not draw a disposed bitmap).
+            _capturedBitmap?.Dispose();
+            _capturedBitmap = null;
         }
 
         private void SetZoomImage(Point point)
@@ -99,6 +102,13 @@ namespace ColorPicker.Helpers
             // Capture once when a zoom session starts (previous level was 0).
             if (_previousZoomLevel == 0)
             {
+                // Release the previous session's GPU surface before capturing a new one. The window
+                // is hidden between sessions, so clear the ZoomView reference first (it is not
+                // drawing this bitmap) and then dispose.
+                _zoomWindow?.ZoomViewControl.ClearBitmap();
+                _capturedBitmap?.Dispose();
+                _capturedBitmap = null;
+
                 var mainWindowHandle = _appStateHandler.GetMainWindowHandle();
                 bool exclusionSuccess = WindowCaptureExclusionHelper.Exclude(mainWindowHandle);
                 try
@@ -123,7 +133,6 @@ namespace ColorPicker.Helpers
             }
 
             _zoomFactorValue = Math.Pow(ZoomFactor, _currentZoomLevel - 1);
-            _zoomViewModel.ZoomFactor = _zoomFactorValue;
 
             // The size the card is animating FROM: the previous level's factor (or the current one
             // on first appearance, which makes the scale a no-op snap).

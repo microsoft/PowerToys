@@ -244,7 +244,7 @@ Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $
 Generate-FileComponents -fileListName "AwakeImagesFiles" -wxsFilePath $PSScriptRoot\Awake.wxs
 
 #ColorPicker
-Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ColorPicker"
+Generate-FileList -fileDepsJson "" -fileListName ColorPickerAssetsFiles -wxsFilePath $PSScriptRoot\ColorPicker.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ColorPicker"
 Generate-FileComponents -fileListName "ColorPickerAssetsFiles" -wxsFilePath $PSScriptRoot\ColorPicker.wxs
 
 #Environment Variables

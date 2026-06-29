@@ -29,8 +29,9 @@ namespace ColorPicker
     /// the cursor by the <c>ChangeWindowPositionBehavior</c>. <see cref="InitializeCursorFollow"/>
     /// ports all three: WinUI has no <c>SizeToContent</c>, the behavior was WPF-only, and the
     /// window is kept top-most so the tooltip stays visible over the magnifier. Per-tick work is a
-    /// single top-most <c>SetWindowPos</c> move (the size, DPI scale and monitor list are cached, not
-    /// recomputed every cursor tick) so following stays as light as the WPF version.
+    /// single top-most <c>SetWindowPos</c> move plus a cheap per-monitor DPI lookup (so a tooltip
+    /// dragged across mixed-DPI monitors re-sizes to the monitor under the cursor); the tooltip size
+    /// and monitor list are cached and only recomputed on first show / content change.
     /// </remarks>
     public sealed partial class ColorPickerOverlayWindow : TransparentWindow
     {
@@ -42,6 +43,9 @@ namespace ColorPicker
         private const int HwndTopmost = -1;
         private const uint SwpNoSize = 0x0001;
         private const uint SwpNoActivate = 0x0010;
+
+        private const uint MonitorDefaultToNearest = 0x00000002;
+        private const int MdtEffectiveDpi = 0;
 
         private readonly nint _hwnd;
 
@@ -96,8 +100,8 @@ namespace ColorPicker
 
             if (_mouseInfoProvider != null)
             {
-                // Cache the DPI scale + monitor bounds once per pick session instead of querying
-                // them on every cursor tick (the old code enumerated all displays per move).
+                // Cache the monitor bounds for this pick session (the DPI scale is re-queried per
+                // move so a tooltip crossing into a different-DPI monitor re-sizes correctly).
                 RefreshEnvironment();
 
                 var position = _mouseInfoProvider.CurrentPosition;
@@ -147,6 +151,16 @@ namespace ColorPicker
             if (_monitors.Length == 0)
             {
                 RefreshEnvironment();
+            }
+
+            // Re-query the DPI of the monitor under the cursor. On mixed-DPI multi-monitor setups
+            // the scale changes as the cursor crosses monitors; a value frozen at Show() would
+            // mis-size and mis-offset the tooltip (the WPF behavior re-queried DPI per move).
+            double scale = GetScaleForCursor(cursorPhysical);
+            if (scale > 0 && scale != _scale)
+            {
+                _scale = scale;
+                resize = true; // re-measure the tooltip card at the new monitor's scale
             }
 
             // WinUI has no SizeToContent: size the window to the tooltip card. Only measured when a
@@ -208,6 +222,32 @@ namespace ColorPicker
 
             return _monitors.Length > 0 ? _monitors[0] : new Rect(0, 0, double.MaxValue, double.MaxValue);
         }
+
+        // Effective DPI scale of the monitor the cursor is on (1.0 == 96 DPI). Falls back to the
+        // last known scale if the lookup fails.
+        private double GetScaleForCursor(Point cursorPhysical)
+        {
+            var monitor = MonitorFromPoint(new POINT { X = (int)cursorPhysical.X, Y = (int)cursorPhysical.Y }, MonitorDefaultToNearest);
+            if (monitor != IntPtr.Zero && GetDpiForMonitor(monitor, MdtEffectiveDpi, out uint dpiX, out _) == 0)
+            {
+                return dpiX / 96.0;
+            }
+
+            return _scale;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct POINT
+        {
+            public int X;
+            public int Y;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
+
+        [DllImport("shcore.dll")]
+        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
 
         [DllImport("user32.dll")]
         private static extern uint GetDpiForWindow(nint hwnd);

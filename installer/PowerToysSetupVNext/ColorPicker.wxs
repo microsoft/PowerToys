@@ -3,7 +3,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <?define ColorPickerAssetsFiles=?>
-  <?define ColorPickerAssetsFilesPath=$(var.BinDir)Assets\ColorPicker\?>
+  <?define ColorPickerAssetsFilesPath=$(var.BinDir)WinUI3Apps\Assets\ColorPicker\?>
 
   <Fragment>
   <!-- Color Picker -->

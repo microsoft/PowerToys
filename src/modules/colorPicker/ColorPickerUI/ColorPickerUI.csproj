@@ -22,8 +22,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- MRT searches for a pri file with the module name before defaulting to resources.pri -->
     <ProjectPriFileName>PowerToys.ColorPickerUI.pri</ProjectPriFileName>
-    <!-- Custom Main entry point -->
-    <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+    <!-- Custom Main entry point (append so inherited DEBUG/TRACE constants survive) -->
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,7 +60,7 @@
          properties (ShowAnimations/HideAnimations) when ColorPickerOverlayWindow.xaml derives
          from the Common.UI.Controls TransparentWindow base. -->
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
-    <!-- Win2D for the zoom magnifier's pixel-grid CanvasControl (7e-2 / 方案1). -->
+    <!-- Win2D for the zoom magnifier's pixel-grid CanvasControl. -->
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
@@ -85,109 +85,6 @@
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-  </ItemGroup>
-
-  <!-- ============================================================= -->
-  <!-- FOLDER GLOB CONTROL: the default SDK Compile glob is removed   -->
-  <!-- per-folder below, then the ported files are re-included        -->
-  <!-- explicitly in the ItemGroups that follow.                      -->
-  <!--                                                                 -->
-  <!-- The WPF->WinUI 3 migration is structurally complete. The dead  -->
-  <!-- WPF Behaviors\ and Shaders\ source was DELETED (TransparentWindow -->
-  <!-- built-ins / services / the native ListView / the Win2D ZoomView -->
-  <!-- replaced them), as was the unused root MainWindow.xaml shell    -->
-  <!-- (App hosts ColorPickerOverlayWindow). Shaders\GridShader.fx is  -->
-  <!-- kept as the reference spec for the alternative shader magnifier. -->
-  <!-- ============================================================= -->
-  <ItemGroup>
-    <!-- All Controls (HSVColor, ColorFormatControl, ColorPickerControl) are ported. -->
-    <Compile Remove="Converters\**\*.cs" />
-    <!-- MainView, ColorEditorView, and ZoomView (Win2D magnifier) are all ported. -->
-    <Compile Remove="ViewModels\**\*.cs" />
-    <!-- ViewModelContracts (IMainViewModel/IZoomViewModel/IColorEditorViewModel) are ported. -->
-    <Compile Remove="Mouse\**\*.cs" />
-    <Compile Remove="Keyboard\**\*.cs" />
-    <Compile Remove="Helpers\**\*.cs" />
-    <Compile Remove="Models\**\*.cs" />
-    <Compile Remove="Settings\**\*.cs" />
-    <Compile Remove="Telemetry\**\*.cs" />
-    <!-- The old WPF .resx string table was fully migrated to Strings\en-us\Resources.resw and
-         Properties\Resources.resx deleted; nothing in the live build references
-         Properties.Resources anymore. -->
-  </ItemGroup>
-
-  <!-- Foundation Helpers that ARE migrated (re-included past the Helpers quarantine) -->
-  <ItemGroup>
-    <Compile Include="Helpers\ResourceLoaderInstance.cs" />
-    <!-- D6 native interop foundation -->
-    <Compile Include="Helpers\NativeMethodsHelper.cs" />
-    <Compile Include="Helpers\MonitorResolutionHelper.cs" />
-    <Compile Include="Helpers\IThrottledActionInvoker.cs" />
-    <Compile Include="Helpers\ThrottledActionInvoker.cs" />
-    <Compile Include="Helpers\ClipboardHelper.cs" />
-    <Compile Include="Helpers\NativeEventWaiter.cs" />
-    <Compile Include="Helpers\SessionEventHelper.cs" />
-    <Compile Include="Telemetry\ColorPickerSession.cs" />
-    <Compile Include="Telemetry\ColorPickerSettings.cs" />
-    <Compile Include="Settings\SettingItem`1.cs" />
-    <Compile Include="Settings\IUserSettings.cs" />
-    <Compile Include="Settings\UserSettings.cs" />
-  </ItemGroup>
-
-  <!-- Sub-project B (step 1): pure color logic + value converters ported to WinUI 3,
-       re-included past the folder quarantines above (color math, model, converters).
-       Consumed later by the editor controls/views as sub-project B continues. -->
-  <ItemGroup>
-    <Compile Include="Helpers\ColorHelper.cs" />
-    <Compile Include="Helpers\ColorRepresentationHelper.cs" />
-    <Compile Include="Helpers\SerializationHelper.cs" />
-    <Compile Include="Models\ColorFormatModel.cs" />
-    <Compile Include="Converters\BoolToInvertedVisibilityConverter.cs" />
-    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
-    <Compile Include="Converters\ColorToBrushConverter.cs" />
-    <Compile Include="Converters\ColorToStringConverter.cs" />
-    <Compile Include="Converters\NumberToInvertedVisibilityConverter.cs" />
-    <Compile Include="Converters\NumberToVisibilityConverter.cs" />
-  </ItemGroup>
-
-  <!-- Sub-project C (input primitives): Win32 low-level mouse/keyboard hooks, the cursor
-       manager, and the mouse-info provider contract, ported off WPF (MouseHook drops the
-       WPF wheel args for a raw delta; IMouseInfoProvider uses Windows.Foundation.Point) and
-       re-included past the Mouse/Keyboard quarantines. Their stateful consumers
-       (MouseInfoProvider, KeyboardMonitor) stay quarantined until the overlay window and
-       AppStateHandler are ported. -->
-  <ItemGroup>
-    <Compile Include="Mouse\CursorManager.cs" />
-    <Compile Include="Mouse\MouseHook.cs" />
-    <Compile Include="Mouse\IMouseInfoProvider.cs" />
-    <Compile Include="Keyboard\GlobalKeyboardHook.cs" />
-    <Compile Include="Keyboard\GlobalKeyboardHookEventArgs.cs" />
-  </ItemGroup>
-
-  <!-- Sub-project C (zoom): ZoomViewModel ported (ObservableObject + ImageSource). Its
-       window and helper (ZoomWindow, ZoomWindowHelper) stay quarantined pending the Win2D
-       magnifier port (step 8). -->
-  <ItemGroup>
-    <Compile Include="ViewModels\ZoomViewModel.cs" />
-  </ItemGroup>
-
-  <!-- Sub-project B (editor): ColorEditorViewModel ported (ObservableObject + RelayCommand +
-       FileSavePicker). Its window/view/controls (ColorEditorWindow, ColorEditorView,
-       ColorPickerControl, ColorFormatControl) stay quarantined pending the XAML port. -->
-  <ItemGroup>
-    <Compile Include="ViewModels\ColorEditorViewModel.cs" />
-    <Compile Include="Helpers\EditorState.cs" />
-  </ItemGroup>
-
-  <!-- Sub-project C (overlay wiring, 7e-1): the activation state machine, the GDI mouse-info
-       provider, the keyboard monitor, the main view model, and the zoom-helper placeholder. -->
-  <ItemGroup>
-    <Compile Include="Helpers\AppStateHandler.cs" />
-    <Compile Include="Helpers\ZoomWindowHelper.cs" />
-    <Compile Include="Helpers\WindowCaptureExclusionHelper.cs" />
-    <Compile Include="Mouse\MouseInfoProvider.cs" />
-    <Compile Include="Keyboard\KeyboardMonitor.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
   </ItemGroup>
 
 </Project>
