@@ -237,10 +237,18 @@ internal sealed class ScreenRecording : IDisposable
         {
             var inputPattern = Path.Combine(framesDirectory, "frame_%06d.jpg");
 
-            // -y overwrite, -nostdin no interaction, -loglevel error quiet, -stats progress.
-            var args = $"-y -nostdin -loglevel error -stats -framerate {TargetFps} -i \"{inputPattern}\" -c:v libx264 -pix_fmt yuv420p -crf 23 \"{outputFilePath}\"";
+            // GDI capture rarely sustains TargetFps (each grab + JPEG save can exceed the frame
+            // interval), so play the frames back at the rate they were ACTUALLY captured — otherwise
+            // assembling fewer-than-target frames at TargetFps speeds the video up (e.g. 2x).
+            var durationSeconds = recordingStopwatch.Elapsed.TotalSeconds;
+            var playbackFps = durationSeconds > 0.5
+                ? Math.Clamp((int)Math.Round(capturedFrames.Count / durationSeconds), 1, TargetFps)
+                : TargetFps;
 
-            Console.WriteLine($"Encoding {capturedFrames.Count} frames to video...");
+            // -y overwrite, -nostdin no interaction, -loglevel error quiet, -stats progress.
+            var args = $"-y -nostdin -loglevel error -stats -framerate {playbackFps} -i \"{inputPattern}\" -c:v libx264 -pix_fmt yuv420p -crf 23 \"{outputFilePath}\"";
+
+            Console.WriteLine($"Encoding {capturedFrames.Count} frames at {playbackFps} fps (real-time) to video...");
 
             var startInfo = new ProcessStartInfo
             {

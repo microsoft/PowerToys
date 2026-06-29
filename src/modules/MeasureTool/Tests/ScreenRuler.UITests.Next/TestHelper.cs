@@ -253,26 +253,44 @@ public static class TestHelper
     /// <summary>Close the Measure Tool UI if it's open (best-effort, tolerant).</summary>
     public static void CloseScreenRulerUI(UITestBase testBase)
     {
+        var t0 = DateTime.UtcNow;
+        Log("CloseScreenRulerUI: checking whether the ruler is open (winappcli list-windows)");
         if (!IsScreenRulerUIOpen(testBase))
         {
+            Log($"CloseScreenRulerUI: open-check took {(DateTime.UtcNow - t0).TotalSeconds:0.00}s — not open, nothing to close");
             return;
         }
+
+        Log($"CloseScreenRulerUI: open-check took {(DateTime.UtcNow - t0).TotalSeconds:0.00}s; ruler is open");
 
         // Prefer the toolbar's Close button; fall back to WM_CLOSE on every Measure Tool window.
         try
         {
+            var t1 = DateTime.UtcNow;
             var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 2000);
+            Log($"CloseScreenRulerUI: FromProcess took {(DateTime.UtcNow - t1).TotalSeconds:0.00}s; searching for the Close button");
+
+            var t2 = DateTime.UtcNow;
             if (ruler.Has(By.AccessibilityId(CloseButtonId), 1000))
             {
+                Log($"CloseScreenRulerUI: Close button found in {(DateTime.UtcNow - t2).TotalSeconds:0.00}s; clicking it");
                 ruler.Find<Element>(By.AccessibilityId(CloseButtonId), 2000).Click();
+                Log("CloseScreenRulerUI: Close button clicked");
+            }
+            else
+            {
+                Log($"CloseScreenRulerUI: Close button not found (search took {(DateTime.UtcNow - t2).TotalSeconds:0.00}s)");
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore — fall through to the tolerant WM_CLOSE.
+            Log($"CloseScreenRulerUI: Close-button path threw: {ex.GetType().Name}: {ex.Message}");
         }
 
+        var t3 = DateTime.UtcNow;
+        Log("CloseScreenRulerUI: WM_CLOSE fallback (WindowControl.TryCloseByApp)");
         WindowControl.TryCloseByApp(ScreenRulerProcess);
+        Log($"CloseScreenRulerUI: WM_CLOSE fallback returned in {(DateTime.UtcNow - t3).TotalSeconds:0.00}s");
     }
 
     /// <summary>Clear the clipboard (STA handled inside the helper).</summary>
@@ -422,8 +440,10 @@ public static class TestHelper
         // move, so just settle briefly and confirm once — no need to poll.
         var (cx, cy) = ScreenCenter();
         MouseHelper.MoveTo(cx, cy);
+        Log($"SelectToolAndVerify[{testName}]: cursor moved to ({cx},{cy}); settling 500ms before the overlay check");
         Thread.Sleep(500);
 
+        Log($"SelectToolAndVerify[{testName}]: checking for the measurement overlay");
         Assert.IsTrue(
             IsMeasureOverlayPresent(),
             $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after the " +
@@ -437,7 +457,9 @@ public static class TestHelper
     /// </summary>
     private static bool IsMeasureOverlayPresent()
     {
+        var start = DateTime.UtcNow;
         var windows = WindowsFinder.ListByApp(ScreenRulerProcess);
+        var elapsed = (DateTime.UtcNow - start).TotalSeconds;
         var present = windows.Any(w =>
             w.Title.Contains("MeasureToolOverlay", StringComparison.OrdinalIgnoreCase) ||
             w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
@@ -445,7 +467,7 @@ public static class TestHelper
         var summary = windows.Count == 0
             ? "(none)"
             : string.Join(", ", windows.Select(w => $"'{w.Title}'[{w.ClassName}]"));
-        Log($"IsMeasureOverlayPresent: {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
+        Log($"IsMeasureOverlayPresent: winappcli list-windows took {elapsed:0.00}s; {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
         return present;
     }
 
