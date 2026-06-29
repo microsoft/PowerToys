@@ -29,8 +29,14 @@ namespace WorkspacesEditor.Views
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
             string description = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
             DescriptionText.Text = description;
-            SnapshotButton.Content = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
-            CancelButton.Content = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
+
+            string captureText = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
+            SnapshotButton.Content = captureText;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SnapshotButton, captureText);
+
+            string cancelText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
+            CancelButton.Content = cancelText;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(CancelButton, cancelText);
 
             // Configure window: small, centered, no resize, topmost
             var hwnd = WindowNative.GetWindowHandle(this);
