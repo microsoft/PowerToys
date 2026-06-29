@@ -75,22 +75,9 @@ if (-not (Get-Service $ServiceName -ErrorAction SilentlyContinue))
     {
         throw "Service '$ServiceName' is not registered and -ServiceBinary was not provided/found."
     }
-
-    # The service runs as a machine-wide virtual account (NT SERVICE\PTSettingsSvc)
-    # and cannot read a binary staged under a user profile (%LocalAppData% is
-    # ACL'd to that user only) - SCM start fails 0x5 ACCESS_DENIED.  Copy the
-    # payload to a machine-readable location and register the service from there.
-    $machineBin = Join-Path $storeRoot 'bin'
-    if (-not (Test-Path $machineBin)) { New-Item -ItemType Directory -Force $machineBin | Out-Null }
-    $machineExe = Join-Path $machineBin (Split-Path $ServiceBinary -Leaf)
-    Copy-Item $ServiceBinary $machineExe -Force
-    # Service account + Authenticated Users need RX to load/execute the binary.
-    & icacls.exe $machineBin /grant "$($ServiceAccount):(OI)(CI)RX" | Out-Null
-    & icacls.exe $machineBin /grant '*S-1-5-11:(OI)(CI)RX'           | Out-Null
-
-    sc.exe create $ServiceName binPath= "`"$machineExe`"" start= auto obj= $ServiceAccount DisplayName= "PowerToys Settings Service" | Out-Null
+    sc.exe create $ServiceName binPath= "`"$ServiceBinary`"" start= auto obj= $ServiceAccount DisplayName= "PowerToys Settings Service" | Out-Null
     sc.exe start  $ServiceName | Out-Null
-    Write-Output "service '$ServiceName' registered + started (binary staged to $machineExe)."
+    Write-Output "service '$ServiceName' registered + started."
 }
 else { Write-Output "service '$ServiceName' already present." }
 
