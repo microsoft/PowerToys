@@ -253,6 +253,7 @@ namespace
             st = static_cast<DialogState*>(cs->lpCreateParams);
             SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(st));
             CreateControls(hwnd, st);
+            SetWindowTextW(st->hStatus, GET_RESOURCE_STRING(IDS_BUGREPORT_GENERATING).c_str());
             SetTimer(hwnd, ANIM_TIMER_ID, 400, nullptr);
             return 0;
         }
