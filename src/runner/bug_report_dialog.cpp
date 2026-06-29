@@ -333,12 +333,17 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
     // instead of starting a second report.
     if (HWND existing = g_dialogWnd.load())
     {
-        ForceForeground(existing);
-        if (onProcessFinished)
+        if (IsWindow(existing))
         {
-            onProcessFinished();
+            ForceForeground(existing);
+            if (onProcessFinished)
+            {
+                onProcessFinished();
+            }
+            return;
         }
-        return;
+
+        g_dialogWnd.store(nullptr);
     }
 
     RegisterDialogClass();
