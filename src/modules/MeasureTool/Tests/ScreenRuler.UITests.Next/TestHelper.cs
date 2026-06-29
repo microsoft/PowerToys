@@ -414,6 +414,7 @@ public static class TestHelper
     {
         Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId}");
         ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
+        Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId} successful");
 
         // Moving the cursor off the toolbar onto the capture surface is what makes the overlay appear.
         // ActivateScreenRuler parked the cursor at the screen centre, so move to an offset to produce a
