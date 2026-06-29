@@ -85,13 +85,6 @@ The module includes multiple language-specific character sets and special charac
 - Special character sets (currency symbols, mathematical notations, etc.)
 - These sets are defined in the core component and can be extended
 
-### WinUI 3 Selector Notes
-
-Non-obvious points for anyone touching `PowerAccentXAML/MainWindow.xaml` / `PowerAccentXAML/MainWindow.xaml.cs`:
-- The selector is a `TransparentWindow` shown with `SW_SHOWNA` and is never activated. x:Bind on a Window-rooted XAML initializes only on `Window.Activated`, which never fires here, so the constructor calls `Bindings.Update()` once after `InitializeComponent()` — without it the accent `ListView` renders empty.
-- Each accent cell pins `MinWidth="48"` in the `ItemContainerStyle`; WinUI's `ListViewItem` defaults `MinWidth` to 88, which would otherwise leave wide gaps between glyphs.
-- The bar width is computed deterministically (`itemCount * 48`, clamped to the monitor width) rather than measured — measuring the `ListView` while its containers realize is racy.
-
 ### Known Behaviors
 
 - The module has a specific timing mechanism for activation that users have become accustomed to. Initially, this was considered a bug (where the toolbar would still appear even after quickly tapping and releasing keys), but it has been maintained as expected behavior since users rely on it.
