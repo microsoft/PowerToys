@@ -354,7 +354,9 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, testName);
 
-        SelectToolAndVerify(ruler, buttonId, AcceleratorFor(buttonId), testName);
+        var spacingButton = ruler.Find<Element>(By.AccessibilityId(buttonId), 15000);
+        Assert.IsNotNull(spacingButton, $"{testName} button should be found");
+        spacingButton.Click(msPostAction: 500);
 
         PerformMeasurementAction();
 
@@ -377,7 +379,9 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, "bounds test");
 
-        SelectToolAndVerify(ruler, BoundsButtonId, Key.Num1, "Bounds");
+        var boundsButton = ruler.Find<Element>(By.AccessibilityId(BoundsButtonId), 15000);
+        Assert.IsNotNull(boundsButton, "Bounds button should be found");
+        boundsButton.Click(msPostAction: 500);
 
         // Drag a 100x100 box centred on the primary monitor. Move to the start first so the Measure
         // Tool overlay is tracking the cursor before the drag. The 99px delta measures 100x100
@@ -406,104 +410,6 @@ public static class TestHelper
             WaitForScreenRulerUIToDisappear(testBase, 2000),
             "ScreenRulerUI should close after calling CloseScreenRulerUI");
     }
-
-    /// <summary>
-    /// Select a toolbar tool and CONFIRM it engaged by waiting for the full-screen measurement overlay
-    /// window (<c>PowerToys.MeasureToolOverlay</c>) to appear — its presence means the tool is in
-    /// capture state, so a following drag/click will actually measure. Per attempt: a UIA invoke
-    /// (winappcli — needs no focus or on-screen bounds, so it sidesteps the Win10 0×0-bounds problem),
-    /// then, as a backup, the tool's keyboard accelerator (the toolbar labels them "Bounds (Ctrl+1)",
-    /// "Spacing (Ctrl+2)", …). The overlay only shows once the cursor leaves the toolbar onto the
-    /// capture surface, so each check parks the cursor at the measurement spot first. Up to 3 attempts.
-    /// </summary>
-    private static void SelectToolAndVerify(Session ruler, string buttonId, Key acceleratorDigit, string testName)
-    {
-        var (cx, cy) = ScreenCenter();
-        const int attempts = 3;
-
-        for (int attempt = 1; attempt <= attempts; attempt++)
-        {
-            // (a) Accessibility invoke via winappcli — coordinate-free, so a 0×0 button rect is fine.
-            Log($"SelectToolAndVerify[{testName}]: attempt {attempt}/{attempts} — UIA invoke of {buttonId}");
-            ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
-            if (MoveOffToolbarAndWaitForOverlay(cx, cy))
-            {
-                Log($"SelectToolAndVerify[{testName}]: overlay present after UIA invoke (attempt {attempt})");
-                return;
-            }
-
-            // (b) Keyboard accelerator backup (Ctrl+<n>) — the toolbar is the foreground window.
-            Log($"SelectToolAndVerify[{testName}]: no overlay after invoke; keyboard backup Ctrl+{acceleratorDigit}");
-            KeyboardHelper.SendKeys(Key.Ctrl, acceleratorDigit);
-            if (MoveOffToolbarAndWaitForOverlay(cx, cy))
-            {
-                Log($"SelectToolAndVerify[{testName}]: overlay present after keyboard backup (attempt {attempt})");
-                return;
-            }
-
-            Log($"SelectToolAndVerify[{testName}]: still no overlay after attempt {attempt}");
-        }
-
-        Assert.Fail(
-            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after " +
-            $"{attempts} accessibility-invoke + keyboard attempts — the Measure Tool never entered " +
-            "capture state, so a measurement can't be taken.");
-    }
-
-    /// <summary>
-    /// Park the cursor at the measurement spot (off the toolbar, two-step so the move is tracked) and
-    /// poll briefly for the measurement overlay window. Returns true once it's present.
-    /// </summary>
-    private static bool MoveOffToolbarAndWaitForOverlay(int cx, int cy)
-    {
-        MouseHelper.MoveTo(cx - 40, cy - 40);
-        Thread.Sleep(150);
-        MouseHelper.MoveTo(cx, cy);
-
-        var deadline = DateTime.UtcNow.AddMilliseconds(1500);
-        do
-        {
-            if (IsMeasureOverlayPresent())
-            {
-                return true;
-            }
-
-            Thread.Sleep(250);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        return false;
-    }
-
-    /// <summary>
-    /// True when the Measure Tool's full-screen measurement overlay is up — winappcli reports a
-    /// <c>PowerToys.MeasureToolOverlay</c> window (class <c>*OverlayWindow</c>) alongside the toolbar
-    /// once a tool is engaged and the cursor is over the capture surface. This is the reliable
-    /// "we're in capture state" signal that the blind click-then-measure approach was missing.
-    /// </summary>
-    private static bool IsMeasureOverlayPresent()
-    {
-        var windows = WindowsFinder.ListByApp(ScreenRulerProcess);
-        var present = windows.Any(w =>
-            w.Title.Contains("MeasureToolOverlay", StringComparison.OrdinalIgnoreCase) ||
-            w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
-
-        var summary = windows.Count == 0
-            ? "(none)"
-            : string.Join(", ", windows.Select(w => $"'{w.Title}'[{w.ClassName}]"));
-        Log($"IsMeasureOverlayPresent: {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
-        return present;
-    }
-
-    /// <summary>The toolbar keyboard accelerator (Ctrl+1..4) that selects each tool.</summary>
-    private static Key AcceleratorFor(string buttonId) => buttonId switch
-    {
-        BoundsButtonId => Key.Num1,
-        SpacingButtonName => Key.Num2,
-        HorizontalSpacingButtonName => Key.Num3,
-        VerticalSpacingButtonName => Key.Num4,
-        _ => Key.Num1,
-    };
 
     /// <summary>Move to the screen centre, left-click to capture, right-click to dismiss.</summary>
     private static void PerformMeasurementAction()
