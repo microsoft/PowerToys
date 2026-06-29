@@ -30,7 +30,10 @@ public class MouseWheelIncrementSettingsTests
     public void Deserialize_LegacyJsonMissingField_DefaultsToFive()
     {
         // A settings.json captured before this feature shipped has no mouse_wheel_increment key.
-        // Deserializing must fall back to the constructor default of 5, not 0.
+        // Deserializing must fall back to the constructor default of 5, not 0. System.Text.Json
+        // calls the parameterless constructor (which sets MouseWheelIncrement = 5) and then fills
+        // only the fields present in JSON. If PowerDisplayProperties ever gains a
+        // [JsonConstructor]-annotated constructor, re-verify this "defaults to 5" behavior.
         const string legacyJson = """
         {
             "monitor_refresh_delay": 5,

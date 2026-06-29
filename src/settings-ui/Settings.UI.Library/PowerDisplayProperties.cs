@@ -51,8 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         /// <summary>
         /// Gets or sets the amount each PowerDisplay flyout slider (brightness, contrast, volume)
-        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step. The Settings
-        /// UI restricts the value to a preset list; out-of-range values fall back to slider behavior.
+        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step.
         /// </summary>
         [JsonPropertyName("mouse_wheel_increment")]
         public int MouseWheelIncrement { get; set; }
