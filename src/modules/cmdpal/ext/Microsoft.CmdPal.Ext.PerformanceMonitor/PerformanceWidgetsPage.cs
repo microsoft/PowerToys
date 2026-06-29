@@ -1017,8 +1017,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     {
         return _settingsManager.NetworkSpeedUnit switch
         {
-            NetworkSpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
-            NetworkSpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
+            SpeedUnit.BytesPerSecond => FormatIncomingData.AsBytesPerSecString(bytesPerSec),
+            SpeedUnit.BinaryBytesPerSecond => FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSec),
             _ => FormatIncomingData.AsBitsPerSecString(bytesPerSec),
         };
     }
