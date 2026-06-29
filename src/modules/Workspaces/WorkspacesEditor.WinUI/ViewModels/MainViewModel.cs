@@ -213,7 +213,10 @@ namespace WorkspacesEditor.ViewModels
                                 nextProjectIndex = index;
                             }
                         }
-                        catch (Exception)
+                        catch (FormatException)
+                        {
+                        }
+                        catch (OverflowException)
                         {
                         }
                     }
