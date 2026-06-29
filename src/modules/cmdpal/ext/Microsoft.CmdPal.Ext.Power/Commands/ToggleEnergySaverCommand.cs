@@ -28,25 +28,60 @@ internal sealed partial class ToggleEnergySaverCommand : InvokableCommand
     {
         var snapshot = _service.GetSnapshot();
         var enable = !snapshot.IsOn;
+
+        if (snapshot.State == ResolvedEnergySaverState.NotAvailable)
+        {
+            return ShowToastKeepOpen(Resources.power_mode_energy_saver_not_available);
+        }
+
+        if (enable && ShouldOpenQuickSettingsDirectly())
+        {
+            return OpenQuickSettingsFallback(Resources.power_mode_energy_saver_open_quick_settings_toast);
+        }
+
         var successToast = enable
             ? Resources.power_mode_energy_saver_turn_on_toast
             : Resources.power_mode_energy_saver_turn_off_toast;
 
-        if (_service.TrySetEnergySaver(enable, out var error))
+        if (_service.TrySetEnergySaver(enable, out _))
         {
             _onChanged();
-            return ShowToastKeepOpen(successToast);
+            return ShowToast(successToast, dismissOnSuccess: false);
         }
 
-        return ShowToastKeepOpen(error ?? Resources.power_mode_energy_saver_set_failed);
+        return OpenQuickSettingsFallback(
+            enable
+                ? Resources.power_mode_energy_saver_open_quick_settings_toast
+                : Resources.power_mode_energy_saver_open_quick_settings_off_toast);
     }
 
-    private static CommandResult ShowToastKeepOpen(string message)
+    private static bool ShouldOpenQuickSettingsDirectly() =>
+        EnergySaverStateHelper.HasRegistryRuntimeDrift();
+
+    private static CommandResult OpenQuickSettingsFallback(string message)
+    {
+        if (EnergySaverFallbackHelper.TryOpenQuickSettings())
+        {
+            return ShowToast(message, dismissOnSuccess: true);
+        }
+
+        if (EnergySaverFallbackHelper.TryOpenPowerSettings())
+        {
+            return ShowToast(Resources.power_mode_energy_saver_open_settings_toast, dismissOnSuccess: true);
+        }
+
+        return ShowToastKeepOpen(Resources.power_mode_energy_saver_set_failed);
+    }
+
+    private static CommandResult ShowToastKeepOpen(string message) =>
+        ShowToast(message, dismissOnSuccess: false);
+
+    private static CommandResult ShowToast(string message, bool dismissOnSuccess)
     {
         return CommandResult.ShowToast(new ToastArgs()
         {
             Message = message,
-            Result = CommandResult.KeepOpen(),
+            Result = dismissOnSuccess ? CommandResult.Dismiss() : CommandResult.KeepOpen(),
         });
     }
 }

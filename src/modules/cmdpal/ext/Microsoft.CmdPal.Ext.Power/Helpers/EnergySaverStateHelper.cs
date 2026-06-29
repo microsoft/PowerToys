@@ -4,7 +4,9 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using Microsoft.Windows.System.Power;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
@@ -18,42 +20,109 @@ internal static class EnergySaverStateHelper
     internal const int EnergySaverStateOn = 1;
     internal const int EnergySaverStateOff = 2;
 
-    internal static bool TryResolveEffectiveState(out bool isOn, out bool canRead)
+    internal static ResolvedEnergySaverState ResolveVisibleState()
     {
-        canRead = false;
-        isOn = false;
-
-        var hasRegistry = TryGetFromRegistry(out var registryOn);
-        var hasOverlay = TryGetEffectiveOverlay(out var overlayGuid);
-
-        if (!hasRegistry && !hasOverlay)
+        if (TryGetWinRtStatus(out var winRtStatus))
         {
-            if (PowerSourceHelper.TryGetEnergySaverActiveFromSystemStatus(out var systemOn))
+            return winRtStatus switch
             {
-                isOn = systemOn;
-                canRead = true;
-                return true;
-            }
-
-            return false;
+                EnergySaverStatus.On => ResolvedEnergySaverState.On,
+                EnergySaverStatus.Off => ResolvedEnergySaverState.Off,
+                EnergySaverStatus.Disabled => ResolvedEnergySaverState.NotAvailable,
+                _ => ResolvedEnergySaverState.Unknown,
+            };
         }
 
-        canRead = true;
-        if (hasRegistry && hasOverlay)
+        if (TryGetEffectiveOverlay(out var overlayGuid) && overlayGuid != Guid.Empty)
         {
-            // Win11 24H2 engages energy saver by forcing the efficiency overlay.
-            isOn = registryOn && overlayGuid == PowerModeGuids.BestEfficiency;
+            return overlayGuid == PowerModeGuids.BestEfficiency
+                ? ResolvedEnergySaverState.On
+                : ResolvedEnergySaverState.Off;
+        }
+
+        if (PowerSourceHelper.TryGetEnergySaverActiveFromSystemStatus(out var systemOn))
+        {
+            return systemOn ? ResolvedEnergySaverState.On : ResolvedEnergySaverState.Off;
+        }
+
+        if (TryGetFromRegistry(out var registryOn))
+        {
+            return registryOn ? ResolvedEnergySaverState.On : ResolvedEnergySaverState.Off;
+        }
+
+        return ResolvedEnergySaverState.Unknown;
+    }
+
+    internal static bool TryResolveEffectiveState(out bool isOn, out bool canRead)
+    {
+        var state = ResolveVisibleState();
+        if (state is ResolvedEnergySaverState.On or ResolvedEnergySaverState.Off)
+        {
+            isOn = state == ResolvedEnergySaverState.On;
+            canRead = true;
             return true;
+        }
+
+        isOn = false;
+        canRead = state == ResolvedEnergySaverState.NotAvailable;
+        return canRead;
+    }
+
+    internal static bool ResolveEffectiveState(
+        bool hasWinRt,
+        EnergySaverStatus winRtStatus,
+        bool hasOverlay,
+        Guid overlayGuid,
+        bool hasSystemStatus,
+        bool systemOn,
+        bool hasRegistry,
+        bool registryOn)
+    {
+        if (hasWinRt)
+        {
+            return winRtStatus switch
+            {
+                EnergySaverStatus.On => true,
+                EnergySaverStatus.Off => false,
+                _ => hasOverlay && overlayGuid != Guid.Empty
+                    ? overlayGuid == PowerModeGuids.BestEfficiency
+                    : hasSystemStatus
+                        ? systemOn
+                        : hasRegistry && registryOn,
+            };
+        }
+
+        if (hasOverlay && overlayGuid != Guid.Empty)
+        {
+            return overlayGuid == PowerModeGuids.BestEfficiency;
+        }
+
+        if (hasSystemStatus)
+        {
+            return systemOn;
         }
 
         if (hasRegistry)
         {
-            isOn = registryOn;
-            return true;
+            return registryOn;
         }
 
-        isOn = overlayGuid == PowerModeGuids.BestEfficiency;
-        return true;
+        return false;
+    }
+
+    internal static bool HasRegistryRuntimeDrift()
+    {
+        if (!TryGetFromRegistry(out var registryOn))
+        {
+            return false;
+        }
+
+        if (!TryGetRuntimeOn(out var runtimeOn))
+        {
+            return false;
+        }
+
+        return registryOn != runtimeOn;
     }
 
     internal static bool TryGetFromRegistry(out bool isOn)
@@ -98,10 +167,11 @@ internal static class EnergySaverStateHelper
                 "if errorlevel 1 exit /b 1" + Environment.NewLine +
                 $"reg add HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\whesvc /v {WhesvcWhatIfValueName} /t REG_DWORD /d 1 /f >nul 2>&1" + Environment.NewLine +
                 "if errorlevel 1 exit /b 1" + Environment.NewLine +
+                "for /f \"tokens=4\" %%i in ('powercfg /getactivescheme') do powercfg /setactive %%i >nul 2>&1" + Environment.NewLine +
                 "exit /b 0" + Environment.NewLine;
             File.WriteAllText(scriptPath, scriptContent);
 
-            if (!ElevatedProcessHelper.TryRunElevated("cmd.exe", $"/q /c \"\"{scriptPath}\"\"", out var exitCode, out var win32Error))
+            if (!ElevatedProcessHelper.TryRunElevated("cmd.exe", $"/q /c \"{scriptPath}\"", out var exitCode, out var win32Error))
             {
                 errorMessage = ElevatedProcessHelper.IsUacCancelled(win32Error)
                     ? Properties.Resources.power_mode_energy_saver_elevation_cancelled
@@ -145,8 +215,75 @@ internal static class EnergySaverStateHelper
         return PowerModeNative.PowerSetActiveOverlayScheme(ref userGuid) == PowerModeNative.ErrorSuccess;
     }
 
+    internal static bool TryRefreshActiveScheme()
+    {
+        if (PowerModeNative.PowerGetActiveScheme(IntPtr.Zero, out var activePolicyGuid) != PowerModeNative.ErrorSuccess
+            || activePolicyGuid == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        try
+        {
+            var schemeGuid = Marshal.PtrToStructure<Guid>(activePolicyGuid);
+            return PowerModeNative.PowerSetActiveScheme(IntPtr.Zero, ref schemeGuid) == PowerModeNative.ErrorSuccess;
+        }
+        finally
+        {
+            _ = PowerModeNative.LocalFree(activePolicyGuid);
+        }
+    }
+
     internal static bool MatchesExpectedState(bool expectedOn) =>
-        TryResolveEffectiveState(out var isOn, out _) && isOn == expectedOn;
+        ResolveVisibleState() switch
+        {
+            ResolvedEnergySaverState.On => expectedOn,
+            ResolvedEnergySaverState.Off => !expectedOn,
+            _ => false,
+        };
+
+    private static bool TryGetRuntimeOn(out bool isOn)
+    {
+        isOn = false;
+        if (TryGetWinRtStatus(out var winRtStatus))
+        {
+            if (winRtStatus == EnergySaverStatus.Disabled)
+            {
+                return false;
+            }
+
+            isOn = winRtStatus == EnergySaverStatus.On;
+            return true;
+        }
+
+        if (TryGetEffectiveOverlay(out var overlayGuid) && overlayGuid != Guid.Empty)
+        {
+            isOn = overlayGuid == PowerModeGuids.BestEfficiency;
+            return true;
+        }
+
+        if (PowerSourceHelper.TryGetEnergySaverActiveFromSystemStatus(out var systemOn))
+        {
+            isOn = systemOn;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetWinRtStatus(out EnergySaverStatus status)
+    {
+        status = EnergySaverStatus.Disabled;
+        try
+        {
+            status = PowerManager.EnergySaverStatus;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private static bool TryGetEffectiveOverlay(out Guid overlayGuid)
     {

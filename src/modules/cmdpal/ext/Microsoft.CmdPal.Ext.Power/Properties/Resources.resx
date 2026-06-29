@@ -107,6 +107,9 @@
   <data name="power_mode_energy_saver_already_on" xml:space="preserve"><value>Energy saver is already on</value></data>
   <data name="power_mode_energy_saver_already_off" xml:space="preserve"><value>Energy saver is already off</value></data>
   <data name="power_mode_energy_saver_set_failed" xml:space="preserve"><value>Could not change energy saver. Approve the administrator prompt if it appears behind Command Palette.</value></data>
+  <data name="power_mode_energy_saver_open_quick_settings_toast" xml:space="preserve"><value>Opened Quick Settings (Win+A). Tap Energy saver to turn on.</value></data>
+  <data name="power_mode_energy_saver_open_quick_settings_off_toast" xml:space="preserve"><value>Opened Quick Settings (Win+A). Tap Energy saver to turn off.</value></data>
+  <data name="power_mode_energy_saver_open_settings_toast" xml:space="preserve"><value>Opened Settings. Use Energy saver under Power &amp; battery.</value></data>
   <data name="power_mode_energy_saver_requires_settings" xml:space="preserve"><value>Energy saver did not change. Use Quick Settings (Win+A) or Settings &gt; System &gt; Power.</value></data>
   <data name="power_mode_energy_saver_elevation_cancelled" xml:space="preserve"><value>Energy saver change was cancelled.</value></data>
   <data name="power_mode_energy_saver_admin_required" xml:space="preserve"><value>Approve the permission prompt to change energy saver on this PC.</value></data>

@@ -277,6 +277,33 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Opened Quick Settings (Win+A). Tap Energy saver to turn on..
+        /// </summary>
+        public static string power_mode_energy_saver_open_quick_settings_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_open_quick_settings_toast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opened Quick Settings (Win+A). Tap Energy saver to turn off..
+        /// </summary>
+        public static string power_mode_energy_saver_open_quick_settings_off_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_open_quick_settings_off_toast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opened Settings. Use Energy saver under Power &amp; battery..
+        /// </summary>
+        public static string power_mode_energy_saver_open_settings_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_open_settings_toast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not change energy saver. Approve the administrator prompt if it appears behind Command Palette..
         /// </summary>
         public static string power_mode_energy_saver_set_failed {
