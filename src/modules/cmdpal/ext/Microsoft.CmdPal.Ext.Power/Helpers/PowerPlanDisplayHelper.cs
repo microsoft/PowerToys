@@ -27,15 +27,7 @@ internal static class PowerPlanDisplayHelper
     internal static string GetPlanTitle(PowerPlanInfo plan) =>
         GetPlanTitle(plan.SchemeGuid, plan.DisplayName);
 
-    internal static string GetPlanTitle(Guid schemeGuid, string displayName)
-    {
-        if (schemeGuid == PowerPlanGuids.UltimatePerformance)
-        {
-            return displayName + "+";
-        }
-
-        return displayName;
-    }
+    internal static string GetPlanTitle(Guid schemeGuid, string displayName) => displayName;
 
     internal static string GetPlanItemSubtitle(PowerPlanInfo plan, PowerPlanSnapshot snapshot)
     {

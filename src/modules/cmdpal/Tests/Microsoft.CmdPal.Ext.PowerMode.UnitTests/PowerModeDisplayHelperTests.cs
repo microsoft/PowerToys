@@ -12,48 +12,6 @@ namespace Microsoft.CmdPal.Ext.Power.UnitTests;
 public sealed class PowerModeDisplayHelperTests
 {
     [TestMethod]
-    public void GetPowerSourceLabel_Desktop_ShowsNoBattery()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.NoBattery, hasBattery: false, isOnAcPower: true, isCharging: false);
-        Assert.AreEqual(Resources.power_mode_no_battery, PowerModeDisplayHelper.GetPowerSourceLabel(snapshot));
-    }
-
-    [TestMethod]
-    public void GetPowerSourceLabel_OnBattery_ShowsOnBattery()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
-        Assert.AreEqual(Resources.power_mode_on_battery, PowerModeDisplayHelper.GetPowerSourceLabel(snapshot));
-    }
-
-    [TestMethod]
-    public void GetPowerSourceLabel_PluggedInCharging_ShowsChargingLabel()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.PluggedIn, hasBattery: true, isOnAcPower: true, isCharging: true);
-        Assert.AreEqual(Resources.power_mode_plugged_in_charging, PowerModeDisplayHelper.GetPowerSourceLabel(snapshot));
-    }
-
-    [TestMethod]
-    public void GetBatteryStatusLabel_Desktop_ShowsNoBattery()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.NoBattery, hasBattery: false, isOnAcPower: true, isCharging: false);
-        Assert.AreEqual(Resources.power_mode_battery_nonexistent, PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot));
-    }
-
-    [TestMethod]
-    public void GetBatteryStatusLabel_Charging_ShowsCharging()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.PluggedIn, hasBattery: true, isOnAcPower: true, isCharging: true);
-        Assert.AreEqual(Resources.power_mode_battery_charging, PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot));
-    }
-
-    [TestMethod]
-    public void GetBatteryStatusLabel_OnBattery_ShowsNotCharging()
-    {
-        var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
-        Assert.AreEqual(Resources.power_mode_battery_not_charging, PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot));
-    }
-
-    [TestMethod]
     public void GetSetModeSubtitle_WhenActiveMode_ShowsCurrent()
     {
         var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);

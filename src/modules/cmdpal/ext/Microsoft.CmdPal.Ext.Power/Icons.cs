@@ -30,17 +30,7 @@ internal sealed class Icons
 
     internal static IconInfo PowerPlanPerformanceIcon { get; } = new IconInfo("\uEC4A");
 
-    internal static IconInfo PowerPlanUltimatePerformanceIcon { get; } = new IconInfo("\uEC4A+");
-
-    internal static IconInfo BatteryStatusGlyph(PowerModeSnapshot snapshot)
-    {
-        if (!snapshot.HasBattery)
-        {
-            return BatteryUnknownIcon;
-        }
-
-        return snapshot.IsCharging ? BatteryChargingIcon : BatteryDischargingIcon;
-    }
+    internal static IconInfo PowerPlanUltimatePerformanceIcon { get; } = new IconInfo("\uF42F");
 
     internal static IconInfo Glyph(UserPowerMode mode) => mode switch
     {

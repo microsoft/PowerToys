@@ -49,10 +49,10 @@ public sealed class PowerPlanDisplayHelperTests
     }
 
     [TestMethod]
-    public void GetPlanTitle_UltimatePerformance_AppendsPlusSuffix()
+    public void GetPlanTitle_UltimatePerformance_ReturnsDisplayNameUnmodified()
     {
         var plan = new PowerPlanInfo(PowerPlanGuids.UltimatePerformance, "Ultimate Performance", string.Empty);
-        Assert.AreEqual("Ultimate Performance+", PowerPlanDisplayHelper.GetPlanTitle(plan));
+        Assert.AreEqual("Ultimate Performance", PowerPlanDisplayHelper.GetPlanTitle(plan));
     }
 
     [TestMethod]
