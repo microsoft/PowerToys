@@ -28,7 +28,7 @@ public static class MouseHelper
     private const uint MOUSEEVENTF_MIDDLEUP = 0x40;
     private const uint MOUSEEVENTF_WHEEL = 0x0800;
 
-    private const int ClickDelayMs = 60;
+    private const int ClickDelayMs = 100;
     private const int WheelTick = 120;
 
     [DllImport("user32.dll")]

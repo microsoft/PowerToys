@@ -455,6 +455,7 @@ public static class TestHelper
         var (cx, cy) = ScreenCenter();
         Log($"PerformMeasurementAction: two-step move to centre ({cx},{cy}), then left-click to capture");
         MouseHelper.MoveTo(cx - 60, cy - 60);
+        Thread.Sleep(500);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
     }
