@@ -43,15 +43,18 @@
                 Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
         </StackPanel>
 
-        <TextBlock
-            x:Name="DescriptionText"
+        <ContentControl
             Grid.Row="1"
             Grid.ColumnSpan="2"
             Margin="8,8,8,16"
-            AutomationProperties.AccessibilityView="Content"
             IsTabStop="True"
-            HorizontalTextAlignment="Center"
-            TextWrapping="Wrap" />
+            AutomationProperties.Name="{Binding Text, ElementName=DescriptionText}">
+            <TextBlock
+                x:Name="DescriptionText"
+                AutomationProperties.AccessibilityView="Raw"
+                HorizontalTextAlignment="Center"
+                TextWrapping="Wrap" />
+        </ContentControl>
         <Button
             x:Name="SnapshotButton"
             Grid.Row="2"

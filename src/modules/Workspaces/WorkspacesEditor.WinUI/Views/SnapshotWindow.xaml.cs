@@ -27,7 +27,8 @@ namespace WorkspacesEditor.Views
             this.InitializeComponent();
 
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
-            DescriptionText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
+            string description = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
+            DescriptionText.Text = description;
             SnapshotButton.Content = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
             CancelButton.Content = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
 

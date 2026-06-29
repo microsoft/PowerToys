@@ -282,6 +282,11 @@ namespace WorkspacesEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
+                foreach (Project p in Workspaces)
+                {
+                    p.InitializePreview();
+                }
+
                 RefreshWorkspacesView();
             }
         }
@@ -296,6 +301,11 @@ namespace WorkspacesEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
+                foreach (Project p in Workspaces)
+                {
+                    p.InitializePreview();
+                }
+
                 RefreshWorkspacesView();
             }
 
@@ -486,22 +496,7 @@ namespace WorkspacesEditor.ViewModels
                 var shortcutAddress = GetDesktopShortcutAddress(project);
                 var shortcutIconFilename = GetShortcutStoreAddress(project);
 
-                bool isDarkTheme = true;
-                try
-                {
-                    var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                    if (key?.GetValue("AppsUseLightTheme") is int val && val == 0)
-                    {
-                        isDarkTheme = true;
-                    }
-                    else
-                    {
-                        isDarkTheme = false;
-                    }
-                }
-                catch
-                {
-                }
+                bool isDarkTheme = Helpers.ThemeHelper.IsDarkTheme();
 
                 var icon = Utils.WorkspacesIcon.DrawIcon(Utils.WorkspacesIcon.IconTextFromProjectName(project.Name), isDarkTheme);
                 Utils.WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);

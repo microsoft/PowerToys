@@ -292,7 +292,7 @@ namespace WorkspacesEditor.Models
 
                 var bounds = new System.Drawing.Rectangle((int)left, (int)top, (int)(right - left), (int)(bottom - top));
 
-                bool isDarkTheme = IsDarkTheme();
+                bool isDarkTheme = Helpers.ThemeHelper.IsDarkTheme();
 
                 PreviewImage = Utils.DrawHelper.DrawPreview(this, bounds, isDarkTheme);
                 PreviewImageWidth = bounds.Width * 0.1;
@@ -332,27 +332,6 @@ namespace WorkspacesEditor.Models
         private static string GetString(string key)
         {
             return ResourceLoaderInstance.ResourceLoader?.GetString(key) ?? key;
-        }
-
-        private static bool IsDarkTheme()
-        {
-            try
-            {
-                var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-                if (key != null)
-                {
-                    var value = key.GetValue("AppsUseLightTheme");
-                    if (value is int intValue)
-                    {
-                        return intValue == 0;
-                    }
-                }
-            }
-            catch (System.Exception)
-            {
-            }
-
-            return true;
         }
     }
 }
