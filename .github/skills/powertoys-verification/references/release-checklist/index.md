@@ -6,6 +6,7 @@ One file per module; a verification run loads only its module's file.
 
 | Module | Items | File |
 |---|---:|---|
+| Advanced Paste | 41 | `advanced-paste.md` |
 | Environment Variables | 20 | `environment-variables.md` |
 | File Locksmith | 10 | `file-locksmith.md` |
 | Image Resizer | 18 | `image-resizer.md` |
