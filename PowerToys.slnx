@@ -329,7 +329,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PowerMode.UnitTests/Microsoft.CmdPal.Ext.Power.UnitTests.csproj">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Power.UnitTests/Microsoft.CmdPal.Ext.Power.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
