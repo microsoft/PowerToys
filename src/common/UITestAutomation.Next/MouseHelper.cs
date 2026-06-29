@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Global mouse input via Win32 <c>SetCursorPos</c> and <c>mouse_event</c>. Required for
+/// Global mouse input via Win32 <c>SetCursorPos</c> and <c>SendInput</c>. Required for
 /// scenarios like clicking inside the ColorPicker overlay, which is a transparent window that
 /// can't be targeted via UIA / <c>winapp ui click</c>.
 /// </summary>
@@ -19,6 +20,26 @@ public static class MouseHelper
         public int X;
         public int Y;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MOUSEINPUT
+    {
+        public int Dx;
+        public int Dy;
+        public uint MouseData;
+        public uint DwFlags;
+        public uint Time;
+        public UIntPtr DwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct INPUT
+    {
+        public uint Type;
+        public MOUSEINPUT Mi;
+    }
+
+    private const uint INPUT_MOUSE = 0;
 
     private const uint MOUSEEVENTF_LEFTDOWN = 0x02;
     private const uint MOUSEEVENTF_LEFTUP = 0x04;
@@ -38,10 +59,8 @@ public static class MouseHelper
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetCursorPos(out POINT lpPoint);
 
-    [DllImport("user32.dll")]
-#pragma warning disable SA1300 // win32 API name
-    private static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint dwData, UIntPtr dwExtraInfo);
-#pragma warning restore SA1300
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint SendInput(uint nInputs, INPUT[] pInputs, int cbSize);
 
     /// <summary>Move the OS cursor to absolute screen coordinates.</summary>
     public static void MoveTo(int x, int y) => SetCursorPos(x, y);
@@ -54,22 +73,22 @@ public static class MouseHelper
     }
 
     /// <summary>Press the left mouse button down at the current position.</summary>
-    public static void LeftDown() => mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, UIntPtr.Zero);
+    public static void LeftDown() => SendMouseInput(MOUSEEVENTF_LEFTDOWN);
 
     /// <summary>Release the left mouse button.</summary>
-    public static void LeftUp() => mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, UIntPtr.Zero);
+    public static void LeftUp() => SendMouseInput(MOUSEEVENTF_LEFTUP);
 
     /// <summary>Press the right mouse button down at the current position.</summary>
-    public static void RightDown() => mouse_event(MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, UIntPtr.Zero);
+    public static void RightDown() => SendMouseInput(MOUSEEVENTF_RIGHTDOWN);
 
     /// <summary>Release the right mouse button.</summary>
-    public static void RightUp() => mouse_event(MOUSEEVENTF_RIGHTUP, 0, 0, 0, UIntPtr.Zero);
+    public static void RightUp() => SendMouseInput(MOUSEEVENTF_RIGHTUP);
 
     /// <summary>Press the middle mouse button down at the current position.</summary>
-    public static void MiddleDown() => mouse_event(MOUSEEVENTF_MIDDLEDOWN, 0, 0, 0, UIntPtr.Zero);
+    public static void MiddleDown() => SendMouseInput(MOUSEEVENTF_MIDDLEDOWN);
 
     /// <summary>Release the middle mouse button.</summary>
-    public static void MiddleUp() => mouse_event(MOUSEEVENTF_MIDDLEUP, 0, 0, 0, UIntPtr.Zero);
+    public static void MiddleUp() => SendMouseInput(MOUSEEVENTF_MIDDLEUP);
 
     /// <summary>Press + release left mouse button at the current cursor position.</summary>
     public static void LeftClick()
@@ -112,7 +131,7 @@ public static class MouseHelper
     }
 
     /// <summary>Scroll the wheel by a raw amount (positive = up, negative = down; one tick = 120).</summary>
-    public static void ScrollWheel(int amount) => mouse_event(MOUSEEVENTF_WHEEL, 0, 0, (uint)amount, UIntPtr.Zero);
+    public static void ScrollWheel(int amount) => SendMouseInput(MOUSEEVENTF_WHEEL, amount);
 
     /// <summary>Scroll the wheel up by one tick.</summary>
     public static void ScrollUp() => ScrollWheel(WheelTick);
@@ -137,5 +156,36 @@ public static class MouseHelper
         Thread.Sleep(200);
 
         LeftUp();
+    }
+
+    /// <summary>
+    /// Injects a single mouse event into the system input queue via <see cref="SendInput"/>.
+    /// Button and wheel events fire at the current cursor position, so <paramref name="data"/>
+    /// only carries the wheel delta for <c>MOUSEEVENTF_WHEEL</c>.
+    /// </summary>
+    private static void SendMouseInput(uint flags, int data = 0)
+    {
+        var inputs = new INPUT[]
+        {
+            new INPUT
+            {
+                Type = INPUT_MOUSE,
+                Mi = new MOUSEINPUT
+                {
+                    Dx = 0,
+                    Dy = 0,
+                    MouseData = (uint)data,
+                    DwFlags = flags,
+                    Time = 0,
+                    DwExtraInfo = UIntPtr.Zero,
+                },
+            },
+        };
+
+        var sent = SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<INPUT>());
+        if (sent != inputs.Length)
+        {
+            throw new Win32Exception(Marshal.GetLastWin32Error());
+        }
     }
 }
