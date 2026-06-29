@@ -29,6 +29,8 @@ internal static class Icons
 
     internal static IconInfo GpuIcon => new("\uE950"); // Component icon
 
+    internal static IconInfo TemperatureIcon => new("\uE9CA"); // Temperature/thermometer icon
+
     internal static IconInfo BatteryIcon => BatteryIcons[10]; // MobBattery10 (page identity)
 
     // Pre-built cache so the 1 Hz dock-band update reuses IconInfo instances
