@@ -354,9 +354,7 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, testName);
 
-        var spacingButton = ruler.Find<Element>(By.AccessibilityId(buttonId), 15000);
-        Assert.IsNotNull(spacingButton, $"{testName} button should be found");
-        spacingButton.Click(msPostAction: 500);
+        SelectToolAndVerify(ruler, buttonId, testName);
 
         PerformMeasurementAction();
 
@@ -379,18 +377,14 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, "bounds test");
 
-        var boundsButton = ruler.Find<Element>(By.AccessibilityId(BoundsButtonId), 15000);
-        Assert.IsNotNull(boundsButton, "Bounds button should be found");
-        boundsButton.Click(msPostAction: 500);
+        SelectToolAndVerify(ruler, BoundsButtonId, "Bounds");
 
-        // Drag a 100x100 box centred on the primary monitor. Move to the start first so the Measure
-        // Tool overlay is tracking the cursor before the drag. The 99px delta measures 100x100
-        // inclusive once the host is per-monitor DPI aware (app.manifest).
+        // Drag a 100x100 box centred on the primary monitor. The cursor is already parked at the start
+        // (cx-50, cy-50) by SelectToolAndVerify, so the drag begins right there. The 99px delta measures
+        // 100x100 inclusive once the host is per-monitor DPI aware (app.manifest).
         var (cx, cy) = ScreenCenter();
         int startX = cx - 50;
         int startY = cy - 50;
-        MouseHelper.MoveTo(startX, startY);
-        Thread.Sleep(300);
         MouseHelper.Drag(startX, startY, startX + 99, startY + 99, steps: 16);
         Thread.Sleep(400);
 
@@ -409,6 +403,59 @@ public static class TestHelper
         Assert.IsTrue(
             WaitForScreenRulerUIToDisappear(testBase, 2000),
             "ScreenRulerUI should close after calling CloseScreenRulerUI");
+    }
+
+    /// <summary>
+    /// Select a toolbar tool with a coordinate-free winappcli UIA invoke, move the cursor onto the
+    /// capture surface (a single tracked move), then CONFIRM the tool engaged by polling for the
+    /// full-screen measurement overlay window (<c>PowerToys.MeasureToolOverlay</c>) — its presence
+    /// means a following drag/click will actually measure. The overlay only shows once the cursor
+    /// leaves the toolbar onto the surface.
+    /// </summary>
+    private static void SelectToolAndVerify(Session ruler, string buttonId, string testName)
+    {
+        Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId}");
+        ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
+
+        // Move onto the capture surface near the screen centre so the overlay engages.
+        var (cx, cy) = ScreenCenter();
+        MouseHelper.MoveTo(cx - 50, cy - 50);
+
+        var deadline = DateTime.UtcNow.AddMilliseconds(2000);
+        do
+        {
+            if (IsMeasureOverlayPresent())
+            {
+                Log($"SelectToolAndVerify[{testName}]: overlay present");
+                return;
+            }
+
+            Thread.Sleep(250);
+        }
+        while (DateTime.UtcNow < deadline);
+
+        Assert.Fail(
+            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after the " +
+            "tool invoke — the Measure Tool never entered capture state, so a measurement can't be taken.");
+    }
+
+    /// <summary>
+    /// True when the Measure Tool's full-screen measurement overlay is up — winappcli reports a
+    /// <c>PowerToys.MeasureToolOverlay</c> window (class <c>*OverlayWindow</c>) alongside the toolbar
+    /// once a tool is engaged and the cursor is over the capture surface.
+    /// </summary>
+    private static bool IsMeasureOverlayPresent()
+    {
+        var windows = WindowsFinder.ListByApp(ScreenRulerProcess);
+        var present = windows.Any(w =>
+            w.Title.Contains("MeasureToolOverlay", StringComparison.OrdinalIgnoreCase) ||
+            w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
+
+        var summary = windows.Count == 0
+            ? "(none)"
+            : string.Join(", ", windows.Select(w => $"'{w.Title}'[{w.ClassName}]"));
+        Log($"IsMeasureOverlayPresent: {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
+        return present;
     }
 
     /// <summary>Move to the screen centre, left-click to capture, right-click to dismiss.</summary>
