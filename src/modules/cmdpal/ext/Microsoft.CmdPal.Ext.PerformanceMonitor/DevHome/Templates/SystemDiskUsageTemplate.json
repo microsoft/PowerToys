@@ -33,7 +33,7 @@
               "type": "Column",
               "items": [
                 {
-                  "text": "%DiskUsage_Widget_Template/Sent%",
+                  "text": "%DiskUsage_Widget_Template/Read%",
                   "type": "TextBlock",
                   "spacing": "none",
                   "size": "small",
@@ -51,7 +51,7 @@
               "type": "Column",
               "items": [
                 {
-                  "text": "%DiskUsage_Widget_Template/Received%",
+                  "text": "%DiskUsage_Widget_Template/Write%",
                   "type": "TextBlock",
                   "spacing": "none",
                   "size": "small",
