@@ -166,23 +166,23 @@ public class Element
     /// Drag this element by a pixel offset using real mouse input (down → stepped move → up).
     /// Win32-based: winappcli has no drag verb. Uses the element's center from its search bounds.
     /// </summary>
-    public void Drag(int offsetX, int offsetY, int steps = 10)
+    public void Drag(int offsetX, int offsetY)
     {
         EnsureBound();
         var startX = X + (Width / 2);
         var startY = Y + (Height / 2);
-        MouseHelper.Drag(startX, startY, startX + offsetX, startY + offsetY, steps);
+        MouseHelper.Drag(startX, startY, startX + offsetX, startY + offsetY);
     }
 
     /// <summary>Drag this element's center onto <paramref name="target"/>'s center (real mouse input).</summary>
-    public void DragTo(Element target, int steps = 10)
+    public void DragTo(Element target)
     {
         EnsureBound();
         var startX = X + (Width / 2);
         var startY = Y + (Height / 2);
         var endX = target.X + (target.Width / 2);
         var endY = target.Y + (target.Height / 2);
-        MouseHelper.Drag(startX, startY, endX, endY, steps);
+        MouseHelper.Drag(startX, startY, endX, endY);
     }
 
     /// <summary>
@@ -190,7 +190,7 @@ public class Element
     /// (<paramref name="targetX"/>, <paramref name="targetY"/>), then release the key. Used for
     /// modifier-drag scenarios (FancyZones merge, tab tear-off).
     /// </summary>
-    public void KeyDownAndDrag(Key key, int targetX, int targetY, int steps = 10)
+    public void KeyDownAndDrag(Key key, int targetX, int targetY)
     {
         EnsureBound();
         var startX = X + (Width / 2);
@@ -198,7 +198,7 @@ public class Element
         KeyboardHelper.PressKey(key);
         try
         {
-            MouseHelper.Drag(startX, startY, targetX, targetY, steps);
+            MouseHelper.Drag(startX, startY, targetX, targetY);
         }
         finally
         {

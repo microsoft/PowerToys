@@ -383,9 +383,7 @@ public static class TestHelper
         // (cx-50, cy-50) by SelectToolAndVerify, so the drag begins right there. The 99px delta measures
         // 100x100 inclusive once the host is per-monitor DPI aware (app.manifest).
         var (cx, cy) = ScreenCenter();
-        int startX = cx - 50;
-        int startY = cy - 50;
-        MouseHelper.Drag(startX, startY, startX + 99, startY + 99, steps: 16);
+        MouseHelper.Drag(cx, cy, cx + 99, cy + 99);
         Thread.Sleep(400);
 
         // Right-click to dismiss the selection (commits the measurement to the clipboard).
@@ -417,24 +415,16 @@ public static class TestHelper
         Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId}");
         ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
 
-        // Move onto the capture surface near the screen centre so the overlay engages.
+        // Moving the cursor off the toolbar onto the capture surface is what makes the overlay appear.
+        // ActivateScreenRuler parked the cursor at the screen centre, so move to an offset to produce a
+        // real tracked move (moving to the centre would be a no-op). The overlay shows right after the
+        // move, so just settle briefly and confirm once — no need to poll.
         var (cx, cy) = ScreenCenter();
-        MouseHelper.MoveTo(cx - 50, cy - 50);
+        MouseHelper.MoveTo(cx, cy);
+        Thread.Sleep(500);
 
-        var deadline = DateTime.UtcNow.AddMilliseconds(2000);
-        do
-        {
-            if (IsMeasureOverlayPresent())
-            {
-                Log($"SelectToolAndVerify[{testName}]: overlay present");
-                return;
-            }
-
-            Thread.Sleep(250);
-        }
-        while (DateTime.UtcNow < deadline);
-
-        Assert.Fail(
+        Assert.IsTrue(
+            IsMeasureOverlayPresent(),
             $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after the " +
             "tool invoke — the Measure Tool never entered capture state, so a measurement can't be taken.");
     }
@@ -461,20 +451,11 @@ public static class TestHelper
     /// <summary>Move to the screen centre, left-click to capture, right-click to dismiss.</summary>
     private static void PerformMeasurementAction()
     {
-        // Move to centre in two steps so the Measure Tool registers cursor MOVEMENT (a single
-        // SetCursorPos can land without a tracked move, leaving the measurement empty), then click
-        // to capture.
         var (cx, cy) = ScreenCenter();
         Log($"PerformMeasurementAction: two-step move to centre ({cx},{cy}), then left-click to capture");
         MouseHelper.MoveTo(cx - 60, cy - 60);
-        Thread.Sleep(200);
-        MouseHelper.MoveTo(cx, cy);
-        Thread.Sleep(400);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
-        Log("PerformMeasurementAction: right-click to dismiss the selection");
-        MouseHelper.RightClick();
-        Thread.Sleep(400);
     }
 
     /// <summary>

@@ -125,28 +125,17 @@ public static class MouseHelper
     /// stepped move → left-up. winappcli has no drag verb, so this stays Win32. Coordinates are
     /// physical screen pixels (matching <c>winapp ui search</c> bounds).
     /// </summary>
-    public static void Drag(int fromX, int fromY, int toX, int toY, int steps = 10)
+    public static void Drag(int fromX, int fromY, int toX, int toY)
     {
-        if (steps < 1)
-        {
-            steps = 1;
-        }
-
         MoveTo(fromX, fromY);
-        Thread.Sleep(40);
-        LeftDown();
-        Thread.Sleep(40);
+        Thread.Sleep(100);
 
-        var dx = (double)(toX - fromX) / steps;
-        var dy = (double)(toY - fromY) / steps;
-        for (var i = 1; i <= steps; i++)
-        {
-            MoveTo(fromX + (int)Math.Round(dx * i), fromY + (int)Math.Round(dy * i));
-            Thread.Sleep(15);
-        }
+        LeftDown();
+        Thread.Sleep(100);
 
         MoveTo(toX, toY);
-        Thread.Sleep(40);
+        Thread.Sleep(200);
+
         LeftUp();
     }
 }
