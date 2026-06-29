@@ -132,6 +132,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool CompactMode
+    {
+        get => _settingsService.Settings.CompactMode;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactMode = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+        }
+    }
+
+    public double CompactCenterHeightPercentage
+    {
+        get => _settingsService.Settings.CompactCenterHeightPercentage;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactCenterHeightPercentage = (int)value });
+        }
+    }
+
     public bool IgnoreShortcutWhenFullscreen
     {
         get => _settingsService.Settings.IgnoreShortcutWhenFullscreen;
