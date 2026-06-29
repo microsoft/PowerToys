@@ -87,7 +87,7 @@ The module includes multiple language-specific character sets and special charac
 
 ### WinUI 3 Selector Notes
 
-Non-obvious points for anyone touching `Selector.xaml` / `Selector.xaml.cs`:
+Non-obvious points for anyone touching `PowerAccentXAML/MainWindow.xaml` / `PowerAccentXAML/MainWindow.xaml.cs`:
 - The selector is a `TransparentWindow` shown with `SW_SHOWNA` and is never activated. x:Bind on a Window-rooted XAML initializes only on `Window.Activated`, which never fires here, so the constructor calls `Bindings.Update()` once after `InitializeComponent()` — without it the accent `ListView` renders empty.
 - Each accent cell pins `MinWidth="48"` in the `ItemContainerStyle`; WinUI's `ListViewItem` defaults `MinWidth` to 88, which would otherwise leave wide gaps between glyphs.
 - The bar width is computed deterministically (`itemCount * 48`, clamped to the monitor width) rather than measured — measuring the `ListView` while its containers realize is racy.

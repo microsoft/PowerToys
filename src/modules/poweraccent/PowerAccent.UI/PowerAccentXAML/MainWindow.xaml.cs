@@ -4,7 +4,6 @@
 
 using System;
 
-using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -50,20 +49,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // user-facing feature name.
         AppWindow.Title = "Quick Accent";
 
-        // The accent popup overlays the app being typed into and must never steal focus
-        // (TransparentWindow.Show uses SW_SHOWNA). Without always-on-top it is shown correctly
-        // sized and positioned but BEHIND the foreground app, so it is effectively invisible.
-        // The WPF original set Window.Topmost on every show; the WinUI 3 equivalent is the
-        // presenter's IsAlwaysOnTop.
-        if (AppWindow.Presenter is OverlappedPresenter presenter)
-        {
-            presenter.IsAlwaysOnTop = true;
-        }
-        else
-        {
-            Logger.LogWarning($"Quick Accent selector presenter is not an OverlappedPresenter ({AppWindow.Presenter?.GetType().Name}); the popup cannot be made always-on-top and may appear behind the active app.");
-        }
-
         // The accent popup is shown/hidden instantly (no slide/fade) for typing-aid
         // responsiveness. TransientSurface defaults to Transition.None (no animation);
         // SubscribeTo wires the surface to this window's Show/Hide so it follows along.
@@ -104,6 +89,11 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         if (!isActive)
         {
             _active = false;
+
+            // Release always-on-top before hiding so the dormant overlay does not keep a discrete
+            // GPU awake on hybrid-graphics laptops (issue #34849 / PR #41044). IsAlwaysOnTop is the
+            // WinUIEx WindowEx property (same as the sibling PowerDisplay).
+            IsAlwaysOnTop = false;
             Hide();
             ViewModel.Characters.Clear();
             _selectedIndex = -1;
@@ -124,10 +114,15 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
             : string.Empty;
 
-        // Size to a content-hugging one-row accent bar and show on-screen (the window is already
-        // always-on-top). No content measurement / off-screen probe: the width is computed from the
-        // item count, the ListView scrolls if it overflows, and we bring the selected glyph into view
-        // once its containers realize.
+        // Make the overlay always-on-top while it is shown so it sits above the foreground app
+        // (TransparentWindow.Show uses SW_SHOWNA and never activates it); released again on hide so
+        // the dormant window does not pin a discrete GPU awake on hybrid-graphics laptops
+        // (issue #34849 / PR #41044). IsAlwaysOnTop is the WinUIEx WindowEx property the sibling
+        // PowerDisplay uses. Then size to a content-hugging one-row accent bar and show on-screen.
+        // No content measurement / off-screen probe: the width is computed from the item count, the
+        // ListView scrolls if it overflows, and we bring the selected glyph into view once its
+        // containers realize.
+        IsAlwaysOnTop = true;
         SizeAndPosition();
         Show();
 
