@@ -180,7 +180,7 @@ namespace WorkspacesEditor.ViewModels
             _editedProject.PreviewImage = projectToSave.PreviewImage;
             _editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
 
-            _editedProject.OnPropertyChanged(new PropertyChangedEventArgs("AppsCountString"));
+            _editedProject.NotifyApplicationsChanged();
             _editedProject.InitializePreview();
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(_editedProject);
@@ -392,7 +392,7 @@ namespace WorkspacesEditor.ViewModels
 
             foreach (Project project in Workspaces)
             {
-                project.OnPropertyChanged(new PropertyChangedEventArgs("LastLaunched"));
+                project.NotifyLastLaunchedChanged();
             }
         }
 

@@ -173,8 +173,10 @@ namespace WorkspacesEditor.Models
         [JsonIgnore]
         public bool IsHighlighted { get; set; }
 
-        [JsonIgnore]
-        public int RepeatIndex { get; set; }
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RepeatIndexString))]
+        [property: JsonIgnore]
+        private int _repeatIndex;
 
         [JsonIgnore]
         public string RepeatIndexString => RepeatIndex <= 1 ? string.Empty : RepeatIndex.ToString(CultureInfo.InvariantCulture);

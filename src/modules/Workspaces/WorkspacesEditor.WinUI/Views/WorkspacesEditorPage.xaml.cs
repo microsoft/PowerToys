@@ -125,7 +125,6 @@ namespace WorkspacesEditor.Views
             if (this.DataContext is Project project && sender is TextBox textBox)
             {
                 project.Name = textBox.Text;
-                project.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Project.CanBeSaved)));
             }
         }
 

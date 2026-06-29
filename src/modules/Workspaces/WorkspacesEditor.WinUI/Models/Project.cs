@@ -159,6 +159,24 @@ namespace WorkspacesEditor.Models
             }
         }
 
+        /// <summary>
+        /// Call after modifying the Applications list to notify dependent computed properties.
+        /// </summary>
+        public void NotifyApplicationsChanged()
+        {
+            OnPropertyChanged(nameof(AppsCountString));
+            OnPropertyChanged(nameof(CanBeSaved));
+            OnPropertyChanged(nameof(ApplicationsListed));
+        }
+
+        /// <summary>
+        /// Call to refresh the relative time display for LastLaunched.
+        /// </summary>
+        public void NotifyLastLaunchedChanged()
+        {
+            OnPropertyChanged(nameof(LastLaunched));
+        }
+
         public List<MonitorSetup> Monitors { get; }
 
         public bool IsPositionChangedManually { get; set; }
@@ -255,14 +273,6 @@ namespace WorkspacesEditor.Models
                 Rect dpiUnaware = new(monitor.MonitorRectDpiUnaware.Left, monitor.MonitorRectDpiUnaware.Top, monitor.MonitorRectDpiUnaware.Width, monitor.MonitorRectDpiUnaware.Height);
                 Monitors.Add(new MonitorSetup(monitor.Id, monitor.InstanceId, monitor.MonitorNumber, monitor.Dpi, dpiAware, dpiUnaware));
             }
-        }
-
-        /// <summary>
-        /// Public override to maintain external caller compatibility.
-        /// </summary>
-        public new void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
         }
 
         public void InitializePreview()

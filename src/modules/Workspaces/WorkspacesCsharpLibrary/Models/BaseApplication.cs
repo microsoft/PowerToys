@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -19,15 +18,6 @@ namespace WorkspacesCsharpLibrary.Models
 {
     public partial class BaseApplication : ObservableObject, IDisposable
     {
-        /// <summary>
-        /// Public override to maintain external caller compatibility.
-        /// Derived classes and external code can call this to raise PropertyChanged.
-        /// </summary>
-        public new void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-        }
-
         public string PwaAppId { get; set; }
 
         public string AppPath { get; set; }

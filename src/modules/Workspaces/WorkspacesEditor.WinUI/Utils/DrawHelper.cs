@@ -90,11 +90,6 @@ namespace WorkspacesEditor.Utils
                 app.RepeatIndex = 0;
             }
 
-            foreach (Application app in project.Applications)
-            {
-                app.OnPropertyChanged(new PropertyChangedEventArgs("RepeatIndexString"));
-            }
-
             foreach (MonitorSetup monitor in project.Monitors)
             {
                 if (monitor.MonitorDpiAwareBounds.X > bounds.Left && project.Monitors.Any(x => (x.MonitorDpiAwareBounds.X + x.MonitorDpiAwareBounds.Width) <= monitor.MonitorDpiAwareBounds.X))
