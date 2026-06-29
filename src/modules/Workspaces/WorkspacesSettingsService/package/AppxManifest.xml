@@ -17,8 +17,8 @@
   xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6">
 
   <Identity Name="Microsoft.PowerToys.SettingsService"
-            Publisher="CN=PowerToysSettingsSvcDev"
-            Version="0.100.6.0"
+            Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+            Version="0.0.1.0"
             ProcessorArchitecture="x64" />
 
   <Properties>
@@ -61,4 +61,5 @@
     </Application>
   </Applications>
 </Package>
+
 

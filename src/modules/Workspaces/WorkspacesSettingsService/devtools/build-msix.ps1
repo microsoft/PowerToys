@@ -13,6 +13,7 @@ param(
     [string]$Config   = 'Release',
     [string]$ExePath  = "$PSScriptRoot\..\x64\$Config\WorkspacesSettingsService\PowerToys.PTSettingsSvc.exe",
     [string]$OutMsix  = "$PSScriptRoot\..\package\PTSettingsSvc.msix",
+    [string]$Version  = '',
     [string]$PfxPath  = '',
     [string]$PfxPass  = ''
 )
@@ -36,6 +37,13 @@ New-Item -ItemType Directory -Force $staging | Out-Null
 Copy-Item (Join-Path $pkgSrc 'AppxManifest.xml') $staging
 Copy-Item $logo $staging
 Copy-Item $ExePath $staging
+
+# Stamp the package version (must be 4-part) to keep it in lockstep with the build.
+if ($Version) {
+    $v = if (($Version -split '\.').Count -eq 3) { "$Version.0" } else { $Version }
+    $mf = Join-Path $staging 'AppxManifest.xml'
+    (Get-Content $mf -Raw) -replace 'Version="[0-9.]+"', "Version=`"$v`"" | Set-Content $mf
+}
 
 & "$sdkBin\makeappx.exe" pack /d $staging /p $OutMsix /o | Out-Null
 if ($LASTEXITCODE -ne 0) { throw "makeappx failed ($LASTEXITCODE)." }

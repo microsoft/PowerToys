@@ -16,9 +16,6 @@ public sealed class ProvisionOptions
     /// <summary>Full path to the settings-service executable to register.</summary>
     public string? ServiceBinaryPath { get; init; }
 
-    /// <summary>Full path to the per-user hardening script to run elevated.</summary>
-    public string? HardenScriptPath { get; init; }
-
     /// <summary>Full path to the signed service MSIX to deploy (deferred install).</summary>
     public string? ServiceMsixPath { get; init; }
 
@@ -44,7 +41,6 @@ public sealed class ProvisionOptions
         return new ProvisionOptions
         {
             ServiceBinaryPath = SettingsPaths.ServiceBinaryPath(installFolder),
-            HardenScriptPath = SettingsPaths.HardenScriptPath(installFolder),
             ServiceMsixPath = SettingsPaths.ServiceMsixPath(installFolder),
             Force = force,
         };

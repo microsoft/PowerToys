@@ -188,7 +188,6 @@
                  Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0005}">
         <File Id="PtSeedScript"    Name="Seed-PtSettingsStore.ps1"   KeyPath="yes" />
         <File Id="PtCleanupScript" Name="Remove-PtSettingsStore.ps1" />
-        <File Id="PtHardenScript"  Name="Harden-PtSettingsPerUser.ps1" />
       </Component>
     </DirectoryRef>
 
@@ -221,11 +220,12 @@
   </Fragment>
 
   <!--
-    Per-user payload (Design §11).  A per-user MSI is non-elevated and cannot
-    register a service or write the protected %ProgramData% store, so it only
-    STAGES the service binary and the hardening script under the install folder.
-    The managed ServiceProvisioner registers the service + hardens the store
-    later via a one-time elevation.  No ServiceInstall / no DACL changes here.
+    Per-user payload (Design §12.1).  A per-user MSI is non-elevated and cannot
+    register a service, so it only STAGES the SIGNED service MSIX under the
+    install folder.  The managed ServiceProvisioner deploys it via one elevated
+    Add-AppxPackage (the windows.service extension auto-registers PTSettingsSvc
+    as LocalSystem; the service hardens the store on first PutBlob).  No
+    user-writable hardening script (the prior Harden ps1 was an EoP hole).
   -->
   <Fragment>
     <DirectoryRef Id="INSTALLFOLDER">
@@ -234,32 +234,15 @@
 
     <DirectoryRef Id="PTSettingsPayloadFolder"
                   FileSource="$(var.PTSettingsSvcFilesPath)">
-      <Component Id="PTSettingsServicePayloadExe"
+      <Component Id="PTSettingsServicePayloadMsix"
                  Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0006}">
-        <File Id="PTSettingsSvcExePerUser"
-              Name="PowerToys.PTSettingsSvc.exe" />
+        <File Id="PTSettingsSvcMsixPerUser"
+              Name="PTSettingsSvc.msix" />
         <!-- Per-user (user-profile) component: KeyPath must be an HKCU
              registry value, not a file (WiX ICE38). -->
         <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string"
-                         Name="PTSettingsServicePayloadExe"
-                         Value=""
-                         KeyPath="yes" />
-        </RegistryKey>
-      </Component>
-    </DirectoryRef>
-
-    <DirectoryRef Id="PTSettingsPayloadFolder"
-                  FileSource="$(var.ProjectDir)\CustomActions">
-      <Component Id="PTSettingsServicePayloadScript"
-                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0007}">
-        <File Id="PtHardenScriptPerUser"
-              Name="Harden-PtSettingsPerUser.ps1" />
-        <!-- Per-user (user-profile) component: KeyPath must be an HKCU
-             registry value, not a file (WiX ICE38). -->
-        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string"
-                         Name="PTSettingsServicePayloadScript"
+                         Name="PTSettingsServicePayloadMsix"
                          Value=""
                          KeyPath="yes" />
         </RegistryKey>
@@ -283,8 +266,7 @@
     </DirectoryRef>
 
     <ComponentGroup Id="PTSettingsServicePayloadComponentGroup">
-      <ComponentRef Id="PTSettingsServicePayloadExe" />
-      <ComponentRef Id="PTSettingsServicePayloadScript" />
+      <ComponentRef Id="PTSettingsServicePayloadMsix" />
       <ComponentRef Id="RemovePTSettingsPayloadFolder" />
     </ComponentGroup>
   </Fragment>

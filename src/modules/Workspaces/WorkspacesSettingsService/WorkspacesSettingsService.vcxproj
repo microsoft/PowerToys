@@ -80,4 +80,14 @@
     <ResourceCompile Include="WorkspacesSettingsService.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <!--
+    Pack the service into an unsigned MSIX next to the exe (Design §12.1).  The
+    signed build pipeline signs all *.msix with the Microsoft cert; the installer
+    ships it as the per-user payload.  x64 only (manifest is x64); guarded so a
+    missing SDK doesn't fail the core build.
+  -->
+  <Target Name="PackPTSettingsSvcMsix" AfterTargets="Build" Condition="'$(Platform)'=='x64'">
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(ProjectDir)devtools\build-msix.ps1&quot; -Config $(Configuration) -ExePath &quot;$(OutDir)PowerToys.PTSettingsSvc.exe&quot; -OutMsix &quot;$(OutDir)PTSettingsSvc.msix&quot;"
+          ContinueOnError="true" />
+  </Target>
 </Project>

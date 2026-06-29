@@ -77,7 +77,6 @@ public static class SettingsBootstrapper
                     options = new ProvisionOptions
                     {
                         ServiceBinaryPath = options.ServiceBinaryPath,
-                        HardenScriptPath = options.HardenScriptPath,
                         ServiceMsixPath = options.ServiceMsixPath,
                         UserSid = options.UserSid,
                         Force = force,

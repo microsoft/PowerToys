@@ -42,9 +42,6 @@ public static class SettingsPaths
     /// <summary>File name of the settings-service executable.</summary>
     public const string ServiceBinaryName = "PowerToys.PTSettingsSvc.exe";
 
-    /// <summary>File name of the per-user lazy-hardening script.</summary>
-    public const string HardenScriptName = "Harden-PtSettingsPerUser.ps1";
-
     /// <summary>File name of the signed service MSIX package (deferred install).</summary>
     public const string ServiceMsixName = "PTSettingsSvc.msix";
 
@@ -112,12 +109,6 @@ public static class SettingsPaths
     public static string ServiceBinaryPath(string installFolder)
     {
         return Path.Combine(ServicePayloadDir(installFolder), ServiceBinaryName);
-    }
-
-    /// <summary>Full path to the per-user hardening script inside an install folder.</summary>
-    public static string HardenScriptPath(string installFolder)
-    {
-        return Path.Combine(ServicePayloadDir(installFolder), HardenScriptName);
     }
 
     /// <summary>Full path to the signed service MSIX package inside an install folder.</summary>
