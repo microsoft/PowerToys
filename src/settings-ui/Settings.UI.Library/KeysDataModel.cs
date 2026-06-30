@@ -47,6 +47,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("operationType")]
         public int OperationType { get; set; }
 
+        [JsonPropertyName("templateId")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string TemplateId { get; set; }
+
+        [JsonPropertyName("templateParameters")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Dictionary<string, string> TemplateParameters { get; set; }
+
         private enum KeyboardManagerEditorType
         {
             KeyEditor = 0,

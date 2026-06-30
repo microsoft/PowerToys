@@ -150,6 +150,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(VcpCodeDisplayInfo))]
     [JsonSerializable(typeof(VcpValueInfo))]
     [JsonSerializable(typeof(List<string>))]
+    [JsonSerializable(typeof(Dictionary<string, string>))]
     [JsonSerializable(typeof(List<MonitorInfo>))]
     [JsonSerializable(typeof(List<VcpCodeDisplayInfo>))]
     [JsonSerializable(typeof(List<VcpValueInfo>))]

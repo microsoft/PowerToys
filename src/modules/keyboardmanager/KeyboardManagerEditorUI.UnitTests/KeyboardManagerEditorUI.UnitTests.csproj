@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <OutputPath>$(RepoRoot)$(Configuration)\$(Platform)\tests\KeyboardManagerEditorUITests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <!--
+    Source-link the pure (WinUI-free) template logic so it can be unit-tested without referencing
+    the KeyboardManagerEditorUI WinExe app. These files have no UI/WinRT dependencies.
+  -->
+  <ItemGroup>
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\TemplateResolver.cs" Link="Templates\TemplateResolver.cs" />
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\CommandTemplate.cs" Link="Templates\CommandTemplate.cs" />
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\CommandTemplateModule.cs" Link="Templates\CommandTemplateModule.cs" />
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\PowerToysCliCatalog.cs" Link="Templates\PowerToysCliCatalog.cs" />
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\TemplateParameter.cs" Link="Templates\TemplateParameter.cs" />
+    <Compile Include="..\KeyboardManagerEditorUI\Templates\TemplateChoice.cs" Link="Templates\TemplateChoice.cs" />
+  </ItemGroup>
+</Project>

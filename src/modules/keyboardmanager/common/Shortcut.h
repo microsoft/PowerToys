@@ -2,6 +2,7 @@
 #include "ModifierKey.h"
 
 #include <compare>
+#include <map>
 #include <tuple>
 #include <variant>
 namespace KeyboardManagerInput
@@ -70,6 +71,12 @@ public:
     std::wstring runProgramArgs;
     std::wstring runProgramStartInDir;
     std::wstring uriToOpen;
+
+    // Optional: when non-empty, indicates this mapping was created from a CLI command template.
+    std::wstring templateId;
+
+    // Optional: parameter values captured at template save time. Lexicographically ordered for stable JSON output.
+    std::map<std::wstring, std::wstring> templateParameters;
 
     ProgramAlreadyRunningAction alreadyRunningAction = ProgramAlreadyRunningAction::ShowWindow;
     ElevationLevel elevationLevel = ElevationLevel::NonElevated;

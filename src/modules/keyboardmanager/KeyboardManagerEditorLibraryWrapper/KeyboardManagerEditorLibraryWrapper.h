@@ -33,6 +33,8 @@ struct ShortcutMapping
     wchar_t* programPath;
     wchar_t* programArgs;
     wchar_t* uriToOpen;
+    wchar_t* templateId;
+    wchar_t* templateParametersJson;
 };
 
 extern "C"
@@ -69,7 +71,9 @@ extern "C"
                                                 const wchar_t* startDirectory = nullptr,
                                                 int elevation = 0,
                                                 int ifRunningAction = 0,
-                                                int visibility = 0);
+                                                int visibility = 0,
+                                                const wchar_t* templateId = nullptr,
+                                                const wchar_t* templateParametersJson = nullptr);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="KeyboardManagerEditorUI.Controls.CommandTemplatePickerControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:KeyboardManagerEditorUI.ViewModels"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <DataTemplate x:Key="TextParamTemplate" x:DataType="vm:TemplateParameterViewModel">
+            <TextBox
+                Header="{x:Bind Label}"
+                Text="{x:Bind Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="ComboParamTemplate" x:DataType="vm:TemplateParameterViewModel">
+            <ComboBox
+                HorizontalAlignment="Stretch"
+                Header="{x:Bind Label}"
+                ItemsSource="{x:Bind Choices}"
+                SelectedItem="{x:Bind SelectedChoice, Mode=TwoWay}"
+                DisplayMemberPath="DisplayText" />
+        </DataTemplate>
+
+        <local:TemplateParameterSelector
+            x:Key="ParamSelector"
+            ComboTemplate="{StaticResource ComboParamTemplate}"
+            TextTemplate="{StaticResource TextParamTemplate}" />
+    </UserControl.Resources>
+
+    <StackPanel Orientation="Vertical" Spacing="12">
+        <TextBlock
+            x:Name="SelectionDescriptionText"
+            FontStyle="Italic"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{x:Bind ViewModel.SelectionDescription, Mode=OneWay}" />
+
+        <Rectangle
+            Height="1"
+            HorizontalAlignment="Stretch"
+            Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <ItemsControl
+            ItemsSource="{x:Bind ViewModel.CurrentParameters, Mode=OneWay}"
+            ItemTemplateSelector="{StaticResource ParamSelector}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" Spacing="12" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+        <Rectangle
+            Height="1"
+            HorizontalAlignment="Stretch"
+            Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+        <TextBlock x:Uid="TemplatePreviewLabel" FontWeight="SemiBold" />
+
+        <TextBlock
+            FontFamily="Consolas"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+            IsTextSelectionEnabled="True"
+            Text="{x:Bind ViewModel.ResolvedCommandLine, Mode=OneWay}"
+            TextWrapping="Wrap" />
+
+        <InfoBar
+            x:Name="MissingTemplateInfoBar"
+            x:Uid="MissingTemplateInfoBar"
+            IsClosable="False"
+            IsOpen="False"
+            Severity="Warning">
+            <StackPanel
+                Margin="0,0,0,8"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Name="MissingTemplateKeepButton"
+                    x:Uid="TemplateMissingKeepButton"
+                    Click="MissingTemplateKeepButton_Click" />
+            </StackPanel>
+        </InfoBar>
+    </StackPanel>
+</UserControl>

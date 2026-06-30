@@ -83,7 +83,9 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string? startDirectory = null,
             int elevation = 0,
             int ifRunningAction = 0,
-            int visibility = 0);
+            int visibility = 0,
+            [MarshalAs(UnmanagedType.LPWStr)] string? templateId = null,
+            [MarshalAs(UnmanagedType.LPWStr)] string? templateParametersJson = null);
 
         // Delete Mapping Functions
         [DllImport(DllName, CallingConvention = Convention)]
@@ -165,6 +167,8 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+        public IntPtr TemplateId;
+        public IntPtr TemplateParametersJson;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

@@ -10,6 +10,58 @@
 #include "RemapShortcut.h"
 #include "Helpers.h"
 
+namespace
+{
+    // Reads optional CLI command-template metadata (templateId + templateParameters) from a settings
+    // entry into the shortcut. Safe to call for legacy entries: missing/malformed metadata is ignored
+    // so it can never discard the surrounding mapping.
+    void ReadTemplateMetadata(const json::JsonObject& entryObj, Shortcut& shortcut)
+    {
+        if (entryObj.HasKey(KeyboardManagerConstants::TemplateIdSettingName))
+        {
+            shortcut.templateId = entryObj.GetNamedString(KeyboardManagerConstants::TemplateIdSettingName, L"");
+        }
+
+        if (entryObj.HasKey(KeyboardManagerConstants::TemplateParametersSettingName))
+        {
+            // Type-check before reading: malformed (non-object) metadata must not discard the whole mapping.
+            auto paramsValue = entryObj.GetNamedValue(KeyboardManagerConstants::TemplateParametersSettingName);
+            if (paramsValue.ValueType() == json::JsonValueType::Object)
+            {
+                for (auto const& kv : paramsValue.GetObjectW())
+                {
+                    if (kv.Value().ValueType() == json::JsonValueType::String)
+                    {
+                        shortcut.templateParameters.emplace(
+                            std::wstring(kv.Key()),
+                            std::wstring(kv.Value().GetString()));
+                    }
+                }
+            }
+        }
+    }
+
+    // Writes optional CLI command-template metadata to a settings entry — only emitted when set so
+    // non-template mappings produce clean JSON.
+    void WriteTemplateMetadata(json::JsonObject& keys, const Shortcut& shortcut)
+    {
+        if (!shortcut.templateId.empty())
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::TemplateIdSettingName, json::value(shortcut.templateId));
+        }
+
+        if (!shortcut.templateParameters.empty())
+        {
+            json::JsonObject paramsObj;
+            for (auto const& [k, v] : shortcut.templateParameters)
+            {
+                paramsObj.SetNamedValue(k, json::JsonValue::CreateStringValue(v));
+            }
+            keys.SetNamedValue(KeyboardManagerConstants::TemplateParametersSettingName, paramsObj);
+        }
+    }
+}
+
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
 {
@@ -258,6 +310,9 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                     tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
+                    // Optional template metadata (preserved through round-trip; safe to omit on legacy entries).
+                    ReadTemplateMetadata(it.GetObjectW(), tempShortcut);
+
                     AddAppSpecificShortcut(targetApp.c_str(), originalShortcut, tempShortcut);
                 }
                 else if (operationType == 2)
@@ -352,6 +407,9 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.elevationLevel = static_cast<Shortcut::ElevationLevel>(runProgramElevationLevel);
                             tempShortcut.alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(runProgramAlreadyRunningAction);
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
+
+                            // Optional template metadata (preserved through round-trip; safe to omit on legacy entries).
+                            ReadTemplateMetadata(it.GetObjectW(), tempShortcut);
 
                             AddOSLevelShortcut(originalShortcut, tempShortcut);
                         }
@@ -525,6 +583,8 @@ bool MappingConfiguration::SaveSettingsToFile()
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                 keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
 
+                WriteTemplateMetadata(keys, targetShortcut);
+
                 // we need to add this dummy data for backwards compatibility
                 keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));
             }
@@ -589,6 +649,8 @@ bool MappingConfiguration::SaveSettingsToFile()
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramFilePathSettingName, json::value(targetShortcut.runProgramFilePath));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramArgsSettingName, json::value(targetShortcut.runProgramArgs));
                     keys.SetNamedValue(KeyboardManagerConstants::RunProgramStartInDirSettingName, json::value(targetShortcut.runProgramStartInDir));
+
+                    WriteTemplateMetadata(keys, targetShortcut);
 
                     // we need to add this dummy data for backwards compatibility
                     keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(L"*Unsupported*"));

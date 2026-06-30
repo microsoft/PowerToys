@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using KeyboardManagerEditorUI.Templates;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -44,6 +45,13 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _urlPathDirty;
         private bool _programPathDirty;
 
+        private string _currentActionTag = "KeyOrShortcut";
+
+        // Resolved program path/args captured when loading a template mapping, so the
+        // missing-template "Keep as plain command" path can preserve the command.
+        private string _templateFallbackProgramPath = string.Empty;
+        private string _templateFallbackProgramArgs = string.Empty;
+
         public bool AllowChords { get; set; } = true;
 
         #endregion
@@ -79,6 +87,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenApp,
             MouseClick,
             Disable,
+            RunTemplate,
         }
 
         /// <summary>
@@ -119,26 +128,16 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Gets the current action type.
         /// </summary>
-        public ActionType CurrentActionType
+        public ActionType CurrentActionType => _currentActionTag switch
         {
-            get
-            {
-                if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
-                {
-                    return item.Tag?.ToString() switch
-                    {
-                        "Text" => ActionType.Text,
-                        "OpenUrl" => ActionType.OpenUrl,
-                        "OpenApp" => ActionType.OpenApp,
-                        "MouseClick" => ActionType.MouseClick,
-                        "Disable" => ActionType.Disable,
-                        _ => ActionType.KeyOrShortcut,
-                    };
-                }
-
-                return ActionType.KeyOrShortcut;
-            }
-        }
+            "Text" => ActionType.Text,
+            "OpenUrl" => ActionType.OpenUrl,
+            "OpenApp" => ActionType.OpenApp,
+            "MouseClick" => ActionType.MouseClick,
+            "Disable" => ActionType.Disable,
+            "RunTemplate" => ActionType.RunTemplate,
+            _ => ActionType.KeyOrShortcut,
+        };
 
         #endregion
 
@@ -163,6 +162,8 @@ namespace KeyboardManagerEditorUI.Controls
                 RaiseValidationStateChanged();
             };
 
+            BuildRunPtCommandMenu();
+
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
 
@@ -172,9 +173,20 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            // Set up event handlers for app-specific checkbox
+            // Set up event handlers for app-specific checkbox.
+            // Detach first so re-entering the visual tree (dialog reopened) does not stack handlers.
+            AppSpecificCheckBox.Checked -= AppSpecificCheckBox_Changed;
+            AppSpecificCheckBox.Unchecked -= AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
+
+            // Wire template picker selection/validity changes so validation re-runs when the user
+            // picks a template or edits its parameters. Guarded against duplicate subscriptions.
+            if (TemplatePicker != null)
+            {
+                TemplatePicker.SelectionChanged -= TemplatePicker_SelectionChanged;
+                TemplatePicker.SelectionChanged += TemplatePicker_SelectionChanged;
+            }
 
             // Activate keyboard hook for the trigger input
             if (TriggerKeyToggleBtn.IsChecked == true)
@@ -182,13 +194,27 @@ namespace KeyboardManagerEditorUI.Controls
                 _currentInputMode = KeyInputMode.OriginalKeys;
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
+
+            // Initialize the action button label here (not in the constructor) so the flyout
+            // items' localized Text is guaranteed populated before it is read.
+            UpdateActionButtonContent(_currentActionTag);
         }
 
         private void UnifiedMappingControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            // Detach handlers wired in UserControl_Loaded so they don't accumulate across reopens.
+            AppSpecificCheckBox.Checked -= AppSpecificCheckBox_Changed;
+            AppSpecificCheckBox.Unchecked -= AppSpecificCheckBox_Changed;
+            if (TemplatePicker != null)
+            {
+                TemplatePicker.SelectionChanged -= TemplatePicker_SelectionChanged;
+            }
+
             Reset();
             CleanupKeyboardHook();
         }
+
+        private void TemplatePicker_SelectionChanged(object? sender, EventArgs e) => RaiseValidationStateChanged();
 
         #endregion
 
@@ -242,29 +268,128 @@ namespace KeyboardManagerEditorUI.Controls
 
         #region Action Type Handling
 
-        private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnActionTypeClick(object sender, RoutedEventArgs e)
         {
-            if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
+            if (sender is FrameworkElement fe && fe.Tag is string tag)
             {
-                string? tag = item.Tag?.ToString();
+                SetActionTag(tag);
+            }
+        }
 
-                // Cleanup keyboard hook when switching away from key/shortcut
-                if (tag != "KeyOrShortcut")
+        private void OnCommandClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item && item.Tag is string templateId)
+            {
+                // Select the template first so the action-type switch validates against the picked
+                // command (not the previously-selected one), avoiding a transient stale Save state.
+                TemplatePicker?.SelectCommand(templateId);
+                SetActionTag("RunTemplate");
+                UpdateActionButtonContent("RunTemplate", item.Text);
+            }
+        }
+
+        private void SetActionTag(string tag)
+        {
+            _currentActionTag = tag;
+
+            if (ActionSwitchPresenter != null)
+            {
+                ActionSwitchPresenter.Value = tag;
+            }
+
+            // Cleanup keyboard hook when switching away from key/shortcut
+            if (tag != "KeyOrShortcut")
+            {
+                if (_currentInputMode == KeyInputMode.RemappedKeys)
                 {
-                    if (_currentInputMode == KeyInputMode.RemappedKeys)
-                    {
-                        CleanupKeyboardHook();
-                    }
+                    CleanupKeyboardHook();
+                }
 
-                    if (ActionKeyToggleBtn?.IsChecked == true)
-                    {
-                        ActionKeyToggleBtn.IsChecked = false;
-                    }
+                if (ActionKeyToggleBtn?.IsChecked == true)
+                {
+                    ActionKeyToggleBtn.IsChecked = false;
                 }
             }
 
             HideValidationMessage();
             RaiseValidationStateChanged();
+            UpdateActionButtonContent(tag);
+        }
+
+        private void UpdateActionButtonContent(string tag, string? commandDisplay = null)
+        {
+            if (ActionTypeButton == null)
+            {
+                return;
+            }
+
+            string cmd = commandDisplay ?? TemplatePicker?.CurrentCommandDisplay ?? string.Empty;
+
+            string text = tag switch
+            {
+                "Text" => ActionItem_Text.Text,
+                "OpenUrl" => ActionItem_OpenUrl.Text,
+                "OpenApp" => ActionItem_OpenApp.Text,
+                "Disable" => ActionItem_Disable.Text,
+                "RunTemplate" => string.IsNullOrEmpty(cmd)
+                    ? RunPtCommandSubItem.Text
+                    : $"{RunPtCommandSubItem.Text}: {cmd}",
+                _ => ActionItem_KeyOrShortcut.Text,
+            };
+
+            ActionTypeButton.Content = text;
+        }
+
+        private void BuildRunPtCommandMenu()
+        {
+            // A malformed/missing catalog must not crash construction of the whole mapping editor.
+            // Degrade gracefully: log and leave the "Run PowerToys command" submenu empty/disabled.
+            try
+            {
+                foreach (var module in CommandTemplateCatalog.Instance.Data.Modules)
+                {
+                    var moduleSub = new MenuFlyoutSubItem
+                    {
+                        Text = ResourceHelper.GetString(module.DisplayResourceKey),
+                    };
+
+                    if (!string.IsNullOrEmpty(module.IconGlyph))
+                    {
+                        moduleSub.Icon = new FontIcon { Glyph = module.IconGlyph };
+                    }
+
+                    foreach (var cmd in module.Commands)
+                    {
+                        var item = new MenuFlyoutItem
+                        {
+                            Text = ResourceHelper.GetString(cmd.DisplayResourceKey),
+                            Tag = cmd.Id,
+                        };
+                        item.Click += OnCommandClick;
+                        moduleSub.Items.Add(item);
+                    }
+
+                    RunPtCommandSubItem.Items.Add(moduleSub);
+                }
+            }
+            catch (Exception ex)
+            {
+                ManagedCommon.Logger.LogError($"Failed to build PowerToys command template menu: {ex.Message}");
+                RunPtCommandSubItem.IsEnabled = false;
+            }
+        }
+
+        private void TemplatePicker_MissingTemplateKeepRequested(object sender, EventArgs e)
+        {
+            // The user chose to keep the resolved command but discard the template association.
+            // Switch to OpenApp first so the program-path inputs are realized, then populate them
+            // with the previously-resolved command so the mapping is preserved (not blanked).
+            SetActionType(ActionType.OpenApp);
+            SetProgramPath(_templateFallbackProgramPath);
+            SetProgramArgs(_templateFallbackProgramArgs);
+
+            // Clear the picker so it doesn't retain stale template state.
+            TemplatePicker?.Reset();
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -798,6 +923,29 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public ProgramAlreadyRunningAction GetIfRunningAction() => (ProgramAlreadyRunningAction)(IfRunningComboBox?.SelectedIndex ?? 0);
 
+        /// <summary>
+        /// Gets the resolved template executable (for RunTemplate action type).
+        /// Returns null if no template is selected or the template cannot be resolved.
+        /// </summary>
+        public string? GetResolvedTemplateExecutable() => TemplatePicker?.ResolveCurrent()?.Executable;
+
+        /// <summary>
+        /// Gets the resolved template arguments (for RunTemplate action type).
+        /// Returns null if no template is selected or the template cannot be resolved.
+        /// </summary>
+        public string? GetResolvedTemplateArgs() => TemplatePicker?.ResolveCurrent()?.Args;
+
+        /// <summary>
+        /// Gets the template id of the currently selected template (for RunTemplate action type).
+        /// Returns null if no template is selected.
+        /// </summary>
+        public string? GetCurrentTemplateId() => TemplatePicker?.CurrentTemplateId;
+
+        /// <summary>
+        /// Gets the current template parameter values (for RunTemplate action type).
+        /// </summary>
+        public Dictionary<string, string> GetCurrentTemplateParameterValues() => TemplatePicker?.CurrentParameterValues ?? new Dictionary<string, string>();
+
         #endregion
 
         #region Public API - Validation
@@ -820,6 +968,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
                 ActionType.Disable => true,
+                ActionType.RunTemplate => TemplatePicker?.IsTemplateInputValid == true,
                 _ => false,
             };
         }
@@ -865,11 +1014,6 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionType(ActionType actionType)
         {
-            if (ActionTypeComboBox == null)
-            {
-                return;
-            }
-
             string tag = actionType switch
             {
                 ActionType.Text => "Text",
@@ -877,17 +1021,11 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenApp => "OpenApp",
                 ActionType.Disable => "Disable",
                 ActionType.MouseClick => "MouseClick",
+                ActionType.RunTemplate => "RunTemplate",
                 _ => "KeyOrShortcut",
             };
 
-            foreach (var item in ActionTypeComboBox.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
-                {
-                    ActionTypeComboBox.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
+            SetActionTag(tag);
         }
 
         /// <summary>
@@ -976,6 +1114,26 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 IfRunningComboBox.SelectedIndex = (int)ifRunningAction;
             }
+        }
+
+        /// <summary>
+        /// Loads an existing template mapping into the picker (for RunTemplate action type).
+        /// Switches the action type to RunTemplate and calls LoadExisting on the picker.
+        /// </summary>
+        public void SetRunTemplate(
+            string templateId,
+            IReadOnlyDictionary<string, string>? parameterValues,
+            string fallbackProgramPath = "",
+            string fallbackProgramArgs = "")
+        {
+            // Remember the already-resolved command so "Keep as plain command" can preserve it
+            // if the stored templateId is no longer in the catalog.
+            _templateFallbackProgramPath = fallbackProgramPath ?? string.Empty;
+            _templateFallbackProgramArgs = fallbackProgramArgs ?? string.Empty;
+
+            SetActionType(ActionType.RunTemplate);
+            TemplatePicker?.LoadExisting(templateId, parameterValues);
+            UpdateActionButtonContent("RunTemplate");
         }
 
         /// <summary>
@@ -1121,10 +1279,7 @@ namespace KeyboardManagerEditorUI.Controls
                 TriggerTypeComboBox.SelectedIndex = 0;
             }
 
-            if (ActionTypeComboBox != null)
-            {
-                ActionTypeComboBox.SelectedIndex = 0;
-            }
+            SetActionTag("KeyOrShortcut");
 
             if (MouseTriggerComboBox != null)
             {
@@ -1185,6 +1340,13 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 VisibilityComboBox.SelectedIndex = 0;
             }
+
+            // Reset template picker
+            TemplatePicker?.Reset();
+
+            // Clear the cached missing-template fallback command so it can't leak into the next open.
+            _templateFallbackProgramPath = string.Empty;
+            _templateFallbackProgramArgs = string.Empty;
 
             HideValidationMessage();
         }

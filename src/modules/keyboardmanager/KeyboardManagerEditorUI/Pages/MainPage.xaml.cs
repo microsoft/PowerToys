@@ -260,18 +260,35 @@ namespace KeyboardManagerEditorUI.Pages
 
             UnifiedMappingControl.Reset();
             UnifiedMappingControl.SetTriggerKeys(programShortcut.Shortcut.ToList());
-            UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenApp);
-            UnifiedMappingControl.SetProgramPath(programShortcut.AppToRun);
-            UnifiedMappingControl.SetProgramArgs(programShortcut.Args);
 
+            // Check if this program shortcut was originally created from a command template.
+            string? templateId = null;
+            Dictionary<string, string>? templateParameters = null;
             if (!string.IsNullOrEmpty(programShortcut.Id) &&
                 SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(programShortcut.Id, out var settings))
             {
+                templateId = settings.Shortcut.TemplateId;
+                templateParameters = settings.Shortcut.TemplateParameters;
+
                 var mapping = settings.Shortcut;
                 UnifiedMappingControl.SetStartInDirectory(mapping.StartInDirectory);
                 UnifiedMappingControl.SetElevationLevel(mapping.Elevation);
                 UnifiedMappingControl.SetVisibility(mapping.Visibility);
                 UnifiedMappingControl.SetIfRunningAction(mapping.IfRunningAction);
+            }
+
+            if (!string.IsNullOrEmpty(templateId))
+            {
+                // Restore as RunTemplate: the picker handles missing-template degradation internally.
+                // Pass the resolved command so "Keep as plain command" can preserve it if the
+                // stored templateId is no longer present in the catalog.
+                UnifiedMappingControl.SetRunTemplate(templateId, templateParameters, programShortcut.AppToRun, programShortcut.Args);
+            }
+            else
+            {
+                UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.OpenApp);
+                UnifiedMappingControl.SetProgramPath(programShortcut.AppToRun);
+                UnifiedMappingControl.SetProgramArgs(programShortcut.Args);
             }
 
             UnifiedMappingControl.SetAppSpecific(!programShortcut.IsAllApps, programShortcut.AppName);
@@ -394,6 +411,7 @@ namespace KeyboardManagerEditorUI.Pages
                     UnifiedMappingControl.ActionType.OpenUrl => SaveUrlMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.OpenApp => SaveProgramMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.Disable => SaveDisableMapping(triggerKeys),
+                    UnifiedMappingControl.ActionType.RunTemplate => SaveRunTemplateMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.MouseClick => throw new NotImplementedException("Mouse click remapping is not yet supported."),
                     _ => false,
                 };
@@ -439,6 +457,8 @@ namespace KeyboardManagerEditorUI.Pages
                     triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
                     triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                UnifiedMappingControl.ActionType.RunTemplate => ValidationHelper.ValidateAppMapping(
+                    triggerKeys, UnifiedMappingControl.GetResolvedTemplateExecutable() ?? string.Empty, isAppSpecific, appName, _mappingService!, _isEditMode),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -671,6 +691,51 @@ namespace KeyboardManagerEditorUI.Pages
                 Visibility = UnifiedMappingControl.GetVisibility(),
                 Elevation = UnifiedMappingControl.GetElevationLevel(),
                 TargetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty,
+            };
+
+            bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);
+            if (saved)
+            {
+                _mappingService.SaveSettings();
+                SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+            }
+
+            return saved;
+        }
+
+        private bool SaveRunTemplateMapping(List<string> triggerKeys)
+        {
+            string? programPath = UnifiedMappingControl.GetResolvedTemplateExecutable();
+            if (string.IsNullOrEmpty(programPath))
+            {
+                // No template selected or unresolvable — validation should have caught this.
+                return false;
+            }
+
+            // Retarget the template's default per-user path to a machine-wide install when needed,
+            // so the saved mapping launches regardless of how PowerToys was installed.
+            programPath = Templates.PowerToysInstallResolver.ResolveExecutable(programPath);
+
+            string originalKeysString = string.Join(";", triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
+
+            // Preserve the run-options that were loaded onto the control when editing an existing
+            // template mapping so re-saving does not silently reset them to defaults.
+            var templateParameters = UnifiedMappingControl.GetCurrentTemplateParameterValues();
+
+            var shortcutKeyMapping = new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RunProgram,
+                OriginalKeys = originalKeysString,
+                TargetKeys = originalKeysString,
+                ProgramPath = programPath,
+                ProgramArgs = UnifiedMappingControl.GetResolvedTemplateArgs() ?? string.Empty,
+                StartInDirectory = UnifiedMappingControl.GetStartInDirectory(),
+                IfRunningAction = UnifiedMappingControl.GetIfRunningAction(),
+                Visibility = UnifiedMappingControl.GetVisibility(),
+                Elevation = UnifiedMappingControl.GetElevationLevel(),
+                TargetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty,
+                TemplateId = UnifiedMappingControl.GetCurrentTemplateId(),
+                TemplateParameters = templateParameters.Count > 0 ? templateParameters : null,
             };
 
             bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);

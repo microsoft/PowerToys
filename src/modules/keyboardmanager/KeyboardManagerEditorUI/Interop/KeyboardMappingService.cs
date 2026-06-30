@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Templates;
 using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
@@ -61,6 +63,7 @@ namespace KeyboardManagerEditorUI.Interop
                 var mapping = default(ShortcutMapping);
                 if (KeyboardManagerInterop.GetShortcutRemap(_configHandle, i, ref mapping))
                 {
+                    var (templateId, templateParameters) = ReadTemplateFields(ref mapping);
                     result.Add(new ShortcutKeyMapping
                     {
                         OriginalKeys = KeyboardManagerInterop.GetStringAndFree(mapping.OriginalKeys),
@@ -71,11 +74,40 @@ namespace KeyboardManagerEditorUI.Interop
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                        TemplateId = templateId,
+                        TemplateParameters = templateParameters,
                     });
                 }
             }
 
             return result;
+        }
+
+        // Reads (and frees) the template metadata strings returned by the native layer.
+        // Must be called for every mapping so the native-allocated strings are always freed.
+        private static (string? TemplateId, Dictionary<string, string>? TemplateParameters) ReadTemplateFields(ref ShortcutMapping mapping)
+        {
+            string templateId = KeyboardManagerInterop.GetStringAndFree(mapping.TemplateId);
+            string templateParametersJson = KeyboardManagerInterop.GetStringAndFree(mapping.TemplateParametersJson);
+
+            Dictionary<string, string>? parameters = null;
+            if (!string.IsNullOrEmpty(templateParametersJson))
+            {
+                try
+                {
+                    parameters = JsonSerializer.Deserialize(
+                        templateParametersJson,
+                        CommandTemplateJsonContext.Default.DictionaryStringString);
+                }
+                catch (Exception)
+                {
+                    // Malformed on-disk metadata must never break config load — the two template
+                    // strings are already freed above; swallow so the caller still frees the rest.
+                    parameters = null;
+                }
+            }
+
+            return (string.IsNullOrEmpty(templateId) ? null : templateId, parameters);
         }
 
         public List<ShortcutKeyMapping> GetShortcutMappingsByType(ShortcutOperationType operationType)
@@ -88,6 +120,7 @@ namespace KeyboardManagerEditorUI.Interop
                 var mapping = default(ShortcutMapping);
                 if (KeyboardManagerInterop.GetShortcutRemapByType(_configHandle, (int)operationType, i, ref mapping))
                 {
+                    var (templateId, templateParameters) = ReadTemplateFields(ref mapping);
                     result.Add(new ShortcutKeyMapping
                     {
                         OriginalKeys = KeyboardManagerInterop.GetStringAndFree(mapping.OriginalKeys),
@@ -98,6 +131,8 @@ namespace KeyboardManagerEditorUI.Interop
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                        TemplateId = templateId,
+                        TemplateParameters = templateParameters,
                     });
                 }
             }
@@ -221,6 +256,14 @@ namespace KeyboardManagerEditorUI.Interop
 
             if (shortcutKeyMapping.OperationType == ShortcutOperationType.RunProgram)
             {
+                string? templateParametersJson = null;
+                if (shortcutKeyMapping.TemplateParameters is not null && shortcutKeyMapping.TemplateParameters.Count > 0)
+                {
+                    templateParametersJson = JsonSerializer.Serialize(
+                        shortcutKeyMapping.TemplateParameters,
+                        CommandTemplateJsonContext.Default.DictionaryStringString);
+                }
+
                 return KeyboardManagerInterop.AddShortcutRemap(
                     _configHandle,
                     shortcutKeyMapping.OriginalKeys,
@@ -232,7 +275,9 @@ namespace KeyboardManagerEditorUI.Interop
                     string.IsNullOrEmpty(shortcutKeyMapping.StartInDirectory) ? null : shortcutKeyMapping.StartInDirectory,
                     (int)shortcutKeyMapping.Elevation,
                     (int)shortcutKeyMapping.IfRunningAction,
-                    (int)shortcutKeyMapping.Visibility);
+                    (int)shortcutKeyMapping.Visibility,
+                    shortcutKeyMapping.TemplateId,
+                    templateParametersJson);
             }
             else if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri)
             {
