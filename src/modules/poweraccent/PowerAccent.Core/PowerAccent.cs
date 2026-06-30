@@ -11,6 +11,8 @@ using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
 
+using PowerAccentActivationKey = Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentActivationKey;
+
 namespace PowerAccent.Core;
 
 public partial class PowerAccent : IDisposable
@@ -95,22 +97,43 @@ public partial class PowerAccent : IDisposable
 
     private void ShowToolbar(LetterKey letterKey)
     {
-        _initialShiftState = WindowsFunctions.IsShiftState();
         _visible = true;
 
-        _characters = GetCharacters(letterKey);
-        _characterDescriptions = GetCharacterDescriptions(_characters);
-        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
+        bool isPressAndHold = _settingService.ActivationKey == PowerAccentActivationKey.PressAndHold;
 
-        Task.Delay(_settingService.InputTime).ContinueWith(
+        // Trigger modes navigate the instant the toolbar is summoned, so the character data must
+        // be ready synchronously. Press-and-hold can't navigate until the popup is actually shown,
+        // so defer the (relatively expensive) character/description build to the delayed render and
+        // keep quick taps off the keystroke hot path.
+        if (!isPressAndHold)
+        {
+            PrepareCharacters(letterKey);
+        }
+
+        int displayDelay = isPressAndHold ? _settingService.HoldDuration : _settingService.InputTime;
+
+        Task.Delay(displayDelay).ContinueWith(
         t =>
         {
             if (_visible)
             {
+                if (isPressAndHold)
+                {
+                    PrepareCharacters(letterKey);
+                }
+
                 OnChangeDisplay?.Invoke(true, _characters);
             }
         },
         TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void PrepareCharacters(LetterKey letterKey)
+    {
+        _initialShiftState = WindowsFunctions.IsShiftState();
+        _characters = GetCharacters(letterKey);
+        _characterDescriptions = GetCharacterDescriptions(_characters);
+        _showUnicodeDescription = _settingService.ShowUnicodeDescription;
     }
 
     private string[] GetCharacters(LetterKey letterKey)
@@ -241,6 +264,13 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
+        // Press-and-hold builds its character set lazily when the popup renders; ignore any
+        // navigation that races ahead of it (there is nothing to select yet).
+        if (_characters.Length == 0)
+        {
+            return;
+        }
+
         // Use an async hardware check as a fallback in case the keyboard hook misses a
         // quick Shift press. If the popup was opened while holding Shift (e.g., typing a
         // capital letter), ignore the hardware check so we don't accidentally trigger a
