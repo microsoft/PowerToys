@@ -250,7 +250,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
             if (_diskItem is not null)
             {
-                _diskItem.Subtitle = Resources.GetResource("Disk_Usage_Subtitle");
+                _diskItem.Subtitle = Resources.GetResource("Disk_Active_Time_Subtitle");
+                _diskItem.Icon = Icons.HardDriveIcon;
             }
 
             if (_gpuItem is not null)
@@ -290,6 +291,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         // Per-metric pages just return the single matching item.
         if (_singleMetric is PerformanceMetricKind metric)
         {
+            if (metric == PerformanceMetricKind.Disk && _isBandPage)
+            {
+                return CreateDiskBandItems();
+            }
+
             return metric switch
             {
                 PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
@@ -327,26 +333,32 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage!.Commands,
             };
 
-            _diskReadItem = new ListItem(_diskPage!)
-            {
-                Title = $"{_diskReadSpeed}",
-                Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
-                Icon = Icons.FileReadIcon,
-                MoreCommands = _diskPage!.Commands,
-            };
-
-            _diskWriteItem = new ListItem(_diskPage!)
-            {
-                Title = $"{_diskWriteSpeed}",
-                Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
-                Icon = Icons.FileWriteIcon,
-                MoreCommands = _diskPage!.Commands,
-            };
-
+            CreateDiskBandItems();
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _diskReadItem!, _diskWriteItem!, _diskItem!, _gpuItem! };
         }
+    }
+
+    private IListItem[] CreateDiskBandItems()
+    {
+        _diskReadItem = new ListItem(_diskPage!)
+        {
+            Title = $"{_diskReadSpeed}",
+            Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
+            Icon = Icons.FileReadIcon,
+            MoreCommands = _diskPage!.Commands,
+        };
+
+        _diskWriteItem = new ListItem(_diskPage!)
+        {
+            Title = $"{_diskWriteSpeed}",
+            Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
+            Icon = Icons.FileWriteIcon,
+            MoreCommands = _diskPage!.Commands,
+        };
+
+        return [_diskReadItem, _diskWriteItem, _diskItem!];
     }
 
     public void Dispose()

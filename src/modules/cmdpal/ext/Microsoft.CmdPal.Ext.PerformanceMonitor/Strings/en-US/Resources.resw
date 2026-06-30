@@ -195,7 +195,7 @@
     <value>Ethernet</value>
   </data>
   <data name="DiskUsage_Widget_Template.Disk_Usage" xml:space="preserve">
-    <value>Utilization</value>
+    <value>Active time</value>
   </data>
   <data name="DiskUsage_Widget_Template.Read" xml:space="preserve">
     <value>Read</value>
@@ -429,6 +429,9 @@
   </data>
   <data name="Disk_Write_Subtitle" xml:space="preserve">
     <value>Write</value>
+  </data>
+  <data name="Disk_Active_Time_Subtitle" xml:space="preserve">
+    <value>Active time</value>
   </data>
   <data name="Network_Speed_Unit_Setting_Title" xml:space="preserve">
     <value>Network speed unit</value>

@@ -33,6 +33,24 @@
               "type": "Column",
               "items": [
                 {
+                  "text": "%DiskUsage_Widget_Template/Disk_Usage%",
+                  "type": "TextBlock",
+                  "spacing": "none",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${diskUsage}",
+                  "type": "TextBlock",
+                  "size": "large",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
                   "text": "%DiskUsage_Widget_Template/Read%",
                   "type": "TextBlock",
                   "spacing": "none",
