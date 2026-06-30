@@ -95,6 +95,7 @@ public class CliRequestHandlerTests
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
         Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>>? applyProfile = null,
+        int defaultStep = 5,
         CancellationToken ct = default)
     {
         return CliRequestHandler.BuildResponseAsync(
@@ -103,6 +104,7 @@ public class CliRequestHandlerTests
             NoHidden,
             Array.Empty<CustomVcpValueMapping>(),
             new FakeManager(),
+            defaultStep,
             () => profiles ?? EmptyProfiles,
             applyProfile ?? ((_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(Array.Empty<ProfileApplyOutcome>())),
             ct);
@@ -364,6 +366,52 @@ public class CliRequestHandlerTests
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+    }
+
+    // ─── up / down commands ───────────────────────────────────────────────────
+    [TestMethod]
+    public async Task Up_Brightness_ReturnsCliSetResult_WithIncrementedValue()
+    {
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Up,
+            Adjust = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 },
+        };
+
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon() });
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
+        Assert.IsNotNull(result, "should deserialize to CliSetResult");
+        Assert.AreEqual("up", result!.Command);
+        Assert.AreEqual("60%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Down_NullStep_UsesDefaultStep()
+    {
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Down,
+            Adjust = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = null },
+        };
+
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon() }, defaultStep: 5);
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("45%", result!.AfterDisplay, "50 - default step 5 = 45");
+    }
+
+    [TestMethod]
+    public async Task Up_MissingAdjustPayload_ReturnsArgumentError()
+    {
+        var envelope = new CliRequestEnvelope { Command = CliCommandNames.Up, Adjust = null };
+
+        var json = await Dispatch(envelope);
+
+        var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
     }
 
     // ─── unknown command ──────────────────────────────────────────────────────

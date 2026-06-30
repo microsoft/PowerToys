@@ -114,6 +114,7 @@ public sealed class CliRequestHandler
         IReadOnlySet<string> hiddenIds,
         IReadOnlyList<CustomVcpValueMapping> customMappings,
         IMonitorManager manager,
+        int defaultStep,
         Func<PowerDisplayProfiles> loadProfiles,
         Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyProfileAsync,
         CancellationToken ct)
@@ -162,6 +163,32 @@ public sealed class CliRequestHandler
                         snapshot,
                         hiddenIds,
                         envelope.Set,
+                        ct).ConfigureAwait(false);
+
+                    if (error is not null)
+                    {
+                        return Serialize(error, ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    return Serialize(result!, ContractsJsonContext.Default.CliSetResult);
+                }
+
+                // ── up / down (relative adjust) ─────────────────────────────────────
+                case CliCommandNames.Up:
+                case CliCommandNames.Down:
+                {
+                    if (envelope.Adjust is null)
+                    {
+                        return Serialize(MakeError(envelope.Command, CliErrorCodes.ArgumentError, "missing 'adjust' payload"), ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    var (result, error) = await AdjustCommandExecutor.ExecuteAsync(
+                        manager,
+                        snapshot,
+                        hiddenIds,
+                        envelope.Adjust,
+                        isUp: envelope.Command == CliCommandNames.Up,
+                        defaultStep,
                         ct).ConfigureAwait(false);
 
                     if (error is not null)
@@ -278,6 +305,7 @@ public sealed class CliRequestHandler
                 hiddenIds,
                 customMappings,
                 manager,
+                _vm.MouseWheelIncrement,
                 ProfileService.LoadProfiles,
                 (name, token) => _vm.ApplyProfileWithOutcomesAsync(name, token),
                 ct).ConfigureAwait(false);
