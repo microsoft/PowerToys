@@ -251,6 +251,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CMDPAL_SHOW_EVENT;
     }
+    hstring Constants::AdvancedPasteKeystrokeMessage()
+    {
+        return CommonSharedConstants::ADVANCED_PASTE_KEYSTROKE_MESSAGE;
+    }
     hstring Constants::TogglePowerDisplayEvent()
     {
         return CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT;
