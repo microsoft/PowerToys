@@ -241,6 +241,41 @@ public static class Program
                 return await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), cancellationToken);
             }
 
+            // ── up / down ─────────────────────────────────────────────────────
+            case CliCommandNames.Up:
+            case CliCommandNames.Down:
+            {
+                var inputs = new AdjustCommandInputs
+                {
+                    MonitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber),
+                    MonitorId = parseResult.GetValueForOption(CliOptions.MonitorId),
+                    Brightness = parseResult.GetValueForOption(CliOptions.BrightnessFlag),
+                    Contrast = parseResult.GetValueForOption(CliOptions.ContrastFlag),
+                    Volume = parseResult.GetValueForOption(CliOptions.VolumeFlag),
+                    Step = parseResult.GetValueForOption(CliOptions.Step),
+                };
+
+                var commandName = parseResult.CommandResult.Command.Name;
+
+                // CLI-side syntactic validation: exactly one continuous setting must be specified.
+                var selected = AdjustCommand.CountSelectedSettings(inputs);
+                if (selected == 0)
+                {
+                    output.WriteError(ArgumentError(commandName, Resources.Error_NoAdjustSettingSpecified));
+                    return CliExitCodes.ArgumentError;
+                }
+
+                if (selected > 1)
+                {
+                    output.WriteError(ArgumentError(commandName, Resources.Error_OnlyOneSetting, Resources.Hint_OnlyOneSetting));
+                    return CliExitCodes.ArgumentError;
+                }
+
+                WarnIfMonitorNumberIgnored(output, inputs.MonitorNumber, inputs.MonitorId);
+
+                return await dispatcher.SendAdjustAsync(CliRequestBuilder.BuildAdjust(commandName, inputs), cancellationToken);
+            }
+
             // ── capabilities ──────────────────────────────────────────────────
             case CliCommandNames.Capabilities:
             {

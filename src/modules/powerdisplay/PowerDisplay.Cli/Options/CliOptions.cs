@@ -58,6 +58,35 @@ public static class CliOptions
         Arity = ArgumentArity.ExactlyOne,
     };
 
+    // --- up/down: no-value setting flags (exactly one) ---
+    public static readonly Option<bool> BrightnessFlag = new(
+        ["--brightness"],
+        "Adjust brightness (no value; the amount comes from --step or the mouse_wheel_increment setting).")
+    {
+        Arity = ArgumentArity.ZeroOrOne,
+    };
+
+    public static readonly Option<bool> ContrastFlag = new(
+        ["--contrast"],
+        "Adjust contrast (no value; the amount comes from --step or the mouse_wheel_increment setting).")
+    {
+        Arity = ArgumentArity.ZeroOrOne,
+    };
+
+    public static readonly Option<bool> VolumeFlag = new(
+        ["--volume"],
+        "Adjust volume (no value; the amount comes from --step or the mouse_wheel_increment setting).")
+    {
+        Arity = ArgumentArity.ZeroOrOne,
+    };
+
+    public static readonly Option<int?> Step = new(
+        ["--step"],
+        "Amount to raise/lower by. Defaults to the PowerDisplay mouse_wheel_increment setting. Must be >= 0.")
+    {
+        Arity = ArgumentArity.ExactlyOne,
+    };
+
     // --- set: discrete ---
     public static readonly Option<string?> ColorTemperature = new(
         ["--color-temperature"],
@@ -128,6 +157,18 @@ public static class CliOptions
                 && seconds < 0)
             {
                 result.ErrorMessage = Resources.Error_NegativeTimeout;
+            }
+        });
+
+        // Reject a negative --step at parse time so it flows through the single ArgumentError
+        // envelope (mirrors the --timeout validator). 0 is allowed (a no-op adjust).
+        Step.AddValidator(result =>
+        {
+            if (result.Tokens.Count != 0
+                && int.TryParse(result.Tokens[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var step)
+                && step < 0)
+            {
+                result.ErrorMessage = Resources.Error_NegativeStep;
             }
         });
     }

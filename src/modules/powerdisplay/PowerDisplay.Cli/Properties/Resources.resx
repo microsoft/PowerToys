@@ -150,4 +150,12 @@
     <value>--timeout must be &gt;= 0 (use 0 to disable the timeout).</value>
     <comment>--timeout is CLI syntax and must not be translated.</comment>
   </data>
+  <data name="Error_NegativeStep" xml:space="preserve">
+    <value>--step must be &gt;= 0.</value>
+    <comment>--step is CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_NoAdjustSettingSpecified" xml:space="preserve">
+    <value>no setting specified; pass one of --brightness/--contrast/--volume</value>
+    <comment>The flag names are CLI syntax and must not be translated.</comment>
+  </data>
 </root>

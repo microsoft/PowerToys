@@ -29,6 +29,8 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
         AddCommand(BuildSet());
         AddCommand(BuildProfiles());
         AddCommand(BuildApplyProfile());
+        AddCommand(BuildUp());
+        AddCommand(BuildDown());
     }
 
     private static Command BuildList()
@@ -80,5 +82,29 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
         var cmd = new Command(CliCommandNames.ApplyProfile, "Apply a saved profile's per-monitor settings to the connected monitors.");
         cmd.AddArgument(CliOptions.ProfileName);
         return cmd;
+    }
+
+    private static Command BuildUp()
+    {
+        var cmd = new Command(CliCommandNames.Up, "Raise a continuous setting (brightness, contrast, or volume) relative to its current value. Exactly one --<setting> flag must be provided.");
+        AddAdjustOptions(cmd);
+        return cmd;
+    }
+
+    private static Command BuildDown()
+    {
+        var cmd = new Command(CliCommandNames.Down, "Lower a continuous setting (brightness, contrast, or volume) relative to its current value. Exactly one --<setting> flag must be provided.");
+        AddAdjustOptions(cmd);
+        return cmd;
+    }
+
+    private static void AddAdjustOptions(Command cmd)
+    {
+        cmd.AddOption(CliOptions.MonitorNumber);
+        cmd.AddOption(CliOptions.MonitorId);
+        cmd.AddOption(CliOptions.BrightnessFlag);
+        cmd.AddOption(CliOptions.ContrastFlag);
+        cmd.AddOption(CliOptions.VolumeFlag);
+        cmd.AddOption(CliOptions.Step);
     }
 }

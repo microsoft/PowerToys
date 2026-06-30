@@ -80,4 +80,26 @@ public class ProgramTokenTests
         var result = Program.BuildParseErrorResult("get", blanks);
         Assert.AreEqual("invalid arguments", result.Error.Message);
     }
+
+    [TestMethod]
+    public void Step_Negative_ProducesParseError()
+    {
+        var parsed = Parse("up", "--brightness", "--step", "-5");
+        Assert.IsTrue(parsed.Errors.Count > 0, "a negative --step must be a parse error");
+    }
+
+    [TestMethod]
+    public void Step_Zero_IsAccepted()
+    {
+        var parsed = Parse("up", "--brightness", "--step", "0");
+        Assert.AreEqual(0, parsed.Errors.Count, "--step 0 is a valid no-op and must not error");
+    }
+
+    [TestMethod]
+    public void Up_BrightnessFlag_ParsesWithoutValue()
+    {
+        var parsed = Parse("up", "--brightness");
+        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsTrue(parsed.GetValueForOption(CliOptions.BrightnessFlag));
+    }
 }

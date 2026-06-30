@@ -70,6 +70,10 @@ internal static class Resources
 
     internal static string Error_NegativeTimeout => Get(nameof(Error_NegativeTimeout));
 
+    internal static string Error_NegativeStep => Get(nameof(Error_NegativeStep));
+
+    internal static string Error_NoAdjustSettingSpecified => Get(nameof(Error_NoAdjustSettingSpecified));
+
     private static string Get(string name) => Manager.GetString(name, CultureInfo.CurrentUICulture) ?? name;
 
     // Defensive formatting: a translator can break a placeholder ({0} -> {1}, an unescaped brace,
