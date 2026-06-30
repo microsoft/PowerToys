@@ -11,8 +11,9 @@
 #include <wintrust.h>
 #include <Softpub.h>
 
+#include <wil/resource.h>
+
 #include <filesystem>
-#include <memory>
 #include <string_view>
 
 #include <common/updating/updating.h>
@@ -141,14 +142,15 @@ bool InstallNewVersionStage1(fs::path installer)
     }
 }
 
-// Verifies that the file at installerPath carries a valid Authenticode signature
-// that chains to a trusted root, and that the signing certificate's organization
-// is "Microsoft Corporation". The updater downloads installers and then launches
-// them (potentially elevated), so the payload must be confirmed as an official
-// Microsoft-signed package before it is executed.
+// Verifies that the file at installerPath carries a valid Authenticode signature that
+// chains to a trusted root and that the signing certificate's organization is
+// "Microsoft Corporation". The updater downloads installers and then launches them
+// (potentially elevated), so the payload must be confirmed as an official Microsoft-signed
+// package before it is executed. The publisher is read from the certificate produced by the
+// same WinVerifyTrust verification (rather than re-parsing the file from disk), so the
+// organization check always applies to the exact signature that was validated.
 static bool IsTrustedMicrosoftSignedInstaller(const std::wstring& installerPath)
 {
-    // 1) Authenticode trust: signature is present, intact, and chains to a trusted root.
     WINTRUST_FILE_INFO fileInfo{};
     fileInfo.cbStruct = sizeof(fileInfo);
     fileInfo.pcwszFilePath = installerPath.c_str();
@@ -166,98 +168,72 @@ static bool IsTrustedMicrosoftSignedInstaller(const std::wstring& installerPath)
     GUID actionId = WINTRUST_ACTION_GENERIC_VERIFY_V2;
     const LONG trustStatus = WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &actionId, &trustData);
 
-    // Always release the state data allocated by the verify call.
-    trustData.dwStateAction = WTD_STATEACTION_CLOSE;
-    WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &actionId, &trustData);
-
-    if (trustStatus != ERROR_SUCCESS)
-    {
-        Logger::error(L"Installer failed Authenticode verification: {}", installerPath);
-        return false;
-    }
-
-    // 2) Publisher pin: the signing certificate's organization (O) must be "Microsoft Corporation".
-    HCERTSTORE hStore = nullptr;
-    HCRYPTMSG hMsg = nullptr;
-    if (!CryptQueryObject(CERT_QUERY_OBJECT_FILE,
-                          installerPath.c_str(),
-                          CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
-                          CERT_QUERY_FORMAT_FLAG_BINARY,
-                          0,
-                          nullptr,
-                          nullptr,
-                          nullptr,
-                          &hStore,
-                          &hMsg,
-                          nullptr))
-    {
-        Logger::error(L"Couldn't read signature from installer: {}", installerPath);
-        return false;
-    }
-
     bool isMicrosoftSigned = false;
 
-    DWORD signerInfoSize = 0;
-    if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &signerInfoSize) && signerInfoSize > 0)
+    if (trustStatus == ERROR_SUCCESS)
     {
-        auto signerInfoBuffer = std::make_unique<BYTE[]>(signerInfoSize);
-        auto pSignerInfo = reinterpret_cast<PCMSG_SIGNER_INFO>(signerInfoBuffer.get());
-        if (CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, pSignerInfo, &signerInfoSize))
+        // Read the signer certificate from the verified state instead of re-opening the file,
+        // so the publisher check is bound to exactly the signature WinVerifyTrust validated.
+        if (CRYPT_PROVIDER_DATA* provData = WTHelperProvDataFromStateData(trustData.hWVTStateData))
         {
-            CERT_INFO certInfo{};
-            certInfo.Issuer = pSignerInfo->Issuer;
-            certInfo.SerialNumber = pSignerInfo->SerialNumber;
-
-            if (PCCERT_CONTEXT pCertContext = CertFindCertificateInStore(hStore,
-                                                                         X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                                                                         0,
-                                                                         CERT_FIND_SUBJECT_CERT,
-                                                                         &certInfo,
-                                                                         nullptr))
+            if (CRYPT_PROVIDER_SGNR* signer = WTHelperGetProvSignerFromChain(provData, 0, FALSE, 0))
             {
-                // CertGetNameStringW takes a non-const void* for the OID parameter.
-                char organizationOid[] = szOID_ORGANIZATION_NAME;
-                const DWORD nameLen = CertGetNameStringW(pCertContext,
-                                                         CERT_NAME_ATTR_TYPE,
-                                                         0,
-                                                         organizationOid,
-                                                         nullptr,
-                                                         0);
-                if (nameLen > 1)
+                if (CRYPT_PROVIDER_CERT* signerCert = WTHelperGetProvCertFromChain(signer, 0))
                 {
-                    std::wstring organization(nameLen, L'\0');
-                    CertGetNameStringW(pCertContext,
-                                       CERT_NAME_ATTR_TYPE,
-                                       0,
-                                       organizationOid,
-                                       organization.data(),
-                                       nameLen);
-                    organization.resize(wcslen(organization.c_str()));
-                    isMicrosoftSigned = organization == L"Microsoft Corporation";
-                    if (!isMicrosoftSigned)
+                    // CertGetNameStringW takes a non-const void* for the OID parameter.
+                    char organizationOid[] = szOID_ORGANIZATION_NAME;
+                    const DWORD nameLen = CertGetNameStringW(signerCert->pCert, CERT_NAME_ATTR_TYPE, 0, organizationOid, nullptr, 0);
+                    if (nameLen > 1)
                     {
-                        Logger::error(L"Installer signed by an unexpected publisher: {}", organization);
+                        std::wstring organization(nameLen, L'\0');
+                        CertGetNameStringW(signerCert->pCert, CERT_NAME_ATTR_TYPE, 0, organizationOid, organization.data(), nameLen);
+                        organization.resize(wcslen(organization.c_str()));
+                        isMicrosoftSigned = _wcsicmp(organization.c_str(), L"Microsoft Corporation") == 0;
+                        if (!isMicrosoftSigned)
+                        {
+                            Logger::error(L"Installer signed by an unexpected publisher: {}", organization);
+                        }
                     }
                 }
-                CertFreeCertificateContext(pCertContext);
             }
         }
+
+        if (!isMicrosoftSigned)
+        {
+            Logger::error(L"Couldn't confirm the installer is signed by Microsoft Corporation: {}", installerPath);
+        }
+    }
+    else
+    {
+        Logger::error(L"Installer failed Authenticode verification: {} (status {:#x})", installerPath, static_cast<uint32_t>(trustStatus));
     }
 
-    if (hMsg)
-    {
-        CryptMsgClose(hMsg);
-    }
-    if (hStore)
-    {
-        CertCloseStore(hStore, 0);
-    }
+    // Always release the verification state allocated above.
+    trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+    WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &actionId, &trustData);
 
     return isMicrosoftSigned;
 }
 
 bool InstallNewVersionStage2(std::wstring installer_path)
 {
+    // Hold a read-only, deny-write handle on the installer across verification AND execution,
+    // so the validated file cannot be swapped between the signature check and running it (TOCTOU).
+    // The handle allows shared reads (so msiexec / the bootstrapper can still open it) but blocks
+    // writes and deletes by other processes for as long as this function is on the stack.
+    wil::unique_hfile installerLock{ CreateFileW(installer_path.c_str(),
+                                                 GENERIC_READ,
+                                                 FILE_SHARE_READ,
+                                                 nullptr,
+                                                 OPEN_EXISTING,
+                                                 FILE_ATTRIBUTE_NORMAL,
+                                                 nullptr) };
+    if (!installerLock)
+    {
+        Logger::error(L"Couldn't open the installer for verification: {}", installer_path);
+        return false;
+    }
+
     // Never execute an installer that isn't an official Microsoft-signed package.
     if (!IsTrustedMicrosoftSignedInstaller(installer_path))
     {
