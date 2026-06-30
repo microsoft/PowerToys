@@ -382,10 +382,7 @@ public static class TestHelper
 
         SelectToolAndVerify(ruler, buttonId, testName);
 
-        PerformMeasurementAction();
-
-        var clipboardText = GetClipboardText();
-        Log($"PerformSpacingToolTest[{testName}]: clipboard after measurement = '{clipboardText}' (length {clipboardText.Length})");
+        var clipboardText = MeasureWithRetry(testName, PerformMeasurementAction);
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), $"{testName}: Clipboard should contain measurement data");
         Assert.IsTrue(
             ValidateSpacingClipboardContent(clipboardText, testName),
@@ -405,19 +402,7 @@ public static class TestHelper
 
         SelectToolAndVerify(ruler, BoundsButtonId, "Bounds");
 
-        // Drag a 100x100 box centred on the primary monitor. The cursor is already parked at the start
-        // (cx-50, cy-50) by SelectToolAndVerify, so the drag begins right there. The 99px delta measures
-        // 100x100 inclusive once the host is per-monitor DPI aware (app.manifest).
-        var (cx, cy) = ScreenCenter();
-        MouseHelper.Drag(cx, cy, cx + 99, cy + 99);
-        Thread.Sleep(400);
-
-        // Right-click to dismiss the selection (commits the measurement to the clipboard).
-        MouseHelper.RightClick();
-        Thread.Sleep(300);
-
-        var clipboardText = GetClipboardText();
-        Log($"PerformBoundsToolTest: clipboard after drag = '{clipboardText}' (length {clipboardText.Length})");
+        var clipboardText = MeasureWithRetry("Bounds", PerformBoundsMeasurement);
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
         Assert.IsTrue(
             clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
@@ -482,16 +467,62 @@ public static class TestHelper
         return present;
     }
 
-    /// <summary>Warm the screen capture by moving the cursor, then left-click to capture.</summary>
+    /// <summary>
+    /// Take a measuring gesture and return the resulting clipboard text, retrying the gesture IN PLACE
+    /// (without closing/reopening the tool) while the clipboard comes back empty. The Measure Tool only
+    /// produces a measurement after its screen-capture and cursor-tracking threads have delivered data
+    /// for the gesture point; the FIRST overlay of each kind pays a one-time cold start (slowest on
+    /// Win10), so the very first gesture can fire before any frame is processed and yield an empty
+    /// clipboard. The gesture itself (cursor move + click/drag) drives those threads, so simply repeating
+    /// it on the SAME overlay succeeds once the pipeline is warm — closing and reopening would reset the
+    /// cold start every time.
+    /// </summary>
+    private static string MeasureWithRetry(string testName, Action gesture, int maxAttempts = 3)
+    {
+        var clipboard = string.Empty;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            gesture();
+            clipboard = GetClipboardText();
+            Log($"{testName}: measurement attempt {attempt}/{maxAttempts}; clipboard = '{clipboard}' (length {clipboard.Length})");
+            if (!string.IsNullOrEmpty(clipboard))
+            {
+                break;
+            }
+
+            if (attempt < maxAttempts)
+            {
+                Log($"{testName}: clipboard empty — retrying the measurement in place");
+            }
+        }
+
+        return clipboard;
+    }
+
+    /// <summary>Spacing measuring gesture: move to a point near the centre and left-click to copy the spacing there.</summary>
     private static void PerformMeasurementAction()
     {
         var (cx, cy) = ScreenCenter();
 
-        Log($"PerformMeasurementAction: move capture around the centre ({cx - 50},{cy - 50}), then left-click");
+        Log($"PerformMeasurementAction: move to ({cx - 50},{cy - 50}) then left-click to capture spacing");
         MouseHelper.MoveTo(cx - 50, cy - 50);
         Thread.Sleep(300);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
+    }
+
+    /// <summary>
+    /// Bounds measuring gesture: drag a 100x100 box from the centre. The drag's button-up is what copies
+    /// the measurement to the clipboard, so no right-click is needed — and we deliberately skip it so a
+    /// retry can re-drag on the SAME overlay (a right-click with no pending selection closes the bounds
+    /// tool). The 99px delta measures 100x100 inclusive on a per-monitor-DPI-aware host (app.manifest).
+    /// </summary>
+    private static void PerformBoundsMeasurement()
+    {
+        var (cx, cy) = ScreenCenter();
+        Log($"PerformBoundsMeasurement: dragging a 100x100 box from ({cx},{cy})");
+        MouseHelper.Drag(cx, cy, cx + 99, cy + 99);
+        Thread.Sleep(400);
     }
 
     /// <summary>
