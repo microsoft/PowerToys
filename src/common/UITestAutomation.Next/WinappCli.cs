@@ -152,6 +152,7 @@ public static class WinappCli
             psi.ArgumentList.Add(a);
         }
 
+        var overall = Stopwatch.StartNew();
         using var p = StartWinappProcess(psi);
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
@@ -175,17 +176,31 @@ public static class WinappCli
                 $"winapp {string.Join(' ', args)} did not exit within {timeout.TotalSeconds:0}s and was killed.");
         }
 
-        // Process exited within budget. Bound the wait for the async stdout/stderr readers: if
-        // winapp.exe left a child that inherited the redirected pipe, the readers (and a parameterless
-        // WaitForExit) can block indefinitely even though winapp.exe itself exited. If they stall, clear
-        // any stray winapp.exe (which closes the pipe) and take what we have rather than hang the test.
-        if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(10)))
+        // winapp.exe itself has now exited; capture how long that took.
+        var processMs = overall.ElapsedMilliseconds;
+
+        // Bound the wait for the async stdout/stderr readers. The output is already buffered, but a
+        // child that inherited the redirected pipe keeps the handle open so the readers (and a
+        // parameterless WaitForExit) never see EOF. After a short grace, clear strays — invocations are
+        // serialized, so any winapp.exe alive now is that child — which closes the pipe so the reads
+        // finish with the full, already-captured output.
+        if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(2)))
         {
             Console.WriteLine(
-                "[winappcli] output streams stalled after exit (lingering child?); clearing strays for: " +
+                "[winappcli] output stalled after winapp.exe exit (lingering child held the pipe); clearing strays for: " +
                 $"winapp {string.Join(' ', args)}");
             KillStrayWinappProcesses(args);
-            Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(5));
+            Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(3));
+        }
+
+        // Surface where slow calls actually spend their time — winapp.exe runtime vs waiting for the
+        // output streams to drain after it exited — so a slow timestamp can be attributed correctly.
+        var totalMs = overall.ElapsedMilliseconds;
+        if (totalMs > 2000)
+        {
+            Console.WriteLine(
+                $"[winappcli] slow call {totalMs}ms (winapp.exe ran {processMs}ms, output drain {totalMs - processMs}ms): " +
+                $"winapp {string.Join(' ', args)}");
         }
 
         return new Result(
