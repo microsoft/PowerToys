@@ -73,6 +73,16 @@ internal sealed class ScreenRecording : IDisposable
                     {
                         Framerate = TargetFps,
                         Encoder = new H264VideoEncoder(),
+
+                        // Force a constant frame rate. Without this, ScreenRecorderLib only sends a
+                        // frame to the encoder when the screen *changes* (variable frame rate), while
+                        // the MP4 still advertises TargetFps. Long static stretches (e.g. waiting for a
+                        // module to launch) then collapse to a handful of frames and bursts of activity
+                        // get packed together, so playback drifts out of sync with wall-clock time — the
+                        // video runs fast/offset and the tail of the test looks cut off. Duplicating the
+                        // previous frame keeps the timeline 1:1 with real time; H.264 compresses the
+                        // repeated frames to almost nothing, so the file stays small.
+                        IsFixedFramerate = true,
                     },
 
                     // UI tests don't need audio, and capturing it can fail on headless CI agents.
