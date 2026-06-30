@@ -33,7 +33,7 @@ namespace PowerDisplay.Ipc;
 /// </para>
 /// <para>
 /// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Cancellation (Ctrl+C / overrun
-/// of <c>--timeout</c>) is reported as <see cref="CliErrorCodes.Timeout"/> / exit 8; any other
+/// of the CLI timeout) is reported as <see cref="CliErrorCodes.Timeout"/> / exit 8; any other
 /// unexpected exception is reported as <see cref="CliErrorCodes.InternalError"/> / exit 9.
 /// </para>
 /// </summary>
@@ -266,7 +266,7 @@ public sealed class CliRequestHandler
         }
         catch (OperationCanceledException)
         {
-            // A blocking hardware write (set / apply-profile) overran --timeout or was cancelled
+            // A blocking hardware write (set / apply-profile) overran the CLI timeout or was cancelled
             // (Ctrl+C). The partial write cannot be rolled back, so report TIMEOUT (exit 8) rather
             // than a false success — this honours the contract documented in SetCommandExecutor.
             return Serialize(

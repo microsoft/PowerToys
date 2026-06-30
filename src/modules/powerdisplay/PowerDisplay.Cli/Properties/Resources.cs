@@ -68,8 +68,6 @@ internal static class Resources
 
     internal static string Error_DeserializeMismatch => Get(nameof(Error_DeserializeMismatch));
 
-    internal static string Error_NegativeTimeout => Get(nameof(Error_NegativeTimeout));
-
     internal static string Error_NegativeStep => Get(nameof(Error_NegativeStep));
 
     internal static string Error_NoAdjustSettingSpecified => Get(nameof(Error_NoAdjustSettingSpecified));

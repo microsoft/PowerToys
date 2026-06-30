@@ -125,13 +125,6 @@ public static class CliOptions
         Arity = ArgumentArity.ExactlyOne,
     };
 
-    public static readonly Option<int?> TimeoutSeconds = new(
-        ["--timeout"],
-        "Abort the operation after this many seconds (default 30). 0 disables the timeout.")
-    {
-        Arity = ArgumentArity.ExactlyOne,
-    };
-
     public static readonly Option<bool> Quiet = new(
         ["--quiet"],
         "Suppress warning messages on stderr.")
@@ -156,21 +149,8 @@ public static class CliOptions
 
     static CliOptions()
     {
-        // Reject a negative --timeout at parse time so it flows through the single ArgumentError
-        // envelope instead of silently disabling the timeout (the `timeoutSeconds > 0` guard in
-        // Program would otherwise treat a fat-fingered "-5" like the documented "0 = disabled").
-        TimeoutSeconds.AddValidator(result =>
-        {
-            if (result.Tokens.Count != 0
-                && int.TryParse(result.Tokens[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds)
-                && seconds < 0)
-            {
-                result.ErrorMessage = Resources.Error_NegativeTimeout;
-            }
-        });
-
         // Reject a negative --step at parse time so it flows through the single ArgumentError
-        // envelope (mirrors the --timeout validator). 0 is allowed (a no-op adjust).
+        // envelope instead of an unfriendly framework message. 0 is allowed (a no-op adjust).
         Step.AddValidator(result =>
         {
             if (result.Tokens.Count != 0

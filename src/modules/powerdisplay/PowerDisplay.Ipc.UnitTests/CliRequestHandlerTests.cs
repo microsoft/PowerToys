@@ -201,7 +201,7 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task Set_Cancelled_ReturnsTimeoutError()
     {
-        // A write that overruns --timeout (or Ctrl+C) cancels the token after the hardware call;
+        // A write that overruns the CLI timeout (or Ctrl+C) cancels the token after the hardware call;
         // SetCommandExecutor surfaces it as OperationCanceledException, which must be reported as
         // TIMEOUT (exit 8) — not INTERNAL_ERROR (exit 9).
         var envelope = new CliRequestEnvelope

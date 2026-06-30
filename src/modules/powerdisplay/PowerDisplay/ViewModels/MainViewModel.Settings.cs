@@ -120,7 +120,7 @@ public partial class MainViewModel
     /// which have no discrete set. This makes the apply-profile path validate identically to <c>set</c>.
     /// </param>
     /// <param name="ct">
-    /// Cancellation token plumbed from the IPC request (Ctrl+C / <c>--timeout</c>). Cancellation
+    /// Cancellation token plumbed from the IPC request (Ctrl+C / the CLI timeout). Cancellation
     /// propagates as <see cref="OperationCanceledException"/> so the caller can report TIMEOUT,
     /// rather than being swallowed into a hardware-failure outcome.
     /// </param>
@@ -187,7 +187,7 @@ public partial class MainViewModel
         }
         catch (OperationCanceledException)
         {
-            // Cancellation (Ctrl+C / --timeout) must surface as TIMEOUT to the caller, not be
+            // Cancellation (Ctrl+C / the CLI timeout) must surface as TIMEOUT to the caller, not be
             // captured as a per-setting hardware-failure outcome.
             throw;
         }

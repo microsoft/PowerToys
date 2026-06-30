@@ -174,7 +174,7 @@ public static class SetCommandExecutor
 
         var op = await apply(manager, monitorId, requested, ct);
 
-        // A blocking write that overran --timeout (or Ctrl+C) cancels the token but cannot be
+        // A blocking write that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
         ct.ThrowIfCancellationRequested();
 
@@ -245,7 +245,7 @@ public static class SetCommandExecutor
 
         var op = await apply(manager, monitorId, resolved.Value, ct);
 
-        // A blocking write that overran --timeout (or Ctrl+C) cancels the token but cannot be
+        // A blocking write that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
         ct.ThrowIfCancellationRequested();
 
@@ -300,7 +300,7 @@ public static class SetCommandExecutor
         var beforeKnown = monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation);
         var op = await manager.SetRotationAsync(monitor.Id, index.Value, ct);
 
-        // A blocking rotation that overran --timeout (or Ctrl+C) cancels the token but cannot be
+        // A blocking rotation that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
         ct.ThrowIfCancellationRequested();
 

@@ -147,7 +147,7 @@ public static class AdjustCommandExecutor
 
         var op = await descriptor.Apply(manager, monitor.Id, newValue, ct);
 
-        // A blocking write that overran --timeout (or Ctrl+C) cancels the token but cannot be
+        // A blocking write that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
         ct.ThrowIfCancellationRequested();
 

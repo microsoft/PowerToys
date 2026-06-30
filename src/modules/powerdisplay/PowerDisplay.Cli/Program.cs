@@ -23,7 +23,12 @@ namespace PowerDisplay.Cli;
 
 public static class Program
 {
-    private const int DefaultTimeoutSeconds = 30;
+    // Fixed wall-clock deadline for one CLI invocation (pipe connect + request/response). There is
+    // deliberately no --timeout option: the CLI is a thin client that blocks waiting on the app, and
+    // the app's DDC/CI writes are synchronous and cannot be cancelled mid-call, so the client must
+    // bound its own wait or a slow/stuck monitor (or a hung app) would hang it indefinitely. 5s
+    // covers a normal connect plus one VCP exchange with margin.
+    private static readonly TimeSpan OperationTimeout = TimeSpan.FromSeconds(5);
 
     // Canonical args for routing any version request through the default invocation pipeline's
     // version renderer (static readonly to satisfy CA1861 — the array is passed, never mutated).
@@ -98,14 +103,6 @@ public static class Program
         {
         }
 
-        var timeoutSeconds = parseResult.GetValueForOption(CliOptions.TimeoutSeconds) ?? DefaultTimeoutSeconds;
-
-        // No --timeout (0/unset) → effectively unbounded. int.MaxValue ms (~24 days) is used rather
-        // than Timeout.InfiniteTimeSpan because this span is later cast to int milliseconds for
-        // NamedPipeClientStream.ConnectAsync, which rejects a negative (infinite) value.
-        var timeout = timeoutSeconds > 0
-            ? TimeSpan.FromSeconds(timeoutSeconds)
-            : TimeSpan.FromMilliseconds(int.MaxValue);
         var timedOut = false;
         Timer? timeoutTimer = null;
         ConsoleCancelEventHandler? cancelHandler = null;
@@ -129,34 +126,33 @@ public static class Program
             };
             Console.CancelKeyPress += cancelHandler;
 
-            if (timeoutSeconds > 0)
-            {
-                // `timedOut` is set on the timer thread before cts.Cancel(); the cancel→token
-                // propagation establishes happens-before, so the catch below reads it reliably.
-                timeoutTimer = new Timer(
-                    _ =>
+            // Fire the fixed deadline. `timedOut` is set on the timer thread before cts.Cancel(); the
+            // cancel→token propagation establishes happens-before, so the catch below reads it
+            // reliably. The flag lets the error envelope distinguish a timeout from a Ctrl+C
+            // cancellation (both map to exit 8).
+            timeoutTimer = new Timer(
+                _ =>
+                {
+                    timedOut = true;
+                    try
                     {
-                        timedOut = true;
-                        try
-                        {
-                            cts.Cancel();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                        }
-                    },
-                    null,
-                    TimeSpan.FromSeconds(timeoutSeconds),
-                    Timeout.InfiniteTimeSpan);
-            }
+                        cts.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                },
+                null,
+                OperationTimeout,
+                Timeout.InfiniteTimeSpan);
 
-            var dispatcher = new IpcDispatcher(output, timeout);
+            var dispatcher = new IpcDispatcher(output, OperationTimeout);
 
             return await DispatchAsync(root, args, parseResult, dispatcher, output, cts.Token);
         }
         catch (OperationCanceledException)
         {
-            output.WriteError(BuildTimeoutErrorResult(CommandLabelFor(parseResult), timedOut, timeoutSeconds));
+            output.WriteError(BuildTimeoutErrorResult(CommandLabelFor(parseResult), timedOut));
             return CliExitCodes.Timeout;
         }
         catch (Exception ex)
@@ -401,8 +397,9 @@ public static class Program
             },
         };
 
-    // Shared TIMEOUT envelope for both the OperationCanceledException catch path.
-    private static CliErrorResult BuildTimeoutErrorResult(string command, bool timedOut, int timeoutSeconds)
+    // Shared TIMEOUT envelope for the OperationCanceledException catch path. Distinguishes the fixed
+    // deadline elapsing (timedOut) from a Ctrl+C cancellation; both map to exit 8.
+    private static CliErrorResult BuildTimeoutErrorResult(string command, bool timedOut)
         => new()
         {
             Command = command,
@@ -410,7 +407,7 @@ public static class Program
             {
                 Code = CliErrorCodes.Timeout,
                 Message = timedOut
-                    ? Resources.Error_TimedOut(timeoutSeconds)
+                    ? Resources.Error_TimedOut((int)OperationTimeout.TotalSeconds)
                     : Resources.Error_Cancelled,
             },
         };

@@ -146,10 +146,6 @@
     <value>Response could not be deserialized as expected type.</value>
     <comment>Shown when the app's IPC response does not match the CLI's expected schema (version skew).</comment>
   </data>
-  <data name="Error_NegativeTimeout" xml:space="preserve">
-    <value>--timeout must be &gt;= 0 (use 0 to disable the timeout).</value>
-    <comment>--timeout is CLI syntax and must not be translated.</comment>
-  </data>
   <data name="Error_NegativeStep" xml:space="preserve">
     <value>--step must be &gt;= 0.</value>
     <comment>--step is CLI syntax and must not be translated.</comment>

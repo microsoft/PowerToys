@@ -80,24 +80,6 @@ public class CliPipeClientTests
         Assert.IsNull(result, "Expected null when no pipe server is running");
     }
 
-    // ── Connect-timeout clamping ──────────────────────────────────────────────
-    [TestMethod]
-    public void ToConnectMilliseconds_NormalTimeout_ReturnsExactMilliseconds()
-        => Assert.AreEqual(5000, CliPipeClient.ToConnectMilliseconds(TimeSpan.FromSeconds(5)));
-
-    [TestMethod]
-    public void ToConnectMilliseconds_HugeTimeout_ClampsToIntMaxWithoutOverflow()
-    {
-        // ~2e9 seconds ≈ 2e12 ms, far beyond int range. The conversion must clamp to int.MaxValue
-        // rather than overflowing to a negative value, which ConnectAsync rejects with
-        // ArgumentOutOfRangeException (surfacing as exit 9 instead of a clean connect/timeout).
-        Assert.AreEqual(int.MaxValue, CliPipeClient.ToConnectMilliseconds(TimeSpan.FromSeconds(2_000_000_000)));
-    }
-
-    [TestMethod]
-    public void ToConnectMilliseconds_NegativeTimeout_ClampsToZero()
-        => Assert.AreEqual(0, CliPipeClient.ToConnectMilliseconds(TimeSpan.FromSeconds(-1)));
-
     // ── Cancellation propagates ───────────────────────────────────────────────
     [TestMethod]
     [Timeout(5_000)]
