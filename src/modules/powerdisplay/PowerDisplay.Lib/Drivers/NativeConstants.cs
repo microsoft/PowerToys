@@ -17,6 +17,18 @@ namespace PowerDisplay.Common.Drivers
         public const byte VcpCodeBrightness = 0x10;
 
         /// <summary>
+        /// VCP code: Backlight Control (0x13).
+        /// Alternate brightness control used by some panels that do not implement 0x10.
+        /// </summary>
+        public const byte VcpCodeBacklightControl = 0x13;
+
+        /// <summary>
+        /// VCP code: Backlight Level: White (0x6B).
+        /// Alternate brightness control used by some panels that expose the backlight directly.
+        /// </summary>
+        public const byte VcpCodeBacklightLevelWhite = 0x6B;
+
+        /// <summary>
         /// VCP code: Contrast (0x12)
         /// Standard VESA MCCS contrast control.
         /// </summary>
