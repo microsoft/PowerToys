@@ -2,75 +2,46 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
+using System.Globalization;
+using ScreenRecorderLib;
 
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Records the desktop to an MP4 during a UI test by sampling GDI frames and encoding them with
-/// FFmpeg. Used only by the pipeline path of <see cref="UITestBase"/>. If FFmpeg isn't on PATH (or
-/// in a few well-known locations) recording silently disables itself — screenshots still cover the
-/// failure. Ported from the legacy harness.
+/// Records the desktop to an MP4 during a UI test using ScreenRecorderLib, which encodes in realtime
+/// with native Microsoft Media Foundation (H.264). Used only by the pipeline path of
+/// <see cref="UITestBase"/>. Unlike the old GDI + FFmpeg path there is nothing to probe for on PATH;
+/// any runtime problem is surfaced through <c>OnRecordingFailed</c> and handled gracefully so the
+/// failing test is never blocked — screenshots still cover the failure.
 /// </summary>
 internal sealed class ScreenRecording : IDisposable
 {
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetDC(IntPtr hWnd);
-
-    [DllImport("gdi32.dll")]
-    private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr ReleaseDC(IntPtr hWnd, IntPtr hDC);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCursorInfo(out ScreenCapture.CURSORINFO pci);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DrawIconEx(IntPtr hdc, int x, int y, IntPtr hIcon, int cx, int cy, int istepIfAniCur, IntPtr hbrFlickerFreeDraw, int diFlags);
-
-    private const int CURSORSHOWING = 0x00000001;
-    private const int DESKTOPHORZRES = 118;
-    private const int DESKTOPVERTRES = 117;
-    private const int DINORMAL = 0x0003;
     private const int TargetFps = 30;
 
+    /// <summary>Upper bound on how long to wait for Media Foundation to flush the MP4 after <c>Stop()</c>.</summary>
+    private static readonly TimeSpan FinalizeTimeout = TimeSpan.FromSeconds(30);
+
     private readonly string outputDirectory;
-    private readonly string framesDirectory;
     private readonly string outputFilePath;
-    private readonly List<string> capturedFrames;
-    private readonly SemaphoreSlim recordingLock = new(1, 1);
-    private readonly Stopwatch recordingStopwatch = new();
-    private readonly string? ffmpegPath;
-    private CancellationTokenSource? recordingCancellation;
-    private Task? recordingTask;
+    private readonly object syncRoot = new();
+
+    private Recorder? recorder;
+    private TaskCompletionSource<bool>? recordingFinished;
     private bool isRecording;
-    private int frameCount;
 
     public ScreenRecording(string outputDirectory)
     {
         this.outputDirectory = outputDirectory;
-        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        framesDirectory = Path.Combine(outputDirectory, $"frames_{timestamp}");
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
         outputFilePath = Path.Combine(outputDirectory, $"recording_{timestamp}.mp4");
-        capturedFrames = new List<string>();
-        frameCount = 0;
-
-        ffmpegPath = FindFfmpeg();
-        if (ffmpegPath is null)
-        {
-            Console.WriteLine("FFmpeg not found. Screen recording will be disabled.");
-            Console.WriteLine("To enable video recording, install FFmpeg: https://ffmpeg.org/download.html");
-        }
     }
 
-    /// <summary>True when FFmpeg was located, so recording can actually produce an MP4.</summary>
-    public bool IsAvailable => ffmpegPath is not null;
+    /// <summary>
+    /// True when recording can be attempted. ScreenRecorderLib ships its native encoder in-package,
+    /// so there is nothing to locate at runtime; a missing prerequisite (e.g. Media Foundation on a
+    /// Windows N/Server SKU) is reported through <c>OnRecordingFailed</c> rather than here.
+    /// </summary>
+    public bool IsAvailable => true;
 
     /// <summary>Path the encoded MP4 will be written to.</summary>
     public string OutputFilePath => outputFilePath;
@@ -78,62 +49,103 @@ internal sealed class ScreenRecording : IDisposable
     /// <summary>Directory containing the recording output.</summary>
     public string OutputDirectory => outputDirectory;
 
-    /// <summary>Start sampling frames on a background task.</summary>
-    public async Task StartRecordingAsync()
+    /// <summary>Start recording the main display. Best-effort and non-blocking.</summary>
+    public Task StartRecordingAsync()
     {
-        await recordingLock.WaitAsync();
-        try
+        lock (syncRoot)
         {
-            if (isRecording || !IsAvailable)
+            if (isRecording)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            Directory.CreateDirectory(framesDirectory);
+            try
+            {
+                Directory.CreateDirectory(outputDirectory);
 
-            recordingCancellation = new CancellationTokenSource();
-            isRecording = true;
-            recordingStopwatch.Start();
+                var options = new RecorderOptions
+                {
+                    OutputOptions = new OutputOptions
+                    {
+                        RecorderMode = RecorderMode.Video,
+                    },
+                    VideoEncoderOptions = new VideoEncoderOptions
+                    {
+                        Framerate = TargetFps,
+                        Encoder = new H264VideoEncoder(),
+                    },
 
-            recordingTask = Task.Run(() => RecordFrames(recordingCancellation.Token));
-            Console.WriteLine($"Started screen recording at {TargetFps} FPS");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to start recording: {ex.Message}");
-            isRecording = false;
-        }
-        finally
-        {
-            recordingLock.Release();
+                    // UI tests don't need audio, and capturing it can fail on headless CI agents.
+                    AudioOptions = new AudioOptions
+                    {
+                        IsAudioEnabled = false,
+                    },
+
+                    // Keep the cursor visible so a failed run shows what was being clicked.
+                    MouseOptions = new MouseOptions
+                    {
+                        IsMousePointerEnabled = true,
+                    },
+                };
+
+                recordingFinished = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                recorder = Recorder.CreateRecorder(options);
+                recorder.OnRecordingComplete += OnRecordingComplete;
+                recorder.OnRecordingFailed += OnRecordingFailed;
+                recorder.Record(outputFilePath);
+
+                isRecording = true;
+                Console.WriteLine($"Started screen recording at {TargetFps} FPS to {outputFilePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start recording: {ex.Message}");
+                DisposeRecorder();
+                isRecording = false;
+            }
+
+            return Task.CompletedTask;
         }
     }
 
-    /// <summary>Stop sampling and encode the captured frames to an MP4.</summary>
+    /// <summary>Stop recording and wait for Media Foundation to finalize the MP4. Best-effort.</summary>
     public async Task StopRecordingAsync()
     {
-        await recordingLock.WaitAsync();
-        try
+        Recorder? activeRecorder;
+        TaskCompletionSource<bool>? finished;
+
+        lock (syncRoot)
         {
-            if (!isRecording || recordingCancellation is null)
+            if (!isRecording || recorder is null)
             {
                 return;
             }
 
-            recordingCancellation.Cancel();
+            activeRecorder = recorder;
+            finished = recordingFinished;
+            isRecording = false;
+        }
 
-            if (recordingTask is not null)
+        try
+        {
+            activeRecorder.Stop();
+
+            if (finished is not null)
             {
-                await recordingTask;
+                // Bound the wait so a stuck encoder never hangs test teardown.
+                var completed = await Task.WhenAny(finished.Task, Task.Delay(FinalizeTimeout)).ConfigureAwait(false);
+                if (completed != finished.Task)
+                {
+                    Console.WriteLine("Timed out waiting for the recording to finalize.");
+                }
             }
 
-            recordingStopwatch.Stop();
-            isRecording = false;
-
-            var duration = recordingStopwatch.Elapsed.TotalSeconds;
-            Console.WriteLine($"Recording stopped. Captured {capturedFrames.Count} frames in {duration:F2} seconds");
-
-            await EncodeToVideoAsync();
+            if (File.Exists(outputFilePath))
+            {
+                var fileInfo = new FileInfo(outputFilePath);
+                Console.WriteLine($"Video created: {outputFilePath} ({fileInfo.Length / 1024.0 / 1024.0:F1} MB)");
+            }
         }
         catch (Exception ex)
         {
@@ -141,8 +153,7 @@ internal sealed class ScreenRecording : IDisposable
         }
         finally
         {
-            Cleanup();
-            recordingLock.Release();
+            DisposeRecorder();
         }
     }
 
@@ -153,196 +164,43 @@ internal sealed class ScreenRecording : IDisposable
             StopRecordingAsync().GetAwaiter().GetResult();
         }
 
-        Cleanup();
-        recordingLock.Dispose();
+        DisposeRecorder();
         GC.SuppressFinalize(this);
     }
 
-    private void RecordFrames(CancellationToken cancellationToken)
+    private void OnRecordingComplete(object? sender, RecordingCompleteEventArgs e)
     {
-        try
-        {
-            var frameInterval = 1000 / TargetFps;
-            var frameTimer = Stopwatch.StartNew();
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var frameStart = frameTimer.ElapsedMilliseconds;
-
-                try
-                {
-                    CaptureFrame();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error capturing frame: {ex.Message}");
-                }
-
-                var frameTime = frameTimer.ElapsedMilliseconds - frameStart;
-                var sleepTime = Math.Max(0, frameInterval - (int)frameTime);
-                if (sleepTime > 0)
-                {
-                    Thread.Sleep(sleepTime);
-                }
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected when stopping.
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during recording: {ex.Message}");
-        }
+        recordingFinished?.TrySetResult(true);
     }
 
-    private void CaptureFrame()
+    private void OnRecordingFailed(object? sender, RecordingFailedEventArgs e)
     {
-        var hdc = GetDC(IntPtr.Zero);
-        var screenWidth = GetDeviceCaps(hdc, DESKTOPHORZRES);
-        var screenHeight = GetDeviceCaps(hdc, DESKTOPVERTRES);
-        ReleaseDC(IntPtr.Zero, hdc);
-
-        var bounds = new Rectangle(0, 0, screenWidth, screenHeight);
-        using var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format24bppRgb);
-        using (var g = Graphics.FromImage(bitmap))
-        {
-            g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
-
-            var cursorInfo = default(ScreenCapture.CURSORINFO);
-            cursorInfo.CbSize = Marshal.SizeOf<ScreenCapture.CURSORINFO>();
-            if (GetCursorInfo(out cursorInfo) && cursorInfo.Flags == CURSORSHOWING)
-            {
-                var hdcDest = g.GetHdc();
-                DrawIconEx(hdcDest, cursorInfo.PTScreenPos.X, cursorInfo.PTScreenPos.Y, cursorInfo.HCursor, 0, 0, 0, IntPtr.Zero, DINORMAL);
-                g.ReleaseHdc(hdcDest);
-            }
-        }
-
-        var framePath = Path.Combine(framesDirectory, $"frame_{frameCount:D6}.jpg");
-        bitmap.Save(framePath, ImageFormat.Jpeg);
-        capturedFrames.Add(framePath);
-        frameCount++;
+        Console.WriteLine($"Screen recording failed: {e.Error}");
+        recordingFinished?.TrySetResult(false);
     }
 
-    private async Task EncodeToVideoAsync()
+    private void DisposeRecorder()
     {
-        if (capturedFrames.Count == 0)
+        lock (syncRoot)
         {
-            Console.WriteLine("No frames captured");
-            return;
-        }
-
-        try
-        {
-            var inputPattern = Path.Combine(framesDirectory, "frame_%06d.jpg");
-
-            // GDI capture rarely sustains TargetFps (each grab + JPEG save can exceed the frame
-            // interval), so play the frames back at the rate they were ACTUALLY captured — otherwise
-            // assembling fewer-than-target frames at TargetFps speeds the video up (e.g. 2x).
-            var durationSeconds = recordingStopwatch.Elapsed.TotalSeconds;
-            var playbackFps = durationSeconds > 0.5
-                ? Math.Clamp((int)Math.Round(capturedFrames.Count / durationSeconds), 1, TargetFps)
-                : TargetFps;
-
-            // -y overwrite, -nostdin no interaction, -loglevel error quiet, -stats progress.
-            var args = $"-y -nostdin -loglevel error -stats -framerate {playbackFps} -i \"{inputPattern}\" -c:v libx264 -pix_fmt yuv420p -crf 23 \"{outputFilePath}\"";
-
-            Console.WriteLine($"Encoding {capturedFrames.Count} frames at {playbackFps} fps (real-time) to video...");
-
-            var startInfo = new ProcessStartInfo
+            if (recorder is null)
             {
-                FileName = ffmpegPath!,
-                Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                CreateNoWindow = true,
-            };
-
-            using var process = Process.Start(startInfo);
-            if (process is not null)
-            {
-                process.StandardInput.Close();
-
-                var outputTask = process.StandardOutput.ReadToEndAsync();
-                var errorTask = process.StandardError.ReadToEndAsync();
-
-                await process.WaitForExitAsync();
-
-                _ = await outputTask;
-                var stderr = await errorTask;
-
-                if (process.ExitCode == 0 && File.Exists(outputFilePath))
-                {
-                    var fileInfo = new FileInfo(outputFilePath);
-                    Console.WriteLine($"Video created: {outputFilePath} ({fileInfo.Length / 1024 / 1024:F1} MB)");
-                }
-                else
-                {
-                    Console.WriteLine($"FFmpeg encoding failed with exit code {process.ExitCode}");
-                    if (!string.IsNullOrWhiteSpace(stderr))
-                    {
-                        Console.WriteLine($"FFmpeg error: {stderr}");
-                    }
-                }
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error encoding video: {ex.Message}");
-        }
-    }
 
-    private static string? FindFfmpeg()
-    {
-        var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
-        foreach (var dir in pathDirs)
-        {
-            var candidate = Path.Combine(dir, "ffmpeg.exe");
-            if (File.Exists(candidate))
+            recorder.OnRecordingComplete -= OnRecordingComplete;
+            recorder.OnRecordingFailed -= OnRecordingFailed;
+
+            try
             {
-                return candidate;
+                recorder.Dispose();
             }
-        }
-
-        var commonPaths = new[]
-        {
-            @"C:\.tools\ffmpeg\bin\ffmpeg.exe",
-            @"C:\ffmpeg\bin\ffmpeg.exe",
-            @"C:\Program Files\ffmpeg\bin\ffmpeg.exe",
-            @"C:\Program Files (x86)\ffmpeg\bin\ffmpeg.exe",
-            $@"{Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)}\Microsoft\WinGet\Links\ffmpeg.exe",
-        };
-
-        foreach (var path in commonPaths)
-        {
-            if (File.Exists(path))
+            catch (Exception ex)
             {
-                return path;
+                Console.WriteLine($"Failed to dispose recorder: {ex.Message}");
             }
-        }
 
-        return null;
-    }
-
-    private void Cleanup()
-    {
-        recordingCancellation?.Dispose();
-        recordingCancellation = null;
-        recordingTask = null;
-
-        try
-        {
-            if (Directory.Exists(framesDirectory))
-            {
-                Directory.Delete(framesDirectory, true);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to cleanup frames directory: {ex.Message}");
+            recorder = null;
         }
     }
 }

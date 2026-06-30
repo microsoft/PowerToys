@@ -1589,6 +1589,7 @@ SOFTWARE.
 - OpenAI
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
+- ScreenRecorderLib
 - SharpCompress
 - Shmuelie.WinRTServer
 - SkiaSharp.Views.WinUI
