@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -223,9 +224,14 @@ public static class TestHelper
     private static bool HasMainKey(Key[] keys) =>
         keys.Any(k => k is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt));
 
-    /// <summary>True when at least one Measure Tool window is open.</summary>
+    /// <summary>
+    /// True when the Measure Tool UI is up. Uses a Win32 PROCESS check, NOT winappcli's
+    /// <c>list-windows</c>: enumerating the live/frozen overlay's UIA tree costs seconds on CI (and can
+    /// hang). MeasureToolUI exists only while the ruler is open, so process-presence is an accurate,
+    /// instant, hang-free proxy.
+    /// </summary>
     public static bool IsScreenRulerUIOpen(UITestBase testBase) =>
-        WindowsFinder.ListByApp(ScreenRulerProcess).Count > 0;
+        Process.GetProcessesByName(ScreenRulerProcess).Length > 0;
 
     /// <summary>Poll until the Measure Tool UI reaches the requested presence.</summary>
     public static bool WaitForScreenRulerUIState(UITestBase testBase, bool shouldBeOpen, int timeoutMs = 5000, int pollingIntervalMs = 100)
@@ -250,47 +256,49 @@ public static class TestHelper
     public static bool WaitForScreenRulerUIToDisappear(UITestBase testBase, int timeoutMs = 5000) =>
         WaitForScreenRulerUIState(testBase, shouldBeOpen: false, timeoutMs);
 
-    /// <summary>Close the Measure Tool UI if it's open (best-effort, tolerant).</summary>
+    /// <summary>
+    /// Close the Measure Tool UI via Win32 — gracefully (WM_CLOSE to the main window), then kill as a
+    /// last resort. Deliberately avoids winappcli: a process-scoped <see cref="Session.FromProcess"/>,
+    /// the Close-button search, and <c>list-windows</c> all walk the live/frozen overlay's UIA tree,
+    /// which costs 5–30s on CI. The test's assertions have already run by here, so a fast, reliable
+    /// teardown matters more than a UI-driven close.
+    /// </summary>
     public static void CloseScreenRulerUI(UITestBase testBase)
     {
-        var t0 = DateTime.UtcNow;
-        Log("CloseScreenRulerUI: checking whether the ruler is open (winappcli list-windows)");
-        if (!IsScreenRulerUIOpen(testBase))
+        var procs = Process.GetProcessesByName(ScreenRulerProcess);
+        if (procs.Length == 0)
         {
-            Log($"CloseScreenRulerUI: open-check took {(DateTime.UtcNow - t0).TotalSeconds:0.00}s — not open, nothing to close");
+            Log("CloseScreenRulerUI: not running — nothing to close");
             return;
         }
 
-        Log($"CloseScreenRulerUI: open-check took {(DateTime.UtcNow - t0).TotalSeconds:0.00}s; ruler is open");
-
-        // Prefer the toolbar's Close button; fall back to WM_CLOSE on every Measure Tool window.
-        try
+        foreach (var p in procs)
         {
-            var t1 = DateTime.UtcNow;
-            var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 2000);
-            Log($"CloseScreenRulerUI: FromProcess took {(DateTime.UtcNow - t1).TotalSeconds:0.00}s; searching for the Close button");
-
-            var t2 = DateTime.UtcNow;
-            if (ruler.Has(By.AccessibilityId(CloseButtonId), 1000))
+            try
             {
-                Log($"CloseScreenRulerUI: Close button found in {(DateTime.UtcNow - t2).TotalSeconds:0.00}s; clicking it");
-                ruler.Find<Element>(By.AccessibilityId(CloseButtonId), 2000).Click();
-                Log("CloseScreenRulerUI: Close button clicked");
+                // Graceful first: WM_CLOSE to the main window; if it doesn't exit, kill it.
+                if (p.MainWindowHandle != IntPtr.Zero && p.CloseMainWindow() && p.WaitForExit(2000))
+                {
+                    Log($"CloseScreenRulerUI: pid {p.Id} closed via WM_CLOSE");
+                }
+                else if (!p.HasExited)
+                {
+                    Log($"CloseScreenRulerUI: pid {p.Id} didn't close on WM_CLOSE; killing it");
+                    p.Kill(entireProcessTree: true);
+                    p.WaitForExit(2000);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Log($"CloseScreenRulerUI: Close button not found (search took {(DateTime.UtcNow - t2).TotalSeconds:0.00}s)");
+                Log($"CloseScreenRulerUI: closing pid {p.Id} failed: {ex.GetType().Name}: {ex.Message}");
+            }
+            finally
+            {
+                p.Dispose();
             }
         }
-        catch (Exception ex)
-        {
-            Log($"CloseScreenRulerUI: Close-button path threw: {ex.GetType().Name}: {ex.Message}");
-        }
 
-        var t3 = DateTime.UtcNow;
-        Log("CloseScreenRulerUI: WM_CLOSE fallback (WindowControl.TryCloseByApp)");
-        WindowControl.TryCloseByApp(ScreenRulerProcess);
-        Log($"CloseScreenRulerUI: WM_CLOSE fallback returned in {(DateTime.UtcNow - t3).TotalSeconds:0.00}s");
+        Log("CloseScreenRulerUI: done");
     }
 
     /// <summary>Clear the clipboard (STA handled inside the helper).</summary>
@@ -471,13 +479,23 @@ public static class TestHelper
         return present;
     }
 
-    /// <summary>Move to the screen centre, left-click to capture, right-click to dismiss.</summary>
+    /// <summary>Warm the screen capture by moving the cursor, then left-click to capture.</summary>
     private static void PerformMeasurementAction()
     {
         var (cx, cy) = ScreenCenter();
-        Log($"PerformMeasurementAction: two-step move to centre ({cx},{cy}), then left-click to capture");
+
+        // The Spacing tool measures from a screen-capture (WGC) frame, which can lag the tool engaging.
+        // Nudge the cursor around the spot for ~1s so frames flow and edge-detection runs before the
+        // click — clicking on a cold capture copies an empty measurement.
+        Log($"PerformMeasurementAction: warming the capture around the centre ({cx},{cy}), then left-click");
+        MouseHelper.MoveTo(cx - 80, cy - 80);
+        Thread.Sleep(300);
+        MouseHelper.MoveTo(cx + 60, cy + 60);
+        Thread.Sleep(300);
         MouseHelper.MoveTo(cx - 60, cy - 60);
-        Thread.Sleep(500);
+        Thread.Sleep(300);
+        MouseHelper.MoveTo(cx, cy);
+        Thread.Sleep(300);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
     }
