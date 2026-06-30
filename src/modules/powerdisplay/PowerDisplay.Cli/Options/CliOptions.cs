@@ -59,6 +59,10 @@ public static class CliOptions
     };
 
     // --- up/down: no-value setting flags (exactly one) ---
+    // These intentionally reuse the same alias strings (--brightness/--contrast/--volume) as the
+    // set-command Option<int?> instances above. There is no conflict: each Option instance is added
+    // only to its own subcommand (set gets the int? options; up/down get these bool flags), and
+    // System.CommandLine scopes alias resolution per command. Do NOT add both variants to one command.
     public static readonly Option<bool> BrightnessFlag = new(
         ["--brightness"],
         "Adjust brightness (no value; the amount comes from --step or the mouse_wheel_increment setting).")
