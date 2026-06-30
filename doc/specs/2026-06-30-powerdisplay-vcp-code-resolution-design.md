@@ -147,9 +147,17 @@ Algorithm, per feature in `VcpFeatureRegistry.AllFeatures`:
    missing one.
 2. Otherwise resolve fresh:
    1. **Phase 1 (both modes).** First candidate with `caps.SupportsVcpCode(candidate)` → code.
-   2. **Phase 2 (max-compat only, if Phase 1 found nothing).** First candidate where
-      `probe(candidate)` returns true → code.
+   2. **Phase 2 (max-compat only, fresh discovery, if Phase 1 found nothing).** Runs only when
+      `persisted == null` — i.e. a first-time discovery or a post-refresh re-resolution (the user
+      Refresh clears persisted maps to null). When a persisted map is supplied (a normal
+      discovery that reuses prior results) probing is skipped entirely, since probing is the
+      expensive path and the persisted decision already covers every feature. First candidate
+      where `probe(candidate)` returns true → code.
    3. Else → `NotSupportedSentinel`.
+
+   > In practice a persisted map always covers all features (resolution writes every feature), so
+   > the per-feature reuse at the top and the `persisted == null` guard on Phase 2 together yield:
+   > known monitor → reuse, no probe; new monitor or post-refresh → full resolve incl. probe.
 
 `probe` is supplied by the controller and encodes **usability**, not mere call success:
 `code => TryGetVcpFeature(handle, code, out cur, out max) && max > 0` — so brightness
