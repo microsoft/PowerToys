@@ -381,6 +381,12 @@ try {
     if (-not $SkipBuild) {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
+
+        # CLI shims: publish ONE Native AOT binary and stage one exe per command name into
+        # <Platform>\<Configuration>\cli for the installer to harvest. The shared script owns
+        # the single-source-of-truth command list and the drift validation; AOT linking relies
+        # on the VC toolchain already set up by the installer build environment.
+        & (Join-Path $repoRoot 'tools\build\publish-cli-shims.ps1') -Platform $Platform -Configuration $Configuration -OutDir (Join-Path $buildOutputPath 'cli')
     }
 
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe

@@ -1,0 +1,72 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <!--
+    CLI shims: tiny Native AOT launchers installed into the "cli" subfolder. Each shim
+    forwards to a real PowerToys CLI (one level up, or under WinUI3Apps). The cli folder
+    is appended to PATH so the shims are callable by name from a terminal.
+  -->
+  <Fragment>
+    <DirectoryRef Id="CliFolder">
+      <Component Id="CliShim_fancyzones_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_fancyzones_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)cli\fancyzones.exe" Id="CliShim_fancyzones.exe" Checksum="yes" />
+      </Component>
+      <Component Id="CliShim_imageresizer_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_imageresizer_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)cli\imageresizer.exe" Id="CliShim_imageresizer.exe" Checksum="yes" />
+      </Component>
+      <Component Id="CliShim_filelocksmith_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_filelocksmith_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)cli\filelocksmith.exe" Id="CliShim_filelocksmith.exe" Checksum="yes" />
+      </Component>
+
+      <!--
+        Append the cli folder to PATH (per-user vs per-machine, mirroring Core.wxs).
+        MSI broadcasts WM_SETTINGCHANGE on commit, so Explorer and newly-opened terminals
+        pick up the new PATH; terminals already open at install time must be reopened before
+        the short command names (fancyzones / imageresizer / filelocksmith) resolve.
+      -->
+      <?if $(var.PerUser) = "true" ?>
+      <Component Id="cli_env_path_user" Guid="87AA86E8-81E8-44CB-9519-FC70CF7BEA56" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="cli_env_path_user" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <Environment Id="AddCliToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[CliFolder]" />
+      </Component>
+      <?else?>
+      <Component Id="cli_env_path_machine" Guid="739F3916-2247-4F1B-8BBD-0949A5B870F7" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="cli_env_path_machine" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <Environment Id="AddCliToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[CliFolder]" />
+      </Component>
+      <?endif?>
+    </DirectoryRef>
+
+    <ComponentGroup Id="CliShimsComponentGroup">
+      <Component Id="RemoveCliFolder" Guid="831C56D8-9FEB-41B2-8A8C-BD49487479BB" Directory="CliFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCliFolder" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderCliFolder" Directory="CliFolder" On="uninstall" />
+      </Component>
+      <ComponentRef Id="CliShim_fancyzones_exe" />
+      <ComponentRef Id="CliShim_imageresizer_exe" />
+      <ComponentRef Id="CliShim_filelocksmith_exe" />
+      <?if $(var.PerUser) = "true" ?>
+      <ComponentRef Id="cli_env_path_user" />
+      <?else?>
+      <ComponentRef Id="cli_env_path_machine" />
+      <?endif?>
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>
