@@ -9,11 +9,11 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI/Common.UI.csproj">
+    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/Common.UI.Controls/Common.UI.Controls.csproj">
+    <Project Path="src/common/Common.UI/Common.UI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -134,6 +134,13 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+  </Folder>
+  <Folder Name="/gpo/" />
+  <Folder Name="/gpo/assets/">
+    <File Path="gpo/assets/PowerToys.admx" />
+  </Folder>
+  <Folder Name="/gpo/assets/en-US/">
+    <File Path="gpo/assets/en-US/PowerToys.adml" />
   </Folder>
   <Folder Name="/modules/" />
   <Folder Name="/modules/AdvancedPaste/">
@@ -718,11 +725,11 @@
     </Project>
   </Folder>
   <Folder Name="/modules/PowerDisplay/">
-    <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib/PowerDisplay.Lib.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/powerdisplay/PowerDisplay.Lib/PowerDisplay.Lib.csproj">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1126,14 +1133,14 @@
     <BuildDependency Project="src/modules/fancyzones/editor/FancyZonesEditor/FancyZonesEditor.csproj" />
     <BuildDependency Project="src/modules/fancyzones/FancyZonesLib/FancyZonesLib.vcxproj" />
     <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
+    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
     <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />
     <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
-    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
-    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />

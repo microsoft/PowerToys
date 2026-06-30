@@ -8,6 +8,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         GPOWrapper() = default;
         static GpoRuleConfigured GetConfiguredAlwaysOnTopEnabledValue();
+        static GpoRuleConfigured GetConfiguredAwakeIndefinitelyEnabledValue();
         static GpoRuleConfigured GetConfiguredAwakeEnabledValue();
         static GpoRuleConfigured GetConfiguredCmdNotFoundEnabledValue();
         static GpoRuleConfigured GetConfiguredCmdPalEnabledValue();
