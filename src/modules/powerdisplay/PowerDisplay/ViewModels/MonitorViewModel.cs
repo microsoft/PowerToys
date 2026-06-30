@@ -288,6 +288,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public string? CapabilitiesRaw => _monitor.CapabilitiesRaw;
 
+    /// <summary>Gets the resolved per-feature VCP code map for this monitor.</summary>
     public VcpFeatureCodeMap ResolvedVcpCodes => _monitor.ResolvedVcpCodes;
 
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
