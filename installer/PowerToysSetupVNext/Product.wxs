@@ -123,6 +123,8 @@
 
       <Custom Action="SetUnApplyModulesRegistryChangeSetsParam" Before="UnApplyModulesRegistryChangeSets" />
       <Custom Action="CheckGPO" After="InstallInitialize" Condition="NOT Installed" />
+      <Custom Action="ForceRemoveOldVersion" Before="RemoveExistingProducts" Condition="WIX_UPGRADE_DETECTED" />
+      <Custom Action="ForceRemoveOldVersion" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;) AND (NOT WIX_UPGRADE_DETECTED)" />
       <Custom Action="SetBundleInstallLocationData" Before="SetBundleInstallLocation" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="SetBundleInstallLocation" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="ApplyModulesRegistryChangeSets" After="InstallFiles" Condition="NOT Installed" />
@@ -247,6 +249,8 @@
     <CustomAction Id="TelemetryLogRepairFail" Return="ignore" Impersonate="yes" DllEntry="TelemetryLogRepairFailCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="DetectPrevInstallPath" Return="check" Impersonate="yes" DllEntry="DetectPrevInstallPathCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="ForceRemoveOldVersion" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="ForceRemoveOldVersionCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="CleanVideoConferenceRegistry" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="CleanVideoConferenceRegistryCA" BinaryRef="PTCustomActions" />
 
