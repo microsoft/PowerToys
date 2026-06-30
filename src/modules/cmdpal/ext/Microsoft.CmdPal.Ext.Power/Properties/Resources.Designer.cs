@@ -331,7 +331,7 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to balanced.
+        ///   Looks up a localized string similar to Balanced.
         /// </summary>
         public static string power_plan_balanced_short {
             get {
@@ -403,7 +403,7 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to high.
+        ///   Looks up a localized string similar to High.
         /// </summary>
         public static string power_plan_high_performance_short {
             get {
@@ -412,7 +412,7 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to saver.
+        ///   Looks up a localized string similar to Saver.
         /// </summary>
         public static string power_plan_power_saver_short {
             get {

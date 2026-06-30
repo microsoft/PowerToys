@@ -232,13 +232,13 @@
     <value>Current</value>
   </data>
   <data name="power_plan_power_saver_short" xml:space="preserve">
-    <value>saver</value>
+    <value>Saver</value>
   </data>
   <data name="power_plan_balanced_short" xml:space="preserve">
-    <value>balanced</value>
+    <value>Balanced</value>
   </data>
   <data name="power_plan_high_performance_short" xml:space="preserve">
-    <value>high</value>
+    <value>High</value>
   </data>
   <data name="power_plan_ultimate_performance_short" xml:space="preserve">
     <value>Ultimate</value>
