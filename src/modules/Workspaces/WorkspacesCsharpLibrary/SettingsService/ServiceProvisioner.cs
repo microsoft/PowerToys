@@ -182,8 +182,15 @@ public static class ServiceProvisioner
     /// </summary>
     public static string BuildInstallArguments(string serviceMsix)
     {
+        // -ForceApplicationShutdown is REQUIRED for the upgrade case: a packaged
+        // windows.service holds its binaries while running, so replacing them on
+        // an in-place update fails with 0x80073D02 ("resources ... currently in
+        // use") unless the running service is force-stopped first. The flag stops
+        // the old service so the new version's files can be laid down; the service
+        // then auto-restarts pointing at the new exe (verified 2026-06-30,
+        // Design §12.6). -ForceUpdateFromAnyVersion allows same/again deploys.
         return "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
-             + "\"Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion\"";
+             + "\"Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown\"";
     }
 
     /// <summary>

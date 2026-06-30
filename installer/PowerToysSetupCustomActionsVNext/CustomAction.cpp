@@ -817,6 +817,37 @@ namespace
 {
     const wchar_t* const kPTSettingsSvcFamilyName = L"Microsoft.PowerToys.SettingsService_8wekyb3d8bbwe";
     const wchar_t* const kPTSettingsSvcMsixRelative = L"WorkspacesSettingsService\\PTSettingsSvc.msix";
+
+    // Best-effort STOP (not delete) of a service so its (packaged) exe is not
+    // held open while a new MSIX version is staged/registered — a running
+    // packaged windows.service otherwise blocks an in-place update with
+    // 0x80073D02 ("resources ... currently in use").  No-op on a fresh install.
+    void StopServiceIfRunning(const wchar_t* serviceName)
+    {
+        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT);
+        if (!scm)
+        {
+            return;
+        }
+        SC_HANDLE svc = OpenServiceW(scm, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
+        if (svc)
+        {
+            SERVICE_STATUS ss{};
+            if (ControlService(svc, SERVICE_CONTROL_STOP, &ss))
+            {
+                for (int i = 0; i < 10; ++i)
+                {
+                    if (!QueryServiceStatus(svc, &ss) || ss.dwCurrentState == SERVICE_STOPPED)
+                    {
+                        break;
+                    }
+                    Sleep(500);
+                }
+            }
+            CloseServiceHandle(svc);
+        }
+        CloseServiceHandle(scm);
+    }
 }
 
 UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
@@ -846,6 +877,12 @@ UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
 
         Uri packageUri{ msixPath.wstring() };
         PackageManager pm;
+
+        // Upgrade case: if a previous version's service is still running, stop it
+        // first so its packaged exe isn't held open (else the update fails with
+        // 0x80073D02).  No-op on a fresh install.  The service auto-restarts
+        // (AUTO_START) once the new version is registered (Design §12.6).
+        StopServiceIfRunning(L"PTSettingsSvc");
 
         // Per-machine: stage once, then provision for all users.  The MSIX
         // windows.service extension registers the machine-wide PTSettingsSvc.
