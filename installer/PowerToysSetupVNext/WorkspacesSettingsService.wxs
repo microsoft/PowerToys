@@ -2,27 +2,29 @@
 <!--
   PowerToys Settings Service (PTSettingsSvc) installer fragment.
 
-  Implements Design-v6-Final.md §6 (identity/lifecycle), §9 (storage DACL)
-  and §11 (installer requirements).
+  Implements Design-v6-Final.md §9 (storage DACL) and §12.1/§12.4 (MSIX service
+  distribution + scope unification).
 
-  Per-machine: this fragment registers the service directly (the per-machine
-  MSI runs elevated, so CreateService succeeds).
+  The service binary is distributed as a signed MSIX (windows.service extension,
+  LocalSystem).  Both scopes use the SAME MSIX, so there is a single machine-wide
+  PTSettingsSvc and a single staged package per version (no MSI <ServiceInstall>).
 
-  Per-user: a per-user MSI is non-elevated and cannot register a service.
-  Hardening per-user therefore requires a one-time UAC elevation that installs
-  this service + creates the protected data root (Design §11 / §15 #5 d).  That
-  elevated path is a follow-up; this fragment is authored for the per-machine
-  case and is guarded by $(var.PerUser) at the consumer site (Workspaces.wxs).
+  Per-machine: this fragment stages PTSettingsSvc.msix and the per-machine MSI
+  (elevated) provisions it for all users via the InstallPTSettingsSvc custom
+  action (Product.wxs) — the MSIX windows.service extension registers the
+  service.
+
+  Per-user: the per-user payload fragment (below) stages the same MSIX; the
+  managed ServiceProvisioner deploys it under one UAC on first editor open (a
+  non-elevated per-user MSI cannot register a service at install time).
 
   Responsibilities:
-    1. Drop the service binary under <InstallFolder>\WorkspacesSettingsService\
-    2. Register PTSettingsSvc as a virtual-account service (NT SERVICE\PTSettingsSvc)
-    3. Start it after install (AUTO_START) and stop/remove it on uninstall
-    4. Create %ProgramData%\Microsoft\PowerToys\SettingsSvc with a PROTECTED
-       DACL (svc:FullControl, Administrators:FullControl, SYSTEM:FullControl,
-       Authenticated Users:Read+Execute).  Per-namespace and per-user
-       subfolders are created lazily by the service itself (it learns the user
-       SID from the impersonated pipe token).
+    1. Stage PTSettingsSvc.msix under <InstallFolder>\WorkspacesSettingsService\
+    2. Provision it for all users (per-machine CA) / deferred deploy (per-user)
+    3. Create %ProgramData%\Microsoft\PowerToys\Settings with a root DACL
+       (Administrators:FullControl, SYSTEM:FullControl, Authenticated Users:RX).
+       Per-user (<sid>) and per-namespace subfolders are created and tightened
+       lazily by the LocalSystem service on first write (SID-first layout).
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
@@ -37,45 +39,18 @@
       <Directory Id="WorkspacesSettingsServiceFolder" Name="WorkspacesSettingsService" />
     </DirectoryRef>
 
-    <!-- Service exe + registration -->
+    <!-- Service MSIX payload (Design §12.4 unification).  Per-machine ships the
+         signed PTSettingsSvc.msix and provisions it for all users via the
+         InstallPTSettingsSvc custom action (Product.wxs).  The MSIX
+         windows.service extension owns the single machine-wide PTSettingsSvc,
+         so there is no MSI <ServiceInstall> competing with the per-user MSIX. -->
     <DirectoryRef Id="WorkspacesSettingsServiceFolder"
                   FileSource="$(var.PTSettingsSvcFilesPath)">
       <Component Id="RegisterPTSettingsService"
                  Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0001}">
-
-        <File Id="PTSettingsSvcExe"
-              Name="PowerToys.PTSettingsSvc.exe"
+        <File Id="PTSettingsSvcMsixPerMachine"
+              Name="PTSettingsSvc.msix"
               KeyPath="yes" />
-
-        <!--
-          Virtual service account: PTSettingsSvc gets its own SID under
-          NT SERVICE\, no password to manage (Design §6), isolated from
-          LocalService / LocalSystem.  WiX 4 passes Account through to
-          CreateService as lpServiceStartName with a null password.
-        -->
-        <ServiceInstall Id="PTSettingsSvcInstall"
-                        Name="PTSettingsSvc"
-                        DisplayName="PowerToys Settings Service"
-                        Description="Protects PowerToys module settings from tampering by mediating all writes through an authenticated local channel."
-                        Type="ownProcess"
-                        Start="auto"
-                        ErrorControl="normal"
-                        Account="NT SERVICE\PTSettingsSvc"
-                        Vital="yes">
-          <ServiceDependency Id="RpcSs" />
-          <util:ServiceConfig FirstFailureActionType="restart"
-                              SecondFailureActionType="restart"
-                              ThirdFailureActionType="none"
-                              ResetPeriodInDays="1"
-                              RestartServiceDelayInSeconds="60" />
-        </ServiceInstall>
-
-        <ServiceControl Id="PTSettingsSvcControl"
-                        Name="PTSettingsSvc"
-                        Start="install"
-                        Stop="both"
-                        Remove="uninstall"
-                        Wait="yes" />
       </Component>
 
       <!-- Remove the per-install service folder on uninstall -->
@@ -110,8 +85,6 @@
             <Component Id="CreatePTSettingsDataRoot"
                        Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0003}">
               <CreateFolder>
-                <util:PermissionEx User="PTSettingsSvc" Domain="NT SERVICE"
-                                   GenericAll="yes" />
                 <util:PermissionEx User="Administrators" Domain="BUILTIN"
                                    GenericAll="yes" />
                 <util:PermissionEx User="SYSTEM" Domain="NT AUTHORITY"
@@ -134,11 +107,10 @@
 
     <!--
       INSTALLFOLDER hardening (Design §8/§11).  Replaces the install folder's
-      DACL with the admin-only-writable set the runtime check expects, and
-      grants the virtual service account Read+Execute so it can READ the DACL
-      during caller authentication (the virtual account is not in
-      BUILTIN\Users, so without this ACE GetNamedSecurityInfoW fails and
-      legitimate callers are rejected).
+      DACL with the admin-only-writable set the runtime check expects.  The
+      service runs as LocalSystem (MSIX), which is covered by the SYSTEM ACE
+      below, so it can read this DACL during caller authentication — no separate
+      virtual-account ACE is needed.
 
       NOTE: util:PermissionEx replaces the whole DACL, so the full intended
       ACL is specified here.  This touches the shared INSTALLFOLDER and MUST
@@ -155,8 +127,6 @@
           <util:PermissionEx User="TrustedInstaller" Domain="NT SERVICE"
                              GenericAll="yes" />
           <util:PermissionEx User="Users" Domain="BUILTIN"
-                             GenericRead="yes" GenericExecute="yes" />
-          <util:PermissionEx User="PTSettingsSvc" Domain="NT SERVICE"
                              GenericRead="yes" GenericExecute="yes" />
         </CreateFolder>
         <RegistryKey Root="HKLM"
