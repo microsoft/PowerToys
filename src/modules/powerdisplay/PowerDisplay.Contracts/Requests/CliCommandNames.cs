@@ -12,4 +12,6 @@ public static class CliCommandNames
     public const string Capabilities = "capabilities";
     public const string Profiles = "profiles";
     public const string ApplyProfile = "apply-profile";
+    public const string Up = "up";
+    public const string Down = "down";
 }

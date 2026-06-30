@@ -18,4 +18,6 @@ public sealed class CliRequestEnvelope
     public CapabilitiesRequest? Capabilities { get; set; }
 
     public ApplyProfileRequest? ApplyProfile { get; set; }
+
+    public AdjustRequest? Adjust { get; set; }
 }

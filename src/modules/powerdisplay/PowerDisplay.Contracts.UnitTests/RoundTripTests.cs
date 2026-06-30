@@ -368,4 +368,40 @@ public class RoundTripTests
         Assert.AreEqual(CliCommandNames.ApplyProfile, back!.Command);
         Assert.AreEqual("Gaming", back.ApplyProfile!.ProfileName);
     }
+
+    [TestMethod]
+    public void AdjustRequest_envelope_round_trips_through_source_gen()
+    {
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Up,
+            Adjust = new AdjustRequest { MonitorNumber = 2, MonitorId = "MON2", Setting = "brightness", Step = 10 },
+        };
+
+        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
+        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
+
+        Assert.IsNotNull(back);
+        Assert.AreEqual(CliCommandNames.Up, back!.Command);
+        Assert.AreEqual(2, back.Adjust!.MonitorNumber);
+        Assert.AreEqual("MON2", back.Adjust.MonitorId);
+        Assert.AreEqual("brightness", back.Adjust.Setting);
+        Assert.AreEqual(10, back.Adjust.Step);
+    }
+
+    [TestMethod]
+    public void AdjustRequest_omitted_step_round_trips_as_null()
+    {
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Down,
+            Adjust = new AdjustRequest { MonitorNumber = 1, Setting = "contrast", Step = null },
+        };
+
+        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
+        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
+
+        Assert.AreEqual(CliCommandNames.Down, back!.Command);
+        Assert.IsNull(back.Adjust!.Step, "omitted --step must serialize/deserialize as null so the app applies the settings default");
+    }
 }
