@@ -175,9 +175,12 @@
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
       <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
-      <?if $(var.PerUser) != "true" ?>
+      <!-- PTSettingsSvc MSIX teardown (Design §12.5).  Per-machine runs elevated
+           and removes the service package for all users; per-user is best-effort
+           (non-elevated uninstall cannot delete the service, mirroring
+           UninstallServicesTask) — the signed/immutable orphan is cleaned by a
+           later per-machine install or a manual elevated Remove-AppxPackage. -->
       <Custom Action="UnRegisterPTSettingsSvc" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
-      <?endif?>
       <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
         <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">

@@ -895,39 +895,82 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
 
     HRESULT hr = S_OK;
     UINT er = ERROR_SUCCESS;
+    LPWSTR installScope = nullptr;
+    bool isMachineLevel = false;
 
     hr = WcaInitialize(hInstall, "UnRegisterPTSettingsSvcCA");
     ExitOnFailure(hr, "Failed to initialize");
+
+    // Removing a windows.service-bearing package deletes the SCM service, which
+    // requires admin.  Per-machine uninstall runs elevated → full cleanup.
+    // Per-user uninstall is non-elevated → this is best-effort (Return="ignore",
+    // Impersonate="yes", mirroring UninstallServicesTask); when it cannot
+    // elevate, the signed+immutable WindowsApps package is left as a harmless
+    // orphan, removed later by a per-machine install or a manual elevated
+    // Remove-AppxPackage (Design §12.5).
+    hr = WcaGetProperty(L"InstallScope", &installScope);
+    if (SUCCEEDED(hr) && installScope && wcscmp(installScope, L"perMachine") == 0)
+    {
+        isMachineLevel = true;
+    }
+
+    Logger::info(L"Unregistering PTSettingsSvc MSIX - perUser: {}", !isMachineLevel);
 
     try
     {
         PackageManager pm;
 
-        // Deprovision, then remove for all users (mirrors UninstallPackageIdentityMSIXCA).
-        try
+        if (isMachineLevel)
         {
-            pm.DeprovisionPackageForAllUsersAsync(kPTSettingsSvcFamilyName).get();
-        }
-        catch (const winrt::hresult_error& ex)
-        {
-            Logger::warn(L"PTSettingsSvc deprovision failed: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
-        }
-
-        auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
-        for (const auto& package : packages)
-        {
+            // Per-machine: deprovision, then remove for all users.
             try
             {
-                auto removeResult = pm.RemovePackageAsync(package.Id().FullName(), RemovalOptions::RemoveForAllUsers).get();
-                uint32_t errorCode = static_cast<uint32_t>(removeResult.ExtendedErrorCode());
-                if (errorCode != 0)
-                {
-                    Logger::error(L"PTSettingsSvc removal failed: 0x{:08X} - {}", errorCode, removeResult.ErrorText());
-                }
+                pm.DeprovisionPackageForAllUsersAsync(kPTSettingsSvcFamilyName).get();
             }
             catch (const winrt::hresult_error& ex)
             {
-                Logger::error(L"PTSettingsSvc removal exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                Logger::warn(L"PTSettingsSvc deprovision failed: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+            }
+
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                try
+                {
+                    auto removeResult = pm.RemovePackageAsync(package.Id().FullName(), RemovalOptions::RemoveForAllUsers).get();
+                    uint32_t errorCode = static_cast<uint32_t>(removeResult.ExtendedErrorCode());
+                    if (errorCode != 0)
+                    {
+                        Logger::error(L"PTSettingsSvc removal failed: 0x{:08X} - {}", errorCode, removeResult.ErrorText());
+                    }
+                }
+                catch (const winrt::hresult_error& ex)
+                {
+                    Logger::error(L"PTSettingsSvc removal exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                }
+            }
+        }
+        else
+        {
+            // Per-user: best-effort removal for the current user.  Removing a
+            // service package needs admin, so non-elevated this typically no-ops;
+            // it succeeds only if the uninstall happens to be elevated.
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                try
+                {
+                    auto removeResult = pm.RemovePackageAsync(package.Id().FullName()).get();
+                    uint32_t errorCode = static_cast<uint32_t>(removeResult.ExtendedErrorCode());
+                    if (errorCode != 0)
+                    {
+                        Logger::warn(L"PTSettingsSvc per-user removal could not complete (likely needs admin): 0x{:08X}", errorCode);
+                    }
+                }
+                catch (const winrt::hresult_error& ex)
+                {
+                    Logger::warn(L"PTSettingsSvc per-user removal exception (likely needs admin): HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                }
             }
         }
     }
@@ -941,6 +984,7 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
     }
 
 LExit:
+    ReleaseStr(installScope);
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
