@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Power;
 
 internal static class Icons
 {
-    internal static IconInfo PowerExtensionIcon { get; } = ThemedBandIcon("Power");
+    internal static IconInfo PowerExtensionIcon { get; } = new IconInfo("\uE7E8");
 
     internal static IconInfo PowerModeBandIcon { get; } = ThemedBandIcon("PowerMode");
 
