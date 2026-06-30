@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -31,6 +32,7 @@ public partial class MainViewModel
             // DDC/CI controller picks up toggle changes without a process restart.
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
+            PushPersistedVcpCodeMaps();
 
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
@@ -115,6 +117,15 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
+            // User-initiated Refresh only (not the display-change watcher): drop persisted
+            // resolved-code maps so every feature is re-resolved from scratch.
+            if (!skipScanningCheck)
+            {
+                _stateManager.ClearAllVcpCodeMaps();
+            }
+
+            PushPersistedVcpCodeMaps();
+
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
 
             _dispatcherQueue.TryEnqueue(() =>
@@ -167,6 +178,15 @@ public partial class MainViewModel
         OnPropertyChanged(nameof(ShowLinkLevelsToggle));
         RecomputeLinkedBrightnessAvailability();
 
+        // Persist the freshly resolved feature->code maps (idempotent; debounced).
+        foreach (var monitor in monitors)
+        {
+            if (!string.IsNullOrEmpty(monitor.Id))
+            {
+                _stateManager.UpdateVcpCodeMap(monitor.Id, monitor.ResolvedVcpCodes);
+            }
+        }
+
         // Save monitor information to settings
         SaveMonitorsToSettings();
 
@@ -191,4 +211,28 @@ public partial class MainViewModel
                 .Where(m => m.IsHidden)
                 .Select(m => m.Id),
             MonitorIdComparer.Instance);
+
+    /// <summary>
+    /// Builds the per-monitor persisted resolved-code maps from the state manager and pushes
+    /// them onto the controller stack ahead of discovery. Empty maps force fresh resolution.
+    /// </summary>
+    private void PushPersistedVcpCodeMaps()
+    {
+        var maps = new Dictionary<string, VcpFeatureCodeMap>(MonitorIdComparer.Instance);
+        foreach (var existing in _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName).Properties.Monitors)
+        {
+            if (string.IsNullOrEmpty(existing.Id))
+            {
+                continue;
+            }
+
+            var map = _stateManager.GetVcpCodeMap(existing.Id);
+            if (map != null)
+            {
+                maps[existing.Id] = map;
+            }
+        }
+
+        _monitorManager.SetPersistedVcpCodeMaps(maps);
+    }
 }

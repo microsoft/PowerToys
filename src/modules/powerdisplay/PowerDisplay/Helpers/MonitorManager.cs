@@ -88,6 +88,19 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Pushes the per-monitor persisted resolved-code maps onto the DDC/CI controller before
+        /// discovery so already-resolved monitors are reused without re-probing. No-op if the DDC
+        /// controller failed to initialize.
+        /// </summary>
+        public void SetPersistedVcpCodeMaps(IReadOnlyDictionary<string, VcpFeatureCodeMap> maps)
+        {
+            if (_ddcController != null)
+            {
+                _ddcController.PersistedVcpCodeMaps = maps;
+            }
+        }
+
+        /// <summary>
         /// Discover all monitors from all controllers.
         /// Each controller is responsible for fully initializing its monitors
         /// (including brightness, capabilities, input source, color temperature, etc.)

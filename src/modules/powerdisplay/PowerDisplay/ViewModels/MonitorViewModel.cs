@@ -288,6 +288,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public string? CapabilitiesRaw => _monitor.CapabilitiesRaw;
 
+    public VcpFeatureCodeMap ResolvedVcpCodes => _monitor.ResolvedVcpCodes;
+
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
 
     /// <summary>
