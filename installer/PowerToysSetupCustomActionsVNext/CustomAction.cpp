@@ -26,6 +26,7 @@
 #include <processthreadsapi.h>
 #include <UserEnv.h>
 #include <winnt.h>
+#include <shellapi.h>
 
 using namespace std;
 
@@ -816,6 +817,7 @@ LExit:
 namespace
 {
     const wchar_t* const kPTSettingsSvcFamilyName = L"Microsoft.PowerToys.SettingsService_8wekyb3d8bbwe";
+    const wchar_t* const kPTSettingsSvcPackageName = L"Microsoft.PowerToys.SettingsService";
     const wchar_t* const kPTSettingsSvcMsixRelative = L"WorkspacesSettingsService\\PTSettingsSvc.msix";
 
     // Best-effort STOP (not delete) of a service so its (packaged) exe is not
@@ -847,6 +849,44 @@ namespace
             CloseServiceHandle(svc);
         }
         CloseServiceHandle(scm);
+    }
+
+    // Prompts UAC once to remove the PTSettingsSvc package elevated (deleting a
+    // service-bearing package needs admin, which a per-user uninstall lacks).
+    // Mirrors the shared run_elevated() helper (common/utils/elevation.h) — the
+    // same UAC-via-ShellExecute("runas") mechanism used elsewhere in the product
+    // — kept self-contained here so the installer CA project need not take a new
+    // WIL/header dependency (elevation.h transitively pulls in wil/resource.h).
+    // Returns true only if the elevated removal completed (exit 0).  False if the
+    // user declines UAC, there is no interactive session (silent uninstall), or
+    // removal fails — the caller then leaves the signed/immutable orphan WITHOUT
+    // blocking the uninstall (Design §12.5).
+    bool TryRemovePackageElevated(const wchar_t* packageName)
+    {
+        std::wstring params =
+            L"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
+            L"\"Get-AppxPackage -Name '";
+        params += packageName;
+        params += L"' | Remove-AppxPackage\"";
+
+        SHELLEXECUTEINFOW sei{};
+        sei.cbSize = sizeof(sei);
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
+        sei.lpVerb = L"runas"; // triggers the UAC consent prompt
+        sei.lpFile = L"powershell.exe";
+        sei.lpParameters = params.c_str();
+        sei.nShow = SW_HIDE;
+
+        if (!ShellExecuteExW(&sei) || !sei.hProcess)
+        {
+            // ERROR_CANCELLED (1223) == user declined UAC; or no shell/session.
+            return false;
+        }
+        WaitForSingleObject(sei.hProcess, 120000);
+        DWORD exitCode = 1;
+        GetExitCodeProcess(sei.hProcess, &exitCode);
+        CloseHandle(sei.hProcess);
+        return exitCode == 0;
     }
 }
 
@@ -989,24 +1029,42 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
         }
         else
         {
-            // Per-user: best-effort removal for the current user.  Removing a
-            // service package needs admin, so non-elevated this typically no-ops;
-            // it succeeds only if the uninstall happens to be elevated.
+            // Per-user uninstall is non-elevated, but deleting a service-bearing
+            // package needs admin.  1) Try in-proc removal (succeeds only if this
+            // uninstall already happens to be elevated).  2) If anything remains,
+            // prompt UAC ONCE to remove it elevated.  3) If the user declines or
+            // there's no interactive session (silent uninstall), leave the
+            // signed/immutable orphan WITHOUT blocking the uninstall (Design §12.5).
+            bool foundAny = false;
+            bool removed = false;
             auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
             for (const auto& package : packages)
             {
+                foundAny = true;
                 try
                 {
                     auto removeResult = pm.RemovePackageAsync(package.Id().FullName()).get();
-                    uint32_t errorCode = static_cast<uint32_t>(removeResult.ExtendedErrorCode());
-                    if (errorCode != 0)
+                    if (static_cast<uint32_t>(removeResult.ExtendedErrorCode()) == 0)
                     {
-                        Logger::warn(L"PTSettingsSvc per-user removal could not complete (likely needs admin): 0x{:08X}", errorCode);
+                        removed = true;
                     }
                 }
-                catch (const winrt::hresult_error& ex)
+                catch (const winrt::hresult_error&)
                 {
-                    Logger::warn(L"PTSettingsSvc per-user removal exception (likely needs admin): HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                    // Expected when non-elevated; fall through to the UAC prompt.
+                }
+            }
+
+            if (foundAny && !removed)
+            {
+                if (TryRemovePackageElevated(kPTSettingsSvcPackageName))
+                {
+                    Logger::info(L"PTSettingsSvc removed via one-time elevation at uninstall.");
+                }
+                else
+                {
+                    Logger::warn(L"PTSettingsSvc left registered (UAC declined or no interactive session); "
+                                 L"removable later by an elevated Remove-AppxPackage or a per-machine install.");
                 }
             }
         }
