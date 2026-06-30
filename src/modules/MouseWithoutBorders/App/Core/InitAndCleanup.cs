@@ -24,18 +24,35 @@ namespace MouseWithoutBorders.Core;
 
 internal static class InitAndCleanup
 {
-    private static bool initDone;
     internal static int REOPEN_WHEN_WSAECONNRESET = -10054;
     internal static int REOPEN_WHEN_HOTKEY = -10055;
-    internal static int PleaseReopenSocket;
-    internal static bool ReopenSocketDueToReadError;
 
-    private static DateTime LastResumeSuspendTime { get; set; } = DateTime.UtcNow;
+#pragma warning disable SA1500 // Braces for multi line statements must not share line
+#pragma warning disable SA1513 // Closing brace must be followed by blank line
+    private static DateTime LastResumeSuspendTime
+    {
+        get;
+        set;
+    } = DateTime.UtcNow;
+#pragma warning restore SA1513
+#pragma warning restore SA1500
 
     internal static bool InitDone
     {
-        get => InitAndCleanup.initDone;
-        set => InitAndCleanup.initDone = value;
+        get;
+        set;
+    }
+
+    internal static int PleaseReopenSocket
+    {
+        get;
+        set;
+    }
+
+    internal static bool ReopenSocketDueToReadError
+    {
+        get;
+        set;
     }
 
     internal static void UpdateMachineTimeAndID()
@@ -126,7 +143,7 @@ internal static class InitAndCleanup
 
         bool dummy = Setting.Values.DrawMouseEx;
         Common.Is64bitOS = IntPtr.Size == 8;
-        Common.tcpPort = Setting.Values.TcpPort;
+        Common.TcpPort = Setting.Values.TcpPort;
         WinAPI.GetScreenConfig();
         Package.PackageSent = new PackageMonitor(0);
         Package.PackageReceived = new PackageMonitor(0);
@@ -162,26 +179,26 @@ internal static class InitAndCleanup
         watchDogThread.Start();
         */
 
-        Common.helper = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
-        Common.helper.SetApartmentState(ApartmentState.STA);
-        Common.helper.Start();
+        Common.HelperThread = new Thread(new ThreadStart(Helper.HelperThread), "Helper Thread");
+        Common.HelperThread.SetApartmentState(ApartmentState.STA);
+        Common.HelperThread.Start();
     }
 
     private static void AskHelperThreadsToExit(int waitTime)
     {
-        Helper.signalHelperToExit = true;
-        Helper.signalWatchDogToExit = true;
+        Helper.SignalHelperToExit = true;
+        Helper.SignalWatchDogToExit = true;
         _ = Common.EvSwitch.Set();
 
         int c = 0;
-        if (Common.helper != null && c < waitTime)
+        if (Common.HelperThread != null && c < waitTime)
         {
-            while (Helper.signalHelperToExit)
+            while (Helper.SignalHelperToExit)
             {
                 Thread.Sleep(1);
             }
 
-            Common.helper = null;
+            Common.HelperThread = null;
         }
     }
 

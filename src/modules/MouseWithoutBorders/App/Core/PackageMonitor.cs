@@ -12,7 +12,7 @@
 // </history>
 namespace MouseWithoutBorders.Core;
 
-internal struct PackageMonitor
+internal sealed class PackageMonitor
 {
     internal ulong Keyboard;
     internal ulong Mouse;
