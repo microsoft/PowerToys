@@ -219,6 +219,8 @@ public partial class MainViewModel
     private void PushPersistedVcpCodeMaps()
     {
         var maps = new Dictionary<string, VcpFeatureCodeMap>(MonitorIdComparer.Instance);
+
+        // Enumerate the settings monitor list (kept in sync with monitor_state.json by UpdateMonitorList) and look up each monitor's persisted resolved-code map; monitors without a persisted map simply resolve fresh.
         foreach (var existing in _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName).Properties.Monitors)
         {
             if (string.IsNullOrEmpty(existing.Id))

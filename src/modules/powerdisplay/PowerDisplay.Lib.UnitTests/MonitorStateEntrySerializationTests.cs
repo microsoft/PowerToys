@@ -10,6 +10,7 @@ using PowerDisplay.Common.Serialization;
 
 namespace PowerDisplay.UnitTests;
 
+/// <summary>Serialization tests for the MonitorStateEntry VCP-code persistence field.</summary>
 [TestClass]
 public class MonitorStateEntrySerializationTests
 {

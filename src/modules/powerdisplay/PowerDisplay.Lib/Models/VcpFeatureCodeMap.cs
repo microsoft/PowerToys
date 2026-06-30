@@ -52,7 +52,9 @@ namespace PowerDisplay.Common.Models
         /// first candidate from <see cref="VcpFeatureRegistry.Primary"/>.
         /// </returns>
         public byte GetCode(VcpFeature feature) =>
-            IsSupported(feature) ? (byte)_codes[feature] : VcpFeatureRegistry.Primary(feature);
+            _codes.TryGetValue(feature, out var code) && code != NotSupportedSentinel
+                ? (byte)code
+                : VcpFeatureRegistry.Primary(feature);
 
         /// <summary>
         /// Records a resolved VCP code for <paramref name="feature"/>.
@@ -88,7 +90,9 @@ namespace PowerDisplay.Common.Models
         /// <summary>
         /// Deserialises a <see cref="VcpFeatureCodeMap"/> from a previously persisted
         /// dictionary. Unknown keys are silently ignored; <see langword="null"/> input
-        /// returns an empty (unresolved) map.
+        /// returns an empty (unresolved) map. Values outside the valid byte range [0, 255]
+        /// that are not the <see cref="NotSupportedSentinel"/> are also ignored (treated as
+        /// unresolved) to guard against corrupt or hand-edited state files.
         /// </summary>
         /// <param name="persisted">
         /// Dictionary produced by <see cref="ToPersisted"/>, or <see langword="null"/>.
@@ -104,7 +108,8 @@ namespace PowerDisplay.Common.Models
 
             foreach (var kvp in persisted)
             {
-                if (VcpFeatureRegistry.TryParseKey(kvp.Key, out var feature))
+                if (VcpFeatureRegistry.TryParseKey(kvp.Key, out var feature) &&
+                    (kvp.Value == NotSupportedSentinel || (kvp.Value >= 0 && kvp.Value <= 255)))
                 {
                     map._codes[feature] = kvp.Value;
                 }

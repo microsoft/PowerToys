@@ -105,8 +105,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get monitor color temperature using VCP code 0x14 (Select Color Preset)
-        /// Returns the raw VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature
+        /// Get monitor color temperature using the resolved color-temperature VCP code.
+        /// Returns the raw VCP preset value (e.g., 0x05 for 6500K), not Kelvin temperature.
         /// </summary>
         public async Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -115,14 +115,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Set monitor color temperature using VCP code 0x14 (Select Color Preset)
+        /// Set monitor color temperature using the resolved color-temperature VCP code.
         /// </summary>
         public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
             => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.ColorTemperature), colorTemperature, cancellationToken);
 
         /// <summary>
-        /// Get current input source using VCP code 0x60
-        /// Returns the raw VCP value (e.g., 0x11 for HDMI-1)
+        /// Get current input source using the resolved input-source VCP code.
+        /// Returns the raw VCP value (e.g., 0x11 for HDMI-1).
         /// </summary>
         public async Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
@@ -131,13 +131,13 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Set input source using VCP code 0x60
+        /// Set input source using the resolved input-source VCP code.
         /// </summary>
         public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
             => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.InputSource), inputSource, cancellationToken);
 
         /// <summary>
-        /// Set power state using VCP code 0xD6 (Power Mode).
+        /// Set power state for a monitor using the resolved power-state VCP code.
         /// Values: 0x01=On, 0x02=Standby, 0x03=Suspend, 0x04=Off(DPM), 0x05=Off(Hard).
         /// Note: Setting any value other than 0x01 (On) will turn off the display.
         /// </summary>
@@ -145,7 +145,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.PowerState), powerState, cancellationToken);
 
         /// <summary>
-        /// Get current power state using VCP code 0xD6 (Power Mode).
+        /// Get current power state for a monitor using the resolved power-state VCP code.
         /// Returns the raw VCP value (0x01=On, 0x02=Standby, etc.)
         /// </summary>
         public async Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
@@ -455,7 +455,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Initialize input source value for a monitor using VCP 0x60.
+        /// Initialize input source value for a monitor using the resolved input-source VCP code.
         /// </summary>
         private static void InitializeInputSource(Monitor monitor, IntPtr handle)
         {
@@ -467,7 +467,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Initialize color temperature value for a monitor using VCP 0x14.
+        /// Initialize color temperature value for a monitor using the resolved color-temperature VCP code.
         /// </summary>
         private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
         {
@@ -491,7 +491,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Initialize brightness value for a monitor using VCP 0x10.
+        /// Initialize brightness value for a monitor using the resolved brightness VCP code.
         /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
         /// </summary>
         private static void InitializeBrightness(Monitor monitor, IntPtr handle)
@@ -513,7 +513,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Initialize contrast value for a monitor using VCP 0x12.
+        /// Initialize contrast value for a monitor using the resolved contrast VCP code.
         /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
         /// </summary>
         private static void InitializeContrast(Monitor monitor, IntPtr handle)
@@ -528,7 +528,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Initialize volume value for a monitor using VCP 0x62.
+        /// Initialize volume value for a monitor using the resolved volume VCP code.
         /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
         /// </summary>
         private static void InitializeVolume(Monitor monitor, IntPtr handle)

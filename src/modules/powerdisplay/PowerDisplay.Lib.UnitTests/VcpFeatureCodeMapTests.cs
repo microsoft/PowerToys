@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 
 namespace PowerDisplay.UnitTests;
 
@@ -36,7 +37,7 @@ public class VcpFeatureCodeMapTests
     public void GetCode_WhenUnresolved_FallsBackToRegistryPrimary()
     {
         var map = new VcpFeatureCodeMap();
-        Assert.AreEqual((byte)0x10, map.GetCode(VcpFeature.Brightness));
+        Assert.AreEqual(VcpFeatureRegistry.Primary(VcpFeature.Brightness), map.GetCode(VcpFeature.Brightness));
     }
 
     [TestMethod]
@@ -44,7 +45,7 @@ public class VcpFeatureCodeMapTests
     {
         var map = new VcpFeatureCodeMap();
         map.SetNotSupported(VcpFeature.Brightness);
-        Assert.AreEqual((byte)0x10, map.GetCode(VcpFeature.Brightness));
+        Assert.AreEqual(VcpFeatureRegistry.Primary(VcpFeature.Brightness), map.GetCode(VcpFeature.Brightness));
     }
 
     [TestMethod]
@@ -84,5 +85,23 @@ public class VcpFeatureCodeMapTests
     {
         var map = VcpFeatureCodeMap.FromPersisted(new Dictionary<string, int> { ["future"] = 5 });
         Assert.IsFalse(map.IsResolved(VcpFeature.Brightness));
+    }
+
+    [TestMethod]
+    public void FromPersisted_OutOfRangeValues_AreIgnored()
+    {
+        var map = VcpFeatureCodeMap.FromPersisted(new Dictionary<string, int>
+        {
+            ["brightness"] = 300,   // > 255
+            ["contrast"] = -2,      // negative, not the sentinel
+            ["volume"] = -1,        // valid sentinel
+            ["colorTemperature"] = 0x14, // valid code
+        });
+
+        Assert.IsFalse(map.IsResolved(VcpFeature.Brightness));
+        Assert.IsFalse(map.IsResolved(VcpFeature.Contrast));
+        Assert.IsTrue(map.IsResolved(VcpFeature.Volume));
+        Assert.IsFalse(map.IsSupported(VcpFeature.Volume));
+        Assert.AreEqual((byte)0x14, map.GetCode(VcpFeature.ColorTemperature));
     }
 }
