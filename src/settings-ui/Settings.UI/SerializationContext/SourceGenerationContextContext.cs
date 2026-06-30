@@ -36,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(PowerOcrSettings))]
 [JsonSerializable(typeof(PowerOcrSettings))]
 [JsonSerializable(typeof(PowerDisplaySettings))]
+[JsonSerializable(typeof(Dictionary<string, int>))]
 [JsonSerializable(typeof(RegistryPreviewSettings))]
 [JsonSerializable(typeof(ShortcutConflictProperties))]
 [JsonSerializable(typeof(ShortcutGuideSettings))]

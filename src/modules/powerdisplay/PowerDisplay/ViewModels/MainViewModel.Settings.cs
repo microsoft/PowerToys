@@ -529,6 +529,7 @@ public partial class MainViewModel
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
             LastSeenUtc = _clock.UtcNow,
+            ResolvedVcpCodes = vm.ResolvedVcpCodes.ToPersisted(),
         };
 
         return monitorInfo;

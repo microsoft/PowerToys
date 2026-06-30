@@ -33,6 +33,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private System.DateTime? _lastSeenUtc;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
+        private Dictionary<string, int> _resolvedVcpCodes = new Dictionary<string, int>();
+
+        // Display order + labels for the diagnostics "Resolved feature" section. Keys must match
+        // PowerDisplay.Lib VcpFeatureRegistry.Key(...) (Settings.UI.Library must not depend on .Lib).
+        private static readonly (string Key, string Label)[] DiagnosticFeatureLabels =
+        {
+            ("brightness", "Brightness"),
+            ("contrast", "Contrast"),
+            ("volume", "Volume"),
+            ("colorTemperature", "Color temperature"),
+            ("inputSource", "Input source"),
+            ("powerState", "Power state"),
+        };
+
         private int _monitorNumber;
         private int _totalMonitorCount;
 
@@ -388,6 +402,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
+        /// Gets or sets the resolved feature-to-VCP-code map (feature name -> code, or -1 =
+        /// checked-but-unsupported). Written by the PowerDisplay app; shown in diagnostics.
+        /// </summary>
+        [JsonPropertyName("resolvedVcpCodes")]
+        public Dictionary<string, int> ResolvedVcpCodes
+        {
+            get => _resolvedVcpCodes;
+            set
+            {
+                _resolvedVcpCodes = value ?? new Dictionary<string, int>();
+                OnPropertyChanged();
+            }
+        }
+
+        /// <summary>
         /// Compare two VcpCodesFormatted lists for equality by content.
         /// Returns true if both lists have the same VCP codes (by code value).
         /// </summary>
@@ -710,6 +739,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             lines.Add($"Supports power state: {SupportsPowerState}");
             lines.Add(string.Empty);
 
+            lines.Add("Resolved feature -> VCP code");
+            lines.Add(new string('-', 50));
+            foreach (var (key, label) in DiagnosticFeatureLabels)
+            {
+                if (_resolvedVcpCodes.TryGetValue(key, out var code))
+                {
+                    lines.Add(code < 0 ? $"{label}: not supported" : $"{label}: 0x{code:X2}");
+                }
+                else
+                {
+                    lines.Add($"{label}: not resolved");
+                }
+            }
+
+            lines.Add(string.Empty);
+
             lines.Add("Raw capabilities");
             lines.Add(new string('-', 50));
             lines.Add(string.IsNullOrWhiteSpace(CapabilitiesRaw) ? "No raw capabilities detected" : CapabilitiesRaw);
@@ -749,6 +794,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnablePowerState = other.EnablePowerState;
             CapabilitiesRaw = other.CapabilitiesRaw;
             VcpCodesFormatted = other.VcpCodesFormatted;
+            ResolvedVcpCodes = other.ResolvedVcpCodes;
             SupportsBrightness = other.SupportsBrightness;
             SupportsContrast = other.SupportsContrast;
             SupportsColorTemperature = other.SupportsColorTemperature;

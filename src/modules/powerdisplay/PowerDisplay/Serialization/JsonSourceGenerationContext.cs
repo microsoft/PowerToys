@@ -34,6 +34,7 @@ namespace PowerDisplay.Serialization
     [JsonSerializable(typeof(List<VcpValueInfo>))]
     [JsonSerializable(typeof(List<PowerDisplayProfile>))]
     [JsonSerializable(typeof(List<ProfileMonitorSetting>))]
+    [JsonSerializable(typeof(Dictionary<string, int>))]
 
     [JsonSourceGenerationOptions(
         WriteIndented = true,
