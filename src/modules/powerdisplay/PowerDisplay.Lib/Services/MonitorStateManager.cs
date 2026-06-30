@@ -47,6 +47,8 @@ namespace PowerDisplay.Common.Services
             public int? Volume { get; set; }
 
             public string? CapabilitiesRaw { get; set; }
+
+            public Dictionary<string, int>? VcpFeatureCodes { get; set; }
         }
 
         /// <summary>
@@ -147,6 +149,97 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
+        /// Gets the persisted resolved feature-to-VCP-code map for a monitor, or <c>null</c>
+        /// if it has never been resolved.
+        /// </summary>
+        public VcpFeatureCodeMap? GetVcpCodeMap(string monitorId)
+        {
+            if (string.IsNullOrEmpty(monitorId))
+            {
+                return null;
+            }
+
+            if (_states.TryGetValue(monitorId, out var state) && state.VcpFeatureCodes != null)
+            {
+                return VcpFeatureCodeMap.FromPersisted(state.VcpFeatureCodes);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Persists the resolved feature-to-VCP-code map for a monitor. Idempotent: skips the
+        /// write when the serialized map is unchanged, so re-running discovery does not churn disk.
+        /// </summary>
+        public void UpdateVcpCodeMap(string monitorId, VcpFeatureCodeMap map)
+        {
+            if (string.IsNullOrEmpty(monitorId) || map == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var persisted = map.ToPersisted();
+                var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
+                if (DictionariesEqual(state.VcpFeatureCodes, persisted))
+                {
+                    return;
+                }
+
+                state.VcpFeatureCodes = persisted;
+                _isDirty = true;
+                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to update VCP code map for monitorId '{monitorId}': {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Clears every monitor's resolved feature-to-VCP-code map (leaving brightness/contrast/
+        /// volume/color values intact), forcing a fresh resolution on the next discovery. Called
+        /// by the user-initiated Refresh path.
+        /// </summary>
+        public void ClearAllVcpCodeMaps()
+        {
+            bool changed = false;
+            foreach (var state in _states.Values)
+            {
+                if (state.VcpFeatureCodes != null)
+                {
+                    state.VcpFeatureCodes = null;
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                _isDirty = true;
+                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+            }
+        }
+
+        private static bool DictionariesEqual(Dictionary<string, int>? a, Dictionary<string, int> b)
+        {
+            if (a == null || a.Count != b.Count)
+            {
+                return false;
+            }
+
+            foreach (var kvp in b)
+            {
+                if (!a.TryGetValue(kvp.Key, out var v) || v != kvp.Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// One-shot upgrade migration: rewrite legacy <c>"{Source}_{EdidId}_{N}"</c> keys
         /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on
         /// (EdidId, MonitorNumber). Legacy keys are always removed; if no exact match is
@@ -221,6 +314,7 @@ namespace PowerDisplay.Common.Services
             Contrast = s.Contrast,
             Volume = s.Volume,
             CapabilitiesRaw = s.CapabilitiesRaw,
+            VcpFeatureCodes = s.VcpFeatureCodes,
         };
 
         /// <summary>
@@ -252,6 +346,7 @@ namespace PowerDisplay.Common.Services
                             Contrast = entry.Contrast,
                             Volume = entry.Volume,
                             CapabilitiesRaw = entry.CapabilitiesRaw,
+                            VcpFeatureCodes = entry.VcpFeatureCodes,
                         };
                     }
                 }
@@ -333,6 +428,7 @@ namespace PowerDisplay.Common.Services
                     Contrast = state.Contrast,
                     Volume = state.Volume,
                     CapabilitiesRaw = state.CapabilitiesRaw,
+                    VcpFeatureCodes = state.VcpFeatureCodes,
                     LastUpdated = now,
                 };
             }
