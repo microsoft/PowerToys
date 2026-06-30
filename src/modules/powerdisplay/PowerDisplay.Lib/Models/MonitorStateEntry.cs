@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace PowerDisplay.Common.Models
@@ -42,6 +43,14 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         [JsonPropertyName("capabilitiesRaw")]
         public string? CapabilitiesRaw { get; set; }
+
+        /// <summary>
+        /// Gets or sets the resolved feature-to-VCP-code map (JSON key = feature name,
+        /// value = VCP code, or <c>-1</c> = checked-but-unsupported). <c>null</c> when the
+        /// monitor's features have never been resolved.
+        /// </summary>
+        [JsonPropertyName("vcpFeatureCodes")]
+        public Dictionary<string, int>? VcpFeatureCodes { get; set; }
 
         /// <summary>
         /// Gets or sets when this entry was last updated.

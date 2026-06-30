@@ -20,6 +20,7 @@ namespace PowerDisplay.Common.Serialization
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
     [JsonSerializable(typeof(Dictionary<string, MonitorStateEntry>))]
+    [JsonSerializable(typeof(Dictionary<string, int>))]
     public partial class MonitorStateSerializationContext : JsonSerializerContext
     {
     }

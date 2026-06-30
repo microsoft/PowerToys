@@ -264,6 +264,13 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         public VcpCapabilities? VcpCapabilitiesInfo { get; set; }
 
+        /// <summary>
+        /// Gets or sets the per-feature resolved VCP code map for this monitor, produced by
+        /// <see cref="PowerDisplay.Common.Utils.VcpFeatureResolver"/> during discovery and
+        /// persisted via <c>MonitorStateManager</c>.
+        /// </summary>
+        public VcpFeatureCodeMap ResolvedVcpCodes { get; set; } = new();
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
