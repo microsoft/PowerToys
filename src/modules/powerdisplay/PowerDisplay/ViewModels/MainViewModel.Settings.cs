@@ -223,6 +223,7 @@ public partial class MainViewModel
             foreach (var monitor in Monitors)
             {
                 monitor.RefreshCustomVcpNames();
+                monitor.RefreshMouseWheelIncrement();
             }
         }
         catch (Exception ex)

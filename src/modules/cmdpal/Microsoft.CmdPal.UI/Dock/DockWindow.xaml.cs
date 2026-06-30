@@ -24,17 +24,24 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Accessibility;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
 using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
+using POINT = Microsoft.PowerToys.Settings.UI.Helpers.POINT;
+using RECT = Windows.Win32.Foundation.RECT;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
+/// <summary>
+/// The main window for the dock feature. Uses the Windows AppBar API to reserve
+/// screen work area and position itself at the edge of the display.
+/// </summary>
 public sealed partial class DockWindow : WindowEx,
     IRecipient<BringToTopMessage>,
     IRecipient<RequestShowPaletteAtMessage>,
@@ -42,6 +49,13 @@ public sealed partial class DockWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
+    private enum DockAppBarMode
+    {
+        None,
+        Pinned,
+        AutoHide,
+    }
+
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
 #pragma warning disable SA1310 // Field names should not contain underscore
     private readonly uint WM_TASKBAR_RESTART;
@@ -69,6 +83,27 @@ public sealed partial class DockWindow : WindowEx,
     private BackdropParameters? _lastAppliedAcrylicBackdrop;
     private DockSize _lastSize;
     private bool _isDisposed;
+    private DockAppBarMode _appBarMode;
+    private bool _autoHideRegistrationSucceeded;
+    private bool _isDockRevealed = true;
+    private bool _trackingMouseLeave;
+    private RECT _revealedRect;
+    private RECT _collapsedRect;
+    private DispatcherQueueTimer? _collapseTimer;
+    private DispatcherQueueTimer? _revealPollTimer;
+    private DispatcherQueueTimer? _slideTimer;
+    private RECT _slideFromRect;
+    private RECT _slideToRect;
+    private bool _slideIsRevealing;
+    private System.Diagnostics.Stopwatch? _slideStopwatch;
+    private bool _paletteOpenedFromDock;
+    private const int AutoHideCollapsedThicknessDips = 0;
+    private const int RevealHitTestMarginPixels = 1;
+    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
+    private static readonly TimeSpan RevealPollInterval = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan SlideRevealDuration = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan SlideCollapseDuration = TimeSpan.FromMilliseconds(150);
+    private static readonly TimeSpan SlideFrameInterval = TimeSpan.FromMilliseconds(8);
 
     /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
@@ -111,7 +146,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _monitorService = serviceProvider.GetRequiredService<IMonitorService>();
         _settings = mainSettings.DockSettings;
-        _lastSize = EffectiveDockSize(_settings);
+        _lastSize = EffectiveDockSize(_settings, EffectiveSide);
 
         viewModel = dockViewModel;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
@@ -203,6 +238,11 @@ public sealed partial class DockWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+
+            // Remove the 1px accent border that Windows 11 DWM draws on all windows.
+            // DWMWA_COLOR_NONE (0xFFFFFFFE) instructs DWM to render no border color.
+            uint borderColorNone = 0xFFFFFFFE;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColorNone, (uint)sizeof(uint));
         }
     }
 
@@ -225,13 +265,22 @@ public sealed partial class DockWindow : WindowEx,
         _dock.UpdateSettings(_settings, EffectiveSide);
 
         var side = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
+        var desiredMode = GetDesiredAppBarMode();
+        var effectiveSize = EffectiveDockSize(_settings, EffectiveSide);
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             var sameEdge = _appBarData.uEdge == side;
-            var sameSize = _lastSize == EffectiveDockSize(_settings);
-            if (sameEdge && sameSize)
+            var sameSize = _lastSize == effectiveSize;
+            var sameMode = _appBarMode == desiredMode;
+
+            if (sameEdge && sameSize && sameMode)
             {
+                if (_appBarMode == DockAppBarMode.AutoHide)
+                {
+                    UpdateWindowPosition();
+                }
+
                 UpdateTopmostState();
                 return;
             }
@@ -373,6 +422,11 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
+    /// <summary>
+    /// Registers this window as a Windows AppBar. In pinned mode, the dock
+    /// reserves work area so maximized windows do not overlap it. In auto-hide
+    /// mode, <c>ABM_SETAUTOHIDEBAR</c> is used and no work area is reserved.
+    /// </summary>
     private void CreateAppBar(HWND hwnd)
     {
         _appBarData = new APPBARDATA
@@ -382,20 +436,71 @@ public sealed partial class DockWindow : WindowEx,
             uCallbackMessage = _callbackMessageId,
         };
 
-        // Register this window as an app bar
-        PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
 
-        // Stash the last size we created the bar at, so we know when to hot-
-        // reload it
-        _lastSize = EffectiveDockSize(_settings);
+        _appBarMode = DockAppBarMode.None;
+        _autoHideRegistrationSucceeded = false;
 
+        if (GetDesiredAppBarMode() == DockAppBarMode.AutoHide
+            && !IsTaskbarAutoHideOnSameEdge(EffectiveSide)
+            && TryRegisterAutoHideAppBar())
+        {
+            _appBarMode = DockAppBarMode.AutoHide;
+            _autoHideRegistrationSucceeded = true;
+            WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(false));
+        }
+        else
+        {
+            _appBarMode = DockAppBarMode.Pinned;
+            if (_settings.AutoHide)
+            {
+                var reason = IsTaskbarAutoHideOnSameEdge(EffectiveSide)
+                    ? "taskbar auto-hide conflict"
+                    : "registration rejected";
+                Logger.LogWarning($"Dock auto-hide unavailable ({reason}) on edge {EffectiveSide} for monitor {MonitorForLogs()}. Falling back to pinned mode.");
+                WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(true));
+            }
+        }
+
+        _lastSize = EffectiveDockSize(_settings, EffectiveSide);
         UpdateWindowPosition();
+
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            // Briefly show the dock at the new position so users can confirm
+            // the move, then schedule a collapse after the standard delay.
+            _isDockRevealed = true;
+            ApplyAutoHideRect(_revealedRect);
+            ScheduleCollapseAutoHideDock();
+        }
     }
 
     private void DestroyAppBar(HWND hwnd)
     {
-        PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
+        StopCollapseTimer();
+        StopRevealPollTimer();
+        StopSlideAnimation();
+
+        // If the window was hidden via SW_HIDE (auto-hide collapsed state),
+        // make it visible again before transitioning to a new mode.
+        if (_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        }
+
+        if (_appBarMode == DockAppBarMode.AutoHide && _autoHideRegistrationSucceeded)
+        {
+            _ = TrySetAutoHideRegistration(register: false);
+            _autoHideRegistrationSucceeded = false;
+        }
+
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
         _appBarData = default;
+        _appBarMode = DockAppBarMode.None;
+        _trackingMouseLeave = false;
+        _isDockRevealed = true;
+        _revealedRect = default;
+        _collapsedRect = default;
     }
 
     private void UpdateTopmostState(bool bringToFront = false)
@@ -435,23 +540,27 @@ public sealed partial class DockWindow : WindowEx,
 
     private void UpdateWindowPosition()
     {
-        Logger.LogDebug("UpdateWindowPosition");
+        Logger.LogDebug($"UpdateWindowPosition mode={_appBarMode} autoHideRequested={_settings.AutoHide} monitor={MonitorForLogs()}");
 
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
-
         var scaleFactor = dpi / 96.0;
-        var effectiveSize = EffectiveDockSize(_settings);
+        var effectiveSize = EffectiveDockSize(_settings, EffectiveSide);
+
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            UpdateAutoHideWindowPosition(effectiveSize, scaleFactor);
+            return;
+        }
+
+        UpdatePinnedWindowPosition(effectiveSize, scaleFactor);
+    }
+
+    private void UpdatePinnedWindowPosition(DockSize effectiveSize, double scaleFactor)
+    {
         UpdateAppBarDataForEdge(EffectiveSide, effectiveSize, scaleFactor);
 
-        // Query and set position
-        PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
 
-        // ABM_QUERYPOS adjusts our rect so we don't overlap other app bars,
-        // but it may have shifted our anchored edge without updating the
-        // opposite edge. We need to re-apply our desired thickness so the
-        // bar keeps its correct size. Without this, a second bar docked to
-        // the same side would get a zero-height/width rect and fail to
-        // reserve work-area space.
         switch (EffectiveSide)
         {
             case DockSide.Top:
@@ -468,18 +577,8 @@ public sealed partial class DockWindow : WindowEx,
                 break;
         }
 
-        PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
-        // TODO: investigate ABS_AUTOHIDE and auto hide bars.
-        // I think it's something like this, but I don't totally know
-        //   _appBarData.lParam = ABS_ALWAYSONTOP;
-        //   _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
-        //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
-        //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
-
-        // The dock window is borderless (SetBorderAndTitleBar(false, false),
-        // IsResizable = false) so no frame compensation is needed — the
-        // app bar rect matches the window rect exactly.
         PInvoke.MoveWindow(
             _hwnd,
             _appBarData.rc.left,
@@ -487,6 +586,8 @@ public sealed partial class DockWindow : WindowEx,
             _appBarData.rc.right - _appBarData.rc.left,
             _appBarData.rc.bottom - _appBarData.rc.top,
             true);
+
+        _isDockRevealed = true;
     }
 
     /// <summary>
@@ -525,10 +626,539 @@ public sealed partial class DockWindow : WindowEx,
     /// Compact mode is only supported for Top/Bottom dock positions.
     /// For Left/Right, always use Default size.
     /// </summary>
-    private static DockSize EffectiveDockSize(DockSettings settings)
+    private static DockSize EffectiveDockSize(DockSettings settings, DockSide side)
     {
-        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var isHorizontal = side == DockSide.Top || side == DockSide.Bottom;
         return isHorizontal ? settings.DockSize : DockSize.Default;
+    }
+
+    private DockAppBarMode GetDesiredAppBarMode()
+    {
+        return _settings.AutoHide ? DockAppBarMode.AutoHide : DockAppBarMode.Pinned;
+    }
+
+    /// <summary>
+    /// Checks whether the Windows taskbar is set to auto-hide on the same
+    /// edge as the dock. When true, the dock should not use auto-hide mode
+    /// to avoid competing for the same screen-edge reveal zone.
+    /// </summary>
+    private bool IsTaskbarAutoHideOnSameEdge(DockSide side)
+    {
+        var stateAbd = new APPBARDATA { cbSize = (uint)Marshal.SizeOf<APPBARDATA>() };
+        var state = PInvoke.SHAppBarMessage(PInvoke.ABM_GETSTATE, ref stateAbd);
+        if ((state & PInvoke.ABS_AUTOHIDE) == 0)
+        {
+            return false;
+        }
+
+        // Taskbar is auto-hiding; check which edge
+        var posAbd = new APPBARDATA { cbSize = (uint)Marshal.SizeOf<APPBARDATA>() };
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_GETTASKBARPOS, ref posAbd);
+
+        var taskbarEdge = posAbd.uEdge;
+        var dockEdge = DockSettingsToViews.GetAppBarEdge(side);
+
+        return taskbarEdge == dockEdge;
+    }
+
+    private bool TryRegisterAutoHideAppBar()
+    {
+        return TrySetAutoHideRegistration(register: true);
+    }
+
+    private bool TrySetAutoHideRegistration(bool register)
+    {
+        _appBarData.rc = GetMonitorBoundsRect();
+        _appBarData.uEdge = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
+        _appBarData.lParam = register ? new LPARAM(1) : new LPARAM(0);
+
+        if (_targetMonitor is null)
+        {
+            var result = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
+            return result != 0;
+        }
+
+        var exResult = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAREX, ref _appBarData);
+        return exResult != 0;
+    }
+
+    private string MonitorForLogs()
+    {
+        return _targetMonitor?.StableId ?? "primary";
+    }
+
+    private RECT GetMonitorBoundsRect()
+    {
+        if (_targetMonitor is not null)
+        {
+            return new RECT
+            {
+                left = _targetMonitor.Bounds.Left,
+                top = _targetMonitor.Bounds.Top,
+                right = _targetMonitor.Bounds.Right,
+                bottom = _targetMonitor.Bounds.Bottom,
+            };
+        }
+
+        return new RECT
+        {
+            left = 0,
+            top = 0,
+            right = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN),
+            bottom = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN),
+        };
+    }
+
+    private void UpdateAutoHideWindowPosition(DockSize effectiveSize, double scaleFactor)
+    {
+        UpdateAppBarDataForEdge(EffectiveSide, effectiveSize, scaleFactor);
+
+        _revealedRect = _appBarData.rc;
+        _collapsedRect = BuildCollapsedRect(_revealedRect, EffectiveSide, scaleFactor);
+
+        ApplyAutoHideRect(_isDockRevealed ? _revealedRect : _collapsedRect);
+
+        if (_isDockRevealed)
+        {
+            EnsureMouseLeaveTracking();
+        }
+    }
+
+    private RECT BuildCollapsedRect(RECT revealedRect, DockSide side, double scaleFactor)
+    {
+        var collapsedRect = revealedRect;
+        var thickness = (int)Math.Round(AutoHideCollapsedThicknessDips * scaleFactor);
+
+        switch (side)
+        {
+            case DockSide.Top:
+                collapsedRect.bottom = collapsedRect.top + thickness;
+                break;
+            case DockSide.Bottom:
+                collapsedRect.top = collapsedRect.bottom - thickness;
+                break;
+            case DockSide.Left:
+                collapsedRect.right = collapsedRect.left + thickness;
+                break;
+            case DockSide.Right:
+                collapsedRect.left = collapsedRect.right - thickness;
+                break;
+        }
+
+        return collapsedRect;
+    }
+
+    private void ApplyAutoHideRect(RECT rect)
+    {
+        var width = rect.right - rect.left;
+        var height = rect.bottom - rect.top;
+
+        if (width <= 0 || height <= 0)
+        {
+            // Window is fully collapsed - hide it
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            return;
+        }
+
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        PInvoke.MoveWindow(
+            _hwnd,
+            rect.left,
+            rect.top,
+            width,
+            height,
+            true);
+    }
+
+    /// <summary>
+    /// Positions the window without forcing a synchronous repaint.
+    /// Used during animation frames for smoother sliding.
+    /// </summary>
+    private void ApplyAutoHideRectNoRepaint(RECT rect)
+    {
+        var width = rect.right - rect.left;
+        var height = rect.bottom - rect.top;
+
+        if (width <= 0 || height <= 0)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            return;
+        }
+
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOCOPYBITS;
+        PInvoke.SetWindowPos(_hwnd, HWND.Null, rect.left, rect.top, width, height, flags);
+    }
+
+    private void RevealAutoHideDock(bool immediate = false)
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
+        {
+            return;
+        }
+
+        StopCollapseTimer();
+        StopRevealPollTimer();
+        _isDockRevealed = true;
+
+        if (immediate)
+        {
+            StopSlideAnimation();
+            ApplyAutoHideRect(_revealedRect);
+            UpdateTopmostState(bringToFront: true);
+        }
+        else
+        {
+            StartSlideAnimation(_collapsedRect, _revealedRect, isRevealing: true);
+            UpdateTopmostState(bringToFront: true);
+        }
+
+        EnsureMouseLeaveTracking();
+    }
+
+    private void CollapseAutoHideDock(bool immediate = false)
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || !_isDockRevealed)
+        {
+            return;
+        }
+
+        if (!immediate && !CanCollapseAutoHideDock())
+        {
+            // Cursor is still over the dock or a blocking condition exists.
+            // Reschedule so we retry when conditions change.
+            ScheduleCollapseAutoHideDock();
+            return;
+        }
+
+        StopCollapseTimer();
+        _isDockRevealed = false;
+
+        if (immediate)
+        {
+            StopSlideAnimation();
+            ApplyAutoHideRect(_collapsedRect);
+        }
+        else
+        {
+            StartSlideAnimation(_revealedRect, _collapsedRect, isRevealing: false);
+        }
+
+        // Only start the reveal poll timer if no fullscreen app is blocking this monitor
+        if (!_isFullScreenAppOpen)
+        {
+            StartRevealPollTimer();
+        }
+    }
+
+    private bool CanCollapseAutoHideDock()
+    {
+        if (_dock.IsEditMode || _dock.HasOpenTransientUi || _dock.IsDragOperationActive)
+        {
+            return false;
+        }
+
+        if (_paletteOpenedFromDock)
+        {
+            return false;
+        }
+
+        if (!PInvoke.GetCursorPos(out var cursor))
+        {
+            return true;
+        }
+
+        // Only block collapse if cursor is over our actual window (not just in the same screen area)
+        var cursorPoint = new POINT(cursor.X, cursor.Y);
+        if (IsPointInRect(_revealedRect, cursorPoint))
+        {
+            var windowUnderCursor = PInvoke.WindowFromPoint(new System.Drawing.Point(cursor.X, cursor.Y));
+
+            // WindowFromPoint may return a child control (button, panel, etc.)
+            // inside the dock. Walk up to the top-level window to compare.
+            var rootWindow = PInvoke.GetAncestor(windowUnderCursor, GET_ANCESTOR_FLAGS.GA_ROOT);
+            if (rootWindow == _hwnd)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsPointInRect(RECT rect, POINT point)
+    {
+        return point.X >= rect.left && point.X < rect.right && point.Y >= rect.top && point.Y < rect.bottom;
+    }
+
+    private void ScheduleCollapseAutoHideDock()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || !_isDockRevealed)
+        {
+            return;
+        }
+
+        _collapseTimer ??= CreateCollapseTimer();
+        _collapseTimer.Stop();
+        _collapseTimer.Start();
+    }
+
+    private DispatcherQueueTimer CreateCollapseTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = AutoHideCollapseDelay;
+        timer.IsRepeating = false;
+        timer.Tick += (sender, _) =>
+        {
+            sender.Stop();
+            CollapseAutoHideDock();
+        };
+
+        return timer;
+    }
+
+    private void StopCollapseTimer()
+    {
+        _collapseTimer?.Stop();
+    }
+
+    private void StartRevealPollTimer()
+    {
+        _revealPollTimer ??= CreateRevealPollTimer();
+        _revealPollTimer.Start();
+    }
+
+    private void StopRevealPollTimer()
+    {
+        _revealPollTimer?.Stop();
+    }
+
+    private DispatcherQueueTimer CreateRevealPollTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = RevealPollInterval;
+        timer.IsRepeating = true;
+        timer.Tick += (_, _) => PollCursorForReveal();
+        return timer;
+    }
+
+    private void PollCursorForReveal()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
+        {
+            StopRevealPollTimer();
+            return;
+        }
+
+        if (!PInvoke.GetCursorPos(out var cursor))
+        {
+            return;
+        }
+
+        if (IsCursorAtDockEdge(new POINT(cursor.X, cursor.Y)))
+        {
+            StopRevealPollTimer();
+            RevealAutoHideDock(immediate: false);
+        }
+    }
+
+    private bool IsCursorAtDockEdge(POINT cursor)
+    {
+        // Use the revealed rect's edge position for detection. This already
+        // accounts for work area offsets (e.g., dock positioned above taskbar).
+        switch (EffectiveSide)
+        {
+            case DockSide.Top:
+                return cursor.Y <= _revealedRect.top + RevealHitTestMarginPixels
+                    && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
+            case DockSide.Bottom:
+                return cursor.Y >= _revealedRect.bottom - RevealHitTestMarginPixels
+                    && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
+            case DockSide.Left:
+                return cursor.X <= _revealedRect.left + RevealHitTestMarginPixels
+                    && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
+            case DockSide.Right:
+                return cursor.X >= _revealedRect.right - RevealHitTestMarginPixels
+                    && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
+            default:
+                return false;
+        }
+    }
+
+    private void StartSlideAnimation(RECT from, RECT to, bool isRevealing)
+    {
+        StopSlideAnimation();
+
+        _slideFromRect = from;
+        _slideToRect = to;
+        _slideIsRevealing = isRevealing;
+
+        // Ensure window is visible at start of reveal animation
+        if (isRevealing)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        }
+
+        _slideStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        _slideTimer ??= CreateSlideTimer();
+        _slideTimer.Start();
+    }
+
+    private void StopSlideAnimation()
+    {
+        _slideTimer?.Stop();
+        _slideStopwatch?.Stop();
+    }
+
+    private DispatcherQueueTimer CreateSlideTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = SlideFrameInterval;
+        timer.IsRepeating = true;
+        timer.Tick += (_, _) => OnSlideTimerTick();
+        return timer;
+    }
+
+    private void OnSlideTimerTick()
+    {
+        if (_slideStopwatch is null)
+        {
+            StopSlideAnimation();
+            return;
+        }
+
+        var duration = _slideIsRevealing ? SlideRevealDuration : SlideCollapseDuration;
+        var elapsed = _slideStopwatch.Elapsed.TotalMilliseconds;
+        var progress = Math.Min(1.0, elapsed / duration.TotalMilliseconds);
+
+        var easedProgress = _slideIsRevealing
+            ? EaseOutCubic(progress)
+            : EaseInCubic(progress);
+
+        var currentRect = LerpRect(_slideFromRect, _slideToRect, easedProgress);
+
+        if (progress >= 1.0)
+        {
+            StopSlideAnimation();
+
+            // Final frame: apply exact position with full repaint
+            ApplyAutoHideRect(_slideToRect);
+        }
+        else
+        {
+            // Intermediate frames: move without synchronous repaint for smoothness
+            ApplyAutoHideRectNoRepaint(currentRect);
+        }
+    }
+
+    private static double EaseOutCubic(double t) => 1.0 - Math.Pow(1.0 - t, 3);
+
+    private static double EaseInCubic(double t) => t * t * t;
+
+    private static RECT LerpRect(RECT a, RECT b, double t)
+    {
+        return new RECT
+        {
+            left = Lerp(a.left, b.left, t),
+            top = Lerp(a.top, b.top, t),
+            right = Lerp(a.right, b.right, t),
+            bottom = Lerp(a.bottom, b.bottom, t),
+        };
+    }
+
+    private static int Lerp(int a, int b, double t) => (int)Math.Round(double.Lerp(a, b, t));
+
+    private void EnsureMouseLeaveTracking()
+    {
+        if (_trackingMouseLeave)
+        {
+            return;
+        }
+
+        var track = new TRACKMOUSEEVENT
+        {
+            cbSize = (uint)Marshal.SizeOf<TRACKMOUSEEVENT>(),
+            dwFlags = TRACKMOUSEEVENT_FLAGS.TME_LEAVE,
+            hwndTrack = _hwnd,
+            dwHoverTime = 0,
+        };
+
+        if (PInvoke.TrackMouseEvent(ref track))
+        {
+            _trackingMouseLeave = true;
+        }
+    }
+
+    private void HandleWorkAreaChanged()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        var desiredMode = GetDesiredAppBarMode();
+        var taskbarConflict = desiredMode == DockAppBarMode.AutoHide
+            && IsTaskbarAutoHideOnSameEdge(EffectiveSide);
+
+        if (taskbarConflict && _appBarMode == DockAppBarMode.AutoHide)
+        {
+            // Taskbar started auto-hiding on our edge, switch to pinned
+            DestroyAppBar(_hwnd);
+            CreateAppBar(_hwnd);
+        }
+        else if (!taskbarConflict && _appBarMode == DockAppBarMode.Pinned && desiredMode == DockAppBarMode.AutoHide)
+        {
+            // Taskbar stopped auto-hiding on our edge, try auto-hide again
+            DestroyAppBar(_hwnd);
+            CreateAppBar(_hwnd);
+        }
+        else
+        {
+            UpdateWindowPosition();
+        }
+    }
+
+    private void HandleMouseMoveForAutoHide()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        // The poll timer handles reveal when the dock is collapsed/hidden.
+        // WM_MOUSEMOVE only arrives when the dock is visible (revealed),
+        // so we just reset the collapse timer to keep it open while active.
+        if (!_isDockRevealed)
+        {
+            return;
+        }
+
+        StopCollapseTimer();
+        EnsureMouseLeaveTracking();
+    }
+
+    private void HandleMouseLeaveForAutoHide()
+    {
+        _trackingMouseLeave = false;
+
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        ScheduleCollapseAutoHideDock();
+    }
+
+    private void HandleDeactivationForAutoHide()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        // When the dock loses activation, the palette (if opened from dock) is closing
+        _paletteOpenedFromDock = false;
+        ScheduleCollapseAutoHideDock();
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)
@@ -537,7 +1167,9 @@ public sealed partial class DockWindow : WindowEx,
         var horizontalHeightDips = DockSettingsToViews.HeightForSize(size);
         var verticalWidthDips = DockSettingsToViews.WidthForSize(size);
 
-        // Use monitor-specific bounds when available; fall back to primary screen metrics
+        // Use monitor-specific bounds when available; fall back to primary screen metrics.
+        // In auto-hide mode, use work area on the dock's edge so the dock
+        // positions inward of the taskbar (if the taskbar is on the same edge).
         int monLeft, monTop, monRight, monBottom;
         if (_targetMonitor is not null)
         {
@@ -545,6 +1177,27 @@ public sealed partial class DockWindow : WindowEx,
             monTop = _targetMonitor.Bounds.Top;
             monRight = _targetMonitor.Bounds.Right;
             monBottom = _targetMonitor.Bounds.Bottom;
+
+            if (_appBarMode == DockAppBarMode.AutoHide || GetDesiredAppBarMode() == DockAppBarMode.AutoHide)
+            {
+                // Use work area edge only on the side where the dock is positioned.
+                // This keeps the dock inward of the taskbar on the shared edge.
+                switch (side)
+                {
+                    case DockSide.Top:
+                        monTop = _targetMonitor.WorkArea.Top;
+                        break;
+                    case DockSide.Bottom:
+                        monBottom = _targetMonitor.WorkArea.Bottom;
+                        break;
+                    case DockSide.Left:
+                        monLeft = _targetMonitor.WorkArea.Left;
+                        break;
+                    case DockSide.Right:
+                        monRight = _targetMonitor.WorkArea.Right;
+                        break;
+                }
+            }
         }
         else
         {
@@ -552,6 +1205,33 @@ public sealed partial class DockWindow : WindowEx,
             monTop = 0;
             monRight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
             monBottom = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+
+            if (_appBarMode == DockAppBarMode.AutoHide || GetDesiredAppBarMode() == DockAppBarMode.AutoHide)
+            {
+                // For primary monitor without MonitorInfo, use the system work area
+                unsafe
+                {
+                    RECT workArea = default;
+                    if (PInvoke.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETWORKAREA, 0, &workArea, 0))
+                    {
+                        switch (side)
+                        {
+                            case DockSide.Top:
+                                monTop = workArea.top;
+                                break;
+                            case DockSide.Bottom:
+                                monBottom = workArea.bottom;
+                                break;
+                            case DockSide.Left:
+                                monLeft = workArea.left;
+                                break;
+                            case DockSide.Right:
+                                monRight = workArea.right;
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         if (side == DockSide.Top)
@@ -607,8 +1287,9 @@ public sealed partial class DockWindow : WindowEx,
             {
                 Logger.LogDebug($"WM_SETTINGCHANGE(SPI_SETWORKAREA)");
 
-                // Use debounced call to throttle rapid successive calls
-                DispatcherQueue.TryEnqueue(() => UpdateWindowPosition());
+                // Work area changed - taskbar may have toggled auto-hide or moved.
+                // Re-evaluate whether our auto-hide mode is still valid.
+                DispatcherQueue.TryEnqueue(HandleWorkAreaChanged);
             }
         }
         else if (msg == PInvoke.WM_DISPLAYCHANGE)
@@ -634,8 +1315,37 @@ public sealed partial class DockWindow : WindowEx,
                 }
 
                 RefreshTargetMonitor();
-                UpdateWindowPosition();
+
+                if (_appBarData.hWnd != IntPtr.Zero)
+                {
+                    // The Shell caches the monitor coordinates from the original
+                    // ABM_NEW registration, so after a topology change the stale
+                    // AppBar rect cannot be repositioned correctly. Destroy and
+                    // recreate to re-register with the new monitor geometry.
+                    DestroyAppBar(_hwnd);
+                    CreateAppBar(_hwnd);
+                }
+                else
+                {
+                    UpdateWindowPosition();
+                }
             });
+        }
+        else if (msg == PInvoke.WM_MOUSEMOVE)
+        {
+            HandleMouseMoveForAutoHide();
+        }
+        else if (msg == PInvoke.WM_MOUSELEAVE)
+        {
+            HandleMouseLeaveForAutoHide();
+        }
+        else if (msg == PInvoke.WM_ACTIVATEAPP && wParam.Value == 0)
+        {
+            HandleDeactivationForAutoHide();
+        }
+        else if (msg == PInvoke.WM_ACTIVATE && (wParam.Value & 0xFFFF) == PInvoke.WA_INACTIVE)
+        {
+            HandleDeactivationForAutoHide();
         }
 
         // Intercept WM_SYSCOMMAND to prevent minimize and maximize
@@ -656,8 +1366,10 @@ public sealed partial class DockWindow : WindowEx,
             {
                 var pWindowPos = (WINDOWPOS*)lParam.Value;
 
-                // Check if the window is being hidden (minimized) or if flags suggest minimize/maximize
-                if ((pWindowPos->flags & SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW) != 0)
+                // Check if the window is being hidden (minimized) or if flags suggest minimize/maximize.
+                // Allow hiding when auto-hide is collapsing the dock intentionally.
+                if ((pWindowPos->flags & SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW) != 0
+                    && !(_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed))
                 {
                     // Prevent hiding the window (minimize)
                     pWindowPos->flags &= ~SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW;
@@ -689,9 +1401,9 @@ public sealed partial class DockWindow : WindowEx,
         else if (msg == PInvoke.WM_SHOWWINDOW)
         {
             var isBeingShown = wParam.Value != 0;
-            if (!isBeingShown)
+            if (!isBeingShown && !(_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed))
             {
-                // Prevent hiding the window
+                // Prevent hiding the window (unless auto-hide is intentionally collapsing)
                 return new LRESULT(0);
             }
         }
@@ -736,6 +1448,17 @@ public sealed partial class DockWindow : WindowEx,
             else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
             {
                 _isFullScreenAppOpen = lParam != 0;
+                if (_isFullScreenAppOpen)
+                {
+                    StopRevealPollTimer();
+                    CollapseAutoHideDock(immediate: true);
+                }
+                else if (_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed)
+                {
+                    // Fullscreen app exited - restart edge detection
+                    StartRevealPollTimer();
+                }
+
                 UpdateTopmostState();
             }
         }
@@ -743,7 +1466,15 @@ public sealed partial class DockWindow : WindowEx,
         {
             Logger.LogDebug("WM_TASKBAR_RESTART");
 
-            DispatcherQueue.TryEnqueue(() => CreateAppBar(_hwnd));
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_appBarData.hWnd != IntPtr.Zero)
+                {
+                    DestroyAppBar(_hwnd);
+                }
+
+                CreateAppBar(_hwnd);
+            });
 
             WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(false));
         }
@@ -756,6 +1487,11 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            if (message.BringToFront)
+            {
+                RevealAutoHideDock(immediate: true);
+            }
+
             UpdateTopmostState(message.BringToFront);
         });
     }
@@ -777,7 +1513,12 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            _paletteOpenedFromDock = true;
+            RevealAutoHideDock(immediate: true);
+            RequestShowPaletteOnUiThread(message.PosDips);
+        });
     }
 
     void IRecipient<ShowDockMonitorLabelsMessage>.Receive(ShowDockMonitorLabelsMessage message)
@@ -960,6 +1701,7 @@ public sealed partial class DockWindow : WindowEx,
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
+        StopCollapseTimer();
         DisposeAcrylic();
         _windowViewModel.Dispose();
 

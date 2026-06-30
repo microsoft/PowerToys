@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;

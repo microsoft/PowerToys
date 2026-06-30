@@ -211,6 +211,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // Property to access IsInteractionEnabled from parent ViewModel
     public bool IsInteractionEnabled => _mainViewModel?.IsInteractionEnabled ?? true;
 
+    /// <summary>
+    /// Gets the shared per-mouse-wheel-notch step for this monitor's sliders, proxied from the
+    /// owning <see cref="MainViewModel"/>. Falls back to 5 if the owner is unavailable.
+    /// </summary>
+    public int MouseWheelIncrement => _mainViewModel?.MouseWheelIncrement ?? 5;
+
     public MonitorViewModel(Monitor monitor, MonitorManager monitorManager, MainViewModel mainViewModel)
     {
         _monitor = monitor;
@@ -668,6 +674,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CurrentInputSourceName));
         _availableInputSources = null;  // Force rebuild with new custom names
         OnPropertyChanged(nameof(AvailableInputSources));
+    }
+
+    /// <summary>
+    /// Raise <see cref="PropertyChanged"/> for <see cref="MouseWheelIncrement"/> so per-monitor
+    /// sliders pick up a new value after the user changes it in Settings. Called from
+    /// <c>MainViewModel.ApplySettingsFromUI</c>.
+    /// </summary>
+    public void RefreshMouseWheelIncrement()
+    {
+        OnPropertyChanged(nameof(MouseWheelIncrement));
     }
 
     /// <summary>
