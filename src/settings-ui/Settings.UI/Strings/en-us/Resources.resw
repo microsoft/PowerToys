@@ -635,10 +635,7 @@ opera.exe</value>
     <value>WSL distribution</value>
   </data>
   <data name="AdvancedPaste_WslDistribution_SettingsCard.Description" xml:space="preserve">
-    <value>Which WSL distribution to use. Leave blank for the default distribution.</value>
-  </data>
-  <data name="AdvancedPaste_WslDistribution_TextBox.PlaceholderText" xml:space="preserve">
-    <value>Default distribution (e.g. Ubuntu)</value>
+    <value>Select which WSL distribution to use for running Python scripts.</value>
   </data>
   <data name="AdvancedPaste_PythonScriptList.Header" xml:space="preserve">
     <value>Discovered scripts</value>

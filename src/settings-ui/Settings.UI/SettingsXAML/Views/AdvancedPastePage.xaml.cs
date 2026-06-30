@@ -65,6 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.OnPageLoaded();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
+
+                if (ViewModel.IsWslMode)
+                {
+                    ViewModel.RefreshWslDistros();
+                }
             };
 
             Unloaded += (_, _) =>

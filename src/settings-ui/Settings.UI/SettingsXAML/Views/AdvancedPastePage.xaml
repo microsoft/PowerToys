@@ -458,11 +458,10 @@
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xEC7A;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
-                            <TextBox
-                                x:Uid="AdvancedPaste_WslDistribution_TextBox"
+                            <ComboBox
                                 MinWidth="200"
-                                HorizontalAlignment="Stretch"
-                                Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                ItemsSource="{x:Bind ViewModel.WslDistroDisplayNames, Mode=OneWay}"
+                                SelectedIndex="{x:Bind ViewModel.WslDistributionIndex, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
 
                         <!-- Discovered Python Scripts (read-only) -->

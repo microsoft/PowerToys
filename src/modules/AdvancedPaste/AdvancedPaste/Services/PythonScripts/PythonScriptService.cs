@@ -1643,10 +1643,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     /// </summary>
     private string BuildWslArgs(string command)
     {
-        var distro = _userSettings.PythonWslDistribution;
+        var distro = _userSettings.PythonWslDistribution?.Trim();
         if (!string.IsNullOrWhiteSpace(distro))
         {
-            return $"-d {distro} -- {command}";
+            // Quote the distro name to handle names with spaces (e.g. "Ubuntu 24.04 LTS")
+            var quotedDistro = distro.Contains(' ') ? $"\"{distro}\"" : distro;
+            return $"-d {quotedDistro} -- {command}";
         }
 
         return $"-- {command}";

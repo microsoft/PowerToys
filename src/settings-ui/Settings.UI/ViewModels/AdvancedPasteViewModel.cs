@@ -341,6 +341,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     OnPropertyChanged(nameof(WslDistribution));
                     SaveAndNotifySettings();
 
+                    if (newMode == "wsl")
+                    {
+                        RefreshWslDistros();
+                    }
+
                     if (_scriptsDiscovered)
                     {
                         RefreshPythonScripts();
@@ -382,9 +387,96 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     scripts.WslSettings.Distribution = value ?? string.Empty;
                     OnPropertyChanged(nameof(WslDistribution));
+                    OnPropertyChanged(nameof(WslDistributionIndex));
                     SaveAndNotifySettings();
                 }
             }
+        }
+
+        private List<string> _availableWslDistros = [string.Empty];
+
+        /// <summary>
+        /// Available WSL distributions. First item is "" (system default).
+        /// </summary>
+        public List<string> AvailableWslDistros
+        {
+            get => _availableWslDistros;
+            private set
+            {
+                _availableWslDistros = value;
+                OnPropertyChanged(nameof(AvailableWslDistros));
+                OnPropertyChanged(nameof(WslDistroDisplayNames));
+                OnPropertyChanged(nameof(WslDistributionIndex));
+            }
+        }
+
+        /// <summary>
+        /// Display names for the ComboBox (maps empty string to "(System default)").
+        /// </summary>
+        public List<string> WslDistroDisplayNames =>
+            _availableWslDistros.Select(d => string.IsNullOrEmpty(d) ? "(System default)" : d).ToList();
+
+        /// <summary>
+        /// Selected index into AvailableWslDistros for ComboBox binding.
+        /// </summary>
+        public int WslDistributionIndex
+        {
+            get
+            {
+                var current = WslDistribution;
+                var idx = _availableWslDistros.IndexOf(current);
+                return idx >= 0 ? idx : 0;
+            }
+
+            set
+            {
+                if (value >= 0 && value < _availableWslDistros.Count)
+                {
+                    WslDistribution = _availableWslDistros[value];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Queries installed WSL distributions and populates AvailableWslDistros.
+        /// </summary>
+        public void RefreshWslDistros()
+        {
+            var distros = new List<string> { string.Empty }; // first = system default
+
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("wsl.exe", "-l -q")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = System.Text.Encoding.Unicode,
+                };
+
+                using var process = System.Diagnostics.Process.Start(psi);
+                if (process != null)
+                {
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(5000);
+
+                    var names = output
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim().Trim('\0', '\r'))
+                        .Where(name => !string.IsNullOrWhiteSpace(name));
+
+                    foreach (var name in names)
+                    {
+                        distros.Add(name);
+                    }
+                }
+            }
+            catch
+            {
+                // WSL not available — just show the default option
+            }
+
+            AvailableWslDistros = distros;
         }
 
         public string ScriptsFolder
