@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace KeyboardManagerEditorUI.Helpers
@@ -47,6 +48,38 @@ namespace KeyboardManagerEditorUI.Helpers
                     "PowerScripts",
                     HostExeName),
             };
+
+            // Prototype dev fallback: in an in-repo build the Host isn't copied next to the editor,
+            // so walk up from the base directory and probe the Host project's bin output. This keeps
+            // the PowerScript action usable for end-to-end testing from a Debug build.
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir is not null)
+            {
+                foreach (var config in new[] { "Debug", "Release" })
+                {
+                    var hostBin = Path.Combine(
+                        dir.FullName,
+                        "src",
+                        "modules",
+                        "PowerScripts",
+                        "PowerScripts.Host",
+                        "bin",
+                        config);
+
+                    if (Directory.Exists(hostBin))
+                    {
+                        var found = Directory
+                            .EnumerateFiles(hostBin, HostExeName, SearchOption.AllDirectories)
+                            .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(found))
+                        {
+                            candidates.Add(found);
+                        }
+                    }
+                }
+
+                dir = dir.Parent;
+            }
 
             foreach (var candidate in candidates)
             {
