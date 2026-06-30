@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using CommunityToolkit.WinUI.Controls;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -19,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
     public sealed partial class ScoobeReleaseNotesPage : Page
     {
         private IList<PowerToysReleaseInfo> _currentReleases;
+        private string _releaseNotesMarkdownText;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScoobeReleaseNotesPage"/> class.
@@ -26,6 +29,37 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public ScoobeReleaseNotesPage()
         {
             this.InitializeComponent();
+
+            // Re-apply the markdown theme workaround when the theme changes at runtime so the
+            // headings/links stay readable after the user switches between light and dark.
+            this.ActualThemeChanged += OnActualThemeChanged;
+            this.Unloaded += OnUnloaded;
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            this.ActualThemeChanged -= OnActualThemeChanged;
+            this.Unloaded -= OnUnloaded;
+        }
+
+        private void OnActualThemeChanged(FrameworkElement sender, object args)
+        {
+            RefreshMarkdownTheme();
+        }
+
+        private void RefreshMarkdownTheme()
+        {
+            if (string.IsNullOrEmpty(_releaseNotesMarkdownText))
+            {
+                return;
+            }
+
+            ApplyMarkdownThemeWorkaround();
+
+            // The MarkdownTextBlock captures heading/link brushes when it renders, so re-set the
+            // text to force it to rebuild with the brushes for the now-active theme.
+            ReleaseNotesMarkdown.Text = string.Empty;
+            ReleaseNotesMarkdown.Text = _releaseNotesMarkdownText;
         }
 
         /// <summary>
@@ -128,7 +162,18 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             {
                 LoadingProgressRing.Visibility = Visibility.Collapsed;
 
+                // Workaround: the MarkdownTextBlock control captures its heading foreground
+                // brushes from Application.Current.Resources when its theme config is created,
+                // which resolves against the OS (application) theme rather than the app's
+                // selected theme. When the OS is Light but PowerToys is Dark (or vice versa),
+                // headings render with an unreadable color. Force the control's theme and
+                // reapply correctly-themed heading brushes before the markdown is rendered.
+                // TODO: Remove once the upstream control resolves brushes against the element theme.
+                // Upstream fix: https://github.com/CommunityToolkit/Labs-Windows/pull/785
+                ApplyMarkdownThemeWorkaround();
+
                 var (releaseNotesMarkdown, heroImageUrl) = ProcessReleaseNotesMarkdown(_currentReleases);
+                _releaseNotesMarkdownText = releaseNotesMarkdown;
 
                 // Set the Hero image if found
                 if (!string.IsNullOrEmpty(heroImageUrl))
@@ -147,6 +192,46 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             catch (Exception ex)
             {
                 Logger.LogError("Exception when displaying the release notes", ex);
+            }
+        }
+
+        /// <summary>
+        /// Works around the <see cref="MarkdownTextBlock"/> control pinning its heading and link
+        /// brushes to the OS (application) theme instead of the element's selected theme, which makes
+        /// titles/links unreadable when the OS and PowerToys themes differ. Pins the control's theme and
+        /// reassigns the heading/link brushes resolved for the selected theme before the markdown renders.
+        /// TODO: Remove once the upstream control resolves brushes against the element theme.
+        /// Upstream fix: https://github.com/CommunityToolkit/Labs-Windows/pull/785
+        /// </summary>
+        private void ApplyMarkdownThemeWorkaround()
+        {
+            var elementTheme = App.IsDarkTheme() ? ElementTheme.Dark : ElementTheme.Light;
+            ReleaseNotesMarkdown.RequestedTheme = elementTheme;
+            LinkBrushProvider.RequestedTheme = elementTheme;
+
+            if (Resources["ReleaseNotesMarkdownConfig"] is MarkdownConfig config
+                && config.Themes is MarkdownThemes themes)
+            {
+                // The control's Foreground is bound to TextFillColorPrimaryBrush via ThemeResource,
+                // so after setting RequestedTheme it resolves to the brush for the selected theme.
+                // Reuse it for the heading brushes, which the control would otherwise pin to the OS theme.
+                if (ReleaseNotesMarkdown.Foreground is Brush headingForeground)
+                {
+                    themes.H1Foreground = headingForeground;
+                    themes.H2Foreground = headingForeground;
+                    themes.H3Foreground = headingForeground;
+                    themes.H4Foreground = headingForeground;
+                    themes.H5Foreground = headingForeground;
+                    themes.H6Foreground = headingForeground;
+                }
+
+                // The link brush is likewise pinned to the OS theme's accent color, which can be
+                // unreadable when the app theme differs from the OS theme. Reapply the accent brush
+                // resolved for the selected theme using the hidden helper element.
+                if (LinkBrushProvider.Foreground is Brush linkForeground)
+                {
+                    themes.LinkForeground = linkForeground;
+                }
             }
         }
 

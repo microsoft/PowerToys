@@ -365,6 +365,13 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var oldWasEmpty = string.IsNullOrEmpty(oldSearch);
+        var newWasEmpty = string.IsNullOrEmpty(newSearch);
+        if (oldWasEmpty != newWasEmpty)
+        {
+            WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(!newWasEmpty));
+        }
+
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
@@ -436,7 +443,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 {
                     specialFallbacks.Add(s);
                 }
-                else
+                else if (s.IsEnabled)
                 {
                     commonFallbacks.Add(s);
                 }

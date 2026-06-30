@@ -66,6 +66,9 @@
     <ClCompile Include="GifRecordingSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImageEncoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="PanoramaCapture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -159,6 +162,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GifRecordingSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageEncoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PanoramaCapture.h">
