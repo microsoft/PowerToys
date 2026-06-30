@@ -28,7 +28,7 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
@@ -112,6 +112,8 @@ Function Generate-FileComponents() {
 
     foreach ($file in $fileList) {
         $fileTmp = $file -replace "-", "_"
+        $fileTmp = $fileTmp -replace "[^A-Za-z0-9_.]", "_"
+        if ($fileTmp -match "^[^A-Za-z_]") { $fileTmp = "_$fileTmp" }
         $componentDefs +=
     @"
               <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)" />`r`n
@@ -397,8 +399,24 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 ## Plugins
 
 #ShortcutGuide
+# Ensure manifest yml files are in the build output (the Build target's CopyToOutputDirectory
+# may not run reliably under -graph mode in solution builds).
+$sgManifestsSrc = "$PSScriptRoot..\..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
+$sgManifestsDst = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"
+Write-Host "ShortcutGuide manifests: src=$sgManifestsSrc exists=$(Test-Path $sgManifestsSrc)"
+Write-Host "ShortcutGuide manifests: dst=$sgManifestsDst exists=$(Test-Path $sgManifestsDst)"
+if (Test-Path $sgManifestsSrc) {
+    New-Item -Path $sgManifestsDst -ItemType Directory -Force | Out-Null
+    Copy-Item "$sgManifestsSrc\*.yml" -Destination $sgManifestsDst -Force
+    $copied = (Get-ChildItem "$sgManifestsDst\*.yml" -ErrorAction SilentlyContinue).Count
+    Write-Host "ShortcutGuide manifests: copied $copied yml files to build output"
+} else {
+    Write-Host "WARNING: ShortcutGuide manifest source not found at $sgManifestsSrc"
+}
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
-Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
+Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideManifestsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"
+Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"

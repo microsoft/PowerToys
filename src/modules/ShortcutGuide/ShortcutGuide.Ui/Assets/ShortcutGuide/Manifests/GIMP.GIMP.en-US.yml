@@ -1,6 +1,6 @@
 PackageName: GIMP.GIMP
 Name: GIMP
-WindowFilter: "gimp*.exe"
+WindowFilter: "gimp-3.exe"
 BackgroundProcess: false
 Shortcuts:
   - SectionName: Help
@@ -489,7 +489,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
   - SectionName: Edit
     Properties:
       - Name: Undo

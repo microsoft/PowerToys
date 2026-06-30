@@ -507,7 +507,7 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for PowerRename</comment>
   </data>
   <data name="Shell_ShortcutGuide.Content" xml:space="preserve">
-    <value>Shortcut Guide V2</value>
+    <value>Shortcut Guide</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
@@ -1129,7 +1129,7 @@ opera.exe</value>
     <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
-    <value>Displays an overlay with keyboard shortcuts for Windows and your apps.</value>
+    <value>Shows an on-screen overlay of keyboard shortcuts for Windows and the active application.</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
@@ -1148,6 +1148,12 @@ opera.exe</value>
   </data>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Description" xml:space="preserve">
+    <value>Choose the highlight style and customize its appearance</value>
   </data>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
@@ -1375,7 +1381,7 @@ opera.exe</value>
     <comment>do not loc the product name</comment>
   </data>
   <data name="ShortcutGuide.ModuleTitle" xml:space="preserve">
-    <value>Shortcut Guide V2</value>
+    <value>Shortcut Guide</value>
   </data>
   <data name="General_Repository.Text" xml:space="preserve">
     <value>GitHub repository</value>
@@ -2051,13 +2057,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>The new Shortcut Guide displays keyboard shortcuts for your apps and for the Windows environment. The following apps are included by default (with more to come in the future):
-The Microsoft Windows Operating System
-Windows Explorer
-Notepad
-Microsoft PowerToys
-
-The shortcuts always correspond to the most current application/Windows version.</value>
+    <value>Shortcut Guide displays keyboard shortcuts for Windows and various applications. The shortcuts shown always correspond to the most current application version or Windows version.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
@@ -2069,7 +2069,7 @@ The shortcuts always correspond to the most current application/Windows version.
 Take a look around and explore how some of the PowerToys utilities work and can improve your Windows experience..</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Documentation on Microsoft Learn</value>
+    <value>Documentation</value>
   </data>
   <data name="Oobe_Overview_ConfigurePowerToysButton.AutomationProperties.Name" xml:space="preserve">
     <value>Configure PowerToys</value>
@@ -2219,7 +2219,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_ShortcutGuide.Title" xml:space="preserve">
-    <value>Shortcut Guide V2</value>
+    <value>Shortcut Guide</value>
     <comment>Do not localize this string</comment>
   </data>
   <data name="Oobe_Overview_Title.Text" xml:space="preserve">
@@ -2817,17 +2817,29 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Fade delay (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before the highlight begins to fade (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (ms)</value>
-    <comment>ms = milliseconds</comment>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
+    <value>Size (px)</value>
+    <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
+    <value>Intensity</value>
+    <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
+    <value>Duration (ms)</value>
+    <comment>Ripple mode only. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
+    <value>Follow cursor while held</value>
+    <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
+    <value>Show crosshairs on right-click release</value>
+    <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
@@ -3649,6 +3661,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Portuguese" xml:space="preserve">
     <value>Portuguese</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Pitjantjatjara" xml:space="preserve">
+    <value>Pitjantjatjara/Yankunytjatjara</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Slovak" xml:space="preserve">
     <value>Slovak</value>
   </data>
@@ -3894,6 +3909,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
+  </data>
+  <data name="AdvancedPaste_ShowAIPasteSettingsCard.Content" xml:space="preserve">
+    <value>Show the AI paste input box</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
     <value>Advanced AI</value>
@@ -4392,8 +4410,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
-    <value>Show clipboard preview</value>
+  <data name="AdvancedPaste_EnableClipboardPreview.Content" xml:space="preserve">
+    <value>Show a preview of the current clipboard content</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
@@ -4414,22 +4432,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus.ModuleDescription" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates</value>
   </data>
   <data name="NewPlus_Product_Name.Content" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>
-    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
     <value>New+</value>
-    <comment>Localize product name in accordance with Windows New</comment>
+    <comment>Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
@@ -4516,7 +4534,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus.Title" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="Oobe_NewPlus.Description" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates.</value>
@@ -4545,7 +4563,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleDescription" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
@@ -4816,6 +4834,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
     <value>Capture audio input</value>
   </data>
+  <data name="ZoomIt_Record_NoiseCancellation.Content" xml:space="preserve">
+    <value>Noise cancellation</value>
+  </data>
   <data name="ZoomIt_Record_MicMonoMix.Content" xml:space="preserve">
     <value>Mono</value>
   </data>
@@ -4882,6 +4903,30 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
     <value>Circle</value>
   </data>
+  <data name="ZoomIt_Record_WebcamBackground.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_Blur.Content" xml:space="preserve">
+    <value>Blur</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_Image.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBrightness.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage.Header" xml:space="preserve">
+    <value>Background image file</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify webcam background image...</value>
+  </data>
   <data name="ZoomIt_Record_AspectRatio.Content" xml:space="preserve">
     <value>Lock region selection to 16:9 aspect ratio</value>
   </data>
@@ -4919,7 +4964,7 @@ The break timer font matches the text font.</value>
     <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="Oobe_ZoomIt.Title" xml:space="preserve">
@@ -5161,7 +5206,7 @@ The break timer font matches the text font.</value>
     <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
-    <value>Highlight the cursor or dim the screen to spotlight it</value>
+    <value>Highlight the cursor, dim the screen to spotlight it, or pulse a ripple on each click</value>
   </data>
   <data name="HighlightMode.Header" xml:space="preserve">
     <value>Highlight mode</value>
@@ -5171,6 +5216,10 @@ The break timer font matches the text font.</value>
   </data>
   <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
     <value>Spotlight</value>
+  </data>
+  <data name="HighlightMode_Ripple_Mode.Content" xml:space="preserve">
+    <value>Ripple</value>
+    <comment>Name of the highlight mode that draws an expanding ring pulse on each click.</comment>
   </data>
   <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
@@ -5270,6 +5319,15 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
     <value />
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Header" xml:space="preserve">
+    <value>Monitor diagnostics</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Description" xml:space="preserve">
+    <value>Copy monitor details, detected capabilities, and VCP codes to the clipboard for troubleshooting.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics_CopyText.Text" xml:space="preserve">
+    <value>Copy diagnostics</value>
   </data>
   <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
     <value>Apply monitor settings to</value>
@@ -5503,6 +5561,12 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
+    <value>Mouse wheel increment</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
+    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
+  </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>
   </data>
@@ -5575,22 +5639,24 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
-    <value>Confirm Color Temperature Change</value>
+  <data name="PowerDisplay_Warning_Title" xml:space="preserve">
+    <value>Before you continue</value>
+    <comment>Title shown on every Power Display warning ContentDialog (enable module, color temperature, power state, input source, max compatibility).</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  <data name="PowerDisplay_Warning_LearnMore" xml:space="preserve">
+    <value>Learn more about Power Display</value>
+    <comment>Text for the learn-more hyperlink shown at the bottom of every Power Display warning ContentDialog.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
-    <value>Changing the color temperature setting may cause unpredictable results including:</value>
+  <data name="PowerDisplay_Warning_ColorTemperature_InfoBar" xml:space="preserve">
+    <value>Color temperature changes may not be reversible on some monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the color temperature confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
-    <value>• Incorrect display colors
-• Display malfunction
-• Settings that cannot be reverted</value>
-  </data>
-  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
-    <value>Do you want to enable color temperature control for this monitor?</value>
+  <data name="PowerDisplay_Warning_ColorTemperature_Body" xml:space="preserve">
+    <value>Adjusting color temperature uses DDC/CI to push values your monitor may not fully support.
+
+• Some monitors display incorrect colors or behave unpredictably.
+• A small number of monitors retain the new value even after Power Display is closed and may need a factory reset to restore the original profile.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the color temperature confirmation dialog.</comment>
   </data>
   <data name="PowerDisplay_CrashDetected_IgnoreButton.Content" xml:space="preserve">
     <value>Ignore</value>
@@ -5604,56 +5670,51 @@ The break timer font matches the text font.</value>
     <value>PowerDisplay was automatically disabled</value>
     <comment>Title of the crash recovery InfoBar shown on PowerDisplay settings page after a detected crash.</comment>
   </data>
-  <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
-    <value>Confirm power state control</value>
+  <data name="PowerDisplay_Warning_PowerState_InfoBar" xml:space="preserve">
+    <value>Some monitors may need a physical power-cycle to recover</value>
+    <comment>Title shown in the Warning InfoBar at the top of the power state control confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This action may be unsafe.</value>
+  <data name="PowerDisplay_Warning_PowerState_Body" xml:space="preserve">
+    <value>Power state control uses DDC/CI to put the monitor into standby or wake it back up.
+
+• Some monitors enter standby but don't wake back up from software — you may need to press the physical power button or reseat the cable.
+• Other monitors don't restore the previous state correctly when toggled.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the power state control confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
-    <value>Enabling power state control may lead to unexpected behavior, including:</value>
+  <data name="PowerDisplay_Warning_InputSource_InfoBar" xml:space="preserve">
+    <value>You may lose software control until you switch back physically</value>
+    <comment>Title shown in the Warning InfoBar at the top of the input source control confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
-    <value>• Monitor may enter standby and not wake via software.
-• You may need to press the monitor’s power button or reconnect the cable to recover.
-• Some monitors may not restore the previous state correctly.</value>
+  <data name="PowerDisplay_Warning_InputSource_Body" xml:space="preserve">
+    <value>Input source control switches the monitor to a different input via DDC/CI.
+
+• If the selected input has no signal, the screen will go black until something is connected.
+• After switching, software control may be unavailable until you change inputs again using the monitor's physical buttons.
+• Not every monitor reliably exposes all of its inputs over DDC/CI.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the input source control confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
-    <value>Enable power state control for this monitor?</value>
+  <data name="PowerDisplay_Warning_MaxCompatibility_InfoBar" xml:space="preserve">
+    <value>Probing every VCP feature can destabilize some monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the maximum compatibility mode confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
-    <value>Confirm input source control</value>
+  <data name="PowerDisplay_Warning_MaxCompatibility_Body" xml:space="preserve">
+    <value>Maximum compatibility mode ignores your monitor's capabilities string and probes every supported VCP feature directly. Only enable this if a monitor is missing from Power Display.
+
+• The screen may briefly go black or lose signal during discovery.
+• The monitor may respond unpredictably — including unwanted changes to brightness, contrast, or input source.
+• The monitor may stop responding to DDC/CI altogether until it's power-cycled.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the maximum compatibility mode confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This action may be unsafe.</value>
+  <data name="PowerDisplay_Warning_EnableModule_InfoBar" xml:space="preserve">
+    <value>This may cause a system crash on a small number of monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the Power Display enable confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
-    <value>Switching input sources may cause unintended results, including:</value>
-  </data>
-  <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
-    <value>• Screen may go black if the selected input has no signal.
-• Software control may be lost until you switch back using the monitor’s physical buttons.
-• Some monitors may not reliably expose all input sources.</value>
-  </data>
-  <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
-    <value>Enable input source control for this monitor?</value>
-  </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningTitle" xml:space="preserve">
-    <value>Confirm maximum compatibility mode</value>
-  </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This may cause unstable monitor behavior.</value>
-  </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
-    <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
-  </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningList" xml:space="preserve">
-    <value>• The screen may go black or briefly lose signal during discovery.
-• The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.
-• The monitor may stop responding to DDC/CI until it is power-cycled.</value>
-  </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
-    <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
+  <data name="PowerDisplay_Warning_EnableModule_Body" xml:space="preserve">
+    <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read can trigger a Windows kernel bug that causes a system crash (BSOD). The underlying issue is in Windows, not in Power Display.
+
+• On affected monitors, the system may crash and restart.
+• If a crash is detected, Power Display will automatically disable itself the next time PowerToys launches, and you'll need to re-enable the module each time.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the Power Display enable confirmation dialog.</comment>
   </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
@@ -5965,9 +6026,6 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
-    <value>Display a preview of the current clipboard content</value>
   </data>
   <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
     <value>Learn more</value>

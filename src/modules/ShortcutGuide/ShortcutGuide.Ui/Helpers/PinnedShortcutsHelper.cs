@@ -5,10 +5,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using ShortcutGuide.Models;
 
@@ -35,16 +33,27 @@ namespace ShortcutGuide.Helpers
                 list.Add(shortcutEntry);
             }
 
+            // Persist on a best-effort basis. The in-memory pinned list is the source of truth
+            // for the rest of the session; failing to write should not crash the overlay
+            // (Pin/Unpin runs from a synchronous UI handler).
             Save();
             PinnedShortcutsChanged?.Invoke(null, appName);
         }
 
         public static void Save()
         {
-            string serialized = JsonSerializer.Serialize(App.PinnedShortcuts);
-
-            string pinnedPath = SettingsUtils.Default.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
-            File.WriteAllText(pinnedPath, serialized);
+            try
+            {
+                string serialized = JsonSerializer.Serialize(App.PinnedShortcuts);
+                string pinnedPath = SettingsUtils.Default.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
+                File.WriteAllText(pinnedPath, serialized);
+            }
+            catch (Exception ex) when (ex is IOException
+                                    or UnauthorizedAccessException
+                                    or JsonException)
+            {
+                Logger.LogError("Failed to persist Shortcut Guide pinned shortcuts; keeping in-memory state.", ex);
+            }
         }
     }
 }

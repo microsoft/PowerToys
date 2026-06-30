@@ -21,6 +21,10 @@ internal static class Icons
 
     internal static IconInfo NetworkIcon => new("\uEC05"); // Network icon
 
+    internal static IconInfo NetworkUpIcon => new("\uE74A"); // Up arrow icon
+
+    internal static IconInfo NetworkDownIcon => new("\uE74B"); // Down arrow icon
+
     internal static IconInfo StackedAreaIcon => new("\uE9D2"); // StackedArea icon
 
     internal static IconInfo GpuIcon => new("\uE950"); // Component icon

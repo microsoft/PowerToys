@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -104,6 +105,13 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
+    // Validated, browser-openable homepage uri. Null when the entry has no
+    // homepage or it is not a web uri. NavigateUri bindings must use this
+    // (a Uri) rather than the raw Homepage string: x:Bind evaluates bindings
+    // regardless of element visibility, and converting a null/invalid string
+    // to Uri throws and crashes the page.
+    public Uri? HomepageUri => _homepageHttpUri;
+
     public Uri IconUri { get; }
 
     public ImageSource IconSource
@@ -112,7 +120,13 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         private set => SetProperty(ref field, value);
     }
 
-    public IReadOnlyList<ExtensionGalleryScreenshotViewModel> Screenshots { get; }
+    // NOTE: This MUST be ObservableCollection<T> (not IReadOnlyList<T> or List<T>).
+    // ItemsView.ItemsSource (used on ExtensionGalleryItemPage) goes through a WinRT
+    // vector adapter; under AOT/trimming, only ObservableCollection<T> has a
+    // preserved IBindableObservableVector adapter. Other list types raise
+    // "Argument 'source' is not a supported vector" at set_ItemsSource time,
+    // crashing the page's first measure pass.
+    public ObservableCollection<ExtensionGalleryScreenshotViewModel> Screenshots { get; }
 
     public bool HasScreenshots => Screenshots.Count > 0;
 
@@ -524,14 +538,14 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             || uri.Scheme.Equals("ms-appx", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static IReadOnlyList<ExtensionGalleryScreenshotViewModel> BuildScreenshots(List<string>? screenshotUrls)
+    private static ObservableCollection<ExtensionGalleryScreenshotViewModel> BuildScreenshots(List<string>? screenshotUrls)
     {
+        ObservableCollection<ExtensionGalleryScreenshotViewModel> screenshots = [];
         if (screenshotUrls is null || screenshotUrls.Count == 0)
         {
-            return [];
+            return screenshots;
         }
 
-        List<ExtensionGalleryScreenshotViewModel> screenshots = [];
         HashSet<string> seenUris = new(OrdinalIgnoreCase);
         for (var i = 0; i < screenshotUrls.Count; i++)
         {

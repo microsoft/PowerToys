@@ -1,6 +1,0 @@
-[submodule "deps/spdlog"]
-	path = deps/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "deps/expected-lite"]
-	path = deps/expected-lite
-	url = https://github.com/martinmoene/expected-lite.git

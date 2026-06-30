@@ -88,7 +88,7 @@
       </AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>WindowsApp.lib;Gdiplus.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

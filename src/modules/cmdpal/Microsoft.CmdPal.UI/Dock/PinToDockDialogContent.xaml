@@ -39,6 +39,58 @@
     </UserControl.Resources>
     <ScrollViewer>
         <StackPanel Width="420" Spacing="16">
+
+            <!--  Monitor Selector (hidden when only one monitor)  -->
+            <StackPanel
+                x:Name="MonitorSelectorPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="PinToDock_MonitorHeader"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ComboBox x:Name="MonitorComboBox" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <!--  Dock Section Selector  -->
+            <StackPanel Spacing="8">
+                <TextBlock
+                    x:Uid="PinToDock_SectionHeader"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <tkcontrols:Segmented
+                    x:Name="SectionSegmented"
+                    HorizontalAlignment="Stretch"
+                    SelectedIndex="0"
+                    SelectionMode="Single">
+                    <tkcontrols:SegmentedItem x:Name="StartSegmentedItem" x:Uid="PinToDock_Start" />
+                    <tkcontrols:SegmentedItem x:Name="CenterSegmentedItem" x:Uid="PinToDock_Center" />
+                    <tkcontrols:SegmentedItem x:Name="EndSegmentedItem" x:Uid="PinToDock_End" />
+                </tkcontrols:Segmented>
+            </StackPanel>
+
+            <!--  Label Options  -->
+            <StackPanel Spacing="4">
+                <CheckBox
+                    x:Name="ShowTitleCheckBox"
+                    x:Uid="PinToDock_ShowTitle"
+                    Checked="OnLabelOptionChanged"
+                    IsChecked="True"
+                    Unchecked="OnLabelOptionChanged" />
+                <CheckBox
+                    x:Name="ShowSubtitleCheckBox"
+                    x:Uid="PinToDock_ShowSubtitle"
+                    Checked="OnLabelOptionChanged"
+                    IsChecked="True"
+                    Unchecked="OnLabelOptionChanged" />
+            </StackPanel>
+
+            <Rectangle
+                Height="1"
+                Margin="-24,0,-24,0"
+                HorizontalAlignment="Stretch"
+                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
             <!--  Preview  -->
             <StackPanel Spacing="8">
                 <Border
@@ -82,57 +134,6 @@
                         </StackPanel>
                     </Grid>
                 </Border>
-            </StackPanel>
-
-            <Rectangle
-                Height="1"
-                Margin="-24,0,-24,0"
-                HorizontalAlignment="Stretch"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
-
-            <!--  Dock Section Selector  -->
-            <StackPanel Spacing="8">
-                <TextBlock
-                    x:Uid="PinToDock_SectionHeader"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <tkcontrols:Segmented
-                    x:Name="SectionSegmented"
-                    HorizontalAlignment="Stretch"
-                    SelectedIndex="0"
-                    SelectionMode="Single">
-                    <tkcontrols:SegmentedItem x:Name="StartSegmentedItem" x:Uid="PinToDock_Start" />
-                    <tkcontrols:SegmentedItem x:Name="CenterSegmentedItem" x:Uid="PinToDock_Center" />
-                    <tkcontrols:SegmentedItem x:Name="EndSegmentedItem" x:Uid="PinToDock_End" />
-                </tkcontrols:Segmented>
-            </StackPanel>
-
-            <!--  Monitor Selector (hidden when only one monitor)  -->
-            <StackPanel
-                x:Name="MonitorSelectorPanel"
-                Spacing="8"
-                Visibility="Collapsed">
-                <TextBlock
-                    x:Uid="PinToDock_MonitorHeader"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <ComboBox x:Name="MonitorComboBox" HorizontalAlignment="Stretch" />
-            </StackPanel>
-
-            <!--  Label Options  -->
-            <StackPanel Spacing="4">
-                <CheckBox
-                    x:Name="ShowTitleCheckBox"
-                    x:Uid="PinToDock_ShowTitle"
-                    Checked="OnLabelOptionChanged"
-                    IsChecked="True"
-                    Unchecked="OnLabelOptionChanged" />
-                <CheckBox
-                    x:Name="ShowSubtitleCheckBox"
-                    x:Uid="PinToDock_ShowSubtitle"
-                    Checked="OnLabelOptionChanged"
-                    IsChecked="True"
-                    Unchecked="OnLabelOptionChanged" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

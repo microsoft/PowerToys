@@ -76,8 +76,13 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
 
         lock (_lock)
         {
-            foreach (var inflightKey in _inflightFetches.Keys)
+            foreach (var (inflightKey, task) in _inflightFetches)
             {
+                if (task.IsCompleted)
+                {
+                    continue;
+                }
+
                 if (!Uri.TryCreate(inflightKey, UriKind.Absolute, out var inflightUri))
                 {
                     continue;

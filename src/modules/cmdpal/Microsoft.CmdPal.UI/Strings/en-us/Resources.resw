@@ -380,6 +380,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_HighlightSearch_SettingsCard.Description" xml:space="preserve">
     <value>Selects the previous search text at launch</value>
   </data>
+  <data name="Settings_GeneralPage_CompactMode_SettingsCard.Header" xml:space="preserve">
+    <value>Compact mode</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactMode_SettingsCard.Description" xml:space="preserve">
+    <value>Shrinks the palette to just the search box until you start typing</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Header" xml:space="preserve">
+    <value>Search box position</value>
+  </data>
+  <data name="Settings_GeneralPage_CompactCenterHeight_SettingsCard.Description" xml:space="preserve">
+    <value>Relative height from the bottom of the screen where the collapsed search box is centered. Only applies in compact mode.</value>
+  </data>
   <data name="Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header" xml:space="preserve">
     <value>Keep previous query</value>
   </data>
@@ -476,6 +488,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Description" xml:space="preserve">
     <value>Keep the dock above other windows, except while an app is fullscreen</value>
   </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Header" xml:space="preserve">
+    <value>Auto-hide dock</value>
+  </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Description" xml:space="preserve">
+    <value>Collapse the dock until you hover over its screen edge</value>
+  </data>
+  <data name="DockBehavior_AutoHideConflict_InfoBar.Title" xml:space="preserve">
+    <value>Auto-hide unavailable</value>
+  </data>
+  <data name="DockBehavior_AutoHideConflict_InfoBar.Message" xml:space="preserve">
+    <value>The taskbar or another application is using auto-hide on this edge. The dock is using pinned mode instead.</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>
@@ -534,6 +558,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="ScreenReader_Announcement_NavigatedToPage0" xml:space="preserve">
     <value>Navigated to {0} page</value>
+  </data>
+  <data name="ScreenReader_Announcement_ContextMenuOpened" xml:space="preserve">
+    <value>Menu, {0} commands. {1}, {2} of {0}.</value>
   </data>
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings (Ctrl+,)</value>
@@ -1137,11 +1164,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Header for the preview section in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_SectionHeader.Text" xml:space="preserve">
-    <value>Choose where to pin this command</value>
+    <value>Position</value>
     <comment>Header for the dock section selector in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_MonitorHeader.Text" xml:space="preserve">
-    <value>Choose which monitor</value>
+    <value>Monitor</value>
     <comment>Header for the monitor selector in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_Start.Content" xml:space="preserve">

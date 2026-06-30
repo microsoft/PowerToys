@@ -7,19 +7,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
-using ShortcutGuide.Telemetry;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
@@ -30,10 +31,11 @@ using WinUIEx.Messaging;
 
 namespace ShortcutGuide
 {
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private readonly Dictionary<string, string?> _currentApplicationIds;
         private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
+        private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
         private string _closeType = "Unknown";
@@ -46,9 +48,14 @@ namespace ShortcutGuide
 
         public MainWindow()
         {
-            this._currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
-
             this.InitializeComponent();
+
+            _getAppIdsTask = Task.Run(() =>
+            {
+                Program.CopyAndIndexGenerationThread.Join();
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
+                return _currentApplicationIds;
+            });
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
             ExtendsContentIntoTitleBar = true;
@@ -131,12 +138,6 @@ namespace ShortcutGuide
             // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
             if (!this._setPosition)
             {
-                Content.GettingFocus += (_, _) =>
-                {
-                    this.FakeSettingsButton.Height = 10;
-                    this.FakeSettingsButton.Height = 0;
-                };
-
                 this.SetWindowPosition();
                 this._setPosition = true;
 
@@ -151,7 +152,22 @@ namespace ShortcutGuide
                 };
             }
 
-            this.SetNavItems();
+            _ = this.InitializeNavItemsAsync();
+        }
+
+        private async Task InitializeNavItemsAsync()
+        {
+            try
+            {
+                _currentApplicationIds = await _getAppIdsTask.ConfigureAwait(true);
+                this.SetNavItems();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize navigation items.", ex);
+                _closeType = "InitializationFailed";
+                this.DispatcherQueue.TryEnqueue(() => this.Close());
+            }
         }
 
         private void SetNavItems()
@@ -160,13 +176,19 @@ namespace ShortcutGuide
             // TO DO: Check if Settings button is considered an item too.
             if (this.WindowSelector.MenuItems.Count == 0)
             {
-                string defaultShellName = ManifestInterpreter.GetIndexYamlFile().DefaultShellName;
+                string defaultShellName = ManifestInterpreter.GetCachedIndexYamlFile().DefaultShellName;
 
                 foreach (var (item, executablePath) in this._currentApplicationIds)
                 {
                     if (item == defaultShellName)
                     {
-                        this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
+                        var pathData = (string)Application.Current.Resources["WindowsLogoPathData"];
+                        this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = CreatePathIcon(pathData) });
+                    }
+                    else if (item == "Microsoft.PowerToys")
+                    {
+                        var pathData = (string)Application.Current.Resources["PowerToysLogoPathData"];
+                        this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = CreatePathIcon(pathData) });
                     }
                     else
                     {
@@ -200,41 +222,69 @@ namespace ShortcutGuide
             return new FontIcon { Glyph = "\uEB91" };
         }
 
+        private static PathIcon CreatePathIcon(string pathData)
+        {
+            var geometry = (Geometry)XamlBindingHelper.ConvertValue(typeof(Geometry), pathData);
+            return new PathIcon
+            {
+                Data = geometry,
+                Width = 20,
+                Height = 20,
+            };
+        }
+
         private bool _hasMovedToRightMonitor;
 
         private void SetWindowPosition()
         {
-            if (!this._hasMovedToRightMonitor)
+            try
             {
-                NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
-                AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
-                this._hasMovedToRightMonitor = true;
+                if (!this._hasMovedToRightMonitor)
+                {
+                    NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
+                    AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
+                    this._hasMovedToRightMonitor = true;
+                }
+
+                var hwnd = WindowNative.GetWindowHandle(this);
+                float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
+                Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+
+                var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+
+                // App.TaskBarWindow / its AppWindow can briefly be null during the reentrant
+                // Hide → Activate → BringToFront chain triggered from SelectionChanged. When the
+                // taskbar window is not currently observable, skip the overlap adjustment instead
+                // of crashing the overlay (issue #48448).
+                var taskbarWindow = App.TaskBarWindow?.AppWindow;
+                bool taskbarOnLeft = false;
+                bool taskbarOnRight = false;
+                if (taskbarWindow is not null)
+                {
+                    taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
+                    taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
+                }
+
+                double newHeight = monitorRect.Height / dpi;
+                if (taskbarWindow is not null && (taskbarOnLeft || taskbarOnRight))
+                {
+                    newHeight -= taskbarWindow.Size.Height;
+                }
+
+                MaxHeight = newHeight;
+                MinHeight = newHeight;
+                Height = newHeight;
+
+                int xPosition = windowPosition == ShortcutGuideWindowPosition.Right
+                    ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
+                    : (int)monitorRect.X;
+
+                this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
             }
-
-            var hwnd = WindowNative.GetWindowHandle(this);
-            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
-            Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-
-            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
-            var taskbarWindow = App.TaskBarWindow.AppWindow;
-            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
-            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
-
-            double newHeight = monitorRect.Height / dpi;
-            if (taskbarOnLeft || taskbarOnRight)
+            catch (Exception ex)
             {
-                newHeight -= taskbarWindow.Size.Height;
+                Logger.LogError("Failed to set Shortcut Guide window position; keeping previous layout.", ex);
             }
-
-            MaxHeight = newHeight;
-            MinHeight = newHeight;
-            Height = newHeight;
-
-            int xPosition = windowPosition == ShortcutGuideWindowPosition.Right
-                ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
-                : (int)monitorRect.X;
-
-            this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
         }
 
         /// <summary>
@@ -249,31 +299,46 @@ namespace ShortcutGuide
                 return;
             }
 
-            this._selectedAppName = selectedItem.Name;
-            App.CurrentAppName = this._selectedAppName;
-            this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
-
-            App.TaskBarWindow.Hide();
-            if (this._shortcutFile is ShortcutFile file)
+            try
             {
-                // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
-                if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
-                {
-                    this._taskBarWindowActivated = true;
-                    App.TaskBarWindow.Activate();
-                }
+                this._selectedAppName = selectedItem.Name;
+                App.CurrentAppName = this._selectedAppName;
+                this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
 
-                // Reposition before navigating so the taskbar window does not clip into the main window.
-                this.SetWindowPosition();
-                this.ContentFrame.Navigate(
-                    typeof(ShortcutsPage),
-                    new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                App.TaskBarWindow?.Hide();
+                if (this._shortcutFile is ShortcutFile file)
+                {
+                    // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
+                    if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
+                    {
+                        this._taskBarWindowActivated = true;
+                        App.TaskBarWindow?.Activate();
+                    }
+
+                    // Reposition before navigating so the taskbar window does not clip into the main window.
+                    this.SetWindowPosition();
+                    this.ContentFrame.Navigate(
+                        typeof(ShortcutsPage),
+                        new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Guard against exceptions during section navigation so the overlay does not close on the user.
+                // InitializeNavItemsAsync's catch interprets any exception bubbling out of the initial
+                // SelectedItem assignment as a fatal init failure and closes the window (issue #48448).
+                Logger.LogError($"Failed to handle Shortcut Guide section selection '{selectedItem.Name}'.", ex);
             }
         }
 
         private void Settings_Tapped(object sender, TappedRoutedEventArgs e)
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide);
+        }
+
+        public void Dispose()
+        {
+            _getAppIdsTask.Dispose();
         }
     }
 }
