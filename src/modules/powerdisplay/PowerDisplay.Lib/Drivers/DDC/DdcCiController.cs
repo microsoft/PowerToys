@@ -44,6 +44,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public bool MaxCompatibilityMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the per-monitor persisted resolved-code maps (keyed by <c>Monitor.Id</c>),
+        /// pushed by <see cref="MonitorManager"/> before each discovery. A monitor present here
+        /// reuses its persisted decision instead of re-resolving/probing. Default: empty.
+        /// </summary>
+        public IReadOnlyDictionary<string, VcpFeatureCodeMap> PersistedVcpCodeMaps { get; set; }
+            = new Dictionary<string, VcpFeatureCodeMap>(MonitorIdComparer.Instance);
+
         public DdcCiController()
         {
             _discoveryHelper = new MonitorDiscoveryHelper();
@@ -55,7 +63,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Brightness), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -63,14 +71,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             ArgumentNullException.ThrowIfNull(monitor);
             var raw = VcpFeatureValue.FromPercentage(brightness, monitor.BrightnessVcpMax);
-            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, raw, cancellationToken);
+            return SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Brightness), raw, cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeContrast, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Contrast), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -78,14 +86,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             ArgumentNullException.ThrowIfNull(monitor);
             var raw = VcpFeatureValue.FromPercentage(contrast, monitor.ContrastVcpMax);
-            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, raw, cancellationToken);
+            return SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Contrast), raw, cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeVolume, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Volume), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -93,7 +101,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             ArgumentNullException.ThrowIfNull(monitor);
             var raw = VcpFeatureValue.FromPercentage(volume, monitor.VolumeVcpMax);
-            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, raw, cancellationToken);
+            return SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.Volume), raw, cancellationToken);
         }
 
         /// <summary>
@@ -103,14 +111,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.ColorTemperature), cancellationToken);
         }
 
         /// <summary>
         /// Set monitor color temperature using VCP code 0x14 (Select Color Preset)
         /// </summary>
         public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, VcpCodeSelectColorPreset, colorTemperature, cancellationToken);
+            => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.ColorTemperature), colorTemperature, cancellationToken);
 
         /// <summary>
         /// Get current input source using VCP code 0x60
@@ -119,14 +127,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodeInputSource, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.InputSource), cancellationToken);
         }
 
         /// <summary>
         /// Set input source using VCP code 0x60
         /// </summary>
         public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, VcpCodeInputSource, inputSource, cancellationToken);
+            => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.InputSource), inputSource, cancellationToken);
 
         /// <summary>
         /// Set power state using VCP code 0xD6 (Power Mode).
@@ -134,7 +142,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Note: Setting any value other than 0x01 (On) will turn off the display.
         /// </summary>
         public Task<MonitorOperationResult> SetPowerStateAsync(Monitor monitor, int powerState, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, VcpCodePowerMode, powerState, cancellationToken);
+            => SetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.PowerState), powerState, cancellationToken);
 
         /// <summary>
         /// Get current power state using VCP code 0xD6 (Power Mode).
@@ -143,7 +151,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public async Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
-            return await GetVcpFeatureAsync(monitor, VcpCodePowerMode, cancellationToken);
+            return await GetVcpFeatureAsync(monitor, monitor.ResolvedVcpCodes.GetCode(VcpFeature.PowerState), cancellationToken);
         }
 
         /// <summary>
@@ -305,6 +313,16 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 monitor.VcpCapabilitiesInfo = caps;
+
+                // Resolve each feature to a concrete VCP code BEFORE capability flags and
+                // value initialization, both of which now read monitor.ResolvedVcpCodes.
+                PersistedVcpCodeMaps.TryGetValue(monitor.Id, out var persistedCodeMap);
+                monitor.ResolvedVcpCodes = VcpFeatureResolver.Resolve(
+                    caps,
+                    MaxCompatibilityMode,
+                    persistedCodeMap,
+                    code => TryGetVcpFeature(physical.HPhysicalMonitor, code, monitor.Id, out _, out var max) && max > 0);
+
                 UpdateMonitorCapabilitiesFromVcp(monitor, caps);
 
                 // Initialize current values for every VCP feature the device reports
@@ -441,7 +459,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeInputSource(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.InputSource);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
             }
@@ -452,7 +471,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.ColorTemperature);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
             }
@@ -463,7 +483,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializePowerState(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.PowerState);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentPowerState = (int)current;
             }
@@ -475,7 +496,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeBrightness(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.Brightness);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint max))
             {
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 if (!brightnessInfo.IsValid)
@@ -496,7 +518,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeContrast(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.Contrast);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint max))
             {
                 monitor.ContrastVcpMax = (int)max;
                 var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
@@ -510,7 +533,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void InitializeVolume(Monitor monitor, IntPtr handle)
         {
-            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
+            var code = monitor.ResolvedVcpCodes.GetCode(VcpFeature.Volume);
+            if (TryGetVcpFeature(handle, code, monitor.Id, out uint current, out uint max))
             {
                 monitor.VolumeVcpMax = (int)max;
                 var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
@@ -545,8 +569,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
         {
-            // Check for Brightness support (VCP 0x10)
-            if (vcpCaps.SupportsVcpCode(VcpCodeBrightness))
+            // Brightness support derives from the resolved map so a monitor that exposes
+            // brightness only via an alternate code (0x13/0x6B) is still recognized.
+            if (monitor.ResolvedVcpCodes.IsSupported(VcpFeature.Brightness))
             {
                 monitor.Capabilities |= MonitorCapabilities.Brightness;
             }
