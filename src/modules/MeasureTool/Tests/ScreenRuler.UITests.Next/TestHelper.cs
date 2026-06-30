@@ -493,6 +493,7 @@ public static class TestHelper
             if (attempt < maxAttempts)
             {
                 Log($"{testName}: clipboard empty — retrying the measurement in place");
+                Thread.Sleep(1000);
             }
         }
 
