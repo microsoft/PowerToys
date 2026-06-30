@@ -161,6 +161,10 @@ static bool IsTrustedMicrosoftSignedInstaller(const std::wstring& installerPath)
     // Don't perform online revocation checks: they require network access and would
     // turn a legitimate offline update into a verification failure (false negative).
     trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+    // Only use locally cached URLs when building the certificate chain. Without this,
+    // WinVerifyTrust can reach out to the network to fetch missing intermediates, which
+    // could hang or time out during an offline update.
+    trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL;
     trustData.dwUnionChoice = WTD_CHOICE_FILE;
     trustData.dwStateAction = WTD_STATEACTION_VERIFY;
     trustData.pFile = &fileInfo;
@@ -230,7 +234,7 @@ bool InstallNewVersionStage2(std::wstring installer_path)
                                                  nullptr) };
     if (!installerLock)
     {
-        Logger::error(L"Couldn't open the installer for verification: {}", installer_path);
+        Logger::error(L"Couldn't open the installer for verification: {} (error {:#x})", installer_path, GetLastError());
         return false;
     }
 
