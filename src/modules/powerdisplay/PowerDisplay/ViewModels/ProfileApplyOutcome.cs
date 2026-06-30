@@ -23,7 +23,19 @@ namespace PowerDisplay.ViewModels;
 /// (present only on success), the status string, and an optional error message (present only
 /// on hardware failure). Empty when <see cref="Connected"/> is <c>false</c>.
 /// </param>
+/// <param name="Number">
+/// 1-based monitor number for the connected monitor, mirrored into the result's
+/// <see cref="PowerDisplay.Contracts.CliMonitorRef.Number"/> so the CLI renderer prints the real
+/// label ("Monitor 2 (Dell ...)"). Defaults to 0 for disconnected entries (the renderer falls back
+/// to the monitor Id for those).
+/// </param>
+/// <param name="Name">
+/// Friendly monitor name for the connected monitor, mirrored into
+/// <see cref="PowerDisplay.Contracts.CliMonitorRef.Name"/>. Defaults to empty for disconnected entries.
+/// </param>
 public readonly record struct ProfileApplyOutcome(
     string MonitorId,
     bool Connected,
-    IReadOnlyList<CliProfileChange> Changes);
+    IReadOnlyList<CliProfileChange> Changes,
+    int Number = 0,
+    string Name = "");

@@ -257,7 +257,14 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) => mon.CurrentBrightness = val,
+                (mon, val) =>
+                {
+                    // A successful write makes the value authoritatively known: set the read flag so
+                    // consumers (e.g. the CLI before/after display, relative up/down) can tell a real
+                    // value apart from the never-read default even if discovery's read had failed.
+                    mon.CurrentBrightness = val;
+                    mon.ReadValues |= MonitorReadFlags.Brightness;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -268,7 +275,11 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 contrast,
                 (ctrl, mon, val, ct) => ctrl.SetContrastAsync(mon, val, ct),
-                (mon, val) => mon.CurrentContrast = val,
+                (mon, val) =>
+                {
+                    mon.CurrentContrast = val;
+                    mon.ReadValues |= MonitorReadFlags.Contrast;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -279,7 +290,11 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 volume,
                 (ctrl, mon, val, ct) => ctrl.SetVolumeAsync(mon, val, ct),
-                (mon, val) => mon.CurrentVolume = val,
+                (mon, val) =>
+                {
+                    mon.CurrentVolume = val;
+                    mon.ReadValues |= MonitorReadFlags.Volume;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -290,7 +305,11 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 colorTemperature,
                 (ctrl, mon, val, ct) => ctrl.SetColorTemperatureAsync(mon, val, ct),
-                (mon, val) => mon.CurrentColorTemperature = val,
+                (mon, val) =>
+                {
+                    mon.CurrentColorTemperature = val;
+                    mon.ReadValues |= MonitorReadFlags.ColorTemperature;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -301,7 +320,11 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 inputSource,
                 (ctrl, mon, val, ct) => ctrl.SetInputSourceAsync(mon, val, ct),
-                (mon, val) => mon.CurrentInputSource = val,
+                (mon, val) =>
+                {
+                    mon.CurrentInputSource = val;
+                    mon.ReadValues |= MonitorReadFlags.InputSource;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -313,7 +336,11 @@ namespace PowerDisplay.Common.Services
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
-                (mon, val) => mon.CurrentPowerState = val,
+                (mon, val) =>
+                {
+                    mon.CurrentPowerState = val;
+                    mon.ReadValues |= MonitorReadFlags.PowerState;
+                },
                 cancellationToken);
 
         /// <summary>

@@ -42,15 +42,29 @@ public class ApplyProfileOutcomeTests
             ct: CancellationToken.None);
 
     [TestMethod]
-    public async Task ColorTemperature_ValueNotInSupportedSet_ReportsOutOfRange_AndSkipsWrite()
+    public async Task ColorTemperature_ValueNotInSupportedSet_ReportsInvalidDiscreteValue_AndSkipsWrite()
     {
-        // A profile value the monitor does not advertise must be rejected before any hardware write,
-        // matching `set` — not attempted and reported as a hardware failure.
+        // A valid byte that the monitor does not advertise must be rejected before any hardware write
+        // and reported as INVALID_DISCRETE_VALUE — the same classification (and exit code 3) the
+        // `set` command uses, not OUT_OF_RANGE (exit 2).
         var outcome = await RunColorTemp(0x99, ColorPresetSet);
 
         Assert.IsNotNull(outcome);
-        Assert.AreEqual(CliProfileChange.StatusOutOfRange, outcome!.Status);
+        Assert.AreEqual(CliProfileChange.StatusInvalidDiscreteValue, outcome!.Status);
         Assert.AreEqual(0, _applyCalls, "hardware write must not be attempted for an unsupported value");
+    }
+
+    [TestMethod]
+    public async Task ColorTemperature_OutOfByteRange_ReportsOutOfRange_AndSkipsWrite()
+    {
+        // A value outside the VCP byte bounds [0, 0xFF] is OUT_OF_RANGE (exit 2), distinct from a
+        // valid-byte-but-unsupported value. Uses a null advertised set so only the byte-range guard
+        // can fire (the previously-untested branch).
+        var outcome = await RunColorTemp(0x100, supportedValues: null);
+
+        Assert.IsNotNull(outcome);
+        Assert.AreEqual(CliProfileChange.StatusOutOfRange, outcome!.Status);
+        Assert.AreEqual(0, _applyCalls, "hardware write must not be attempted for an out-of-range value");
     }
 
     [TestMethod]

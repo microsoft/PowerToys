@@ -25,6 +25,23 @@ public static class Program
 {
     private const int DefaultTimeoutSeconds = 30;
 
+    // Canonical args for routing any version request through the default invocation pipeline's
+    // version renderer (static readonly to satisfy CA1861 — the array is passed, never mutated).
+    private static readonly string[] VersionArgs = { "--version" };
+
+    // Stable program identifier stamped into the `command` field of root-level error envelopes.
+    // For an error that resolves to the RootCommand (e.g. an unrecognized top-level option),
+    // CommandResult.Command.Name is the auto-derived executable name ("PowerToys.PowerDisplay.Cli");
+    // mapping it to this constant keeps the machine-readable field a documented command identifier.
+    private const string ProgramCommandLabel = "powerdisplay";
+
+    // The command name for the error envelope: a real subcommand keeps its name; a root-level error
+    // is reported as the program label instead of leaking the binary name.
+    private static string CommandLabelFor(ParseResult parseResult)
+        => parseResult.CommandResult.Command is RootCommand
+            ? ProgramCommandLabel
+            : parseResult.CommandResult.Command.Name;
+
     public static async Task<int> Main(string[] args)
     {
         // Emit UTF-8 so non-ASCII glyphs in human-readable output (the → arrow, ° degree sign,
@@ -38,9 +55,18 @@ public static class Program
         // Help / version short-circuit through the default invocation pipeline (which owns
         // the version + help renderers). Done BEFORE the logger is created so a pure
         // --help/--version invocation has no file-system side effects.
-        if (parseResult.Tokens.Count == 0 || HasHelpToken(parseResult) || IsVersionRequest(parseResult))
+        if (parseResult.Tokens.Count == 0 || HasHelpToken(parseResult))
         {
             return await root.InvokeAsync(args);
+        }
+
+        if (IsVersionRequest(parseResult))
+        {
+            // Route through the canonical root `--version` invocation rather than re-invoking the
+            // original args. This also covers `apply-profile --version`, where the version token was
+            // greedily bound to the profile-name argument (see IsVersionRequest) and replaying args
+            // would instead dispatch "apply a profile literally named --version".
+            return await root.InvokeAsync(VersionArgs);
         }
 
         var quiet = parseResult.GetValueForOption(CliOptions.Quiet);
@@ -52,7 +78,7 @@ public static class Program
             // them into a single envelope so consumers always receive exactly one parseable
             // object (text output) instead of N concatenated ones.
             output.WriteError(BuildParseErrorResult(
-                parseResult.CommandResult.Command.Name,
+                CommandLabelFor(parseResult),
                 parseResult.Errors.Select(e => e.Message)));
 
             return CliExitCodes.ArgumentError;
@@ -130,7 +156,7 @@ public static class Program
         }
         catch (OperationCanceledException)
         {
-            output.WriteError(BuildTimeoutErrorResult(parseResult.CommandResult.Command.Name, timedOut, timeoutSeconds));
+            output.WriteError(BuildTimeoutErrorResult(CommandLabelFor(parseResult), timedOut, timeoutSeconds));
             return CliExitCodes.Timeout;
         }
         catch (Exception ex)
@@ -138,7 +164,7 @@ public static class Program
             Logger.LogError($"PowerDisplay CLI failed: {ex}");
             output.WriteError(new CliErrorResult
             {
-                Command = parseResult.CommandResult.Command.Name,
+                Command = CommandLabelFor(parseResult),
                 Error = new CliError
                 {
                     Code = CliErrorCodes.InternalError,
@@ -340,7 +366,16 @@ public static class Program
         => parseResult.UnmatchedTokens.Any(t => t == "--version");
 
     public static bool IsVersionRequest(ParseResult parseResult)
-        => HasVersionToken(parseResult) && parseResult.CommandResult.Command is RootCommand;
+        => (HasVersionToken(parseResult) && parseResult.CommandResult.Command is RootCommand)
+            || VersionBoundToProfileNameArgument(parseResult);
+
+    // Mirror of HelpBoundToProfileNameArgument for "--version": the `apply-profile <name>` positional
+    // argument greedily captures a "--version" token (it binds to the argument, so it never reaches
+    // UnmatchedTokens and IsVersionRequest's RootCommand gate cannot see it). Without this,
+    // `apply-profile --version` would be dispatched as "apply a profile literally named --version".
+    private static bool VersionBoundToProfileNameArgument(ParseResult parseResult)
+        => parseResult.CommandResult.Command.Name == CliCommandNames.ApplyProfile
+            && parseResult.GetValueForArgument(CliOptions.ProfileName) == "--version";
 
     /// <summary>
     /// Collapses one or more System.CommandLine parse-error messages into a single

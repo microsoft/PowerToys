@@ -59,6 +59,19 @@ public class ProgramTokenTests
         => Assert.IsFalse(Program.IsVersionRequest(Parse("set", "-n", "1", "--version")));
 
     [TestMethod]
+    public void IsVersionRequest_VersionUnderApplyProfile_True()
+    {
+        // `apply-profile <name>` greedily binds "--version" as the profile name, so it never reaches
+        // UnmatchedTokens. It must still be treated as a version request (mirrors the --help carve-out)
+        // rather than dispatched as "apply a profile literally named --version".
+        Assert.IsTrue(Program.IsVersionRequest(Parse("apply-profile", "--version")));
+    }
+
+    [TestMethod]
+    public void ApplyProfileWithRealName_IsNotVersion()
+        => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "Night")));
+
+    [TestMethod]
     public void BuildParseErrorResult_CollapsesMultipleMessagesIntoOneEnvelope()
     {
         // System.CommandLine can report several errors for one bad invocation; they must be
@@ -101,5 +114,15 @@ public class ProgramTokenTests
         var parsed = Parse("up", "--brightness");
         Assert.AreEqual(0, parsed.Errors.Count);
         Assert.IsTrue(parsed.GetValueForOption(CliOptions.BrightnessFlag));
+    }
+
+    [TestMethod]
+    public void Up_BrightnessFlag_RejectsAttachedValue()
+    {
+        // The up/down setting flags are pure presence flags (ArgumentArity.Zero). A following
+        // bareword like "false" must NOT be swallowed as the flag's value (which would silently make
+        // the flag false and yield a misleading "no setting specified"); it is an unrecognized token.
+        var parsed = Parse("up", "--brightness", "false");
+        Assert.IsTrue(parsed.Errors.Count > 0, "an attached value on a no-value flag must be a parse error");
     }
 }

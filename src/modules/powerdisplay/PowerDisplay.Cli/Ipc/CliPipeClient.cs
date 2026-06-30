@@ -37,7 +37,7 @@ public sealed class CliPipeClient
         try
         {
             using var client = new NamedPipeClientStream(".", PipeNames.CliServer(), PipeDirection.InOut, PipeOptions.Asynchronous);
-            await client.ConnectAsync((int)connectTimeout.TotalMilliseconds, ct);
+            await client.ConnectAsync(ToConnectMilliseconds(connectTimeout), ct);
 
             using var writer = new StreamWriter(client, CliPipeProtocol.PipeEncoding, CliPipeProtocol.BufferSize, leaveOpen: true) { AutoFlush = true };
             using var reader = new StreamReader(client, CliPipeProtocol.PipeEncoding, false, CliPipeProtocol.BufferSize, leaveOpen: true);
@@ -60,5 +60,24 @@ public sealed class CliPipeClient
 
         // OperationCanceledException is intentionally NOT caught here — it propagates to the
         // caller, which treats Ctrl+C / timeout-token cancellation as user cancellation.
+    }
+
+    /// <summary>
+    /// Converts a connect-timeout <see cref="TimeSpan"/> to the int-milliseconds value
+    /// <see cref="NamedPipeClientStream.ConnectAsync(int, CancellationToken)"/> expects, clamped to
+    /// <c>[0, int.MaxValue]</c>. A large <c>--timeout</c> (e.g. millions of seconds) would otherwise
+    /// overflow the cast to a negative value, which <c>ConnectAsync</c> rejects with
+    /// <see cref="ArgumentOutOfRangeException"/> — surfacing as exit 9 instead of a clean connect/timeout.
+    /// int.MaxValue ms (~24.8 days) is effectively unbounded for a connect wait.
+    /// </summary>
+    internal static int ToConnectMilliseconds(TimeSpan timeout)
+    {
+        var ms = timeout.TotalMilliseconds;
+        if (ms >= int.MaxValue)
+        {
+            return int.MaxValue;
+        }
+
+        return ms < 0 ? 0 : (int)ms;
     }
 }

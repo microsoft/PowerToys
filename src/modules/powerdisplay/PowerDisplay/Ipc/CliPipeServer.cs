@@ -26,16 +26,29 @@ namespace PowerDisplay.Ipc;
 /// </para>
 /// <para>
 /// <b>ACL:</b> Uses <see cref="NamedPipeServerStreamAcl.Create"/> with a
-/// <see cref="PipeSecurity"/> that grants <see cref="WellKnownSidType.AuthenticatedUserSid"/>
-/// <c>ReadWrite | CreateNewInstance</c>, so a same-user non-elevated CLI can connect to an
-/// elevated app (cross-integrity). Pattern sourced from
-/// <c>MouseWithoutBorders/App/Class/IClipboardHelper.cs – IpcChannel&lt;T&gt;.StartIpcServer</c>.
+/// <see cref="PipeSecurity"/> that grants the <em>current user's</em> SID
+/// <c>ReadWrite | CreateNewInstance</c>, so a same-user non-elevated CLI can connect to a
+/// same-user elevated app (elevation changes the integrity level, not the user SID). The ACE is
+/// deliberately scoped to the owner rather than
+/// <see cref="WellKnownSidType.AuthenticatedUserSid"/>: named pipes are not session-isolated (the
+/// session id in <see cref="PipeNames.CliServer"/> only avoids name collisions), so an
+/// AuthenticatedUsers ACE would let any other logged-on user drive this user's monitors. Pattern
+/// sourced from <c>MouseWithoutBorders/App/Class/IClipboardHelper.cs – IpcChannel&lt;T&gt;.StartIpcServer</c>.
 /// </para>
 /// <para>
 /// <b>Concurrency:</b> the accept loop serves one request at a time — it waits for a connection,
 /// runs it to completion, then accepts the next. This is sufficient for the one-shot CLI client.
 /// <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed only to avoid an
 /// artificial single-instance cap, not to serve requests concurrently.
+/// </para>
+/// <para>
+/// <b>Limitation:</b> because the loop is single-instance, one in-flight request holds the sole
+/// pipe instance until <see cref="CliRequestHandler.HandleAsync"/> returns. A blocking DDC/CI
+/// hardware write cannot be cancelled mid-call (the underlying Win32 <c>SetVCPFeature</c> I2C
+/// transaction is synchronous), so a slow or hung monitor serializes every subsequent CLI request
+/// behind it until the OS DDC/CI layer times out. This is an accepted trade-off for the one-shot
+/// CLI; making the server handle connections concurrently would require guarding the shared
+/// ViewModel / MonitorManager state the handler currently touches single-threaded.
 /// </para>
 /// </summary>
 public sealed class CliPipeServer
@@ -64,9 +77,17 @@ public sealed class CliPipeServer
     {
         var pipeName = PipeNames.CliServer();
 
+        // Scope pipe access to the current user's SID (not AuthenticatedUsers). Elevation changes the
+        // integrity level, not the user SID, so a same-user non-elevated CLI can still connect to a
+        // same-user elevated app, while other logged-on users are denied (named pipes are not
+        // session-isolated). Fall back to AuthenticatedUsers only if the owner SID is somehow null.
+        using var currentIdentity = WindowsIdentity.GetCurrent();
+        var ownerSid = currentIdentity.User
+            ?? new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+
         var security = new PipeSecurity();
         security.AddAccessRule(new PipeAccessRule(
-            new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null),
+            ownerSid,
             PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
             AccessControlType.Allow));
 
@@ -141,6 +162,22 @@ public sealed class CliPipeServer
 
         var responseJson = await _handler.HandleAsync(requestJson, ct).ConfigureAwait(false);
         await writer.WriteLineAsync(responseJson.AsMemory(), ct).ConfigureAwait(false);
+
+        // Block until the client has drained the full response before the caller's `using` disposes
+        // the pipe instance. Without this, disposing the handle immediately after an AutoFlush write
+        // can truncate a large response the client has not finished reading, surfacing as a spurious
+        // deserialize-mismatch on the CLI side. Best-effort: if the client already vanished the pipe
+        // is broken and there is nothing left to drain.
+        try
+        {
+            server.WaitForPipeDrain();
+        }
+        catch (IOException)
+        {
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     /// <summary>

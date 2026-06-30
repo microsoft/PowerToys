@@ -65,7 +65,7 @@ public static class MonitorDtoProjector
 
         if (!number.HasValue && string.IsNullOrEmpty(id))
         {
-            if (TryGetUnknownSettingError(settingFilter, out var settingErr))
+            if (TryGetUnknownSettingError(settingFilter, out _, out var settingErr))
             {
                 return (null, new CliErrorResult { Command = CliCommandNames.Get, Error = settingErr! });
             }
@@ -296,14 +296,14 @@ public static class MonitorDtoProjector
         IReadOnlyList<CustomVcpValueMapping>? customMappings,
         out CliError? error)
     {
-        if (TryGetUnknownSettingError(settingFilter, out error))
+        if (TryGetUnknownSettingError(settingFilter, out var normalizedFilter, out error))
         {
             return null;
         }
 
-        IEnumerable<string> settingNames = settingFilter is null
+        IEnumerable<string> settingNames = normalizedFilter is null
             ? CliSettingNames.All
-            : new[] { settingFilter.ToLowerInvariant() };
+            : new[] { normalizedFilter };
 
         var results = new List<CliSettingValue>();
         foreach (var name in settingNames)
@@ -323,10 +323,11 @@ public static class MonitorDtoProjector
     /// Returns <c>true</c> with a populated error when the filter names an unknown setting.
     /// The error echoes the user's original input verbatim, not the lower-cased lookup key.
     /// </summary>
-    private static bool TryGetUnknownSettingError(string? settingFilter, out CliError? error)
+    private static bool TryGetUnknownSettingError(string? settingFilter, out string? normalized, out CliError? error)
     {
         error = null;
-        if (settingFilter is null || Array.IndexOf(CliSettingNames.All, settingFilter.ToLowerInvariant()) >= 0)
+        normalized = settingFilter?.ToLowerInvariant();
+        if (settingFilter is null || Array.IndexOf(CliSettingNames.All, normalized) >= 0)
         {
             return false;
         }

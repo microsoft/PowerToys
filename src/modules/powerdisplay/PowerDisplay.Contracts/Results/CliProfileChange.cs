@@ -12,6 +12,12 @@ public sealed class CliProfileChange
     public const string StatusApplied = "applied";
     public const string StatusUnsupported = "unsupported";
     public const string StatusOutOfRange = "out-of-range";
+
+    // A discrete value (color-temperature) that parses as a byte but is not in the monitor's
+    // advertised supported set. Distinct from out-of-range (raw byte bounds) so apply-profile maps
+    // it to the same exit code (3 / INVALID_DISCRETE_VALUE) the `set` command uses for that case.
+    public const string StatusInvalidDiscreteValue = "invalid-discrete-value";
+
     public const string StatusHardwareFailure = "hardware-failure";
 
     public string Setting { get; init; } = string.Empty;
@@ -22,7 +28,7 @@ public sealed class CliProfileChange
     /// <summary>Human-readable applied value (e.g. "50%", "6500K (0x05)"); present only when <see cref="Status"/> is "applied".</summary>
     public string? Display { get; init; }
 
-    /// <summary>One of applied / unsupported / out-of-range / hardware-failure.</summary>
+    /// <summary>One of applied / unsupported / out-of-range / invalid-discrete-value / hardware-failure.</summary>
     public string Status { get; init; } = string.Empty;
 
     /// <summary>Hardware error message; present only when <see cref="Status"/> is "hardware-failure".</summary>

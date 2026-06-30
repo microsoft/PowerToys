@@ -63,25 +63,30 @@ public static class CliOptions
     // set-command Option<int?> instances above. There is no conflict: each Option instance is added
     // only to its own subcommand (set gets the int? options; up/down get these bool flags), and
     // System.CommandLine scopes alias resolution per command. Do NOT add both variants to one command.
+    //
+    // Arity is Zero (a pure presence flag), not ZeroOrOne: ZeroOrOne lets the option greedily swallow
+    // a following bareword, so `up --brightness false` would bind "false" as the flag value and then
+    // report "no setting specified" — contradicting the documented "no value" contract. Zero rejects
+    // any attached value while `up --brightness` still resolves to true.
     public static readonly Option<bool> BrightnessFlag = new(
         ["--brightness"],
         "Adjust brightness (no value; the amount comes from --step or the mouse_wheel_increment setting).")
     {
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.Zero,
     };
 
     public static readonly Option<bool> ContrastFlag = new(
         ["--contrast"],
         "Adjust contrast (no value; the amount comes from --step or the mouse_wheel_increment setting).")
     {
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.Zero,
     };
 
     public static readonly Option<bool> VolumeFlag = new(
         ["--volume"],
         "Adjust volume (no value; the amount comes from --step or the mouse_wheel_increment setting).")
     {
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.Zero,
     };
 
     public static readonly Option<int?> Step = new(

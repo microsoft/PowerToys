@@ -22,11 +22,14 @@ namespace PowerDisplay.Ipc;
 /// <summary>
 /// App-side IPC dispatcher. Called from the named-pipe server (Task 3.1) on a background thread.
 /// <para>
-/// <b>Threading:</b> All ViewModel/MonitorManager access is marshalled onto the UI thread via the
+/// <b>Threading:</b> ViewModel/MonitorManager access is <em>initiated</em> on the UI thread via the
 /// injected <see cref="DispatcherQueue"/> using a <see cref="TaskCompletionSource{T}"/> pattern
-/// (see <c>RunOnUiThreadAsync</c>). Only serialization of the resulting DTO happens on the
-/// background thread; this matches the pattern established by <c>ApplyLightSwitchProfile</c> in
-/// <see cref="MainViewModel"/>.
+/// (see <c>RunOnUiThreadAsync</c>): the synchronous VM snapshot reads and the dispatch of each
+/// hardware write run on the UI thread. The work is awaited with <c>ConfigureAwait(false)</c>, so
+/// continuations after an incomplete hardware-write await resume on a thread-pool thread — the
+/// MonitorManager controllers are already thread-affinity-free, matching the pattern established by
+/// <c>ApplyLightSwitchProfile</c> in <see cref="MainViewModel"/>. Only serialization of the
+/// resulting DTO happens on the background thread.
 /// </para>
 /// <para>
 /// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Cancellation (Ctrl+C / overrun
@@ -254,8 +257,11 @@ public sealed class CliRequestHandler
                 }
 
                 // ── unknown command ───────────────────────────────────────────────
+                // A command name the app does not recognize is a bad argument (e.g. a newer CLI
+                // talking to an older app), not an internal app fault — map it to ARGUMENT_ERROR
+                // (exit 7) like the apply-profile not-found path, not INTERNAL_ERROR (exit 9).
                 default:
-                    return Serialize(MakeError("unknown", CliErrorCodes.InternalError, $"unknown command '{envelope.Command}'"), ContractsJsonContext.Default.CliErrorResult);
+                    return Serialize(MakeError(envelope.Command, CliErrorCodes.ArgumentError, $"unknown command '{envelope.Command}'"), ContractsJsonContext.Default.CliErrorResult);
             }
         }
         catch (OperationCanceledException)

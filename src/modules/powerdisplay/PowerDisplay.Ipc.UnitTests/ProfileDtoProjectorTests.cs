@@ -141,6 +141,82 @@ public class ProfileDtoProjectorTests
     }
 
     [TestMethod]
+    public void BuildApplyProfileResult_InvalidDiscreteValue_ExitCodeInvalidDiscreteValue()
+    {
+        // An out-of-supported-set color-temperature value maps to INVALID_DISCRETE_VALUE (exit 3),
+        // matching the `set` command's classification rather than OUT_OF_RANGE (exit 2).
+        var outcomes = new List<ProfileApplyOutcome>
+        {
+            new("MON-A", Connected: true, Changes: new[]
+            {
+                new CliProfileChange { Setting = "color-temperature", Value = 0x99, Display = null, Status = CliProfileChange.StatusInvalidDiscreteValue, Error = null },
+            }),
+        };
+
+        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
+
+        Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, result.ExitCode);
+    }
+
+    [TestMethod]
+    public void BuildApplyProfileResult_InvalidDiscreteValueDominatesOutOfRange()
+    {
+        // Precedence: InvalidDiscreteValue (3) wins over OutOfRange (2), regardless of order.
+        var outcomes = new List<ProfileApplyOutcome>
+        {
+            new("MON-A", Connected: true, Changes: new[]
+            {
+                new CliProfileChange { Setting = "brightness", Value = 150, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null },
+                new CliProfileChange { Setting = "color-temperature", Value = 0x99, Display = null, Status = CliProfileChange.StatusInvalidDiscreteValue, Error = null },
+            }),
+        };
+
+        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
+
+        Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, result.ExitCode);
+    }
+
+    [TestMethod]
+    public void BuildApplyProfileResult_HardwareFailureDominatesInvalidDiscreteValue()
+    {
+        // Precedence: HardwareFailure (5) wins over InvalidDiscreteValue (3).
+        var outcomes = new List<ProfileApplyOutcome>
+        {
+            new("MON-A", Connected: true, Changes: new[]
+            {
+                new CliProfileChange { Setting = "color-temperature", Value = 0x99, Display = null, Status = CliProfileChange.StatusInvalidDiscreteValue, Error = null },
+                new CliProfileChange { Setting = "contrast", Value = 70, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = "I2C error" },
+            }),
+        };
+
+        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
+
+        Assert.AreEqual(CliExitCodes.HardwareFailure, result.ExitCode);
+    }
+
+    [TestMethod]
+    public void BuildApplyProfileResult_ConnectedMonitor_CarriesNumberAndName()
+    {
+        // A connected outcome carries the monitor's real number/name so the renderer prints
+        // "Monitor 2 (Dell U2720Q)" rather than the placeholder "Monitor 0 ()".
+        var changes = new[]
+        {
+            new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
+        };
+        var outcomes = new List<ProfileApplyOutcome>
+        {
+            new("MON-A", Connected: true, Changes: changes, Number: 2, Name: "Dell U2720Q"),
+        };
+
+        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
+
+        var mon = result.Monitors[0].Monitor;
+        Assert.AreEqual("MON-A", mon.Id);
+        Assert.AreEqual(2, mon.Number);
+        Assert.AreEqual("Dell U2720Q", mon.Name);
+    }
+
+    [TestMethod]
     public void BuildApplyProfileResult_UnsupportedOnly_ExitCodeOk()
     {
         // "unsupported" does NOT contribute to exit-code failures (mirrors ApplyProfileCommand).

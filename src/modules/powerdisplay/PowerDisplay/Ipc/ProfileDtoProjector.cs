@@ -64,7 +64,7 @@ public static class ProfileDtoProjector
     /// per-monitor apply outcomes, and computes the process exit code.
     /// <para>
     /// Exit-code precedence (highest wins):
-    /// <c>HardwareFailure (5) &gt; OutOfRange (2) &gt; Ok (0)</c>.
+    /// <c>HardwareFailure (5) &gt; InvalidDiscreteValue (3) &gt; OutOfRange (2) &gt; Ok (0)</c>.
     /// </para>
     /// <para>
     /// <c>unsupported</c> settings do not affect the exit code.
@@ -93,6 +93,7 @@ public static class ProfileDtoProjector
 
         var monitorOutcomes = new List<CliProfileMonitorOutcome>(outcomes.Count);
         var anyHardwareFailure = false;
+        var anyInvalidDiscreteValue = false;
         var anyOutOfRange = false;
 
         foreach (var outcome in outcomes)
@@ -111,12 +112,16 @@ public static class ProfileDtoProjector
             }
 
             // outcome.Changes are already Contracts DTOs; scan them for the worst-outcome flags
-            // (HardwareFailure > OutOfRange; "unsupported" sets neither — intentional).
+            // (HardwareFailure > InvalidDiscreteValue > OutOfRange; "unsupported" sets none — intentional).
             foreach (var change in outcome.Changes)
             {
                 if (change.Status == CliProfileChange.StatusHardwareFailure)
                 {
                     anyHardwareFailure = true;
+                }
+                else if (change.Status == CliProfileChange.StatusInvalidDiscreteValue)
+                {
+                    anyInvalidDiscreteValue = true;
                 }
                 else if (change.Status == CliProfileChange.StatusOutOfRange)
                 {
@@ -126,14 +131,17 @@ public static class ProfileDtoProjector
 
             monitorOutcomes.Add(new CliProfileMonitorOutcome
             {
-                Monitor = new CliMonitorRef { Id = outcome.MonitorId },
+                // Carry the real number/name (the connected outcome has them) so the CLI renderer
+                // prints "Monitor 2 (Dell ...)" instead of the placeholder "Monitor 0 ()".
+                Monitor = new CliMonitorRef { Id = outcome.MonitorId, Number = outcome.Number, Name = outcome.Name },
                 Connected = true,
                 Changes = outcome.Changes,
             });
         }
 
-        // Worst-outcome precedence: HardwareFailure > OutOfRange > Ok.
+        // Worst-outcome precedence: HardwareFailure > InvalidDiscreteValue > OutOfRange > Ok.
         var exitCode = anyHardwareFailure ? CliExitCodes.HardwareFailure
+            : anyInvalidDiscreteValue ? CliExitCodes.InvalidDiscreteValue
             : anyOutOfRange ? CliExitCodes.OutOfRange
             : CliExitCodes.Ok;
 

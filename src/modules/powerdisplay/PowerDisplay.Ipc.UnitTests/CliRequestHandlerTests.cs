@@ -416,16 +416,19 @@ public class CliRequestHandlerTests
 
     // ─── unknown command ──────────────────────────────────────────────────────
     [TestMethod]
-    public async Task UnknownCommand_ReturnsInternalError()
+    public async Task UnknownCommand_ReturnsArgumentError()
     {
+        // A command name the app does not recognize (e.g. a newer CLI talking to an older app) is a
+        // bad argument, not an internal fault: it maps to ARGUMENT_ERROR (exit 7), not INTERNAL_ERROR
+        // (exit 9). The offending command name is echoed back in the Command field.
         var envelope = MakeEnvelope("does-not-exist");
 
         var json = await Dispatch(envelope);
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.AreEqual(CliErrorCodes.InternalError, error.Error.Code);
-        Assert.AreEqual(CliExitCodes.InternalError, error.Error.ExitCode);
-        Assert.AreEqual("unknown", error.Command);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+        Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
+        Assert.AreEqual("does-not-exist", error.Command);
     }
 }

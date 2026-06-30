@@ -66,6 +66,49 @@ public class AdjustCommandExecutorTests
     }
 
     [TestMethod]
+    public async Task Up_HugeStep_ClampsToMax_WithoutOverflow()
+    {
+        // A pathologically large step must not overflow `current + delta` (which, computed in int,
+        // would wrap negative and clamp to 0 — turning an `up` into a slam-to-minimum). It must
+        // clamp to 100.
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = int.MaxValue };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual("100%", result!.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Up_CurrentValueUnread_ReturnsHardwareFailure()
+    {
+        // The monitor advertises brightness (Supports passes) but discovery never read the live value
+        // (ReadValues lacks Brightness, so CurrentBrightness is the fabricated default 0). Relative
+        // adjust must NOT compute from that default and silently write an absolute value; it must
+        // surface a hardware failure so the caller knows the starting point was unknown.
+        var monitor = new Monitor
+        {
+            Id = "A",
+            MonitorNumber = 1,
+            Name = "TestMon",
+            CommunicationMethod = "DDC/CI",
+            Capabilities = MonitorCapabilities.Brightness,
+            ReadValues = MonitorReadFlags.None,
+            CurrentBrightness = 0,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.HardwareFailure, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.HardwareFailure, error.Error.ExitCode);
+    }
+
+    [TestMethod]
     public async Task Down_ClampsToMin0()
     {
         var snapshot = new List<Monitor> { BrightnessMon(3) };

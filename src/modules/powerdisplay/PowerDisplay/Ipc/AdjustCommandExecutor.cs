@@ -109,11 +109,41 @@ public static class AdjustCommandExecutor
             });
         }
 
-        var current = descriptor.Current(monitor!);
         var beforeKnown = monitor!.ReadValues.HasFlag(descriptor.ReadFlag);
+
+        // Relative adjust is meaningless without a trustworthy starting value. If discovery never
+        // read this setting (the capability is advertised but the live VCP read failed),
+        // descriptor.Current returns a fabricated default (0 for brightness, 50 for contrast/volume).
+        // Adjusting from that would silently turn "up 10" into an absolute write to ~10 on a panel
+        // that may have been at any level. Surface it as a hardware failure rather than guessing.
+        if (!beforeKnown)
+        {
+            return (null, new CliErrorResult
+            {
+                Command = commandName,
+                Monitor = monitorRef,
+                Error = new CliError
+                {
+                    Code = CliErrorCodes.HardwareFailure,
+                    Message = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "monitor {0} ({1}): current {2} value could not be read, so it cannot be adjusted relatively",
+                        monitorRef.Number,
+                        monitorRef.Name,
+                        setting),
+                    Hint = "use 'powerdisplay set' to assign an absolute value",
+                },
+            });
+        }
+
+        var current = descriptor.Current(monitor!);
         var step = req.Step ?? defaultStep;
         var delta = isUp ? step : -step;
-        var newValue = Math.Clamp(current + delta, 0, 100);
+
+        // Compute in long so a pathologically large --step cannot overflow int: `current + delta`
+        // could wrap negative and Math.Clamp of a wrapped value would invert the direction (an
+        // `up` ending at 0). Widen, clamp to [0, 100], then narrow back.
+        var newValue = (int)Math.Clamp((long)current + delta, 0, 100);
 
         var op = await descriptor.Apply(manager, monitor.Id, newValue, ct);
 
@@ -140,7 +170,9 @@ public static class AdjustCommandExecutor
             Command = commandName,
             Monitor = monitorRef,
             Setting = descriptor.Name,
-            BeforeDisplay = beforeKnown ? current + "%" : null,
+
+            // beforeKnown is guaranteed true here (the !beforeKnown case returned above).
+            BeforeDisplay = current + "%",
             AfterDisplay = newValue + "%",
         }, null);
     }
