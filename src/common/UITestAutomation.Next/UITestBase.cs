@@ -233,57 +233,12 @@ public class UITestBase : IDisposable
             }
         }
 
-        try
-        {
-            CaptureFailureScreenshot();
-        }
-        catch
-        {
-        }
-
         if (isInPipeline)
         {
             try
             {
                 AddRecordingsToTestResults();
                 AddLogFilesToTestResults();
-            }
-            catch
-            {
-            }
-        }
-    }
-
-    /// <summary>
-    /// Attach a failure screenshot. The primary capture is a window-independent GDI grab of the
-    /// desktop, so it works even when the test's window was already closed (e.g. by the test's own
-    /// <c>finally</c>) or never appeared (an init failure) — unlike winappcli's <c>--capture-screen</c>,
-    /// which requires a live target window. When the session window is still live, a winapp
-    /// window/overlay shot is added too. Best-effort.
-    /// </summary>
-    private void CaptureFailureScreenshot()
-    {
-        var dir = TestContext.TestRunResultsDirectory ?? TestContext.TestResultsDirectory ?? Path.GetTempPath();
-        Directory.CreateDirectory(dir);
-        var baseName = $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}";
-
-        // Reliable, window-independent desktop grab.
-        var desktopShot = Path.Combine(dir, $"{baseName}.png");
-        if (ScreenCapture.TryCaptureDesktop(desktopShot) && File.Exists(desktopShot))
-        {
-            TestContext.AddResultFile(desktopShot);
-        }
-
-        // Bonus detail: the winapp window/overlay shot, only when the session window is still alive.
-        if (Session is not null && Session.WindowHandle != 0)
-        {
-            var windowShot = Path.Combine(dir, $"{baseName}_window.png");
-            try
-            {
-                if (Session.TryScreenshot(windowShot, captureScreen: true) && File.Exists(windowShot))
-                {
-                    TestContext.AddResultFile(windowShot);
-                }
             }
             catch
             {

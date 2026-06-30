@@ -459,15 +459,18 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// True when the Measure Tool's full-screen measurement overlay is up — winappcli reports a
-    /// <c>PowerToys.MeasureToolOverlay</c> window (class <c>*OverlayWindow</c>) alongside the toolbar
-    /// once a tool is engaged and the cursor is over the capture surface.
+    /// True when the Measure Tool's full-screen measurement overlay is up. Detection uses the pure
+    /// Win32 <c>EnumWindows</c> API (via <see cref="WindowControl.EnumerateProcessWindows"/>) filtered
+    /// to the <c>PowerToys.MeasureToolUI</c> process, looking for the overlay window
+    /// (class <c>*OverlayWindow</c> / title <c>PowerToys.MeasureToolOverlay</c>). Win32 is used
+    /// deliberately: winappcli's <c>list-windows</c> attaches a UI Automation client and walks the
+    /// overlay's UIA tree, which disturbs the Measure Tool's live screen-capture session and yields an
+    /// empty measurement on the very next click.
     /// </summary>
     private static bool IsMeasureOverlayPresent()
     {
-        var start = DateTime.UtcNow;
-        var windows = WindowsFinder.ListByApp(ScreenRulerProcess);
-        var elapsed = (DateTime.UtcNow - start).TotalSeconds;
+        var pids = Process.GetProcessesByName(ScreenRulerProcess).Select(p => p.Id).ToList();
+        var windows = WindowControl.EnumerateProcessWindows(pids);
         var present = windows.Any(w =>
             w.Title.Contains("MeasureToolOverlay", StringComparison.OrdinalIgnoreCase) ||
             w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
@@ -475,7 +478,7 @@ public static class TestHelper
         var summary = windows.Count == 0
             ? "(none)"
             : string.Join(", ", windows.Select(w => $"'{w.Title}'[{w.ClassName}]"));
-        Log($"IsMeasureOverlayPresent: winappcli list-windows took {elapsed:0.00}s; {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
+        Log($"IsMeasureOverlayPresent (Win32 EnumWindows): {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
         return present;
     }
 
@@ -484,17 +487,8 @@ public static class TestHelper
     {
         var (cx, cy) = ScreenCenter();
 
-        // The Spacing tool measures from a screen-capture (WGC) frame, which can lag the tool engaging.
-        // Nudge the cursor around the spot for ~1s so frames flow and edge-detection runs before the
-        // click — clicking on a cold capture copies an empty measurement.
-        Log($"PerformMeasurementAction: warming the capture around the centre ({cx},{cy}), then left-click");
-        MouseHelper.MoveTo(cx - 80, cy - 80);
-        Thread.Sleep(300);
-        MouseHelper.MoveTo(cx + 60, cy + 60);
-        Thread.Sleep(300);
-        MouseHelper.MoveTo(cx - 60, cy - 60);
-        Thread.Sleep(300);
-        MouseHelper.MoveTo(cx, cy);
+        Log($"PerformMeasurementAction: move capture around the centre ({cx - 50},{cy - 50}), then left-click");
+        MouseHelper.MoveTo(cx - 50, cy - 50);
         Thread.Sleep(300);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
