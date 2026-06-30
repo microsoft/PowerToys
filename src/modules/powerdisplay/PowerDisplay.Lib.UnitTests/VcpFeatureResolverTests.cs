@@ -57,6 +57,7 @@ public class VcpFeatureResolverTests
     [TestMethod]
     public void Phase1_HonorsPriorityWhenMultiplePresent()
     {
+        // VcpFeatureRegistry.Candidates(VcpFeature.Brightness) == [0x10, 0x13, 0x6B] (priority order).
         var caps = CapsWith(0x13, 0x6B); // both alternates present, no 0x10
         var map = VcpFeatureResolver.Resolve(caps, maxCompatibilityMode: false, persisted: null, probe: _ => false);
         Assert.AreEqual((byte)0x13, map.GetCode(VcpFeature.Brightness));
@@ -78,6 +79,7 @@ public class VcpFeatureResolverTests
     [TestMethod]
     public void MaxCompat_ProbesInPriorityOrder_AndStopsAtFirstSuccess()
     {
+        // VcpFeatureRegistry.Candidates(VcpFeature.Brightness) == [0x10, 0x13, 0x6B] (priority order).
         var caps = CapsWith(); // empty: no candidate for any feature
         var probeLog = new List<byte>();
         Func<byte, bool> probe = code =>
@@ -90,7 +92,7 @@ public class VcpFeatureResolverTests
 
         Assert.AreEqual((byte)0x6B, map.GetCode(VcpFeature.Brightness));
 
-        // Brightness probes happen in order 0x10, 0x13, 0x6B (stops at 0x6B).
+        // Assert the first 3 brightness probes happened in order 0x10, 0x13, 0x6B (stops at 0x6B for brightness).
         CollectionAssert.AreEqual(new byte[] { 0x10, 0x13, 0x6B }, probeLog.GetRange(0, 3));
     }
 
@@ -117,6 +119,7 @@ public class VcpFeatureResolverTests
 
         Assert.AreEqual((byte)0x6B, map.GetCode(VcpFeature.Brightness));
         Assert.IsFalse(map.IsSupported(VcpFeature.Volume));
+        Assert.IsTrue(map.IsResolved(VcpFeature.Volume));
         Assert.AreEqual(0, probeLog.Count, "Reused features must not be probed.");
     }
 

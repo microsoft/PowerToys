@@ -84,7 +84,7 @@ namespace PowerDisplay.Common.Utils
                 // Phase 1 (both modes): first candidate the cap string reports as supported.
                 foreach (var code in candidates)
                 {
-                    if (caps != null && caps.SupportsVcpCode(code))
+                    if (caps.SupportsVcpCode(code))
                     {
                         resolved = code;
                         break;
