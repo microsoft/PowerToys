@@ -65,6 +65,33 @@ public static class CliRequestBuilder
         };
     }
 
+    /// <summary>Builds an <c>up</c>/<c>down</c> request envelope from the already-validated inputs.
+    /// Exactly one continuous-setting flag in <paramref name="inputs"/> must be true.
+    /// <paramref name="command"/> is the subcommand name (<c>up</c> or <c>down</c>).</summary>
+    public static CliRequestEnvelope BuildAdjust(string command, AdjustCommandInputs inputs)
+    {
+        var settingName = inputs switch
+        {
+            { Brightness: true } => CliSettingNames.Brightness,
+            { Contrast: true } => CliSettingNames.Contrast,
+            { Volume: true } => CliSettingNames.Volume,
+            _ => throw new System.InvalidOperationException(
+                "BuildAdjust called without any setting; callers must validate CountSelectedSettings == 1 first."),
+        };
+
+        return new CliRequestEnvelope
+        {
+            Command = command,
+            Adjust = new AdjustRequest
+            {
+                MonitorNumber = inputs.MonitorNumber,
+                MonitorId = inputs.MonitorId,
+                Setting = settingName,
+                Step = inputs.Step,
+            },
+        };
+    }
+
     /// <summary>Builds a <c>capabilities</c> request envelope.</summary>
     public static CliRequestEnvelope BuildCapabilities(int? monitorNumber, string? monitorId, string? settingFilter) => new()
     {

@@ -268,4 +268,53 @@ public class IpcDispatchTests
         Assert.AreEqual(CliCommandNames.ApplyProfile, envelope.Command);
         Assert.AreEqual("Night", envelope.ApplyProfile!.ProfileName);
     }
+
+    // ── BuildAdjust round-trips ──────────────────────────────────────────────
+    [TestMethod]
+    public void BuildAdjust_Up_Brightness_MapsCommandSettingAndStep()
+    {
+        var inputs = new AdjustCommandInputs { Brightness = true, Step = 10, MonitorNumber = 2 };
+        var envelope = CliRequestBuilder.BuildAdjust(CliCommandNames.Up, inputs);
+
+        Assert.AreEqual(CliCommandNames.Up, envelope.Command);
+        Assert.IsNotNull(envelope.Adjust);
+        Assert.AreEqual("brightness", envelope.Adjust!.Setting);
+        Assert.AreEqual(10, envelope.Adjust.Step);
+        Assert.AreEqual(2, envelope.Adjust.MonitorNumber);
+    }
+
+    [TestMethod]
+    public void BuildAdjust_Down_Contrast_NullStep()
+    {
+        var inputs = new AdjustCommandInputs { Contrast = true, Step = null };
+        var envelope = CliRequestBuilder.BuildAdjust(CliCommandNames.Down, inputs);
+
+        Assert.AreEqual(CliCommandNames.Down, envelope.Command);
+        Assert.AreEqual("contrast", envelope.Adjust!.Setting);
+        Assert.IsNull(envelope.Adjust.Step);
+    }
+
+    [TestMethod]
+    public void BuildAdjust_NoSetting_Throws()
+    {
+        Assert.ThrowsException<InvalidOperationException>(
+            () => CliRequestBuilder.BuildAdjust(CliCommandNames.Up, new AdjustCommandInputs()));
+    }
+
+    // ── SendAdjustAsync renders via the set renderer, exits 0 ─────────────────
+    [TestMethod]
+    public async Task Success_adjust_renders_result_exits_0()
+    {
+        var output = new CaptureOutput();
+        var responseJson = SerializeSuccess(
+            new CliSetResult { Command = "up", Setting = "brightness", Monitor = new CliMonitorRef { Number = 1, Id = "x", Name = "N" }, AfterDisplay = "60%" },
+            ContractsJsonContext.Default.CliSetResult);
+        var dispatcher = MakeDispatcher(responseJson, output);
+        var inputs = new AdjustCommandInputs { Brightness = true, Step = 10 };
+        var exit = await dispatcher.SendAdjustAsync(CliRequestBuilder.BuildAdjust(CliCommandNames.Up, inputs), CancellationToken.None);
+
+        Assert.AreEqual(CliExitCodes.Ok, exit);
+        Assert.AreEqual(1, output.StdoutLines.Count);
+        StringAssert.Contains(output.StdoutLines[0], "brightness");
+    }
 }

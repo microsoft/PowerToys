@@ -63,6 +63,10 @@ public sealed class IpcDispatcher
     public Task<int> SendProfilesAsync(CliRequestEnvelope envelope, CancellationToken ct)
         => SendAsync(envelope, ContractsJsonContext.Default.CliProfileListResult, _output.WriteProfileListResult, ct);
 
+    // up/down reuse the set response shape (CliSetResult before/after) and the set renderer.
+    public Task<int> SendAdjustAsync(CliRequestEnvelope envelope, CancellationToken ct)
+        => SendAsync(envelope, ContractsJsonContext.Default.CliSetResult, _output.WriteSetResult, ct);
+
     // apply-profile is the one success envelope whose exit code is data-driven: it returns the
     // worst-outcome code carried by the DTO (0=Ok, 2=OutOfRange, 5=HardwareFailure) instead of a
     // constant Ok, so OutOfRange(2) partial failures are not lost.
