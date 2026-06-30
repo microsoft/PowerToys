@@ -63,6 +63,12 @@ public class PeekFilePreviewTests : UITestBase
                     ""AlwaysRunNotElevated"": {
                       ""value"": true
                     },
+                    ""AlwaysOnTop"": {
+                      ""value"": false
+                    },
+                    ""ShowTaskbarIcon"": {
+                      ""value"": true
+                    },
                     ""CloseAfterLosingFocus"": {
                       ""value"": false
                     },
