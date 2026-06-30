@@ -42,26 +42,24 @@ public sealed class PowerDockPageTests
     }
 
     [TestMethod]
-    public void FullDockPage_ItemsExcludeEnergySaver()
+    public void FullDockPage_ItemsExcludeSeparators()
     {
         var context = CreateContext();
         var page = CreateDockPage(context, PowerDockScope.All);
         var items = page.GetItems();
 
         Assert.IsTrue(items.Length >= 1);
-        Assert.IsFalse(items.Any(item => item.Command is Commands.ToggleEnergySaverCommand));
         Assert.IsFalse(items.Any(item => item is Separator));
     }
 
     [TestMethod]
-    public void ModePickerPage_ItemsExcludeEnergySaver()
+    public void ModePickerPage_HasExpectedItemCount()
     {
         var context = CreateContext();
         var picker = CreateModePicker(context);
         var items = picker.GetItems();
 
         Assert.IsTrue(items.Length == 0 || items.Length == 3);
-        Assert.IsFalse(items.Any(item => item.Command is Commands.ToggleEnergySaverCommand));
     }
 
     [TestMethod]
@@ -84,7 +82,6 @@ public sealed class PowerDockPageTests
 
     private sealed record TestContext(
         PowerModeService PowerModeService,
-        EnergySaverService EnergySaverService,
         PowerPlanService PowerPlanService,
         PowerModeDataManager DataManager,
         PowerListItemBuilder ItemBuilder,
@@ -94,14 +91,12 @@ public sealed class PowerDockPageTests
     private static TestContext CreateContext()
     {
         var powerModeService = new PowerModeService();
-        var energySaverService = new EnergySaverService();
         var powerPlanService = new PowerPlanService();
         var itemBuilder = new PowerListItemBuilder(powerModeService, powerPlanService);
         PowerModePickerPage modePicker = null!;
         PowerPlanPickerPage planPicker = null!;
         var dataManager = new PowerModeDataManager(
             powerModeService,
-            energySaverService,
             () =>
             {
                 modePicker?.HandleLiveStateChanged();
@@ -113,7 +108,6 @@ public sealed class PowerDockPageTests
 
         return new TestContext(
             powerModeService,
-            energySaverService,
             powerPlanService,
             dataManager,
             itemBuilder,

@@ -16,8 +16,6 @@ internal static class PowerFallbackQueryMatcher
         "powercfg",
         "power plan",
         "power mode",
-        "energy saver",
-        "battery saver",
     ];
 
     private static readonly Lazy<IReadOnlyList<string>> SearchTerms = new(BuildSearchTerms);
@@ -57,7 +55,6 @@ internal static class PowerFallbackQueryMatcher
         }
 
         terms.Add(Resources.power_section_power_plan);
-        terms.Add(Resources.power_mode_energy_saver_title);
 
         return terms;
     }

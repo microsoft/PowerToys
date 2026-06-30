@@ -48,19 +48,4 @@ internal static class PowerSourceReader
     /// </summary>
     internal static bool UseAcPowerProfile(PowerSourceKind powerSourceKind) =>
         powerSourceKind is PowerSourceKind.NoBattery or PowerSourceKind.PluggedIn or PowerSourceKind.Unknown;
-
-    /// <summary>
-    /// Reads the battery saver / energy saver bit from SYSTEM_POWER_STATUS.SystemStatusFlag.
-    /// </summary>
-    internal static bool TryGetEnergySaverActiveFromSystemStatus(out bool isActive)
-    {
-        isActive = false;
-        if (!TryGetPowerStatus(out var status))
-        {
-            return false;
-        }
-
-        isActive = status.SystemStatusFlag == 1;
-        return true;
-    }
 }

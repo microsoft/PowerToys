@@ -41,10 +41,9 @@ public sealed class FallbackPowerItemTests
     private static PowerListPage CreateListPage()
     {
         var service = new PowerModeService();
-        var energySaverService = new EnergySaverService();
         var powerPlanService = new PowerPlanService();
-        var dataManager = new PowerModeDataManager(service, energySaverService, () => { });
+        var dataManager = new PowerModeDataManager(service, () => { });
         var itemBuilder = new PowerListItemBuilder(service, powerPlanService);
-        return new PowerListPage(service, energySaverService, powerPlanService, dataManager, itemBuilder);
+        return new PowerListPage(service, powerPlanService, dataManager, itemBuilder);
     }
 }

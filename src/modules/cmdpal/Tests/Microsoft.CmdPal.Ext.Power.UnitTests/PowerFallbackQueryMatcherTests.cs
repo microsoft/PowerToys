@@ -17,12 +17,6 @@ public sealed class PowerFallbackQueryMatcherTests
     }
 
     [TestMethod]
-    public void Matches_EnergySaverQuery_ReturnsTrue()
-    {
-        Assert.IsTrue(PowerFallbackQueryMatcher.Matches("energy saver"));
-    }
-
-    [TestMethod]
     public void Matches_CatalogLabelQuery_ReturnsTrue()
     {
         Assert.IsTrue(PowerFallbackQueryMatcher.Matches("best performance"));

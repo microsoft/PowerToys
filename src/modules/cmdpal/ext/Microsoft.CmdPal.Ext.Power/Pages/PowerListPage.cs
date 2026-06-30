@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Power.Classes;
-using Microsoft.CmdPal.Ext.Power.Commands;
 using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
@@ -20,11 +19,9 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
     public override string Id => "com.microsoft.cmdpal.power";
 
     private readonly PowerModeService _powerModeService;
-    private readonly EnergySaverService _energySaverService;
     private readonly PowerPlanService _powerPlanService;
     private readonly PowerModeDataManager _dataManager;
     private readonly PowerListItemBuilder _itemBuilder;
-    private readonly ListItem _energySaverItem;
 
     private ListItem? _efficiencyItem;
     private ListItem? _balancedItem;
@@ -38,13 +35,11 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
     internal PowerListPage(
         PowerModeService powerModeService,
-        EnergySaverService energySaverService,
         PowerPlanService powerPlanService,
         PowerModeDataManager dataManager,
         PowerListItemBuilder itemBuilder)
     {
         _powerModeService = powerModeService;
-        _energySaverService = energySaverService;
         _powerPlanService = powerPlanService;
         _dataManager = dataManager;
         _itemBuilder = itemBuilder;
@@ -52,12 +47,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         Name = Resources.power_page_title;
         Icon = Icons.PowerExtensionIcon;
         ShowDetails = true;
-
-        _energySaverItem = new ListItem(new ToggleEnergySaverCommand(_energySaverService, RefreshPresentation))
-        {
-            Title = Resources.power_mode_energy_saver_title,
-            Icon = Icons.EnergySaverIcon,
-        };
 
         RebuildItemListIfNeeded(force: true);
         RefreshPresentation();
@@ -97,8 +86,6 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
         }
 
         var list = new List<IListItem>();
-
-        AddSection(list, Resources.power_section_energy_saver, _energySaverItem);
 
         if (supportsControl)
         {
@@ -203,12 +190,7 @@ internal sealed partial class PowerListPage : OnLoadStaticListPage
 
     private void RefreshPresentation()
     {
-        var snapshot = _powerModeService.GetSnapshot();
-        var energySaverSnapshot = _energySaverService.GetSnapshot();
         var planSnapshot = _powerPlanService.GetSnapshot();
-
-        _energySaverItem.Subtitle = PowerModeDisplayHelper.GetEnergySaverStatusLabel(energySaverSnapshot);
-        _energySaverItem.Icon = Icons.EnergySaverIcon;
 
         RefreshPowerPlanItemSubtitles(planSnapshot);
 

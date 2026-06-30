@@ -15,22 +15,17 @@ internal sealed partial class PowerModeDataManager : IDisposable
     private readonly Timer _updateTimer;
     private readonly Action _updateAction;
     private readonly PowerModeService _powerModeService;
-    private readonly EnergySaverService _energySaverService;
     private readonly EventHandler _powerModeChangedHandler;
-    private readonly EventHandler _energySaverChangedHandler;
     private readonly Lock _activateLock = new();
     private int _activateCount;
 
     internal PowerModeDataManager(
         PowerModeService powerModeService,
-        EnergySaverService energySaverService,
         Action updateAction)
     {
         _powerModeService = powerModeService;
-        _energySaverService = energySaverService;
         _updateAction = updateAction;
         _powerModeChangedHandler = (_, _) => _updateAction();
-        _energySaverChangedHandler = (_, _) => _updateAction();
         _updateTimer = new Timer(OneSecondInMilliseconds)
         {
             AutoReset = true,
@@ -38,7 +33,6 @@ internal sealed partial class PowerModeDataManager : IDisposable
         };
         _updateTimer.Elapsed += (_, _) => _updateAction();
         _powerModeService.PowerModeChanged += _powerModeChangedHandler;
-        _energySaverService.EnergySaverChanged += _energySaverChangedHandler;
     }
 
     internal void PushActivate()
@@ -69,13 +63,11 @@ internal sealed partial class PowerModeDataManager : IDisposable
         StopPolling();
         _updateTimer.Dispose();
         _powerModeService.PowerModeChanged -= _powerModeChangedHandler;
-        _energySaverService.EnergySaverChanged -= _energySaverChangedHandler;
     }
 
     private void StartPolling()
     {
         _powerModeService.EnsureSubscribed();
-        _energySaverService.EnsureSubscribed();
         _updateAction();
         _updateTimer.Enabled = true;
     }

@@ -15,7 +15,6 @@ namespace Microsoft.CmdPal.Ext.Power;
 public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
 {
     private readonly PowerModeService _powerModeService = new();
-    private readonly EnergySaverService _energySaverService = new();
     private readonly PowerPlanService _powerPlanService = new();
     private readonly PowerModeDataManager _dataManager;
     private readonly PowerListItemBuilder _itemBuilder;
@@ -43,12 +42,9 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
         PowerDockPage? modeDockPage = null;
         PowerDockPage? planDockPage = null;
 
-        _dataManager = new PowerModeDataManager(
-            _powerModeService,
-            _energySaverService,
-            HandleLiveStateChanged);
+        _dataManager = new PowerModeDataManager(_powerModeService, HandleLiveStateChanged);
 
-        listPage = new PowerListPage(_powerModeService, _energySaverService, _powerPlanService, _dataManager, _itemBuilder);
+        listPage = new PowerListPage(_powerModeService, _powerPlanService, _dataManager, _itemBuilder);
         _listPage = listPage;
 
         modePickerPage = new PowerModePickerPage(_powerModeService, _dataManager, _itemBuilder, HandleLiveStateChanged);
@@ -137,7 +133,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
     {
         _dataManager.PopActivate();
         _dataManager.Dispose();
-        _energySaverService.Dispose();
         _powerModeService.Dispose();
         GC.SuppressFinalize(this);
         base.Dispose();

@@ -32,8 +32,6 @@ internal static class Icons
 
     internal static IconInfo UnknownIcon { get; } = new IconInfo("\uE783");
 
-    internal static IconInfo EnergySaverIcon { get; } = new IconInfo("\uEC0A");
-
     internal static IconInfo PowerPlanSaverIcon { get; } = new IconInfo("\uEC48");
 
     internal static IconInfo PowerPlanBalancedIcon { get; } = new IconInfo("\uEC49");
