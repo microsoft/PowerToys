@@ -17,7 +17,12 @@
 - Persistence "not supported" sentinel = `-1` (the state file serializes with `WhenWritingNull`, which would drop a `null`).
 - Settings.UI.Library MUST NOT take a binary dependency on `PowerDisplay.Lib` (diagnostics text renders codes hex-only; no `VcpNames`).
 - Namespaces: Lib models = `PowerDisplay.Common.Models`; Lib utils = `PowerDisplay.Common.Utils`; tests = `PowerDisplay.UnitTests`.
-- Test runner (Lib): `dotnet test src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.csproj -c Debug`. If the build needs an explicit platform add `-p:Platform=x64`; VS Test Explorer is an equivalent fallback.
+- **Toolchain (verified): use MSBuild + vstest, NOT `dotnet`.** PowerToys has transitive C++ `.vcxproj` deps that the .NET CLI cannot build. The solution (`PowerToys.slnx`) has already been restored (`/t:restore /p:RestorePackagesConfig=true`) and the C++ deps are warm, so incremental managed builds work in a plain shell without entering the VS dev shell. Use these absolute paths:
+  - `MSBUILD = C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe`
+  - `VSTEST  = C:\Program Files\Microsoft Visual Studio\18\Enterprise\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe`
+  - **Build a project:** `"$MSBUILD" <csproj> -t:build -p:Configuration=Debug -p:Platform=x64 -m -nologo -v:minimal`
+  - **Run Lib unit tests** (build the test project first, then): `"$VSTEST" "src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/x64/Debug/tests/PowerDisplay.Lib.UnitTests/PowerDisplay.Lib.UnitTests.dll" /Platform:x64 /TestCaseFilter:"FullyQualifiedName~<ClassOrName>"` (omit `/TestCaseFilter` to run all).
+  - Wherever a task step below says `dotnet build`/`dotnet test`, run the MSBuild/vstest equivalent above instead. Baseline before changes: 138 tests, 138 passed.
 - Commit after every task (and after each green test in TDD tasks). Commit messages start with `[PowerDisplay]`.
 
 ---
