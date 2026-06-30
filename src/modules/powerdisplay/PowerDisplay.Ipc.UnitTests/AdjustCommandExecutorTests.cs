@@ -1,0 +1,203 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
+using PowerDisplay.Contracts;
+using PowerDisplay.Ipc;
+using Monitor = PowerDisplay.Common.Models.Monitor;
+
+namespace PowerDisplay.Ipc.UnitTests;
+
+/// <summary>
+/// Unit tests for <see cref="AdjustCommandExecutor"/> (relative up/down on continuous settings).
+/// </summary>
+[TestClass]
+public class AdjustCommandExecutorTests
+{
+    private const int DefaultStep = 5;
+
+    private static readonly IReadOnlySet<string> EmptyHidden =
+        new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Brightness-capable monitor with the given current value.</summary>
+    private static Monitor BrightnessMon(int current) => new()
+    {
+        Id = "A",
+        MonitorNumber = 1,
+        Name = "TestMon",
+        CommunicationMethod = "DDC/CI",
+        Capabilities = MonitorCapabilities.Brightness,
+        ReadValues = MonitorReadFlags.Brightness,
+        CurrentBrightness = current,
+    };
+
+    [TestMethod]
+    public async Task Up_AddsStep_AndReportsBeforeAfter()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 20 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("brightness", result!.Setting);
+        Assert.AreEqual("50%", result.BeforeDisplay);
+        Assert.AreEqual("70%", result.AfterDisplay);
+        Assert.AreEqual("up", result.Command);
+    }
+
+    [TestMethod]
+    public async Task Up_ClampsToMax100()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(95) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual("100%", result!.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Down_ClampsToMin0()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(3) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: false, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual("0%", result!.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task NullStep_UsesDefaultStep()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = null };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual("55%", result!.AfterDisplay, "null step must fall back to the supplied default (5)");
+    }
+
+    [TestMethod]
+    public async Task StepZero_IsNoOp_BeforeEqualsAfter()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 0 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual("50%", result!.BeforeDisplay);
+        Assert.AreEqual("50%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task UnknownMonitor_ReturnsMonitorNotFound()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 9, Setting = "brightness" };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.MonitorNotFound, error!.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task Brightness_NotSupported_ReturnsUnsupportedFeature()
+    {
+        var monitor = new Monitor { Id = "F", MonitorNumber = 6, Name = "NoBrightnessMon", Capabilities = MonitorCapabilities.None };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new AdjustRequest { MonitorNumber = 6, Setting = "brightness" };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.UnsupportedFeature, error!.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task DiscreteSetting_ReturnsUnsupportedFeature()
+    {
+        // color-temperature is a known but DISCRETE setting: relative adjust must reject it as UNSUPPORTED.
+        var monitor = new Monitor { Id = "C", MonitorNumber = 3, Name = "ColorMon", SupportsColorTemperature = true };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new AdjustRequest { MonitorNumber = 3, Setting = "color-temperature" };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task UnknownSetting_ReturnsArgumentError()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "flicker-rate" };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.ArgumentError, error!.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task HardwareFailure_ReturnsHardwareFailure()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = 10 };
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(new FailingManager(), snapshot, EmptyHidden, req, isUp: true, DefaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.HardwareFailure, error!.Error.ExitCode);
+    }
+
+    // ─── Fakes ────────────────────────────────────────────────────────────────
+    private sealed class NoOpManager : IMonitorManager
+    {
+        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
+    }
+
+    private sealed class FailingManager : IMonitorManager
+    {
+        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+
+        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
+    }
+}
