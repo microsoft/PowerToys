@@ -12,7 +12,7 @@ namespace PowerDisplay.Common.Drivers
         /// <summary>
         /// VCP code: Brightness (0x10)
         /// Standard VESA MCCS brightness control.
-        /// This is the ONLY brightness code used by PowerDisplay.
+        /// Primary brightness candidate; see also VcpCodeBacklightControl (0x13) and VcpCodeBacklightLevelWhite (0x6B).
         /// </summary>
         public const byte VcpCodeBrightness = 0x10;
 

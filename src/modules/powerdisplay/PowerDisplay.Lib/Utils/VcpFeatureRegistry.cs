@@ -47,14 +47,43 @@ namespace PowerDisplay.Common.Utils
             [VcpFeature.PowerState] = "powerState",
         };
 
+        /// <summary>
+        /// All supported <see cref="VcpFeature"/> values in display order.
+        /// </summary>
         public static IReadOnlyList<VcpFeature> AllFeatures => AllFeaturesArray;
 
+        /// <summary>
+        /// Returns the ordered list of candidate VCP codes for <paramref name="feature"/>,
+        /// highest priority first.
+        /// </summary>
+        /// <param name="feature">The feature whose candidates are requested.</param>
+        /// <returns>Ordered candidate byte values (highest priority first).</returns>
         public static IReadOnlyList<byte> Candidates(VcpFeature feature) => CandidatesByFeature[feature];
 
+        /// <summary>
+        /// Returns the highest-priority VCP code for <paramref name="feature"/>.
+        /// </summary>
+        /// <param name="feature">The feature whose primary code is requested.</param>
+        /// <returns>The first (highest-priority) candidate VCP code.</returns>
         public static byte Primary(VcpFeature feature) => CandidatesByFeature[feature][0];
 
+        /// <summary>
+        /// Returns the stable persistence/diagnostic key string for <paramref name="feature"/>
+        /// (e.g., <c>"brightness"</c>).
+        /// </summary>
+        /// <param name="feature">The feature whose key is requested.</param>
+        /// <returns>Lowercase camelCase key string.</returns>
         public static string Key(VcpFeature feature) => KeysByFeature[feature];
 
+        /// <summary>
+        /// Attempts to look up the <see cref="VcpFeature"/> corresponding to a persistence key.
+        /// </summary>
+        /// <param name="key">Key string previously returned by <see cref="Key"/>.</param>
+        /// <param name="feature">
+        /// When this method returns <see langword="true"/>, contains the matching feature;
+        /// otherwise the default value.
+        /// </param>
+        /// <returns><see langword="true"/> if the key was recognised; otherwise <see langword="false"/>.</returns>
         public static bool TryParseKey(string key, out VcpFeature feature)
         {
             foreach (var kvp in KeysByFeature)
