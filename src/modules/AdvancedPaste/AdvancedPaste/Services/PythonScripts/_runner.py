@@ -220,7 +220,15 @@ def main():
     if isinstance(formats, str):
         formats = [formats]
 
-    if input_type not in formats:
+    # Normalize: treat "file" and "files" as equivalent so that
+    # advanced_paste_from_files_to_* scripts match the C# ClipboardFormat.File flag.
+    normalized_formats = set(formats)
+    if "file" in normalized_formats:
+        normalized_formats.add("files")
+    if "files" in normalized_formats:
+        normalized_formats.add("file")
+
+    if input_type not in normalized_formats:
         print(
             f"Error: script expects '{input_type}' input but clipboard has [{', '.join(formats)}].",
             file=sys.stderr,
