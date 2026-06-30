@@ -173,8 +173,11 @@ public class AdjustCommandExecutorTests
     [TestMethod]
     public async Task DiscreteSetting_ReturnsUnsupportedFeature()
     {
-        // color-temperature is a known but DISCRETE setting: relative adjust must reject it as UNSUPPORTED.
-        var monitor = new Monitor { Id = "C", MonitorNumber = 3, Name = "ColorMon", SupportsColorTemperature = true };
+        // color-temperature is a known but DISCRETE setting: relative adjust rejects it as UNSUPPORTED
+        // via the Kind!=Continuous check, which runs BEFORE the Supports check. SupportsColorTemperature
+        // is deliberately left false: pinning the kind-specific message makes the branch order
+        // load-bearing — a reorder that ran Supports first would emit the generic "is not supported".
+        var monitor = new Monitor { Id = "C", MonitorNumber = 3, Name = "ColorMon" };
         var snapshot = new List<Monitor> { monitor };
         var req = new AdjustRequest { MonitorNumber = 3, Setting = "color-temperature" };
 
@@ -183,6 +186,7 @@ public class AdjustCommandExecutorTests
         Assert.IsNull(result);
         Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
+        StringAssert.Contains(error.Error.Message, "cannot be adjusted relatively");
     }
 
     [TestMethod]

@@ -180,6 +180,12 @@ public class CliRequestHandlerTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result, "should deserialize to CliSetResult");
         Assert.AreEqual("set", result.Command);
+
+        // Pin the dispatch wiring end-to-end: MakeMon's CurrentBrightness=50 → BeforeDisplay; the
+        // requested 75 → AfterDisplay. (Command alone is satisfied by the DTO default and carries no
+        // signal.) A handler that passed a wrong value to the executor, or swapped before/after, fails here.
+        Assert.AreEqual("50%", result.BeforeDisplay);
+        Assert.AreEqual("75%", result.AfterDisplay);
     }
 
     [TestMethod]
@@ -258,6 +264,11 @@ public class CliRequestHandlerTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
         Assert.IsNotNull(result, "should deserialize to CliCapabilitiesResult");
         Assert.AreEqual("capabilities", result.Command);
+
+        // Confirm the dispatch path resolved the right monitor and carried the top-level transport,
+        // not just a typed-but-empty envelope: MakeMon(1, "A") is monitor #1 on DDC/CI.
+        Assert.AreEqual(1, result.Monitor.Number);
+        Assert.AreEqual("DDC/CI", result.CommunicationMethod);
     }
 
     [TestMethod]

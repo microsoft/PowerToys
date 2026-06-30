@@ -185,26 +185,34 @@ public class SetCommandExecutorTests
     [TestMethod]
     public async Task Set_InputSource_ValueNotInSupportedList_ReturnsInvalidDiscreteValue()
     {
+        // The monitor advertises input-source value 0x11. 0x99 parses as a valid byte but is NOT in
+        // that set, so it must be rejected via the supported-set branch (MakeDiscreteUnsupportedError)
+        // before any hardware write — a different path from the hex-parse failure. Use a VcpCodeInfo
+        // WITH a discrete value list (VcpCapsWithCodes builds an empty set, which accepts any value).
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11 });
         var monitor = new Monitor
         {
             Id = "E",
             MonitorNumber = 5,
             Name = "InputMon",
-            VcpCapabilitiesInfo = VcpCapsWithCodes(0x60), // makes SupportsInputSource == true
+            VcpCapabilitiesInfo = caps,
             ReadValues = MonitorReadFlags.InputSource,
             CurrentInputSource = 0x11,
         };
-
-        // SupportsInputSource is true (0x60 in VcpCapabilitiesInfo), so the support check passes.
-        // The raw value "0xZZ" fails hex-parse → executor returns InvalidDiscreteValue (exit 3).
         var snapshot = new List<Monitor> { monitor };
-        var req = new SetRequest { MonitorNumber = 5, Setting = "input-source", RawValue = "0xZZ" };
+        var req = new SetRequest { MonitorNumber = 5, Setting = "input-source", RawValue = "0x99" };
 
         var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
 
         Assert.IsNull(result);
         Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
+
+        // Pin the supported-set branch specifically (not the hex-parse branch, which shares the code):
+        // its message names the supported set and BuildSupportedList advertises the real value 0x11.
+        StringAssert.Contains(error.Error.Message, "supported set");
+        Assert.IsNotNull(error.Error.Supported);
     }
 
     // ─── Discrete settings are hex-only: friendly names are rejected ──────────
@@ -524,6 +532,14 @@ public class SetCommandExecutorTests
         // No error — the confirmation flag was provided
         Assert.IsNull(error);
         Assert.IsNotNull(result);
+
+        // Pin the discrete success projection (the only discrete-set success in the suite): before/after
+        // are formatted via FormatDiscrete(0xD6, …), not the raw int. Self-pin to the product formatter
+        // (BeforeDisplay = "On (0x01)", AfterDisplay = "Off (DPM) (0x04)"). Catches a before/after swap
+        // or a dropped FormatDiscrete in ApplyDiscreteAsync.
+        Assert.AreEqual("power-state", result!.Setting);
+        Assert.AreEqual(MonitorDtoProjector.FormatDiscrete(0xD6, 0x01), result.BeforeDisplay);
+        Assert.AreEqual(MonitorDtoProjector.FormatDiscrete(0xD6, 0x04), result.AfterDisplay);
     }
 
     // ─── Unknown setting name ─────────────────────────────────────────────────
