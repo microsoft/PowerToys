@@ -65,6 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.OnPageLoaded();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
+
+                if (ViewModel.IsWslMode)
+                {
+                    ViewModel.RefreshWslDistros();
+                }
             };
 
             Unloaded += (_, _) =>
@@ -261,6 +266,75 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     ViewModel.PasteAIProviderDraft.ModelPath = selectedFile;
                 }
+            }
+        }
+
+        private void BrowsePythonExecutablePath_Click(object sender, RoutedEventArgs e)
+        {
+            string selectedFile = PickFileDialog(
+                "Python Executable\0python.exe;python3.exe\0All Executables\0*.exe\0",
+                "Select Python Executable");
+
+            if (!string.IsNullOrEmpty(selectedFile))
+            {
+                PythonExecutablePathTextBox.Text = selectedFile;
+                if (ViewModel is not null)
+                {
+                    ViewModel.PythonExecutablePath = selectedFile;
+                }
+            }
+        }
+
+        private void BrowseScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            string selectedFolder = ShellGetFolder.GetFolderDialogWithFlags(
+                windowHandle,
+                ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE);
+
+            if (!string.IsNullOrEmpty(selectedFolder))
+            {
+                ScriptsFolderTextBox.Text = selectedFolder;
+                if (ViewModel is not null)
+                {
+                    ViewModel.ScriptsFolder = selectedFolder;
+                }
+            }
+        }
+
+        private void OpenScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = ViewModel?.ScriptsFolder;
+            if (!string.IsNullOrEmpty(folder) && System.IO.Directory.Exists(folder))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true,
+                });
+            }
+        }
+
+        private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.RefreshPythonScripts();
+            RefreshScriptsButton.Content = "Refresh scripts";
+        }
+
+        private void OpenPythonScript_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: AdvancedPastePythonScriptAction action })
+            {
+                return;
+            }
+
+            if (System.IO.File.Exists(action.ScriptPath))
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo(action.ScriptPath)
+                {
+                    UseShellExecute = true,
+                };
+                System.Diagnostics.Process.Start(startInfo);
             }
         }
 

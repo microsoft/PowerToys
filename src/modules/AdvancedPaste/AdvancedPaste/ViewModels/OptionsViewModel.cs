@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
+using AdvancedPaste.Services.PythonScripts;
 using AdvancedPaste.Settings;
 using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -41,6 +42,7 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly IAICredentialsProvider _credentialsProvider;
+        private readonly IPythonScriptService _pythonScriptService;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
@@ -99,6 +101,8 @@ namespace AdvancedPaste.ViewModels
         public ObservableCollection<PasteFormat> StandardPasteFormats { get; } = [];
 
         public ObservableCollection<PasteFormat> CustomActionPasteFormats { get; } = [];
+
+        public ObservableCollection<PasteFormat> PythonScriptPasteFormats { get; } = [];
 
         public bool IsCustomAIServiceEnabled
         {
@@ -234,8 +238,6 @@ namespace AdvancedPaste.ViewModels
 
         public bool ShowClipboardHistoryButton => ClipboardHistoryEnabled;
 
-        public bool ShowAIPasteSection => _userSettings.ShowAIPaste && IsAllowedByGPO;
-
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
         private PasteFormats CustomAIFormat =>
@@ -260,11 +262,12 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor, IPythonScriptService pythonScriptService)
         {
             _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
+            _pythonScriptService = pythonScriptService;
 
             GeneratedResponses = [];
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -322,7 +325,6 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
             OnPropertyChanged(nameof(ShowClipboardPreview));
-            OnPropertyChanged(nameof(ShowAIPasteSection));
 
             NotifyActiveProviderChanged();
 
@@ -416,12 +418,51 @@ namespace AdvancedPaste.ViewModels
             }
 
             UpdateFormats(StandardPasteFormats, Enum.GetValues<PasteFormats>()
-                                                    .Where(format => PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format))
+                                                    .Where(format => format != PasteFormats.PythonScript &&
+                                                                     (PasteFormat.MetadataDict[format].IsCoreAction || _userSettings.AdditionalActions.Contains(format)))
                                                     .Select(CreateStandardPasteFormat));
 
             UpdateFormats(
                 CustomActionPasteFormats,
                 IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+
+            UpdateFormats(
+                PythonScriptPasteFormats,
+                BuildPythonScriptFormats());
+        }
+
+        private IEnumerable<PasteFormat> BuildPythonScriptFormats()
+        {
+            if (!_userSettings.IsPythonScriptsEnabled)
+            {
+                yield break;
+            }
+
+            var folder = _userSettings.PythonScriptsFolder;
+            if (string.IsNullOrWhiteSpace(folder))
+            {
+                yield break;
+            }
+
+            var discoveredScripts = _pythonScriptService.DiscoverScripts(folder);
+            var scriptActions = _userSettings.PythonScriptActions;
+
+            // Use metadata from discovered scripts, but apply IsShown from saved settings.
+            var hiddenPaths = new System.Collections.Generic.HashSet<string>(
+                scriptActions.Where(a => !a.IsShown).Select(a => a.ScriptPath),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var meta in discoveredScripts)
+            {
+                if (hiddenPaths.Contains(meta.ScriptPath) || !meta.IsEnabled)
+                {
+                    continue;
+                }
+
+                // Filter by intersection: only pass clipboard formats the script supports.
+                var filteredFormats = AvailableClipboardFormats & meta.SupportedFormats;
+                yield return PasteFormat.CreatePythonScriptFormat(meta.Name, meta.ScriptPath, filteredFormats);
+            }
         }
 
         public void Dispose()
@@ -695,7 +736,10 @@ namespace AdvancedPaste.ViewModels
             _pasteActionCancellationTokenSource = new();
             TransformProgress = double.NaN;
             PasteActionError = PasteActionError.None;
-            Query = pasteFormat.Query;
+
+            // For Python scripts the Prompt field holds the file path, not a user-visible query.
+            // Setting Query to the path would show it in the AI prompt box, which is misleading.
+            Query = pasteFormat.Format == PasteFormats.PythonScript ? string.Empty : pasteFormat.Query;
 
             try
             {
@@ -735,7 +779,7 @@ namespace AdvancedPaste.ViewModels
 
         internal async Task ExecutePasteFormatAsync(VirtualKey key)
         {
-            var pasteFormat = StandardPasteFormats.Concat(CustomActionPasteFormats)
+            var pasteFormat = StandardPasteFormats.Concat(CustomActionPasteFormats).Concat(PythonScriptPasteFormats)
                                                   .Where(pasteFormat => pasteFormat.IsEnabled)
                                                   .ElementAtOrDefault(key - VirtualKey.Number1);
 

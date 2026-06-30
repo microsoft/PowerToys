@@ -164,10 +164,10 @@
                                     </InfoBar.IconSource>
                                 </InfoBar>
                             </tkcontrols:SettingsExpander.ItemsHeader>
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <CheckBox x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
@@ -178,14 +178,12 @@
                                     IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
+
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
-                                </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard Name="AdvancedPasteShowAIPasteSettingsCard" ContentAlignment="Left">
-                                    <CheckBox x:Uid="AdvancedPaste_ShowAIPasteSettingsCard" IsChecked="{x:Bind ViewModel.ShowAIPaste, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
@@ -197,7 +195,7 @@
                             Name="PasteAsPlainTextShortcut"
                             x:Uid="PasteAsPlainText_Shortcut"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE8E9;}">
-                            <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
+                            <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.PasteAsPlainTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsMarkdownShortcut"
@@ -392,6 +390,124 @@
                             IsTabStop="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
                             Severity="Warning" />
                     </controls:SettingsGroup>
+
+                    <controls:SettingsGroup x:Uid="AdvancedPaste_PythonScripts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonScripts_RuntimeCard">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE943;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="Off" />
+                                <ComboBoxItem Content="Windows Python" />
+                                <ComboBoxItem Content="WSL Python" />
+                            </ComboBox>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE8B7;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox
+                                    x:Name="ScriptsFolderTextBox"
+                                    x:Uid="AdvancedPaste_ScriptsFolder_TextBox"
+                                    MinWidth="300"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{x:Bind ViewModel.ScriptsFolder, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <Button
+                                    VerticalAlignment="Bottom"
+                                    Click="BrowseScriptsFolder_Click"
+                                    Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                          FontSize=16}"
+                                    Style="{StaticResource SubtleButtonStyle}" />
+                                <Button
+                                    VerticalAlignment="Bottom"
+                                    Click="OpenScriptsFolder_Click"
+                                    Content="{ui:FontIcon Glyph=&#xE838;,
+                                                          FontSize=16}"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    ToolTipService.ToolTip="Open folder" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+
+                        <!-- Windows-mode settings -->
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard"
+                            Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE943;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBox
+                                    x:Name="PythonExecutablePathTextBox"
+                                    x:Uid="AdvancedPaste_PythonExecutablePath_TextBox"
+                                    MinWidth="300"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{x:Bind ViewModel.PythonExecutablePath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                <Button
+                                    VerticalAlignment="Bottom"
+                                    Click="BrowsePythonExecutablePath_Click"
+                                    Content="{ui:FontIcon Glyph=&#xE8DA;,
+                                                          FontSize=16}"
+                                    Style="{StaticResource SubtleButtonStyle}" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+
+                        <!-- WSL-mode settings -->
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard"
+                            Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xEC7A;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <ComboBox
+                                MinWidth="200"
+                                ItemsSource="{x:Bind ViewModel.WslDistroDisplayNames, Mode=OneWay}"
+                                SelectedIndex="{x:Bind ViewModel.WslDistributionIndex, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+
+                        <!-- Discovered Python Scripts (read-only) -->
+                        <tkcontrols:SettingsExpander
+                            x:Name="PythonScriptListExpander"
+                            x:Uid="AdvancedPaste_PythonScriptList"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}"
+                            IsExpanded="True"
+                            ItemsSource="{x:Bind ViewModel.PythonScriptActions, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    x:Name="RefreshScriptsButton"
+                                    Click="RefreshPythonScripts_Click"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Content="Load scripts" />
+                            </StackPanel>
+                            <tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
+                                    <tkcontrols:SettingsCard
+                                        Margin="0,0,0,2"
+                                        Header="{x:Bind DisplayName, Mode=OneWay}"
+                                        Description="{x:Bind Description, Mode=OneWay}"
+                                        IsActionIconVisible="False">
+                                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                            <TextBlock
+                                                Text="{x:Bind ConversionSummary, Mode=OneWay}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                VerticalAlignment="Center" />
+                                            <Button
+                                                Content="&#xE8A7;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Click="OpenPythonScript_Click"
+                                                Style="{StaticResource SubtleButtonStyle}"
+                                                Tag="{x:Bind}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Open script in editor" />
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>
+                        </tkcontrols:SettingsExpander>
+                    </controls:SettingsGroup>
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
             <controls:SettingsPageControl.PrimaryLinks>
@@ -430,7 +546,6 @@
             </StackPanel>
         </ContentDialog>
 
-        <!--  Paste AI provider dialog  -->
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             x:Uid="AdvancedPaste_EndpointDialog"

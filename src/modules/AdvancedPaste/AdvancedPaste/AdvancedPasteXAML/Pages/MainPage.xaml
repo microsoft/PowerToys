@@ -29,31 +29,31 @@
                         Padding="-9,0,0,0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        AutomationProperties.AcceleratorKey="{x:Bind ShortcutText, Mode=OneTime}"
+                        AutomationProperties.AcceleratorKey="{x:Bind ShortcutText, Mode=OneWay}"
                         AutomationProperties.AutomationControlType="ListItem"
-                        AutomationProperties.FullDescription="{x:Bind ToolTip, Mode=OneTime}"
-                        AutomationProperties.HelpText="{x:Bind Name, Mode=OneTime}"
-                        AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneTime}">
+                        AutomationProperties.FullDescription="{x:Bind ToolTip, Mode=OneWay}"
+                        AutomationProperties.HelpText="{x:Bind Name, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneWay}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind ToolTip, Mode=OneTime}" />
+                            <TextBlock Text="{x:Bind ToolTip, Mode=OneWay}" />
                         </ToolTipService.ToolTip>
                         <FontIcon
                             Margin="0,0,0,0"
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="16"
-                            Glyph="{x:Bind IconGlyph, Mode=OneTime}" />
+                            Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Name, Mode=OneTime}" />
+                            Text="{x:Bind Name, Mode=OneWay}" />
                         <TextBlock
                             Grid.Column="2"
                             Margin="0,0,8,0"
@@ -61,7 +61,7 @@
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ShortcutText, Mode=OneTime}" />
+                            Text="{x:Bind ShortcutText, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
             </controls:PasteFormatTemplateSelector.ItemTemplate>
@@ -83,13 +83,13 @@
                             Margin="0,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="16"
-                            Glyph="{x:Bind IconGlyph, Mode=OneTime}" />
+                            Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Name, Mode=OneTime}" />
+                            Text="{x:Bind Name, Mode=OneWay}" />
                     </Grid>
                 </DataTemplate>
             </controls:PasteFormatTemplateSelector.ItemTemplateDisabled>
@@ -146,6 +146,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -198,7 +199,7 @@
                             <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="local:ClipboardItem">
                                     <ItemContainer
-                                        AutomationProperties.Name="{x:Bind Description, Mode=OneTime}"
+                                        AutomationProperties.Name="{x:Bind Description, Mode=OneWay}"
                                         CornerRadius="16"
                                         ToolTipService.ToolTip="{x:Bind Content}">
                                         <Grid
@@ -250,11 +251,12 @@
             Grid.Row="1"
             Margin="20,0,20,0"
             x:FieldModifier="public"
-            IsEnabled="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay}"
-            TabIndex="0"
-            Visibility="{x:Bind ViewModel.ShowAIPasteSection, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+            IsEnabled="True"
+            TabIndex="0">
             <controls:PromptBox.Footer>
-                <StackPanel Orientation="Horizontal">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Visibility="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock
                         x:Uid="AIMistakeNote"
                         Margin="0,0,2,0"
@@ -300,19 +302,70 @@
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <ScrollViewer Grid.Row="2">
+        <Grid
+            x:Name="ErrorMessageGrid"
+            Grid.Row="2"
+            Margin="20,4,20,0"
+            ColumnSpacing="8"
+            Visibility="{x:Bind ViewModel.PasteActionError.HasText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <FontIcon
+                Grid.Column="0"
+                Margin="0,3,3,0"
+                VerticalAlignment="Top"
+                FontSize="12"
+                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                Glyph="&#xE946;"
+                Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock
+                Grid.Column="1"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                MaxLines="2"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="Wrap"
+                Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}" />
+            <HyperlinkButton
+                x:Name="ShowErrorDetailsBtn"
+                x:Uid="ShowErrorDetailsBtn"
+                Grid.Column="2"
+                Margin="4,-1,0,0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Click="ShowErrorDetailsBtn_Click"
+                FontSize="12"
+                Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <HyperlinkButton
+                x:Uid="SettingsBtn"
+                Grid.Column="3"
+                Margin="0,-1,0,0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                FontSize="12" />
+        </Grid>
+        <ScrollViewer Grid.Row="3">
             <Grid RowSpacing="4">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ListView
                     x:Name="PasteOptionsListView"
                     Grid.Row="0"
-                    VerticalAlignment="Bottom"
                     IsItemClickEnabled="True"
                     ItemClick="PasteFormat_ItemClick"
                     ItemContainerTransitions="{x:Null}"
@@ -342,6 +395,27 @@
                     ScrollViewer.VerticalScrollMode="Disabled"
                     SelectionMode="None"
                     TabIndex="2" />
+
+                <Rectangle
+                    Grid.Row="3"
+                    Height="1"
+                    HorizontalAlignment="Stretch"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    Visibility="{x:Bind ViewModel.PythonScriptPasteFormats.Count, Mode=OneWay, Converter={StaticResource countToVisibilityConverter}}" />
+
+                <ListView
+                    x:Name="PythonScriptsListView"
+                    Grid.Row="4"
+                    VerticalAlignment="Top"
+                    IsItemClickEnabled="True"
+                    ItemClick="PasteFormat_ItemClick"
+                    ItemContainerTransitions="{x:Null}"
+                    ItemTemplateSelector="{StaticResource PasteFormatTemplateSelector}"
+                    ItemsSource="{x:Bind ViewModel.PythonScriptPasteFormats, Mode=OneWay}"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled"
+                    SelectionMode="None"
+                    TabIndex="3" />
             </Grid>
         </ScrollViewer>
     </Grid>

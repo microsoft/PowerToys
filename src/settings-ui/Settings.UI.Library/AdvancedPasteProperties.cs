@@ -26,7 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AdditionalActions = new();
             IsAIEnabled = false;
             ShowCustomPreview = true;
-            ShowAIPaste = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
             AutoCopySelectionForCustomActionHotkey = false;
@@ -76,9 +75,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowCustomPreview { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
-        public bool ShowAIPaste { get; set; }
-
-        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool CloseAfterLosingFocus { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
@@ -110,6 +106,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]
         public PasteAIConfiguration PasteAIConfiguration { get; set; }
+
+        [JsonPropertyName("python-scripts")]
+        [CmdConfigureIgnoreAttribute]
+        public AdvancedPastePythonScriptSettings PythonScripts { get; set; } = new();
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.AdvancedPasteProperties);
