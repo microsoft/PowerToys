@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.CmdPal.Ext.Power.Helpers;
+namespace Microsoft.CmdPal.Ext.Power.Constants;
 
 internal static class PowerPlanGuids
 {

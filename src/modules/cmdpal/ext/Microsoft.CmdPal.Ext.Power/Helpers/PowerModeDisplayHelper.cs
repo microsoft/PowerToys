@@ -2,27 +2,21 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Properties;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
 internal static class PowerModeDisplayHelper
 {
-    internal static string GetUserModeLabel(UserPowerMode mode) => mode switch
-    {
-        UserPowerMode.BestEfficiency => Resources.power_mode_best_efficiency,
-        UserPowerMode.Balanced => Resources.power_mode_balanced,
-        UserPowerMode.BestPerformance => Resources.power_mode_best_performance,
-        _ => Resources.power_mode_unknown,
-    };
+    internal static string GetUserModeLabel(UserPowerMode mode) =>
+        PowerModeCatalog.GetDefinition(mode).Label;
 
-    internal static string GetUserModeShortLabel(UserPowerMode mode) => mode switch
-    {
-        UserPowerMode.BestEfficiency => Resources.power_mode_best_efficiency_short,
-        UserPowerMode.Balanced => Resources.power_mode_balanced_short,
-        UserPowerMode.BestPerformance => Resources.power_mode_best_performance_short,
-        _ => Resources.power_mode_unknown_short,
-    };
+    internal static string GetUserModeShortLabel(UserPowerMode mode) =>
+        PowerModeCatalog.GetDefinition(mode).ShortLabel;
 
     internal static string GetStatusSubtitle(PowerModeSnapshot snapshot)
     {
@@ -34,14 +28,14 @@ internal static class PowerModeDisplayHelper
         return GetUserModeLabel(snapshot.UserMode);
     }
 
-    internal static string GetSetModeSubtitle(UserPowerMode mode, PowerModeSnapshot snapshot)
+    internal static ITag[] GetModeItemTags(UserPowerMode mode, PowerModeSnapshot snapshot)
     {
         if (snapshot.CanReadUserMode && snapshot.UserMode == mode)
         {
-            return Resources.power_list_current;
+            return [new Tag(Resources.power_list_current)];
         }
 
-        return string.Empty;
+        return [];
     }
 
     internal static string GetEnergySaverStatusLabel(EnergySaverSnapshot snapshot)

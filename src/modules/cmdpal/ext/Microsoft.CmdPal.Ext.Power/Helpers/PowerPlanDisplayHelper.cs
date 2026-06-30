@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Constants;
 using Microsoft.CmdPal.Ext.Power.Properties;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
@@ -57,13 +61,13 @@ internal static class PowerPlanDisplayHelper
         return displayName;
     }
 
-    internal static string GetPlanItemSubtitle(PowerPlanInfo plan, PowerPlanSnapshot snapshot)
+    internal static ITag[] GetPlanItemTags(PowerPlanInfo plan, PowerPlanSnapshot snapshot)
     {
         if (snapshot.ActivePlan?.SchemeGuid == plan.SchemeGuid)
         {
-            return Resources.power_plan_current;
+            return [new Tag(Resources.power_list_current)];
         }
 
-        return string.Empty;
+        return [];
     }
 }

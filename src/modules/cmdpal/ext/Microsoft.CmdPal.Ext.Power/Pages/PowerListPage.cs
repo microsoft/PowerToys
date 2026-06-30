@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CmdPal.Ext.Power.Classes;
 using Microsoft.CmdPal.Ext.Power.Commands;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.CommandPalette.Extensions;

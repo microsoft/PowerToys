@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.Power;
+using Microsoft.CmdPal.Ext.Power.Constants;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

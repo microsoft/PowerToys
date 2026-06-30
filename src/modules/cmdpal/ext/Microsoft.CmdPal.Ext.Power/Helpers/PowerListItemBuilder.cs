@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Power.Classes;
 using Microsoft.CmdPal.Ext.Power.Commands;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
@@ -30,7 +32,8 @@ internal sealed partial class PowerListItemBuilder
         return new ListItem(new SetPowerModeCommand(_powerModeService, mode, successToast, onChanged, dismissOnSuccess))
         {
             Title = title,
-            Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(mode, snapshot),
+            Subtitle = string.Empty,
+            Tags = PowerModeDisplayHelper.GetModeItemTags(mode, snapshot),
             Icon = Icons.Glyph(mode),
         };
     }
@@ -38,7 +41,7 @@ internal sealed partial class PowerListItemBuilder
     internal void RefreshModeItem(ListItem item, UserPowerMode mode)
     {
         var snapshot = _powerModeService.GetSnapshot();
-        item.Subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(mode, snapshot);
+        item.Tags = PowerModeDisplayHelper.GetModeItemTags(mode, snapshot);
         item.Icon = Icons.Glyph(mode);
     }
 
@@ -51,14 +54,15 @@ internal sealed partial class PowerListItemBuilder
         return new ListItem(new SetPowerPlanCommand(_powerPlanService, plan.SchemeGuid, plan.DisplayName, onChanged, dismissOnSuccess))
         {
             Title = PowerPlanDisplayHelper.GetPlanTitle(plan),
-            Subtitle = PowerPlanDisplayHelper.GetPlanItemSubtitle(plan, snapshot),
+            Subtitle = string.Empty,
+            Tags = PowerPlanDisplayHelper.GetPlanItemTags(plan, snapshot),
             Icon = Icons.PlanGlyph(plan.SchemeGuid),
         };
     }
 
     internal void RefreshPlanItem(ListItem item, PowerPlanInfo plan, PowerPlanSnapshot snapshot)
     {
-        item.Subtitle = PowerPlanDisplayHelper.GetPlanItemSubtitle(plan, snapshot);
+        item.Tags = PowerPlanDisplayHelper.GetPlanItemTags(plan, snapshot);
         item.Icon = Icons.PlanGlyph(plan.SchemeGuid);
     }
 }

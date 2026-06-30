@@ -4,7 +4,9 @@
   <Import Project="..\Common.ExtDependencies.props" />
   <PropertyGroup>
     <RootNamespace>Microsoft.CmdPal.Ext.Power</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <CsWin32RunAsBuildTask>true</CsWin32RunAsBuildTask>
     <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -21,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
   </ItemGroup>
 
@@ -49,5 +50,6 @@
 
   <ItemGroup>
     <AdditionalFiles Include="NativeMethods.txt" />
+    <AdditionalFiles Include="NativeMethods.json" />
   </ItemGroup>
 </Project>

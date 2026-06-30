@@ -2,12 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-namespace Microsoft.CmdPal.Ext.Power.Helpers;
+using System;
 
-internal enum PowerSourceKind
-{
-    Unknown,
-    NoBattery,
-    OnBattery,
-    PluggedIn,
-}
+namespace Microsoft.CmdPal.Ext.Power.Classes;
+
+internal readonly record struct PowerPlanInfo(
+    Guid SchemeGuid,
+    string DisplayName,
+    string Description);

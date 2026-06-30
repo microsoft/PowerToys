@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO;
 using System.Threading.Channels;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
@@ -160,22 +159,9 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 
         if (!string.IsNullOrEmpty(iconString))
         {
-            var result = await _dispatcherQueue
+            return await _dispatcherQueue
                 .EnqueueAsync(() => GetStringIconSource(iconString, fontFamily, scaledSize), LoadingPriorityOnDispatcher)
                 .ConfigureAwait(false);
-
-            if (result == null)
-            {
-                var pngFallbackPath = TryGetPngFallbackPath(iconString);
-                if (pngFallbackPath is not null)
-                {
-                    result = await _dispatcherQueue
-                        .EnqueueAsync(() => GetStringIconSource(pngFallbackPath, fontFamily, scaledSize), LoadingPriorityOnDispatcher)
-                        .ConfigureAwait(false);
-                }
-            }
-
-            return result;
         }
 
         if (streamRef != null)

@@ -3,8 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
+using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.Windows.System.Power;
-using Windows.Win32.System.Power;
+using Windows.Win32;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
@@ -16,25 +19,25 @@ internal sealed partial class PowerModeService : IDisposable
 
     internal PowerModeSnapshot GetSnapshot()
     {
-        if (!PowerSourceHelper.TryGetPowerStatus(out var status))
+        if (!PowerSourceReader.TryGetPowerStatus(out var status))
         {
             return CreateSnapshot(
                 userMode: UserPowerMode.Unknown,
                 effective: null,
-                powerSourceKind: PowerSourceKind.Unknown,
+                powerSourceKind: Enumerations.PowerSourceKind.Unknown,
                 hasBattery: false,
                 isOnAcPower: true,
                 isCharging: false,
                 canReadUserMode: false);
         }
 
-        var powerSourceKind = PowerSourceHelper.GetPowerSourceKind(in status);
-        var hasBattery = PowerSourceHelper.HasBattery(in status);
-        var isOnAcPower = PowerSourceHelper.IsOnAcPower(in status);
-        var isCharging = PowerSourceHelper.IsCharging(in status);
-        var useAcProfile = PowerSourceHelper.UseAcPowerProfile(powerSourceKind);
+        var powerSourceKind = PowerSourceReader.GetPowerSourceKind(in status);
+        var hasBattery = PowerSourceReader.HasBattery(in status);
+        var isOnAcPower = PowerSourceReader.IsOnAcPower(in status);
+        var isCharging = PowerSourceReader.IsCharging(in status);
+        var useAcProfile = PowerSourceReader.UseAcPowerProfile(powerSourceKind);
         var canReadUserMode = TryGetUserPowerMode(useAcProfile, out var userGuid);
-        var userMode = canReadUserMode ? PowerModeMapper.FromGuid(userGuid) : UserPowerMode.Unknown;
+        var userMode = canReadUserMode ? PowerModeCatalog.FromGuid(userGuid) : UserPowerMode.Unknown;
 
         EffectivePowerMode? effective = null;
         try
@@ -70,33 +73,33 @@ internal sealed partial class PowerModeService : IDisposable
             return false;
         }
 
-        if (!PowerSourceHelper.TryGetPowerStatus(out var status))
+        if (!PowerSourceReader.TryGetPowerStatus(out var status))
         {
-            errorMessage = Properties.Resources.power_mode_not_supported;
+            errorMessage = Resources.power_mode_not_supported;
             return false;
         }
 
-        var powerSourceKind = PowerSourceHelper.GetPowerSourceKind(in status);
-        var useAcProfile = PowerSourceHelper.UseAcPowerProfile(powerSourceKind);
-        var guid = PowerModeMapper.ToGuid(mode);
+        var powerSourceKind = PowerSourceReader.GetPowerSourceKind(in status);
+        var useAcProfile = PowerSourceReader.UseAcPowerProfile(powerSourceKind);
+        var guid = PowerModeCatalog.ToGuid(mode);
 
         var result = useAcProfile
-            ? PowerModeNative.PowerSetUserConfiguredACPowerMode(ref guid)
-            : PowerModeNative.PowerSetUserConfiguredDCPowerMode(ref guid);
+            ? PInvoke.PowerSetUserConfiguredACPowerMode(in guid)
+            : PInvoke.PowerSetUserConfiguredDCPowerMode(in guid);
 
-        if (result == PowerModeNative.ErrorSuccess)
+        if (result == 0)
         {
             return true;
         }
 
-        guid = PowerModeMapper.ToGuid(mode);
-        result = PowerModeNative.PowerSetActiveOverlayScheme(ref guid);
-        if (result == PowerModeNative.ErrorSuccess)
+        guid = PowerModeCatalog.ToGuid(mode);
+        result = PInvoke.PowerSetActiveOverlayScheme(ref guid);
+        if (result == 0)
         {
             return true;
         }
 
-        errorMessage = Properties.Resources.power_mode_set_failed;
+        errorMessage = Resources.power_mode_set_failed;
         return false;
     }
 
@@ -149,22 +152,22 @@ internal sealed partial class PowerModeService : IDisposable
     {
         powerModeGuid = Guid.Empty;
         var result = useAcProfile
-            ? PowerModeNative.PowerGetUserConfiguredACPowerMode(out powerModeGuid)
-            : PowerModeNative.PowerGetUserConfiguredDCPowerMode(out powerModeGuid);
+            ? PInvoke.PowerGetUserConfiguredACPowerMode(out powerModeGuid)
+            : PInvoke.PowerGetUserConfiguredDCPowerMode(out powerModeGuid);
 
-        if (result == PowerModeNative.ErrorSuccess)
+        if (result == 0)
         {
             return true;
         }
 
-        result = PowerModeNative.PowerGetActualOverlayScheme(out powerModeGuid);
-        return result == PowerModeNative.ErrorSuccess;
+        result = PInvoke.PowerGetActualOverlayScheme(out powerModeGuid);
+        return result == 0;
     }
 
     private static PowerModeSnapshot CreateSnapshot(
         UserPowerMode userMode,
         EffectivePowerMode? effective,
-        PowerSourceKind powerSourceKind,
+        Microsoft.CmdPal.Ext.Power.Enumerations.PowerSourceKind powerSourceKind,
         bool hasBattery,
         bool isOnAcPower,
         bool isCharging,
@@ -177,16 +180,4 @@ internal sealed partial class PowerModeService : IDisposable
             isOnAcPower,
             isCharging,
             canReadUserMode);
-}
-
-internal readonly record struct PowerModeSnapshot(
-    UserPowerMode UserMode,
-    EffectivePowerMode? EffectiveMode,
-    PowerSourceKind PowerSourceKind,
-    bool HasBattery,
-    bool IsOnAcPower,
-    bool IsCharging,
-    bool CanReadUserMode)
-{
-    internal bool UseAcPowerProfile => PowerSourceHelper.UseAcPowerProfile(PowerSourceKind);
 }

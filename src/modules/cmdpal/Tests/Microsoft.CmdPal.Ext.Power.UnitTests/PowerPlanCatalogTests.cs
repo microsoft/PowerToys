@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Constants;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

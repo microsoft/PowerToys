@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.CmdPal.Ext.Power.Classes;
 using Microsoft.CmdPal.Ext.Power.Properties;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Power;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
@@ -51,8 +54,7 @@ internal sealed partial class PowerPlanService
     internal bool TrySetActivePlan(Guid schemeGuid, out string? errorMessage)
     {
         errorMessage = null;
-        var result = PowerModeNative.PowerSetActiveScheme(IntPtr.Zero, ref schemeGuid);
-        if (result == PowerModeNative.ErrorSuccess)
+        if (PInvoke.PowerSetActiveScheme(null, schemeGuid) == WIN32_ERROR.NO_ERROR)
         {
             return true;
         }
@@ -88,21 +90,21 @@ internal sealed partial class PowerPlanService
     {
         schemeGuid = Guid.Empty;
         var bufferSize = 0u;
-        var result = PowerModeNative.PowerEnumerate(
-            IntPtr.Zero,
-            IntPtr.Zero,
-            IntPtr.Zero,
-            PowerModeNative.AccessScheme,
-            index,
+        var result = PInvoke.PowerEnumerate(
             null,
+            null,
+            null,
+            POWER_DATA_ACCESSOR.ACCESS_SCHEME,
+            index,
+            default,
             ref bufferSize);
 
-        if (result == PowerModeNative.ErrorNoMoreItems)
+        if (result == WIN32_ERROR.ERROR_NO_MORE_ITEMS)
         {
             return false;
         }
 
-        if (result != PowerModeNative.ErrorSuccess && result != PowerModeNative.ErrorMoreData)
+        if (result != WIN32_ERROR.NO_ERROR && result != WIN32_ERROR.ERROR_MORE_DATA)
         {
             return false;
         }
@@ -113,16 +115,16 @@ internal sealed partial class PowerPlanService
         }
 
         var buffer = new byte[bufferSize];
-        result = PowerModeNative.PowerEnumerate(
-            IntPtr.Zero,
-            IntPtr.Zero,
-            IntPtr.Zero,
-            PowerModeNative.AccessScheme,
+        result = PInvoke.PowerEnumerate(
+            null,
+            null,
+            null,
+            POWER_DATA_ACCESSOR.ACCESS_SCHEME,
             index,
             buffer,
             ref bufferSize);
 
-        if (result != PowerModeNative.ErrorSuccess)
+        if (result != WIN32_ERROR.NO_ERROR)
         {
             return false;
         }
@@ -134,37 +136,38 @@ internal sealed partial class PowerPlanService
     private static bool TryGetActivePlanGuid(out Guid schemeGuid)
     {
         schemeGuid = Guid.Empty;
-        var result = PowerModeNative.PowerGetActiveScheme(IntPtr.Zero, out var activePolicyGuid);
-        if (result != PowerModeNative.ErrorSuccess || activePolicyGuid == IntPtr.Zero)
+        unsafe
         {
-            return false;
-        }
+            if (PInvoke.PowerGetActiveScheme(null, out Guid* activePolicyGuid) != WIN32_ERROR.NO_ERROR)
+            {
+                return false;
+            }
 
-        try
-        {
-            schemeGuid = Marshal.PtrToStructure<Guid>(activePolicyGuid);
-            return true;
-        }
-        finally
-        {
-            PowerModeNative.LocalFree(activePolicyGuid);
+            try
+            {
+                schemeGuid = *activePolicyGuid;
+                return true;
+            }
+            finally
+            {
+                _ = PInvoke.LocalFree((HLOCAL)activePolicyGuid);
+            }
         }
     }
 
     private static bool TryReadFriendlyName(Guid schemeGuid, out string friendlyName)
     {
         friendlyName = string.Empty;
-        var scheme = schemeGuid;
         var bufferSize = 0u;
-        var result = PowerModeNative.PowerReadFriendlyName(
-            IntPtr.Zero,
-            ref scheme,
-            IntPtr.Zero,
-            IntPtr.Zero,
+        var result = PInvoke.PowerReadFriendlyName(
             null,
+            schemeGuid,
+            null,
+            null,
+            default,
             ref bufferSize);
 
-        if (result != PowerModeNative.ErrorSuccess && result != PowerModeNative.ErrorMoreData)
+        if (result != WIN32_ERROR.NO_ERROR && result != WIN32_ERROR.ERROR_MORE_DATA)
         {
             return false;
         }
@@ -174,21 +177,21 @@ internal sealed partial class PowerPlanService
             return false;
         }
 
-        var builder = new StringBuilder((int)(bufferSize / sizeof(char)));
-        result = PowerModeNative.PowerReadFriendlyName(
-            IntPtr.Zero,
-            ref scheme,
-            IntPtr.Zero,
-            IntPtr.Zero,
-            builder,
+        var buffer = new byte[bufferSize];
+        result = PInvoke.PowerReadFriendlyName(
+            null,
+            schemeGuid,
+            null,
+            null,
+            buffer,
             ref bufferSize);
 
-        if (result != PowerModeNative.ErrorSuccess)
+        if (result != WIN32_ERROR.NO_ERROR)
         {
             return false;
         }
 
-        friendlyName = builder.ToString();
+        friendlyName = Encoding.Unicode.GetString(buffer.AsSpan(0, (int)bufferSize)).TrimEnd('\0');
         return friendlyName.Length > 0;
     }
 

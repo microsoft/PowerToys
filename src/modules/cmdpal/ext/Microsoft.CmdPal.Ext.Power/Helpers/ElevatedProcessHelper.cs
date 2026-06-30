@@ -3,77 +3,53 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
-using ManagedCsWin32;
+using System.ComponentModel;
+using System.Diagnostics;
+using Windows.Win32;
+using Windows.Win32.Foundation;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
 internal static class ElevatedProcessHelper
 {
-    private const uint SeeMaskNoCloseProcess = 0x00000040;
-    private const uint SeeMaskNoAsync = 0x00000100;
-    private const uint SeeMaskNoConsole = 0x00008000;
-    private const int SwHide = 0;
-    private const int UacCancelledWin32Error = 1223;
-    private const uint InfiniteWait = 0xFFFFFFFF;
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CloseHandle(IntPtr hObject);
-
-    internal static bool TryRunElevated(string file, string arguments, out int exitCode, out int? win32Error)
+    internal static bool TryRunElevated(string file, string arguments, out int exitCode, out WIN32_ERROR? win32Error)
     {
         exitCode = -1;
         win32Error = null;
 
-        unsafe
+        try
         {
-            fixed (char* filePtr = file)
+            using var process = Process.Start(new ProcessStartInfo
             {
-                fixed (char* argumentsPtr = arguments)
-                {
-                    fixed (char* verbPtr = "runas")
-                    {
-                        var info = new Shell32.SHELLEXECUTEINFOW
-                        {
-                            CbSize = (uint)sizeof(Shell32.SHELLEXECUTEINFOW),
-                            FMask = SeeMaskNoCloseProcess | SeeMaskNoAsync | SeeMaskNoConsole,
-                            LpVerb = (IntPtr)verbPtr,
-                            LpFile = (IntPtr)filePtr,
-                            LpParameters = (IntPtr)argumentsPtr,
-                            Show = SwHide,
-                        };
+                FileName = file,
+                Arguments = arguments,
+                UseShellExecute = true,
+                Verb = "runas",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            });
 
-                        if (!Shell32.ShellExecuteEx(ref info))
-                        {
-                            win32Error = Marshal.GetLastWin32Error();
-                            return false;
-                        }
-
-                        if (info.Process == IntPtr.Zero)
-                        {
-                            exitCode = 0;
-                            return true;
-                        }
-
-                        _ = WaitForSingleObject(info.Process, InfiniteWait);
-                        _ = GetExitCodeProcess(info.Process, out uint processExitCode);
-                        exitCode = (int)processExitCode;
-                        _ = CloseHandle(info.Process);
-                        return exitCode == 0;
-                    }
-                }
+            if (process is null)
+            {
+                return false;
             }
+
+            process.WaitForExit();
+            exitCode = process.ExitCode;
+            return exitCode == 0;
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == (int)WIN32_ERROR.ERROR_CANCELLED)
+        {
+            win32Error = WIN32_ERROR.ERROR_CANCELLED;
+            return false;
+        }
+        catch (Win32Exception ex)
+        {
+            win32Error = (WIN32_ERROR)ex.NativeErrorCode;
+            return false;
         }
     }
 
-    internal static bool IsUacCancelled(int? win32Error) =>
-        win32Error == UacCancelledWin32Error;
+    internal static bool IsUacCancelled(WIN32_ERROR? win32Error) =>
+        win32Error == WIN32_ERROR.ERROR_CANCELLED;
 }

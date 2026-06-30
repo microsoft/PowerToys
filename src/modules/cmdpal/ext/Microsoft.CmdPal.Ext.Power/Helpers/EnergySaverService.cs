@@ -4,6 +4,9 @@
 
 using System;
 using System.Threading;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
+using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.Windows.System.Power;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
@@ -19,7 +22,8 @@ internal sealed partial class EnergySaverService : IDisposable
 
     internal EnergySaverSnapshot GetSnapshot()
     {
-        var state = EnergySaverStateHelper.ResolveVisibleState();
+        var signals = EnergySaverSignalReader.Read();
+        var state = EnergySaverStateResolver.ResolveVisibleState(in signals);
         if (state is ResolvedEnergySaverState.On or ResolvedEnergySaverState.Off or ResolvedEnergySaverState.NotAvailable)
         {
             return new EnergySaverSnapshot(state, CanReadStatus: true, CanAttemptSet: state != ResolvedEnergySaverState.NotAvailable);
@@ -28,25 +32,41 @@ internal sealed partial class EnergySaverService : IDisposable
         return new EnergySaverSnapshot(ResolvedEnergySaverState.Unknown, CanReadStatus: false, CanAttemptSet: true);
     }
 
+    internal bool HasRegistryRuntimeDrift()
+    {
+        if (!EnergySaverStateWriter.TryGetFromRegistry(out var registryOn))
+        {
+            return false;
+        }
+
+        var signals = EnergySaverSignalReader.Read();
+        if (!EnergySaverSignalReader.TryGetRuntimeOn(in signals, out var runtimeOn))
+        {
+            return false;
+        }
+
+        return registryOn != runtimeOn;
+    }
+
     internal bool TrySetEnergySaver(bool enabled, out string? errorMessage)
     {
         errorMessage = null;
 
-        if (EnergySaverStateHelper.MatchesExpectedState(enabled))
+        if (EnergySaverStateWriter.MatchesExpectedState(enabled))
         {
             EnergySaverChanged?.Invoke(this, EventArgs.Empty);
             return true;
         }
 
-        if (!EnergySaverStateHelper.TryApplyOverlayScheme(enabled))
+        if (!EnergySaverStateWriter.TryApplyOverlayScheme(enabled))
         {
-            errorMessage = Properties.Resources.power_mode_energy_saver_set_failed;
+            errorMessage = Resources.power_mode_energy_saver_set_failed;
             return false;
         }
 
-        if (EnergySaverStateHelper.TrySetInRegistry(enabled))
+        if (EnergySaverStateWriter.TrySetInRegistry(enabled))
         {
-            _ = EnergySaverStateHelper.TryRefreshActiveScheme();
+            _ = EnergySaverStateWriter.TryRefreshActiveScheme();
             if (VerifyState(enabled))
             {
                 EnergySaverChanged?.Invoke(this, EventArgs.Empty);
@@ -60,7 +80,7 @@ internal sealed partial class EnergySaverService : IDisposable
             return true;
         }
 
-        errorMessage ??= Properties.Resources.power_mode_energy_saver_requires_settings;
+        errorMessage ??= Resources.power_mode_energy_saver_requires_settings;
         return false;
     }
 
@@ -107,12 +127,12 @@ internal sealed partial class EnergySaverService : IDisposable
     private static bool TryApplyElevatedRegistryAndVerify(bool enabled, out string? errorMessage)
     {
         errorMessage = null;
-        if (!EnergySaverStateHelper.TrySetViaElevatedScript(enabled, out errorMessage))
+        if (!EnergySaverStateWriter.TrySetViaElevatedScript(enabled, out errorMessage))
         {
             return false;
         }
 
-        _ = EnergySaverStateHelper.TryRefreshActiveScheme();
+        _ = EnergySaverStateWriter.TryRefreshActiveScheme();
         return VerifyState(enabled);
     }
 
@@ -120,7 +140,7 @@ internal sealed partial class EnergySaverService : IDisposable
     {
         for (var attempt = 0; attempt < VerifyAttempts; attempt++)
         {
-            if (EnergySaverStateHelper.MatchesExpectedState(expectedOn))
+            if (EnergySaverStateWriter.MatchesExpectedState(expectedOn))
             {
                 return true;
             }

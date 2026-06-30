@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -36,7 +37,7 @@ internal sealed partial class ToggleEnergySaverCommand : InvokableCommand
 
         if (enable && ShouldOpenQuickSettingsDirectly())
         {
-            return OpenQuickSettingsFallback(Resources.power_mode_energy_saver_open_quick_settings_toast);
+            return OpenSettingsFallback(Resources.power_mode_energy_saver_open_quick_settings_toast);
         }
 
         var successToast = enable
@@ -49,25 +50,20 @@ internal sealed partial class ToggleEnergySaverCommand : InvokableCommand
             return ShowToast(successToast, dismissOnSuccess: false);
         }
 
-        return OpenQuickSettingsFallback(
+        return OpenSettingsFallback(
             enable
                 ? Resources.power_mode_energy_saver_open_quick_settings_toast
                 : Resources.power_mode_energy_saver_open_quick_settings_off_toast);
     }
 
-    private static bool ShouldOpenQuickSettingsDirectly() =>
-        EnergySaverStateHelper.HasRegistryRuntimeDrift();
+    private bool ShouldOpenQuickSettingsDirectly() =>
+        _service.HasRegistryRuntimeDrift();
 
-    private static CommandResult OpenQuickSettingsFallback(string message)
+    private static CommandResult OpenSettingsFallback(string message)
     {
-        if (EnergySaverFallbackHelper.TryOpenQuickSettings())
+        if (EnergySaverFallbackHelper.TryOpenEnergySaverSettings())
         {
             return ShowToast(message, dismissOnSuccess: true);
-        }
-
-        if (EnergySaverFallbackHelper.TryOpenPowerSettings())
-        {
-            return ShowToast(Resources.power_mode_energy_saver_open_settings_toast, dismissOnSuccess: true);
         }
 
         return ShowToastKeepOpen(Resources.power_mode_energy_saver_set_failed);

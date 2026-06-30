@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.CmdPal.Ext.Power.Helpers;
+namespace Microsoft.CmdPal.Ext.Power.Classes;
 
 internal readonly record struct PowerPlanSnapshot(
     PowerPlanInfo? ActivePlan,

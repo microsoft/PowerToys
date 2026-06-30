@@ -3,6 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Constants;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 

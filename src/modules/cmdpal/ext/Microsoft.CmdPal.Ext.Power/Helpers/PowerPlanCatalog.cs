@@ -4,7 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Constants;
 using Microsoft.CmdPal.Ext.Power.Properties;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.System.Power;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 

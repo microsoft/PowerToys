@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Windows.Win32;
 using Windows.Win32.System.Power;
 
 namespace Microsoft.CmdPal.Ext.Power.Helpers;
 
-internal static class PowerSourceHelper
+internal static class PowerSourceReader
 {
     private const byte BatteryFlagCharging = 0x08;
     private const byte BatteryFlagNoBattery = 0x80;

@@ -79,51 +79,6 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Power mode.
-        /// </summary>
-        public static string power_mode_dock_band_title {
-            get {
-                return ResourceManager.GetString("power_mode_dock_band_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Power mode.
-        /// </summary>
-        public static string power_mode_dock_item_subtitle {
-            get {
-                return ResourceManager.GetString("power_mode_dock_item_subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Power plan.
-        /// </summary>
-        public static string power_plan_dock_band_title {
-            get {
-                return ResourceManager.GetString("power_plan_dock_band_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Power plan.
-        /// </summary>
-        public static string power_plan_dock_item_subtitle {
-            get {
-                return ResourceManager.GetString("power_plan_dock_item_subtitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to power;powermode;power mode;best performance;best efficiency;balanced;performance mode;efficiency mode;energy saver;power plan;powercfg;ultimate performance;high performance.
-        /// </summary>
-        public static string power_fallback_search_tags {
-            get {
-                return ResourceManager.GetString("power_fallback_search_tags", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to View and change Windows power settings.
         /// </summary>
         public static string power_fallback_subtitle {
@@ -205,6 +160,24 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Power mode.
+        /// </summary>
+        public static string power_mode_dock_band_title {
+            get {
+                return ResourceManager.GetString("power_mode_dock_band_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power mode.
+        /// </summary>
+        public static string power_mode_dock_item_subtitle {
+            get {
+                return ResourceManager.GetString("power_mode_dock_item_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Approve the permission prompt to change energy saver on this PC..
         /// </summary>
         public static string power_mode_energy_saver_admin_required {
@@ -268,29 +241,20 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Energy saver did not change. Use Quick Settings (Win+A) or Settings &gt; System &gt; Power..
-        /// </summary>
-        public static string power_mode_energy_saver_requires_settings {
-            get {
-                return ResourceManager.GetString("power_mode_energy_saver_requires_settings", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Opened Quick Settings (Win+A). Tap Energy saver to turn on..
-        /// </summary>
-        public static string power_mode_energy_saver_open_quick_settings_toast {
-            get {
-                return ResourceManager.GetString("power_mode_energy_saver_open_quick_settings_toast", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Opened Quick Settings (Win+A). Tap Energy saver to turn off..
+        ///   Looks up a localized string similar to Opened Settings. Turn off Energy saver under Power &amp; battery..
         /// </summary>
         public static string power_mode_energy_saver_open_quick_settings_off_toast {
             get {
                 return ResourceManager.GetString("power_mode_energy_saver_open_quick_settings_off_toast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opened Settings. Turn on Energy saver under Power &amp; battery..
+        /// </summary>
+        public static string power_mode_energy_saver_open_quick_settings_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_open_quick_settings_toast", resourceCulture);
             }
         }
         
@@ -300,6 +264,15 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         public static string power_mode_energy_saver_open_settings_toast {
             get {
                 return ResourceManager.GetString("power_mode_energy_saver_open_settings_toast", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Energy saver did not change. Open Settings &gt; System &gt; Power &amp; battery..
+        /// </summary>
+        public static string power_mode_energy_saver_requires_settings {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_requires_settings", resourceCulture);
             }
         }
         
@@ -565,16 +538,7 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Current.
-        /// </summary>
-        public static string power_plan_current {
-            get {
-                return ResourceManager.GetString("power_plan_current", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Balanced.
+        ///   Looks up a localized string similar to balanced.
         /// </summary>
         public static string power_plan_balanced_short {
             get {
@@ -583,38 +547,11 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to High perf.
+        ///   Looks up a localized string similar to Current.
         /// </summary>
-        public static string power_plan_high_performance_short {
+        public static string power_plan_current {
             get {
-                return ResourceManager.GetString("power_plan_high_performance_short", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Power saver.
-        /// </summary>
-        public static string power_plan_power_saver_short {
-            get {
-                return ResourceManager.GetString("power_plan_power_saver_short", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ultimate.
-        /// </summary>
-        public static string power_plan_ultimate_performance_short {
-            get {
-                return ResourceManager.GetString("power_plan_ultimate_performance_short", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unknown.
-        /// </summary>
-        public static string power_plan_unknown_short {
-            get {
-                return ResourceManager.GetString("power_plan_unknown_short", resourceCulture);
+                return ResourceManager.GetString("power_plan_current", resourceCulture);
             }
         }
         
@@ -651,6 +588,42 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         public static string power_plan_desc_ultimate_performance {
             get {
                 return ResourceManager.GetString("power_plan_desc_ultimate_performance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        public static string power_plan_dock_band_title {
+            get {
+                return ResourceManager.GetString("power_plan_dock_band_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Power plan.
+        /// </summary>
+        public static string power_plan_dock_item_subtitle {
+            get {
+                return ResourceManager.GetString("power_plan_dock_item_subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to high.
+        /// </summary>
+        public static string power_plan_high_performance_short {
+            get {
+                return ResourceManager.GetString("power_plan_high_performance_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to saver.
+        /// </summary>
+        public static string power_plan_power_saver_short {
+            get {
+                return ResourceManager.GetString("power_plan_power_saver_short", resourceCulture);
             }
         }
         
@@ -714,6 +687,24 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         public static string power_plan_status_unknown {
             get {
                 return ResourceManager.GetString("power_plan_status_unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ultimate.
+        /// </summary>
+        public static string power_plan_ultimate_performance_short {
+            get {
+                return ResourceManager.GetString("power_plan_ultimate_performance_short", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown.
+        /// </summary>
+        public static string power_plan_unknown_short {
+            get {
+                return ResourceManager.GetString("power_plan_unknown_short", resourceCulture);
             }
         }
         

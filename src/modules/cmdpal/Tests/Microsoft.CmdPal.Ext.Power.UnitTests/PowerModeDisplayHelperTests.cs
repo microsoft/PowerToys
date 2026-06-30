@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.Ext.Power.Classes;
+using Microsoft.CmdPal.Ext.Power.Enumerations;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,19 +14,19 @@ namespace Microsoft.CmdPal.Ext.Power.UnitTests;
 public sealed class PowerModeDisplayHelperTests
 {
     [TestMethod]
-    public void GetSetModeSubtitle_WhenActiveMode_ShowsCurrent()
+    public void GetModeItemTags_WhenActiveMode_ShowsCurrentTag()
     {
         var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
-        var subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.Balanced, snapshot);
-        Assert.AreEqual(Resources.power_list_current, subtitle);
+        var tags = PowerModeDisplayHelper.GetModeItemTags(UserPowerMode.Balanced, snapshot);
+        Assert.HasCount(1, tags);
+        Assert.AreEqual(Resources.power_list_current, tags[0].Text);
     }
 
     [TestMethod]
-    public void GetSetModeSubtitle_WhenInactiveMode_ShowsEmpty()
+    public void GetModeItemTags_WhenInactiveMode_ReturnsEmpty()
     {
         var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
-        var subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.BestPerformance, snapshot);
-        Assert.AreEqual(string.Empty, subtitle);
+        Assert.IsEmpty(PowerModeDisplayHelper.GetModeItemTags(UserPowerMode.BestPerformance, snapshot));
     }
 
     [TestMethod]
