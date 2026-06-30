@@ -35,6 +35,7 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
+#include <common/Themes/dark_menu.h>
 #include <array>
 #include <vector>
 #endif // __ZOOMIT_POWERTOYS__
@@ -10107,8 +10108,23 @@ LRESULT APIENTRY MainWndProc(
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
             }
-            // Apply dark mode theme to the menu
+            // Make the popup theme-aware (dark/light).
+#ifdef __ZOOMIT_POWERTOYS__
+            // Shared common helper: the OS renders the dark/light menu (native
+            // chrome, keyboard, accessibility). Reusable by other Win32 modules
+            // such as the runner tray menu.
+            //
+            // Detect the theme fresh at open time (respecting ZoomIt's theme
+            // override) so a live light<->dark switch is reflected without a
+            // restart. IsDarkModeEnabled() uses uxtheme's cached state, which a
+            // runtime theme switch may not refresh, whereas the AppsUseLightTheme
+            // registry value (read by IsSystemDarkMode) is always current.
+            const bool useDarkMenu = ( g_ThemeOverride == 1 ) ||
+                                     ( g_ThemeOverride != 0 && theme::dark_menu::IsSystemDarkMode() );
+            theme::dark_menu::SetAppMode( useDarkMenu );
+#else
             ApplyDarkModeToMenu( hPopupMenu );
+#endif
             TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
             DestroyMenu( hPopupMenu );
             break;
