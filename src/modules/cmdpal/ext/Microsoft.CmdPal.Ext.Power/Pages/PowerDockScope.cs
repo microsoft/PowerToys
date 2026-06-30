@@ -6,7 +6,6 @@ namespace Microsoft.CmdPal.Ext.Power.Pages;
 
 internal enum PowerDockScope
 {
-    All,
     Mode,
     Plan,
 }

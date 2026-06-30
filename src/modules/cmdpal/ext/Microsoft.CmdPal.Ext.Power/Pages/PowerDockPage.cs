@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.CmdPal.Ext.Power.Properties;
@@ -24,14 +25,14 @@ internal sealed partial class PowerDockPage : OnLoadStaticListPage
     {
         PowerDockScope.Mode => $"{BaseId}.mode",
         PowerDockScope.Plan => $"{BaseId}.plan",
-        _ => BaseId,
+        _ => throw new InvalidOperationException($"Unsupported dock scope: {_scope}"),
     };
 
     public override IconInfo Icon => _scope switch
     {
         PowerDockScope.Mode => Icons.PowerModeBandIcon,
         PowerDockScope.Plan => Icons.PowerPlanBandIcon,
-        _ => Icons.PowerExtensionIcon,
+        _ => throw new InvalidOperationException($"Unsupported dock scope: {_scope}"),
     };
 
     internal PowerDockPage(
@@ -48,16 +49,16 @@ internal sealed partial class PowerDockPage : OnLoadStaticListPage
         {
             PowerDockScope.Mode => Resources.power_mode_dock_band_title,
             PowerDockScope.Plan => Resources.power_plan_dock_band_title,
-            _ => Resources.power_dock_band_title,
+            _ => throw new InvalidOperationException($"Unsupported dock scope: {scope}"),
         };
         Name = Title;
 
-        if (scope is PowerDockScope.All or PowerDockScope.Mode)
+        if (scope == PowerDockScope.Mode)
         {
             _modeDockItem = new PowerModeDockItem(powerModeService, modePickerPage);
         }
 
-        if (scope is PowerDockScope.All or PowerDockScope.Plan)
+        if (scope == PowerDockScope.Plan)
         {
             _planDockItem = new PowerPlanDockItem(powerPlanService, planPickerPage);
         }

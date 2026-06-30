@@ -70,15 +70,6 @@ namespace Microsoft.CmdPal.Ext.Power.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Power.
-        /// </summary>
-        public static string power_dock_band_title {
-            get {
-                return ResourceManager.GetString("power_dock_band_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to View and change Windows power settings.
         /// </summary>
         public static string power_fallback_subtitle {

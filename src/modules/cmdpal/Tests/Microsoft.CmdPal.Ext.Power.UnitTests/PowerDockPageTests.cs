@@ -15,15 +15,6 @@ namespace Microsoft.CmdPal.Ext.Power.UnitTests;
 public sealed class PowerDockPageTests
 {
     [TestMethod]
-    public void FullDockPage_IdMatchesTopLevelCommand()
-    {
-        var context = CreateContext();
-        var page = CreateDockPage(context, PowerDockScope.All);
-
-        Assert.AreEqual("com.microsoft.cmdpal.power", page.Id);
-    }
-
-    [TestMethod]
     public void ModeDockPage_HasScopedId()
     {
         var context = CreateContext();
@@ -42,13 +33,24 @@ public sealed class PowerDockPageTests
     }
 
     [TestMethod]
-    public void FullDockPage_ItemsExcludeSeparators()
+    public void ModeDockPage_HasSingleItemWithoutSeparators()
     {
         var context = CreateContext();
-        var page = CreateDockPage(context, PowerDockScope.All);
+        var page = CreateDockPage(context, PowerDockScope.Mode);
         var items = page.GetItems();
 
-        Assert.IsTrue(items.Length >= 1);
+        Assert.IsTrue(items.Length == 0 || items.Length == 1);
+        Assert.IsFalse(items.Any(item => item is Separator));
+    }
+
+    [TestMethod]
+    public void PlanDockPage_HasSingleItemWithoutSeparators()
+    {
+        var context = CreateContext();
+        var page = CreateDockPage(context, PowerDockScope.Plan);
+        var items = page.GetItems();
+
+        Assert.IsTrue(items.Length == 0 || items.Length == 1);
         Assert.IsFalse(items.Any(item => item is Separator));
     }
 
@@ -72,9 +74,8 @@ public sealed class PowerDockPageTests
         Assert.IsTrue(bands!.Length >= 1);
 
         var titles = bands.Select(b => b.Title).ToArray();
-        if (bands.Length >= 3)
+        if (bands.Length >= 2)
         {
-            CollectionAssert.Contains(titles, Resources.power_dock_band_title);
             CollectionAssert.Contains(titles, Resources.power_mode_dock_band_title);
             CollectionAssert.Contains(titles, Resources.power_plan_dock_band_title);
         }

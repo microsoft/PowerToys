@@ -22,7 +22,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
     private readonly PowerListPage _listPage;
     private readonly PowerModePickerPage _modePickerPage;
     private readonly PowerPlanPickerPage _planPickerPage;
-    private readonly PowerDockPage _fullDockPage;
     private readonly PowerDockPage _modeDockPage;
     private readonly PowerDockPage _planDockPage;
     private readonly FallbackPowerItem _fallback;
@@ -38,7 +37,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
         PowerListPage? listPage = null;
         PowerModePickerPage? modePickerPage = null;
         PowerPlanPickerPage? planPickerPage = null;
-        PowerDockPage? fullDockPage = null;
         PowerDockPage? modeDockPage = null;
         PowerDockPage? planDockPage = null;
 
@@ -52,15 +50,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
 
         planPickerPage = new PowerPlanPickerPage(_powerPlanService, _dataManager, _itemBuilder, HandleLiveStateChanged);
         _planPickerPage = planPickerPage;
-
-        fullDockPage = new PowerDockPage(
-            PowerDockScope.All,
-            _powerModeService,
-            _powerPlanService,
-            modePickerPage,
-            planPickerPage,
-            _dataManager);
-        _fullDockPage = fullDockPage;
 
         modeDockPage = new PowerDockPage(
             PowerDockScope.Mode,
@@ -99,15 +88,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
     {
         var bands = new List<ICommandItem>();
 
-        if (_powerModeService.SupportsPowerModeControl() || _powerPlanService.GetSnapshot().CanReadPlans)
-        {
-            bands.Add(new CommandItem(_fullDockPage)
-            {
-                Title = Resources.power_dock_band_title,
-                Icon = Icons.PowerExtensionIcon,
-            });
-        }
-
         if (_powerModeService.SupportsPowerModeControl())
         {
             bands.Add(new CommandItem(_modeDockPage)
@@ -143,7 +123,6 @@ public sealed partial class PowerCommandsProvider : CommandProvider, IDisposable
         _listPage.HandleLiveStateChanged();
         _modePickerPage.HandleLiveStateChanged();
         _planPickerPage.HandleLiveStateChanged();
-        _fullDockPage.HandleLiveStateChanged();
         _modeDockPage.HandleLiveStateChanged();
         _planDockPage.HandleLiveStateChanged();
     }

@@ -123,9 +123,6 @@
   <data name="power_page_title" xml:space="preserve">
     <value>Power</value>
   </data>
-  <data name="power_dock_band_title" xml:space="preserve">
-    <value>Power</value>
-  </data>
   <data name="power_mode_dock_band_title" xml:space="preserve">
     <value>Power mode</value>
   </data>
