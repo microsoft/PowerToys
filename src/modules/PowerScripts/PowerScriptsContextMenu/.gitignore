@@ -1,0 +1,9 @@
+# Native handler build artifacts
+*.dll
+*.lib
+*.exp
+*.obj
+*.pdb
+*.ilk
+# Host publish output used by register.ps1
+hostpublish/

@@ -46,6 +46,7 @@ internal static class Program
                 "run" => RunScript(registry, positional, options),
                 "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
                 "set-extensions" => RunSetExtensions(registry, positional, options),
+                "shell-menu" => RunShellMenu(registry, options),
                 "shell-install" => ShellRegistration.Install(registry, Environment.ProcessPath ?? "PowerScripts.Host.exe"),
                 "shell-uninstall" => ShellRegistration.Uninstall(registry),
                 "-h" or "--help" or "help" => PrintUsage(),
@@ -217,6 +218,28 @@ internal static class Program
     }
 
     /// <summary>
+    /// Emits the file scripts that match a right-clicked selection as tab-separated
+    /// <c>&lt;id&gt;\t&lt;name&gt;</c> lines (one per script). This is the machine-readable feed the
+    /// Windows 11 modern context-menu handler (IExplorerCommand) consumes to build its submenu; a
+    /// line-based format keeps the native handler free of a JSON parser.
+    /// </summary>
+    private static int RunShellMenu(ScriptRegistry registry, IReadOnlyDictionary<string, List<string>> options)
+    {
+        var files = options.TryGetValue("files", out var f) ? f : new List<string>();
+        if (files.Count == 0)
+        {
+            return 0;
+        }
+
+        foreach (var script in registry.FileScriptsForSelection(files))
+        {
+            Console.WriteLine($"{script.Id}\t{script.Name}");
+        }
+
+        return 0;
+    }
+
+    /// <summary>
     /// Rewrites a file script's declared input extensions in its manifest.json. This is the write
     /// side of the Settings "trigger on these file types" editor; the user picks the extensions and
     /// every surface (context menu, selection matching) then reflects them. System scripts have no
@@ -330,6 +353,7 @@ internal static class Program
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--root <dir>]");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
         Console.WriteLine("  set-extensions <id> --ext <.md .txt ...>  (set a file script's trigger extensions)");
+        Console.WriteLine("  shell-menu --files <f1> <f2> ...    (tab-separated id/name of matching file scripts)");
         Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
         Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");
         return 0;
