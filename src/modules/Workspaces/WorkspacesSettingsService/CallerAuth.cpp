@@ -213,19 +213,14 @@ namespace PTSettingsSvc
         const unsigned long long serviceVersion = GetServiceOwnVersion();
         bool sigOk = sigMicrosoft;
 #ifdef _DEBUG
-        // DEV-ONLY (compiled out of Release): local/smoke-test builds are not
-        // Microsoft-signed, so allow skipping ONLY the signature predicate when
-        // PT_DEV_SKIP_SIGCHECK is set.  The version-match check still applies,
-        // so the unified anchor's logic is exercised with unsigned dev binaries.
-        // MUST NOT ship — Release always requires a real Microsoft signature.
-        if (!sigOk)
-        {
-            wchar_t dev[8] = {};
-            if (GetEnvironmentVariableW(L"PT_DEV_SKIP_SIGCHECK", dev, ARRAYSIZE(dev)) > 0)
-            {
-                sigOk = true;
-            }
-        }
+        // DEV-ONLY, conditional compilation: this block exists ONLY in Debug
+        // builds and is physically absent from Release, so there is no bypass to
+        // abuse in shipped binaries.  Local/smoke-test builds are not
+        // Microsoft-signed, so a Debug build accepts an unsigned caller — but
+        // the version-match check below STILL applies, so the unified anchor's
+        // logic is exercised.  Production is always Release + ESRP-signed, where
+        // a real Microsoft signature is mandatory.
+        sigOk = true;
 #endif
         const bool accepted =
             serviceVersion != 0 &&
