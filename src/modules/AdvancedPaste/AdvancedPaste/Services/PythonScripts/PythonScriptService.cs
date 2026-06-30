@@ -94,10 +94,6 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             var inputPayload = await BuildInputPayloadAsync(clipboardData, detectedFormat, workDir, cancellationToken);
             var inputJson = JsonSerializer.Serialize(inputPayload);
 
-            // Write payload to file to avoid stdin BOM/encoding issues.
-            var inputFilePath = Path.Combine(workDir, "ap_input.json");
-            await File.WriteAllTextAsync(inputFilePath, inputJson, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
-
             var psi = new ProcessStartInfo(pythonExe, $"-X utf8 \"{runnerPath}\" \"{scriptPath}\"")
             {
                 UseShellExecute = false,

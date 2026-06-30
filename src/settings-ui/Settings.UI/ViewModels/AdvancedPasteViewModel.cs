@@ -600,18 +600,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var hasExplicitRequires = false;
             var inputType = string.Empty;
             var outputType = string.Empty;
+            int matchingFunctionCount = 0;
 
             using var reader = new System.IO.StreamReader(filePath, System.Text.Encoding.UTF8);
-            int lineCount = 0;
-            while (lineCount < 100)
+            string line;
+            while ((line = reader.ReadLine()) is not null)
             {
-                var line = reader.ReadLine();
-                if (line is null)
-                {
-                    break;
-                }
-
-                lineCount++;
                 var trimmed = line.Trim();
 
                 // Detect the function definition to extract input/output types
@@ -622,6 +616,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         @"^def advanced_paste_from_(text|html|image|audio|video|files)_to_(text|html|image|audio|video|file|files)\s*\(");
                     if (match.Success)
                     {
+                        matchingFunctionCount++;
                         inputType = match.Groups[1].Value;
                         outputType = match.Groups[2].Value;
                     }
@@ -662,6 +657,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     requires = string.IsNullOrEmpty(requires) ? val : $"{requires} {val}";
                     hasExplicitRequires = true;
                 }
+            }
+
+            // Runtime rejects scripts with more than one matching function.
+            if (matchingFunctionCount != 1)
+            {
+                inputType = string.Empty;
+                outputType = string.Empty;
             }
 
             // Preserve existing saved settings (hotkeys, IsShown)
