@@ -397,9 +397,9 @@
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
-                                <ComboBoxItem Content="Off" />
-                                <ComboBoxItem Content="Windows Python" />
-                                <ComboBoxItem Content="WSL Python" />
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeOff" />
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeWindows" />
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeWsl" />
                             </ComboBox>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
@@ -421,12 +421,12 @@
                                                           FontSize=16}"
                                     Style="{StaticResource SubtleButtonStyle}" />
                                 <Button
+                                    x:Name="OpenScriptsFolderButton"
                                     VerticalAlignment="Bottom"
                                     Click="OpenScriptsFolder_Click"
                                     Content="{ui:FontIcon Glyph=&#xE838;,
                                                           FontSize=16}"
-                                    Style="{StaticResource SubtleButtonStyle}"
-                                    ToolTipService.ToolTip="Open folder" />
+                                    Style="{StaticResource SubtleButtonStyle}" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
@@ -475,9 +475,9 @@
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Button
                                     x:Name="RefreshScriptsButton"
+                                    x:Uid="AdvancedPaste_PythonScripts_LoadScripts"
                                     Click="RefreshPythonScripts_Click"
-                                    Style="{ThemeResource AccentButtonStyle}"
-                                    Content="Load scripts" />
+                                    Style="{ThemeResource AccentButtonStyle}" />
                             </StackPanel>
                             <tkcontrols:SettingsExpander.ItemTemplate>
                                 <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
@@ -499,7 +499,7 @@
                                                 Style="{StaticResource SubtleButtonStyle}"
                                                 Tag="{x:Bind}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Open script in editor" />
+                                                    <TextBlock x:Uid="AdvancedPaste_PythonScripts_OpenScriptInEditor" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
                                         </StackPanel>

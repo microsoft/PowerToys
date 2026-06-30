@@ -6281,5 +6281,23 @@ Text uses the current drawing color.</value>
   <data name="AdvancedPaste_PythonScript_ApplyChanges.Content" xml:space="preserve">
     <value>Apply changes</value>
   </data>
+  <data name="AdvancedPaste_PythonScripts_ModeOff.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_ModeWindows.Content" xml:space="preserve">
+    <value>Windows Python</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_ModeWsl.Content" xml:space="preserve">
+    <value>WSL Python</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_LoadScripts.Content" xml:space="preserve">
+    <value>Load scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_OpenScriptInEditor.Text" xml:space="preserve">
+    <value>Open script in editor</value>
+  </data>
 
 </root>

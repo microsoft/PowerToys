@@ -70,6 +70,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     ViewModel.RefreshWslDistros();
                 }
+
+                if (OpenScriptsFolderButton is not null)
+                {
+                    ToolTipService.SetToolTip(OpenScriptsFolderButton, ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_PythonScripts_OpenFolder"));
+                }
             };
 
             Unloaded += (_, _) =>
@@ -318,7 +323,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
         {
             ViewModel?.RefreshPythonScripts();
-            RefreshScriptsButton.Content = "Refresh scripts";
+            RefreshScriptsButton.Content = ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_PythonScript_RefreshScripts/Content");
         }
 
         private void OpenPythonScript_Click(object sender, RoutedEventArgs e)

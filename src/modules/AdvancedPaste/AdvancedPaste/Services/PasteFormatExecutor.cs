@@ -81,6 +81,11 @@ public sealed class PasteFormatExecutor(
 
         var metadata = _pythonScriptService.ReadMetadata(scriptPath);
 
+        if (metadata is null)
+        {
+            throw new InvalidOperationException($"Script '{scriptPath}' does not define a valid advanced_paste_from_*_to_*() function.");
+        }
+
         // Pre-flight: check for missing packages and offer to install them.
         var missingPackages = await _pythonScriptService.GetMissingRequirementsAsync(metadata, cancellationToken);
         if (missingPackages.Count > 0)
