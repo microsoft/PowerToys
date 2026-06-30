@@ -567,6 +567,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 try
                 {
                     var action = CreateActionFromScript(file, savedActions);
+
+                    // Only list scripts that define exactly one advanced_paste_from_*_to_*() function,
+                    // matching the runtime's discovery behavior in PythonScriptService.
+                    if (string.IsNullOrEmpty(action.InputType) || string.IsNullOrEmpty(action.OutputType))
+                    {
+                        continue;
+                    }
+
                     scripts.Add(action);
                 }
                 catch

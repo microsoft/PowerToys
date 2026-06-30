@@ -14,7 +14,7 @@ Each script must define exactly one function matching the pattern:
   def advanced_paste_from_<input>_to_<output>(<param>)
 
 Supported input types:
-  - text, html, image, files
+  - text, html, image, audio, video, files
 
 Required output types (declared via _to_ suffix):
   - text, html, image, file, files
