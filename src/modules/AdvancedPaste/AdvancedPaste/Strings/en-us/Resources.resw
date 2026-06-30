@@ -212,10 +212,10 @@
     <value>Delete</value>
   </data>
   <data name="CustomFormatTextBox.PlaceholderText" xml:space="preserve">
-    <value>Describe what format you want..</value>
+    <value>Search or describe what format you want..</value>
   </data>
   <data name="InputTxtBoxTooltip.Text" xml:space="preserve">
-    <value>Describe what format you want..</value>
+    <value>Search or describe what format you want..</value>
   </data>
   <data name="LearnMoreLink.Text" xml:space="preserve">
     <value>Privacy</value>
@@ -371,5 +371,74 @@
   <data name="FoundryLocal_UnableToLoadModel" xml:space="preserve">
     <value>Unable to load Foundry Local model: {0}</value>
     <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonNotFound" xml:space="preserve">
+    <value>Python was not found. Please install Python or configure the path in Settings.</value>
+  </data>
+  <data name="WslNotAvailable" xml:space="preserve">
+    <value>WSL is not installed or not available. Cannot run Linux scripts.</value>
+  </data>
+  <data name="PythonScriptFailed" xml:space="preserve">
+    <value>The Python script failed to execute.</value>
+  </data>
+  <data name="PythonScriptTimeout" xml:space="preserve">
+    <value>Script execution timed out ({0} seconds).</value>
+    <comment>{0} is the configured timeout in seconds. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptNotFound" xml:space="preserve">
+    <value>Script file not found: {0}</value>
+    <comment>{0} is the script file path. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptInvalidJson" xml:space="preserve">
+    <value>The script output is not valid JSON.</value>
+  </data>
+  <data name="PythonScriptTrustTitle" xml:space="preserve">
+    <value>Run Python Script?</value>
+  </data>
+  <data name="PythonScriptTrustContent" xml:space="preserve">
+    <value>This script has not been verified. Running untrusted scripts can be a security risk. Do you want to run the following script?
+
+{0}</value>
+    <comment>{0} is the script file path. Do not translate {0}.</comment>
+  </data>
+  <data name="PythonScriptTrustConfirm" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="PythonScriptTrustCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PythonPackageInstallTitle" xml:space="preserve">
+    <value>Install Missing Packages?</value>
+  </data>
+  <data name="PythonPackageInstallContent" xml:space="preserve">
+    <value>The script "{0}" requires the following Python packages that are not installed:
+
+{1}
+
+Install them now?</value>
+    <comment>{0} = script display name, {1} = bullet list of package names. Do not translate package names.</comment>
+  </data>
+  <data name="PythonPackageInstallConfirm" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="PythonPackageInstallCancel" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="PythonPackageInstallFailed" xml:space="preserve">
+    <value>Failed to install package(s) "{0}": {1}</value>
+    <comment>{0} = pip package names, {1} = error detail. Do not translate package names.</comment>
+  </data>
+  <data name="PythonPackageInstallTimeout" xml:space="preserve">
+    <value>Package installation for "{0}" timed out ({1} seconds).</value>
+    <comment>{0} = pip package names, {1} = timeout in seconds. Do not translate {0} or {1}.</comment>
+  </data>
+  <data name="ShowErrorDetailsBtn.Content" xml:space="preserve">
+    <value>Show details</value>
+  </data>
+  <data name="ErrorDetailsDialogTitle" xml:space="preserve">
+    <value>Error Details</value>
+  </data>
+  <data name="ErrorDetailsDialogClose" xml:space="preserve">
+    <value>Close</value>
   </data>
 </root>

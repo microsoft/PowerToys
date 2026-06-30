@@ -57,21 +57,7 @@ namespace AdvancedPaste.Helpers
                 return string.Empty;
             }
 
-            string text;
-            try
-            {
-                text = await clipboardData.GetTextAsync();
-            }
-            catch (Exception ex)
-            {
-                // GetTextAsync goes through WinRT/COM and can fail for reasons outside
-                // our control (e.g. clipboard contention, malformed payloads from other
-                // apps). The contract for this helper is that it does not throw — any
-                // failure to read clipboard text should be treated as "no text".
-                Logger.LogError("Failed reading text from clipboard", ex);
-                return string.Empty;
-            }
-
+            var text = await clipboardData.GetTextAsync();
             string jsonText = string.Empty;
 
             // If the text is already JSON, return it

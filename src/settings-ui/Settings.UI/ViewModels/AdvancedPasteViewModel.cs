@@ -293,6 +293,403 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
+        public bool IsPythonScriptsEnabled
+        {
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                return scripts != null && !string.Equals(scripts.Mode, "disabled", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// ComboBox index: 0 = Disabled, 1 = Windows, 2 = WSL.
+        /// </summary>
+        public int PythonScriptsModeIndex
+        {
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                var mode = scripts?.Mode ?? "disabled";
+                return mode switch
+                {
+                    "windows" => 1,
+                    "wsl" => 2,
+                    _ => 0,
+                };
+            }
+
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                var newMode = value switch
+                {
+                    1 => "windows",
+                    2 => "wsl",
+                    _ => "disabled",
+                };
+
+                if (!string.Equals(scripts.Mode, newMode, StringComparison.Ordinal))
+                {
+                    scripts.Mode = newMode;
+                    OnPropertyChanged(nameof(PythonScriptsModeIndex));
+                    OnPropertyChanged(nameof(IsPythonScriptsEnabled));
+                    OnPropertyChanged(nameof(IsWindowsMode));
+                    OnPropertyChanged(nameof(IsWslMode));
+                    OnPropertyChanged(nameof(ScriptsFolder));
+                    OnPropertyChanged(nameof(PythonExecutablePath));
+                    OnPropertyChanged(nameof(WslDistribution));
+                    SaveAndNotifySettings();
+
+                    if (newMode == "wsl")
+                    {
+                        RefreshWslDistros();
+                    }
+
+                    if (_scriptsDiscovered)
+                    {
+                        RefreshPythonScripts();
+                    }
+                }
+            }
+        }
+
+        public bool IsWindowsMode => PythonScriptsModeIndex == 1;
+
+        public bool IsWslMode => PythonScriptsModeIndex == 2;
+
+        public bool ScriptsDiscovered => _scriptsDiscovered;
+
+        public string PythonExecutablePath
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.WindowsSettings?.PythonExecutablePath ?? string.Empty;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                scripts.WindowsSettings ??= new PythonScriptWindowsSettings();
+                if (!string.Equals(scripts.WindowsSettings.PythonExecutablePath, value, StringComparison.OrdinalIgnoreCase))
+                {
+                    scripts.WindowsSettings.PythonExecutablePath = value ?? string.Empty;
+                    OnPropertyChanged(nameof(PythonExecutablePath));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
+        public string WslDistribution
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.WslSettings?.Distribution ?? string.Empty;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                scripts.WslSettings ??= new PythonScriptWslSettings();
+                if (!string.Equals(scripts.WslSettings.Distribution, value, StringComparison.Ordinal))
+                {
+                    scripts.WslSettings.Distribution = value ?? string.Empty;
+                    OnPropertyChanged(nameof(WslDistribution));
+                    OnPropertyChanged(nameof(WslDistributionIndex));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
+        private List<string> _availableWslDistros = [string.Empty];
+
+        /// <summary>
+        /// Available WSL distributions. First item is "" (system default).
+        /// </summary>
+        public List<string> AvailableWslDistros
+        {
+            get => _availableWslDistros;
+            private set
+            {
+                _availableWslDistros = value;
+                OnPropertyChanged(nameof(AvailableWslDistros));
+                OnPropertyChanged(nameof(WslDistroDisplayNames));
+                OnPropertyChanged(nameof(WslDistributionIndex));
+            }
+        }
+
+        /// <summary>
+        /// Display names for the ComboBox (maps empty string to "(System default)").
+        /// </summary>
+        public List<string> WslDistroDisplayNames =>
+            _availableWslDistros.Select(d => string.IsNullOrEmpty(d) ? "(System default)" : d).ToList();
+
+        /// <summary>
+        /// Selected index into AvailableWslDistros for ComboBox binding.
+        /// </summary>
+        public int WslDistributionIndex
+        {
+            get
+            {
+                var current = WslDistribution;
+                var idx = _availableWslDistros.IndexOf(current);
+                return idx >= 0 ? idx : 0;
+            }
+
+            set
+            {
+                if (value >= 0 && value < _availableWslDistros.Count)
+                {
+                    WslDistribution = _availableWslDistros[value];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Queries installed WSL distributions and populates AvailableWslDistros.
+        /// </summary>
+        public void RefreshWslDistros()
+        {
+            var distros = new List<string> { string.Empty }; // first = system default
+
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("wsl.exe", "-l -q")
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    StandardOutputEncoding = System.Text.Encoding.Unicode,
+                };
+
+                using var process = System.Diagnostics.Process.Start(psi);
+                if (process != null)
+                {
+                    var output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(5000);
+
+                    var names = output
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim().Trim('\0', '\r'))
+                        .Where(name => !string.IsNullOrWhiteSpace(name));
+
+                    foreach (var name in names)
+                    {
+                        distros.Add(name);
+                    }
+                }
+            }
+            catch
+            {
+                // WSL not available — just show the default option
+            }
+
+            AvailableWslDistros = distros;
+        }
+
+        public string ScriptsFolder
+        {
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                if (scripts == null)
+                {
+                    return string.Empty;
+                }
+
+                return string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase)
+                    ? scripts.WslSettings?.ScriptsFolder ?? string.Empty
+                    : scripts.WindowsSettings?.ScriptsFolder ?? string.Empty;
+            }
+
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase))
+                {
+                    scripts.WslSettings ??= new PythonScriptWslSettings();
+                    if (!string.Equals(scripts.WslSettings.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scripts.WslSettings.ScriptsFolder = value ?? string.Empty;
+                        OnPropertyChanged(nameof(ScriptsFolder));
+                        SaveAndNotifySettings();
+
+                        if (_scriptsDiscovered)
+                        {
+                            RefreshPythonScripts();
+                        }
+                    }
+                }
+                else
+                {
+                    scripts.WindowsSettings ??= new PythonScriptWindowsSettings();
+                    if (!string.Equals(scripts.WindowsSettings.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scripts.WindowsSettings.ScriptsFolder = value ?? string.Empty;
+                        OnPropertyChanged(nameof(ScriptsFolder));
+                        SaveAndNotifySettings();
+
+                        if (_scriptsDiscovered)
+                        {
+                            RefreshPythonScripts();
+                        }
+                    }
+                }
+            }
+        }
+
+        private ObservableCollection<AdvancedPastePythonScriptAction> _pythonScriptActions = [];
+        private bool _scriptsDiscovered;
+
+        public ObservableCollection<AdvancedPastePythonScriptAction> PythonScriptActions
+        {
+            get => _pythonScriptActions;
+            set
+            {
+                _pythonScriptActions = value;
+                OnPropertyChanged(nameof(PythonScriptActions));
+            }
+        }
+
+        /// <summary>
+        /// Scans the scripts folder for .py files and populates PythonScriptActions
+        /// with metadata from their headers. Existing settings (hotkeys) are preserved.
+        /// </summary>
+        public void RefreshPythonScripts()
+        {
+            _scriptsDiscovered = true;
+            OnPropertyChanged(nameof(ScriptsDiscovered));
+
+            var folder = ScriptsFolder;
+            if (string.IsNullOrWhiteSpace(folder) || !System.IO.Directory.Exists(folder))
+            {
+                PythonScriptActions = [];
+                return;
+            }
+
+            var scripts = new ObservableCollection<AdvancedPastePythonScriptAction>();
+            var savedActions = _advancedPasteSettings.Properties.PythonScripts?.Value ?? [];
+
+            foreach (var file in System.IO.Directory.EnumerateFiles(folder, "*.py", System.IO.SearchOption.TopDirectoryOnly))
+            {
+                try
+                {
+                    var action = CreateActionFromScript(file, savedActions);
+                    scripts.Add(action);
+                }
+                catch
+                {
+                    // Skip scripts that can't be read
+                }
+            }
+
+            PythonScriptActions = scripts;
+        }
+
+        private static AdvancedPastePythonScriptAction CreateActionFromScript(
+            string filePath,
+            List<AdvancedPastePythonScriptAction> savedActions)
+        {
+            // Read header metadata from the .py file
+            var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
+            var description = string.Empty;
+            var platform = "windows";
+            var formats = "any";
+            var enabled = true;
+            var requires = string.Empty;
+            var hasExplicitRequires = false;
+            var inputType = string.Empty;
+            var outputType = string.Empty;
+
+            using var reader = new System.IO.StreamReader(filePath, System.Text.Encoding.UTF8);
+            int lineCount = 0;
+            while (lineCount < 100)
+            {
+                var line = reader.ReadLine();
+                if (line is null)
+                {
+                    break;
+                }
+
+                lineCount++;
+                var trimmed = line.Trim();
+
+                // Detect the function definition to extract input/output types
+                if (trimmed.StartsWith("def advanced_paste_from_", StringComparison.Ordinal))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        trimmed,
+                        @"^def advanced_paste_from_(text|html|image|audio|video|files)_to_(text|html|image|audio|video|file|files)\s*\(");
+                    if (match.Success)
+                    {
+                        inputType = match.Groups[1].Value;
+                        outputType = match.Groups[2].Value;
+                    }
+
+                    continue;
+                }
+
+                if (!trimmed.StartsWith('#'))
+                {
+                    continue;
+                }
+
+                if (TryParseTag(trimmed, "@advancedpaste:name", out var val))
+                {
+                    name = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:desc", out val))
+                {
+                    description = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:platform", out val))
+                {
+                    platform = val.ToLowerInvariant();
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:formats", out val))
+                {
+                    formats = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:enabled", out val))
+                {
+                    enabled = !string.Equals(val, "false", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(val, "0", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(val, "no", StringComparison.OrdinalIgnoreCase);
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:requires", out val))
+                {
+                    // Accumulate multiple requires tags
+                    requires = string.IsNullOrEmpty(requires) ? val : $"{requires} {val}";
+                    hasExplicitRequires = true;
+                }
+            }
+
+            // Preserve existing saved settings (hotkeys, IsShown)
+            var saved = savedActions?.FirstOrDefault(a =>
+                string.Equals(a.ScriptPath, filePath, StringComparison.OrdinalIgnoreCase));
+
+            return new AdvancedPastePythonScriptAction
+            {
+                ScriptPath = filePath,
+                Name = name,
+                Description = description,
+                Platform = platform,
+                Formats = formats,
+                IsEnabled = enabled,
+                Requires = requires,
+                RequiresAutoDetect = !hasExplicitRequires,
+                InputType = inputType,
+                OutputType = outputType,
+                IsShown = saved?.IsShown ?? true,
+                Shortcut = saved?.Shortcut ?? new HotkeySettings(),
+            };
+        }
+
+        private static bool TryParseTag(string line, string tag, out string value)
+        {
+            var idx = line.IndexOf(tag, StringComparison.OrdinalIgnoreCase);
+            if (idx < 0)
+            {
+                value = null;
+                return false;
+            }
+
+            value = line[(idx + tag.Length)..].Trim();
+            return value.Length > 0;
+        }
+
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
 
         /// <summary>
@@ -538,19 +935,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _advancedPasteSettings.Properties.ShowCustomPreview)
                 {
                     _advancedPasteSettings.Properties.ShowCustomPreview = value;
-                    NotifySettingsChanged();
-                }
-            }
-        }
-
-        public bool ShowAIPaste
-        {
-            get => _advancedPasteSettings.Properties.ShowAIPaste;
-            set
-            {
-                if (value != _advancedPasteSettings.Properties.ShowAIPaste)
-                {
-                    _advancedPasteSettings.Properties.ShowAIPaste = value;
                     NotifySettingsChanged();
                 }
             }
@@ -1245,12 +1629,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.ShowCustomPreview = source.ShowCustomPreview;
                 OnPropertyChanged(nameof(ShowCustomPreview));
-            }
-
-            if (target.ShowAIPaste != source.ShowAIPaste)
-            {
-                target.ShowAIPaste = source.ShowAIPaste;
-                OnPropertyChanged(nameof(ShowAIPaste));
             }
 
             if (target.CloseAfterLosingFocus != source.CloseAfterLosingFocus)
