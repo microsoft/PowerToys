@@ -2,6 +2,7 @@
 #include "ZonesOverlay.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
@@ -13,6 +14,83 @@ namespace
 {
     const int FadeInDurationMillis = 200;
     const int FlashZonesDurationMillis = 700;
+    const int RotationPulseDurationMillis = 920;
+
+    D2D1_RECT_F ShrinkRect(D2D1_RECT_F rect, float scale)
+    {
+        const float width = rect.right - rect.left;
+        const float height = rect.bottom - rect.top;
+        const float dx = width * (1.f - scale) / 2.f;
+        const float dy = height * (1.f - scale) / 2.f;
+
+        return D2D1::RectF(rect.left + dx, rect.top + dy, rect.right - dx, rect.bottom - dy);
+    }
+
+    constexpr float ClampDimension(float value, float min, float max) noexcept
+    {
+        return std::clamp(value, min, max);
+    }
+
+    float TriangleWave(float value) noexcept
+    {
+        value -= std::floor(value);
+        return value < 0.5f ? value * 2.f : (1.f - value) * 2.f;
+    }
+
+    constexpr float SmoothStep(float value) noexcept
+    {
+        value = std::clamp(value, 0.f, 1.f);
+        return value * value * (3.f - 2.f * value);
+    }
+
+    D2D1_COLOR_F MonitorAccentColor(size_t monitorNumber, float alpha = 1.f) noexcept
+    {
+        switch ((monitorNumber - 1) % 6)
+        {
+        case 0:
+            return D2D1::ColorF(0.38f, 0.76f, 1.f, alpha);
+        case 1:
+            return D2D1::ColorF(0.45f, 0.91f, 0.58f, alpha);
+        case 2:
+            return D2D1::ColorF(1.f, 0.70f, 0.28f, alpha);
+        case 3:
+            return D2D1::ColorF(0.86f, 0.56f, 1.f, alpha);
+        case 4:
+            return D2D1::ColorF(0.34f, 0.93f, 0.88f, alpha);
+        default:
+            return D2D1::ColorF(1.f, 0.48f, 0.55f, alpha);
+        }
+    }
+
+    void DrawArrowLine(ID2D1RenderTarget* renderTarget, ID2D1Brush* brush, D2D1_POINT_2F start, D2D1_POINT_2F end, float strokeWidth) noexcept
+    {
+        renderTarget->DrawLine(start, end, brush, strokeWidth);
+
+        const float dx = end.x - start.x;
+        const float dy = end.y - start.y;
+        const float length = std::sqrt(dx * dx + dy * dy);
+        if (length <= 0.001f)
+        {
+            return;
+        }
+
+        const float unitX = dx / length;
+        const float unitY = dy / length;
+        const float normalX = -unitY;
+        const float normalY = unitX;
+        const float headLength = strokeWidth * 4.2f;
+        const float headSpread = strokeWidth * 2.7f;
+        const auto headA = D2D1::Point2F(end.x - unitX * headLength + normalX * headSpread, end.y - unitY * headLength + normalY * headSpread);
+        const auto headB = D2D1::Point2F(end.x - unitX * headLength - normalX * headSpread, end.y - unitY * headLength - normalY * headSpread);
+
+        renderTarget->DrawLine(end, headA, brush, strokeWidth);
+        renderTarget->DrawLine(end, headB, brush, strokeWidth);
+    }
+
+    D2D1_RECT_F CenteredRect(float centerX, float centerY, float width, float height) noexcept
+    {
+        return D2D1::RectF(centerX - width / 2.f, centerY - height / 2.f, centerX + width / 2.f, centerY + height / 2.f);
+    }
 }
 
 namespace NonLocalizable
@@ -62,6 +140,11 @@ D2D1_COLOR_F ZonesOverlay::ConvertColor(COLORREF color)
 D2D1_RECT_F ZonesOverlay::ConvertRect(RECT rect)
 {
     return D2D1::RectF(rect.left + 0.5f, rect.top + 0.5f, rect.right - 0.5f, rect.bottom - 0.5f);
+}
+
+D2D1_RECT_F ZonesOverlay::OffsetRect(D2D1_RECT_F rect, float x, float y)
+{
+    return D2D1::RectF(rect.left + x, rect.top + y, rect.right + x, rect.bottom + y);
 }
 
 ZonesOverlay::ZonesOverlay(HWND window)
@@ -128,8 +211,43 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
     m_renderTarget->BeginDraw();
 
+    const auto renderNow = std::chrono::steady_clock().now();
+    float rotationPulse = 0.f;
+    float rotationProgress = 0.f;
+    if (m_rotationPulseStart)
+    {
+        const auto pulseMillis = (renderNow - *m_rotationPulseStart).count() / 1e6f;
+        if (pulseMillis < RotationPulseDurationMillis)
+        {
+            rotationProgress = std::clamp(pulseMillis / RotationPulseDurationMillis, 0.f, 1.f);
+            rotationPulse = 1.f - rotationProgress;
+        }
+        else
+        {
+            rotationProgress = 1.f;
+            m_rotationPulseStart.reset();
+        }
+    }
+
+    const auto width = static_cast<float>(m_clientRect.right - m_clientRect.left);
+    const auto height = static_cast<float>(m_clientRect.bottom - m_clientRect.top);
+    const float directionSign = m_rotationDirection == RotationDirection::Left ? -1.f : (m_rotationDirection == RotationDirection::Right ? 1.f : 0.f);
+    const float easedRotationProgress = SmoothStep(rotationProgress);
+    const float pulseOffset = m_animateRotation ? directionSign * easedRotationProgress * ClampDimension(width * 0.075f, 44.f, 132.f) : 0.f;
+    const float pulseScale = 1.f + ((m_animateRotation ? rotationPulse : 0.f) * 0.05f);
+
     // Draw backdrop
     m_renderTarget->Clear(D2D1::ColorF(0.f, 0.f, 0.f, 0.f));
+    if (m_drawBackdrop)
+    {
+        ID2D1SolidColorBrush* backdropBrush = nullptr;
+        m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(0.f, 0.f, 0.f, 0.88f * animationAlpha), &backdropBrush);
+        if (backdropBrush)
+        {
+            m_renderTarget->FillRectangle(ConvertRect(m_clientRect), backdropBrush);
+            backdropBrush->Release();
+        }
+    }
 
     IDWriteTextFormat* textFormat = nullptr;
 
@@ -142,13 +260,13 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
     for (auto drawableRect : m_sceneRects)
     {
-        ID2D1SolidColorBrush* textBrush = nullptr;
         ID2D1SolidColorBrush* borderBrush = nullptr;
         ID2D1SolidColorBrush* fillBrush = nullptr;
 
         // Need to copy the rect from m_sceneRects
         drawableRect.borderColor.a *= animationAlpha;
         drawableRect.fillColor.a *= animationAlpha;
+        drawableRect.rect = OffsetRect(drawableRect.rect, pulseOffset, 0.f);
 
         m_renderTarget->CreateSolidColorBrush(drawableRect.borderColor, &borderBrush);
         m_renderTarget->CreateSolidColorBrush(drawableRect.fillColor, &fillBrush);
@@ -169,6 +287,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
         if (drawableRect.showText)
         {
+            ID2D1SolidColorBrush* textBrush = nullptr;
             m_renderTarget->CreateSolidColorBrush(drawableRect.textColor, &textBrush);
 
             if (textFormat && textBrush)
@@ -188,6 +307,153 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
     if (textFormat)
     {
         textFormat->Release();
+    }
+
+    const auto accentColor = MonitorAccentColor(m_monitorNumber.value_or(1));
+
+    if (m_animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right))
+    {
+        constexpr int MarkerCount = 7;
+        const float railWidth = ClampDimension(width * 0.58f, 260.f, 760.f);
+        const float railLeft = (width - railWidth) / 2.f;
+        const float railY = (height / 2.f) + ClampDimension(height * 0.20f, 104.f, 222.f);
+        const float segmentWidth = railWidth / MarkerCount;
+        const float markerSize = ClampDimension(width * 0.025f, 18.f, 34.f);
+        const float strokeWidth = ClampDimension(width * 0.0038f, 3.4f, 6.4f);
+
+        for (int markerIndex = 0; markerIndex < MarkerCount; markerIndex++)
+        {
+            const float order = m_rotationDirection == RotationDirection::Left ? static_cast<float>(MarkerCount - 1 - markerIndex) : static_cast<float>(markerIndex);
+            const float wave = TriangleWave(rotationProgress * 2.4f - order * 0.14f);
+            const float alpha = (0.18f + wave * 0.64f) * animationAlpha;
+            ID2D1SolidColorBrush* markerBrush = nullptr;
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(accentColor.r, accentColor.g, accentColor.b, alpha), &markerBrush);
+
+            if (markerBrush)
+            {
+                const float centerX = railLeft + segmentWidth * (markerIndex + 0.5f) + directionSign * wave * 9.f;
+                const float headX = centerX + directionSign * markerSize;
+                const auto head = D2D1::Point2F(headX, railY);
+                const auto wingTop = D2D1::Point2F(centerX - directionSign * markerSize * 0.45f, railY - markerSize * 0.62f);
+                const auto wingBottom = D2D1::Point2F(centerX - directionSign * markerSize * 0.45f, railY + markerSize * 0.62f);
+                m_renderTarget->DrawLine(wingTop, head, markerBrush, strokeWidth);
+                m_renderTarget->DrawLine(wingBottom, head, markerBrush, strokeWidth);
+                markerBrush->Release();
+            }
+        }
+    }
+
+    if (m_monitorNumber && writeFactory)
+    {
+        const float smallerDimension = width < height ? width : height;
+        const bool isRotating = m_animateRotation && (m_rotationDirection == RotationDirection::Left || m_rotationDirection == RotationDirection::Right);
+        const float radius = ClampDimension(smallerDimension * 0.14f, 82.f, 170.f) * pulseScale;
+        const float centerX = width / 2.f;
+        const float centerY = height / 2.f;
+
+        if (isRotating)
+        {
+            ID2D1SolidColorBrush* ghostFillBrush = nullptr;
+            ID2D1SolidColorBrush* ghostBorderBrush = nullptr;
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(accentColor.r, accentColor.g, accentColor.b, 0.10f * animationAlpha), &ghostFillBrush);
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(accentColor.r, accentColor.g, accentColor.b, 0.42f * animationAlpha), &ghostBorderBrush);
+
+            if (ghostFillBrush && ghostBorderBrush)
+            {
+                const float ghostWidth = ClampDimension(width * 0.34f, 220.f, 520.f);
+                const float ghostHeight = ClampDimension(height * 0.17f, 110.f, 220.f);
+                const float ghostCenterX = (width / 2.f) + pulseOffset;
+                const float ghostCenterY = centerY - ClampDimension(height * 0.17f, 72.f, 170.f);
+                const auto ghostRect = CenteredRect(ghostCenterX, ghostCenterY, ghostWidth, ghostHeight);
+                const float cornerRadius = ClampDimension(ghostHeight * 0.16f, 14.f, 28.f);
+                const auto roundedGhostRect = D2D1::RoundedRect(ghostRect, cornerRadius, cornerRadius);
+                m_renderTarget->FillRoundedRectangle(roundedGhostRect, ghostFillBrush);
+                m_renderTarget->DrawRoundedRectangle(roundedGhostRect, ghostBorderBrush, ClampDimension(width * 0.002f, 2.f, 4.f));
+
+                const int innerLines = 3;
+                const float lineGap = ghostHeight * 0.20f;
+                const float lineStart = ghostCenterY - lineGap;
+                for (int lineIndex = 0; lineIndex < innerLines; lineIndex++)
+                {
+                    const float lineY = lineStart + lineGap * lineIndex;
+                    const float lineInset = ghostWidth * (0.18f + lineIndex * 0.04f);
+                    m_renderTarget->DrawLine(
+                        D2D1::Point2F(ghostRect.left + lineInset, lineY),
+                        D2D1::Point2F(ghostRect.right - lineInset, lineY),
+                        ghostBorderBrush,
+                        ClampDimension(width * 0.0014f, 1.5f, 3.f));
+                }
+            }
+
+            if (ghostFillBrush)
+            {
+                ghostFillBrush->Release();
+            }
+
+            if (ghostBorderBrush)
+            {
+                ghostBorderBrush->Release();
+            }
+        }
+
+        ID2D1SolidColorBrush* glowBrush = nullptr;
+        ID2D1SolidColorBrush* numberBrush = nullptr;
+        m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(accentColor.r, accentColor.g, accentColor.b, (0.11f + rotationPulse * 0.11f) * animationAlpha), &glowBrush);
+        m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(1.f, 1.f, 1.f, 0.95f * animationAlpha), &numberBrush);
+
+        if (glowBrush)
+        {
+            m_renderTarget->FillEllipse(D2D1::Ellipse(D2D1::Point2F(centerX, centerY), radius + 22.f, radius + 22.f), glowBrush);
+            glowBrush->Release();
+        }
+
+        IDWriteTextFormat* numberFormat = nullptr;
+        writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, isRotating ? radius * 0.72f : radius * 1.15f, L"en-US", &numberFormat);
+        if (numberFormat && numberBrush)
+        {
+            const auto numberStr = std::to_wstring(*m_monitorNumber);
+            numberFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+            numberFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+            const auto numberRect = isRotating ?
+                D2D1::RectF(centerX - (radius * 0.45f), centerY - (radius * 0.45f), centerX + (radius * 0.45f), centerY + (radius * 0.45f)) :
+                D2D1::RectF(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+            m_renderTarget->DrawTextW(numberStr.c_str(), static_cast<UINT32>(numberStr.size()), numberFormat, numberRect, numberBrush);
+        }
+
+        if (isRotating)
+        {
+            ID2D1SolidColorBrush* symbolBrush = nullptr;
+            m_renderTarget->CreateSolidColorBrush(D2D1::ColorF(accentColor.r, accentColor.g, accentColor.b, (0.84f + rotationPulse * 0.14f) * animationAlpha), &symbolBrush);
+
+            if (symbolBrush)
+            {
+                const float strokeWidth = ClampDimension(radius * 0.045f, 4.5f, 8.5f);
+                const float arm = radius * 0.76f;
+                const float gap = radius * 0.30f;
+                if (m_rotationDirection == RotationDirection::Left)
+                {
+                    DrawArrowLine(m_renderTarget, symbolBrush, D2D1::Point2F(centerX + gap, centerY - gap), D2D1::Point2F(centerX - arm, centerY - arm), strokeWidth);
+                    DrawArrowLine(m_renderTarget, symbolBrush, D2D1::Point2F(centerX - gap, centerY + gap), D2D1::Point2F(centerX + arm, centerY + arm), strokeWidth);
+                }
+                else
+                {
+                    DrawArrowLine(m_renderTarget, symbolBrush, D2D1::Point2F(centerX - gap, centerY - gap), D2D1::Point2F(centerX + arm, centerY - arm), strokeWidth);
+                    DrawArrowLine(m_renderTarget, symbolBrush, D2D1::Point2F(centerX + gap, centerY + gap), D2D1::Point2F(centerX - arm, centerY + arm), strokeWidth);
+                }
+
+                symbolBrush->Release();
+            }
+        }
+
+        if (numberBrush)
+        {
+            numberBrush->Release();
+        }
+
+        if (numberFormat)
+        {
+            numberFormat->Release();
+        }
     }
 
     // The lock must be released here, as EndDraw() will wait for vertical sync
@@ -286,6 +552,11 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
     std::unique_lock lock(m_mutex);
 
     m_sceneRects = {};
+    m_drawBackdrop = false;
+    m_rotationDirection = RotationDirection::None;
+    m_animateRotation = false;
+    m_monitorNumber.reset();
+    m_rotationPulseStart.reset();
 
     auto borderColor = ConvertColor(colors.borderColor);
     auto inactiveColor = ConvertColor(colors.primaryColor);
@@ -335,6 +606,47 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
 
             m_sceneRects.push_back(drawableRect);
         }
+    }
+}
+
+void ZonesOverlay::DrawMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation)
+{
+    std::unique_lock lock(m_mutex);
+
+    m_sceneRects = {};
+    m_drawBackdrop = true;
+    m_rotationDirection = reverse.has_value() ? (reverse.value() ? RotationDirection::Left : RotationDirection::Right) : RotationDirection::Both;
+    m_animateRotation = animateRotation && reverse.has_value();
+    m_monitorNumber = monitorNumber;
+    if (m_animateRotation)
+    {
+        m_rotationPulseStart = std::chrono::steady_clock().now();
+    }
+    else
+    {
+        m_rotationPulseStart.reset();
+    }
+
+    const auto borderColor = D2D1::ColorF(1.f, 1.f, 1.f, 0.08f);
+    const auto fillColor = D2D1::ColorF(0.05f, 0.07f, 0.09f, 0.50f);
+    const auto textColor = D2D1::ColorF(1.f, 1.f, 1.f, 0.85f);
+
+    for (const auto& rect : windowRects)
+    {
+        const auto drawableRect = ShrinkRect(ConvertRect(rect), 0.82f);
+        if (drawableRect.right - drawableRect.left < 18.f || drawableRect.bottom - drawableRect.top < 18.f)
+        {
+            continue;
+        }
+
+        m_sceneRects.push_back(DrawableRect{
+            .rect = drawableRect,
+            .borderColor = borderColor,
+            .fillColor = fillColor,
+            .textColor = textColor,
+            .id = 0,
+            .showText = false,
+        });
     }
 }
 
