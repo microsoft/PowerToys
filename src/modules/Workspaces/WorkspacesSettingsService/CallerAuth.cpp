@@ -91,24 +91,6 @@ namespace PTSettingsSvc
             return result;
         }
 
-        bool IsUnderDir(const std::wstring& file, const std::wstring& dir)
-        {
-            if (dir.empty())
-            {
-                return false;
-            }
-            std::wstring d = dir;
-            if (d.back() != L'\\')
-            {
-                d.push_back(L'\\');
-            }
-            if (file.size() < d.size())
-            {
-                return false;
-            }
-            return _wcsnicmp(file.c_str(), d.c_str(), d.size()) == 0;
-        }
-
         std::wstring BaseName(const std::wstring& path)
         {
             auto pos = path.find_last_of(L"\\/");
@@ -208,68 +190,47 @@ namespace PTSettingsSvc
 
         outIdentity.imagePath = canonical;
 
-        // 4) Caller-image trust anchor.  This is ONE pipeline with a branch
-        //    selected by the install-folder DACL (Design-v6-Final.md §7):
+        // 4) Caller-image trust anchor (UNIFIED — Design §7, updated 2026-06-30).
+        //    EVERY caller, per-machine and per-user alike, must be Microsoft-
+        //    signed AND its file version must equal the service's own version.
         //
-        //      * If the caller's image resolves under an admin-only-writable
-        //        install folder  -> trust the PATH anchor (per-machine).
-        //      * Otherwise the path cannot be trusted (per-user install in a
-        //        user-writable %LocalAppData% folder, or a relocated/custom
-        //        path) -> fall back to the BINARY-IDENTITY anchor: the image
-        //        must be Microsoft-signed AND its version must equal the
-        //        service's own version (§15 #5 option d).
+        //    Why the former per-machine "path-only" branch was dropped:
+        //      * Path-trust accepted any image under the admin-only install
+        //        folder regardless of version, so a different admin-installed
+        //        editor version would pass — inconsistent with the version-match
+        //        requirement.
+        //      * The signature is verified by this LocalSystem service against
+        //        the MACHINE trust store (CallerVerify.cpp), so it is NOT
+        //        forgeable by a non-admin user-store root (this defeats the §13
+        //        per-user TrustedPeople objection that argued path > signature).
+        //      * Version-pinning supplies the "freshness" that path-trust gave;
+        //        binary immutability is already guaranteed by deployment
+        //        (WindowsApps for the service, %ProgramFiles% for per-machine
+        //        callers), so it need not be re-proven during authentication.
         //
-        //    Per-machine naturally takes the path branch; per-user naturally
-        //    takes the signature+version branch.  No separate "which install
-        //    am I" detection is needed.
-        std::wstring installFolder = GetPowerToysInstallFolder();
-        // Prototype dev override — lets the smoke test demonstrate the
-        // per-machine path happy path without a real MSI install + HKLM write.
-        // Production relies on the MSI-written
-        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  Remove (or
-        // #ifdef _DEBUG) before merge.
+        //    sigMicrosoft and callerVersion were captured above under
+        //    impersonation so a user-profile image is readable.
+        const unsigned long long serviceVersion = GetServiceOwnVersion();
+        bool sigOk = sigMicrosoft;
 #ifdef _DEBUG
-        // DEV-ONLY override (compiled out of Release): lets the smoke test
-        // demonstrate the per-machine path happy-path without a real MSI
-        // install + HKLM write.  Production relies solely on the MSI-written
-        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  This MUST NOT
-        // ship — the IsFolderAdminOnlyWritable check still applies, but an
-        // env-var-chosen root is a dev convenience only.
-        if (installFolder.empty())
+        // DEV-ONLY (compiled out of Release): local/smoke-test builds are not
+        // Microsoft-signed, so allow skipping ONLY the signature predicate when
+        // PT_DEV_SKIP_SIGCHECK is set.  The version-match check still applies,
+        // so the unified anchor's logic is exercised with unsigned dev binaries.
+        // MUST NOT ship — Release always requires a real Microsoft signature.
+        if (!sigOk)
         {
-            wchar_t dev[MAX_PATH] = {};
-            if (GetEnvironmentVariableW(L"PT_DEV_INSTALL_FOLDER", dev, ARRAYSIZE(dev)) > 0)
+            wchar_t dev[8] = {};
+            if (GetEnvironmentVariableW(L"PT_DEV_SKIP_SIGCHECK", dev, ARRAYSIZE(dev)) > 0)
             {
-                installFolder = dev;
+                sigOk = true;
             }
         }
 #endif
-
-        const bool pathTrusted =
-            !installFolder.empty() &&
-            IsUnderDir(canonical, installFolder) &&
-            IsFolderAdminOnlyWritable(installFolder);
-
-        bool accepted;
-        if (pathTrusted)
-        {
-            // Per-machine: the admin-only install path already guarantees the
-            // image's integrity, freshness and immutability.  Cheapest anchor.
-            accepted = true;
-        }
-        else
-        {
-            // Per-user fallback: signature pinned to Microsoft AND version equal
-            // to the service's own.  The signature is what makes the version
-            // trustworthy; version comparison alone would be forgeable.  Both
-            // facts were captured above under impersonation so a user-profile
-            // image is readable.
-            const unsigned long long serviceVersion = GetServiceOwnVersion();
-            accepted =
-                serviceVersion != 0 &&
-                sigMicrosoft &&
-                callerVersion == serviceVersion;
-        }
+        const bool accepted =
+            serviceVersion != 0 &&
+            sigOk &&
+            callerVersion == serviceVersion;
 
         if (!accepted)
         {
