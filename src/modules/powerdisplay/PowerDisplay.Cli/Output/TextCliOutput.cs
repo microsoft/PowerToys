@@ -172,6 +172,7 @@ public sealed class TextCliOutput : ICliOutput
                     CliProfileChange.StatusApplied => $"{c.Setting} → {c.Display}",
                     CliProfileChange.StatusUnsupported => $"{c.Setting} {Resources.Text_NotSupported}",
                     CliProfileChange.StatusOutOfRange => $"{c.Setting} {c.Value} {Resources.Text_OutOfRangeSkipped}",
+                    CliProfileChange.StatusInvalidDiscreteValue => $"{c.Setting} {c.Value} {Resources.Text_InvalidValueSkipped}",
                     CliProfileChange.StatusHardwareFailure => $"{c.Setting} → {c.Value} {Resources.Text_Failed} ({c.Error})",
                     _ => $"{c.Setting}: {c.Status}",
                 };

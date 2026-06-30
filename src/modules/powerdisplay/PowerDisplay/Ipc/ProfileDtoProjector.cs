@@ -83,7 +83,7 @@ public static class ProfileDtoProjector
     /// <returns>
     /// The DTO to serialize to the IPC caller. The process exit code is carried on
     /// <see cref="CliApplyProfileResult.ExitCode"/> (worst-outcome precedence:
-    /// HardwareFailure &gt; OutOfRange &gt; Ok), which the CLI dispatcher relays back.
+    /// HardwareFailure &gt; InvalidDiscreteValue &gt; OutOfRange &gt; Ok), which the CLI dispatcher relays back.
     /// </returns>
     public static CliApplyProfileResult BuildApplyProfileResult(
         string profileName,

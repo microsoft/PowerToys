@@ -130,7 +130,12 @@ public static class MonitorDtoProjector
                     {
                         Code = CliErrorCodes.ArgumentError,
                         Message = string.Format(CultureInfo.InvariantCulture, "--setting '{0}' is not a discrete VCP setting", settingFilter),
-                        Hint = "valid discrete settings: color-temperature, input-source, power-state",
+                        Hint = string.Format(
+                            CultureInfo.InvariantCulture,
+                            "valid discrete settings: {0}, {1}, {2}",
+                            CliSettingNames.ColorTemperature,
+                            CliSettingNames.InputSource,
+                            CliSettingNames.PowerState),
                     },
                 });
             }
@@ -352,17 +357,17 @@ public static class MonitorDtoProjector
     /// </summary>
     private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName, IReadOnlyList<CustomVcpValueMapping>? customMappings)
     {
-        // Orientation is GDI-based (not a VCP setting), so it is not in the catalog. The display
-        // string is derived from the index; the formatter ignores its int argument and calls
-        // OrientationDegrees(index) directly.
+        // Orientation is GDI-based (not a VCP setting), so it is not in the catalog. The raw value is
+        // the orientation index; Reading formats it via OrientationDegrees only when it was actually
+        // read.
         if (settingName == CliSettingNames.Orientation)
         {
             return Reading(
                 CliSettingNames.Orientation,
                 !string.IsNullOrEmpty(monitor.GdiDeviceName),
                 monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation),
-                OrientationDegreesValue(monitor.Orientation),
-                _ => OrientationDegrees(monitor.Orientation));
+                monitor.Orientation,
+                OrientationDegrees);
         }
 
         var setting = CliSettingCatalog.TryGet(settingName);

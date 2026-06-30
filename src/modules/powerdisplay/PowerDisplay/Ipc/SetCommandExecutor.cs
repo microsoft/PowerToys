@@ -146,7 +146,7 @@ public static class SetCommandExecutor
     {
         if (!supportsCheck)
         {
-            return (null, MakeUnsupportedError(monitorRef, settingName, unsupportedReason));
+            return (null, CliErrorFactory.Unsupported(CliCommandNames.Set, monitorRef, settingName, unsupportedReason));
         }
 
         // Parse the raw value string to int (the CLI receives it as an already-parsed int; the
@@ -180,7 +180,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "hardware write failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "hardware write failed"));
         }
 
         return (new CliSetResult
@@ -211,7 +211,7 @@ public static class SetCommandExecutor
     {
         if (!supportsCheck)
         {
-            return (null, MakeUnsupportedError(monitorRef, settingName, unsupportedReason));
+            return (null, CliErrorFactory.Unsupported(CliCommandNames.Set, monitorRef, settingName, unsupportedReason));
         }
 
         // Resolve (and verify against the monitor's advertised set) BEFORE the power-off
@@ -251,7 +251,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "hardware write failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "hardware write failed"));
         }
 
         return (new CliSetResult
@@ -306,7 +306,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "ChangeDisplaySettingsEx failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "ChangeDisplaySettingsEx failed"));
         }
 
         return (new CliSetResult
@@ -435,45 +435,6 @@ public static class SetCommandExecutor
     private static bool IsDisplayBlanking(int powerState) => powerState is 0x02 or 0x03 or 0x04 or 0x05;
 
     // ─── Shared CliError factory helpers ─────────────────────────────────────
-    private static CliErrorResult MakeUnsupportedError(CliMonitorRef monitorRef, string settingName, string unsupportedReason)
-    {
-        // TODO(M4): app should set Code-only; CLI maps Code->localized message
-        return new CliErrorResult
-        {
-            Command = CliCommandNames.Set,
-            Monitor = monitorRef,
-            Error = new CliError
-            {
-                Code = CliErrorCodes.UnsupportedFeature,
-                Message = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "monitor {0} ({1}): {2} is not supported",
-                    monitorRef.Number,
-                    monitorRef.Name,
-                    settingName),
-                Hint = string.Format(CultureInfo.InvariantCulture, "reason: {0}", unsupportedReason),
-            },
-        };
-    }
-
-    private static CliErrorResult MakeHardwareFailureError(
-        CliMonitorRef monitorRef,
-        string? errorMessage,
-        string fallback)
-    {
-        // TODO(M4): app should set Code-only; CLI maps Code->localized message
-        return new CliErrorResult
-        {
-            Command = CliCommandNames.Set,
-            Monitor = monitorRef,
-            Error = new CliError
-            {
-                Code = CliErrorCodes.HardwareFailure,
-                Message = errorMessage ?? fallback,
-            },
-        };
-    }
-
     private static CliError MakeDiscreteParseError(
         string settingName,
         string raw,

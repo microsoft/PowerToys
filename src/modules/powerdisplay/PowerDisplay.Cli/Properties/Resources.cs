@@ -35,6 +35,8 @@ internal static class Resources
 
     internal static string Text_OutOfRangeSkipped => Get(nameof(Text_OutOfRangeSkipped));
 
+    internal static string Text_InvalidValueSkipped => Get(nameof(Text_InvalidValueSkipped));
+
     internal static string Text_NoProfilesSaved => Get(nameof(Text_NoProfilesSaved));
 
     internal static string Text_NoVcpCapabilities => Get(nameof(Text_NoVcpCapabilities));

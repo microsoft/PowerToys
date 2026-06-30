@@ -91,22 +91,7 @@ public static class AdjustCommandExecutor
 
         if (!descriptor.Supports(monitor!))
         {
-            return (null, new CliErrorResult
-            {
-                Command = commandName,
-                Monitor = monitorRef,
-                Error = new CliError
-                {
-                    Code = CliErrorCodes.UnsupportedFeature,
-                    Message = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "monitor {0} ({1}): {2} is not supported",
-                        monitorRef.Number,
-                        monitorRef.Name,
-                        setting),
-                    Hint = string.Format(CultureInfo.InvariantCulture, "reason: {0}", descriptor.UnsupportedReason),
-                },
-            });
+            return (null, CliErrorFactory.Unsupported(commandName, monitorRef, setting, descriptor.UnsupportedReason));
         }
 
         var beforeKnown = monitor!.ReadValues.HasFlag(descriptor.ReadFlag);
@@ -153,16 +138,7 @@ public static class AdjustCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, new CliErrorResult
-            {
-                Command = commandName,
-                Monitor = monitorRef,
-                Error = new CliError
-                {
-                    Code = CliErrorCodes.HardwareFailure,
-                    Message = op.ErrorMessage ?? "hardware write failed",
-                },
-            });
+            return (null, CliErrorFactory.HardwareFailure(commandName, monitorRef, op.ErrorMessage, "hardware write failed"));
         }
 
         return (new CliSetResult

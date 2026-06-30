@@ -158,7 +158,7 @@ public sealed class CliRequestHandler
                 {
                     if (envelope.Set is null)
                     {
-                        return Serialize(MakeError("set", CliErrorCodes.ArgumentError, "missing 'set' payload"), ContractsJsonContext.Default.CliErrorResult);
+                        return Serialize(MakeError(CliCommandNames.Set, CliErrorCodes.ArgumentError, "missing 'set' payload"), ContractsJsonContext.Default.CliErrorResult);
                     }
 
                     var (result, error) = await SetCommandExecutor.ExecuteAsync(
@@ -235,7 +235,7 @@ public sealed class CliRequestHandler
                     var profileName = envelope.ApplyProfile?.ProfileName ?? string.Empty;
                     if (string.IsNullOrWhiteSpace(profileName))
                     {
-                        return Serialize(MakeError("apply-profile", CliErrorCodes.ArgumentError, "profile name must not be empty"), ContractsJsonContext.Default.CliErrorResult);
+                        return Serialize(MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile name must not be empty"), ContractsJsonContext.Default.CliErrorResult);
                     }
 
                     var outcomes = await applyProfileAsync(profileName, ct).ConfigureAwait(false);

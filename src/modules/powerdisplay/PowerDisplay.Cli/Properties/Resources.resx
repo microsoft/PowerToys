@@ -86,6 +86,10 @@
     <value>(out of range, skipped)</value>
     <comment>apply-profile: a profile value was outside the valid range and was not written.</comment>
   </data>
+  <data name="Text_InvalidValueSkipped" xml:space="preserve">
+    <value>(not a supported value, skipped)</value>
+    <comment>apply-profile: a discrete profile value was not in the monitor's advertised set and was not written.</comment>
+  </data>
   <data name="Text_NoProfilesSaved" xml:space="preserve">
     <value>No profiles saved.</value>
     <comment>profiles command: no saved profiles exist.</comment>
