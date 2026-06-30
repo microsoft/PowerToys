@@ -190,21 +190,23 @@ namespace PTSettingsSvc
 
         outIdentity.imagePath = canonical;
 
-        // 4) Caller-image trust anchor (UNIFIED — Design §7, updated 2026-06-30).
+        // 4) Caller-image trust anchor (UNIFIED — Design §7/§12.7, updated 2026-06-30).
         //    EVERY caller, per-machine and per-user alike, must be Microsoft-
-        //    signed AND its file version must equal the service's own version.
+        //    signed AND its version must satisfy the floor + max-delta policy
+        //    against the service's own version (IsCallerVersionAcceptable).
         //
-        //    Why the former per-machine "path-only" branch was dropped:
-        //      * Path-trust accepted any image under the admin-only install
-        //        folder regardless of version, so a different admin-installed
-        //        editor version would pass — inconsistent with the version-match
-        //        requirement.
+        //    Why a version POLICY, not exact equality:
+        //      * The machine-wide service is a singleton (one version).  Exact
+        //        `caller == service` broke multi-user / multi-version: the
+        //        latest install would reject every other-version caller (§12.7).
+        //      * The real goal is anti-DOWNGRADE — block old vulnerable signed
+        //        binaries — which a minimum-version FLOOR achieves, while a
+        //        bounded max-delta keeps callers reasonably current.
         //      * The signature is verified by this LocalSystem service against
         //        the MACHINE trust store (CallerVerify.cpp), so it is NOT
-        //        forgeable by a non-admin user-store root (this defeats the §13
+        //        forgeable by a non-admin user-store root (defeats the §13
         //        per-user TrustedPeople objection that argued path > signature).
-        //      * Version-pinning supplies the "freshness" that path-trust gave;
-        //        binary immutability is already guaranteed by deployment
+        //      * Binary immutability is already guaranteed by deployment
         //        (WindowsApps for the service, %ProgramFiles% for per-machine
         //        callers), so it need not be re-proven during authentication.
         //
@@ -217,15 +219,14 @@ namespace PTSettingsSvc
         // builds and is physically absent from Release, so there is no bypass to
         // abuse in shipped binaries.  Local/smoke-test builds are not
         // Microsoft-signed, so a Debug build accepts an unsigned caller — but
-        // the version-match check below STILL applies, so the unified anchor's
-        // logic is exercised.  Production is always Release + ESRP-signed, where
-        // a real Microsoft signature is mandatory.
+        // the version policy below STILL applies, so the anchor's logic is
+        // exercised.  Production is always Release + ESRP-signed, where a real
+        // Microsoft signature is mandatory.
         sigOk = true;
 #endif
         const bool accepted =
-            serviceVersion != 0 &&
             sigOk &&
-            callerVersion == serviceVersion;
+            IsCallerVersionAcceptable(callerVersion, serviceVersion);
 
         if (!accepted)
         {

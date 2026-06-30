@@ -179,4 +179,34 @@ namespace PTSettingsSvc
         }
         return GetBinaryVersion(self);
     }
+
+    bool IsCallerVersionAcceptable(unsigned long long callerVersion,
+                                   unsigned long long serviceVersion)
+    {
+        if (callerVersion == 0 || serviceVersion == 0)
+        {
+            return false;
+        }
+
+        // 1) Absolute floor — the anti-downgrade boundary.
+        if (callerVersion < kMinSupportedCallerVersion)
+        {
+            return false;
+        }
+
+        // 2) Bounded staleness on the MINOR-release field (bits 32..47).  Compare
+        //    the absolute distance so a caller may trail OR (transiently, mid-
+        //    upgrade) lead the service by at most kMaxMinorVersionDelta releases.
+        const unsigned long long callerMinor = (callerVersion >> 32) & 0xFFFFull;
+        const unsigned long long serviceMinor = (serviceVersion >> 32) & 0xFFFFull;
+        const unsigned long long minorDelta =
+            (serviceMinor > callerMinor) ? (serviceMinor - callerMinor)
+                                         : (callerMinor - serviceMinor);
+        if (minorDelta > kMaxMinorVersionDelta)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
