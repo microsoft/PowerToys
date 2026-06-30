@@ -51,14 +51,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ResetScriptsFolder();
         }
 
-        private void ApplyExtensionsButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.Tag is PowerScriptListItem item)
-            {
-                ViewModel.SetScriptExtensions(item);
-            }
-        }
-
         private async Task<string> PickSingleFolderDialog()
         {
             // Use the shell32 folder dialog (works even when Settings runs elevated), matching GeneralPage.

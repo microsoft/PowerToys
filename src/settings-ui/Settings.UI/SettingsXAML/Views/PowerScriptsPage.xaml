@@ -71,20 +71,31 @@
                                         Text="{x:Bind Kind}" />
                                     <tkcontrols:SettingsExpander.Items>
                                         <tkcontrols:SettingsCard
-                                            Description="Right-click any file with one of these extensions to see this script under the &quot;PowerScript&quot; menu. Separate multiple extensions with commas (e.g. .md, .markdown)."
+                                            ContentAlignment="Right"
                                             Header="Trigger on file types"
                                             Visibility="{x:Bind IsFileScript, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <TextBox
-                                                    MinWidth="180"
-                                                    VerticalAlignment="Center"
-                                                    PlaceholderText=".md, .txt"
-                                                    Text="{x:Bind ExtensionsText, Mode=TwoWay}" />
-                                                <Button
-                                                    Click="ApplyExtensionsButton_Click"
-                                                    Content="Apply"
-                                                    Tag="{x:Bind}" />
-                                            </StackPanel>
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind ExtensionsDisplay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Runtime">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind RuntimeDisplay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Surfaces">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind SurfacesDisplay}" />
+                                        </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Capabilities">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind CapabilitiesDisplay}" />
                                         </tkcontrols:SettingsCard>
                                     </tkcontrols:SettingsExpander.Items>
                                 </tkcontrols:SettingsExpander>

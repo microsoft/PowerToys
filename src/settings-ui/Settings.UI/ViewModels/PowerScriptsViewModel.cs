@@ -20,8 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private const string HostExeName = "PowerScripts.Host.exe";
 
-        private static readonly char[] ExtensionSeparators = { ',', ';', ' ' };
-
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
         private static readonly JsonSerializerOptions WriteJsonOptions = new() { WriteIndented = true };
@@ -108,42 +106,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(HasScripts));
-        }
-
-        /// <summary>
-        /// Updates the file extensions a script triggers on (e.g. ".md") from the user-typed value,
-        /// then re-registers the Explorer right-click submenu so the change takes effect immediately.
-        /// </summary>
-        public void SetScriptExtensions(PowerScriptListItem item)
-        {
-            if (item is null || !item.IsFileScript)
-            {
-                return;
-            }
-
-            var exts = (item.ExtensionsText ?? string.Empty)
-                .Split(ExtensionSeparators, StringSplitOptions.RemoveEmptyEntries);
-            if (exts.Length == 0)
-            {
-                return;
-            }
-
-            // Remove the verbs for the script's current extensions first (so a changed extension
-            // like .md -> .txt doesn't leave a stale right-click entry behind), then rewrite the
-            // manifest and re-register.
-            if (_isEnabled)
-            {
-                RunHostShellCommand("shell-uninstall");
-            }
-
-            RunHostShellCommand($"set-extensions {item.Id} --ext {string.Join(' ', exts)}");
-
-            if (_isEnabled)
-            {
-                RunHostShellCommand("shell-install");
-            }
-
-            ReloadScripts();
         }
 
         /// <summary>Persists a user-chosen scripts folder and refreshes every surface that reads it.</summary>
