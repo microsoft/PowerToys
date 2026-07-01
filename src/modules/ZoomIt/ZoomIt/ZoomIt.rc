@@ -171,6 +171,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,59,57,80,12
     LTEXT           "After toggling ZoomIt you can zoom in with the mouse wheel or up and down arrow keys. Exit zoom mode with Escape or by pressing the right mouse button.",IDC_STATIC,7,6,230,26
+    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,7,34,230,18
     LTEXT           "Zoom Toggle:",IDC_STATIC,7,59,51,8
     CONTROL         "",IDC_ZOOM_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,53,118,150,15,WS_EX_TRANSPARENT
     LTEXT           "Specify the initial level of magnification when zooming in:",IDC_STATIC,7,105,230,10
@@ -182,8 +183,6 @@ BEGIN
     LTEXT           "4.0",IDC_STATIC,190,136,12,8
     CONTROL         "Animate zoom in and zoom out:",IDC_ANIMATE_ZOOM,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,74,116,10
     CONTROL         "Smooth zoomed image:",IDC_SMOOTH_IMAGE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,88,116,10
-    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,7,148,230,17
-    LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,6,34,230,18
 END
 
 DRAW DIALOGEX 0, 0, 260, 228
@@ -329,16 +328,17 @@ BEGIN
     CONTROL         "",IDC_SNIP_OCR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,71,81,80,12
 END
 
-PANORAMA DIALOGEX 0, 0, 260, 120
+PANORAMA DIALOGEX 0, 0, 260, 140
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CLIPSIBLINGS | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Capture a scrolling panorama of a selected screen region. Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the panorama toggle again to copy to the clipboard, or use the save shortcut to save to a file.",IDC_STATIC,7,7,245,33
-    LTEXT           "Panorama Toggle:",IDC_STATIC,7,74,80,8
-    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,90,72,80,12
-    LTEXT           "Panorama Save Toggle:",IDC_STATIC,7,90,80,8
-    CONTROL         "",IDC_SNIP_PANORAMA_SAVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,90,88,80,12
-    LTEXT           "For the best results, scroll slowly and at a constant rate, do not include stationary content (like scrollbars) in the capture area, and avoid content that is changing (e.g., animations or videos). ",IDC_STATIC,7,41,245,30
+    LTEXT           "Capture a scrolling panorama of a selected screen region. Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas.",IDC_STATIC,7,7,245,30
+    LTEXT           "Press the panorama toggle again to copy to the clipboard, or use the save shortcut to save to a file.",IDC_STATIC,7,39,245,18
+    LTEXT           "For the best results, scroll slowly and at a constant rate, do not include stationary content (like scrollbars) in the capture area, and avoid content that is changing (e.g., animations or videos). ",IDC_STATIC,7,62,245,30
+    LTEXT           "Panorama Toggle:",IDC_STATIC,7,95,80,8
+    CONTROL         "",IDC_SNIP_PANORAMA_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,90,93,80,12
+    LTEXT           "Panorama Save Toggle:",IDC_STATIC,7,111,80,8
+    CONTROL         "",IDC_SNIP_PANORAMA_SAVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,90,109,80,12
 END
 
 DEMOTYPE DIALOGEX 0, 0, 260, 249
