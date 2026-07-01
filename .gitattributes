@@ -17,4 +17,5 @@
 *.gcode linguist-detectable=false
 
 *.vsconfig linguist-language=json
+# gh-aw compiled lock workflows are generated artifacts; keep current branch copy on merges.
 .github/workflows/*.lock.yml linguist-generated=true merge=ours
