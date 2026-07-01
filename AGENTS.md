@@ -93,7 +93,7 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 |------|--------------|-------|
 | Unit Tests | Standard dev environment | None |
 | UI Tests | WinAppDriver v1.2.1, Developer Mode | Install from [WinAppDriver releases](https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1) |
-| Fuzz Tests | OneFuzz, .NET 8 | See [Fuzzing Tests](doc/devdocs/tools/fuzzingtesting.md) |
+| Fuzz Tests | OneFuzz, .NET 10 | See [Fuzzing Tests](doc/devdocs/tools/fuzzingtesting.md) |
 
 ### Test discipline
 
