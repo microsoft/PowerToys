@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 {
     private readonly HttpClient _http = CreateClient();
-    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphores = new();
     private bool _disposed;
 
     private static HttpClient CreateClient()
@@ -38,7 +41,8 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
     public async Task<IRandomAccessStream?> TryGetFaviconAsync(Uri siteUri, CancellationToken ct = default)
     {
-        await _semaphore.WaitAsync(ct);
+        var semaphore = _semaphores.GetOrAdd(siteUri.Host, _ => new SemaphoreSlim(1));
+        await semaphore.WaitAsync(ct);
         try
         {
             if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
@@ -49,12 +53,15 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
             var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
             directory = Path.Combine(directory, "icons");
             Directory.CreateDirectory(directory);
-            var iconFileName = $"{siteUri.Host}.ico";
+
+            // The icon filename is a short hexadecimal hash of the hostname
+            var hostHash = SHA256.HashData(Encoding.UTF8.GetBytes(siteUri.Host));
+            var iconFileName = $"{Convert.ToHexString(hostHash)}.ico";
             var iconPath = Path.Combine(directory, iconFileName);
 
             if (File.Exists(iconPath))
             {
-                var iconBytes = File.ReadAllBytes(iconPath);
+                var iconBytes = await File.ReadAllBytesAsync(iconPath, ct).ConfigureAwait(false);
                 var iconStream = new InMemoryRandomAccessStream();
                 await iconStream.WriteAsync(iconBytes.AsBuffer());
                 iconStream.Seek(0);
@@ -97,7 +104,7 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
         }
         finally
         {
-            _semaphore.Release();
+            semaphore.Release();
         }
     }
 
@@ -185,6 +192,12 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
         }
 
         _http.Dispose();
+
+        foreach (var semaphore in _semaphores.Values)
+        {
+            semaphore.Dispose();
+        }
+
         _disposed = true;
         GC.SuppressFinalize(this);
     }
