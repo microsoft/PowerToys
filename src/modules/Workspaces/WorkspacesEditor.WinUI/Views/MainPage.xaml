@@ -90,9 +90,11 @@
 
         <!--  empty state  -->
         <TextBlock
+            x:Name="EmptyStateText"
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            AutomationProperties.LiveSetting="Polite"
             FontSize="16"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
             Text="{x:Bind ViewModel.EmptyWorkspacesViewMessage, Mode=OneWay}"

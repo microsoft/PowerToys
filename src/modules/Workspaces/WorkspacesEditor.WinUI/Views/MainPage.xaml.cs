@@ -36,6 +36,15 @@ namespace WorkspacesEditor.Views
                 ViewModel = vm;
                 this.DataContext = vm;
                 Bindings.Update();
+
+                vm.PropertyChanged += (s, args) =>
+                {
+                    if (args.PropertyName == nameof(vm.IsWorkspacesViewEmpty) && vm.IsWorkspacesViewEmpty)
+                    {
+                        var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(EmptyStateText);
+                        peer?.RaiseAutomationEvent(Microsoft.UI.Xaml.Automation.Peers.AutomationEvents.LiveRegionChanged);
+                    }
+                };
             }
         }
 
