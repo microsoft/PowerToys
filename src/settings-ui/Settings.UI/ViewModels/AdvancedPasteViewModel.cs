@@ -414,7 +414,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Display names for the ComboBox (maps empty string to "(System default)").
         /// </summary>
         public List<string> WslDistroDisplayNames =>
-            _availableWslDistros.Select(d => string.IsNullOrEmpty(d) ? "(System default)" : d).ToList();
+            _availableWslDistros.Select(d => string.IsNullOrEmpty(d) ? ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_PythonScripts_WslDefaultDistro") : d).ToList();
 
         /// <summary>
         /// Selected index into AvailableWslDistros for ComboBox binding.
@@ -458,7 +458,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (process != null)
                 {
                     // WaitForExit first with timeout to avoid blocking indefinitely on ReadToEnd().
-                    // If the process doesn't finish in time, kill it and use whatever output we have.
+                    // If the process doesn't finish in time, kill it and wait for exit before reading.
                     if (!process.WaitForExit(5000))
                     {
                         try
@@ -467,6 +467,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
                         catch
                         {
+                        }
+
+                        // After Kill, wait briefly for the process to actually terminate.
+                        // If it still hasn't exited, skip reading to avoid blocking the UI thread.
+                        if (!process.WaitForExit(2000))
+                        {
+                            return;
                         }
                     }
 

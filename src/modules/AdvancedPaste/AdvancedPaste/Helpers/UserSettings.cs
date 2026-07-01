@@ -412,8 +412,10 @@ namespace AdvancedPaste.Settings
             lock (_loadingSettingsLock)
             {
                 _scriptFolderDebounce?.Cancel();
+                _scriptFolderDebounce?.Dispose();
                 _scriptFolderDebounce = new CancellationTokenSource();
 
+                var token = _scriptFolderDebounce.Token;
                 Task.Delay(TimeSpan.FromMilliseconds(500))
                     .ContinueWith(
                         _ =>
@@ -423,10 +425,9 @@ namespace AdvancedPaste.Settings
                                     () => Changed?.Invoke(this, EventArgs.Empty),
                                     CancellationToken.None,
                                     TaskCreationOptions.None,
-                                    _taskScheduler)
-                                .Wait();
+                                    _taskScheduler);
                         },
-                        _scriptFolderDebounce.Token,
+                        token,
                         TaskContinuationOptions.NotOnCanceled,
                         TaskScheduler.Default);
             }
