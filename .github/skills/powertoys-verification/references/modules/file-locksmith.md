@@ -3,12 +3,19 @@
 **PT module**: `File Locksmith` (shows which processes are using selected files/dirs and lets you kill them)
 **Source**: `<PT-repo>\src\modules\FileLocksmith\` (PT repo)
 **Settings file (module)**: `%LOCALAPPDATA%\Microsoft\PowerToys\File Locksmith\settings.json` (`{"properties":{"bool_show_extended_menu":{...}}}`) and `file-locksmith-settings.json` (`{"showInExtendedContextMenu":bool}`)
-**Enable flag**: `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` → `enabled."File Locksmith"` (general settings; runner-owned)
+**Enable flag**: `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` → `enabled."File Locksmith"` (general settings; runner-owned; **read-only for verification** — flip enable/disable via the Settings-UI toggle)
 **Logs**: `%LOCALAPPDATA%\Microsoft\PowerToys\File Locksmith\FileLocksmithUI\Logs\…`
 **Exes**: UI = `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.FileLocksmithUI.exe`; CLI = `%LOCALAPPDATA%\PowerToys\FileLocksmithCLI.exe`
 **Context menu**: Win11 packaged `IExplorerCommand` CLSID `{AAF1E27D-4976-49C2-8895-AAFA743C0A7E}` (sparse pkg `Microsoft.PowerToys.FileLocksmithContextMenu`); legacy `FileLocksmithExt.dll`. Caption resource = "What's using this file?".
 **Named Event / DSC**: no Named Event. DSC resource `microsoft.powertoys.FileLocksmith.settings` exists (controls module settings, not the master enable flag).
 **No global hotkey** — entry is the Explorer context menu only.
+
+**Context-menu routing (File Locksmith-specific):** appears on a **selected file OR a selected folder**
+(verified both) — but **NOT** on the folder-background menu. Select the file/folder first
+(`Select-PtExplorerFiles`, Shell COM) then open its menu with `Open-PtExplorerContextMenu -FileName <f>`
+(see `references/explorer-context-menu-flow.md`). Verified visible caption:
+**`Unlock with File Locksmith`** (the resource string "What's using this file?" is not what renders).
+Confirm at runtime with `Get-PtContextMenuItems`.
 
 ## The two back-doors that make this module fully drivable (no Explorer needed)
 
@@ -56,7 +63,7 @@ Source: `ExplorerCommand.cpp:182-227`, `dllmain.cpp:94-159`, `IPC.cpp`, `NativeM
 | 7 | Non-elevated FL does NOT see the elevated runner | run CLI/UI non-elevated via scheduled task `RunLevel Limited` | `PowerToys.exe` absent (medium-IL FL can't see elevated procs) |
 | 8 | "Restart as administrator" surfaces elevated-only lockers | non-elev UI shows the button; elevated run shows them | elevated run lists `PowerToys.exe` (UAC consent click NOT automatable) |
 | 9 | Scrolling a large list doesn't crash | UI on a drive root + `winapp ui scroll` | process alive + responsive after scroll |
-| 10 | Disabling FL removes the Explorer context-menu entry | Settings toggle Off (winapp ui) | `enabled."File Locksmith"`→false; `GetState→ECS_HIDDEN` (source) |
+| 10 | Disabling FL removes the Explorer context-menu entry | **Settings-UI toggle** via `Set-PtModuleEnabledViaSettingsUI -PageTag FileLocksmith -EnabledKey 'File Locksmith'` (see `references/explorer-context-menu-flow.md` → "Enabling / disabling the module") | `enabled."File Locksmith"`→false; entry gone (live, no restart); `GetState→ECS_HIDDEN` (source) |
 
 > **Mapping process**: read the actual checklist item → identify the capability → find its row → drive the named control and design your own inputs + assertions. If no row matches, drive ad-hoc and add a row (capability + control + observation point; no canned inputs).
 
@@ -90,4 +97,4 @@ $menu = Open-PtExplorerContextMenu -ExplorerHwnd $hwnd -FileName 'target.txt'   
 (Get-PtContextMenuItems -MenuHwnd $menu) -contains 'Unlock with File Locksmith'  # true enabled / false disabled
 Invoke-PtContextMenuItem -MenuHwnd $menu -ItemName 'Unlock with File Locksmith'  # launches PowerToys.FileLocksmithUI.exe (non-elevated)
 ```
-- Don't expect `Shell.Application.Verbs()` to show the FL entry — Win11 packaged command, invisible to classic verbs. Don't kill by name (`Stop-Process -Id <pid>`). Restore `enabled."File Locksmith"=true` + close spawned UI after the disable test.
+- Don't expect `Shell.Application.Verbs()` to show the FL entry — Win11 packaged command, invisible to classic verbs. Don't kill by name (`Stop-Process -Id <pid>`). For the disable test, flip enable/disable with `Set-PtModuleEnabledViaSettingsUI -PageTag FileLocksmith` and **restore by re-toggling on** (`-Enabled $true`); close the spawned UI + the Settings window afterward.

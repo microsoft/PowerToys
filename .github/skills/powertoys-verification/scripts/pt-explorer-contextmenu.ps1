@@ -16,11 +16,21 @@ public static class PtCtx {
   [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c);
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern IntPtr FindWindow(string cls, string win);
   [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
   [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint a, uint b, bool f);
   [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
   [DllImport("user32.dll")] public static extern void mouse_event(uint f, uint dx, uint dy, uint d, IntPtr e);
-  public const uint RIGHTDOWN=0x0008, RIGHTUP=0x0010, LEFTDOWN=0x0002, LEFTUP=0x0004;
+  [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte s, uint f, IntPtr e);
+  public const uint RIGHTDOWN=0x0008, RIGHTUP=0x0010, LEFTDOWN=0x0002, LEFTUP=0x0004, KEYUP=0x0002;
+  // Shift+F10 = "open context menu for the current selection/focus". With NOTHING selected it opens the
+  // folder-BACKGROUND menu — coordinate-free, so it can't miss a row or land in the preview pane.
+  public static void ShiftF10() {
+    keybd_event(0x10,0,0,IntPtr.Zero); System.Threading.Thread.Sleep(40);
+    keybd_event(0x79,0,0,IntPtr.Zero); System.Threading.Thread.Sleep(60); keybd_event(0x79,0,KEYUP,IntPtr.Zero);
+    System.Threading.Thread.Sleep(40); keybd_event(0x10,0,KEYUP,IntPtr.Zero);
+  }
+  public static void EscKey() { keybd_event(0x1B,0,0,IntPtr.Zero); System.Threading.Thread.Sleep(40); keybd_event(0x1B,0,KEYUP,IntPtr.Zero); }
   public static void ForceForeground(IntPtr h) {
     IntPtr fg = GetForegroundWindow(); uint fp;
     uint ft = GetWindowThreadProcessId(fg, out fp); uint ct = GetCurrentThreadId();
@@ -57,27 +67,68 @@ function Open-PtExplorerContextMenu {
     if (-not (Test-PtDesktopInteractive)) { throw 'BLK-ENV: desktop is locked / no foreground (GetForegroundWindow()=0). Unlock and retry.' }
     for ($try = 1; $try -le $MaxTries; $try++) {
         [PtCtx]::ForceForeground([IntPtr]$ExplorerHwnd); Start-Sleep -Milliseconds 500
+        # Select the target via Shell COM first (reliable, coordinate-free, scrolls it into view) so the
+        # right-click has a guaranteed-visible selected row — never opens the file / never renames it.
+        try {
+            $sh = New-Object -ComObject Shell.Application
+            $w = $sh.Windows() | Where-Object { $_.HWND -eq $ExplorerHwnd } | Select-Object -First 1
+            if ($w -and $w.Document) {
+                $it = $w.Document.Folder.Items() | Where-Object { $_.Name -eq $FileName -or $_.Name -like "$FileName*" } | Select-Object -First 1
+                if ($it) { $w.Document.SelectItem($it, 0x2D); Start-Sleep -Milliseconds 300 }
+            }
+        } catch { }
         $item = (winapp ui search $FileName -w $ExplorerHwnd --json 2>$null | ConvertFrom-Json).matches |
             Where-Object { $_.type -eq 'ListItem' } | Select-Object -First 1
         if (-not $item) { Start-Sleep -Milliseconds 500; continue }   # transient (mid-populate) — retry
-        # Right-click the FILE ITEM by its UIA selector. winapp resolves the element's own clickable
-        # point, so this opens the FILE's context menu — NOT the folder-background menu that a
-        # hand-computed x/y lands on when it misses the row. If it fails to spawn the popup, fall back
-        # to a coordinate right-click on the row's filename.
+        # Right-click the FILE ITEM by its UIA selector (winapp resolves the element's own point).
         winapp ui click --right $item.selector -w $ExplorerHwnd 2>$null | Out-Null
         Start-Sleep -Seconds 2
         $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
             Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
-        if (-not $menu) {
+        if (-not $menu) {   # popup didn't spawn — fall back to a coordinate right-click on the row
             [PtCtx]::RightClick([int]($item.x + [Math]::Min(80, $item.width/2)), [int]($item.y + $item.height/2))
             Start-Sleep -Seconds 2
             $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
                 Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
         }
-        if ($menu) { return $menu.hwnd }
-        Start-Sleep -Milliseconds 500   # retry: foreground/menu wasn't ready (common on the first attempt right after Explorer opens)
+        if ($menu) {
+            # HONESTY GUARD: confirm we actually opened the FILE item's menu, not the folder background
+            # (winapp's click point can land in the preview pane / empty canvas → background menu). A file
+            # menu has Open/Cut/Copy/Delete; the background menu has View/Sort by/Group by. Never return
+            # the background menu here and pretend it's the file's — retry, then fail loudly.
+            $names = Get-PtContextMenuItems -MenuHwnd $menu.hwnd
+            if ($names -match '^(Open|Cut|Copy|Delete|Rename)$') { return $menu.hwnd }
+            [PtCtx]::EscKey(); Start-Sleep -Milliseconds 400   # wrong (background) menu — close and retry
+        }
+        Start-Sleep -Milliseconds 500
     }
-    throw "Context-menu popup window not found after $MaxTries right-click attempts"
+    throw "Could not open the FILE context menu for '$FileName' after $MaxTries attempts (got background/none). If the module's entry appears on the folder menu (PowerRename, New+), use Open-PtBackgroundContextMenu instead."
+}
+
+# Opens the folder-BACKGROUND context menu (no file needed) via Shift+F10 with nothing selected —
+# coordinate-free, so it can't miss a row or land in the preview pane. Use this for modules whose entry
+# appears on the folder menu (PowerRename, New+). NOT valid for File Locksmith / Image Resizer, whose
+# entries only appear on a selected file (Image Resizer: an image) — use Open-PtExplorerContextMenu +
+# Select-PtExplorerFiles for those.
+function Open-PtBackgroundContextMenu {
+    param([Parameter(Mandatory)][int]$ExplorerHwnd, [int]$MaxTries = 3)
+    if (-not (Test-PtDesktopInteractive)) { throw 'BLK-ENV: desktop is locked / no foreground (GetForegroundWindow()=0). Unlock and retry.' }
+    for ($try = 1; $try -le $MaxTries; $try++) {
+        [PtCtx]::ForceForeground([IntPtr]$ExplorerHwnd); Start-Sleep -Milliseconds 400
+        [PtCtx]::EscKey(); Start-Sleep -Milliseconds 200   # clear any selection so Shift+F10 targets the folder background
+        [PtCtx]::ShiftF10()
+        Start-Sleep -Seconds 2
+        $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+            Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        if ($menu) {
+            # Confirm it's the BACKGROUND menu (View/Sort by/Group by), not an item menu.
+            $names = Get-PtContextMenuItems -MenuHwnd $menu.hwnd
+            if ($names -match '^(View|Sort by|Group by)$') { return $menu.hwnd }
+            [PtCtx]::EscKey(); Start-Sleep -Milliseconds 400
+        }
+        Start-Sleep -Milliseconds 500
+    }
+    throw "Could not open the folder BACKGROUND context menu after $MaxTries attempts."
 }
 
 # Invokes a context-menu item by its visible NAME (robust — UIA InvokePattern, no coord click).
@@ -93,9 +144,118 @@ function Invoke-PtContextMenuItem {
     return $true
 }
 
-# Lists all context-menu item names (for discovering a module's caption or asserting absence).
+# Lists all context-menu item names — works on ANY menu HWND: the modern Win11 menu (from
+# Open-PtBackgroundContextMenu / Open-PtExplorerContextMenu) OR the legacy #32768 menu (from
+# Open-PtClassicContextMenu). Use for present/absent assertions and to discover a module's caption.
 function Get-PtContextMenuItems {
     param([Parameter(Mandatory)][int]$MenuHwnd)
     winapp ui inspect -w $MenuHwnd --depth 8 2>$null | Out-String |
         Select-String 'MenuItem "([^"]+)"' -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Groups[1].Value }
+}
+
+# Open an Explorer window on $Path and return its CabinetWClass HWND (int) — the handle the context-menu
+# openers need. Polls until the window appears (or throws). Use at the start of a synthetic-menu flow.
+function Open-PtExplorerWindow {
+    param([Parameter(Mandatory)][string]$Path, [int]$TimeoutSec = 10)
+    if (-not (Test-Path $Path)) { throw "Path not found: $Path" }
+    Start-Process explorer.exe $Path
+    $leaf = Split-Path $Path -Leaf
+    $h = $null; $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    do {
+        Start-Sleep -Milliseconds 800
+        $h = (winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+            Where-Object { $_.className -eq 'CabinetWClass' -and $_.title -match [regex]::Escape($leaf) } |
+            Select-Object -First 1).hwnd
+    } while (-not $h -and (Get-Date) -lt $deadline)
+    if (-not $h) { throw "Explorer window for '$Path' did not appear within $TimeoutSec s." }
+    [int]$h
+}
+
+# From an already-open MODERN menu (HWND from Open-PtBackgroundContextMenu / Open-PtExplorerContextMenu),
+# expand "Show more options" and return the legacy classic #32768 menu's HWND (int). The #32768 window is
+# NOT enumerable via `winapp ui list-windows`, so its handle is resolved with Win32 FindWindow; the returned
+# HWND is a normal menu HWND — read it with Get-PtContextMenuItems / act with Invoke-PtContextMenuItem, exactly
+# like the modern menu. See explorer-context-menu-flow.md for the writeup.
+function Open-PtClassicContextMenu {
+    param([Parameter(Mandatory)][int]$MenuHwnd, [int]$TimeoutSec = 6)
+    if (-not (Invoke-PtContextMenuItem -MenuHwnd $MenuHwnd -ItemName 'Show more options')) {
+        throw "No 'Show more options' entry on the modern menu (HWND $MenuHwnd) — is this a Win11 packaged menu?"
+    }
+    $classic = [IntPtr]::Zero; $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    do { Start-Sleep -Milliseconds 500; $classic = [PtCtx]::FindWindow('#32768', $null) }
+    while ($classic -eq [IntPtr]::Zero -and (Get-Date) -lt $deadline)
+    if ($classic -eq [IntPtr]::Zero) { throw 'Classic #32768 menu did not appear after invoking "Show more options".' }
+    [int64]$classic
+}
+
+# Enable/disable a whole PowerToys MODULE through the real Settings-UI toggle switch — the faithful
+# user flow for "check enable/disable of the module works" items, and the sanctioned way to do it.
+# The UI toggle exercises the Settings->runner IPC enable/disable path and takes effect on the live
+# context menu WITHOUT a runner restart; for New+ it also runs the enable-time CopyTemplateExamples
+# that seeds templates. If the desktop is locked so this can't be driven, mark the item BLK-ENV.
+# Verified for PowerRename / File Locksmith / Image Resizer / New+ (2026-07-01). Always restore the
+# original state in a finally{} (call again with the old value).
+#
+#   $r = Set-PtModuleEnabledViaSettingsUI -PageTag PowerRename -Enabled $false -EnabledKey PowerRename
+#   # ...assert the context-menu entry is gone...
+#   Set-PtModuleEnabledViaSettingsUI -PageTag PowerRename -Enabled $true  -EnabledKey PowerRename   # restore
+#
+# -PageTag    : the `--open-settings=<tag>` moniker / page id. Known: PowerRename, FileLocksmith,
+#               ImageResizer, NewPlus (no spaces).
+# -Enabled    : desired state ($true = on, $false = off). No-ops if already in that state.
+# -EnabledKey : (optional) master settings.json `enabled.<key>` to cross-check. Note the key uses the
+#               DISPLAY name with spaces: 'PowerRename','File Locksmith','Image Resizer','NewPlus'.
+# Returns: [pscustomobject] @{ SettingsHwnd; Selector; State('on'|'off'); EnabledFlag; Matched }.
+# NOTE: leaves the Settings window OPEN (caller closes it, e.g. `winapp ui invoke btn-close-<id> -w <hwnd>`).
+function Set-PtModuleEnabledViaSettingsUI {
+    param(
+        [Parameter(Mandatory)][string]$PageTag,
+        [Parameter(Mandatory)][bool]$Enabled,
+        [string]$EnabledKey,
+        [int]$TimeoutSec = 20
+    )
+    if (-not (Test-PtDesktopInteractive)) { throw 'BLK-ENV: desktop locked / no foreground; cannot drive the Settings UI toggle.' }
+
+    # 1) Open Settings straight on the module page (the runner honours --open-settings=<tag>; single-instance,
+    #    so if Settings is already open it just navigates+focuses that window).
+    Start-Process "$env:LOCALAPPDATA\PowerToys\PowerToys.exe" -ArgumentList "--open-settings=$PageTag" -EA SilentlyContinue
+    $h = $null; $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    do {
+        Start-Sleep 1
+        $w = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+            Where-Object { $_.title -match 'PowerToys Settings' } | Select-Object -First 1
+        if ($w) { $h = [int]$w.hwnd }
+    } while (-not $h -and (Get-Date) -lt $deadline)
+    if (-not $h) { throw "Could not find the PowerToys Settings window after --open-settings=$PageTag." }
+    Start-Sleep 2   # let the page render
+
+    # 2) The module's master enable toggle is ALWAYS the top-most ToggleSwitch on its page, i.e. the FIRST
+    #    element whose UIA state renders as [on]/[off]. AutomationIds carry a per-session suffix
+    #    (btn-powerrename-XXXX), so discover by state, never by a hard-coded id.
+    $sel = $null; $state = $null; $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    do {
+        $dump = (winapp ui inspect -w $h --depth 12 2>$null | Out-String) -split "`r?`n"
+        $line = $dump | Where-Object { $_ -match '\[(on|off)\]' } | Select-Object -First 1
+        if ($line -and $line -match '^\s*(\S+)\b.*\[(on|off)\]') { $sel = $matches[1]; $state = $matches[2]; break }
+        Start-Sleep 1
+    } while ((Get-Date) -lt $deadline)
+    if (-not $sel) { throw "Could not locate the enable ToggleSwitch on the '$PageTag' Settings page." }
+
+    # 3) Flip only if needed
+    $want = if ($Enabled) { 'on' } else { 'off' }
+    if ($state -ne $want) {
+        winapp ui invoke $sel -w $h 2>$null | Out-Null
+        Start-Sleep 3
+        $dump = (winapp ui inspect -w $h --depth 12 2>$null | Out-String) -split "`r?`n"
+        $line = $dump | Where-Object { $_ -match [regex]::Escape($sel) -and $_ -match '\[(on|off)\]' } | Select-Object -First 1
+        if ($line -and $line -match '\[(on|off)\]') { $state = $matches[1] }
+    }
+
+    # 4) Optional cross-check against the master settings.json enabled flag (the UI writes it for you)
+    $flag = $null
+    if ($EnabledKey) {
+        Start-Sleep 1
+        try { $flag = (Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\settings.json" -Raw | ConvertFrom-Json).enabled.$EnabledKey } catch {}
+    }
+    [pscustomobject]@{ SettingsHwnd = $h; Selector = $sel; State = $state; EnabledFlag = $flag; Matched = ($state -eq $want) }
 }
