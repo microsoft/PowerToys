@@ -1,0 +1,125 @@
+name: Contribution Intent Reply
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  models: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}-${{ github.event.comment.id }}
+  cancel-in-progress: true
+
+jobs:
+  contribution-intent-reply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect contribution intent and reply
+        uses: actions/github-script@v9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const comment = context.payload.comment;
+            const sender = context.payload.sender;
+
+            if (!issue || !comment) {
+              return;
+            }
+
+            // Only process issue comments, not pull request review comments.
+            if (issue.pull_request) {
+              return;
+            }
+
+            // Avoid bot loops.
+            if (sender?.type === 'Bot') {
+              return;
+            }
+
+            const token = process.env.GITHUB_TOKEN;
+            if (!token) {
+              core.info('GITHUB_TOKEN is not set; skipping.');
+              return;
+            }
+
+            const systemPrompt = `You are a classifier for issue comments in the microsoft/PowerToys repository.
+            Decide whether the comment indicates the author wants to contribute to solving the issue.
+            Return ONLY JSON in this exact shape: {"wantsToContribute":true} or {"wantsToContribute":false}.
+            Mark true when the comment clearly expresses intent to help, contribute, implement, or fix this issue.`;
+
+            const issueTitle = issue.title ?? '';
+            const issueBody = (issue.body ?? '').slice(0, 2000);
+            const commentBody = (comment.body ?? '').slice(0, 2000);
+
+            if (!commentBody.trim()) {
+              return;
+            }
+
+            const userPrompt = `Issue title:
+            ${issueTitle}
+
+            Issue body:
+            ${issueBody}
+
+            New comment:
+            ${commentBody}`;
+
+            const headers = {
+              'Content-Type': 'application/json',
+            };
+            headers.Authorization = 'Bearer ' + token;
+
+            const response = await fetch(
+              'https://models.inference.ai.azure.com/chat/completions',
+              {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                  model: 'gpt-4o-mini',
+                  messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
+                  ],
+                  temperature: 0,
+                  max_tokens: 50,
+                }),
+              },
+            );
+
+            if (!response.ok) {
+              const errorBody = await response.text();
+              core.info(`GitHub Models API error: ${response.status} ${response.statusText} - ${errorBody}`);
+              return;
+            }
+
+            const data = await response.json();
+            const text = data?.choices?.[0]?.message?.content?.trim() ?? '';
+            if (!text) {
+              return;
+            }
+
+            let wantsToContribute = false;
+            try {
+              wantsToContribute = Boolean(JSON.parse(text)?.wantsToContribute);
+            } catch {
+              core.info(`Unparseable model response: ${text}`);
+              return;
+            }
+
+            if (!wantsToContribute) {
+              return;
+            }
+
+            const reply = 'Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don\\'t see all the comments. <br /><br />_I\\'m a bot (beep!) so please excuse any mistakes I may make_';
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: reply,
+            });
