@@ -1,8 +1,10 @@
 # Test Data Attribution
 
-This directory contains test image files used for PowerRename metadata extraction unit tests. These images are sourced from Wikimedia Commons and are used under the Creative Commons licenses specified below.
+This file records attribution for metadata test assets used by PowerToys. Some files live in this shared `src\TestData\ImageMetadata` directory, while additional PowerRename-specific fixtures live under `src\modules\powerrename\unittests\testdata`. These images are sourced from Wikimedia Commons and are used under the Creative Commons licenses specified below.
 
 ## Test Files and Licenses
+
+Files listed below may be stored either in this shared directory or in module-specific test-data folders that link to or deploy this attribution file alongside the assets.
 
 ### Files from Carlseibert
 
@@ -24,7 +26,7 @@ We gratefully acknowledge the contributions of Carlseibert and Edward Steven for
 
 ## Usage
 
-These test images are used in PowerRename's unit tests to verify correct extraction of:
+These test images are used in PowerToys metadata-related tests, including PowerRename's unit tests, to verify correct extraction of:
 - EXIF metadata (camera make, model, ISO, aperture, shutter speed, etc.)
 - XMP metadata (creator, title, description, copyright, etc.)
 - GPS coordinates
@@ -38,7 +40,7 @@ These test images are distributed as part of the PowerToys source code repositor
 
 **Modifications:** These images have not been modified from their original versions downloaded from Wikimedia Commons. They are used in their original form for metadata extraction testing purposes.
 
-**Distribution:** These test images are included in the PowerToys source repository and comply with the terms of their respective Creative Commons licenses through proper attribution in this file. While included in the source code, these images are not distributed in end-user installation packages or releases.
+**Distribution:** These test images are included in the PowerToys source repository and comply with the terms of their respective Creative Commons licenses through proper attribution in this file. This attribution file may be shared across multiple test-data locations in the repository when the listed assets are consumed from more than one folder. While included in the source code, these images are not distributed in end-user installation packages or releases.
 
 **Derivatives:** Any modifications or derivative works of these images must comply with the respective CC BY-SA license terms, including proper attribution and applying the same license to the modified versions.
 
