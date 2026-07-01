@@ -32,6 +32,23 @@ public sealed partial class ExtensionsPage : Page
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+
+        Unloaded += ExtensionsPage_Unloaded;
+    }
+
+    private void ExtensionsPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        // ProviderSettingsViewModel subscribes to its CommandProviderWrapper (owned by the
+        // singleton TopLevelCommandManager), so a live VM roots this page through the
+        // PropertyChanged handler below. Drain any VMs still hooked when the page is torn
+        // down; SettingsCard_DataContextChanged only unhooks the ones that get recycled.
+        foreach (var vm in _cardToVmMap.Values)
+        {
+            vm.PropertyChanged -= ProviderViewModel_PropertyChanged;
+        }
+
+        _cardToVmMap.Clear();
+        _vmToCardMap.Clear();
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)

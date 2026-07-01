@@ -381,19 +381,19 @@ internal sealed partial class BlurImageControl : Control
 
             Logger.LogDebug($"Starting load of BlurImageControl from '{bitmapImage.UriSource}'");
 
-            // Each call to LoadImageAsync creates a new LoadedImageSurface. Unsubscribe
-            // from the previous surface so the old handler (which captures `this` via
-            // the local function) doesn't prevent garbage collection.
-            if (_lastLoadedSurface is not null)
-            {
-                _lastLoadedSurface.LoadCompleted -= OnLoadedSurfaceOnLoadCompleted;
-            }
+            // Each call to LoadImageAsync creates a new LoadedImageSurface backed by native
+            // composition resources. The old surface becomes unrooted once the brush points at
+            // the new one, so it isn't leaked, but dispose it explicitly so the unmanaged
+            // resources are released deterministically instead of waiting for finalization.
+            var previousSurface = _lastLoadedSurface;
 
             var loadedSurface = LoadedImageSurface.StartLoadFromUri(bitmapImage.UriSource);
             _lastLoadedSurface = loadedSurface;
             loadedSurface.LoadCompleted += OnLoadedSurfaceOnLoadCompleted;
             SetLoadedSurfaceToBrush(loadedSurface);
             _effectBrush?.SetSourceParameter(ImageSourceParameterName, _imageBrush);
+
+            previousSurface?.Dispose();
         }
         catch (Exception ex)
         {
