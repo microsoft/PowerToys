@@ -3586,14 +3586,14 @@ void RegisterAllHotkeys(HWND hWnd)
         registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
     }
     if (g_SnipSaveToggleKey) {
-        RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
+        registerHotkey( SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
     }
     if (g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
     }
     if (g_SnipPanoramaSaveToggleKey) {
-        RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF);
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
@@ -5605,8 +5605,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
             }
             else if (newSnipToggleKey &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -5614,12 +5613,29 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if (newSnipPanoramaToggleKey &&
                 (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
@@ -7671,20 +7687,34 @@ LRESULT APIENTRY MainWndProc(
 
             }
             else if (g_SnipToggleKey &&
-                (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
             }
+            else if (g_SnipSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
-                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
@@ -10339,8 +10369,7 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_SnipToggleKey)
         {
-            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -10349,15 +10378,36 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
             }
         }
+        if (g_SnipSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
         if (g_SnipPanoramaToggleKey &&
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
-            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
