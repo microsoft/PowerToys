@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -15,6 +16,7 @@ using Microsoft.UI.Xaml;
 using WinRT.Interop;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
+using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor
 {
@@ -86,9 +88,19 @@ namespace WorkspacesEditor
             });
 
             // Listen for snapshot window requests from ViewModel
+            OverlayBorder overlayBorder = null;
             StrongReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
             {
+                // Show red border overlay around all displays
+                var displays = OverlayBorder.GetAllMonitorBounds();
+                overlayBorder = OverlayBorder.CreateForAllMonitors(displays);
+
                 var snapshotWindow = new Views.SnapshotWindow();
+                snapshotWindow.Closed += (s, args) =>
+                {
+                    overlayBorder?.Dispose();
+                    overlayBorder = null;
+                };
                 snapshotWindow.Activate();
             });
 
