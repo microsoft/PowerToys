@@ -67,6 +67,14 @@ public record SettingsModel
         init => _fallbackRanks = value;
     }
 
+    private string[]? _extensionOrder = [];
+
+    public string[] ExtensionOrder
+    {
+        get => _extensionOrder ?? [];
+        init => _extensionOrder = value;
+    }
+
     private ImmutableDictionary<string, CommandAlias>? _aliases
         = ImmutableDictionary<string, CommandAlias>.Empty;
 
@@ -165,12 +173,14 @@ public record SettingsModel
           ImmutableList<PinnedCommandSettings>? pinnedCommands = null,
           ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
           string[]? fallbackRanks = null,
+          string[]? extensionOrder = null,
           ImmutableDictionary<string, CommandAlias>? aliases = null,
           ImmutableList<TopLevelHotkey>? commandHotkeys = null)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
         FallbackRanks = fallbackRanks ?? [];
+        ExtensionOrder = extensionOrder ?? [];
         Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
         CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
     }

@@ -297,6 +297,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
 
+    public ObservableCollection<ProviderSettingsViewModel> ExtensionOrderRankings { get; set; } = new();
+
     public ObservableCollection<DockMonitorConfigViewModel> MonitorConfigs { get; } = new();
 
     public SettingsExtensionsViewModel Extensions { get; }
@@ -366,6 +368,24 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
 
         FallbackRankings = new ObservableCollection<FallbackSettingsViewModel>(fallbackRankings.OrderBy(o => o.Score).Select(fr => fr.Item));
+
+        // Build extension order rankings: providers in ExtensionOrder first (in order), then the rest
+        var currentExtensionOrder = _settingsService.Settings.ExtensionOrder;
+        var extensionOrderLookup = new Dictionary<string, int>(currentExtensionOrder.Length, StringComparer.Ordinal);
+        for (var i = 0; i < currentExtensionOrder.Length; i++)
+        {
+            extensionOrderLookup.TryAdd(currentExtensionOrder[i], i);
+        }
+
+        var orderedProviders = new List<Scored<ProviderSettingsViewModel>>(CommandProviders.Count);
+        foreach (var provider in CommandProviders)
+        {
+            var score = extensionOrderLookup.TryGetValue(provider.Id, out var idx) ? idx : CommandProviders.Count + orderedProviders.Count;
+            orderedProviders.Add(new Scored<ProviderSettingsViewModel>() { Item = provider, Score = score });
+        }
+
+        ExtensionOrderRankings = new ObservableCollection<ProviderSettingsViewModel>(orderedProviders.OrderBy(o => o.Score).Select(o => o.Item));
+
         Extensions = new SettingsExtensionsViewModel(CommandProviders, scheduler);
 
         if (needsSave)
@@ -391,6 +411,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
     {
         _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.Id).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
+    }
+
+    public void ApplyExtensionOrder()
+    {
+        _settingsService.UpdateSettings(s => s with { ExtensionOrder = ExtensionOrderRankings.Select(p => p.Id).ToArray() });
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ExtensionOrderRankings)));
+        WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>();
     }
 
     /// <summary>
