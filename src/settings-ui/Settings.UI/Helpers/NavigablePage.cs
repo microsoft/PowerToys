@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.UI;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers;
@@ -23,6 +24,10 @@ public abstract partial class NavigablePage : Page
 
     public NavigablePage()
     {
+        // Cache the page instance so re-navigating doesn't rebuild the XAML tree, ViewModel,
+        // file watchers and IPC handlers each time. The Frame's default CacheSize (10) is
+        // sufficient to keep all top-level settings pages warm.
+        NavigationCacheMode = NavigationCacheMode.Enabled;
         Loaded += OnPageLoaded;
     }
 
