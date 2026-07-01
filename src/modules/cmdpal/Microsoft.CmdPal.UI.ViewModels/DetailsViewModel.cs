@@ -10,6 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class DetailsViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IDetails> _detailsModel;
+    private readonly bool _isObservable;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -31,9 +32,10 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         _detailsModel = new(details);
 
         // IDetails does not require INotifyPropChanged, so we must check at runtime.
-        if (details is INotifyPropChanged observable)
+        _isObservable = details is INotifyPropChanged;
+        if (_isObservable)
         {
-            observable.PropChanged += Model_PropChanged;
+            ((INotifyPropChanged)details).PropChanged += Model_PropChanged;
         }
     }
 
@@ -145,10 +147,9 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     {
         base.UnsafeCleanup();
 
-        var model = _detailsModel.Unsafe;
-        if (model is INotifyPropChanged observable)
+        if (_isObservable)
         {
-            observable.PropChanged -= Model_PropChanged;
+            ((INotifyPropChanged)_detailsModel.Unsafe).PropChanged -= Model_PropChanged;
         }
     }
 }
