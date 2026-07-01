@@ -256,8 +256,11 @@ namespace WorkspacesEditor.Models
             }
         }
 
+        public string DeleteButtonAccessibleName => $"{DeleteButtonContent} {AppName}";
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DeleteButtonContent))]
+        [NotifyPropertyChangedFor(nameof(DeleteButtonAccessibleName))]
         private bool _isIncluded = true;
 
         partial void OnIsIncludedChanged(bool value)

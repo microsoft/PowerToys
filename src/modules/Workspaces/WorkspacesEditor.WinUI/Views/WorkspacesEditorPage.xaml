@@ -74,6 +74,7 @@
                                 Grid.Column="4"
                                 Width="Auto"
                                 Margin="12,4"
+                                AutomationProperties.Name="{Binding DeleteButtonAccessibleName, Mode=OneWay}"
                                 Click="DeleteButtonClicked"
                                 Content="{Binding DeleteButtonContent, Mode=OneWay}"
                                 IsEnabled="True" />
