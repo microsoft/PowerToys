@@ -119,6 +119,7 @@ namespace updating
             // Match on the certificate's Organization (O) field rather than the simple display
             // name (which is the CN and can legitimately vary, e.g. ".NET"). PowerToys is signed
             // with O="Microsoft Corporation", matching the MSIX publisher check above.
+            // Compare case-insensitively so a cosmetic casing difference can't cause a false negative.
             // Mutable copy of the OID string: CertGetNameStringW takes a non-const void* type param.
             char organizationOid[] = szOID_ORGANIZATION_NAME;
             const DWORD nameLen = CertGetNameStringW(certContext, CERT_NAME_ATTR_TYPE, 0, organizationOid, nullptr, 0);
@@ -131,7 +132,7 @@ namespace updating
             CertGetNameStringW(certContext, CERT_NAME_ATTR_TYPE, 0, organizationOid, organization.data(), nameLen);
             organization.resize(nameLen - 1); // drop the trailing null terminator
 
-            return organization == L"Microsoft Corporation";
+            return _wcsicmp(organization.c_str(), L"Microsoft Corporation") == 0;
         }
     }
 
@@ -151,7 +152,10 @@ namespace updating
         trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
         trustData.dwUnionChoice = WTD_CHOICE_FILE;
         trustData.dwStateAction = WTD_STATEACTION_VERIFY;
-        trustData.dwProvFlags = WTD_SAFER_FLAG;
+        // WTD_CACHE_ONLY_URL_RETRIEVAL keeps chain building local: without it WinVerifyTrust can
+        // reach the network to fetch missing intermediates, which may hang or time out when the
+        // update is applied offline. Revocation checks are already disabled above for the same reason.
+        trustData.dwProvFlags = WTD_SAFER_FLAG | WTD_CACHE_ONLY_URL_RETRIEVAL;
         trustData.pFile = &fileInfo;
 
         const LONG status = WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &actionGuid, &trustData);

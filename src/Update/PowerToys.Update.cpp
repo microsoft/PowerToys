@@ -230,7 +230,7 @@ bool InstallNewVersionStage2(std::wstring installer_path)
                                                  nullptr) };
     if (!installerFile)
     {
-        Logger::error(L"Couldn't open the downloaded installer for verification: {}", installer_path);
+        Logger::error(L"Couldn't open the downloaded installer for verification: {} (error {:#x})", installer_path, GetLastError());
         return false;
     }
 
