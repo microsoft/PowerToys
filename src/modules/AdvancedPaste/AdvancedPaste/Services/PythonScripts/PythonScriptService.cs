@@ -1252,7 +1252,13 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 new InvalidOperationException("Python executable not found."));
         }
 
-        var psi = new ProcessStartInfo(pythonExe, $"-m pip install {packages}")
+        var sanitizedPackages = SanitizePackageList(packages);
+        if (string.IsNullOrWhiteSpace(sanitizedPackages))
+        {
+            return;
+        }
+
+        var psi = new ProcessStartInfo(pythonExe, $"-m pip install {sanitizedPackages}")
         {
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -1304,10 +1310,18 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     {
         int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
 
+        // Sanitize package names: only allow alphanumeric, hyphen, underscore, dot, brackets, commas, spaces, and comparison operators.
+        // This prevents shell metacharacters (;, &&, |, $, etc.) from being injected via script metadata.
+        var sanitizedPackages = SanitizePackageList(packages);
+        if (string.IsNullOrWhiteSpace(sanitizedPackages))
+        {
+            return;
+        }
+
         // Try plain pip3 first; if the environment is managed (PEP 668), retry with --break-system-packages.
         foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
         {
-            var installCmd = $"pip3 install {packages} {extraArgs}".TrimEnd();
+            var installCmd = $"pip3 install {sanitizedPackages} {extraArgs}".TrimEnd();
             var wslArgs = BuildWslArgs($"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"");
             var psi = new ProcessStartInfo("wsl.exe", wslArgs)
             {
@@ -1648,6 +1662,25 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return $"-- {command}";
+    }
+
+    /// <summary>
+    /// Sanitizes a space-separated pip package list by rejecting any token containing shell metacharacters.
+    /// Only allows: alphanumeric, hyphen, underscore, dot, square brackets, comparison operators, commas.
+    /// </summary>
+    private static string SanitizePackageList(string packages)
+    {
+        if (string.IsNullOrWhiteSpace(packages))
+        {
+            return string.Empty;
+        }
+
+        var safeTokens = packages
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(token => System.Text.RegularExpressions.Regex.IsMatch(token, @"^[a-zA-Z0-9\._\-\[\],>=<!=~]+$"))
+            .ToArray();
+
+        return string.Join(' ', safeTokens);
     }
 
     internal static string ToWslPath(string windowsPath)
