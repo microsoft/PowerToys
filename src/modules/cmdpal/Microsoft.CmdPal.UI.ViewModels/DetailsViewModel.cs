@@ -11,6 +11,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IDetails> _detailsModel;
     private readonly bool _isObservable;
+    private bool _isSubscribed;
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -30,13 +31,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         : base(context)
     {
         _detailsModel = new(details);
-
-        // IDetails does not require INotifyPropChanged, so we must check at runtime.
         _isObservable = details is INotifyPropChanged;
-        if (_isObservable)
-        {
-            ((INotifyPropChanged)details).PropChanged += Model_PropChanged;
-        }
     }
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
@@ -116,6 +111,13 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             return;
         }
 
+        // Subscribe to PropChanged if the model supports it (only subscribe once)
+        if (_isObservable && !_isSubscribed)
+        {
+            ((INotifyPropChanged)model).PropChanged += Model_PropChanged;
+            _isSubscribed = true;
+        }
+
         Title = model.Title ?? string.Empty;
         Body = model.Body ?? string.Empty;
         HeroImage = new(model.HeroImage);
@@ -147,9 +149,15 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     {
         base.UnsafeCleanup();
 
-        if (_isObservable)
+        if (_isObservable && _isSubscribed)
         {
-            ((INotifyPropChanged)_detailsModel.Unsafe).PropChanged -= Model_PropChanged;
+            var model = _detailsModel.Unsafe;
+            if (model is not null)
+            {
+                ((INotifyPropChanged)model).PropChanged -= Model_PropChanged;
+            }
+
+            _isSubscribed = false;
         }
     }
 }
