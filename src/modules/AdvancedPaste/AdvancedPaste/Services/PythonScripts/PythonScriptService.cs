@@ -1201,6 +1201,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
     private async Task<bool> IsInstalledOnWindowsAsync(string importName, CancellationToken cancellationToken)
     {
+        if (!IsValidPythonImportName(importName))
+        {
+            return false;
+        }
+
         var pythonExe = TryFindPythonExecutable(_userSettings.PythonExecutablePath);
         if (pythonExe is null)
         {
@@ -1237,6 +1242,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
     private async Task<bool> IsInstalledInWslAsync(string importName, CancellationToken cancellationToken)
     {
+        if (!IsValidPythonImportName(importName))
+        {
+            return false;
+        }
+
         var wslArgs = BuildWslArgs($"bash -l -c \"python3 -c 'import {importName}'\"");
         var psi = new ProcessStartInfo("wsl.exe", wslArgs)
         {
@@ -1706,6 +1716,14 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
         return string.Join(' ', safeTokens);
     }
+
+    /// <summary>
+    /// Validates that a module import name is a safe Python identifier (e.g. "numpy", "PIL.Image").
+    /// Rejects names containing shell metacharacters or spaces.
+    /// </summary>
+    private static bool IsValidPythonImportName(string name) =>
+        !string.IsNullOrWhiteSpace(name) &&
+        System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-zA-Z_][a-zA-Z0-9_.]*$");
 
     internal static string ToWslPath(string windowsPath)
     {

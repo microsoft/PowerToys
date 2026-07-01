@@ -470,9 +470,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         }
 
                         // After Kill, wait briefly for the process to actually terminate.
-                        // If it still hasn't exited, skip reading to avoid blocking the UI thread.
+                        // If it still hasn't exited, skip reading but still update with default-only list.
                         if (!process.WaitForExit(2000))
                         {
+                            AvailableWslDistros = distros;
                             return;
                         }
                     }

@@ -198,7 +198,7 @@ namespace AdvancedPaste.Settings
                                     StringComparer.OrdinalIgnoreCase);
 
                                 _pythonScriptActions.Clear();
-                                _pythonScriptActions.AddRange(pythonScripts.Value.Where(a => a.IsShown));
+                                _pythonScriptActions.AddRange(pythonScripts.Value);
 
                                 UpdateScriptFolderWatcher(PythonScriptsFolder);
 
@@ -416,7 +416,7 @@ namespace AdvancedPaste.Settings
                 _scriptFolderDebounce = new CancellationTokenSource();
 
                 var token = _scriptFolderDebounce.Token;
-                Task.Delay(TimeSpan.FromMilliseconds(500))
+                Task.Delay(TimeSpan.FromMilliseconds(500), token)
                     .ContinueWith(
                         _ =>
                         {
