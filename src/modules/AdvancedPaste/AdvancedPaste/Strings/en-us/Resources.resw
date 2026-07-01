@@ -232,6 +232,9 @@
   <data name="PasteAsPlainText" xml:space="preserve">
     <value>Paste as plain text</value>
   </data>
+  <data name="PasteAsPlainTextTrimmed" xml:space="preserve">
+    <value>Paste as plain text (trimmed)</value>
+  </data>
   <data name="ImageToText" xml:space="preserve">
     <value>Image to text</value>
   </data>

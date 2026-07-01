@@ -160,6 +160,10 @@ namespace AdvancedPaste
             {
                 await viewModel.ExecutePasteFormatAsync(PasteFormats.Json, PasteActionSource.GlobalKeyboardShortcut);
             }
+            else if (messageType == PowerToys.Interop.Constants.AdvancedPastePlainTextTrimmedMessage())
+            {
+                await viewModel.ExecutePasteFormatAsync(PasteFormats.PlainTextTrimmed, PasteActionSource.GlobalKeyboardShortcut);
+            }
             else if (messageType == PowerToys.Interop.Constants.AdvancedPasteAdditionalActionMessage())
             {
                 await OnAdvancedPasteAdditionalActionHotkey(messageParts);

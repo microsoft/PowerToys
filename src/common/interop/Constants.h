@@ -20,6 +20,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring AdvancedPasteShowUIMessage();
         static hstring AdvancedPasteMarkdownMessage();
         static hstring AdvancedPasteJsonMessage();
+        static hstring AdvancedPastePlainTextTrimmedMessage();
         static hstring AdvancedPasteAdditionalActionMessage();
         static hstring AdvancedPasteCustomActionMessage();
         static hstring AdvancedPasteTerminateAppMessage();
