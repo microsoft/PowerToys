@@ -290,7 +290,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         return 1;
     }
 
-    // D3 fix: ensure args is freed on all exit paths
+    // Ensure args is freed on all exit paths
     auto freeArgs = wil::scope_exit([&] { LocalFree(args); });
 
     std::wstring_view action{ args[1] };
