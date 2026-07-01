@@ -99,105 +99,103 @@
             Visibility="{x:Bind ViewModel.IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
 
         <!--  workspace list  -->
-        <ScrollViewer
+        <ListView
+            x:Name="WorkspacesList"
             Grid.Row="2"
-            Margin="0,24,0,0"
-            VerticalScrollBarVisibility="Auto"
+            Margin="24,24,24,0"
+            AutomationProperties.Name="Workspace list"
+            IsItemClickEnabled="True"
+            ItemClick="WorkspaceItemClicked"
+            ItemsSource="{x:Bind ViewModel.WorkspacesView, Mode=OneWay}"
+            SelectionMode="None"
             Visibility="{x:Bind ViewModel.IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
-            <ItemsRepeater
-                x:Name="WorkspacesRepeater"
-                Margin="24,0,24,24"
-                ItemsSource="{x:Bind ViewModel.WorkspacesView, Mode=OneWay}">
-                <ItemsRepeater.Layout>
-                    <StackLayout Orientation="Vertical" Spacing="4" />
-                </ItemsRepeater.Layout>
-                <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="models:Project">
-                        <Button
-                            DataContext="{x:Bind}"
-                            Margin="0,4,0,0"
-                            Padding="1"
-                            HorizontalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch"
-                            AutomationProperties.Name="{x:Bind Name}"
-                            Click="EditButtonClicked">
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel
-                                    Margin="12,8,8,8"
-                                    HorizontalAlignment="Left"
-                                    Orientation="Vertical">
-                                    <TextBlock
-                                        Margin="0,0,0,8"
-                                        FontSize="16"
-                                        FontWeight="SemiBold"
-                                        Text="{x:Bind Name, Mode=OneWay}" />
-                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
-                                        <Image
-                                            Height="16"
-                                            Source="{x:Bind PreviewIcons, Mode=OneWay}" />
-                                        <TextBlock
-                                            Margin="8,0,8,0"
-                                            VerticalAlignment="Center"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind AppsCountString, Mode=OneWay}" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock
-                                            Margin="0,0,8,0"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="&#xE81C;" />
-                                        <TextBlock
-                                            FontSize="12"
-                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{x:Bind LastLaunched, Mode=OneWay}" />
-                                    </StackPanel>
-                                </StackPanel>
-                                <StackPanel
-                                    Grid.Column="1"
-                                    Margin="12"
-                                    Orientation="Horizontal">
-                                    <Button
-                                        Margin="0,0,8,0"
-                                        Click="LaunchButton_Click"
-                                        x:Uid="LaunchBtn" />
-                                    <Button
-                                        x:Uid="MoreOptionsBtn"
-                                        Padding="8">
-                                        <TextBlock
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                            Text="&#xE712;" />
-                                        <Button.Flyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem
-                                                    Click="EditButtonClicked"
-                                                    x:Uid="EditFlyoutItem">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE70F;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                                <MenuFlyoutItem
-                                                    Click="DeleteButtonClicked"
-                                                    x:Uid="RemoveFlyoutItem">
-                                                    <MenuFlyoutItem.Icon>
-                                                        <FontIcon Glyph="&#xE74D;" />
-                                                    </MenuFlyoutItem.Icon>
-                                                </MenuFlyoutItem>
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
-                        </Button>
-                    </DataTemplate>
-                </ItemsRepeater.ItemTemplate>
-            </ItemsRepeater>
-        </ScrollViewer>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,4,0,0" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:Project">
+                    <Grid
+                        DataContext="{x:Bind}"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.Name="{x:Bind Name}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel
+                            Margin="12,8,8,8"
+                            HorizontalAlignment="Left"
+                            Orientation="Vertical">
+                            <TextBlock
+                                Margin="0,0,0,8"
+                                FontSize="16"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind Name, Mode=OneWay}" />
+                            <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                <Image
+                                    Height="16"
+                                    Source="{x:Bind PreviewIcons, Mode=OneWay}" />
+                                <TextBlock
+                                    Margin="8,0,8,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind AppsCountString, Mode=OneWay}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock
+                                    Margin="0,0,8,0"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="&#xE81C;" />
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Text="{x:Bind LastLaunched, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel
+                            Grid.Column="1"
+                            Margin="12"
+                            Orientation="Horizontal">
+                            <Button
+                                Margin="0,0,8,0"
+                                Click="LaunchButton_Click"
+                                x:Uid="LaunchBtn" />
+                            <Button
+                                x:Uid="MoreOptionsBtn"
+                                Padding="8">
+                                <TextBlock
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    Text="&#xE712;" />
+                                <Button.Flyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem
+                                            Click="EditButtonClicked"
+                                            x:Uid="EditFlyoutItem">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE70F;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                        <MenuFlyoutItem
+                                            Click="DeleteButtonClicked"
+                                            x:Uid="RemoveFlyoutItem">
+                                            <MenuFlyoutItem.Icon>
+                                                <FontIcon Glyph="&#xE74D;" />
+                                            </MenuFlyoutItem.Icon>
+                                        </MenuFlyoutItem>
+                                    </MenuFlyout>
+                                </Button.Flyout>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </Page>

@@ -62,6 +62,15 @@ namespace WorkspacesEditor.Views
             }
         }
 
+        private void WorkspaceItemClicked(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is Project project)
+            {
+                ViewModel.CloseAllPopups();
+                ViewModel.EditProject(project);
+            }
+        }
+
         private static Project GetProjectFromSender(object sender)
         {
             if (sender is FrameworkElement element)
