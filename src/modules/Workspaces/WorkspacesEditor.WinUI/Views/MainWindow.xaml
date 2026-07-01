@@ -15,6 +15,8 @@
             Height="48"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            AutomationProperties.Name="Loading"
+            AutomationProperties.LiveSetting="Polite"
             IsActive="False"
             Visibility="Collapsed" />
     </Grid>
