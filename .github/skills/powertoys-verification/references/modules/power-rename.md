@@ -10,7 +10,16 @@
 
 ## Shared mechanics
 
-For the synthetic-right-click + context-menu-invoke flow that ALL Explorer-context-menu modules use, see **`references/explorer-context-menu-flow.md`** + **`scripts/pt-explorer-contextmenu.ps1`** (`Test-PtDesktopInteractive`, `Open-PtExplorerContextMenu`, `Invoke-PtContextMenuItem`, `Get-PtContextMenuItems`). That doc covers stability rules, multi-file selection, BLK-ENV handling, and module-caption table. Don't duplicate; cite by section.
+For the context-menu machinery (the two openers, packaged-menu facts, BLK-ENV, honesty guard) see
+**`references/explorer-context-menu-flow.md`** + **`scripts/pt-explorer-contextmenu.ps1`**. Don't
+duplicate; cite by section.
+
+**Context-menu routing (PowerRename-specific):**
+- **Caption:** `Rename with PowerRename` (Win11 Tier-1). Launched exe: `PowerToys.PowerRename.exe`.
+- **Which menu:** appears on **both** the selected-file menu **and** the folder-**background** menu.
+  Prefer **`Open-PtBackgroundContextMenu`** (coordinate-free Shift+F10 — can't miss a row or hit the
+  preview pane) for present/absent/icon/extended-menu assertions. Use `Open-PtExplorerContextMenu
+  -FileName <f>` only if a test specifically needs the entry on a *file* item.
 
 For the Win11 IExplorerCommand vs classic HKCR distinction, see `scripts/pt-shell-verbs.ps1` header — PR is **modern-menu-only on Win11**, so classic-verb enumeration via Shell.Application **will not find it**.
 
@@ -33,19 +42,27 @@ winapp ui inspect -w $pr --depth 5 -i 2>$null | Out-String | Select-String 'Chec
 Bypasses the context menu entirely; same code path inside the exe (it parses argv as the file list). **Use for every UI-driven option/regex/preview test** (Recipes 4-12 below).
 
 ### 2. Synthetic right-click + Invoke-PtContextMenuItem — for "menu entry present/absent" assertions (Recipes 1-3)
-Use the canonical flow from `references/explorer-context-menu-flow.md` Recipe. The menu-presence assertion is the ONE thing the CLI back-door cannot prove (it works even if the menu entry is correctly hidden — the false-positive trap described in that doc).
+Use the openers from `references/explorer-context-menu-flow.md`. PowerRename appears on the folder
+**background** menu too, so prefer the coordinate-free background opener (no file needed, can't miss a
+row / hit the preview pane). The menu-presence assertion is the ONE thing the CLI back-door cannot
+prove (it works even if the entry is correctly hidden — the false-positive trap in that doc).
 
 ```powershell
 . "$skill\scripts\pt-explorer-contextmenu.ps1"
-$hwnd = Open-PtExplorerContextMenu -FolderPath 'D:\fixtures' -FileNames 'a.txt'
-$items = Get-PtContextMenuItems -MenuHwnd $hwnd
-$has = $items | Where-Object Name -match 'Rename with PowerRename'
+# Disposable fixtures folder (same convention as Entry-path 1)
+$fx = New-Item -ItemType Directory -Path "$env:TEMP\pr-fixture-$(Get-Random)"
+'x' | Set-Content "$($fx.FullName)\a.txt"
+# Open Explorer on it and grab its CabinetWClass HWND
+$hwnd  = Open-PtExplorerWindow -Path $fx.FullName
+$menu  = Open-PtBackgroundContextMenu -ExplorerHwnd $hwnd   # coordinate-free; no file needed
+$items = Get-PtContextMenuItems -MenuHwnd $menu             # returns MenuItem name strings
+$has   = $items | Where-Object { $_ -match 'Rename with PowerRename' }
 # assert $has -> entry present
 ```
 
 ### 3. Shell COM classic verb (does NOT work on Win11 stock install)
 ```powershell
-Invoke-PtShellVerb -Path 'D:\fixtures\a.txt' -NamePattern 'PowerRename'  # -> False
+Invoke-PtShellVerb -Path "$($fx.FullName)\a.txt" -NamePattern 'PowerRename'  # -> False (reuses $fx from Entry-path 2)
 ```
 Returns False on Win11 because PT registers PR only via IExplorerCommand, not as a classic HKCR shell verb. **Use only for negative checks** (and prefer the synthetic-menu enumeration above, which observes the actual Tier-1 menu).
 
@@ -55,7 +72,7 @@ Returns False on Win11 because PT registers PR only via IExplorerCommand, not as
 
 | # | Capability | Drive (control / settings key) | Observe (where the result shows) |
 |---|---|---|---|
-| 1 | Context-menu entry present when enabled, gone when disabled | master `enabled.PowerRename` flip + `Restart-PtRunner`; synthetic menu (entry-path 2) | `Get-PtContextMenuItems` includes / excludes "Rename with PowerRename" |
+| 1 | Context-menu entry present when enabled, gone when disabled | **Settings-UI toggle** via `Set-PtModuleEnabledViaSettingsUI -PageTag PowerRename -EnabledKey PowerRename` (see `references/explorer-context-menu-flow.md` → "Enabling / disabling the module"); synthetic menu (entry-path 2) to observe | `Get-PtContextMenuItems` includes / excludes "Rename with PowerRename". Locked desktop → `BLK-ENV` |
 | 2 | "Show icon on context menu" | `ShowIcon` in `power-rename-settings.json` + relaunch | menu entry shows icon vs text-only (screenshot); or HKCR `Icon` |
 | 3 | "Appear only in extended menu" | `ExtendedContextMenuOnly` + relaunch | Tier-1 menu hides PR; classic "Show more options" still lists it |
 | 4 | Any search/replace option toggle (regex, match-all, case-sensitive, autocomplete, last-use) | `winapp ui invoke checkBox_regex` / `checkBox_matchAll` / `checkBox_case` (etc.); re-read `power-rename-settings.json` | the settings key flips **and** the preview behavior changes accordingly |
@@ -83,32 +100,23 @@ In a workspace `fixtures/` folder:
 
 Always copy fixtures to a disposable temp folder before running actual rename operations.
 
-## Gotchas
+## BLOCKED traps
 
 - **TWO settings files — PR reads `power-rename-settings.json`, NOT `settings.json`** (verified 2026-06-10). `%LOCALAPPDATA%\Microsoft\PowerToys\PowerRename\` holds both: (1) `settings.json` = PT-store, keys `bool_mru_enabled`/`bool_persist_input`/`bool_show_icon_on_menu`/`bool_show_extended_menu`/`bool_use_boost_lib`/`int_max_mru_size` (what `Get-PtModuleSettings` + the Settings UI bind to); (2) `power-rename-settings.json` = the module's own store, keys `ShowIcon`/`ExtendedContextMenuOnly`/`PersistState`/`MRUEnabled`/`MaxMRUSize`/`UseBoostLib` — **this is the file the PR UI exe and the context-menu COM handlers actually read at launch** (`lib/Settings.cpp` `CSettings::Load→ParseJson`). The runner (`dll/dllmain.cpp:301-307`) syncs PT-store→module-store only on a Settings-UI *change event*; the PT-store file can sit stale for days. **To drive ShowIcon / ExtendedContextMenuOnly / MRUEnabled / PersistState / UseBoostLib deterministically, edit `power-rename-settings.json` directly + relaunch PR (or restart runner+Explorer for the menu handlers), then restore.** Map (settings.json key → user-facing toggle): ShowIcon→"Show icon on context menu", ExtendedContextMenuOnly→"Appear only in extended menu", MRUEnabled→autocomplete, PersistState→"Show values from last use", UseBoostLib→"Use Boost library". MRU values live in `search-mru.json`/`replace-mru.json`; last-used (persist) in `power-rename-last-run-data.json`.
 - **"Show icon on context menu" has no Settings-UI toggle in current builds** — drive it via `power-rename-settings.json` `ShowIcon`. Behavior is observable on the synthetic menu (icon vs text-only); source `PowerRenameContextMenu/dllmain.cpp:73` (`GetIcon→null`).
-- **The "Appear only in extended menu" classic `#32768` popup is not winapp-enumerable** — assert the Tier-1 *hide* (observed; `dllmain.cpp:108` `ECS_HIDDEN`) and cite `PowerRenameExt.cpp:84` (`E_FAIL` unless `CMF_EXTENDEDVERBS`) for the "still in extended menu" half.
-- **PR registers on the directory *background* menu too** — the synthetic right-click often lands on background (View/Sort by/Group by/...) yet still shows/hides `Rename with PowerRename`, which is a valid, stable surface for menu-entry / icon-visibility / extended-menu-only present-absent comparisons.
+- **The classic `#32768` ("Show more options") menu IS winapp-enumerable** — open it with `Open-PtClassicContextMenu` then read it with `Get-PtContextMenuItems` (see `references/explorer-context-menu-flow.md` → "Reading the legacy menu"). For "Appear only in extended menu", assert PR is **absent from the Tier-1 menu** but **present in the classic menu** (source: `dllmain.cpp:108` `ECS_HIDDEN` hides it from Tier-1; `PowerRenameExt.cpp:84` returns `E_FAIL` unless `CMF_EXTENDEDVERBS`, i.e. classic-only).
+- **PR registers on the directory *background* menu too** — so prefer `Open-PtBackgroundContextMenu` (coordinate-free) for menu-entry / icon-visibility / extended-menu present-absent comparisons (see the module's "Context-menu routing" note + `references/explorer-context-menu-flow.md`).
 - **`set-value` on search/replace DOES fire the preview** (TextChanged works, unlike CmdPal) — Apply button enabling/disabling is a reliable match/no-match signal. The search/replace Edit AutomationIds are random per launch (`txt-textbox-XXXX`); discover them each launch by name (`Edit "Search for"` / `Edit "Replace with"`).
 - **Preview-row uncheck + column-header invokes need the Preview populated first** — set Search/Replace and wait ~500 ms for the regex engine; otherwise the invokes hit an empty list.
 - **Boost library is read at PR process start** — close + relaunch PR after toggling.
 - **Icon-on-menu and extended-only checks prefer registry over screenshot** — read HKCR `Extended` / `Icon` REG_SZ; more reliable + locale-independent.
 - **Disk mutation is real** — run renames against `$env:TEMP\pr-test-<random>`, not real fixtures.
 - **COM cache staleness** when re-checking verbs after enable/disable — call `Reset-PtShellComCache` from `scripts/pt-shell-verbs.ps1`.
+- **Don't** try `Invoke-PtShellVerb 'PowerRename'` — returns False on Win11 (no classic registration). Use synthetic menu via `Invoke-PtContextMenuItem` or direct-CLI.
+- **Don't** run renames against reusable fixtures — copy to a disposable temp folder. Don't trust screenshot-only for icon/extended checks (use registry). Don't skip the synthetic-menu test for menu-presence — CLI back-door false-PASSes when the entry is correctly hidden (see `references/explorer-context-menu-flow.md`).
 
 ## Source citations
 
-- `<PT-repo>\src\modules\PowerRename\dllmain.cpp` — IExplorerCommand registration (no classic HKCR shadow on Win11).
-- `<PT-repo>\src\modules\PowerRename\PowerRenameUILib\` — XAML for main PR window (toggle/checkbox AutomationIds).
-- `<PT-repo>\src\modules\PowerRename\PowerRenameLib\Settings.cpp` — settings.json schema canonical property names.
-
-## Ceiling
-
-Expected **18/18 = 100%** from an interactive admin console session. Direct-CLI (#1) covers UI-driven items; synthetic-menu (#2) covers menu-presence assertions.
-
-## Don'ts
-
-- **Don't** try `Invoke-PtShellVerb 'PowerRename'` — returns False on Win11 (no classic registration). Use synthetic menu via `Invoke-PtContextMenuItem` or direct-CLI.
-- **Don't** run rename operations against reusable fixtures — copy to a disposable temp folder.
-- **Don't** trust screenshot-only for icon-on-menu or extended-only checks — registry inspection is faster + locale-independent.
-- **Don't** skip the synthetic-menu test for the menu-presence assertion — CLI back-door PASSes even when the menu entry is correctly hidden (false-positive trap described in `references/explorer-context-menu-flow.md`).
+- `src\modules\PowerRename\dllmain.cpp` — IExplorerCommand registration (no classic HKCR shadow on Win11).
+- `src\modules\PowerRename\PowerRenameUILib\` — XAML for main PR window (toggle/checkbox AutomationIds).
+- `src\modules\PowerRename\PowerRenameLib\Settings.cpp` — settings.json schema canonical property names.

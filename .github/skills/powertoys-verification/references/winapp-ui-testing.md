@@ -1,6 +1,6 @@
 # WinUI UI-testing mechanics (winapp ui)
 
-> **Provenance:** Adapted from the `winui-ui-testing` skill in [microsoft/win-dev-skills](https://github.com/microsoft/win-dev-skills) (MIT, © Microsoft Corporation and Contributors), with PowerToys-specific edits. This is a **reference doc** for the `powertoys-module-verification` skill — it is intentionally not a standalone skill (no frontmatter), so it is not separately discovered.
+> **Provenance:** Adapted from the `winui-ui-testing` skill in [microsoft/win-dev-skills](https://github.com/microsoft/win-dev-skills) (MIT, © Microsoft Corporation and Contributors), with PowerToys-specific edits. This is a **reference doc** for the `powertoys-verification` skill — it is intentionally not a standalone skill (no frontmatter), so it is not separately discovered.
 
 Automated UI testing for WinUI 3 apps — generate a batch test script, run all tests in one pass, read results. Covers element assertions, interactions, value checking (TextBox, ComboBox, ToggleSwitch), file pickers, flyouts, dialogs, persistence, and accessibility audits.
 

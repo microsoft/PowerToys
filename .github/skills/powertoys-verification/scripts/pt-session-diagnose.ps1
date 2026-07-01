@@ -3,9 +3,13 @@
 # Tells you in one go: am I on the active console session, can I see foreground windows,
 # and can I use Shell COM. If not, prints the exact psexec mitigation command.
 
-Add-Type 'using System; using System.Runtime.InteropServices;
+# Guard Add-Type so this script can be dot-sourced / re-run in the same session without
+# throwing "type already exists" on the second invocation.
+if (-not ('WTS' -as [type])) {
+    Add-Type 'using System; using System.Runtime.InteropServices;
 public class WTS { [DllImport("kernel32.dll")] public static extern uint WTSGetActiveConsoleSessionId(); }
 public class FG  { [DllImport("user32.dll")]   public static extern IntPtr GetForegroundWindow(); }'
+}
 
 Write-Host "--- Logged-on users + sessions ---" -ForegroundColor Cyan
 quser 2>&1

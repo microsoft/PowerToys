@@ -3,11 +3,16 @@
 **PT module**: `Image Resizer` (resize images via Explorer right-click; WinUI 3 GUI + headless CLI)
 **Source**: `<PT-repo>\src\modules\imageresizer\` (PT repo)
 **Settings file**: `%LOCALAPPDATA%\Microsoft\PowerToys\Image Resizer\settings.json` (PowerToys-wrapper shape: `{ "properties": { "imageresizer_*": { "value": … } }, "name": "Image Resizer", "version": "1" }`). A legacy `sizes.json` mirrors `imageresizer_sizes`; `image-resizer-settings.json` is `{}` (unused).
-**Enable flag**: `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` → `enabled."Image Resizer"` (runner-owned; restart runner after toggling).
+**Enable flag**: `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` → `enabled."Image Resizer"` (runner-owned; **read-only for verification** — flip enable/disable via the Settings-UI toggle).
 **Logs**: `%LOCALAPPDATA%\Microsoft\PowerToys\Image Resizer\Logs\…`
 **Exes**: GUI = `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.ImageResizer.exe`; **CLI = `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.ImageResizerCLI.exe`**.
 **Context menu**: Win11 packaged `IExplorerCommand` (sparse pkg `ImageResizerContextMenuPackage.msix`, dllmain.cpp) + legacy classic `ImageResizerExt.dll` (`dll/ContextMenuHandler.cpp`). **Shipped caption = "Resize with Image Resizer"** (`IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY`; checklist's "Resize images" is STALE).
 **No global hotkey / no Named Event / no DSC for the engine** — entry is the Explorer menu (or direct exe launch).
+
+**Context-menu routing (Image Resizer-specific):** appears **only on a selected image file** — NOT on
+the folder-background menu, and NOT on non-image files. Select an image first (`Select-PtExplorerFiles`,
+Shell COM) then open the file menu with `Open-PtExplorerContextMenu -FileName <img>` (see
+`references/explorer-context-menu-flow.md`). Verified caption **`Resize with Image Resizer`**.
 
 ## The back-door that makes this module ~fully drivable (no Explorer needed)
 
@@ -42,7 +47,7 @@ Shares the exact `ResizeBatch.FromCliOptions` → `ResizeBatch.ProcessAsync` →
 
 | # | Capability | Drive (control / CLI flag) | Observe (where the result shows) |
 |---|---|---|---|
-| 1 | Module disabled → context-menu entry absent | toggle `enabled` off + restart runner; synthetic menu (only valid observer) | "Resize with Image Resizer" absent. Gate: `dllmain.cpp:87-91` (ECS_HIDDEN), `ContextMenuHandler.cpp:70-71,383-385`. Locked desktop → BLK-ENV |
+| 1 | Module disabled → context-menu entry absent | **Settings-UI toggle** via `Set-PtModuleEnabledViaSettingsUI -PageTag ImageResizer -EnabledKey 'Image Resizer'` (locked desktop → `BLK-ENV`); synthetic menu (only valid observer) | "Resize with Image Resizer" absent. Gate: `dllmain.cpp:87-91` (ECS_HIDDEN), `ContextMenuHandler.cpp:70-71,383-385`. Locked desktop → BLK-ENV |
 | 2 | Module enabled → entry present (modern + classic), click launches the GUI | synthetic menu + invoke | `Get-PtContextMenuItems` shows "Resize with Image Resizer"; classic "Show more options" too; invoke → `PowerToys.ImageResizer.exe` launches |
 | 3 | Remove a built-in size / add a custom size | edit `imageresizer_sizes` (INTEGER Ids!) + launch GUI | `SizeComboBox` reflects the edit (removed gone, custom present) |
 | 4 | Resize one / multiple files end-to-end | CLI `--size <id> [files…]` | outputs at the size's Fit dimensions |
@@ -63,6 +68,7 @@ Shares the exact `ResizeBatch.FromCliOptions` → `ResizeBatch.ProcessAsync` →
 - **cm/inch outputs depend on the fixture's DPI, not 96.** System.Drawing saves at the session display DPI (here 120). Compute expectations from the actual DPI.
 - **Caption is "Resize with Image Resizer", not the checklist's "Resize images"** (both menus). Hard-match the real caption.
 - **Idle auto-lock = BLK-ENV for the disabled-absent + enabled-present items (Recipes 1-2)** (synthetic right-click needs foreground). Disable lock/sleep before the run (`references/environment-setup.md`).
+- Don't expect `Shell.Application.Verbs()` to list the entry — Win11 packaged command (`CoCreate` → `REGDB_E_CLASSNOTREGISTERED`). Kill by `-Id <pid>` not name. Restore by re-toggling **on** via `Set-PtModuleEnabledViaSettingsUI -PageTag ImageResizer -Enabled $true`; revert any `settings.json`/`sizes.json` edits and close the Settings window.
 
 ## Fixture files needed
 None pre-canned. Generate with `System.Drawing`: a landscape (e.g. 1200×800) and portrait (800×1200) JPEG, a small (100×100) PNG, a square (400×400) PNG, a `.gif` (single frame is fine — the warning is extension-based), and 3 identical images for the multi-file batch.
@@ -75,13 +81,3 @@ None pre-canned. Generate with `System.Drawing`: a landscape (e.g. 1200×800) an
 - `ImageResizerContextMenu/dllmain.cpp:49,79-133,219-245,284` — modern menu title, enable+image gate, launch, caption.
 - `dll/ContextMenuHandler.cpp:21,46-48,70-71,383-385` — classic menu caption + enable gate.
 - `ui/ViewModels/InputViewModel.cs:76,143`, `ImageResizerXAML/Views/InputPage.xaml:293-299`, `Strings/en-us/Resources.resw:148-149` — gif warning.
-
-## Ceiling
-**18/18 PASS** observed (2026-06-09). All 14 resize-behavior items + the enabled-entry-present-in-both-menus + the remove-size + the gif-warning items cleanly driven via CLI/GUI. The disabled-entry-absent case (in both modern + classic menus, with sibling entries remaining and the entry returning on re-enable) verified live once the desktop was unlocked. NB: an idle auto-lock will turn the menu-presence Recipes 1-2 into BLK-ENV — disable lock/sleep up front (`references/environment-setup.md`).
-
-## Don'ts
-- Don't expect `Shell.Application.Verbs()` to list the entry — it's a Win11 packaged command (classic verbs are blind; `CoCreate` → `REGDB_E_CLASSNOTREGISTERED`).
-- Don't hardcode 96 DPI for cm/inch math.
-- Don't write preset Ids as JSON doubles.
-- Don't kill processes by name; use `Stop-Process -Id <pid>`.
-- Don't forget to restore `enabled."Image Resizer"=true` + restart runner, and revert any `settings.json`/`sizes.json` edits.

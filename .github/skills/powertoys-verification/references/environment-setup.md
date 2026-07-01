@@ -139,5 +139,5 @@ These are **human prep steps**, not agent instructions. The agent needs to *dete
 
 - `scripts/pt-session-diagnose.ps1` — one-shot session diagnostic
 - `scripts/pt-foreground-guard.ps1` — `Test-PtForeground` / `Force-PtForeground` / `Assert-PtForegroundOrAbort` used by agent
-- `SKILL.md` pitfall #13 — short pointer to this doc
+- `SKILL.md` pitfall #12 — short pointer to this doc
 - `references/pre-flight.md` pre-flight check #4 — agent reads this doc when it detects a bad env

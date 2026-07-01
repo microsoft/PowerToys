@@ -22,7 +22,7 @@ Each item is annotated with two metadata tags:
 
 ## PowerRename (18 items)
 
-- [ ] **[ADMIN: NO] [CLARITY: VAGUE-AMBIGUOUS]** (L393) Check if disable and enable of the module works. (On Win11) Check if both old context menu and Win11 tier1 context menu items are present when module is enabled.
+- [ ] **[ADMIN: NO]** (L393) Toggle the PowerRename enable switch **off**, then **on**, in PowerToys Settings. Confirm the `Rename with PowerRename` context-menu entry **disappears** when the module is disabled and **reappears** when it is enabled. (On Win11) With the module enabled, confirm `Rename with PowerRename` is present in **both** the Win11 tier-1 (modern) context menu **and** the classic "Show more options" (`#32768`) context menu.
 - [ ] **[ADMIN: NO]** (L394) Check that with the `Show icon on context menu` icon is shown and vice versa.
 - [ ] **[ADMIN: NO] [CLARITY: VAGUE-AMBIGUOUS]** (L395) Check if `Appear only in extended context menu` works.
 - [ ] **[ADMIN: NO]** (L396) Enable/disable autocomplete.
