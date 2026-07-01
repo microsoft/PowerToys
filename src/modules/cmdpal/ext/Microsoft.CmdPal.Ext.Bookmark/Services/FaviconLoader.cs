@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 {
     private readonly HttpClient _http = CreateClient();
-    private readonly ConcurrentDictionary<string, SemaphoreSlim> _semaphores = new();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _hostLocks = new();
     private bool _disposed;
 
     private static HttpClient CreateClient()
@@ -41,8 +41,8 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
     public async Task<IRandomAccessStream?> TryGetFaviconAsync(Uri siteUri, CancellationToken ct = default)
     {
-        var semaphore = _semaphores.GetOrAdd(siteUri.Host, _ => new SemaphoreSlim(1));
-        await semaphore.WaitAsync(ct);
+        var hostLock = _hostLocks.GetOrAdd(siteUri.Host, _ => new SemaphoreSlim(1));
+        await hostLock.WaitAsync(ct);
         try
         {
             if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
@@ -104,7 +104,7 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
         }
         finally
         {
-            semaphore.Release();
+            hostLock.Release();
         }
     }
 
@@ -193,7 +193,7 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
         _http.Dispose();
 
-        foreach (var semaphore in _semaphores.Values)
+        foreach (var semaphore in _hostLocks.Values)
         {
             semaphore.Dispose();
         }
