@@ -1,0 +1,510 @@
+name: Daily Dedupe Digest
+
+on:
+  schedule:
+    # Daily at 08:00 UTC (~09:00 AMS, ~00:00 PT).
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  models: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  DIGEST_ASSIGNEE: niels9001
+  DIGEST_LABEL: dedupe-digest
+  DIGEST_TITLE_PREFIX: '[Dedupe Digest]'
+  LOOKBACK_HOURS: '26'
+  MAX_CANDIDATES_PER_DIGEST: '40'
+  CANDIDATE_POOL_SIZE: '200'
+
+jobs:
+  ensure-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure dedupe-digest label exists
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const name        = process.env.DIGEST_LABEL;
+            const color       = 'A78BFA';
+            const description = 'Daily aggregated duplicate-issue candidate digest';
+
+            try {
+              await github.rest.issues.getLabel({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                name,
+              });
+              console.log(`Label '${name}' already exists.`);
+            } catch (e) {
+              if (e.status === 404) {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  name, color, description,
+                });
+                console.log(`Created label '${name}'.`);
+              } else {
+                throw e;
+              }
+            }
+
+  digest:
+    needs: ensure-label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build daily dedupe digest
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // ── Config (resolved from env) ───────────────────────────────────
+            const ASSIGNEE         = process.env.DIGEST_ASSIGNEE;
+            const LABEL            = process.env.DIGEST_LABEL;
+            const TITLE_PREFIX     = process.env.DIGEST_TITLE_PREFIX;
+            const LOOKBACK_HOURS   = parseInt(process.env.LOOKBACK_HOURS, 10);
+            const MAX_CANDIDATES   = parseInt(process.env.MAX_CANDIDATES_PER_DIGEST, 10);
+            const POOL_SIZE        = parseInt(process.env.CANDIDATE_POOL_SIZE, 10);
+            const MAX_BODY_CHARS   = 60000; // leave headroom under GitHub's 65536 cap
+            const MAX_ISSUE_BODY   = 1500;  // truncate per-issue body sent to the model
+
+            const DUPLICATE_LABEL  = 'duplicate'; // set by automatic-issue-deduplication.yml
+
+            // ── Helpers ──────────────────────────────────────────────────────
+            const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+            async function findOpenDigests() {
+              // Returns ALL open issues that look like a digest — sorted newest first.
+              // Filtered by BOTH the label and the title prefix as defense in depth
+              // against accidental manual labeling of unrelated issues.
+              const { data } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                state: 'open',
+                labels: LABEL,
+                sort: 'created',
+                direction: 'desc',
+                per_page: 50,
+              });
+              const digests = data
+                .filter(i => !i.pull_request)
+                .filter(i => (i.title || '').startsWith(TITLE_PREFIX));
+              if (digests.length > 1) {
+                console.log(`Found ${digests.length} open digests; will aggregate carry-overs and close all but the new one.`);
+              }
+              return digests;
+            }
+
+            // Neutralize HTML comment delimiters so attacker-controlled text
+            // (issue titles, model-produced reasons) cannot inject fake
+            // carry-over markers into a future digest body.
+            function sanitizeForMarkdown(text) {
+              return String(text || '')
+                .replace(/<!--/g, '<!‐‐')
+                .replace(/-->/g, '‐‐>');
+            }
+
+            // Parse carry-over markers: <!-- candidate:NEW=123 ORIG=456 -->
+            function parseCarryOvers(body) {
+              const re = /<!--\s*candidate:NEW=(\d+)\s+ORIG=(\d+)\s*-->/g;
+              const seen = new Set();
+              const out = [];
+              let m;
+              while ((m = re.exec(body || '')) !== null) {
+                const key = `${m[1]}:${m[2]}`;
+                if (seen.has(key)) continue;
+                seen.add(key);
+                out.push({ new: parseInt(m[1], 10), orig: parseInt(m[2], 10) });
+              }
+              return out;
+            }
+
+            async function getIssueLite(num) {
+              try {
+                const { data } = await github.rest.issues.get({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: num,
+                });
+                if (data.pull_request) return null;
+                return {
+                  number: data.number,
+                  title:  data.title,
+                  state:  data.state,
+                  labels: (data.labels || []).map(l => l.name),
+                };
+              } catch (e) {
+                console.log(`Could not fetch issue #${num}: ${e.message}`);
+                return null;
+              }
+            }
+
+            async function listRecentOpenIssues(limit) {
+              const out = [];
+              const pages = Math.ceil(limit / 100);
+              for (let page = 1; page <= pages; page++) {
+                const { data } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  state: 'open',
+                  sort: 'updated',
+                  direction: 'desc',
+                  per_page: 100,
+                  page,
+                });
+                for (const i of data) {
+                  if (i.pull_request) continue;
+                  if ((i.labels || []).some(l => l.name === LABEL)) continue;
+                  out.push({ number: i.number, title: i.title, labels: i.labels.map(l => l.name) });
+                  if (out.length >= limit) break;
+                }
+                if (data.length < 100 || out.length >= limit) break;
+              }
+              return out;
+            }
+
+            async function listNewIssuesSince(sinceISO) {
+              const sinceMs = new Date(sinceISO).getTime();
+              const out = [];
+              for (let page = 1; page <= 5; page++) {
+                const { data } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  state: 'all',
+                  since: sinceISO, // 'updated since' — we'll filter created_at below
+                  sort: 'created',
+                  direction: 'desc',
+                  per_page: 100,
+                  page,
+                });
+                let pageHadInWindow = false;
+                for (const i of data) {
+                  if (i.pull_request) continue;
+                  const createdMs = new Date(i.created_at).getTime();
+                  if (createdMs < sinceMs) continue;
+                  pageHadInWindow = true;
+                  if (i.state !== 'open') continue; // skip already-closed issues
+                  if ((i.labels || []).some(l => l.name === LABEL)) continue;
+                  out.push({
+                    number: i.number,
+                    title:  i.title,
+                    body:   i.body || '',
+                    labels: (i.labels || []).map(l => l.name),
+                    state:  i.state,
+                  });
+                }
+                // Since direction is 'desc', once a page has no in-window items we can stop.
+                if (data.length < 100 || !pageHadInWindow) break;
+              }
+              return out;
+            }
+
+            async function askModelForDupes(newIssue, pool) {
+              const token = process.env.GITHUB_TOKEN;
+              if (!token) {
+                console.log('GITHUB_TOKEN is not set; skipping AI dedup.');
+                return [];
+              }
+
+              // Bias candidates toward those sharing a Product-* label, if any.
+              const productLabels = newIssue.labels.filter(l => l.startsWith('Product-'));
+              let candidates = pool.filter(p => p.number !== newIssue.number);
+              if (productLabels.length > 0) {
+                const shared = candidates.filter(c => c.labels.some(l => productLabels.includes(l)));
+                if (shared.length >= 10) candidates = shared;
+              }
+              candidates = candidates.slice(0, 60); // keep prompt small
+
+              if (candidates.length === 0) return [];
+
+              const candidateList = candidates
+                .map(c => `  #${c.number}: ${c.title}`)
+                .join('\n');
+
+              const systemPrompt = `You are a triage assistant for the microsoft/PowerToys repository.
+              You are given ONE new issue and a list of recent open issues. Identify which (if any)
+              of the candidates is likely to be a duplicate of the new issue.
+
+              Rules:
+              - Only consider issue numbers from the provided candidate list.
+              - Return up to 3 strongest matches.
+              - "confidence" must be one of: high, medium, low.
+              - "reason" must be one short sentence (≤ 25 words).
+              - Respond with ONLY a JSON array, no explanation or markdown fencing.
+                Example: [{"original": 1234, "confidence": "high", "reason": "Same crash on FancyZones drag."}]
+              - If there is no plausible duplicate, return [].`;
+
+              const userPrompt = `New issue #${newIssue.number}:
+              Title: ${newIssue.title}
+
+              Body:
+              ${(newIssue.body || '').slice(0, MAX_ISSUE_BODY)}
+
+              Candidate open issues:
+              ${candidateList}`;
+
+              try {
+                const response = await fetch(
+                  'https://models.inference.ai.azure.com/chat/completions',
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type':  'application/json',
+                    },
+                    body: JSON.stringify({
+                      model: 'gpt-4o-mini',
+                      messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user',   content: userPrompt   },
+                      ],
+                      max_tokens:  300,
+                      temperature: 0,
+                    }),
+                  }
+                );
+
+                if (!response.ok) {
+                  const errorBody = await response.text();
+                  console.log(`Model API error for #${newIssue.number}: ${response.status} ${response.statusText} — ${errorBody}`);
+                  return [];
+                }
+
+                const data = await response.json();
+                const text = data.choices?.[0]?.message?.content?.trim() ?? '';
+
+                let parsed;
+                try {
+                  parsed = JSON.parse(text);
+                } catch {
+                  console.log(`Could not parse model response for #${newIssue.number}: ${text}`);
+                  return [];
+                }
+
+                if (!Array.isArray(parsed)) return [];
+
+                // Filter against the actual candidate pool (defense-in-depth against hallucinated numbers).
+                const poolNums = new Set(candidates.map(c => c.number));
+                return parsed
+                  .filter(p => p && Number.isInteger(p.original) && poolNums.has(p.original))
+                  .filter(p => ['high', 'medium', 'low'].includes((p.confidence || '').toLowerCase()))
+                  .slice(0, 3)
+                  .map(p => ({
+                    original:   p.original,
+                    confidence: p.confidence.toLowerCase(),
+                    reason:     String(p.reason || '').slice(0, 200),
+                  }));
+              } catch (e) {
+                console.log(`AI call failed for #${newIssue.number}: ${e.message}`);
+                return [];
+              }
+            }
+
+            // ── Phase 1: read state ──────────────────────────────────────────
+            const now      = new Date();
+            const previousDigests = await findOpenDigests();
+            const oldestPrevious  = previousDigests[previousDigests.length - 1] || null;
+            const lookbackMs = LOOKBACK_HOURS * 3600 * 1000;
+
+            let sinceISO;
+            if (oldestPrevious) {
+              // Use the oldest open digest's creation time as the lower bound so we
+              // don't miss issues that arrived between the oldest and newest digests.
+              const prevCreated = new Date(oldestPrevious.created_at).getTime();
+              const lookbackMin = now.getTime() - lookbackMs;
+              sinceISO = new Date(Math.max(prevCreated, lookbackMin)).toISOString();
+              const ids = previousDigests.map(d => `#${d.number}`).join(', ');
+              console.log(`Previous open digest(s): ${ids}. Oldest created ${oldestPrevious.created_at}.`);
+            } else {
+              sinceISO = new Date(now.getTime() - lookbackMs).toISOString();
+              console.log('No previous open digest found.');
+            }
+            console.log(`Discovery window: ${sinceISO} → ${now.toISOString()}`);
+
+            // ── Phase 2: aggregate carry-over from ALL previous open digests ─
+            // Drop carry-overs where the NEW issue is closed, already labeled
+            // 'duplicate', or where the ORIGINAL issue is closed/missing/a PR.
+            const carryOverEntries = [];
+            const seenKeys = new Set(); // dedupe across digests AND new candidates
+
+            for (const prev of previousDigests) {
+              const parsed = parseCarryOvers(prev.body);
+              console.log(`Parsed ${parsed.length} carry-over marker(s) from #${prev.number}.`);
+              for (const co of parsed) {
+                const key = `${co.new}:${co.orig}`;
+                if (seenKeys.has(key)) continue;
+
+                const issue = await getIssueLite(co.new);
+                if (!issue) continue;
+                if (issue.state === 'closed') {
+                  console.log(`Drop carry-over #${co.new}: closed.`);
+                  continue;
+                }
+                if (issue.labels.includes(DUPLICATE_LABEL)) {
+                  console.log(`Drop carry-over #${co.new}: already labeled '${DUPLICATE_LABEL}'.`);
+                  continue;
+                }
+                // Validate the suggested ORIGINAL is still an actionable open issue.
+                const orig = await getIssueLite(co.orig);
+                if (!orig) {
+                  console.log(`Drop carry-over #${co.new}: original #${co.orig} not found (or is a PR).`);
+                  continue;
+                }
+                if (orig.state === 'closed') {
+                  console.log(`Drop carry-over #${co.new}: original #${co.orig} is closed.`);
+                  continue;
+                }
+
+                seenKeys.add(key);
+                carryOverEntries.push({
+                  new:        co.new,
+                  newTitle:   issue.title,
+                  original:   co.orig,
+                  confidence: 'carried-over',
+                  reason:     'Pending review from previous digest.',
+                });
+              }
+            }
+
+            // ── Phase 3: discover new candidates ─────────────────────────────
+            const pool       = await listRecentOpenIssues(POOL_SIZE);
+            console.log(`Candidate pool: ${pool.length} recently-updated open issues.`);
+            const newIssues  = await listNewIssuesSince(sinceISO);
+            console.log(`New issues in window: ${newIssues.length}.`);
+
+            const newEntriesAuto   = [];
+            const newEntriesReview = [];
+            const newEntriesLow    = [];
+
+            for (const ni of newIssues) {
+              const matches = await askModelForDupes(ni, pool);
+              await sleep(250); // gentle throttle on the models endpoint
+              if (matches.length === 0) continue;
+
+              const isAutoLabeled = ni.labels.includes(DUPLICATE_LABEL);
+
+              for (const m of matches) {
+                const key = `${ni.number}:${m.original}`;
+                if (seenKeys.has(key)) continue;
+                seenKeys.add(key);
+
+                const entry = {
+                  new:        ni.number,
+                  newTitle:   ni.title,
+                  original:   m.original,
+                  confidence: m.confidence,
+                  reason:     m.reason,
+                };
+
+                if (isAutoLabeled) {
+                  newEntriesAuto.push(entry);
+                } else if (m.confidence === 'high' || m.confidence === 'medium') {
+                  newEntriesReview.push(entry);
+                } else {
+                  newEntriesLow.push(entry);
+                }
+              }
+            }
+
+            const totalNew = newEntriesAuto.length + newEntriesReview.length + newEntriesLow.length;
+            console.log(`New candidates → auto:${newEntriesAuto.length} review:${newEntriesReview.length} low:${newEntriesLow.length}.`);
+
+            // ── Phase 4: skip if nothing to do ───────────────────────────────
+            if (carryOverEntries.length === 0 && totalNew === 0) {
+              console.log('No carry-overs and no new candidates; not creating a new digest.');
+              return;
+            }
+
+            // ── Phase 5: assemble body ───────────────────────────────────────
+            // Sanitize attacker-controlled text fields (titles + model reasons)
+            // before composing the body so they cannot inject fake carry-over
+            // markers into tomorrow's digest.
+            const fmt = (e) => {
+              const safeTitle  = sanitizeForMarkdown(e.newTitle).replace(/"/g, '\\"').slice(0, 120);
+              const safeReason = sanitizeForMarkdown(e.reason).slice(0, 200);
+              return `- #${e.new} "${safeTitle}" → likely duplicate of #${e.original} _(${e.confidence}: ${safeReason})_ <!-- candidate:NEW=${e.new} ORIG=${e.original} -->`;
+            };
+
+            // Cap each section so we never exceed MAX_BODY_CHARS overall.
+            const cap = (arr, n) => arr.slice(0, n);
+
+            const dateStr   = now.toISOString().slice(0, 10);
+            const windowStr = `${sinceISO.slice(0, 16).replace('T', ' ')} → ${now.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+
+            const sections = [];
+            sections.push(`_Auto-generated daily. Review and act; close this issue when done — a fresh one will appear tomorrow._`);
+            sections.push('');
+
+            if (carryOverEntries.length > 0) {
+              sections.push('## 📌 Carried over from previous digest');
+              sections.push(cap(carryOverEntries, MAX_CANDIDATES).map(fmt).join('\n'));
+              sections.push('');
+            }
+            if (newEntriesAuto.length > 0) {
+              sections.push(`## 🔴 AI-flagged duplicates (already labeled \`${DUPLICATE_LABEL}\`)`);
+              sections.push('Confirm by adding `Resolution-Duplicate` (Fabric Bot will close after 1 day), or remove the `duplicate` label if false positive.');
+              sections.push('');
+              sections.push(cap(newEntriesAuto, MAX_CANDIDATES).map(fmt).join('\n'));
+              sections.push('');
+            }
+            if (newEntriesReview.length > 0) {
+              sections.push('## 🟡 Needs review (potential duplicates)');
+              sections.push(cap(newEntriesReview, MAX_CANDIDATES).map(fmt).join('\n'));
+              sections.push('');
+            }
+            if (newEntriesLow.length > 0) {
+              const lowCap = Math.max(0, MAX_CANDIDATES - newEntriesReview.length - newEntriesAuto.length - carryOverEntries.length);
+              if (lowCap > 0) {
+                sections.push('## 🟢 Low confidence');
+                sections.push(cap(newEntriesLow, lowCap).map(fmt).join('\n'));
+                sections.push('');
+              }
+            }
+            sections.push('---');
+            sections.push(`_Window: ${windowStr}. New issues considered: ${newIssues.length}. Candidates surfaced: ${carryOverEntries.length + totalNew}._`);
+
+            let body = sections.join('\n');
+            if (body.length > MAX_BODY_CHARS) {
+              body = body.slice(0, MAX_BODY_CHARS - 200) + '\n\n_…truncated to fit GitHub issue body limit…_';
+            }
+
+            // ── Phase 6: create new digest issue ─────────────────────────────
+            const title = `${TITLE_PREFIX} ${dateStr}`;
+            const created = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              title,
+              body,
+              labels: [LABEL],
+              assignees: ASSIGNEE ? [ASSIGNEE] : [],
+            });
+            console.log(`Created digest issue #${created.data.number}: ${title}`);
+
+            // ── Phase 7: comment + close ALL previous open digests ──────────
+            for (const prev of previousDigests) {
+              try {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: prev.number,
+                  body: `Superseded by #${created.data.number}.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: prev.number,
+                  state: 'closed',
+                });
+                console.log(`Closed previous digest #${prev.number}.`);
+              } catch (e) {
+                console.log(`Could not close previous digest #${prev.number}: ${e.message}`);
+              }
+            }
