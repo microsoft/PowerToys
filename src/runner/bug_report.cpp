@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "bug_report.h"
+#include "bug_report_dialog.h"
 #include "Generated files/resource.h"
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
@@ -50,21 +51,14 @@ void BugReportManager::launch_bug_report() noexcept
         notify_observers(true);
 
         std::thread([this, bug_report_path]() {
-            SHELLEXECUTEINFOW sei{ sizeof(sei) };
-            sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NO_CONSOLE };
-            sei.lpFile = bug_report_path.c_str();
-            sei.nShow = SW_HIDE;
-            if (ShellExecuteExW(&sei))
-            {
-                WaitForSingleObject(sei.hProcess, INFINITE);
-                CloseHandle(sei.hProcess);
-                static const std::wstring bugreport_success = GET_RESOURCE_STRING(IDS_BUGREPORT_SUCCESS);
-                MessageBoxW(nullptr, bugreport_success.c_str(), L"PowerToys", MB_OK);
-            }
-
-            m_isBugReportRunning.store(false);
-            // Notify observers that bug report has finished
-            notify_observers(false);
+            // Shows the progress/result window and runs the tool. The running
+            // state is cleared as soon as the tool process exits, so the window
+            // with the result and "Report on GitHub" action can stay open
+            // afterwards without keeping the UI in a "running" state.
+            run_bug_report_dialog(bug_report_path, [this]() {
+                m_isBugReportRunning.store(false);
+                notify_observers(false);
+            });
         }).detach();
     }
     else
