@@ -254,9 +254,7 @@
             IsEnabled="True"
             TabIndex="0">
             <controls:PromptBox.Footer>
-                <StackPanel
-                    Orientation="Horizontal"
-                    Visibility="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" Visibility="{x:Bind ViewModel.IsCustomAIServiceEnabled, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <TextBlock
                         x:Uid="AIMistakeNote"
                         Margin="0,0,2,0"
@@ -326,11 +324,11 @@
                 Grid.Column="1"
                 FontWeight="SemiBold"
                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}"
                 MaxLines="2"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}"
                 TextTrimming="CharacterEllipsis"
-                TextWrapping="Wrap"
-                Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}" />
+                TextWrapping="Wrap" />
             <HyperlinkButton
                 x:Name="ShowErrorDetailsBtn"
                 x:Uid="ShowErrorDetailsBtn"
