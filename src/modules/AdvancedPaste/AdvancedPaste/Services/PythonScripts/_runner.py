@@ -235,7 +235,7 @@ def main():
         )
         sys.exit(1)
 
-    if not input_value:
+    if input_value is None:
         print(
             f"Error: no data available for format '{input_type}' "
             f"(expected '{key}' in input payload).",

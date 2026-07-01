@@ -429,7 +429,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
             case "html":
                 var html = outputObj["html"]?.GetValue<string>() ?? string.Empty;
-                dataPackage.SetHtmlFormat(html);
+                dataPackage.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(html));
                 var htmlAsText = outputObj["text"]?.GetValue<string>();
                 if (!string.IsNullOrEmpty(htmlAsText))
                 {
@@ -1857,7 +1857,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
             case "html":
                 var html = outputObj["html"]?.GetValue<string>() ?? string.Empty;
-                dataPackage.SetHtmlFormat(html);
+                dataPackage.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat(html));
 
                 // Also set plain text as fallback for apps that don't accept HTML.
                 var htmlAsText = outputObj["text"]?.GetValue<string>();
