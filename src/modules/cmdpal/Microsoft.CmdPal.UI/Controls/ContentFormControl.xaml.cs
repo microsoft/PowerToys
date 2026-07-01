@@ -283,7 +283,13 @@ public sealed partial class ContentFormControl : UserControl
 
     private void OnFormKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key != VirtualKey.Enter || _renderedCard == null || _adaptiveCard == null)
+        // Snapshot the fields so a subsequent DisplayCard call can't swap the
+        // rendered/parsed card out from under us mid-method. This keeps the
+        // resolved submit action and the gathered inputs from the same card.
+        var renderedCard = _renderedCard;
+        var adaptiveCard = _adaptiveCard;
+
+        if (e.Key != VirtualKey.Enter || renderedCard == null || adaptiveCard == null)
         {
             return;
         }
@@ -293,7 +299,7 @@ public sealed partial class ContentFormControl : UserControl
         {
             // Find the first Submit or Execute action on the card
             IAdaptiveActionElement? submitAction = null;
-            foreach (var action in _adaptiveCard.Actions)
+            foreach (var action in adaptiveCard.Actions)
             {
                 if (action is AdaptiveSubmitAction or AdaptiveExecuteAction)
                 {
@@ -310,7 +316,7 @@ public sealed partial class ContentFormControl : UserControl
                 // returns the values cached by a successful ValidateInputs() call, so
                 // skipping this would submit an empty payload. This mirrors what the
                 // renderer does internally when a submit button is clicked.
-                var inputs = _renderedCard.UserInputs;
+                var inputs = renderedCard.UserInputs;
                 if (inputs.ValidateInputs(submitAction))
                 {
                     ViewModel?.HandleSubmit(submitAction, inputs.AsJson());
