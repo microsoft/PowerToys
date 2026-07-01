@@ -352,7 +352,15 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         result = -1;
     }
     Trace::UnregisterProvider();
-    QuickAccessHost::stop();
+    // On OS-initiated shutdown the OS reaps the Quick Access host process in
+    // parallel, so blocking up to the QuickAccessHost::stop() wait timeout here
+    // is pure dead time against the quiesce budget. Skip when the runner
+    // observed WM_ENDSESSION(TRUE); the user-initiated tray->Exit path still
+    // calls stop() and unwinds cleanly.
+    if (!is_session_ending())
+    {
+        QuickAccessHost::stop();
+    }
     return result;
 }
 
