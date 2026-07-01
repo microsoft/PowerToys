@@ -16,7 +16,13 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </summary>
 internal sealed class ScreenRecording : IDisposable
 {
-    private const int TargetFps = 30;
+    // Deliberately light capture settings: on CI runners without a GPU, ScreenRecorderLib falls back
+    // to software H.264, and a full 1080p/30fps realtime encode competes with the test for CPU. 15 fps
+    // at 720p (~4x less pixel throughput than 1080p/30) is still plenty to see what a UI test did.
+    // Tune these down further (e.g. 10 fps / 960x540) if a runner is still CPU-starved.
+    private const int TargetFps = 15;
+    private const int OutputWidth = 1280;
+    private const int OutputHeight = 720;
 
     /// <summary>Upper bound on how long to wait for Media Foundation to flush the MP4 after <c>Stop()</c>.</summary>
     private static readonly TimeSpan FinalizeTimeout = TimeSpan.FromSeconds(30);
@@ -68,11 +74,21 @@ internal sealed class ScreenRecording : IDisposable
                     OutputOptions = new OutputOptions
                     {
                         RecorderMode = RecorderMode.Video,
+
+                        // Downscale from the test desktop (normalized to 1080p) to 720p. Both are 16:9 so
+                        // Uniform is a clean scale with no letterboxing, and encoding ~2.25x fewer pixels
+                        // is the single biggest CPU saving when the runner falls back to software H.264.
+                        OutputFrameSize = new ScreenSize(OutputWidth, OutputHeight),
+                        Stretch = StretchMode.Uniform,
                     },
                     VideoEncoderOptions = new VideoEncoderOptions
                     {
                         Framerate = TargetFps,
-                        Encoder = new H264VideoEncoder(),
+
+                        // Baseline is the cheapest H.264 profile to encode (no B-frames/CABAC); the
+                        // library's own docs note lesser profiles "use less resources" — ideal for a
+                        // throwaway diagnostic clip on a runner that falls back to software encoding.
+                        Encoder = new H264VideoEncoder { EncoderProfile = H264Profile.Baseline },
 
                         // Force a constant frame rate. Without this, ScreenRecorderLib only sends a
                         // frame to the encoder when the screen *changes* (variable frame rate), while
@@ -81,8 +97,13 @@ internal sealed class ScreenRecording : IDisposable
                         // get packed together, so playback drifts out of sync with wall-clock time — the
                         // video runs fast/offset and the tail of the test looks cut off. Duplicating the
                         // previous frame keeps the timeline 1:1 with real time; H.264 compresses the
-                        // repeated frames to almost nothing, so the file stays small.
+                        // repeated frames to almost nothing, so the file stays small. At 15 fps the extra
+                        // duplicated idle frames are nearly free to encode.
                         IsFixedFramerate = true,
+
+                        // Prefer encode speed over quality — this is a throwaway diagnostic clip, and a
+                        // lower-latency encode leaves more CPU for the test itself on shared CI agents.
+                        IsLowLatencyEnabled = true,
                     },
 
                     // UI tests don't need audio, and capturing it can fail on headless CI agents.
