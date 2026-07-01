@@ -18,9 +18,7 @@ namespace WorkspacesEditor.Views
 {
     public sealed partial class SnapshotWindow : Window
     {
-        private readonly Microsoft.UI.Xaml.DispatcherTimer _pulseTimer;
         private bool _captured;
-        private bool _dotVisible = true;
 
         public SnapshotWindow()
         {
@@ -58,16 +56,6 @@ namespace WorkspacesEditor.Views
             int y = workArea.Y + ((workArea.Height - 200) / 2);
             appWindow.Move(new Windows.Graphics.PointInt32(x, y));
 
-            // Pulse the recording dot
-            _pulseTimer = new Microsoft.UI.Xaml.DispatcherTimer();
-            _pulseTimer.Interval = TimeSpan.FromMilliseconds(600);
-            _pulseTimer.Tick += (s, e) =>
-            {
-                _dotVisible = !_dotVisible;
-                RecordingDot.Opacity = _dotVisible ? 1.0 : 0.15;
-            };
-            _pulseTimer.Start();
-
             this.Closed += OnClosed;
 
             // Set focus to the Capture button when window loads
@@ -102,7 +90,6 @@ namespace WorkspacesEditor.Views
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
-            _pulseTimer.Stop();
             if (!_captured)
             {
                 StrongReferenceMessenger.Default.Send(new SnapshotCancelledMessage());

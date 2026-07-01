@@ -18,31 +18,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!--  Recording indicator  -->
-        <StackPanel
-            Grid.ColumnSpan="2"
-            Margin="0,12,0,4"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="8">
-            <Ellipse
-                x:Name="RecordingDot"
-                Width="12"
-                Height="12"
-                VerticalAlignment="Center"
-                Fill="Red">
-                <Ellipse.OpacityTransition>
-                    <ScalarTransition Duration="0:0:0.6" />
-                </Ellipse.OpacityTransition>
-            </Ellipse>
-            <TextBlock
-                x:Uid="CapturingLabel"
-                VerticalAlignment="Center"
-                FontSize="13"
-                FontWeight="SemiBold"
-                Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
-        </StackPanel>
-
         <ContentControl
             Grid.Row="1"
             Grid.ColumnSpan="2"
