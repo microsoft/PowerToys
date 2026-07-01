@@ -59,6 +59,28 @@ steps:
           **/PowerToysSetupCustomActionsVNext.dll
           **/SilentFilesInUseBAFunction.dll
 
+  # Pack the PTSettingsSvc MSIX from the ALREADY-SIGNED service binary (core ESRP
+  # signing ran before this template) and then sign the package itself, so the
+  # per-user installer can stage a signed, immutable service package (Design
+  # §12.1).  Must run after core signing and before the MSI build, which embeds
+  # the .msix as the per-user payload.
+  - pwsh: |-
+      $svcDir = "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\WorkspacesSettingsService"
+      & "$(Build.SourcesDirectory)\src\modules\Workspaces\WorkspacesSettingsService\devtools\build-msix.ps1" `
+          -ExePath "$svcDir\PowerToys.PTSettingsSvc.exe" `
+          -OutMsix "$svcDir\PTSettingsSvc.msix" `
+          -Version "${{ parameters.versionNumber }}" `
+          -Arch "$(BuildPlatform)"
+    displayName: Pack PTSettingsSvc MSIX
+
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: steps-esrp-sign-files-authenticode.yml
+      parameters:
+        displayName: Sign PTSettingsSvc MSIX
+        signingIdentity: ${{ parameters.signingIdentity }}
+        folder: '$(BuildPlatform)\$(BuildConfiguration)\WorkspacesSettingsService'
+        pattern: '**/PTSettingsSvc.msix'
+
   ## INSTALLER START
   #### MSI BUILDING AND SIGNING
   #

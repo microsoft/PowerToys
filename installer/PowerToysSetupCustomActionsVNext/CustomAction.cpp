@@ -26,6 +26,7 @@
 #include <processthreadsapi.h>
 #include <UserEnv.h>
 #include <winnt.h>
+#include <shellapi.h>
 
 using namespace std;
 
@@ -806,10 +807,286 @@ LExit:
     return WcaFinalize(er);
 }
 
+// --- PTSettingsSvc MSIX (Design-v6-Final.md §12.4 unification) ---------------
+// Per-MACHINE registration of the PowerToys Settings Service MSIX.  Replaces the
+// former MSI <ServiceInstall> of the loose exe: provisioning the MSIX for all
+// users makes the MSIX windows.service extension the single owner of the
+// machine-wide PTSettingsSvc, so per-machine and per-user no longer compete for
+// the service name.  Per-USER registration stays in the deferred managed
+// ServiceProvisioner (a non-elevated per-user MSI cannot register a service).
+namespace
+{
+    const wchar_t* const kPTSettingsSvcFamilyName = L"Microsoft.PowerToys.SettingsService_8wekyb3d8bbwe";
+    const wchar_t* const kPTSettingsSvcPackageName = L"Microsoft.PowerToys.SettingsService";
+    const wchar_t* const kPTSettingsSvcMsixRelative = L"WorkspacesSettingsService\\PTSettingsSvc.msix";
+
+    // Best-effort STOP (not delete) of a service so its (packaged) exe is not
+    // held open while a new MSIX version is staged/registered — a running
+    // packaged windows.service otherwise blocks an in-place update with
+    // 0x80073D02 ("resources ... currently in use").  No-op on a fresh install.
+    void StopServiceIfRunning(const wchar_t* serviceName)
+    {
+        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT);
+        if (!scm)
+        {
+            return;
+        }
+        SC_HANDLE svc = OpenServiceW(scm, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
+        if (svc)
+        {
+            SERVICE_STATUS ss{};
+            if (ControlService(svc, SERVICE_CONTROL_STOP, &ss))
+            {
+                for (int i = 0; i < 10; ++i)
+                {
+                    if (!QueryServiceStatus(svc, &ss) || ss.dwCurrentState == SERVICE_STOPPED)
+                    {
+                        break;
+                    }
+                    Sleep(500);
+                }
+            }
+            CloseServiceHandle(svc);
+        }
+        CloseServiceHandle(scm);
+    }
+
+    // Prompts UAC once to remove the PTSettingsSvc package elevated (deleting a
+    // service-bearing package needs admin, which a per-user uninstall lacks).
+    // Mirrors the shared run_elevated() helper (common/utils/elevation.h) — the
+    // same UAC-via-ShellExecute("runas") mechanism used elsewhere in the product
+    // — kept self-contained here so the installer CA project need not take a new
+    // WIL/header dependency (elevation.h transitively pulls in wil/resource.h).
+    // Returns true only if the elevated removal completed (exit 0).  False if the
+    // user declines UAC, there is no interactive session (silent uninstall), or
+    // removal fails — the caller then leaves the signed/immutable orphan WITHOUT
+    // blocking the uninstall (Design §12.5).
+    bool TryRemovePackageElevated(const wchar_t* packageName)
+    {
+        std::wstring params =
+            L"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
+            L"\"Get-AppxPackage -Name '";
+        params += packageName;
+        params += L"' | Remove-AppxPackage\"";
+
+        SHELLEXECUTEINFOW sei{};
+        sei.cbSize = sizeof(sei);
+        sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
+        sei.lpVerb = L"runas"; // triggers the UAC consent prompt
+        sei.lpFile = L"powershell.exe";
+        sei.lpParameters = params.c_str();
+        sei.nShow = SW_HIDE;
+
+        if (!ShellExecuteExW(&sei) || !sei.hProcess)
+        {
+            // ERROR_CANCELLED (1223) == user declined UAC; or no shell/session.
+            return false;
+        }
+        WaitForSingleObject(sei.hProcess, 120000);
+        DWORD exitCode = 1;
+        GetExitCodeProcess(sei.hProcess, &exitCode);
+        CloseHandle(sei.hProcess);
+        return exitCode == 0;
+    }
+}
+
+UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
+{
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "InstallPTSettingsSvcCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get install folder");
+
+    try
+    {
+        std::filesystem::path msixPath = std::filesystem::path(installationFolder) / kPTSettingsSvcMsixRelative;
+        if (!std::filesystem::exists(msixPath))
+        {
+            Logger::error(L"PTSettingsSvc MSIX not found: " + msixPath.wstring());
+            er = ERROR_INSTALL_FAILURE;
+            ExitFunction();
+        }
+
+        Uri packageUri{ msixPath.wstring() };
+        PackageManager pm;
+
+        // Upgrade case: if a previous version's service is still running, stop it
+        // first so its packaged exe isn't held open (else the update fails with
+        // 0x80073D02).  No-op on a fresh install.  The service auto-restarts
+        // (AUTO_START) once the new version is registered (Design §12.6).
+        StopServiceIfRunning(L"PTSettingsSvc");
+
+        // Per-machine: stage once, then provision for all users.  The MSIX
+        // windows.service extension registers the machine-wide PTSettingsSvc.
+        StagePackageOptions stageOptions;
+        auto stageResult = pm.StagePackageByUriAsync(packageUri, stageOptions).get();
+        uint32_t stageErrorCode = static_cast<uint32_t>(stageResult.ExtendedErrorCode());
+        if (stageErrorCode != 0)
+        {
+            Logger::error(L"PTSettingsSvc staging failed: 0x{:08X} - {}", stageErrorCode, stageResult.ErrorText());
+            er = ERROR_INSTALL_FAILURE;
+            ExitFunction();
+        }
+
+        auto provisionResult = pm.ProvisionPackageForAllUsersAsync(kPTSettingsSvcFamilyName).get();
+        uint32_t provisionErrorCode = static_cast<uint32_t>(provisionResult.ExtendedErrorCode());
+        if (provisionErrorCode != 0)
+        {
+            Logger::error(L"PTSettingsSvc provisioning failed: 0x{:08X}", provisionErrorCode);
+            er = ERROR_INSTALL_FAILURE;
+            ExitFunction();
+        }
+
+        Logger::info(L"PTSettingsSvc MSIX staged + provisioned for all users.");
+    }
+    catch (const winrt::hresult_error& ex)
+    {
+        Logger::error(L"PTSettingsSvc MSIX install exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+        er = ERROR_INSTALL_FAILURE;
+    }
+    catch (const std::exception& ex)
+    {
+        std::string errorMessage{ "Exception while installing PTSettingsSvc MSIX: " };
+        errorMessage += ex.what();
+        Logger::error(errorMessage);
+        er = ERROR_INSTALL_FAILURE;
+    }
+
+LExit:
+    er = er == ERROR_SUCCESS ? (SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE) : er;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
+{
+    using namespace winrt::Windows::Foundation;
+    using namespace winrt::Windows::Management::Deployment;
+
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR installScope = nullptr;
+    bool isMachineLevel = false;
+
+    hr = WcaInitialize(hInstall, "UnRegisterPTSettingsSvcCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    // Removing a windows.service-bearing package deletes the SCM service, which
+    // requires admin.  Per-machine uninstall runs elevated → full cleanup.
+    // Per-user uninstall is non-elevated → this is best-effort (Return="ignore",
+    // Impersonate="yes", mirroring UninstallServicesTask); when it cannot
+    // elevate, the signed+immutable WindowsApps package is left as a harmless
+    // orphan, removed later by a per-machine install or a manual elevated
+    // Remove-AppxPackage (Design §12.5).
+    hr = WcaGetProperty(L"InstallScope", &installScope);
+    if (SUCCEEDED(hr) && installScope && wcscmp(installScope, L"perMachine") == 0)
+    {
+        isMachineLevel = true;
+    }
+
+    Logger::info(L"Unregistering PTSettingsSvc MSIX - perUser: {}", !isMachineLevel);
+
+    try
+    {
+        PackageManager pm;
+
+        if (isMachineLevel)
+        {
+            // Per-machine: deprovision, then remove for all users.
+            try
+            {
+                pm.DeprovisionPackageForAllUsersAsync(kPTSettingsSvcFamilyName).get();
+            }
+            catch (const winrt::hresult_error& ex)
+            {
+                Logger::warn(L"PTSettingsSvc deprovision failed: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+            }
+
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                try
+                {
+                    auto removeResult = pm.RemovePackageAsync(package.Id().FullName(), RemovalOptions::RemoveForAllUsers).get();
+                    uint32_t errorCode = static_cast<uint32_t>(removeResult.ExtendedErrorCode());
+                    if (errorCode != 0)
+                    {
+                        Logger::error(L"PTSettingsSvc removal failed: 0x{:08X} - {}", errorCode, removeResult.ErrorText());
+                    }
+                }
+                catch (const winrt::hresult_error& ex)
+                {
+                    Logger::error(L"PTSettingsSvc removal exception: HRESULT 0x{:08X}", static_cast<uint32_t>(ex.code()));
+                }
+            }
+        }
+        else
+        {
+            // Per-user uninstall is non-elevated, but deleting a service-bearing
+            // package needs admin.  1) Try in-proc removal (succeeds only if this
+            // uninstall already happens to be elevated).  2) If anything remains,
+            // prompt UAC ONCE to remove it elevated.  3) If the user declines or
+            // there's no interactive session (silent uninstall), leave the
+            // signed/immutable orphan WITHOUT blocking the uninstall (Design §12.5).
+            bool foundAny = false;
+            bool removed = false;
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
+            {
+                foundAny = true;
+                try
+                {
+                    auto removeResult = pm.RemovePackageAsync(package.Id().FullName()).get();
+                    if (static_cast<uint32_t>(removeResult.ExtendedErrorCode()) == 0)
+                    {
+                        removed = true;
+                    }
+                }
+                catch (const winrt::hresult_error&)
+                {
+                    // Expected when non-elevated; fall through to the UAC prompt.
+                }
+            }
+
+            if (foundAny && !removed)
+            {
+                if (TryRemovePackageElevated(kPTSettingsSvcPackageName))
+                {
+                    Logger::info(L"PTSettingsSvc removed via one-time elevation at uninstall.");
+                }
+                else
+                {
+                    Logger::warn(L"PTSettingsSvc left registered (UAC declined or no interactive session); "
+                                 L"removable later by an elevated Remove-AppxPackage or a per-machine install.");
+                }
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        std::string errorMessage{ "Exception while unregistering PTSettingsSvc MSIX: " };
+        errorMessage += ex.what();
+        Logger::error(errorMessage);
+        // Don't fail the whole uninstall over service-package cleanup.
+        Logger::warn(L"Continuing uninstall despite PTSettingsSvc MSIX error");
+    }
+
+LExit:
+    ReleaseStr(installScope);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
 UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
 {
     SC_HANDLE hSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_CONNECT);
-
     if (!hSCManager)
     {
         return ERROR_INSTALL_FAILURE;

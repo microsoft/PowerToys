@@ -126,7 +126,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (projectToLaunch.id.empty())
     {
         auto file = WorkspacesData::WorkspacesFile();
-        auto res = JsonUtils::ReadWorkspaces(file);
+        auto res = JsonUtils::ReadWorkspacesFromService();
         if (res.isOk())
         {
             workspaces = res.getValue();
@@ -201,7 +201,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
         }
 
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
+        JsonUtils::WriteWorkspacesToService(workspaces);
     }
 
     // launch

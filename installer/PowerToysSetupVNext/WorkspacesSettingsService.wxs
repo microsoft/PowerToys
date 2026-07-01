@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PowerToys Settings Service (PTSettingsSvc) installer fragment.
+
+  Implements Design-v6-Final.md §9 (storage DACL) and §12.1/§12.4 (MSIX service
+  distribution + scope unification).
+
+  The service binary is distributed as a signed MSIX (windows.service extension,
+  LocalSystem).  Both scopes use the SAME MSIX, so there is a single machine-wide
+  PTSettingsSvc and a single staged package per version (no MSI <ServiceInstall>).
+
+  Per-machine: this fragment stages PTSettingsSvc.msix and the per-machine MSI
+  (elevated) provisions it for all users via the InstallPTSettingsSvc custom
+  action (Product.wxs) — the MSIX windows.service extension registers the
+  service.
+
+  Per-user: the per-user payload fragment (below) stages the same MSIX; the
+  managed ServiceProvisioner deploys it under one UAC on first editor open (a
+  non-elevated per-user MSI cannot register a service at install time).
+
+  Responsibilities:
+    1. Stage PTSettingsSvc.msix under <InstallFolder>\WorkspacesSettingsService\
+    2. Provision it for all users (per-machine CA) / deferred deploy (per-user)
+    3. Create %ProgramData%\Microsoft\PowerToys\Settings with a root DACL
+       (Administrators:FullControl, SYSTEM:FullControl, Authenticated Users:RX).
+       Per-user (<sid>) and per-namespace subfolders are created and tightened
+       lazily by the LocalSystem service on first write (SID-first layout).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define PTSettingsSvcFilesPath=$(var.BinDir)\WorkspacesSettingsService\?>
+
+  <Fragment>
+    <!-- Service binary directory -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="WorkspacesSettingsServiceFolder" Name="WorkspacesSettingsService" />
+    </DirectoryRef>
+
+    <!-- Service MSIX payload (Design §12.4 unification).  Per-machine ships the
+         signed PTSettingsSvc.msix and provisions it for all users via the
+         InstallPTSettingsSvc custom action (Product.wxs).  The MSIX
+         windows.service extension owns the single machine-wide PTSettingsSvc,
+         so there is no MSI <ServiceInstall> competing with the per-user MSIX. -->
+    <DirectoryRef Id="WorkspacesSettingsServiceFolder"
+                  FileSource="$(var.PTSettingsSvcFilesPath)">
+      <Component Id="RegisterPTSettingsService"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0001}">
+        <File Id="PTSettingsSvcMsixPerMachine"
+              Name="PTSettingsSvc.msix"
+              KeyPath="yes" />
+      </Component>
+
+      <!-- Remove the per-install service folder on uninstall -->
+      <Component Id="RemovePTSettingsServiceFolder"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0002}"
+                 Directory="INSTALLFOLDER">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="RemovePTSettingsServiceFolder"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderPTSettingsServiceFolder"
+                      Directory="WorkspacesSettingsServiceFolder"
+                      On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
+    <!--
+      %ProgramData%\Microsoft\PowerToys\Settings — created at install with a
+      PROTECTED DACL (Design §9).  util:PermissionEx replaces the inherited
+      DACL with the explicit ACEs below, so the default %ProgramData%
+      "Users can create" ACE does not carry through.  Authenticated Users get
+      RX so each user can traverse to their own \<sid> node.  Per-user (\<sid>)
+      and per-namespace (\<sid>\Workspaces) subfolders are created and tightened
+      by the service on first write (SID-first layout).
+    -->
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="PTSettingsDataMicrosoft" Name="Microsoft">
+        <Directory Id="PTSettingsDataPT" Name="PowerToys">
+          <Directory Id="PTSettingsDataRoot" Name="Settings">
+            <Component Id="CreatePTSettingsDataRoot"
+                       Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0003}">
+              <CreateFolder>
+                <util:PermissionEx User="Administrators" Domain="BUILTIN"
+                                   GenericAll="yes" />
+                <util:PermissionEx User="SYSTEM" Domain="NT AUTHORITY"
+                                   GenericAll="yes" />
+                <util:PermissionEx User="Authenticated Users" Domain="NT AUTHORITY"
+                                   GenericRead="yes" GenericExecute="yes" />
+              </CreateFolder>
+              <RegistryKey Root="HKLM"
+                           Key="Software\Microsoft\PowerToys\SettingsSvc">
+                <RegistryValue Type="integer"
+                               Name="DataRootCreated"
+                               Value="1"
+                               KeyPath="yes" />
+              </RegistryKey>
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <!--
+      INSTALLFOLDER hardening (Design §8/§11).  Replaces the install folder's
+      DACL with the admin-only-writable set the runtime check expects.  The
+      service runs as LocalSystem (MSIX), which is covered by the SYSTEM ACE
+      below, so it can read this DACL during caller authentication — no separate
+      virtual-account ACE is needed.
+
+      NOTE: util:PermissionEx replaces the whole DACL, so the full intended
+      ACL is specified here.  This touches the shared INSTALLFOLDER and MUST
+      be validated end-to-end (installer validation is deferred).
+    -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="HardenInstallFolderDacl"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0004}">
+        <CreateFolder>
+          <util:PermissionEx User="SYSTEM" Domain="NT AUTHORITY"
+                             GenericAll="yes" />
+          <util:PermissionEx User="Administrators" Domain="BUILTIN"
+                             GenericAll="yes" />
+          <util:PermissionEx User="TrustedInstaller" Domain="NT SERVICE"
+                             GenericAll="yes" />
+          <util:PermissionEx User="Users" Domain="BUILTIN"
+                             GenericRead="yes" GenericExecute="yes" />
+        </CreateFolder>
+        <RegistryKey Root="HKLM"
+                     Key="Software\Microsoft\PowerToys\SettingsSvc">
+          <RegistryValue Type="integer"
+                         Name="InstallFolderHardened"
+                         Value="1"
+                         KeyPath="yes" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <!--
+      Migration / cleanup CustomActions (Design-v6-Final.md §11).  The seeding
+      and cleanup logic lives in PowerShell scripts (installed next to the
+      service binary); these CAs invoke them as SYSTEM.  Installer validation
+      is deferred — authored, not yet MSI-validated.
+
+      * Seed at install: enumerate user profiles → create each user's protected
+        blob from their legacy %LocalAppData% file (direct SYSTEM write).
+      * Cleanup at uninstall: recursively delete the SettingsSvc data tree
+        (the runtime-created <SID>\blob.bin nodes aren't MSI-tracked, so the
+        default RemoveFolder can't remove them; the service itself is removed
+        by ServiceControl above).
+    -->
+    <DirectoryRef Id="WorkspacesSettingsServiceFolder"
+                  FileSource="$(var.ProjectDir)\CustomActions">
+      <Component Id="PTSettingsCustomActionScripts"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0005}">
+        <File Id="PtSeedScript"    Name="Seed-PtSettingsStore.ps1"   KeyPath="yes" />
+        <File Id="PtCleanupScript" Name="Remove-PtSettingsStore.ps1" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Run the seeding script as SYSTEM after files are laid down (fresh install only). -->
+    <CustomAction Id="PtSeedStore"
+                  Directory="WorkspacesSettingsServiceFolder"
+                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtSeedScript]&quot;"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <!-- Recursively remove the protected data tree as SYSTEM on uninstall. -->
+    <CustomAction Id="PtCleanupStore"
+                  Directory="WorkspacesSettingsServiceFolder"
+                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtCleanupScript]&quot; -RemoveService:$false -RemoveData"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <InstallExecuteSequence>
+      <!-- After the data root + files exist; only on a fresh install. -->
+      <Custom Action="PtSeedStore" After="InstallFiles" Condition="NOT Installed" />
+      <!-- While the script still exists; only on full uninstall. -->
+      <Custom Action="PtCleanupStore" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+    </InstallExecuteSequence>
+
+    <ComponentGroup Id="PTSettingsServiceComponentGroup">
+      <ComponentRef Id="RegisterPTSettingsService" />
+      <ComponentRef Id="RemovePTSettingsServiceFolder" />
+      <ComponentRef Id="CreatePTSettingsDataRoot" />
+      <ComponentRef Id="HardenInstallFolderDacl" />
+      <ComponentRef Id="PTSettingsCustomActionScripts" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!--
+    Per-user payload (Design §12.1).  A per-user MSI is non-elevated and cannot
+    register a service, so it only STAGES the SIGNED service MSIX under the
+    install folder.  The managed ServiceProvisioner deploys it via one elevated
+    Add-AppxPackage (the windows.service extension auto-registers PTSettingsSvc
+    as LocalSystem; the service hardens the store on first PutBlob).  No
+    user-writable hardening script (the prior Harden ps1 was an EoP hole).
+  -->
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="PTSettingsPayloadFolder" Name="WorkspacesSettingsService" />
+    </DirectoryRef>
+
+    <DirectoryRef Id="PTSettingsPayloadFolder"
+                  FileSource="$(var.PTSettingsSvcFilesPath)">
+      <Component Id="PTSettingsServicePayloadMsix"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0006}">
+        <File Id="PTSettingsSvcMsixPerUser"
+              Name="PTSettingsSvc.msix" />
+        <!-- Per-user (user-profile) component: KeyPath must be an HKCU
+             registry value, not a file (WiX ICE38). -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="PTSettingsServicePayloadMsix"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+
+    <!-- Remove the staged payload folder on uninstall. -->
+    <DirectoryRef Id="PTSettingsPayloadFolder">
+      <Component Id="RemovePTSettingsPayloadFolder"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0008}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="RemovePTSettingsPayloadFolder"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderPTSettingsPayload"
+                      Directory="PTSettingsPayloadFolder"
+                      On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="PTSettingsServicePayloadComponentGroup">
+      <ComponentRef Id="PTSettingsServicePayloadMsix" />
+      <ComponentRef Id="RemovePTSettingsPayloadFolder" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>
