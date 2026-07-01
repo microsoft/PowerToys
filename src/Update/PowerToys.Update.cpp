@@ -190,9 +190,17 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
-            // Get the process that owns the tray window so we can wait for it to exit
+            // Get the process that owns the tray window so we can wait for it to exit.
             DWORD ptProcessId = 0;
             GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
+            // Open the process handle BEFORE sending WM_CLOSE. PowerToys can exit
+            // inside its own WM_CLOSE handler, and once it does the OS is free to
+            // recycle its PID -- opening by PID afterwards could then fail or, worse,
+            // attach to an unrelated process that reused the PID. Holding the handle
+            // anchors the kernel object to the original process, so reuse is
+            // impossible while we wait on it.
+            wil::unique_handle ptProcess{ ptProcessId != 0 ? OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) : nullptr };
 
             // Use SendMessageTimeoutW to avoid blocking indefinitely if the
             // tray window thread is hung or unresponsive.
@@ -201,13 +209,9 @@ bool InstallNewVersionStage1(fs::path installer)
 
             // Wait for PT to actually exit before launching installer.
             // Without this, the installer may find PT files locked.
-            if (ptProcessId != 0)
+            if (ptProcess)
             {
-                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
-                if (ptProcess)
-                {
-                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
-                }
+                WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
             }
         }
 
