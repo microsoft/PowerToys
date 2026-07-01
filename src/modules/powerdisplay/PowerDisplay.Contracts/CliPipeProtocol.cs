@@ -36,4 +36,14 @@ public static class CliPipeProtocol
     /// single-threaded accept loop for every other CLI invocation.
     /// </summary>
     public const int ReadTimeoutMilliseconds = 10_000;
+
+    /// <summary>
+    /// How long the server waits for the response write and drain (<c>WaitForPipeDrain</c>) to
+    /// complete before abandoning the connection. Bounds the write phase the same way
+    /// <see cref="ReadTimeoutMilliseconds"/> bounds the read phase: the pipe uses a 0-byte output
+    /// buffer, so both the write and the drain block until the client reads, and a connected client
+    /// that never reads the response would otherwise wedge the single-threaded accept loop
+    /// indefinitely (<c>WaitForPipeDrain</c> has no timeout/<c>CancellationToken</c> overload).
+    /// </summary>
+    public const int WriteTimeoutMilliseconds = 10_000;
 }

@@ -561,12 +561,4 @@ public class MonitorDtoProjectorTests
     [TestMethod]
     public void OrientationDegrees_UnknownIndex_ReturnsIndexLabel()
         => Assert.AreEqual("index 7", MonitorDtoProjector.OrientationDegrees(7));
-
-    [TestMethod]
-    public void OrientationDegreesValue_Index1_Returns90()
-        => Assert.AreEqual(90, MonitorDtoProjector.OrientationDegreesValue(1));
-
-    [TestMethod]
-    public void OrientationDegreesValue_UnknownIndex_ReturnsIndex()
-        => Assert.AreEqual(7, MonitorDtoProjector.OrientationDegreesValue(7));
 }

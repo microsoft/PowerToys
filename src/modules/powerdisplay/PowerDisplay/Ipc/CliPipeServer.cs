@@ -97,12 +97,17 @@ public sealed class CliPipeServer
         {
             try
             {
+                // FirstPipeInstance makes Create fail (rather than silently join) if another process
+                // already owns this pipe name. The name is predictable (session id), so without it a
+                // same-user process could pre-create the pipe and intercept/spoof CLI traffic — the
+                // current-user ACL below would be moot. The accept loop's catch surfaces the failure
+                // and backs off.
                 using var server = NamedPipeServerStreamAcl.Create(
                     pipeName,
                     PipeDirection.InOut,
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Byte,
-                    PipeOptions.Asynchronous,
+                    PipeOptions.Asynchronous | PipeOptions.FirstPipeInstance,
                     inBufferSize: 0,
                     outBufferSize: 0,
                     security);
@@ -118,7 +123,18 @@ public sealed class CliPipeServer
             {
                 Logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
 
-                // Continue — a single bad connection must not kill the server.
+                // Continue — a single bad connection must not kill the server. Back off briefly so a
+                // persistent create failure (e.g. another process holding the pipe name, which
+                // FirstPipeInstance now surfaces as an exception instead of silently joining it) does
+                // not spin the loop.
+                try
+                {
+                    await Task.Delay(500, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
         }
 
@@ -161,16 +177,44 @@ public sealed class CliPipeServer
         }
 
         var responseJson = await _handler.HandleAsync(requestJson, ct).ConfigureAwait(false);
-        await writer.WriteLineAsync(responseJson.AsMemory(), ct).ConfigureAwait(false);
 
-        // Block until the client has drained the full response before the caller's `using` disposes
-        // the pipe instance. Without this, disposing the handle immediately after an AutoFlush write
-        // can truncate a large response the client has not finished reading, surfacing as a spurious
-        // deserialize-mismatch on the CLI side. Best-effort: if the client already vanished the pipe
-        // is broken and there is nothing left to drain.
+        // Bound the write + drain the same way the read is bounded above. The pipe uses a 0-byte
+        // output buffer, so both WriteLineAsync and WaitForPipeDrain block until the client reads;
+        // a connected client that never reads must not wedge the single-threaded accept loop.
+        using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        writeCts.CancelAfter(CliPipeProtocol.WriteTimeoutMilliseconds);
+
+        // Drain rationale: without WaitForPipeDrain, disposing the handle immediately after an
+        // AutoFlush write can truncate a large response the client has not finished reading,
+        // surfacing as a spurious deserialize-mismatch on the CLI side. WaitForPipeDrain has no
+        // timeout/CancellationToken overload, so run it on a worker and bound it via writeCts;
+        // disposing the pipe (the caller's `using`) unblocks a still-waiting worker.
         try
         {
-            server.WaitForPipeDrain();
+            await writer.WriteLineAsync(responseJson.AsMemory(), writeCts.Token).ConfigureAwait(false);
+
+            var drainTask = Task.Run(
+                () =>
+                {
+                    try
+                    {
+                        server.WaitForPipeDrain();
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                    }
+                },
+                CancellationToken.None);
+
+            await drainTask.WaitAsync(writeCts.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Write/drain timeout (not app shutdown — that propagates to break the accept loop).
+            Logger.LogWarning("[PowerDisplay CLI IPC] Response write/drain timed out; closing connection.");
         }
         catch (IOException)
         {

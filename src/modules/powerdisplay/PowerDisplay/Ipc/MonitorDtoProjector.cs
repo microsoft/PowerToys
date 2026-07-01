@@ -434,16 +434,4 @@ public static class MonitorDtoProjector
         3 => "270°",
         _ => $"index {index}",
     };
-
-    /// <summary>
-    /// Returns the degree value for a GDI orientation index (0–3).
-    /// </summary>
-    internal static int OrientationDegreesValue(int index) => index switch
-    {
-        0 => 0,
-        1 => 90,
-        2 => 180,
-        3 => 270,
-        _ => index,
-    };
 }
