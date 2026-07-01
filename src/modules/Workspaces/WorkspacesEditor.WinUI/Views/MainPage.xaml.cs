@@ -55,19 +55,11 @@ namespace WorkspacesEditor.Views
 
         private void EditButtonClicked(object sender, RoutedEventArgs e)
         {
-            try
+            ViewModel.CloseAllPopups();
+            Project selectedProject = GetProjectFromSender(sender);
+            if (selectedProject != null)
             {
-                ViewModel.CloseAllPopups();
-                Project selectedProject = GetProjectFromSender(sender);
-                ManagedCommon.Logger.LogInfo($"EditButtonClicked: project={selectedProject?.Name ?? "NULL"}");
-                if (selectedProject != null)
-                {
-                    ViewModel.EditProject(selectedProject);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                ManagedCommon.Logger.LogError($"EditButtonClicked crashed: {ex}");
+                ViewModel.EditProject(selectedProject);
             }
         }
 

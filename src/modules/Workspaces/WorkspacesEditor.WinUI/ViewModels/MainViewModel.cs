@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -537,8 +536,6 @@ namespace WorkspacesEditor.ViewModels
             string shortcutAddress = GetDesktopShortcutAddress(project);
             string shortcutIconFilename = GetShortcutStoreAddress(project);
 
-            Logger.LogInfo($"RemoveShortcut: trying to delete '{shortcutAddress}' (exists: {File.Exists(shortcutAddress)})");
-
             if (File.Exists(shortcutIconFilename))
             {
                 File.Delete(shortcutIconFilename);
@@ -547,11 +544,6 @@ namespace WorkspacesEditor.ViewModels
             if (File.Exists(shortcutAddress))
             {
                 File.Delete(shortcutAddress);
-                Logger.LogInfo("RemoveShortcut: deleted successfully");
-            }
-            else
-            {
-                Logger.LogInfo("RemoveShortcut: file not found at expected path");
             }
         }
 

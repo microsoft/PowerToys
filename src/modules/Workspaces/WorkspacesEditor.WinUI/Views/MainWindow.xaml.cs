@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -60,16 +59,7 @@ namespace WorkspacesEditor
             var vm = App.MainViewModel;
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
-                try
-                {
-                    Logger.LogInfo($"Navigating to editor for: {m.Project?.Name}");
-                    ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
-                    Logger.LogInfo("Navigation completed");
-                }
-                catch (System.Exception ex)
-                {
-                    Logger.LogError($"Navigation crashed: {ex}");
-                }
+                ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
             });
             StrongReferenceMessenger.Default.Register<GoBackMessage>(this, (r, m) =>
             {
