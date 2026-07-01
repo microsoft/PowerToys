@@ -47,6 +47,9 @@ namespace WorkspacesEditor.Views
             {
                 _mainViewModel = vm;
                 this.DataContext = project;
+
+                // Set focus to the name field so Narrator announces the page context
+                this.Loaded += (s, args) => EditNameTextBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             }
         }
 

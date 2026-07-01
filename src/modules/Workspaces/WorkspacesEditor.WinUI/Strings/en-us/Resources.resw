@@ -126,6 +126,9 @@
   <data name="MonthsAgo" xml:space="preserve">
     <value>months ago</value>
   </data>
+  <data name="MoreOptions" xml:space="preserve">
+    <value>More options for</value>
+  </data>
   <data name="MoveIfExist" xml:space="preserve">
     <value>Move existing windows</value>
   </data>

@@ -182,6 +182,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
                 <Button
+                    AutomationProperties.Name="Back to Workspaces"
                     Padding="0"
                     VerticalAlignment="Center"
                     Click="CancelButtonClicked"

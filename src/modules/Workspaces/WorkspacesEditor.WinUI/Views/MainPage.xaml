@@ -12,6 +12,7 @@
         <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
         <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
         <converters:LaunchButtonNameConverter x:Key="LaunchButtonNameConverter" />
+        <converters:MoreOptionsButtonNameConverter x:Key="MoreOptionsButtonNameConverter" />
     </Page.Resources>
 
     <Grid>
@@ -171,6 +172,7 @@
                                 Click="LaunchButton_Click"
                                 x:Uid="LaunchBtn" />
                             <Button
+                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource MoreOptionsButtonNameConverter}}"
                                 x:Uid="MoreOptionsBtn"
                                 Padding="8">
                                 <TextBlock
