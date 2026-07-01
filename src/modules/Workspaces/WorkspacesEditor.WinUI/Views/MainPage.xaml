@@ -61,6 +61,7 @@
             Orientation="Horizontal">
             <TextBox
                 x:Name="SearchTextBox"
+                x:Uid="SearchTextBox"
                 Width="320"
                 PlaceholderText="Search for Workspaces or apps"
                 Text="{x:Bind ViewModel.SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

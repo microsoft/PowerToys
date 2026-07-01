@@ -249,6 +249,7 @@
             <StackPanel Orientation="Horizontal" Spacing="24">
                 <TextBox
                     x:Name="EditNameTextBox"
+                    x:Uid="EditNameTextBox"
                     Width="300"
                     HorizontalAlignment="Left"
                     GotFocus="EditNameTextBox_GotFocus"

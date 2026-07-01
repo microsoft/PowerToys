@@ -72,6 +72,9 @@
   <data name="Edit" xml:space="preserve">
     <value>Edit</value>
   </data>
+  <data name="EditNameTextBox.AutomationProperties.Name" xml:space="preserve">
+    <value>Workspace name</value>
+  </data>
   <data name="EditWorkspace" xml:space="preserve">
     <value>Edit Workspace</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="SearchExplanation" xml:space="preserve">
     <value>Search for Workspaces or apps</value>
+  </data>
+  <data name="SearchTextBox.AutomationProperties.Name" xml:space="preserve">
+    <value>Search workspaces</value>
   </data>
   <data name="SecondsAgo" xml:space="preserve">
     <value>seconds ago</value>
