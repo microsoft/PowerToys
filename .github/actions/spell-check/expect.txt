@@ -1607,7 +1607,6 @@ sancov
 SAVEFAILED
 schedtasks
 SCID
-SCL
 Scode
 SCREENFONTS
 screenruler

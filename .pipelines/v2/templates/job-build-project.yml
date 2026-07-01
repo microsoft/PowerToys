@@ -266,6 +266,17 @@ jobs:
         VCWhereExtraVersionTarget: '-prerelease'
 
   - ${{ if eq(parameters.official, true) }}:
+    # M.W.T.V Setup.ps1 sets the pipeline-level XES_APPXMANIFESTVERSION env var
+    # from the supplied -ProjectDirectory's custom.props. Whichever invocation
+    # runs last wins. cmdpal MUST run last because $(CmdPalVersion) (used by the
+    # VNext installer and CmdPal's AppxPackageTestDir) falls back to that env
+    # var; if AP wins, CmdPal's folder name and MSIX filename disagree on
+    # VersionMinor and the installer fails with WIX0103. Each project's own
+    # custom.props is still applied at MSBuild time, so AP versioning is
+    # unaffected by the order.
+    - template: .\steps-setup-versioning.yml
+      parameters:
+        directory: $(build.sourcesdirectory)\src\modules\AdvancedPaste
     - template: .\steps-setup-versioning.yml
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
