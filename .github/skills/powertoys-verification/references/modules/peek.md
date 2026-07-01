@@ -78,7 +78,7 @@ Wakes the resident Peek process (different from CLI back-door — respects curre
 
 If the agent only tried the CLI back-door and marked the pin / navigation tests BLOCKED → **misdiagnosis**, try entry-path #2 (Shell.Application COM + Ctrl+Space).
 
-If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver). See `SKILL.md` pitfall #13 and `references/environment-setup.md`. Mark BLK-ENV with mitigation citation.
+If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver). See `SKILL.md` pitfall #12 and `references/environment-setup.md`. Mark BLK-ENV with mitigation citation.
 
 Module quirks that mislead driving:
 - **Activation-shortcut is NOT hot-reloaded.** Editing `Peek\settings.json` `ActivationShortcut` does nothing until `Restart-PtRunner`. Restart after the change AND after restoring.
