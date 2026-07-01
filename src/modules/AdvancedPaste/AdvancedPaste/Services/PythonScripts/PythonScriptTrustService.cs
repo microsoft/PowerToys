@@ -52,7 +52,8 @@ public sealed class PythonScriptTrustService(IUserSettings userSettings) : IPyth
                 Content = string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
                     resourceLoader.GetString("PythonScriptTrustContent"),
-                    scriptPath),
+                    scriptPath,
+                    hash),
                 PrimaryButtonText = resourceLoader.GetString("PythonScriptTrustConfirm"),
                 CloseButtonText = resourceLoader.GetString("PythonScriptTrustCancel"),
             };

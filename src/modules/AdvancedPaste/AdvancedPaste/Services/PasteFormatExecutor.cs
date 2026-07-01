@@ -77,7 +77,7 @@ public sealed class PasteFormatExecutor(
             {
                 throw new PasteActionException(
                     string.Format(System.Globalization.CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptNotFound"), scriptPath),
-                    new System.IO.FileNotFoundException(scriptPath));
+                    new System.IO.FileNotFoundException(null, scriptPath));
             }
 
             var approved = await _pythonScriptTrustService.RequestTrustAsync(scriptPath, hash);

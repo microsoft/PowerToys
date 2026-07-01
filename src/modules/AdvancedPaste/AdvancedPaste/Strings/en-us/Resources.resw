@@ -398,8 +398,10 @@
   <data name="PythonScriptTrustContent" xml:space="preserve">
     <value>This script has not been verified. Running untrusted scripts can be a security risk. Do you want to run the following script?
 
-{0}</value>
-    <comment>{0} is the script file path. Do not translate {0}.</comment>
+{0}
+
+SHA256: {1}</value>
+    <comment>{0} is the script file path. {1} is the SHA-256 hash of the script. Do not translate {0} or {1}.</comment>
   </data>
   <data name="PythonScriptTrustConfirm" xml:space="preserve">
     <value>Run</value>
