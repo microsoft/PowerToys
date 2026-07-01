@@ -402,8 +402,7 @@
                                 <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeWsl" />
                             </ComboBox>
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
-                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard" IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE8B7;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -430,9 +429,8 @@
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
-                        <!-- Windows-mode settings -->
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard"
-                            Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay}">
+                        <!--  Windows-mode settings  -->
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard" Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -452,9 +450,8 @@
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
-                        <!-- WSL-mode settings -->
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard"
-                            Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay}">
+                        <!--  WSL-mode settings  -->
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard" Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xEC7A;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -464,7 +461,7 @@
                                 SelectedIndex="{x:Bind ViewModel.WslDistributionIndex, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
 
-                        <!-- Discovered Python Scripts (read-only) -->
+                        <!--  Discovered Python Scripts (read-only)  -->
                         <tkcontrols:SettingsExpander
                             x:Name="PythonScriptListExpander"
                             x:Uid="AdvancedPaste_PythonScriptList"
@@ -483,19 +480,22 @@
                                 <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
                                     <tkcontrols:SettingsCard
                                         Margin="0,0,0,2"
-                                        Header="{x:Bind DisplayName, Mode=OneWay}"
                                         Description="{x:Bind Description, Mode=OneWay}"
+                                        Header="{x:Bind DisplayName, Mode=OneWay}"
                                         IsActionIconVisible="False">
-                                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                        <StackPanel
+                                            VerticalAlignment="Center"
+                                            Orientation="Horizontal"
+                                            Spacing="12">
                                             <TextBlock
-                                                Text="{x:Bind ConversionSummary, Mode=OneWay}"
-                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                VerticalAlignment="Center"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                VerticalAlignment="Center" />
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Text="{x:Bind ConversionSummary, Mode=OneWay}" />
                                             <Button
+                                                Click="OpenPythonScript_Click"
                                                 Content="&#xE8A7;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Click="OpenPythonScript_Click"
                                                 Style="{StaticResource SubtleButtonStyle}"
                                                 Tag="{x:Bind}">
                                                 <ToolTipService.ToolTip>
