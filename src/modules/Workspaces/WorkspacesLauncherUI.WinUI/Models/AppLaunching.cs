@@ -2,8 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -17,15 +16,8 @@ namespace WorkspacesLauncherUI.Models
     /// Drives the display of the spinner (Loading), checkmark/X glyph (StateGlyph),
     /// and color (StateColor) for each app row.
     /// </summary>
-    public class AppLaunching : INotifyPropertyChanged, IDisposable
+    public partial class AppLaunching : ObservableObject
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public bool Loading => LaunchState == LaunchingState.Waiting || LaunchState == LaunchingState.Launched;
 
         public string Name { get; set; }
@@ -40,24 +32,16 @@ namespace WorkspacesLauncherUI.Models
 
         public string PwaAppId { get; set; }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Loading))]
+        [NotifyPropertyChangedFor(nameof(StateGlyph))]
+        [NotifyPropertyChangedFor(nameof(StateColor))]
+        [NotifyPropertyChangedFor(nameof(StateColorValue))]
         private LaunchingState _launchState;
 
-        public LaunchingState LaunchState
+        partial void OnLaunchStateChanged(LaunchingState value)
         {
-            get => _launchState;
-            set
-            {
-                if (_launchState != value)
-                {
-                    _launchState = value;
-                    _stateColorBrush = null;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(LaunchState)));
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(Loading)));
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateGlyph)));
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateColor)));
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateColorValue)));
-                }
-            }
+            _stateColorBrush = null;
         }
 
         public string StateGlyph
@@ -85,11 +69,6 @@ namespace WorkspacesLauncherUI.Models
                 LaunchingState.Failed => Windows.UI.Color.FromArgb(255, 254, 0, 0),
                 _ => Windows.UI.Color.FromArgb(255, 254, 0, 0),
             };
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
         }
     }
 }

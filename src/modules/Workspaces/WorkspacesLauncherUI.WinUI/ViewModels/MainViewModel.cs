@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
+
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 using ManagedCommon;
 using WorkspacesCsharpLibrary;
@@ -15,18 +17,13 @@ using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged, IDisposable
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
-        public ObservableCollection<AppLaunching> AppsListed { get; set; } = new ObservableCollection<AppLaunching>();
-
         private readonly PwaHelper _pwaHelper;
+        private bool _isDisposed;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
+        [ObservableProperty]
+        private ObservableCollection<AppLaunching> _appsListed = new ObservableCollection<AppLaunching>();
 
         public MainViewModel()
         {
@@ -65,16 +62,27 @@ namespace WorkspacesLauncherUI.ViewModels
             }
 
             AppsListed = new ObservableCollection<AppLaunching>(appLaunchingList);
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppsListed)));
         }
 
-        public void CancelLaunch()
+        [RelayCommand]
+        private void CancelLaunch()
         {
             App.SendIPCMessage("cancel");
         }
 
+        [RelayCommand]
+        private void Dismiss()
+        {
+            // Window close is handled by the view
+        }
+
         public void Dispose()
         {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+            }
+
             GC.SuppressFinalize(this);
         }
     }

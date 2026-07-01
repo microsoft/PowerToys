@@ -135,19 +135,6 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("Model")]
-        public void DisposeModel_WithActiveState_CompletesCleanly()
-        {
-            var app = new AppLaunching
-            {
-                Name = "Test",
-                AppPath = @"C:\app.exe",
-                LaunchState = LaunchingState.Waiting,
-            };
-            app.Dispose();
-        }
-
-        [TestMethod]
-        [TestCategory("Model")]
         public void StateProgression_WaitingToSuccess_TransitionsSpinnerToGreenCheckmark()
         {
             var app = new AppLaunching { Name = "Test", LaunchState = LaunchingState.Waiting };

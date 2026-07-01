@@ -6,6 +6,7 @@
     xmlns:converters="using:WorkspacesLauncherUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WorkspacesLauncherUI.Models"
     Title="Workspaces"
     mc:Ignorable="d">
 
@@ -31,7 +32,7 @@
             <StackPanel AutomationProperties.AccessibilityView="Content" AutomationProperties.LiveSetting="Polite">
                 <ItemsControl AutomationProperties.Name="Applications" ItemsSource="{Binding AppsListed, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="models:AppLaunching">
                             <Grid
                                 Margin="0,2"
                                 Padding="4"
@@ -74,8 +75,8 @@
                                     AutomationProperties.AccessibilityView="Raw"
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     FontSize="20"
-                                    Foreground="{Binding StateColor}"
-                                    Text="{Binding StateGlyph}"
+                                    Foreground="{Binding StateColor, Mode=OneWay}"
+                                    Text="{Binding StateGlyph, Mode=OneWay}"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}" />
                             </Grid>
                         </DataTemplate>
@@ -90,6 +91,7 @@
             Grid.Row="1"
             Margin="4"
             HorizontalAlignment="Stretch"
+            Command="{Binding CancelLaunchCommand}"
             Click="CancelButton_Click"
             TabIndex="1" />
 

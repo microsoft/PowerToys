@@ -17,17 +17,18 @@ namespace WorkspacesLauncherUI
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA1001:Types that own disposable fields should be disposable", Justification = "WinUI Window does not support IDisposable; ViewModel is disposed on window close.")]
     public sealed partial class StatusWindow : Window
     {
-        private readonly MainViewModel _viewModel;
+        public MainViewModel ViewModel { get; }
 
         public StatusWindow()
         {
-            _viewModel = new MainViewModel();
+            ViewModel = new MainViewModel();
             this.InitializeComponent();
 
-            // WinUI Window is not a DependencyObject — set DataContext on root content
+            // WinUI Window is not a FrameworkElement, so set DataContext on the root content
+            // for {Binding} expressions. DataTemplate x:Bind works independently via x:DataType.
             if (this.Content is FrameworkElement rootElement)
             {
-                rootElement.DataContext = _viewModel;
+                rootElement.DataContext = ViewModel;
             }
 
             this.Closed += Window_Closed;
@@ -71,7 +72,6 @@ namespace WorkspacesLauncherUI
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.CancelLaunch();
             Close();
         }
 
@@ -82,7 +82,7 @@ namespace WorkspacesLauncherUI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            _viewModel?.Dispose();
+            ViewModel?.Dispose();
             (Application.Current as System.IDisposable)?.Dispose();
         }
     }
