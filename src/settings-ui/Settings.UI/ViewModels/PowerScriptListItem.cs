@@ -31,6 +31,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<string> Capabilities { get; set; } = new();
 
+        /// <summary>
+        /// True once the user has approved this script's current content to run (trust-on-first-use).
+        /// Emitted by the Host as <c>trusted</c>; recomputed from the script's content hash, so it
+        /// flips back to false if the script body or its declared capabilities change.
+        /// </summary>
+        public bool Trusted { get; set; }
+
         public string KindGlyph => string.Equals(Kind, "file", StringComparison.OrdinalIgnoreCase)
             ? "\uE8A5" // file action
             : "\uE756"; // system action
@@ -55,5 +62,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         /// <summary>Friendly runtime label (e.g. "PowerShell").</summary>
         public string RuntimeDisplay => string.IsNullOrEmpty(Runtime) ? "—" : Runtime;
+
+        /// <summary>Human-readable trust state shown in the Settings list.</summary>
+        public string TrustDisplay => Trusted
+            ? "Trusted"
+            : "Not yet trusted — you'll be asked to allow it the first time it runs";
     }
 }

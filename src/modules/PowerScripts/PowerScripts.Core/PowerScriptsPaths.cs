@@ -37,6 +37,12 @@ public static class PowerScriptsPaths
     /// <summary>The user-settings file that persists the chosen scripts root.</summary>
     public static string ConfigFilePath => Path.Combine(ModuleDirectory, ConfigFileName);
 
+    /// <summary>The trust store file name (records which script contents the user has approved).</summary>
+    public const string TrustFileName = "trust.json";
+
+    /// <summary>The trust store: which (script id, content hash) pairs the user has approved to run.</summary>
+    public static string TrustFilePath => Path.Combine(ModuleDirectory, TrustFileName);
+
     /// <summary>
     /// Default scripts root:
     /// <c>%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts</c>.

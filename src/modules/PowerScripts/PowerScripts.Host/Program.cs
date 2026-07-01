@@ -7,6 +7,7 @@ using PowerScripts.Core;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Registry;
+using PowerScripts.Core.Security;
 
 namespace PowerScripts.Host;
 
@@ -44,6 +45,7 @@ internal static class Program
             {
                 "list" => RunList(registry, options.ContainsKey("json")),
                 "run" => RunScript(registry, positional, options),
+                "trust" => RunTrust(registry, positional),
                 "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
                 "set-extensions" => RunSetExtensions(registry, positional, options),
                 "shell-menu" => RunShellMenu(registry, options),
@@ -66,6 +68,7 @@ internal static class Program
         {
             // Structured, permissioned capability list — also the shape the KBM editor picker and
             // future agents/MCP servers consume.
+            var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
             var projection = registry.Scripts.Select(s => new
             {
                 s.Id,
@@ -73,8 +76,12 @@ internal static class Program
                 s.Description,
                 kind = s.Kind.ToString(),
                 runtime = s.Runtime.ToString(),
+                s.Publisher,
+                s.Version,
+                s.Source,
                 s.Surfaces,
                 s.Capabilities,
+                trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
                 input = s.Input,
                 parameters = s.Parameters,
             });
@@ -129,6 +136,40 @@ internal static class Program
 
         var files = options.TryGetValue("files", out var f) ? f : new List<string>();
 
+        // Trust-on-first-use gate. This is the single enforcement point for the manifest's declared
+        // capabilities: a script only runs once the user has approved its exact current content, and
+        // is re-prompted whenever the script body or its declared capabilities change (the content
+        // hash then no longer matches the stored approval).
+        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
+        var contentHash = ScriptIntegrity.ComputeHash(manifest);
+        if (!trustStore.IsTrusted(id, contentHash))
+        {
+            var nonInteractive = options.ContainsKey("no-consent")
+                || string.Equals(Environment.GetEnvironmentVariable("POWERSCRIPTS_NO_CONSENT"), "1", StringComparison.Ordinal);
+
+            if (nonInteractive)
+            {
+                Console.Error.WriteLine($"run: script '{id}' is not trusted and consent is disabled; refusing to run. Approve it with 'trust approve {id}'.");
+                return 3;
+            }
+
+            if (!ConsentPrompt.Confirm(manifest))
+            {
+                Console.Error.WriteLine($"run: user declined to trust script '{id}'.");
+                return 3;
+            }
+
+            trustStore.Trust(new TrustRecord
+            {
+                Id = manifest.Id,
+                Hash = contentHash,
+                Capabilities = manifest.Capabilities,
+                Source = manifest.Source,
+                Publisher = manifest.Publisher,
+                ApprovedUtc = DateTimeOffset.UtcNow,
+            });
+        }
+
         var parameters = new Dictionary<string, string?>();
         if (options.TryGetValue("set", out var sets))
         {
@@ -159,6 +200,84 @@ internal static class Program
         }
 
         return result.ExitCode;
+    }
+
+    /// <summary>
+    /// Manages the trust store — the record of which script contents the user has approved to run.
+    ///   trust list                 show every approved script id + the content hash approved
+    ///   trust approve &lt;id&gt;         approve the script's current content without running it
+    ///   trust revoke &lt;id&gt;          forget approval, so the next run re-prompts
+    /// </summary>
+    private static int RunTrust(ScriptRegistry registry, IReadOnlyList<string> positional)
+    {
+        var sub = positional.Count > 0 ? positional[0].ToLowerInvariant() : "list";
+        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
+
+        switch (sub)
+        {
+            case "list":
+                if (trustStore.Records.Count == 0)
+                {
+                    Console.WriteLine("(no scripts trusted yet)");
+                    return 0;
+                }
+
+                foreach (var record in trustStore.Records.OrderBy(r => r.Id, StringComparer.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"  {record.Id,-24} {record.Hash[..Math.Min(12, record.Hash.Length)]}  approved {record.ApprovedUtc:u}");
+                }
+
+                return 0;
+
+            case "approve":
+            {
+                if (positional.Count < 2)
+                {
+                    Console.Error.WriteLine("trust approve: missing <id>.");
+                    return 1;
+                }
+
+                var manifest = registry.Get(positional[1]);
+                if (manifest is null)
+                {
+                    Console.Error.WriteLine($"trust approve: no script with id '{positional[1]}'. Try 'list'.");
+                    return 1;
+                }
+
+                trustStore.Trust(new TrustRecord
+                {
+                    Id = manifest.Id,
+                    Hash = ScriptIntegrity.ComputeHash(manifest),
+                    Capabilities = manifest.Capabilities,
+                    Source = manifest.Source,
+                    Publisher = manifest.Publisher,
+                    ApprovedUtc = DateTimeOffset.UtcNow,
+                });
+
+                Console.WriteLine($"trust approve: '{manifest.Id}' approved.");
+                return 0;
+            }
+
+            case "revoke":
+                if (positional.Count < 2)
+                {
+                    Console.Error.WriteLine("trust revoke: missing <id>.");
+                    return 1;
+                }
+
+                if (trustStore.Revoke(positional[1]))
+                {
+                    Console.WriteLine($"trust revoke: '{positional[1]}' will be re-prompted on next run.");
+                    return 0;
+                }
+
+                Console.Error.WriteLine($"trust revoke: '{positional[1]}' was not trusted.");
+                return 1;
+
+            default:
+                Console.Error.WriteLine($"trust: unknown subcommand '{sub}'. Use list | approve <id> | revoke <id>.");
+                return 1;
+        }
     }
 
     /// <summary>
@@ -350,7 +469,8 @@ internal static class Program
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
         Console.WriteLine("  list [--json] [--root <dir>]");
-        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--root <dir>]");
+        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
+        Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
         Console.WriteLine("  set-extensions <id> --ext <.md .txt ...>  (set a file script's trigger extensions)");
         Console.WriteLine("  shell-menu --files <f1> <f2> ...    (tab-separated id/name of matching file scripts)");

@@ -102,6 +102,15 @@ public sealed class PowerScriptManifest
     /// <summary>Optional icon file name, relative to the script folder.</summary>
     public string? Icon { get; set; }
 
+    /// <summary>Optional author/publisher, shown in the trust prompt (e.g. "contoso" or a GitHub user).</summary>
+    public string? Publisher { get; set; }
+
+    /// <summary>Optional semantic version of the script (e.g. "1.2.0").</summary>
+    public string? Version { get; set; }
+
+    /// <summary>Optional provenance, e.g. the catalogue URL the script was adopted from.</summary>
+    public string? Source { get; set; }
+
     public ScriptKind Kind { get; set; }
 
     public ScriptRuntime Runtime { get; set; } = ScriptRuntime.PowerShell;

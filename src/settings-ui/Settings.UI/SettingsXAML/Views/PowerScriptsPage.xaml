@@ -97,6 +97,12 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind CapabilitiesDisplay}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard ContentAlignment="Right" Header="Trust">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind TrustDisplay}" />
+                                        </tkcontrols:SettingsCard>
                                     </tkcontrols:SettingsExpander.Items>
                                 </tkcontrols:SettingsExpander>
                             </DataTemplate>

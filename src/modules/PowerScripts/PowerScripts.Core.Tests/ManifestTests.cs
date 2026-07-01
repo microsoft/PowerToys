@@ -37,11 +37,21 @@ public class ManifestTests
     }
 
     [TestMethod]
-    public void Validator_Flags_IdFolderMismatch()
+    public void Validator_Allows_IdFolderMismatch()
     {
+        // A script's id is portable and intentionally decoupled from its folder name, so a mismatch
+        // is no longer an error (a downloaded/shared script keeps its id in any folder).
         var manifest = new PowerScriptManifest { Id = "abc", Name = "x", Entry = "run.ps1" };
         var errors = ManifestValidator.Validate(manifest, folderName: "different");
-        Assert.IsTrue(errors.Any(e => e.Contains("must match the folder name")));
+        Assert.AreEqual(0, errors.Count);
+    }
+
+    [TestMethod]
+    public void Validator_Flags_MissingId()
+    {
+        var manifest = new PowerScriptManifest { Id = string.Empty, Name = "x", Entry = "run.ps1" };
+        var errors = ManifestValidator.Validate(manifest, folderName: "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("'id' is required")));
     }
 
     [TestMethod]

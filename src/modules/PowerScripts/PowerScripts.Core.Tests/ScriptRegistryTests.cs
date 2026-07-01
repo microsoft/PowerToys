@@ -44,9 +44,9 @@ public class ScriptRegistryTests
             { "id": "good", "name": "Good", "kind": "system", "entry": "run.ps1" }
             """);
 
-        // id does not match the folder name -> should be rejected.
+        // Missing 'id' -> should be rejected.
         WriteScript("bad", """
-            { "id": "mismatch", "name": "Bad", "kind": "system", "entry": "run.ps1" }
+            { "name": "Bad", "kind": "system", "entry": "run.ps1" }
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -55,6 +55,42 @@ public class ScriptRegistryTests
         Assert.AreEqual(1, registry.Scripts.Count);
         Assert.AreEqual("good", registry.Scripts[0].Id);
         Assert.AreEqual(1, registry.Errors.Count);
+    }
+
+    [TestMethod]
+    public void Load_Allows_IdDecoupledFromFolder()
+    {
+        // The folder name differs from the id; the script is still loaded and keyed by its id.
+        WriteScript("some-folder", """
+            { "id": "portable.id", "name": "Portable", "kind": "system", "entry": "run.ps1" }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        Assert.AreEqual(1, registry.Scripts.Count);
+        Assert.AreEqual("portable.id", registry.Scripts[0].Id);
+        Assert.AreEqual(0, registry.Errors.Count);
+        Assert.IsNotNull(registry.Get("portable.id"));
+    }
+
+    [TestMethod]
+    public void Load_Rejects_DuplicateIds()
+    {
+        WriteScript("folder-a", """
+            { "id": "dup", "name": "First", "kind": "system", "entry": "run.ps1" }
+            """);
+        WriteScript("folder-b", """
+            { "id": "dup", "name": "Second", "kind": "system", "entry": "run.ps1" }
+            """);
+
+        var registry = new ScriptRegistry(_root);
+        registry.Load();
+
+        // Only the first wins; the collision is reported.
+        Assert.AreEqual(1, registry.Scripts.Count);
+        Assert.AreEqual(1, registry.Errors.Count);
+        Assert.IsTrue(registry.Errors[0].Message.Contains("duplicate id"));
     }
 
     [TestMethod]

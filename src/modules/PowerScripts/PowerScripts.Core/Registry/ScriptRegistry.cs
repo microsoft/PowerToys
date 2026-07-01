@@ -47,6 +47,8 @@ public sealed class ScriptRegistry
             return;
         }
 
+        var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var folder in Directory.EnumerateDirectories(Root))
         {
             var manifestPath = Path.Combine(folder, PowerScriptsPaths.ManifestFileName);
@@ -79,6 +81,15 @@ public sealed class ScriptRegistry
             if (validationErrors.Count > 0)
             {
                 _errors.Add(new ScriptLoadError(folder, string.Join(" ", validationErrors)));
+                continue;
+            }
+
+            // Ids are the portable identity and must be unique across the catalogue, since every
+            // surface resolves a script by id. A collision (e.g. two adopted scripts sharing an id)
+            // is reported and the duplicate skipped rather than silently shadowed.
+            if (!seenIds.Add(manifest.Id))
+            {
+                _errors.Add(new ScriptLoadError(folder, $"duplicate id '{manifest.Id}' - already defined by another script; skipped."));
                 continue;
             }
 
