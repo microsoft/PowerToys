@@ -345,7 +345,6 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         bool refreshInstalledExtensions = false,
         bool refreshWinGetCatalogs = false)
     {
-        List<ExtensionGalleryItemViewModel> snapshot;
         try
         {
             var allInstalledExtensions = new List<IExtensionWrapper>();
@@ -369,6 +368,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
                     .Where(pfn => !string.IsNullOrEmpty(pfn)),
                 StringComparer.OrdinalIgnoreCase);
 
+            List<ExtensionGalleryItemViewModel> snapshot = [];
             lock (_entriesLock)
             {
                 snapshot = [.. _allEntries];
@@ -395,87 +395,148 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
             LogCheckInstalledExtensionsError(_logger, ex);
         }
 
-        if (_winGetPackageStatusService is null)
+        if (_winGetPackageStatusService is not null)
         {
-            return;
-        }
+            if (refreshWinGetCatalogs && _winGetPackageManagerService is not null && _winGetPackageManagerService.State.IsAvailable)
+            {
+                try
+                {
+                    using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    refreshCts.CancelAfter(WinGetRefreshTimeout);
+                    await RunInBackgroundAsync(
+                        () => _winGetPackageManagerService.RefreshCatalogsAsync(refreshCts.Token),
+                        refreshCts.Token);
+                    refreshCts.Token.ThrowIfCancellationRequested();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Proceed to next pass
+                }
+                catch (Exception ex)
+                {
+                    LogRefreshWinGetCatalogsError(_logger, ex);
+                }
+            }
 
-        if (refreshWinGetCatalogs && _winGetPackageManagerService is not null && _winGetPackageManagerService.State.IsAvailable)
-        {
             try
             {
-                using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                refreshCts.CancelAfter(WinGetRefreshTimeout);
-                await RunInBackgroundAsync(
-                    () => _winGetPackageManagerService.RefreshCatalogsAsync(refreshCts.Token),
-                    refreshCts.Token);
-                refreshCts.Token.ThrowIfCancellationRequested();
+                List<ExtensionGalleryItemViewModel> snapshot = [];
+                lock (_entriesLock)
+                {
+                    snapshot = [.. _allEntries];
+                }
+
+                var wingetIds = snapshot
+                    .Select(entry => entry.WinGetId)
+                    .Where(static id => !string.IsNullOrWhiteSpace(id))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Cast<string>()
+                    .ToArray();
+                if (wingetIds.Length > 0)
+                {
+                    using var wingetCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    wingetCts.CancelAfter(WinGetRefreshTimeout);
+                    var wingetInfos = await RunInBackgroundAsync(
+                        () => _winGetPackageStatusService.TryGetPackageInfosAsync(wingetIds, wingetCts.Token),
+                        wingetCts.Token);
+                    wingetCts.Token.ThrowIfCancellationRequested();
+                    if (wingetInfos is not null)
+                    {
+                        foreach (var entry in snapshot)
+                        {
+                            if (string.IsNullOrWhiteSpace(entry.WinGetId))
+                            {
+                                continue;
+                            }
+
+                            if (!wingetInfos.TryGetValue(entry.WinGetId, out var packageInfo))
+                            {
+                                continue;
+                            }
+
+                            entry.ApplyWinGetPackageInfo(packageInfo);
+                        }
+                    }
+
+                    QueueApplyFilter();
+                }
             }
             catch (OperationCanceledException)
             {
-                return;
+                // Cancelled or timed out — non-critical.
             }
             catch (Exception ex)
             {
-                LogRefreshWinGetCatalogsError(_logger, ex);
-                return;
+                // Non-critical; keep the gallery visible with its existing state.
+                LogCheckWinGetPackageStatusError(_logger, ex);
             }
         }
 
-        try
+        // Pass 3 (WinGet Store Catalog Search)
+        if (_winGetPackageManagerService is not null && _winGetPackageManagerService.State.IsAvailable)
         {
-            lock (_entriesLock)
+            try
             {
-                snapshot = [.. _allEntries];
-            }
-
-            var wingetIds = snapshot
-                .Select(entry => entry.WinGetId)
-                .Where(static id => !string.IsNullOrWhiteSpace(id))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .Cast<string>()
-                .ToArray();
-            if (wingetIds.Length == 0)
-            {
-                return;
-            }
-
-            using var wingetCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            wingetCts.CancelAfter(WinGetRefreshTimeout);
-            var wingetInfos = await RunInBackgroundAsync(
-                () => _winGetPackageStatusService.TryGetPackageInfosAsync(wingetIds, wingetCts.Token),
-                wingetCts.Token);
-            wingetCts.Token.ThrowIfCancellationRequested();
-            if (wingetInfos is null)
-            {
-                return;
-            }
-
-            foreach (var entry in snapshot)
-            {
-                if (string.IsNullOrWhiteSpace(entry.WinGetId))
+                List<ExtensionGalleryItemViewModel> snapshot = [];
+                lock (_entriesLock)
                 {
-                    continue;
+                    snapshot = [.. _allEntries];
                 }
 
-                if (!wingetInfos.TryGetValue(entry.WinGetId, out var packageInfo))
+                var storeIdsToLookup = snapshot
+                    .Where(e => !e.IsInstalledStateKnown && !string.IsNullOrWhiteSpace(e.StoreId))
+                    .Select(e => e.StoreId!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (storeIdsToLookup.Count > 0)
                 {
-                    continue;
+                    using var storeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    storeCts.CancelAfter(WinGetRefreshTimeout);
+
+                    var results = await RunInBackgroundAsync(
+                        () => _winGetPackageManagerService.GetStorePackagesByIdAsync(storeIdsToLookup, storeCts.Token),
+                        storeCts.Token);
+                    storeCts.Token.ThrowIfCancellationRequested();
+
+                    if (results?.Value != null)
+                    {
+                        foreach (var entry in snapshot)
+                        {
+                            if (entry.IsInstalledStateKnown || string.IsNullOrWhiteSpace(entry.StoreId))
+                            {
+                                continue;
+                            }
+
+                            if (results.Value.TryGetValue(entry.StoreId, out var catalogPackage))
+                            {
+                                entry.IsInstalled = catalogPackage.InstalledVersion != null;
+                                entry.IsInstalledStateKnown = true;
+                            }
+                        }
+
+                        // Mark any Store-ID entries not found in the catalog as known-not-installed.
+                        foreach (var entry in snapshot)
+                        {
+                            if (!entry.IsInstalledStateKnown && !string.IsNullOrWhiteSpace(entry.StoreId))
+                            {
+                                entry.IsInstalled = false;
+                                entry.IsInstalledStateKnown = true;
+                            }
+                        }
+                    }
+
+                    QueueApplyFilter();
                 }
-
-                entry.ApplyWinGetPackageInfo(packageInfo);
             }
-
-            QueueApplyFilter();
-        }
-        catch (OperationCanceledException)
-        {
-            // Cancelled or timed out — non-critical.
-        }
-        catch (Exception ex)
-        {
-            // Non-critical; keep the gallery visible with its existing state.
-            LogCheckWinGetPackageStatusError(_logger, ex);
+            catch (OperationCanceledException)
+            {
+                // Cancelled
+            }
+            catch (Exception ex)
+            {
+                LogCheckWinGetPackageStatusError(_logger, ex);
+            }
         }
     }
 

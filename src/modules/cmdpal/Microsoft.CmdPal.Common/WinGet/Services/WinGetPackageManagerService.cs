@@ -191,6 +191,91 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         }
     }
 
+    public async Task<WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>> GetStorePackagesByIdAsync(
+        IEnumerable<string> storeIds,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedIds = NormalizePackageIds(storeIds);
+        if (normalizedIds.Count == 0)
+        {
+            return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(
+                new Dictionary<string, CatalogPackage>(OrdinalIgnoreCase), false, null);
+        }
+
+        var initialization = _initialization.Value;
+        if (!initialization.State.IsAvailable || initialization.Factory is null)
+        {
+            return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, true, initialization.State.Message);
+        }
+
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var catalogResult = await GetCompositeCatalogResultAsync(includeStoreCatalog: true, cancellationToken).ConfigureAwait(false);
+            if (!catalogResult.IsSuccess || catalogResult.Value is null)
+            {
+                return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, catalogResult.IsUnavailable, catalogResult.ErrorMessage);
+            }
+
+            var catalog = catalogResult.Value;
+            Dictionary<string, CatalogPackage> results = new(OrdinalIgnoreCase);
+
+            using var throttle = new SemaphoreSlim(4);
+
+            var tasks = normalizedIds.Select(async id =>
+            {
+                await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    var options = initialization.Factory.CreateFindPackagesOptions();
+                    options.ResultLimit = 1;
+
+                    var selector = initialization.Factory.CreatePackageMatchFilter();
+                    selector.Field = PackageMatchField.Id;
+                    selector.Option = PackageFieldMatchOption.Equals;
+                    selector.Value = id.ToUpperInvariant();
+                    options.Selectors.Add(selector);
+
+                    var findResult = await Task.Run(() => catalog.FindPackages(options), cancellationToken).ConfigureAwait(false);
+                    if (findResult.Status != FindPackagesResultStatus.Ok)
+                    {
+                        throw new InvalidOperationException($"Microsoft Store package lookup failed for '{id}': {findResult.Status}");
+                    }
+
+                    if (findResult.Matches.Count > 0 )
+                    {
+                        var package = findResult.Matches[0].CatalogPackage;
+                        return (id, package);
+                    }
+
+                    return (id, (CatalogPackage?)null);
+                }
+                finally
+                {
+                    throttle.Release();
+                }
+            });
+
+            var completed = await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            foreach (var (id, package) in completed)
+            {
+                if (package is not null)
+                {
+                    results[id] = package;
+                }
+            }
+
+            return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(results, false, null);
+        }
+        catch (Exception ex) when (ex is COMException or InvalidOperationException or TaskCanceledException)
+        {
+            CoreLogger.LogWarning($"Microsoft Store package lookup failed: {ex.Message}");
+            return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, false, ex.Message);
+        }
+    }
+
     public async Task<WinGetPackageOperationResult> InstallPackageAsync(
         CatalogPackage package,
         bool skipDependencies = false,
@@ -432,7 +517,7 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
             cancellationToken.ThrowIfCancellationRequested();
 
             var options = initialization.Factory.CreateCreateCompositePackageCatalogOptions();
-            options.CompositeSearchBehavior = CompositeSearchBehavior.RemotePackagesFromAllCatalogs;
+            options.CompositeSearchBehavior = CompositeSearchBehavior.AllCatalogs;
             options.Catalogs.Add(initialization.WingetCatalog);
 
             if (includeStoreCatalog && initialization.StoreCatalog is not null)
@@ -556,19 +641,19 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
                 _operationTracker.UpdateOperation(operationId, WinGetPackageOperationState.Queued, isIndeterminate: true);
                 break;
             case PackageInstallProgressState.Downloading:
-            {
-                var progressPercent = progress.BytesRequired > 0
-                    ? (uint?)Math.Min(100, (progress.BytesDownloaded * 100UL) / progress.BytesRequired)
-                    : null;
-                _operationTracker.UpdateOperation(
-                    operationId,
-                    WinGetPackageOperationState.Downloading,
-                    isIndeterminate: progress.BytesRequired == 0,
-                    progressPercent: progressPercent,
-                    bytesDownloaded: progress.BytesDownloaded,
-                    bytesRequired: progress.BytesRequired);
-                break;
-            }
+                {
+                    var progressPercent = progress.BytesRequired > 0
+                        ? (uint?)Math.Min(100, (progress.BytesDownloaded * 100UL) / progress.BytesRequired)
+                        : null;
+                    _operationTracker.UpdateOperation(
+                        operationId,
+                        WinGetPackageOperationState.Downloading,
+                        isIndeterminate: progress.BytesRequired == 0,
+                        progressPercent: progressPercent,
+                        bytesDownloaded: progress.BytesDownloaded,
+                        bytesRequired: progress.BytesRequired);
+                    break;
+                }
 
             case PackageInstallProgressState.Installing:
                 _operationTracker.UpdateOperation(operationId, WinGetPackageOperationState.Installing, isIndeterminate: true);
