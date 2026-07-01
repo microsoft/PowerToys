@@ -57,7 +57,17 @@ namespace ShortcutGuide
                 return _currentApplicationIds;
             });
 
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
+            var title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = "Shortcut Guide";
+            }
+
+            Title = title;
             ExtendsContentIntoTitleBar = true;
 
 #if !DEBUG
