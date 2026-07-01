@@ -6273,7 +6273,7 @@ Text uses the current drawing color.</value>
     <value>Discovered scripts</value>
   </data>
   <data name="AdvancedPaste_PythonScriptList.Description" xml:space="preserve">
-    <value>Python scripts found in the scripts folder. Changes to settings are written back to the script file headers.</value>
+    <value>Python scripts found in the scripts folder.</value>
   </data>
   <data name="AdvancedPaste_PythonScript_RefreshScripts.Content" xml:space="preserve">
     <value>Refresh scripts</value>

@@ -457,8 +457,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 using var process = System.Diagnostics.Process.Start(psi);
                 if (process != null)
                 {
+                    // WaitForExit first with timeout to avoid blocking indefinitely on ReadToEnd().
+                    // If the process doesn't finish in time, kill it and use whatever output we have.
+                    if (!process.WaitForExit(5000))
+                    {
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch
+                        {
+                        }
+                    }
+
                     var output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit(5000);
 
                     var names = output
                         .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -486,12 +498,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var scripts = _advancedPasteSettings.Properties.PythonScripts;
                 if (scripts == null)
                 {
-                    return string.Empty;
+                    return DefaultScriptsFolder;
                 }
 
-                return string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase)
-                    ? scripts.WslSettings?.ScriptsFolder ?? string.Empty
-                    : scripts.WindowsSettings?.ScriptsFolder ?? string.Empty;
+                var folder = string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase)
+                    ? scripts.WslSettings?.ScriptsFolder
+                    : scripts.WindowsSettings?.ScriptsFolder;
+
+                return string.IsNullOrWhiteSpace(folder) ? DefaultScriptsFolder : folder;
             }
 
             set
@@ -529,6 +543,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        private static string DefaultScriptsFolder { get; } = System.IO.Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "AdvancedPaste",
+            "Scripts");
 
         private ObservableCollection<AdvancedPastePythonScriptAction> _pythonScriptActions = [];
         private bool _scriptsDiscovered;
@@ -645,11 +666,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     formats = val;
                 }
-                else if (TryParseTag(trimmed, "@advancedpaste:enabled", out val))
+                else if (TryParseTag(trimmed, "@advancedpaste:disabled", out _))
                 {
-                    enabled = !string.Equals(val, "false", StringComparison.OrdinalIgnoreCase)
-                           && !string.Equals(val, "0", StringComparison.OrdinalIgnoreCase)
-                           && !string.Equals(val, "no", StringComparison.OrdinalIgnoreCase);
+                    enabled = false;
                 }
                 else if (TryParseTag(trimmed, "@advancedpaste:requires", out val))
                 {

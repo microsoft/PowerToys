@@ -532,6 +532,17 @@ private:
             {
                 std::vector<INPUT> inputs;
 
+                // Release any held modifiers (from the Advanced Paste hotkey) before sending Ctrl+C.
+                // Without this, apps may receive Win+Shift+Ctrl+C instead of Ctrl+C.
+                try_inject_modifier_key_up(inputs, VK_LCONTROL);
+                try_inject_modifier_key_up(inputs, VK_RCONTROL);
+                try_inject_modifier_key_up(inputs, VK_LWIN);
+                try_inject_modifier_key_up(inputs, VK_RWIN);
+                try_inject_modifier_key_up(inputs, VK_LSHIFT);
+                try_inject_modifier_key_up(inputs, VK_RSHIFT);
+                try_inject_modifier_key_up(inputs, VK_LMENU);
+                try_inject_modifier_key_up(inputs, VK_RMENU);
+
                 // send Ctrl+C (key downs and key ups)
                 {
                     INPUT input_event = {};
@@ -568,6 +579,16 @@ private:
                     input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
                     inputs.push_back(input_event);
                 }
+
+                // Restore modifiers that were released above.
+                try_inject_modifier_key_restore(inputs, VK_LCONTROL);
+                try_inject_modifier_key_restore(inputs, VK_RCONTROL);
+                try_inject_modifier_key_restore(inputs, VK_LWIN);
+                try_inject_modifier_key_restore(inputs, VK_RWIN);
+                try_inject_modifier_key_restore(inputs, VK_LSHIFT);
+                try_inject_modifier_key_restore(inputs, VK_RSHIFT);
+                try_inject_modifier_key_restore(inputs, VK_LMENU);
+                try_inject_modifier_key_restore(inputs, VK_RMENU);
 
                 auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
                 if (uSent != inputs.size())
