@@ -1,0 +1,413 @@
+name: PR Needs-Author-Feedback lifecycle
+
+# Handles the lifecycle of the "Needs-Author-Feedback" label on pull requests:
+# 1. When the author pushes commits → remove "Needs-Author-Feedback".
+#    (Comment/review-based label removal is already handled by fabricbot in
+#    resourceManagement.yml via the Issue_Comment eventResponderTask.)
+# 2. Scheduled check every 6 hours:
+#    - After 7 days of author inactivity (measured from label application or last
+#      author activity, whichever is later) → convert PR to draft + comment.
+#    - After 14 days → close PR + comment.
+
+on:
+  pull_request_target:
+    types: [synchronize]
+  schedule:
+    # Run every 6 hours to check for stale PRs
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, only log actions without making changes'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || 'maintenance' }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 1: When author pushes commits → remove "Needs-Author-Feedback"
+  # ─────────────────────────────────────────────────────────────────────────────
+  author-responded-push:
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'synchronize' &&
+      github.event.sender.id == github.event.pull_request.user.id
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove Needs-Author-Feedback
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const labels = (await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            })).data.map(l => l.name);
+
+            if (labels.includes('Needs-Author-Feedback')) {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                name: 'Needs-Author-Feedback',
+              });
+              console.log(`Removed Needs-Author-Feedback from PR #${prNumber}`);
+            }
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2: Scheduled check — convert to draft after 7 days, close after 14 days
+  # ─────────────────────────────────────────────────────────────────────────────
+  check-stale-prs:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process stale PRs with Needs-Author-Feedback
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const DRY_RUN = '${{ github.event.inputs.dry_run }}' === 'true';
+            const DAYS_TO_DRAFT = 7;
+            const DAYS_TO_CLOSE = 14;
+            const MS_PER_DAY = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+
+            if (DRY_RUN) {
+              console.log('🔍 DRY RUN MODE — no changes will be made');
+            }
+
+            // Re-check that the label is still present before mutating.
+            // Guards against races where a maintainer removes the label while
+            // this batch job is running.
+            async function hasLabel(prNumber, labelName) {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+              return labels.some(l => l.name === labelName);
+            }
+
+            // Find all open PRs with "Needs-Author-Feedback" label
+            const prs = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'Needs-Author-Feedback',
+              per_page: 100,
+            });
+
+            for (const issue of prs) {
+              // Skip issues (only process PRs)
+              if (!issue.pull_request) continue;
+
+              const prNumber = issue.number;
+
+              // Get the full PR object to check draft status
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+
+              const authorLogin = pr.user.login;
+
+              // Determine when "Needs-Author-Feedback" was applied.
+              // The inactivity timer starts from label application, not from the
+              // PR's overall last activity, so labeling a long-stale PR doesn't
+              // cause immediate draft/close.
+              const events = await github.paginate(github.rest.issues.listEvents, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+              let labelAppliedDate = new Date(pr.created_at).getTime();
+              for (const event of events) {
+                if (event.event === 'labeled' && event.label?.name === 'Needs-Author-Feedback') {
+                  const eventDate = new Date(event.created_at).getTime();
+                  if (eventDate > labelAppliedDate) {
+                    labelAppliedDate = eventDate;
+                  }
+                }
+              }
+
+              // Early skip: if the label was applied less than DAYS_TO_DRAFT ago,
+              // the PR can never meet the draft/close thresholds yet — avoid
+              // expensive commit/comment pagination.
+              const daysSinceLabelApplied = (now - labelAppliedDate) / MS_PER_DAY;
+              if (daysSinceLabelApplied < DAYS_TO_DRAFT) {
+                console.log(`PR #${prNumber}: label applied only ${daysSinceLabelApplied.toFixed(1)} days ago (need ${DAYS_TO_DRAFT}); skipping`);
+                continue;
+              }
+
+              // Fetch all commits on the PR for author-activity detection.
+              const allCommits = await github.paginate(github.rest.pulls.listCommits, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+
+              // Find last commit authored by the PR author.
+              // Note: if GitHub cannot associate the git committer with a GitHub
+              // user (commit.author is null), those commits are not counted here.
+              // This is acceptable because the event-driven job (Job 2) reliably
+              // catches author pushes via the synchronize event and removes the
+              // label immediately — the scheduled job is a secondary fallback.
+              let lastAuthorCommitDate = 0;
+              for (const commit of allCommits) {
+                const commitAuthorLogin = commit.author?.login || commit.committer?.login;
+                if (commitAuthorLogin === authorLogin) {
+                  const commitDate = commit.commit?.committer?.date || commit.commit?.author?.date;
+                  if (commitDate) {
+                    const ts = new Date(commitDate).getTime();
+                    if (ts > lastAuthorCommitDate) {
+                      lastAuthorCommitDate = ts;
+                    }
+                  }
+                }
+              }
+
+              // Get all comments (issue comments + review comments) from the author.
+              const allIssueComments = await github.paginate(github.rest.issues.listComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+
+              const allReviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+
+              const allComments = [...allIssueComments, ...allReviewComments];
+
+              let lastAuthorCommentDate = 0;
+              for (const comment of allComments) {
+                if (comment.user?.login === authorLogin && comment.user?.type !== 'Bot') {
+                  const commentDate = new Date(comment.created_at || comment.submitted_at).getTime();
+                  if (commentDate > lastAuthorCommentDate) {
+                    lastAuthorCommentDate = commentDate;
+                  }
+                }
+              }
+
+              // Also count review submissions (e.g., author submitting a review)
+              // as author activity.
+              const allReviews = await github.paginate(github.rest.pulls.listReviews, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+
+              let lastAuthorReviewDate = 0;
+              for (const review of allReviews) {
+                if (review.user?.login === authorLogin) {
+                  const reviewDate = new Date(review.submitted_at).getTime();
+                  if (reviewDate > lastAuthorReviewDate) {
+                    lastAuthorReviewDate = reviewDate;
+                  }
+                }
+              }
+
+              // The inactivity baseline is the later of: when the label was applied,
+              // or the author's last activity. This ensures that labeling an already-
+              // stale PR starts a fresh 7-day window rather than acting immediately.
+              const lastAuthorActivity = Math.max(lastAuthorCommitDate, lastAuthorCommentDate, lastAuthorReviewDate);
+              const inactivityBaseline = Math.max(lastAuthorActivity, labelAppliedDate);
+              const daysSinceBaseline = (now - inactivityBaseline) / MS_PER_DAY;
+
+              console.log(`PR #${prNumber}: ${daysSinceBaseline.toFixed(1)} days since inactivity baseline (author activity: ${((now - lastAuthorActivity) / MS_PER_DAY).toFixed(1)}d ago, label applied: ${((now - labelAppliedDate) / MS_PER_DAY).toFixed(1)}d ago), draft=${pr.draft}`);
+
+              // If already draft and still inactive → check whether to warn or close.
+              if (pr.draft) {
+                const BOT_DRAFT_MARKER = 'requiring author feedback';
+                // Only consider bot warnings posted AFTER the label was (re-)applied.
+                const botWarningComment = allComments.find(c =>
+                  c.user?.type === 'Bot' &&
+                  c.body?.includes(BOT_DRAFT_MARKER) &&
+                  new Date(c.created_at).getTime() >= labelAppliedDate
+                );
+
+                if (!botWarningComment) {
+                  // No prior warning exists for this label cycle.
+                  if (daysSinceBaseline < DAYS_TO_DRAFT) {
+                    continue;
+                  }
+
+                  // If already past the close threshold, skip the warning and
+                  // fall through to the close logic below.
+                  if (daysSinceBaseline < DAYS_TO_CLOSE) {
+                    if (DRY_RUN) {
+                      console.log(`[DRY RUN] Would post draft warning on PR #${prNumber} (draft, no prior warning this cycle)`);
+                      continue;
+                    }
+                    if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                      console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
+                      continue;
+                    }
+                    await github.rest.issues.createComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: prNumber,
+                      body: [
+                        'This draft pull request has been marked as requiring author feedback but has',
+                        'not had any activity for **7 days**.',
+                        '',
+                        'If no further activity occurs within approximately **7 more days**, this PR',
+                        'will be closed automatically.',
+                        '',
+                        'To continue working on this PR, please push your changes or leave a comment.',
+                        'Once the label is removed, please also click **"Ready for review"** to move',
+                        'your PR out of draft state.',
+                      ].join('\n'),
+                    });
+                    console.log(`PR #${prNumber} is draft; posted warning (will close on next cycle if still inactive)`);
+                    continue;
+                  }
+                }
+
+                // Close if DAYS_TO_CLOSE have passed since the inactivity baseline.
+                if (daysSinceBaseline < DAYS_TO_CLOSE) {
+                  console.log(`PR #${prNumber}: draft with warning, but only ${daysSinceBaseline.toFixed(1)} days since baseline (need ${DAYS_TO_CLOSE}); skipping`);
+                  continue;
+                }
+
+                if (DRY_RUN) {
+                  console.log(`[DRY RUN] Would close PR #${prNumber} (inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                  continue;
+                }
+
+                // Re-check label before closing (guards against concurrent removal).
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
+                  continue;
+                }
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: [
+                    'This pull request has been automatically closed because it has been marked as',
+                    'requiring author feedback but has not had any activity for **14 days**.',
+                    '',
+                    'If you would like to continue working on this, please reopen the PR and push',
+                    'your changes. The `Needs-Author-Feedback` label will be removed automatically',
+                    'when you do so.',
+                  ].join('\n'),
+                });
+
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  state: 'closed',
+                });
+                console.log(`Closed PR #${prNumber} (inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                continue;
+              }
+
+              // Not draft yet — only convert after DAYS_TO_DRAFT since baseline.
+              if (daysSinceBaseline < DAYS_TO_DRAFT) {
+                continue;
+              }
+
+              if (DRY_RUN) {
+                console.log(`[DRY RUN] Would convert PR #${prNumber} to draft (inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                continue;
+              }
+
+              // Re-check label before mutating (guards against concurrent removal).
+              if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
+                continue;
+              }
+
+              // GitHub REST API does not support converting to draft; use GraphQL.
+              const mutation = `
+                mutation($pullRequestId: ID!) {
+                  convertPullRequestToDraft(input: { pullRequestId: $pullRequestId }) {
+                    pullRequest { id isDraft }
+                  }
+                }
+              `;
+
+              let draftConversionSucceeded = false;
+              try {
+                await github.graphql(mutation, { pullRequestId: pr.node_id });
+                draftConversionSucceeded = true;
+                console.log(`Converted PR #${prNumber} to draft (inactive ${daysSinceBaseline.toFixed(1)} days)`);
+              } catch (err) {
+                console.log(`Failed to convert PR #${prNumber} to draft: ${err.message}`);
+              }
+
+              if (draftConversionSucceeded) {
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed after draft conversion; skipping comment`);
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: [
+                      'This pull request has been automatically converted to a draft because it has',
+                      'been marked as requiring author feedback but has not had any activity for',
+                      '**7 days**.',
+                      '',
+                      'If no further activity occurs within approximately **7 more days**, this PR',
+                      'will be closed automatically.',
+                      '',
+                      'To continue working on this PR, please push your changes or leave a comment.',
+                      'Once the label is removed, please also click **"Ready for review"** to move',
+                      'your PR out of draft state.',
+                    ].join('\n'),
+                  });
+                }
+              } else if (daysSinceBaseline >= DAYS_TO_CLOSE) {
+                // Fallback: if draft conversion keeps failing and we've exceeded
+                // the close threshold, close the PR anyway.
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed while job was running; skipping fallback close`);
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: [
+                      'This pull request has been automatically closed because it has been marked as',
+                      'requiring author feedback but has not had any activity for **14 days**.',
+                      '',
+                      'If you would like to continue working on this, please reopen the PR and push',
+                      'your changes. The `Needs-Author-Feedback` label will be removed automatically',
+                      'when you do so.',
+                    ].join('\n'),
+                  });
+
+                  await github.rest.pulls.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                    state: 'closed',
+                  });
+                  console.log(`Closed PR #${prNumber} as fallback (draft conversion failed, inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                }
+              }
+            }
