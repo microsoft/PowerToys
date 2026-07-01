@@ -59,16 +59,21 @@ function Open-PtExplorerContextMenu {
         [PtCtx]::ForceForeground([IntPtr]$ExplorerHwnd); Start-Sleep -Milliseconds 500
         $item = (winapp ui search $FileName -w $ExplorerHwnd --json 2>$null | ConvertFrom-Json).matches |
             Where-Object { $_.type -eq 'ListItem' } | Select-Object -First 1
-        if (-not $item) { throw "File item '$FileName' not found in Explorer window $ExplorerHwnd" }
-        # Right-click near the row's LEFT edge (on the filename), not the geometric center:
-        # in Details view the ListItem rect spans ~full row width (measured 71% of window), so
-        # x+width/2 lands far right over other columns / empty canvas → background menu or missed
-        # click. x + min(80, width/2) is on the filename in Details AND on the tile in Icons view.
-        [PtCtx]::RightClick([int]($item.x + [Math]::Min(80, $item.width/2)), [int]($item.y + $item.height/2))
+        if (-not $item) { Start-Sleep -Milliseconds 500; continue }   # transient (mid-populate) — retry
+        # Right-click the FILE ITEM by its UIA selector. winapp resolves the element's own clickable
+        # point, so this opens the FILE's context menu — NOT the folder-background menu that a
+        # hand-computed x/y lands on when it misses the row. If it fails to spawn the popup, fall back
+        # to a coordinate right-click on the row's filename.
+        winapp ui click --right $item.selector -w $ExplorerHwnd 2>$null | Out-Null
         Start-Sleep -Seconds 2
-        # The Win11 menu is its own top-level popup window:
         $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
             Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        if (-not $menu) {
+            [PtCtx]::RightClick([int]($item.x + [Math]::Min(80, $item.width/2)), [int]($item.y + $item.height/2))
+            Start-Sleep -Seconds 2
+            $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+                Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        }
         if ($menu) { return $menu.hwnd }
         Start-Sleep -Milliseconds 500   # retry: foreground/menu wasn't ready (common on the first attempt right after Explorer opens)
     }
