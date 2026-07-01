@@ -140,6 +140,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                         _userSettings.PythonScriptTimeoutSeconds),
                     new TimeoutException());
             }
+            catch (OperationCanceledException)
+            {
+                // User-initiated cancellation: kill the child process to avoid orphans.
+                process.Kill(entireProcessTree: true);
+                throw;
+            }
 
             if (process.ExitCode != 0)
             {
@@ -253,6 +259,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                         ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptTimeout"),
                         _userSettings.PythonScriptTimeoutSeconds),
                     new TimeoutException());
+            }
+            catch (OperationCanceledException)
+            {
+                // User-initiated cancellation: kill the child process to avoid orphans.
+                process.Kill(entireProcessTree: true);
+                throw;
             }
 
             if (process.ExitCode != 0)
@@ -557,6 +569,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                         _userSettings.PythonScriptTimeoutSeconds),
                     new TimeoutException());
             }
+            catch (OperationCanceledException)
+            {
+                // User-initiated cancellation: kill the child process to avoid orphans.
+                process.Kill(entireProcessTree: true);
+                throw;
+            }
 
             var stderr = await stderrTask;
 
@@ -654,6 +672,12 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                         ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptTimeout"),
                         _userSettings.PythonScriptTimeoutSeconds),
                     new TimeoutException());
+            }
+            catch (OperationCanceledException)
+            {
+                // User-initiated cancellation: kill the child process to avoid orphans.
+                process.Kill(entireProcessTree: true);
+                throw;
             }
 
             if (process.ExitCode != 0)

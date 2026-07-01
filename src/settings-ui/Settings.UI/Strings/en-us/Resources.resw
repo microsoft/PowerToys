@@ -6299,5 +6299,8 @@ Text uses the current drawing color.</value>
   <data name="AdvancedPaste_PythonScripts_OpenScriptInEditor.Text" xml:space="preserve">
     <value>Open script in editor</value>
   </data>
+  <data name="AdvancedPaste_PythonScripts_WslDefaultDistro" xml:space="preserve">
+    <value>(System default)</value>
+  </data>
 
 </root>
