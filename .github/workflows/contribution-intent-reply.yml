@@ -50,7 +50,9 @@ jobs:
             const systemPrompt = `You are a classifier for issue comments in the microsoft/PowerToys repository.
             Decide whether the comment indicates the author wants to contribute to solving the issue.
             Return ONLY JSON in this exact shape: {"wantsToContribute":true} or {"wantsToContribute":false}.
-            Mark true when the comment clearly expresses intent to help, contribute, implement, or fix this issue.`;
+            Mark true when the comment clearly expresses intent to help, contribute, implement, or fix this issue.
+            Examples that should return true: "I'd like to help", "Can I work on this?", "I want to fix this".
+            Examples that should return false: "this would help", "someone should fix this", "I also see this bug".`;
 
             const issueTitle = issue.title ?? '';
             const issueBody = (issue.body ?? '').slice(0, 2000);
@@ -113,7 +115,7 @@ jobs:
               return;
             }
 
-            const reply = 'Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don\\'t see all the comments. <br /><br />_I\\'m a bot (beep!) so please excuse any mistakes I may make_';
+            const reply = `Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don't see all the comments. <br /><br />_I'm a bot (beep!) so please excuse any mistakes I may make_`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
