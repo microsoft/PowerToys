@@ -69,16 +69,14 @@ jobs:
             New comment:
             ${commentBody}`;
 
-            const headers = {
-              'Content-Type': 'application/json',
-            };
-            headers.Authorization = 'Bearer ' + token;
-
             const response = await fetch(
               'https://models.inference.ai.azure.com/chat/completions',
               {
                 method: 'POST',
-                headers,
+                headers: {
+                  Authorization: 'Bearer ' + token,
+                  'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({
                   model: 'gpt-4o-mini',
                   messages: [
@@ -86,7 +84,7 @@ jobs:
                     { role: 'user', content: userPrompt },
                   ],
                   temperature: 0,
-                  max_tokens: 50,
+                  max_tokens: 100,
                 }),
               },
             );
