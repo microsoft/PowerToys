@@ -175,6 +175,7 @@ DWORD   g_SnipToggleMod;
 DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
 DWORD   g_SnipSaveToggleMod;
+DWORD   g_SnipPanoramaSaveToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -3590,7 +3591,9 @@ void RegisterAllHotkeys(HWND hWnd)
     if (g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
-        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipPanoramaSaveToggleKey) {
+        RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF);
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
@@ -4820,6 +4823,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
     DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
+    DWORD			newSnipPanoramaSaveToggleKey, newSnipPanoramaSaveToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
@@ -5056,6 +5060,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
         if( g_SnipSaveToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipSaveToggleKey, 0 );
         if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
@@ -5519,6 +5524,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
@@ -5530,6 +5536,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
             newSnipSaveToggleMod = GetKeyMod( newSnipSaveToggleKey );
             newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
+            newSnipPanoramaSaveToggleMod = GetKeyMod( newSnipPanoramaSaveToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
@@ -5610,7 +5617,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             else if (newSnipPanoramaToggleKey &&
                 (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
                 (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, ( newSnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF))) {
+                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF))) {
 
                 MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -5656,6 +5663,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_SnipSaveToggleMod = newSnipSaveToggleMod;
                 g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
                 g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipPanoramaSaveToggleKey = newSnipPanoramaSaveToggleKey;
+                g_SnipPanoramaSaveToggleMod = newSnipPanoramaSaveToggleMod;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
@@ -7611,6 +7620,7 @@ LRESULT APIENTRY MainWndProc(
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
         g_SnipSaveToggleMod = GetKeyMod( g_SnipSaveToggleKey );
         g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipPanoramaSaveToggleMod = GetKeyMod( g_SnipPanoramaSaveToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
@@ -7672,7 +7682,7 @@ LRESULT APIENTRY MainWndProc(
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
                 (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
+                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -10266,6 +10276,7 @@ LRESULT APIENTRY MainWndProc(
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
         g_SnipSaveToggleMod = GetKeyMod(g_SnipSaveToggleKey);
         g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipPanoramaSaveToggleMod = GetKeyMod(g_SnipPanoramaSaveToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
@@ -10342,7 +10353,7 @@ LRESULT APIENTRY MainWndProc(
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
             if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {

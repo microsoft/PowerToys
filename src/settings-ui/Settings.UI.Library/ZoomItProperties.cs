@@ -38,6 +38,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultSnipPanoramaToggleKey => new HotkeySettings(false, true, false, false, '8'); // Ctrl+8
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipPanoramaSaveToggleKey => new HotkeySettings(false, true, false, true, '8'); // Ctrl+Shift+8
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
@@ -58,6 +61,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipPanoramaSaveToggleKey { get; set; }
 
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 
