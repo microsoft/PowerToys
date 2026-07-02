@@ -17,7 +17,7 @@ namespace KeyboardManagerEditorUI.Helpers
 {
     public static class RemappingHelper
     {
-        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName, bool saveToSettings = true)
+        public static bool SaveMapping(KeyboardMappingService mappingService, List<string> originalKeys, List<string> remappedKeys, bool isAppSpecific, string appName, bool exactMatch = false, bool saveToSettings = true)
         {
             if (mappingService == null)
             {
@@ -76,15 +76,16 @@ namespace KeyboardManagerEditorUI.Helpers
                         OriginalKeys = originalKeysString,
                         TargetKeys = targetKeysString,
                         TargetApp = isAppSpecific ? appName : string.Empty,
+                        ExactMatch = exactMatch,
                     };
 
                     if (isAppSpecific && !string.IsNullOrEmpty(appName))
                     {
-                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName);
+                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, appName, exactMatch: exactMatch);
                     }
                     else
                     {
-                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString);
+                        mappingService.AddShortcutMapping(originalKeysString, targetKeysString, exactMatch: exactMatch);
                     }
 
                     if (saveToSettings)

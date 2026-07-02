@@ -486,6 +486,10 @@
   <data name="Warning_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="Warning_OrphanedKeys" xml:space="preserve">
+    <value>The following key will no longer have an assignment after this remapping: {0}. Press Save again to apply anyway.</value>
+    <comment>{0} is the name of the key that will be left without an assignment.</comment>
+  </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">
     <value>Validation error</value>
   </data>

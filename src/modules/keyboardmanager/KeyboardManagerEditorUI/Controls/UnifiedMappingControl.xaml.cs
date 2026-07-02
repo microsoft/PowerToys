@@ -561,6 +561,16 @@ namespace KeyboardManagerEditorUI.Controls
                     AppSpecificCheckBox.IsChecked = false;
                     AppNameTextBox.Visibility = Visibility.Collapsed;
                 }
+
+                // Exact match only applies to shortcuts (multiple keys), matching the classic editor.
+                if (ExactMatchCheckBox != null)
+                {
+                    ExactMatchCheckBox.IsEnabled = isShortcut;
+                    if (!isShortcut)
+                    {
+                        ExactMatchCheckBox.IsChecked = false;
+                    }
+                }
             }
             finally
             {
@@ -857,6 +867,23 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     _actionKeys.Add(key);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the origin shortcut requires an exact match
+        /// (i.e., no extra modifiers may be pressed). Only meaningful for shortcuts.
+        /// </summary>
+        public bool GetExactMatch() => ExactMatchCheckBox?.IsChecked == true && ExactMatchCheckBox?.IsEnabled == true;
+
+        /// <summary>
+        /// Sets the exact-match state for the origin shortcut.
+        /// </summary>
+        public void SetExactMatch(bool value)
+        {
+            if (ExactMatchCheckBox != null)
+            {
+                ExactMatchCheckBox.IsChecked = value;
             }
         }
 
@@ -1168,6 +1195,12 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 AppSpecificCheckBox.IsChecked = false;
                 AppSpecificCheckBox.IsEnabled = false;
+            }
+
+            if (ExactMatchCheckBox != null)
+            {
+                ExactMatchCheckBox.IsChecked = false;
+                ExactMatchCheckBox.IsEnabled = false;
             }
 
             // Reset app combo boxes

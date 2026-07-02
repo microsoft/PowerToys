@@ -111,6 +111,10 @@
                             x:Uid="AllowChordsCheckBox"
                             Click="AllowChordsCheckBox_Click"
                             IsChecked="True" />
+                        <CheckBox
+                            x:Name="ExactMatchCheckBox"
+                            x:Uid="ExactMatchCheckBox"
+                            IsEnabled="False" />
                     </StackPanel>
                 </tkcontrols:Case>
                 <!--  Mouse Button Trigger  -->

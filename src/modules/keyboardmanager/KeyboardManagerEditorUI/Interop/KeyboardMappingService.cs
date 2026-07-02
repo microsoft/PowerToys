@@ -71,6 +71,7 @@ namespace KeyboardManagerEditorUI.Interop
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                        ExactMatch = mapping.ExactMatch != 0,
                     });
                 }
             }
@@ -98,6 +99,7 @@ namespace KeyboardManagerEditorUI.Interop
                         ProgramPath = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramPath),
                         ProgramArgs = KeyboardManagerInterop.GetStringAndFree(mapping.ProgramArgs),
                         UriToOpen = KeyboardManagerInterop.GetStringAndFree(mapping.UriToOpen),
+                        ExactMatch = mapping.ExactMatch != 0,
                     });
                 }
             }
@@ -192,14 +194,14 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
         }
 
-        public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut)
+        public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut, bool exactMatch = false)
         {
             if (string.IsNullOrEmpty(originalKeys) || string.IsNullOrEmpty(targetKeys))
             {
                 return false;
             }
 
-            return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp, (int)operationType);
+            return KeyboardManagerInterop.AddShortcutRemap(_configHandle, originalKeys, targetKeys, targetApp, (int)operationType, exactMatch: exactMatch ? 1 : 0);
         }
 
         public bool AddShortcutMapping(ShortcutKeyMapping shortcutKeyMapping)
@@ -232,7 +234,8 @@ namespace KeyboardManagerEditorUI.Interop
                     string.IsNullOrEmpty(shortcutKeyMapping.StartInDirectory) ? null : shortcutKeyMapping.StartInDirectory,
                     (int)shortcutKeyMapping.Elevation,
                     (int)shortcutKeyMapping.IfRunningAction,
-                    (int)shortcutKeyMapping.Visibility);
+                    (int)shortcutKeyMapping.Visibility,
+                    shortcutKeyMapping.ExactMatch ? 1 : 0);
             }
             else if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri)
             {
@@ -242,7 +245,8 @@ namespace KeyboardManagerEditorUI.Interop
                     shortcutKeyMapping.TargetKeys,
                     shortcutKeyMapping.TargetApp,
                     (int)shortcutKeyMapping.OperationType,
-                    shortcutKeyMapping.UriToOpen);
+                    shortcutKeyMapping.UriToOpen,
+                    exactMatch: shortcutKeyMapping.ExactMatch ? 1 : 0);
             }
 
             return KeyboardManagerInterop.AddShortcutRemap(
@@ -250,7 +254,8 @@ namespace KeyboardManagerEditorUI.Interop
                 shortcutKeyMapping.OriginalKeys,
                 shortcutKeyMapping.TargetKeys,
                 shortcutKeyMapping.TargetApp,
-                (int)shortcutKeyMapping.OperationType);
+                (int)shortcutKeyMapping.OperationType,
+                exactMatch: shortcutKeyMapping.ExactMatch ? 1 : 0);
         }
 
         public bool SaveSettings()

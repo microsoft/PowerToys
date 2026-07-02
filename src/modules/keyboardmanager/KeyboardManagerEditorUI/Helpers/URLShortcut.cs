@@ -23,5 +23,7 @@ namespace KeyboardManagerEditorUI.Helpers
         public bool IsAllApps { get; set; } = true;
 
         public string AppName { get; set; } = string.Empty;
+
+        public bool ExactMatch { get; set; }
     }
 }
