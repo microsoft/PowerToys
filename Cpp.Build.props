@@ -2,6 +2,34 @@
 <Project ToolsVersion="4.0"
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!--
+    Cold "Rebuild All" ordering fix for native PackageReference projects.
+
+    A handful of native projects use <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    (Microsoft.CommandPalette.Extensions, Microsoft.Terminal.UI, PowerToys.MeasureToolCore,
+    FindMyMouse, PowerRenameUILib, runner). For those, the CppWinRT configuration - most importantly
+    the MIDL default <EnableWindowsRuntime>true</EnableWindowsRuntime> that makes IInspectable /
+    IUnknown resolvable - only arrives via the restore-generated obj\*.nuget.g.props.
+
+    On a cold "Rebuild All", MSBuild evaluates the project (resolving imports) before the in-session
+    NuGet restore regenerates those obj props, so MIDL runs in non-WinRT mode and fails with
+    "MIDL2009: undefined symbol IInspectable". Because Microsoft.CommandPalette.Extensions and
+    Microsoft.Terminal.UI are winmd producers consumed (by file path) across the entire Command
+    Palette graph, that single race cascades into dozens of downstream CS0006/CS0234 failures. A
+    second build "works" only because restore has since written the obj props. This is why the
+    RestoreThenBuild PowerShell helper (two separate msbuild invocations) already avoids the issue.
+
+    Statically importing the committed CppWinRT props here makes the WinRT MIDL configuration present
+    at evaluation time regardless of restore ordering, so it is durable across Visual Studio, the
+    build scripts, and CI. It is scoped to PackageReference-style vcxproj only (the ~100 other native
+    projects already import this same committed package directly), and the Exists() guard plus
+    CppWinRT's own import guards keep it a safe no-op once restore has run.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj'
+                     and '$(RestoreProjectStyle)' == 'PackageReference'
+                     and Exists('$(MSBuildThisFileDirectory)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
+
   <!-- Skip building C++ test projects when BuildTests=false -->
   <PropertyGroup Condition="'$(_IsSkippedTestProject)' == 'true'">
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>

@@ -13,4 +13,25 @@
   -->
   <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(VcpkgEnabled)' == 'true' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets')" />
+
+  <!--
+    Cold "Rebuild All" ordering fix (matching partner to the CppWinRT props import in Cpp.Build.props).
+
+    Native PackageReference projects (Microsoft.CommandPalette.Extensions, Microsoft.Terminal.UI,
+    PowerToys.MeasureToolCore, FindMyMouse, PowerRenameUILib, runner) receive the CppWinRT MIDL
+    metadata wiring (CppWinRTMidlResponseFile, AdditionalMetadataDirectories, the MdMerge step that
+    produces the .winmd) only from the restore-generated obj\*.nuget.g.targets. On a cold "Rebuild
+    All" that file has not been regenerated yet when the project is evaluated, so MIDL cannot resolve
+    IInspectable / IUnknown and the Command Palette graph fails with MIDL2009 - until a second build.
+
+    Importing the committed CppWinRT targets here - after Microsoft.Cpp.targets, exactly where the
+    statically-wired native projects put their own CppWinRT ExtensionTargets import - makes that wiring
+    present regardless of restore ordering. Scoped to PackageReference-style vcxproj only; the Exists()
+    guard and CppWinRT's own import guards make it a safe no-op once restore has run or for the ~100
+    native projects that already import this committed package directly.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj'
+                     and '$(RestoreProjectStyle)' == 'PackageReference'
+                     and Exists('$(MSBuildThisFileDirectory)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
 </Project>
