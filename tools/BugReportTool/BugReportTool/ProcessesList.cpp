@@ -50,7 +50,7 @@ std::vector<std::wstring> processes =
     L"PowerToys.WorkspacesLauncher.exe",
     L"PowerToys.WorkspacesLauncherUI.exe",
     L"PowerToys.WorkspacesWindowArranger.exe",
-    L"PowerToys.WorkspacesEditor.exe",
+    L"WinUI3Apps\\PowerToys.WorkspacesEditor.exe",
     L"PowerToys.ZoomIt.exe",
     L"Microsoft.CmdPal.UI.exe",
 };

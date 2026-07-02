@@ -1,0 +1,103 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+
+using CommunityToolkit.Mvvm.Messaging;
+
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+
+using WinRT.Interop;
+using WorkspacesEditor.Helpers;
+using WorkspacesEditor.Messages;
+
+namespace WorkspacesEditor.Views
+{
+    public sealed partial class SnapshotWindow : Window
+    {
+        private bool _captured;
+
+        public SnapshotWindow()
+        {
+            this.InitializeComponent();
+
+            this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
+            string description = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
+            DescriptionText.Text = description;
+
+            string captureText = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
+            SnapshotButton.Content = captureText;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SnapshotButton, captureText);
+
+            string cancelText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
+            CancelButton.Content = cancelText;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(CancelButton, cancelText);
+
+            // Configure window: small, centered, no resize, topmost
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.Resize(new Windows.Graphics.SizeInt32(420, 200));
+
+            if (appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsResizable = false;
+                presenter.IsMaximizable = false;
+                presenter.IsAlwaysOnTop = true;
+            }
+
+            // Center on primary display
+            var displayArea = DisplayArea.Primary;
+            var workArea = displayArea.WorkArea;
+            int x = workArea.X + ((workArea.Width - 420) / 2);
+            int y = workArea.Y + ((workArea.Height - 200) / 2);
+            appWindow.Move(new Windows.Graphics.PointInt32(x, y));
+
+            this.Closed += OnClosed;
+
+            // Set focus to the Capture button when window loads
+            this.Activated += (s, e) =>
+            {
+                var snapshotHwnd = WindowNative.GetWindowHandle(this);
+                SetForegroundWindow(snapshotHwnd);
+                SnapshotButton.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            };
+
+            // Handle Escape key to cancel
+            this.Content.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Escape)
+                {
+                    this.Close();
+                }
+            };
+        }
+
+        private void SnapshotButtonClicked(object sender, RoutedEventArgs e)
+        {
+            _captured = true;
+            this.Close();
+            StrongReferenceMessenger.Default.Send(new SnapshotCapturedMessage());
+        }
+
+        private void CancelButtonClicked(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void OnClosed(object sender, WindowEventArgs args)
+        {
+            if (!_captured)
+            {
+                StrongReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
+            }
+        }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+    }
+}
