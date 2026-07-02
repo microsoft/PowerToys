@@ -6,12 +6,6 @@ namespace PowerAccent.Core;
 
 public struct Point
 {
-    public Point()
-    {
-        X = 0;
-        Y = 0;
-    }
-
     public Point(double x, double y)
     {
         X = x;
@@ -27,24 +21,4 @@ public struct Point
     public double X { get; init; }
 
     public double Y { get; init; }
-
-    public static Point operator /(Point point, double divider)
-    {
-        if (divider == 0)
-        {
-            throw new DivideByZeroException();
-        }
-
-        return new Point(point.X / divider, point.Y / divider);
-    }
-
-    public static Point operator /(Point point, Point divider)
-    {
-        if (divider.X == 0 || divider.Y == 0)
-        {
-            throw new DivideByZeroException();
-        }
-
-        return new Point(point.X / divider.X, point.Y / divider.Y);
-    }
 }

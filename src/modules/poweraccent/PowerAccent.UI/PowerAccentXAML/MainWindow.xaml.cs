@@ -14,13 +14,11 @@ namespace PowerAccent.UI;
 
 public sealed partial class MainWindow : TransparentWindow, IDisposable
 {
-    // Deterministic accent-bar geometry (DIP). We deliberately do NOT measure the ListView to size
-    // the window: a ListView wraps its items in a ScrollViewer (whose DesiredSize does not reflect
-    // content size), and measuring it before/while its item containers realize is racy (it
-    // intermittently reports 0, yielding a blank/clipped bar). Instead the width is derived from the
-    // item count (count * ItemWidthDip) so the one-row bar hugs its content like the WPF original,
-    // capped at the monitor's max width; beyond that the ListView scrolls horizontally and
-    // ScrollIntoView reveals the selected glyph.
+    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip), not
+    // measured from the ListView: its DesiredSize (wrapped in a ScrollViewer) is racy while item
+    // containers realize and intermittently reports 0, yielding a blank/clipped bar. The one-row bar
+    // hugs its content like the WPF original, capped at the monitor width; beyond that it scrolls
+    // and ScrollIntoView reveals the selected glyph.
     private const double RowHeightDip = 92;          // one row of accent pills (item Height=48 + card border)
     private const double DescriptionHeightDip = 36;  // extra row shown when the Unicode description is on
     private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
@@ -30,19 +28,13 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private int _selectedIndex = -1;
     private bool _active;
 
-    public SelectorViewModel ViewModel { get; } = new();
+    // The view model lives on the SelectorControl (the x:Bind target); expose it here for the
+    // PowerAccent event handlers that populate the accent list and description.
+    private SelectorViewModel ViewModel => Selector.ViewModel;
 
     public MainWindow()
     {
         InitializeComponent();
-
-        // x:Bind bindings on a Window-rooted XAML are initialized ONLY by Window.Activated (the
-        // generated Connect does `element1.Activated += bindings.Activated`). This accent popup is
-        // shown with SW_SHOWNA and is deliberately never activated, so Activated never fires and the
-        // root x:Bind bindings (ItemsSource, Description, DescriptionVisibility) would stay unset -
-        // the ListView renders empty. Force the one-time binding init here; OneWay tracking then
-        // keeps them live (the ListView follows the ObservableCollection, text follows the VM).
-        Bindings.Update();
 
         // Give the overlay a stable UIA identity (window name) for accessibility tools (Narrator,
         // Accessibility Insights) and the release-verification harness. "Quick Accent" is the
@@ -51,27 +43,22 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
         // The accent popup is shown/hidden instantly (no slide/fade) for typing-aid
         // responsiveness. TransientSurface defaults to Transition.None (no animation);
-        // SubscribeTo wires the surface to this window's Show/Hide so it follows along.
-        Surface.SubscribeTo(this);
+        // SubscribeSurfaceTo forwards to the inner surface so it follows this window's Show/Hide.
+        Selector.SubscribeSurfaceTo(this);
 
         _powerAccent = new Core.PowerAccent(RunOnUiThread);
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
         _powerAccent.OnSelectCharacter += PowerAccent_OnSelectCharacter;
 
-        // Theme is handled automatically: App.xaml leaves Application.RequestedTheme unset, so WinUI
-        // follows the system app theme and re-resolves the {ThemeResource} brushes on a live light/dark
-        // switch - including for this never-activated SW_SHOWNA overlay - so no manual theme code is
-        // needed (the ActualThemeChanged that drives the acrylic retint fires off the same update).
+        // No manual theme handling: App.xaml leaves RequestedTheme unset, so WinUI follows the system
+        // theme and re-resolves the {ThemeResource} brushes (and retints the acrylic) on a live
+        // light/dark switch, even for this never-activated SW_SHOWNA overlay.
     }
 
-    // Marshals the keyboard-hook callbacks (ShowToolbar / HideToolbar / NextChar) onto the UI
-    // thread. The low-level keyboard hook is installed on this same UI thread, so the callbacks
-    // already arrive here; run them inline in that case to match the WPF original's
-    // Dispatcher.Invoke, which executed synchronously when already on the dispatcher thread. That
-    // keeps the accent injection (the SendInput backspace+char in SendInputAndHideToolbar) ordered
-    // before the hook returns and the trigger key-up propagates - a bare TryEnqueue would defer even
-    // on this thread, leaving a window where a fast next keystroke races the injection. If ever
-    // called off-thread, fall back to enqueueing.
+    // Marshal keyboard-hook callbacks (ShowToolbar / HideToolbar / NextChar) onto the UI thread. The
+    // hook runs on this UI thread, so callbacks arrive here already; run them inline (not via
+    // TryEnqueue, which would defer) so the accent injection stays ordered before the hook returns
+    // and the trigger key-up propagates. Fall back to enqueueing if ever called off-thread.
     private void RunOnUiThread(Action action)
     {
         if (DispatcherQueue.HasThreadAccess)
@@ -109,28 +96,22 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             ViewModel.Characters.Add(c);
         }
 
-        CharactersList.SelectedIndex = _selectedIndex;
+        Selector.SetSelectedIndex(_selectedIndex);
         ViewModel.Description = (_selectedIndex >= 0 && _selectedIndex < _powerAccent.CharacterDescriptions.Length)
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
             : string.Empty;
 
-        // Make the overlay always-on-top while it is shown so it sits above the foreground app
-        // (TransparentWindow.Show uses SW_SHOWNA and never activates it); released again on hide so
-        // the dormant window does not pin a discrete GPU awake on hybrid-graphics laptops
-        // (issue #34849 / PR #41044). IsAlwaysOnTop is the WinUIEx WindowEx property the sibling
-        // PowerDisplay uses. Then size to a content-hugging one-row accent bar and show on-screen.
-        // No content measurement / off-screen probe: the width is computed from the item count, the
-        // ListView scrolls if it overflows, and we bring the selected glyph into view once its
-        // containers realize.
+        // Always-on-top only while shown, so the overlay sits above the foreground app (Show uses
+        // SW_SHOWNA and never activates it); released on hide (see above). Then size and show.
         IsAlwaysOnTop = true;
         SizeAndPosition();
         Show();
 
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (_active && _selectedIndex >= 0 && _selectedIndex < CharactersList.Items.Count)
+            if (_active)
             {
-                CharactersList.ScrollIntoView(CharactersList.Items[_selectedIndex]);
+                Selector.ScrollSelectedIntoView(_selectedIndex);
             }
         });
 
@@ -140,25 +121,20 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private void PowerAccent_OnSelectCharacter(int index, string character)
     {
         _selectedIndex = index;
-        CharactersList.SelectedIndex = index;
+        Selector.SetSelectedIndex(index);
 
         if (index >= 0 && index < _powerAccent.CharacterDescriptions.Length)
         {
             ViewModel.Description = _powerAccent.CharacterDescriptions[index];
         }
 
-        if (index >= 0 && index < CharactersList.Items.Count)
-        {
-            CharactersList.ScrollIntoView(CharactersList.Items[index]);
-        }
+        Selector.ScrollSelectedIntoView(index);
     }
 
     private void SizeAndPosition()
     {
-        // Width hugs the content (like the WPF original's SizeToContent) instead of always filling the
-        // monitor: compute it deterministically from the item count - each accent cell is ItemWidthDip
-        // wide - rather than measuring the ListView (which is racy while its containers realize). Cap
-        // at the monitor's max usable width so a long accent list scrolls horizontally on screen.
+        // Width hugs the content: item count * ItemWidthDip (see the class-level note on why the
+        // ListView is not measured), capped at the monitor's max usable width so long lists scroll.
         double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
         double contentWidthDip = ViewModel.Characters.Count * ItemWidthDip;
 

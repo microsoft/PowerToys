@@ -359,14 +359,13 @@ public partial class PowerAccent : IDisposable
     /// Gets the maximum width for the toolbar display based on the active screen
     /// dimensions.
     /// </summary>
-    /// <returns>The maximum width in logical pixels, accounting for screen padding.
-    /// </returns>
+    /// <returns>The maximum width in DIPs (device-independent pixels), accounting for
+    /// screen padding.</returns>
     public double GetDisplayMaxWidth()
     {
-        // Note: activeDisplay.Size.Width is in raw physical pixels.
-        // We divide by DPI to convert to WPF logical pixels (Device-Independent Pixels),
-        // because ScreenMinPadding is a logical pixel value and WPF MaxWidth expects
-        // logical pixels.
+        // activeDisplay.Size.Width is in raw physical pixels; divide by the DPI scale to
+        // convert to DIPs (device-independent pixels), since ScreenMinPadding and the
+        // consuming window width are both expressed in DIPs.
         var activeDisplay = WindowsFunctions.GetActiveDisplay();
         return (activeDisplay.Size.Width / activeDisplay.Dpi) - ScreenMinPadding;
     }

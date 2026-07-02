@@ -20,9 +20,8 @@ public partial class SelectorViewModel : ObservableObject
     [ObservableProperty]
     public partial string Description { get; set; }
 
-    // Bound directly as a Visibility (no value converter). The Selector's XAML root is a
-    // Window (TransparentWindow), and x:Bind's {StaticResource} converter resolution requires
-    // a FrameworkElement root, so a BoolToVisibilityConverter cannot be used here.
+    // Exposed directly as a Visibility (rather than binding the bool through a
+    // BoolToVisibilityConverter) so the description row's visibility needs no converter resource.
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(DescriptionVisibility))]
     public partial bool ShowDescription { get; set; }
