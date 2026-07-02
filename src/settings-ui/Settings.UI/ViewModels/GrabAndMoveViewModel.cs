@@ -147,6 +147,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseMiddleClickMaximize
+        {
+            get => _moduleSettings.Properties.UseMiddleClickMaximize.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.UseMiddleClickMaximize.Value != value)
+                {
+                    _moduleSettings.Properties.UseMiddleClickMaximize.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(UseMiddleClickMaximize));
+                }
+            }
+        }
+
         public bool DoNotActivateOnGameMode
         {
             get => _moduleSettings.Properties.DoNotActivateOnGameMode.Value;
