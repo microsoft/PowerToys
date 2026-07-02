@@ -263,9 +263,9 @@ namespace WorkspacesEditor.Models
         [NotifyPropertyChangedFor(nameof(DeleteButtonAccessibleName))]
         private bool _isIncluded = true;
 
-        partial void OnIsIncludedChanged(bool value)
+        partial void OnIsIncludedChanged(bool oldValue, bool newValue)
         {
-            if (!value)
+            if (!newValue)
             {
                 IsExpanded = false;
             }

@@ -8,10 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:WorkspacesEditor.Models"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+        <toolkit:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <toolkit:BoolToVisibilityConverter
+            x:Key="BooleanToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
         <converters:IndexToBooleanConverter x:Key="IndexToBool" />
     </Page.Resources>
 
