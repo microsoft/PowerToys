@@ -83,6 +83,27 @@ public static class CharacterMappings
             [LetterKey.VK_BACKSLASH] = ["`", "~"],
         }),
 
+        // Belarusian Latin
+        new(Language.BE, "Belarusian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_C] = ["ć", "č"],
+            [LetterKey.VK_L] = ["ł"],
+            [LetterKey.VK_N] = ["ń"],
+            [LetterKey.VK_S] = ["ś", "š"],
+            [LetterKey.VK_U] = ["ŭ"],
+            [LetterKey.VK_Z] = ["ź", "ž"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
+        }),
+
+        new(Language.BE_CYRL, "Belarusian_Cyrillic", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_E] = ["ё"],
+            [LetterKey.VK_G] = ["ґ"],
+            [LetterKey.VK_I] = ["і"],
+            [LetterKey.VK_L] = ["ў"],
+            [LetterKey.VK_COMMA] = ["’", "„", "“", "«", "»"],
+        }),
+
         new(Language.BG, "Bulgarian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_I] = ["й"],
@@ -717,6 +738,8 @@ public static class CharacterMappings
     [
 
         // Spoken languages.
+        Language.BE,
+        Language.BE_CYRL,
         Language.BG,
         Language.CA,
         Language.CRH,
