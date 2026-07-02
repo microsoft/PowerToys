@@ -51,6 +51,12 @@
   <data name="CreateShortcut" xml:space="preserve">
     <value>Create desktop shortcut</value>
   </data>
+  <data name="CreateShortcutCheckBox.Content" xml:space="preserve">
+    <value>Create desktop shortcut</value>
+  </data>
+  <data name="MoveExistingWindowsCheckBox.Content" xml:space="preserve">
+    <value>Move existing windows</value>
+  </data>
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
   </data>
@@ -62,6 +68,12 @@
   </data>
   <data name="Delete" xml:space="preserve">
     <value>Remove</value>
+  </data>
+  <data name="DeleteWorkspaceButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Delete workspace</value>
+  </data>
+  <data name="DeleteWorkspaceButtonToolTip.Text" xml:space="preserve">
+    <value>Delete workspace</value>
   </data>
   <data name="DeleteSelected" xml:space="preserve">
     <value>Remove selected apps</value>
@@ -101,6 +113,12 @@
   </data>
   <data name="LaunchEdit" xml:space="preserve">
     <value>Launch &amp; edit</value>
+  </data>
+  <data name="LaunchEditLabel.Text" xml:space="preserve">
+    <value>Launch &amp; edit</value>
+  </data>
+  <data name="LaunchEditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch and edit</value>
   </data>
   <data name="Launch_args" xml:space="preserve">
     <value>Launch args</value>
@@ -180,7 +198,16 @@
   <data name="Revert" xml:space="preserve">
     <value>Revert</value>
   </data>
+  <data name="RevertButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="RevertButtonToolTip.Text" xml:space="preserve">
+    <value>Revert</value>
+  </data>
   <data name="Save_Workspace" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SaveLabel.Text" xml:space="preserve">
     <value>Save</value>
   </data>
   <data name="Search" xml:space="preserve">
@@ -189,7 +216,10 @@
   <data name="SearchExplanation" xml:space="preserve">
     <value>Search for Workspaces or apps</value>
   </data>
-  <data name="SearchTextBox.AutomationProperties.Name" xml:space="preserve">
+  <data name="SearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for Workspaces or apps</value>
+  </data>
+  <data name="SearchBox.AutomationProperties.Name" xml:space="preserve">
     <value>Search workspaces</value>
   </data>
   <data name="SecondsAgo" xml:space="preserve">
@@ -204,17 +234,20 @@
   <data name="SelectedAllInWorkspace" xml:space="preserve">
     <value>Select all apps in Workspace</value>
   </data>
-  <data name="SnapshotDescription" xml:space="preserve">
+  <data name="SnapshotDescription.Text" xml:space="preserve">
     <value>Edit your layout and click "Capture" when finished.</value>
+  </data>
+  <data name="SnapshotButton.Content" xml:space="preserve">
+    <value>Capture</value>
+  </data>
+  <data name="SnapshotCancelButton.Content" xml:space="preserve">
+    <value>Cancel</value>
   </data>
   <data name="SnapshotWindowTitle" xml:space="preserve">
     <value>Snapshot Creator</value>
   </data>
   <data name="SortBy" xml:space="preserve">
     <value>Sort by</value>
-  </data>
-  <data name="Take_Snapshot" xml:space="preserve">
-    <value>Capture</value>
   </data>
   <data name="Top" xml:space="preserve">
     <value>Top</value>
@@ -240,13 +273,13 @@
   <data name="LaunchButton.Content" xml:space="preserve">
     <value>Launch</value>
   </data>
-  <data name="LastLaunchedItem.Content" xml:space="preserve">
+  <data name="SortLastLaunchedItem.Text" xml:space="preserve">
     <value>Last launched</value>
   </data>
-  <data name="CreatedItem.Content" xml:space="preserve">
+  <data name="SortCreatedItem.Text" xml:space="preserve">
     <value>Created</value>
   </data>
-  <data name="NameItem.Content" xml:space="preserve">
+  <data name="SortNameItem.Text" xml:space="preserve">
     <value>Name</value>
   </data>
   <data name="CustomItem.Content" xml:space="preserve">
@@ -258,16 +291,16 @@
   <data name="MinimizedItem.Content" xml:space="preserve">
     <value>Minimized</value>
   </data>
-  <data name="LaunchAsAdminLabel.Text" xml:space="preserve">
+  <data name="LaunchAsAdminLabel.Content" xml:space="preserve">
     <value>Launch as Admin</value>
   </data>
-  <data name="CliArgumentsLabel.Text" xml:space="preserve">
-    <value>CLI arguments</value>
+	<data name="PositionHeader.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>	
+<data name="LaunchBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch</value>
   </data>
-  <data name="WindowPositionLabel.Text" xml:space="preserve">
-    <value>Window position</value>
-  </data>
-  <data name="LaunchBtn.Content" xml:space="preserve">
+  <data name="LaunchLabel.Text" xml:space="preserve">
     <value>Launch</value>
   </data>
   <data name="EditFlyoutItem.Text" xml:space="preserve">
@@ -300,16 +333,22 @@
   <data name="CreateWorkspaceBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Create Workspace</value>
   </data>
-  <data name="SortByComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="CreateWorkspaceLabel.Text" xml:space="preserve">
+    <value>Create Workspace</value>
+  </data>
+  <data name="SortByButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="SortByButtonToolTip.Text" xml:space="preserve">
     <value>Sort by</value>
   </data>
   <data name="MoreOptionsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
   </data>
-  <data name="CliArgsTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="CliArgsTextBox.Header" xml:space="preserve">
     <value>CLI arguments</value>
   </data>
-  <data name="WindowPositionComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="WindowPositionComboBox.Header" xml:space="preserve">
     <value>Window position</value>
   </data>
   <data name="LeftTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">

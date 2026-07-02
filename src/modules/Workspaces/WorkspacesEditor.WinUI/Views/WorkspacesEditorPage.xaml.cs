@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 using System.Linq;
 
@@ -27,7 +28,6 @@ namespace WorkspacesEditor.Views
         public WorkspacesEditorPage()
         {
             this.InitializeComponent();
-            SetLocalizedStrings();
 
             this.KeyDown += (s, e) =>
             {
@@ -53,18 +53,6 @@ namespace WorkspacesEditor.Views
             }
         }
 
-        private void SetLocalizedStrings()
-        {
-            WorkspacesBackText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Workspaces") ?? "Workspaces";
-            SaveText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Save_Workspace") ?? "Save";
-            CancelText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
-            WorkspaceNameLabel.Text = ResourceLoaderInstance.ResourceLoader?.GetString("WorkspaceName") ?? "Workspace name";
-            CreateShortcutLabel.Text = ResourceLoaderInstance.ResourceLoader?.GetString("CreateShortcut") ?? "Create desktop shortcut";
-            MoveIfExistLabel.Text = ResourceLoaderInstance.ResourceLoader?.GetString("MoveIfExist") ?? "Move existing windows";
-            LaunchEditText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("LaunchEdit") ?? "Launch & edit";
-            RevertText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Revert") ?? "Revert";
-        }
-
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
             if (this.DataContext is Project projectToSave)
@@ -84,17 +72,43 @@ namespace WorkspacesEditor.Views
             }
         }
 
-        private void CancelButtonClicked(object sender, RoutedEventArgs e)
-        {
-            TempProjectData.DeleteTempFile();
-            _mainViewModel.SwitchToMainView();
-        }
-
         private void DeleteButtonClicked(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is Application app)
             {
                 app.SwitchDeletion();
+            }
+        }
+
+        private async void DeleteWorkspaceButtonClicked(object sender, RoutedEventArgs e)
+        {
+            if (this.DataContext is not Project project)
+            {
+                return;
+            }
+
+            var dialog = new ContentDialog
+            {
+                Title = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure") ?? "Are you sure?",
+                Content = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure_Description") ?? "Are you sure you want to delete this Workspace?",
+                PrimaryButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Delete") ?? "Remove",
+                CloseButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.XamlRoot,
+            };
+
+            var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                // The edited project is a copy, so remove the matching workspace from the list by Id.
+                var existing = _mainViewModel.Workspaces.FirstOrDefault(x => x.Id == project.Id);
+                if (existing != null)
+                {
+                    _mainViewModel.DeleteProject(existing);
+                }
+
+                TempProjectData.DeleteTempFile();
+                _mainViewModel.SwitchToMainView();
             }
         }
 

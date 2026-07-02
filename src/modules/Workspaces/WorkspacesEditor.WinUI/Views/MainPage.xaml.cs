@@ -3,12 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
-using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.ViewModels;
 
@@ -21,11 +18,6 @@ namespace WorkspacesEditor.Views
         public MainPage()
         {
             this.InitializeComponent();
-
-            WorkspacesHeaderBlock.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Workspaces") ?? "Workspaces";
-            CreateWorkspaceText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("CreateWorkspace") ?? "Create Workspace";
-            SortByLabel.Text = ResourceLoaderInstance.ResourceLoader?.GetString("SortBy") ?? "Sort by";
-            SearchTextBox.PlaceholderText = ResourceLoaderInstance.ResourceLoader?.GetString("SearchExplanation") ?? "Search for Workspaces or apps";
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -53,19 +45,25 @@ namespace WorkspacesEditor.Views
             ViewModel.EnterSnapshotMode(false);
         }
 
-        private void EditButtonClicked(object sender, RoutedEventArgs e)
+        private void SortByLastLaunched_Click(object sender, RoutedEventArgs e)
         {
-            ViewModel.CloseAllPopups();
-            Project selectedProject = GetProjectFromSender(sender);
-            if (selectedProject != null)
-            {
-                ViewModel.EditProject(selectedProject);
-            }
+            ViewModel.OrderByIndex = 0;
         }
 
-        private void WorkspaceItemClicked(object sender, ItemClickEventArgs e)
+        private void SortByCreated_Click(object sender, RoutedEventArgs e)
         {
-            if (e.ClickedItem is Project project)
+            ViewModel.OrderByIndex = 1;
+        }
+
+        private void SortByName_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OrderByIndex = 2;
+        }
+
+        private void WorkspaceCardClicked(object sender, RoutedEventArgs e)
+        {
+            Project project = GetProjectFromSender(sender);
+            if (project != null)
             {
                 ViewModel.CloseAllPopups();
                 ViewModel.EditProject(project);
@@ -96,31 +94,6 @@ namespace WorkspacesEditor.Views
             }
 
             return null;
-        }
-
-        private async void DeleteButtonClicked(object sender, RoutedEventArgs e)
-        {
-            Project selectedProject = GetProjectFromSender(sender);
-            if (selectedProject != null)
-            {
-                selectedProject.IsPopupVisible = false;
-
-                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
-                {
-                    Title = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure") ?? "Are you sure?",
-                    Content = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure_Description") ?? "Are you sure you want to delete this Workspace?",
-                    PrimaryButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Delete") ?? "Remove",
-                    CloseButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel",
-                    DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
-                    XamlRoot = this.XamlRoot,
-                };
-
-                var result = await dialog.ShowAsync();
-                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
-                {
-                    ViewModel.DeleteProject(selectedProject);
-                }
-            }
         }
 
         private async void LaunchButton_Click(object sender, RoutedEventArgs e)

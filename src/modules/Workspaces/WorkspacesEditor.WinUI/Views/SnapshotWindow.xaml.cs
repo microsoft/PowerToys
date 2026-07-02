@@ -6,17 +6,17 @@ using System;
 
 using CommunityToolkit.Mvvm.Messaging;
 
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
 using WinRT.Interop;
+using WinUIEx;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
 
 namespace WorkspacesEditor.Views
 {
-    public sealed partial class SnapshotWindow : Window
+    public sealed partial class SnapshotWindow : WindowEx
     {
         private bool _captured;
 
@@ -25,36 +25,17 @@ namespace WorkspacesEditor.Views
             this.InitializeComponent();
 
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
-            string description = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
-            DescriptionText.Text = description;
 
-            string captureText = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
-            SnapshotButton.Content = captureText;
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(SnapshotButton, captureText);
+            AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
 
-            string cancelText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel";
-            CancelButton.Content = cancelText;
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(CancelButton, cancelText);
+            // Custom title bar
+            ExtendsContentIntoTitleBar = true;
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            SetTitleBar(AppTitleBar);
+            AppTitleBar.Title = this.Title;
 
-            // Configure window: small, centered, no resize, topmost
-            var hwnd = WindowNative.GetWindowHandle(this);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new Windows.Graphics.SizeInt32(420, 200));
-
-            if (appWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.IsResizable = false;
-                presenter.IsMaximizable = false;
-                presenter.IsAlwaysOnTop = true;
-            }
-
-            // Center on primary display
-            var displayArea = DisplayArea.Primary;
-            var workArea = displayArea.WorkArea;
-            int x = workArea.X + ((workArea.Width - 420) / 2);
-            int y = workArea.Y + ((workArea.Height - 200) / 2);
-            appWindow.Move(new Windows.Graphics.PointInt32(x, y));
+            // Center the small dialog on screen
+            this.CenterOnScreen();
 
             this.Closed += OnClosed;
 

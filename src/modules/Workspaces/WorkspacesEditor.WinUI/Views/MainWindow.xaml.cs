@@ -3,40 +3,36 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-
 using CommunityToolkit.Mvvm.Messaging;
-
 using ManagedCommon;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using WinRT.Interop;
+using WinUIEx;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
+using WorkspacesEditor.Models;
 using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor
 {
-    public sealed partial class MainWindow : Window, IDisposable
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        public const int MinWindowWidth = 750;
-        public const int MinWindowHeight = 680;
-
         private readonly CancellationTokenSource _cancellationToken = new();
-        private readonly AppWindow _appWindow;
 
         public MainWindow()
         {
             this.InitializeComponent();
 
             var hwnd = WindowNative.GetWindowHandle(this);
-            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
-            _appWindow = AppWindow.GetFromWindowId(windowId);
 
-            SetMinSize(hwnd, MinWindowWidth, MinWindowHeight);
-            RestoreWindowState(hwnd);
+            this.CenterOnScreen();
+
+            AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
 
             // Set title from resource or fallback
             try
@@ -47,6 +43,11 @@ namespace WorkspacesEditor
             {
                 this.Title = "Workspaces";
             }
+
+            ExtendsContentIntoTitleBar = true;
+            AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+            SetTitleBar(AppTitleBar);
+            AppTitleBar.Title = this.Title;
 
             this.Closed += OnClosed;
 
@@ -60,6 +61,9 @@ namespace WorkspacesEditor
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
                 ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+                SearchBox.Visibility = Visibility.Collapsed;
+                AppTitleBar.IsBackButtonVisible = true;
+                AppTitleBar.Title = m.Project.EditorWindowTitle;
             });
             StrongReferenceMessenger.Default.Register<GoBackMessage>(this, (r, m) =>
             {
@@ -67,6 +71,11 @@ namespace WorkspacesEditor
                 {
                     ContentFrame.GoBack();
                 }
+
+                SearchBox.Text = string.Empty;
+                SearchBox.Visibility = Visibility.Visible;
+                AppTitleBar.IsBackButtonVisible = false;
+                AppTitleBar.Title = this.Title;
             });
             StrongReferenceMessenger.Default.Register<MinimizeWindowMessage>(this, (r, m) =>
             {
@@ -112,36 +121,45 @@ namespace WorkspacesEditor
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
-        private void RestoreWindowState(IntPtr hwnd)
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            var state = WindowStateHelper.Load();
-
-            if (state != null && state.IsValid())
+            if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
             {
-                // Use AppWindow for positioning — it handles DPI correctly for WinUI windows
-                _appWindow.Move(new Windows.Graphics.PointInt32((int)state.Left, (int)state.Top));
-                _appWindow.Resize(new Windows.Graphics.SizeInt32((int)state.Width, (int)state.Height));
-
-                if (state.Maximized)
-                {
-                    ShowWindow(hwnd, 3); // SW_SHOWMAXIMIZED
-                }
+                return;
             }
-            else
+
+            sender.ItemsSource = App.MainViewModel.SearchWorkspaces(sender.Text).ToList();
+        }
+
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if (args.SelectedItem is Project project)
             {
-                // First launch: center on current display at 90% height, 75% width
-                var displayArea = DisplayArea.GetFromWindowId(
-                    Win32Interop.GetWindowIdFromWindow(hwnd),
-                    DisplayAreaFallback.Primary);
-                var workArea = displayArea.WorkArea;
-
-                int width = (int)(workArea.Width * 0.75);
-                int height = (int)(workArea.Height * 0.90);
-                int x = workArea.X + (int)(workArea.Width * 0.125);
-                int y = workArea.Y + (int)(workArea.Height * 0.05);
-
-                _appWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, width, height));
+                sender.Text = project.Name;
             }
+        }
+
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            var vm = App.MainViewModel;
+            var project = args.ChosenSuggestion as Project
+                ?? vm.SearchWorkspaces(args.QueryText).FirstOrDefault();
+
+            if (project == null)
+            {
+                return;
+            }
+
+            sender.Text = string.Empty;
+            vm.CloseAllPopups();
+            vm.EditProject(project);
+        }
+
+        private void AppTitleBar_BackRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
+        {
+            // Discard any in-progress edits (same behavior as the editor's Cancel), then return to the overview.
+            WorkspacesCsharpLibrary.Data.TempProjectData.DeleteTempFile();
+            App.MainViewModel.SwitchToMainView();
         }
 
         private void StartHotkeyEventLoop(IntPtr hwnd)
@@ -174,29 +192,10 @@ namespace WorkspacesEditor
             }) { IsBackground = true }.Start();
         }
 
-        private void SaveWindowState()
-        {
-            var hwnd = WindowNative.GetWindowHandle(this);
-            bool isMaximized = IsWindowMaximized(hwnd);
-
-            // Use AppWindow for both save and restore — same coordinate space, no DPI mismatch
-            var pos = _appWindow.Position;
-            var size = _appWindow.Size;
-            WindowStateHelper.Save(new WindowStateData
-            {
-                Top = pos.Y,
-                Left = pos.X,
-                Width = size.Width,
-                Height = size.Height,
-                Maximized = isMaximized,
-            });
-        }
-
         private void OnClosed(object sender, WindowEventArgs args)
         {
-            SaveWindowState();
             _cancellationToken.Dispose();
-            (Application.Current as IDisposable)?.Dispose();
+            (Microsoft.UI.Xaml.Application.Current as IDisposable)?.Dispose();
         }
 
         private static bool ApplicationIsInFocus()
@@ -211,50 +210,6 @@ namespace WorkspacesEditor
             _ = GetWindowThreadProcessId(activatedHandle, out int activeProcId);
 
             return activeProcId == procId;
-        }
-
-        private static void SetMinSize(IntPtr hwnd, int minWidth, int minHeight)
-        {
-            var subclassId = (nuint)1;
-            SubclassProc callback = (hWnd, msg, wParam, lParam, id, data) =>
-            {
-                if (msg == WmGetminmaxinfo)
-                {
-                    var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
-                    mmi.PtMinTrackSize.X = minWidth;
-                    mmi.PtMinTrackSize.Y = minHeight;
-                    Marshal.StructureToPtr(mmi, lParam, false);
-                }
-
-                return DefSubclassProc(hWnd, msg, wParam, lParam);
-            };
-
-            // prevent GC of delegate
-            _subclassCallback = callback;
-            SetWindowSubclass(hwnd, callback, subclassId, 0);
-        }
-
-        private static SubclassProc _subclassCallback;
-
-        private const uint WmGetminmaxinfo = 0x0024;
-
-        private delegate IntPtr SubclassProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, nuint id, nuint data);
-
-        [DllImport("comctl32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetWindowSubclass(IntPtr hWnd, SubclassProc pfnSubclass, nuint uIdSubclass, nuint dwRefData);
-
-        [DllImport("comctl32.dll")]
-        private static extern IntPtr DefSubclassProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MINMAXINFO
-        {
-            public POINT PtReserved;
-            public POINT PtMaxSize;
-            public POINT PtMaxPosition;
-            public POINT PtMinTrackSize;
-            public POINT PtMaxTrackSize;
         }
 
         public void Dispose()
@@ -272,42 +227,5 @@ namespace WorkspacesEditor
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int processId);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
-
-        private static bool IsWindowMaximized(IntPtr hwnd)
-        {
-            GetWindowPlacement(hwnd, out WINDOWPLACEMENT placement);
-            return placement.ShowCmd == 3; // SW_SHOWMAXIMIZED
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct WINDOWPLACEMENT
-        {
-            public uint Length;
-            public uint Flags;
-            public uint ShowCmd;
-            public POINT PtMinPosition;
-            public POINT PtMaxPosition;
-            public RECT RcNormalPosition;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
     }
 }

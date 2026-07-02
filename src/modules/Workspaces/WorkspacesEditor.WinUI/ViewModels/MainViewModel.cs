@@ -92,33 +92,37 @@ namespace WorkspacesEditor.ViewModels
 
         private IEnumerable<Project> GetFilteredWorkspaces()
         {
-            if (string.IsNullOrEmpty(SearchTerm))
-            {
-                return Workspaces;
-            }
-
-            return Workspaces.Where(x =>
-            {
-                if (x.Name.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (x.Applications == null)
-                {
-                    return false;
-                }
-
-                return x.Applications.Any(app => app.AppName.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase));
-            });
+            return Workspaces;
         }
 
-        [ObservableProperty]
-        private string _searchTerm;
-
-        partial void OnSearchTermChanged(string value)
+        /// <summary>
+        /// Returns the workspaces matching the given query (by workspace name or contained app name),
+        /// used to populate the title bar search suggestions. Returns an empty list for an empty query.
+        /// </summary>
+        public IEnumerable<Project> SearchWorkspaces(string query)
         {
-            RefreshWorkspacesView();
+            if (Workspaces == null || string.IsNullOrWhiteSpace(query))
+            {
+                return Enumerable.Empty<Project>();
+            }
+
+            return Workspaces
+                .Where(x =>
+                {
+                    if (x.Name != null && x.Name.Contains(query, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    if (x.Applications == null)
+                    {
+                        return false;
+                    }
+
+                    return x.Applications.Any(app => app.AppName.Contains(query, StringComparison.InvariantCultureIgnoreCase));
+                })
+                .OrderBy(x => x.Name)
+                .ToList();
         }
 
         [ObservableProperty]
@@ -267,8 +271,6 @@ namespace WorkspacesEditor.ViewModels
         public void SwitchToMainView()
         {
             StrongReferenceMessenger.Default.Send(new GoBackMessage());
-            SearchTerm = string.Empty;
-            OnPropertyChanged(nameof(SearchTerm));
             _lastUpdatedTimer.Start();
             _editedProject = null;
         }
