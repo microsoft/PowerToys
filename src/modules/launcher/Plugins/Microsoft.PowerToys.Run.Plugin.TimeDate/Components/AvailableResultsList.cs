@@ -65,6 +65,32 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
+                // Friendly (relative) date/time results.
+                // For system-time queries `dateTimeNow` is already DateTime.Now and gets reused as the
+                // reference, which avoids a midnight race between two separate DateTime.Now calls.
+                // For parsed-timestamp queries we take a single fresh sample so the friendly label
+                // describes the input instant relative to the current moment.
+                // Helpers return null when the delta is outside the supported window; those entries
+                // get filtered out by the final `Where(x => !string.IsNullOrEmpty(x.Value))` pass.
+                DateTime friendlyReferenceNow = isSystemDateTime ? dateTimeNow : DateTime.Now;
+                results.AddRange(new[]
+                {
+                    new AvailableResult()
+                    {
+                        Value = TimeAndDateHelper.GetFriendlyDate(dateTimeNow, friendlyReferenceNow, CultureInfo.CurrentCulture) ?? string.Empty,
+                        Label = Resources.Microsoft_plugin_timedate_FriendlyDate,
+                        AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagFriendly,
+                        IconType = ResultIconType.Date,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = TimeAndDateHelper.GetFriendlyDateTime(dateTimeNow, friendlyReferenceNow, CultureInfo.CurrentCulture) ?? string.Empty,
+                        Label = Resources.Microsoft_plugin_timedate_FriendlyDateTime,
+                        AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagFriendly,
+                        IconType = ResultIconType.DateTime,
+                    },
+                });
+
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
                 long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();

@@ -373,6 +373,108 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
+        /// Returns a human-readable relative date label (e.g. "Today", "Yesterday", "in 3 days").
+        /// </summary>
+        /// <param name="target">The date to describe.</param>
+        /// <param name="now">Reference "now" value used to compute the relative offset. Tests pass a fixed value; callers in production pass <see cref="DateTime.Now"/>.</param>
+        /// <param name="culture">Culture used for formatting the integer day count.</param>
+        /// <returns>Localized label, or <c>null</c> if the delta exceeds the supported range (more than 7 calendar days in either direction).</returns>
+        internal static string GetFriendlyDate(DateTime target, DateTime now, CultureInfo culture)
+        {
+            // Compare calendar days, not 24-hour deltas: 1am vs yesterday 11pm must read "Yesterday", not "Today".
+            int dayDelta = (target.Date - now.Date).Days;
+
+            switch (dayDelta)
+            {
+                case 0:
+                    return Resources.Microsoft_plugin_timedate_FriendlyToday;
+                case -1:
+                    return Resources.Microsoft_plugin_timedate_FriendlyYesterday;
+                case 1:
+                    return Resources.Microsoft_plugin_timedate_FriendlyTomorrow;
+            }
+
+            if (dayDelta >= -7 && dayDelta <= -2)
+            {
+                CompositeFormat fmt = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_FriendlyDaysAgo);
+                return string.Format(culture, fmt, -dayDelta);
+            }
+
+            if (dayDelta >= 2 && dayDelta <= 7)
+            {
+                CompositeFormat fmt = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_FriendlyInDays);
+                return string.Format(culture, fmt, dayDelta);
+            }
+
+            // Outside the supported window: omit the result rather than producing "in 14000 days".
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a human-readable relative date/time label (e.g. "just now", "5 minutes ago", "in 2 hours").
+        /// </summary>
+        /// <param name="target">The instant to describe.</param>
+        /// <param name="now">Reference "now" value used to compute the relative offset.</param>
+        /// <param name="culture">Culture used for formatting the integer counts.</param>
+        /// <returns>Localized label, or <c>null</c> if the delta is 24 hours or larger (defer to <see cref="GetFriendlyDate"/> in that case).</returns>
+        internal static string GetFriendlyDateTime(DateTime target, DateTime now, CultureInfo culture)
+        {
+            TimeSpan delta = target - now;
+            double absSeconds = Math.Abs(delta.TotalSeconds);
+            bool isPast = delta.TotalSeconds < 0;
+
+            if (absSeconds < 30)
+            {
+                return Resources.Microsoft_plugin_timedate_FriendlyJustNow;
+            }
+
+            // Rounded counts can land on a bucket boundary (e.g. 59m45s rounds to 60 min). When that
+            // happens we promote to the next bucket rather than emit "60 minutes ago" or "in 24 hours".
+            int roundedMinutes = (int)Math.Round(Math.Abs(delta.TotalMinutes));
+            if (roundedMinutes == 0)
+            {
+                // 30s..59s rounds down to 0 minutes; clamp to 1 instead of falling back to "just now".
+                roundedMinutes = 1;
+            }
+
+            if (roundedMinutes < 60)
+            {
+                if (roundedMinutes == 1)
+                {
+                    return isPast
+                        ? Resources.Microsoft_plugin_timedate_FriendlyMinuteAgo
+                        : Resources.Microsoft_plugin_timedate_FriendlyInMinute;
+                }
+
+                string key = isPast
+                    ? Resources.Microsoft_plugin_timedate_FriendlyMinutesAgo
+                    : Resources.Microsoft_plugin_timedate_FriendlyInMinutes;
+                return string.Format(culture, CompositeFormat.Parse(key), roundedMinutes);
+            }
+
+            // Once we reach this branch roundedMinutes >= 60, which implies absolute delta is at least
+            // 59.5 minutes; that rounds to at least 1 hour, so no zero-clamp is needed here.
+            int roundedHours = (int)Math.Round(Math.Abs(delta.TotalHours));
+            if (roundedHours < 24)
+            {
+                if (roundedHours == 1)
+                {
+                    return isPast
+                        ? Resources.Microsoft_plugin_timedate_FriendlyHourAgo
+                        : Resources.Microsoft_plugin_timedate_FriendlyInHour;
+                }
+
+                string key = isPast
+                    ? Resources.Microsoft_plugin_timedate_FriendlyHoursAgo
+                    : Resources.Microsoft_plugin_timedate_FriendlyInHours;
+                return string.Format(culture, CompositeFormat.Parse(key), roundedHours);
+            }
+
+            // 23h30m+ rounds to 24h, which belongs in the date bucket; defer to GetFriendlyDate.
+            return null;
+        }
+
+        /// <summary>
         /// Returns a CalendarWeekRule enum value based on the plugin setting.
         /// </summary>
         internal static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)
