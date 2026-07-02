@@ -23,6 +23,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         [STAThread]
         public static void Main(string[] args)
         {
+            try
+            {
+                System.IO.Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+            }
+            catch
+            {
+            }
+
             Logger.InitializeLogger("\\FileExplorer_localLow\\Monaco\\logs", true);
 
             ApplicationConfiguration.Initialize();
