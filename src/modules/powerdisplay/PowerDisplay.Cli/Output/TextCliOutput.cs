@@ -183,26 +183,34 @@ public sealed class TextCliOutput : ICliOutput
 
     public void WriteError(CliErrorResult result)
     {
-        _stderr.WriteLine($"Error: {result.Error.Message}");
+        var err = result.Error;
+        var (message, hint) = CliErrorLocalizer.Localize(err);
+
+        _stderr.WriteLine($"{Resources.Label_Error}: {message}");
 
         if (result.Monitor is { Number: > 0 })
         {
-            _stderr.WriteLine($"  monitor: {MonitorLabel(result.Monitor)}");
+            _stderr.WriteLine($"  {Resources.Label_Monitor}: {MonitorLabel(result.Monitor)}");
         }
 
-        if (!string.IsNullOrEmpty(result.Error.ExpectedRange))
+        if (!string.IsNullOrEmpty(err.ExpectedRange))
         {
-            _stderr.WriteLine($"  expected: integer in {result.Error.ExpectedRange}");
+            _stderr.WriteLine($"  {Resources.Label_Expected}: {Resources.Text_ExpectedInteger(err.ExpectedRange)}");
         }
 
-        if (result.Error.Supported is { Count: > 0 })
+        if (err.Supported is { Count: > 0 })
         {
-            _stderr.WriteLine("  supported: " + string.Join(", ", result.Error.Supported.Select(v => $"{v.Name} ({v.Vcp})")));
+            _stderr.WriteLine($"  {Resources.Label_Supported}: " + string.Join(", ", err.Supported.Select(v => $"{v.Name} ({v.Vcp})")));
         }
 
-        if (!string.IsNullOrEmpty(result.Error.Hint))
+        if (!string.IsNullOrEmpty(err.Detail))
         {
-            _stderr.WriteLine($"  hint: {result.Error.Hint}");
+            _stderr.WriteLine($"  {Resources.Label_Diagnostic}: {err.Detail}");
+        }
+
+        if (!string.IsNullOrEmpty(hint))
+        {
+            _stderr.WriteLine($"  {Resources.Label_Hint}: {hint}");
         }
     }
 

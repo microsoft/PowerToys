@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerDisplay.Common.Services;
@@ -58,13 +57,8 @@ public static class AdjustCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.ArgumentError,
-                    Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", req.Setting),
-                    Hint = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "relative up/down supports only: {0}, {1}, {2}",
-                        CliSettingNames.Brightness,
-                        CliSettingNames.Contrast,
-                        CliSettingNames.Volume),
+                    MessageId = CliMessageIds.UnknownSettingAdjust,
+                    Value = req.Setting,
                 },
             });
         }
@@ -78,13 +72,8 @@ public static class AdjustCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.UnsupportedFeature,
-                    Message = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "monitor {0} ({1}): {2} cannot be adjusted relatively",
-                        monitorRef.Number,
-                        monitorRef.Name,
-                        setting),
-                    Hint = "relative up/down supports only continuous settings: brightness, contrast, volume",
+                    MessageId = CliMessageIds.NotAdjustable,
+                    Setting = setting,
                 },
             });
         }
@@ -110,13 +99,8 @@ public static class AdjustCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.HardwareFailure,
-                    Message = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "monitor {0} ({1}): current {2} value could not be read, so it cannot be adjusted relatively",
-                        monitorRef.Number,
-                        monitorRef.Name,
-                        setting),
-                    Hint = "use 'powerdisplay set' to assign an absolute value",
+                    MessageId = CliMessageIds.AdjustValueUnknown,
+                    Setting = setting,
                 },
             });
         }
@@ -138,7 +122,7 @@ public static class AdjustCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, CliErrorFactory.HardwareFailure(commandName, monitorRef, op.ErrorMessage, "hardware write failed"));
+            return (null, CliErrorFactory.HardwareFailure(commandName, monitorRef, op.ErrorMessage));
         }
 
         return (new CliSetResult

@@ -186,7 +186,7 @@ public class AdjustCommandExecutorTests
         Assert.IsNull(result);
         Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
-        StringAssert.Contains(error.Error.Message, "cannot be adjusted relatively");
+        Assert.AreEqual(CliMessageIds.NotAdjustable, error.Error.MessageId);
     }
 
     [TestMethod]

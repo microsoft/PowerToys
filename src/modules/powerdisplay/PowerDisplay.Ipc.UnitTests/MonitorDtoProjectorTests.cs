@@ -137,7 +137,8 @@ public class MonitorDtoProjectorTests
         var (_, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: null, id: null, settingFilter: "BRIGHTNESSS");
 
         Assert.IsNotNull(error);
-        StringAssert.Contains(error!.Error.Message, "BRIGHTNESSS");
+        Assert.AreEqual(CliMessageIds.UnknownSetting, error!.Error.MessageId);
+        Assert.AreEqual("BRIGHTNESSS", error.Error.Value);
     }
 
     // ─── BuildGetResult — selected path ──────────────────────────────────────

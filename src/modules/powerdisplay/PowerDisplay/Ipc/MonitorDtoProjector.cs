@@ -129,13 +129,8 @@ public static class MonitorDtoProjector
                     Error = new CliError
                     {
                         Code = CliErrorCodes.ArgumentError,
-                        Message = string.Format(CultureInfo.InvariantCulture, "--setting '{0}' is not a discrete VCP setting", settingFilter),
-                        Hint = string.Format(
-                            CultureInfo.InvariantCulture,
-                            "valid discrete settings: {0}, {1}, {2}",
-                            CliSettingNames.ColorTemperature,
-                            CliSettingNames.InputSource,
-                            CliSettingNames.PowerState),
+                        MessageId = CliMessageIds.NotDiscreteSetting,
+                        Value = settingFilter,
                     },
                 });
             }
@@ -239,8 +234,7 @@ public static class MonitorDtoProjector
             return (null, new CliError
             {
                 Code = CliErrorCodes.SelectorMissing,
-                Message = "one of --monitor-number/-n or --monitor-id/-i is required",
-                Hint = "run 'powerdisplay list' to see available monitors",
+                MessageId = CliMessageIds.SelectorMissing,
             });
         }
 
@@ -257,8 +251,8 @@ public static class MonitorDtoProjector
             return (null, new CliError
             {
                 Code = CliErrorCodes.MonitorNotFound,
-                Message = string.Format(CultureInfo.InvariantCulture, "no monitor found with id '{0}'", monitorId),
-                Hint = "run 'powerdisplay list' to see available monitors",
+                MessageId = CliMessageIds.MonitorNotFoundId,
+                Value = monitorId,
             });
         }
 
@@ -274,8 +268,8 @@ public static class MonitorDtoProjector
         return (null, new CliError
         {
             Code = CliErrorCodes.MonitorNotFound,
-            Message = string.Format(CultureInfo.InvariantCulture, "no monitor found with number {0}", number),
-            Hint = "run 'powerdisplay list' to see available monitors",
+            MessageId = CliMessageIds.MonitorNotFoundNumber,
+            Value = number.ToString(CultureInfo.InvariantCulture),
         });
     }
 
@@ -340,11 +334,8 @@ public static class MonitorDtoProjector
         error = new CliError
         {
             Code = CliErrorCodes.ArgumentError,
-            Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", settingFilter),
-            Hint = string.Format(
-                CultureInfo.InvariantCulture,
-                "valid settings: {0}",
-                string.Join(", ", CliSettingNames.All)),
+            MessageId = CliMessageIds.UnknownSetting,
+            Value = settingFilter,
         };
         return true;
     }

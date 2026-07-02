@@ -74,6 +74,77 @@ internal static class Resources
 
     internal static string Error_NoAdjustSettingSpecified => Get(nameof(Error_NoAdjustSettingSpecified));
 
+    // ---- error-line labels (no arguments) ----
+    internal static string Label_Error => Get(nameof(Label_Error));
+
+    internal static string Label_Monitor => Get(nameof(Label_Monitor));
+
+    internal static string Label_Expected => Get(nameof(Label_Expected));
+
+    internal static string Label_Supported => Get(nameof(Label_Supported));
+
+    internal static string Label_Diagnostic => Get(nameof(Label_Diagnostic));
+
+    internal static string Label_Hint => Get(nameof(Label_Hint));
+
+    internal static string Text_ExpectedInteger(string range) => Format(nameof(Text_ExpectedInteger), range);
+
+    // ---- app-side error message templates (keyed by CliMessageIds) ----
+    internal static string ErrMsg_OutOfRange(string value, string setting) => Format(nameof(ErrMsg_OutOfRange), value, setting);
+
+    internal static string ErrMsg_InvalidInteger(string value, string setting) => Format(nameof(ErrMsg_InvalidInteger), value, setting);
+
+    internal static string ErrMsg_InvalidDiscrete(string value, string setting) => Format(nameof(ErrMsg_InvalidDiscrete), value, setting);
+
+    internal static string ErrMsg_DiscreteNotInSet(string value, string setting) => Format(nameof(ErrMsg_DiscreteNotInSet), value, setting);
+
+    internal static string ErrMsg_InvalidOrientation(string value) => Format(nameof(ErrMsg_InvalidOrientation), value);
+
+    internal static string ErrMsg_Unsupported(string setting) => Format(nameof(ErrMsg_Unsupported), setting);
+
+    internal static string ErrMsg_PowerBlankingConfirm => Get(nameof(ErrMsg_PowerBlankingConfirm));
+
+    internal static string ErrMsg_HardwareFailure => Get(nameof(ErrMsg_HardwareFailure));
+
+    internal static string ErrMsg_UnknownSetting(string value) => Format(nameof(ErrMsg_UnknownSetting), value);
+
+    internal static string ErrMsg_NotDiscreteSetting(string value) => Format(nameof(ErrMsg_NotDiscreteSetting), value);
+
+    internal static string ErrMsg_SelectorMissing => Get(nameof(ErrMsg_SelectorMissing));
+
+    internal static string ErrMsg_MonitorNotFoundNumber(string value) => Format(nameof(ErrMsg_MonitorNotFoundNumber), value);
+
+    internal static string ErrMsg_MonitorNotFoundId(string value) => Format(nameof(ErrMsg_MonitorNotFoundId), value);
+
+    internal static string ErrMsg_NotAdjustable(string setting) => Format(nameof(ErrMsg_NotAdjustable), setting);
+
+    internal static string ErrMsg_AdjustValueUnknown(string setting) => Format(nameof(ErrMsg_AdjustValueUnknown), setting);
+
+    internal static string ErrMsg_ProfileNotFound(string value) => Format(nameof(ErrMsg_ProfileNotFound), value);
+
+    internal static string ErrMsg_UnknownCommand(string value) => Format(nameof(ErrMsg_UnknownCommand), value);
+
+    internal static string ErrMsg_InternalError => Get(nameof(ErrMsg_InternalError));
+
+    // ---- hints (CLI-generated; some carry a CLI-known list) ----
+    internal static string Hint_ValidDiscreteSettings(string settings) => Format(nameof(Hint_ValidDiscreteSettings), settings);
+
+    internal static string Hint_AdjustSettings(string settings) => Format(nameof(Hint_AdjustSettings), settings);
+
+    internal static string Hint_UseSetForAbsolute => Get(nameof(Hint_UseSetForAbsolute));
+
+    internal static string Hint_UseHexVcp => Get(nameof(Hint_UseHexVcp));
+
+    internal static string Hint_RunList => Get(nameof(Hint_RunList));
+
+    internal static string Hint_SelectorMissing => Get(nameof(Hint_SelectorMissing));
+
+    internal static string Hint_Orientation => Get(nameof(Hint_Orientation));
+
+    internal static string Hint_ConfirmPowerOff => Get(nameof(Hint_ConfirmPowerOff));
+
+    internal static string Hint_RunProfiles => Get(nameof(Hint_RunProfiles));
+
     private static string Get(string name) => Manager.GetString(name, CultureInfo.CurrentUICulture) ?? name;
 
     // Defensive formatting: a translator can break a placeholder ({0} -> {1}, an unescaped brace,

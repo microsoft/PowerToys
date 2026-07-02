@@ -26,9 +26,9 @@ namespace PowerDisplay.Ipc;
 /// already names the single target setting.
 /// </para>
 /// <para>
-/// Defines the validation order and exit-code mapping for the <c>set</c> command. Error messages
-/// are inlined here as invariant English strings so the Contracts layer stays self-contained; see
-/// the TODO(M4) notes below for the planned move to Code-only errors localized by the CLI.
+/// Defines the validation order and exit-code mapping for the <c>set</c> command. Errors carry a
+/// <see cref="CliError.Code"/> + <see cref="CliError.MessageId"/> + structured fields only; the CLI
+/// owns and localizes the human-readable text (see <c>CliErrorLocalizer</c>).
 /// </para>
 /// </summary>
 public static class SetCommandExecutor
@@ -80,15 +80,12 @@ public static class SetCommandExecutor
             return (null, new CliErrorResult
             {
                 Command = CliCommandNames.Set,
+                Monitor = monitorRef,
                 Error = new CliError
                 {
-                    // TODO(M4): app should set Code-only; CLI maps Code->localized message
                     Code = CliErrorCodes.ArgumentError,
-                    Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", req.Setting),
-                    Hint = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "valid settings: {0}",
-                        string.Join(", ", CliSettingNames.All)),
+                    MessageId = CliMessageIds.UnknownSetting,
+                    Value = req.Setting,
                 },
             });
         }
@@ -153,7 +150,6 @@ public static class SetCommandExecutor
         // app receives it as a string from the JSON request, so we parse here).
         if (!int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var requested))
         {
-            // TODO(M4): app should set Code-only; CLI maps Code->localized message
             return (null, new CliErrorResult
             {
                 Command = CliCommandNames.Set,
@@ -161,7 +157,9 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.ArgumentError,
-                    Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid integer for {1}", rawValue, settingName),
+                    MessageId = CliMessageIds.InvalidInteger,
+                    Value = rawValue,
+                    Setting = settingName,
                 },
             });
         }
@@ -180,7 +178,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "hardware write failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage));
         }
 
         return (new CliSetResult
@@ -225,7 +223,6 @@ public static class SetCommandExecutor
         // Gate any state that blanks the panel on the already-resolved value.
         if (confirmIfDisplayBlanking && IsDisplayBlanking(resolved.Value))
         {
-            // TODO(M4): app should set Code-only; CLI maps Code->localized message
             return (null, new CliErrorResult
             {
                 Command = CliCommandNames.Set,
@@ -233,12 +230,8 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.ArgumentError,
-                    Message = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "monitor {0} ({1}): add --confirm-power-off to apply a display-blanking power state",
-                        monitorRef.Number,
-                        monitorRef.Name),
-                    Hint = "use --confirm-power-off to allow setting power states that blank the display",
+                    MessageId = CliMessageIds.PowerBlankingConfirm,
+                    Setting = settingName,
                 },
             });
         }
@@ -251,7 +244,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "hardware write failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage));
         }
 
         return (new CliSetResult
@@ -273,7 +266,6 @@ public static class SetCommandExecutor
     {
         if (string.IsNullOrEmpty(monitor.GdiDeviceName))
         {
-            // TODO(M4): app should set Code-only; CLI maps Code->localized message
             return (null, new CliErrorResult
             {
                 Command = CliCommandNames.Set,
@@ -281,11 +273,9 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.UnsupportedFeature,
-                    Message = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "monitor {0} ({1}): rotation is not supported (no GDI device name)",
-                        monitorRef.Number,
-                        monitorRef.Name),
+                    MessageId = CliMessageIds.Unsupported,
+                    Setting = CliSettingNames.Orientation,
+                    Detail = "no GDI device name",
                 },
             });
         }
@@ -306,7 +296,7 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage, "ChangeDisplaySettingsEx failed"));
+            return (null, CliErrorFactory.HardwareFailure(CliCommandNames.Set, monitorRef, op.ErrorMessage));
         }
 
         return (new CliSetResult
@@ -330,18 +320,13 @@ public static class SetCommandExecutor
 
         if (value < Min || value > Max)
         {
-            // TODO(M4): app should set Code-only; CLI maps Code->localized message
             return new CliError
             {
                 Code = CliErrorCodes.OutOfRange,
+                MessageId = CliMessageIds.OutOfRange,
                 ExpectedRange = $"[{Min}, {Max}]",
-                Message = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "'{0}' is out of range for {1}; accepted range is [{2}, {3}]",
-                    value,
-                    settingName,
-                    Min,
-                    Max),
+                Value = value.ToString(CultureInfo.InvariantCulture),
+                Setting = settingName,
             };
         }
 
@@ -441,13 +426,13 @@ public static class SetCommandExecutor
         IReadOnlyList<int>? supportedValues,
         byte vcpCode)
     {
-        // TODO(M4): app should set Code-only; CLI maps Code->localized message
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
+            MessageId = CliMessageIds.InvalidDiscrete,
             Supported = BuildSupportedList(vcpCode, supportedValues),
-            Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid value for {1}", raw, settingName),
-            Hint = "use a hex VCP value (0x??); run 'powerdisplay capabilities -n N --setting <name>' to list supported values",
+            Value = raw,
+            Setting = settingName,
         };
     }
 
@@ -457,27 +442,23 @@ public static class SetCommandExecutor
         IReadOnlyList<int> supportedValues,
         byte vcpCode)
     {
-        // TODO(M4): app should set Code-only; CLI maps Code->localized message
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
+            MessageId = CliMessageIds.DiscreteNotInSet,
             Supported = BuildSupportedList(vcpCode, supportedValues),
-            Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not in the monitor's supported set for {1}", raw, settingName),
-            Hint = "use a hex VCP value (0x??); run 'powerdisplay capabilities -n N --setting <name>' to list supported values",
+            Value = raw,
+            Setting = settingName,
         };
     }
 
     private static CliError MakeOrientationError(string raw)
     {
-        // TODO(M4): app should set Code-only; CLI maps Code->localized message
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
-            Message = string.Format(
-                CultureInfo.InvariantCulture,
-                "'{0}' is not a valid orientation; accepted values are: 0, 90, 180, 270",
-                raw),
-            Hint = "specify orientation in degrees: 0, 90, 180, or 270",
+            MessageId = CliMessageIds.InvalidOrientation,
+            Value = raw,
         };
     }
 

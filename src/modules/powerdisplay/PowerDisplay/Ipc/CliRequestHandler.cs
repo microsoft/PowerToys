@@ -85,7 +85,7 @@ public sealed class CliRequestHandler
         catch (Exception ex)
         {
             Logger.LogError($"[CliRequestHandler] Unexpected exception in HandleAsync: {ex.GetType().Name}: {ex.Message}");
-            var errorResult = MakeError("unknown", CliErrorCodes.InternalError, $"unexpected error: {ex.Message}");
+            var errorResult = MakeCodedError("unknown", CliErrorCodes.InternalError, CliMessageIds.InternalError, detail: ex.Message);
             return Serialize(errorResult, ContractsJsonContext.Default.CliErrorResult);
         }
     }
@@ -244,11 +244,11 @@ public sealed class CliRequestHandler
                     {
                         // Profile not found — return ARGUMENT_ERROR / exit code 7.
                         return Serialize(
-                            MakeError(
+                            MakeCodedError(
                                 CliCommandNames.ApplyProfile,
                                 CliErrorCodes.ArgumentError,
-                                $"profile '{profileName}' not found",
-                                "run 'powerdisplay profiles' to see available profiles"),
+                                CliMessageIds.ProfileNotFound,
+                                value: profileName),
                             ContractsJsonContext.Default.CliErrorResult);
                     }
 
@@ -261,7 +261,7 @@ public sealed class CliRequestHandler
                 // talking to an older app), not an internal app fault — map it to ARGUMENT_ERROR
                 // (exit 7) like the apply-profile not-found path, not INTERNAL_ERROR (exit 9).
                 default:
-                    return Serialize(MakeError(envelope.Command, CliErrorCodes.ArgumentError, $"unknown command '{envelope.Command}'"), ContractsJsonContext.Default.CliErrorResult);
+                    return Serialize(MakeCodedError(envelope.Command, CliErrorCodes.ArgumentError, CliMessageIds.UnknownCommand, value: envelope.Command), ContractsJsonContext.Default.CliErrorResult);
             }
         }
         catch (OperationCanceledException)
@@ -290,7 +290,7 @@ public sealed class CliRequestHandler
 
         if (envelope is null || string.IsNullOrEmpty(envelope.Command))
         {
-            return Serialize(MakeError("unknown", CliErrorCodes.InternalError, "could not parse request envelope"), ContractsJsonContext.Default.CliErrorResult);
+            return Serialize(MakeCodedError("unknown", CliErrorCodes.InternalError, CliMessageIds.InternalError, detail: "could not parse request envelope"), ContractsJsonContext.Default.CliErrorResult);
         }
 
         // Marshal all ViewModel/MonitorManager access onto the UI thread.
@@ -375,6 +375,21 @@ public sealed class CliRequestHandler
                 Code = code,
                 Message = message,
                 Hint = hint,
+            },
+        };
+
+    // Code-only error: the app names the message via CliMessageIds and supplies structured data;
+    // the CLI localizes the human-readable text. Value/Detail feed the localized template.
+    private static CliErrorResult MakeCodedError(string command, string code, string messageId, string? value = null, string? detail = null)
+        => new()
+        {
+            Command = command,
+            Error = new CliError
+            {
+                Code = code,
+                MessageId = messageId,
+                Value = value,
+                Detail = detail,
             },
         };
 }

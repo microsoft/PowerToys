@@ -360,7 +360,8 @@ public class CliRequestHandlerTests
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
         Assert.AreEqual("apply-profile", error.Command);
-        StringAssert.Contains(error.Error.Message, "NoSuchProfile");
+        Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
+        Assert.AreEqual("NoSuchProfile", error.Error.Value);
     }
 
     [TestMethod]

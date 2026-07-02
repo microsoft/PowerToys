@@ -210,8 +210,8 @@ public class SetCommandExecutorTests
         Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
 
         // Pin the supported-set branch specifically (not the hex-parse branch, which shares the code):
-        // its message names the supported set and BuildSupportedList advertises the real value 0x11.
-        StringAssert.Contains(error.Error.Message, "supported set");
+        // DiscreteNotInSet is the "value not in the monitor's advertised set" message id.
+        Assert.AreEqual(CliMessageIds.DiscreteNotInSet, error.Error.MessageId);
         Assert.IsNotNull(error.Error.Supported);
     }
 
@@ -303,7 +303,7 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
-        Assert.IsNotNull(error.Error.Hint);
+        Assert.AreEqual(CliMessageIds.Unsupported, error.Error.MessageId);
     }
 
     [TestMethod]
@@ -366,7 +366,8 @@ public class SetCommandExecutorTests
 
         Assert.IsNull(result);
         Assert.AreEqual(CliExitCodes.HardwareFailure, error!.Error.ExitCode);
-        Assert.AreEqual("DDC write timed out", error.Error.Message);
+        Assert.AreEqual(CliMessageIds.HardwareFailure, error.Error.MessageId);
+        Assert.AreEqual("DDC write timed out", error.Error.Detail);
     }
 
     // ─── Success paths (exit code 0) ──────────────────────────────────────────
