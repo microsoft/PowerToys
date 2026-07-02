@@ -1,0 +1,537 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Awake.AwakeLaunchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
+    KeyDown="OnKeyDown">
+
+    <Page.Resources>
+        <Style
+            x:Key="FlyoutIconButtonStyle"
+            BasedOn="{StaticResource SubtleButtonStyle}"
+            TargetType="Button">
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        </Style>
+
+        <Style x:Key="DurationCardStyle" TargetType="ToggleButton">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="48" />
+            <Setter Property="Padding" Value="4,8" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ControlElevationBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid
+                            x:Name="RootGrid"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Content="{TemplateBinding Content}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                Foreground="{TemplateBinding Foreground}" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource ControlFillColorDisabledBrush}" />
+                                            <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="Checked">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                                            <Setter Target="RootGrid.BorderThickness" Value="2" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+                                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                                            <Setter Target="RootGrid.BorderThickness" Value="2" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="RootGrid.Background" Value="{ThemeResource CardBackgroundFillColorSecondaryBrush}" />
+                                            <Setter Target="RootGrid.BorderBrush" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                                            <Setter Target="RootGrid.BorderThickness" Value="2" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="CustomCardStyle"
+            BasedOn="{StaticResource DefaultButtonStyle}"
+            TargetType="Button">
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="48" />
+            <Setter Property="Padding" Value="4,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+    </Page.Resources>
+
+    <Grid
+        x:Name="RootGrid"
+        IsTabStop="True"
+        TabFocusNavigation="Local">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="120" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="48" />
+        </Grid.RowDefinitions>
+
+        <!--  Idle header: neutral status ring + title/subtitle  -->
+        <Grid
+            x:Name="IdleHeader"
+            Padding="16"
+            ColumnSpacing="16"
+            RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" MinHeight="16" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation
+                    From="0.0"
+                    To="1.0"
+                    Duration="0:0:0.4" />
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation
+                    From="1.0"
+                    To="0.0"
+                    Duration="0:0:0.25" />
+            </animations:Implicit.HideAnimations>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                x:Uid="HeaderTitle"
+                Grid.Row="1"
+                FontSize="16"
+                FontWeight="SemiBold"
+                TextWrapping="Wrap" />
+
+            <TextBlock
+                x:Uid="HeaderSubtitle"
+                Grid.Row="2"
+                FontSize="12"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap" />
+
+            <Button
+                x:Name="StartButton"
+                Grid.RowSpan="3"
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Click="OnStartButtonClick">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xE768;" />
+                    <TextBlock x:Uid="ActionStartText" />
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!--  Active header: translucent accent base + animated accent glow + countdown  -->
+        <Border
+            x:Name="ActiveHeader"
+            Grid.Row="0"
+            Visibility="Collapsed">
+            <Border.Background>
+                <LinearGradientBrush Opacity="0.6" StartPoint="0.5,0" EndPoint="0.5,1">
+                    <GradientStop Offset="0.0" Color="{ThemeResource SystemAccentColorLight3}" />
+                    <GradientStop Offset="1.0" Color="Transparent" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <animations:Implicit.ShowAnimations>
+                <animations:OpacityAnimation
+                    From="0.0"
+                    To="1.0"
+                    Duration="0:0:0.4" />
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation
+                    From="1.0"
+                    To="0.0"
+                    Duration="0:0:0.25" />
+            </animations:Implicit.HideAnimations>
+            <Grid>
+                <!--  Subtle, organic accent glow (Composition-animated) — fills the whole header  -->
+                <Grid
+                    x:Name="HeaderGlowHost"
+                    IsHitTestVisible="False" />
+
+                <Grid
+                    Padding="16"
+                    ColumnSpacing="16"
+                    RowSpacing="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" MinHeight="16" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border
+                        Padding="8,2"
+                        HorizontalAlignment="Left"
+                        CornerRadius="4">
+                        <Border.Background>
+                            <SolidColorBrush Opacity="0.22" Color="{ThemeResource SystemAccentColor}" />
+                        </Border.Background>
+                        <TextBlock
+                            x:Uid="ActiveBadgeText"
+                            FontSize="10"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                    </Border>
+                    <StackPanel
+                        Grid.Row="1"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Image
+                            Width="24"
+                            Height="24"
+                            VerticalAlignment="Center"
+                            Source="{x:Bind ViewModel.WhileAppCardIcon, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.ActiveAppIconVisibility, Mode=OneWay}" />
+                        <TextBlock
+                            VerticalAlignment="Bottom"
+                            FontSize="20"
+                            FontWeight="SemiBold"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Text="{x:Bind ViewModel.CountdownTime, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.ActiveCountdownVisibility, Mode=OneWay}" />
+                    </StackPanel>
+                    <TextBlock
+                        Grid.Row="2"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.OffAtText, Mode=OneWay}" />
+                    <Button
+                        x:Name="ActionButton"
+                        Grid.RowSpan="3"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Click="OnStopButtonClick"
+                        Style="{StaticResource AccentButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="14" Glyph="&#xE71A;" />
+                            <TextBlock x:Uid="ActionStopText" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Grid
+            Grid.Row="1"
+            Padding="16"
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,1"
+            RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton
+                    x:Name="Card30"
+                    Click="OnDurationCardClick"
+                    Style="{StaticResource DurationCardStyle}"
+                    Tag="30">
+                    <StackPanel HorizontalAlignment="Center" Spacing="0">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="30" />
+                        <TextBlock
+                            x:Uid="Card30Unit"
+                            HorizontalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="Card60"
+                    Grid.Column="1"
+                    Click="OnDurationCardClick"
+                    Style="{StaticResource DurationCardStyle}"
+                    Tag="60">
+                    <StackPanel HorizontalAlignment="Center" Spacing="0">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="1" />
+                        <TextBlock
+                            x:Uid="Card60Unit"
+                            HorizontalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="Card120"
+                    Grid.Column="2"
+                    Click="OnDurationCardClick"
+                    Style="{StaticResource DurationCardStyle}"
+                    Tag="120">
+                    <StackPanel HorizontalAlignment="Center" Spacing="0">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Text="2" />
+                        <TextBlock
+                            x:Uid="Card120Unit"
+                            HorizontalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </ToggleButton>
+                <ToggleButton
+                    x:Name="CardForever"
+                    Grid.Column="3"
+                    Click="OnForeverCardClick"
+                    FontSize="16"
+                    Style="{StaticResource DurationCardStyle}">
+                    <StackPanel HorizontalAlignment="Center" Spacing="0">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="∞" />
+                        <TextBlock
+                            x:Uid="CardForeverText"
+                            HorizontalAlignment="Center"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </ToggleButton>
+            </Grid>
+            <!--  Custom: left toggle selects, right chevron navigates to the picker page  -->
+            <Grid Grid.Row="1">
+                <ToggleButton
+                    x:Name="CardCustom"
+                    MinHeight="48"
+                    Padding="8,4,40,4"
+                    HorizontalAlignment="Stretch"
+                    Click="OnCustomToggleClick"
+                    Style="{StaticResource DurationCardStyle}">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Glyph="&#xE823;" />
+                        <TextBlock
+                            x:Name="CardCustomText"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind ViewModel.CustomCardText, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </ToggleButton>
+                <Rectangle
+                    Width="1"
+                    Margin="0,8,36,8"
+                    HorizontalAlignment="Right"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    IsHitTestVisible="False" />
+                <Button
+                    x:Name="CardCustomNav"
+                    x:Uid="CardCustomNav"
+                    Width="36"
+                    Margin="2"
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="OnCustomNavClick"
+                    CornerRadius="0,4,4,0"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="12" Glyph="&#xE76C;" />
+                </Button>
+            </Grid>
+
+            <!--  While app runs: left toggle selects, right chevron navigates to the app picker  -->
+            <Grid Grid.Row="2">
+                <ToggleButton
+                    x:Name="CardWhileApp"
+                    MinHeight="48"
+                    Padding="8,4,40,4"
+                    HorizontalAlignment="Stretch"
+                    Click="OnWhileAppToggleClick"
+                    Style="{StaticResource DurationCardStyle}">
+                    <Grid HorizontalAlignment="Stretch" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid
+                            Grid.Column="0"
+                            Width="20"
+                            Height="20"
+                            VerticalAlignment="Center">
+                            <Image
+                                x:Name="CardWhileAppIcon"
+                                Width="20"
+                                Height="20"
+                                Source="{x:Bind ViewModel.WhileAppCardIcon, Mode=OneWay}"
+                                Visibility="Collapsed" />
+                            <FontIcon
+                                x:Name="CardWhileAppGlyph"
+                                FontSize="16"
+                                Glyph="&#xE7F4;" />
+                        </Grid>
+                        <TextBlock
+                            x:Name="CardWhileAppText"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            Text="{x:Bind ViewModel.WhileAppCardText, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                    </Grid>
+                </ToggleButton>
+                <Rectangle
+                    Width="1"
+                    Margin="0,8,36,8"
+                    HorizontalAlignment="Right"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}"
+                    IsHitTestVisible="False" />
+                <Button
+                    x:Name="CardWhileAppNav"
+                    x:Uid="CardWhileAppNav"
+                    Width="36"
+                    Margin="2"
+                    Padding="0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Stretch"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="OnWhileAppNavClick"
+                    CornerRadius="0,4,4,0"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="12" Glyph="&#xE76C;" />
+                </Button>
+            </Grid>
+
+            <!--  Keep screen on  -->
+            <CheckBox
+                x:Name="KeepDisplayOnToggle"
+                x:Uid="KeepDisplayOnToggle"
+                Grid.Row="3"
+                Margin="0,4,0,0"
+                IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
+                IsEnabled="{x:Bind ViewModel.KeepDisplayOnEnabled, Mode=OneWay}" />
+
+            <!--  Keep awake with lid closed  -->
+            <CheckBox
+                Grid.Row="4"
+                VerticalAlignment="Top"
+                Content="Keep awake when lid is closed" />
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Button
+                x:Name="OpenSettingsButton"
+                x:Uid="OpenSettingsButton"
+                Margin="0,0,12,0"
+                HorizontalAlignment="Right"
+                Click="OnOpenSettingsClick"
+                Style="{StaticResource FlyoutIconButtonStyle}">
+                <AnimatedIcon x:Name="SettingsAnimatedIcon">
+                    <AnimatedIcon.Source>
+                        <animatedVisuals:AnimatedSettingsVisualSource />
+                    </AnimatedIcon.Source>
+                    <AnimatedIcon.FallbackIconSource>
+                        <SymbolIconSource Symbol="Setting" />
+                    </AnimatedIcon.FallbackIconSource>
+                </AnimatedIcon>
+            </Button>
+        </Grid>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="ActivationStates">
+                <VisualState x:Name="IdleState" />
+                <VisualState x:Name="ActiveState">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind ViewModel.IsActive, Mode=OneWay}" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="IdleHeader.Visibility" Value="Collapsed" />
+                        <Setter Target="ActiveHeader.Visibility" Value="Visible" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </Grid>
+</Page>

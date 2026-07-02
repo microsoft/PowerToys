@@ -245,6 +245,98 @@
     <value>Until date</value>
     <comment>Short label for the Expirable keep-awake mode (active until a specified date and time) in the flyout's mode selector.</comment>
   </data>
+  <data name="AWAKE_FLYOUT_DURATION_DAY" xml:space="preserve">
+    <value>{0} day</value>
+    <comment>Subtext under the countdown ring for a single remaining day. {0} is the number 1.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_DURATION_DAYS" xml:space="preserve">
+    <value>{0} days</value>
+    <comment>Subtext under the countdown ring for the number of remaining days. {0} is the day count.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_DURATION_WEEK" xml:space="preserve">
+    <value>{0} week</value>
+    <comment>Subtext under the countdown ring for a single remaining week. {0} is the number 1.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_DURATION_WEEKS" xml:space="preserve">
+    <value>{0} weeks</value>
+    <comment>Subtext under the countdown ring for the number of remaining weeks. {0} is the week count.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_DURATION_MONTH" xml:space="preserve">
+    <value>{0} month</value>
+    <comment>Subtext under the countdown ring for a single remaining month. {0} is the number 1.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_DURATION_MONTHS" xml:space="preserve">
+    <value>{0} months</value>
+    <comment>Subtext under the countdown ring for the number of remaining months. {0} is the month count.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_AWAKE_UNTIL" xml:space="preserve">
+    <value>Awake until {0}</value>
+    <comment>Line under the countdown gauge stating when keep-awake ends. {0} is a time or date/time.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_AWAKE_INDEFINITELY" xml:space="preserve">
+    <value>Stays awake until stopped</value>
+    <comment>Line under the countdown gauge when the machine is kept awake indefinitely.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_WHILE_APP_RUNS" xml:space="preserve">
+    <value>Awake while {0} runs</value>
+    <comment>Status line shown while keep-awake is bound to a running app. {0} is the app name.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_FOREVER" xml:space="preserve">
+    <value>Forever</value>
+    <comment>Label for the flyout chip that keeps the machine awake indefinitely.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_CUSTOM" xml:space="preserve">
+    <value>Custom</value>
+    <comment>Label for the flyout chip that opens a popup to set a custom duration or end date/time.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_CARD_WHILE_APP" xml:space="preserve">
+    <value>While app runs</value>
+    <comment>Default label on the flyout card that keeps the PC awake while a chosen app runs.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_CARD_CUSTOM_UNTIL" xml:space="preserve">
+    <value>Until {0}</value>
+    <comment>Custom card label when keeping awake until a specific time. {0} is a time or date/time.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_CUSTOM_DURATION" xml:space="preserve">
+    <value>Duration</value>
+    <comment>Label for the option in the Custom popup that keeps the machine awake for a specified hours/minutes duration.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_STOP" xml:space="preserve">
+    <value>Stop</value>
+    <comment>Label for the button that stops keeping the machine awake and returns to following the power plan.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_START" xml:space="preserve">
+    <value>Start</value>
+    <comment>Label for the button that starts keeping the machine awake using the selected duration.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_ACTIVE_UNTIL" xml:space="preserve">
+    <value>Active until {0}</value>
+    <comment>Preview line stating when keep-awake will end. {0} is a time or date/time.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_UNIT_MIN" xml:space="preserve">
+    <value>min</value>
+    <comment>Short unit label for minutes shown under a duration preset (e.g. "15 min").</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_UNIT_HOUR" xml:space="preserve">
+    <value>hour</value>
+    <comment>Singular unit label for an hour shown under a duration preset (e.g. "1 hour").</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_UNIT_HOURS" xml:space="preserve">
+    <value>hours</value>
+    <comment>Plural unit label for hours shown under a duration preset (e.g. "2 hours").</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_SUBTITLE" xml:space="preserve">
+    <value>Choose a duration to prevent sleep.</value>
+    <comment>Subtitle shown in the flyout header while keep-awake is not active.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_ACTIVE" xml:space="preserve">
+    <value>ACTIVE</value>
+    <comment>Badge text shown in the flyout header while keep-awake is running.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_KEEP_SCREEN_ON_DESC" xml:space="preserve">
+    <value>Prevent your display from going to sleep.</value>
+    <comment>Description shown beneath the "Keep screen on" checkbox.</comment>
+  </data>
   <data name="AWAKE_FLYOUT_TIMED_HEADER" xml:space="preserve">
     <value>Keep awake for</value>
     <comment>Header above the list of preset timed durations.</comment>
@@ -286,9 +378,9 @@
     <comment>Status line shown below the title when Awake is in Timed mode. {0} is the duration, e.g. "30 minutes".</comment>
   </data>
   <data name="AWAKE_FLYOUT_STATUS_EXPIRABLE" xml:space="preserve">
-    <value>Keeping your PC awake until {0}</value>
-    <comment>Status line shown below the title when Awake is in Expirable mode. {0} is the formatted date/time.</comment>
-  </data>
+      <value>Keeping your PC awake until {0}</value>
+      <comment>Status line shown below the title when Awake is in Expirable mode. {0} is the formatted date/time.</comment>
+    </data>
   <data name="AWAKE_FLYOUT_INTERVAL_HOURS" xml:space="preserve">
     <value>Hours</value>
     <comment>Header above the hours number input in the flyout's Timed mode section.</comment>

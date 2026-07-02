@@ -25,6 +25,9 @@
     <UseWindowsForms>False</UseWindowsForms>
     <!--Per documentation: https://learn.microsoft.com/dotnet/core/compatibility/windows-forms/5.0/automatically-infer-winexe-output-type#outputtype-set-to-winexe-for-wpf-and-winforms-apps -->
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+    <!-- Background tray app: workstation, non-concurrent GC keeps a smaller heap reserve. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <PackageProjectUrl>https://awake.den.dev</PackageProjectUrl>
     <RepositoryUrl>https://github.com/microsoft/powertoys</RepositoryUrl>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -73,6 +76,8 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="WinUIEx" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.Mvvm" />

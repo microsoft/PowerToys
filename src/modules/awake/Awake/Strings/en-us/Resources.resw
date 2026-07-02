@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HeaderTitle.Text" xml:space="preserve">
+    <value>Awake is not running</value>
+    <comment>Title shown in the flyout header while keep-awake is not active.</comment>
+  </data>
+  <data name="HeaderSubtitle.Text" xml:space="preserve">
+    <value>PC sleep follows your power plan.</value>
+    <comment>Subtitle shown in the flyout header while keep-awake is not active.</comment>
+  </data>
+  <data name="ActiveBadgeText.Text" xml:space="preserve">
+    <value>ACTIVE</value>
+    <comment>Badge text shown in the flyout header while keep-awake is running.</comment>
+  </data>
+  <data name="Card30Unit.Text" xml:space="preserve">
+    <value>min</value>
+    <comment>Unit label shown under the "30" on the 30-minute preset card.</comment>
+  </data>
+  <data name="Card60Unit.Text" xml:space="preserve">
+    <value>hour</value>
+    <comment>Unit label shown under the "1" on the 1-hour preset card.</comment>
+  </data>
+  <data name="Card120Unit.Text" xml:space="preserve">
+    <value>hours</value>
+    <comment>Unit label shown under the "2" on the 2-hour preset card.</comment>
+  </data>
+  <data name="Card30.Content" xml:space="preserve">
+    <value>30 min</value>
+    <comment>Duration preset button that keeps the PC awake for 30 minutes.</comment>
+  </data>
+  <data name="Card60.Content" xml:space="preserve">
+    <value>1 hour</value>
+    <comment>Duration preset button that keeps the PC awake for 1 hour.</comment>
+  </data>
+  <data name="Card120.Content" xml:space="preserve">
+    <value>2 hours</value>
+    <comment>Duration preset button that keeps the PC awake for 2 hours.</comment>
+  </data>
+  <data name="CardForever.Content" xml:space="preserve">
+    <value>Forever</value>
+    <comment>Duration preset button that keeps the PC awake indefinitely.</comment>
+  </data>
+  <data name="CardForeverText.Text" xml:space="preserve">
+    <value>Forever</value>
+    <comment>Label on the card that keeps the PC awake indefinitely.</comment>
+  </data>
+  <data name="CardCustomText.Text" xml:space="preserve">
+    <value>Custom</value>
+    <comment>Label on the button that opens the custom duration picker.</comment>
+  </data>
+  <data name="CardWhileAppText.Text" xml:space="preserve">
+    <value>While app runs</value>
+    <comment>Label on the button that opens the running-app picker; keeps the PC awake while the chosen app runs.</comment>
+  </data>
+  <data name="CardCustomNav.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Configure custom duration</value>
+    <comment>Accessible name for the chevron that opens the custom duration picker page.</comment>
+  </data>
+  <data name="CardCustomNav.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Configure custom duration</value>
+    <comment>Tooltip for the chevron that opens the custom duration picker page.</comment>
+  </data>
+  <data name="CardWhileAppNav.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Choose an app</value>
+    <comment>Accessible name for the chevron that opens the running-app picker page.</comment>
+  </data>
+  <data name="CardWhileAppNav.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Choose an app</value>
+    <comment>Tooltip for the chevron that opens the running-app picker page.</comment>
+  </data>
+  <data name="AppSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search apps</value>
+    <comment>Placeholder text in the search box of the running-app picker.</comment>
+  </data>
+  <data name="AppEmptyText.Text" xml:space="preserve">
+    <value>No running apps found</value>
+    <comment>Shown in the running-app picker when no apps match the search.</comment>
+  </data>
+  <data name="CustomDurationRadio.Content" xml:space="preserve">
+    <value>Duration</value>
+    <comment>Option to keep awake for a custom number of hours and minutes.</comment>
+  </data>
+  <data name="CustomUntilRadio.Content" xml:space="preserve">
+    <value>Until date</value>
+    <comment>Option to keep awake until a specific date and time.</comment>
+  </data>
+  <data name="IntervalHoursInput.Header" xml:space="preserve">
+    <value>Hours</value>
+    <comment>Header for the custom-duration hours input.</comment>
+  </data>
+  <data name="IntervalMinutesInput.Header" xml:space="preserve">
+    <value>Minutes</value>
+    <comment>Header for the custom-duration minutes input.</comment>
+  </data>
+  <data name="ExpirationDatePicker.Header" xml:space="preserve">
+    <value>Date</value>
+    <comment>Header for the keep-awake-until date picker.</comment>
+  </data>
+  <data name="ExpirationTimePicker.Header" xml:space="preserve">
+    <value>Time</value>
+    <comment>Header for the keep-awake-until time picker.</comment>
+  </data>
+  <data name="CustomApplyButton.Content" xml:space="preserve">
+    <value>Apply</value>
+    <comment>Button that confirms the custom duration selection.</comment>
+  </data>
+  <data name="KeepDisplayOnToggle.Content" xml:space="preserve">
+    <value>Keep screen on</value>
+    <comment>Checkbox to also keep the display awake.</comment>
+  </data>
+  <data name="ActionStartText.Text" xml:space="preserve">
+    <value>Start</value>
+    <comment>Text on the action button that starts keeping the PC awake.</comment>
+  </data>
+  <data name="ActionStopText.Text" xml:space="preserve">
+    <value>Stop</value>
+    <comment>Text on the action button that stops keeping the PC awake.</comment>
+  </data>
+  <data name="OpenSettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open settings</value>
+    <comment>Tooltip for the button that opens Awake settings.</comment>
+  </data>
+  <data name="OpenSettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open settings</value>
+    <comment>Accessible name for the button that opens Awake settings.</comment>
+  </data>
+  <data name="AwakeBackButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Back</value>
+    <comment>Tooltip for the button that returns to the main flyout page.</comment>
+  </data>
+  <data name="AwakeBackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Back</value>
+    <comment>Accessible name for the button that returns to the main flyout page.</comment>
+  </data>
+  <data name="CustomTimeTitle.Text" xml:space="preserve">
+    <value>Custom duration</value>
+    <comment>Title of the page where the user sets a custom keep-awake duration or end time.</comment>
+  </data>
+  <data name="AppPickerTitle.Text" xml:space="preserve">
+    <value>While app runs</value>
+    <comment>Title of the page where the user picks an app to keep the PC awake while it runs.</comment>
+  </data>
+</root>

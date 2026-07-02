@@ -3,29 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using Awake.Core;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Awake.Properties;
 using Awake.ViewModels;
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI.Controls.Flyout;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.System;
 using WinUIEx;
 
 namespace Awake
 {
     /// <summary>
-    /// The Awake tray flyout. Hidden at startup; shown when the user clicks the tray icon.
+    /// The Awake tray flyout window. Hidden at startup; shown when the user clicks the tray icon.
     /// Auto-hides when it loses activation (same behavior as the PowerDisplay flyout).
+    /// The flyout body lives in <see cref="AwakeShellPage"/> (a navigation frame whose root
+    /// is <see cref="AwakeLaunchPage"/>); this window owns the
+    /// window lifecycle, positioning, and the countdown timer.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
@@ -37,10 +35,16 @@ namespace Awake
         private const int FlyoutRightMarginDip = 12;
         private const int FlyoutBottomMarginDip = 12;
 
+        // Delay the working-set trim after hide so quick toggles don't trigger aggressive
+        // GC; cancel it on re-show. The trim only releases idle UI/heap pages back to the OS —
+        // it has no effect on the keep-awake state (driven by SetThreadExecutionState in Manager).
+        private const int MemoryTrimDelayMs = 2000;
+
         private readonly AwakeFlyoutViewModel _viewModel;
         private readonly int _designWidthDip;
         private readonly int _designHeightDip;
-        private readonly Dictionary<AwakeMode, BitmapImage> _statusIconsByMode = CreateStatusIcons();
+        private readonly DispatcherTimer _countdownTimer;
+        private CancellationTokenSource? _trimCts;
         private bool _isShowingWindow;
         private bool _disposed;
 
@@ -59,13 +63,27 @@ namespace Awake
                 _designWidthDip = (int)Math.Ceiling(this.Width);
                 _designHeightDip = (int)Math.Ceiling(this.Height);
 
-                ApplyLocalizedStrings();
+                ShellHost.Initialize(_viewModel);
+                ShellHost.CloseRequested += OnFlyoutCloseRequested;
+
+                // The window title isn't a XAML element, so it can't use x:Uid; set it here.
+                // All other UI strings are localized via x:Uid against Strings\<lang>\Resources.resw.
+                this.AppWindow.Title = Resources.AWAKE_FLYOUT_TITLE;
 
                 ConfigureWindow();
                 RegisterEventHandlers();
-                SyncModeSelection();
+
+                _countdownTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(1),
+                };
+                _countdownTimer.Tick += OnCountdownTick;
 
                 this.SetIsShownInSwitchers(false);
+
+                // Window starts hidden at launch; trim the initial working set so the idle
+                // background footprint drops without waiting for a first show/hide cycle.
+                ScheduleMemoryTrim();
             }
             catch (Exception ex)
             {
@@ -74,33 +92,9 @@ namespace Awake
             }
         }
 
-        private void ApplyLocalizedStrings()
+        private void OnCountdownTick(object? sender, object e)
         {
-            this.AppWindow.Title = Resources.AWAKE_FLYOUT_TITLE;
-
-            ModeHeaderText.Text = Resources.AWAKE_FLYOUT_MODE_HEADER;
-
-            ModeOffItem.Content = Resources.AWAKE_FLYOUT_MODE_OFF;
-            ModeIndefiniteItem.Content = Resources.AWAKE_FLYOUT_MODE_INDEFINITE;
-            ModeTimedItem.Content = Resources.AWAKE_FLYOUT_MODE_TIMED;
-            ModeExpirableItem.Content = Resources.AWAKE_FLYOUT_MODE_EXPIRABLE;
-
-            KeepDisplayOnCheckBox.Content = Resources.AWAKE_KEEP_SCREEN_ON;
-
-            TimedHeaderText.Text = Resources.AWAKE_FLYOUT_TIMED_HEADER;
-            ExpirableHeaderText.Text = Resources.AWAKE_FLYOUT_EXPIRABLE_HEADER;
-
-            IntervalHoursInput.Header = Resources.AWAKE_FLYOUT_INTERVAL_HOURS;
-            IntervalMinutesInput.Header = Resources.AWAKE_FLYOUT_INTERVAL_MINUTES;
-
-            ExpirationTimePicker.Header = Resources.AWAKE_FLYOUT_EXPIRABLE_TIME;
-            ExpirationDatePicker.Header = Resources.AWAKE_FLYOUT_EXPIRABLE_DATE;
-
-            OpenSettingsButtonTooltip.Text = Resources.AWAKE_FLYOUT_OPEN_SETTINGS;
-            AutomationProperties.SetName(OpenSettingsButton, Resources.AWAKE_FLYOUT_OPEN_SETTINGS);
-
-            ExitButtonTooltip.Text = Resources.AWAKE_EXIT;
-            AutomationProperties.SetName(ExitButton, Resources.AWAKE_EXIT);
+            _viewModel.UpdateCountdown();
         }
 
         private void ConfigureWindow()
@@ -127,98 +121,11 @@ namespace Awake
         {
             this.Closed += OnWindowClosed;
             this.Activated += OnWindowActivated;
-            _viewModel.PropertyChanged += OnViewModelPropertyChanged;
         }
 
-        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnFlyoutCloseRequested(object? sender, EventArgs e)
         {
-            if (e.PropertyName == nameof(AwakeFlyoutViewModel.Mode))
-            {
-                SyncModeSelection();
-            }
-        }
-
-        private void SyncModeSelection()
-        {
-            int target = _viewModel.Mode switch
-            {
-                AwakeMode.INDEFINITE => 1,
-                AwakeMode.TIMED => 2,
-                AwakeMode.EXPIRABLE => 3,
-                _ => 0,
-            };
-
-            if (ModeComboBox.SelectedIndex != target)
-            {
-                ModeComboBox.SelectedIndex = target;
-            }
-
-            if (_statusIconsByMode.TryGetValue(_viewModel.Mode, out BitmapImage? iconSource))
-            {
-                StatusIcon.Source = iconSource;
-            }
-        }
-
-        private static Dictionary<AwakeMode, BitmapImage> CreateStatusIcons()
-        {
-            // Mirrors TrayIconService's mode → icon mapping so the flyout's status
-            // glyph stays in lock-step with whatever is currently in the system tray.
-            string baseDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Awake");
-
-            return new Dictionary<AwakeMode, BitmapImage>
-            {
-                [AwakeMode.PASSIVE] = LoadIcon(Path.Combine(baseDir, "disabled.ico")),
-                [AwakeMode.INDEFINITE] = LoadIcon(Path.Combine(baseDir, "indefinite.ico")),
-                [AwakeMode.TIMED] = LoadIcon(Path.Combine(baseDir, "timed.ico")),
-                [AwakeMode.EXPIRABLE] = LoadIcon(Path.Combine(baseDir, "expirable.ico")),
-            };
-        }
-
-        private static BitmapImage LoadIcon(string path)
-        {
-            try
-            {
-                return new BitmapImage(new Uri(path));
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Failed to load Awake status icon '{path}': {ex.Message}");
-                return new BitmapImage();
-            }
-        }
-
-        private void ModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // ComboBox can fire SelectionChanged transiently with SelectedIndex == -1
-            // during template apply; ignore those intermediate states.
-            if (ModeComboBox.SelectedIndex < 0)
-            {
-                return;
-            }
-
-            var newMode = ModeComboBox.SelectedIndex switch
-            {
-                1 => AwakeMode.INDEFINITE,
-                2 => AwakeMode.TIMED,
-                3 => AwakeMode.EXPIRABLE,
-                _ => AwakeMode.PASSIVE,
-            };
-
-            if (_viewModel.Mode != newMode)
-            {
-                _viewModel.Mode = newMode;
-            }
-        }
-
-        private void OnOpenSettingsClick(object sender, RoutedEventArgs e)
-        {
-            _viewModel.OpenSettingsCommand.Execute(null);
             HideWindow();
-        }
-
-        private void OnExitClick(object sender, RoutedEventArgs e)
-        {
-            _viewModel.ExitAwakeCommand.Execute(null);
         }
 
         private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
@@ -235,27 +142,22 @@ namespace Awake
             HideWindow();
         }
 
-        private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
-        {
-            if (e.Key == VirtualKey.Escape)
-            {
-                HideWindow();
-                e.Handled = true;
-            }
-        }
-
         public void ShowWindow()
         {
             _isShowingWindow = true;
             try
             {
+                CancelMemoryTrim();
                 _viewModel.Refresh();
+                ShellHost.NavigateToLaunch();
+                ShellHost.RefreshGlow();
                 PositionFlyout();
                 this.Activate();
                 this.Show();
                 this.IsAlwaysOnTop = true;
                 this.BringToFront();
-                RootGrid.Focus(FocusState.Programmatic);
+                ShellHost.FocusContent();
+                _countdownTimer.Start();
             }
             catch (Exception ex)
             {
@@ -271,12 +173,47 @@ namespace Awake
         {
             try
             {
+                _countdownTimer.Stop();
                 this.Hide();
+                ScheduleMemoryTrim();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"HideWindow failed: {ex}");
             }
+        }
+
+        // Releases idle pages back to the OS ~2s after the flyout is hidden so the background
+        // working set drops. Cancelled on re-show to avoid GC churn during quick toggles.
+        private void ScheduleMemoryTrim()
+        {
+            CancelMemoryTrim();
+            _trimCts = new CancellationTokenSource();
+            var token = _trimCts.Token;
+
+            Task.Delay(MemoryTrimDelayMs, token).ContinueWith(
+                _ =>
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                    SetProcessWorkingSetSize(System.Diagnostics.Process.GetCurrentProcess().Handle, -1, -1);
+                },
+                token,
+                TaskContinuationOptions.OnlyOnRanToCompletion,
+                TaskScheduler.Default);
+        }
+
+        private void CancelMemoryTrim()
+        {
+            _trimCts?.Cancel();
+            _trimCts?.Dispose();
+            _trimCts = null;
         }
 
         public void ToggleWindow()
@@ -319,8 +256,14 @@ namespace Awake
             }
 
             _disposed = true;
-            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            CancelMemoryTrim();
+            _countdownTimer.Stop();
+            _countdownTimer.Tick -= OnCountdownTick;
+            ShellHost.CloseRequested -= OnFlyoutCloseRequested;
             _viewModel.Dispose();
         }
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, int dwMinimumWorkingSetSize, int dwMaximumWorkingSetSize);
     }
 }

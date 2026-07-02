@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Awake.AwakeCustomTimePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    KeyDown="OnKeyDown">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Header with back button  -->
+        <Grid Padding="4,4,16,8" ColumnSpacing="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                x:Name="BackButton"
+                x:Uid="AwakeBackButton"
+                Width="40"
+                Height="40"
+                VerticalAlignment="Center"
+                Click="OnBackClick"
+                Style="{StaticResource SubtleButtonStyle}">
+                <FontIcon FontSize="14" Glyph="&#xE72B;" />
+            </Button>
+            <TextBlock
+                x:Uid="CustomTimeTitle"
+                Grid.Column="1"
+                Margin="0,-1,0,0"
+                VerticalAlignment="Center" />
+        </Grid>
+
+        <StackPanel
+            Grid.Row="1"
+            Padding="16,8,16,16"
+            Spacing="12">
+            <tkcontrols:Segmented
+                x:Name="CustomTypeSelector"
+                HorizontalAlignment="Stretch"
+                SelectedIndex="0">
+                <tkcontrols:SegmentedItem x:Name="CustomDurationSegment" x:Uid="CustomDurationRadio" />
+                <tkcontrols:SegmentedItem x:Name="CustomUntilSegment" x:Uid="CustomUntilRadio" />
+            </tkcontrols:Segmented>
+
+            <tkcontrols:SwitchPresenter TargetType="x:Int32" Value="{x:Bind CustomTypeSelector.SelectedIndex, Mode=OneWay}">
+                <!--  Case 0 = duration (hours/minutes)  -->
+                <tkcontrols:Case Value="0">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <NumberBox
+                            x:Name="IntervalHoursInput"
+                            x:Uid="IntervalHoursInput"
+                            Grid.Column="0"
+                            LargeChange="5"
+                            Maximum="23"
+                            Minimum="0"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.IntervalHours, Mode=TwoWay}" />
+                        <NumberBox
+                            x:Name="IntervalMinutesInput"
+                            x:Uid="IntervalMinutesInput"
+                            Grid.Column="1"
+                            LargeChange="5"
+                            Maximum="59"
+                            Minimum="0"
+                            SmallChange="1"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.IntervalMinutes, Mode=TwoWay}" />
+                    </Grid>
+                </tkcontrols:Case>
+                <!--  Case 1 = until a specific date/time  -->
+                <tkcontrols:Case Value="1">
+                    <StackPanel Spacing="8">
+                        <DatePicker
+                            x:Name="ExpirationDatePicker"
+                            x:Uid="ExpirationDatePicker"
+                            HorizontalAlignment="Stretch"
+                            Date="{x:Bind ViewModel.ExpirationDate, Mode=TwoWay}" />
+                        <TimePicker
+                            x:Name="ExpirationTimePicker"
+                            x:Uid="ExpirationTimePicker"
+                            HorizontalAlignment="Stretch"
+                            ClockIdentifier="24HourClock"
+                            MinuteIncrement="5"
+                            Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
+                    </StackPanel>
+                </tkcontrols:Case>
+            </tkcontrols:SwitchPresenter>
+
+            <Button
+                x:Name="CustomApplyButton"
+                x:Uid="CustomApplyButton"
+                HorizontalAlignment="Stretch"
+                Click="OnApplyClick" />
+        </StackPanel>
+    </Grid>
+</Page>

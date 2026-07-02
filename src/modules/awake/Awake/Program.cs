@@ -92,7 +92,20 @@ namespace Awake
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => LockMutex?.ReleaseMutex();
+            // Note: dispose (rather than ReleaseMutex) here because ProcessExit runs on a
+            // different thread than the one that acquired the mutex, and ReleaseMutex requires
+            // the owning thread. Disposing closes the handle and the OS releases ownership on exit.
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try
+                {
+                    LockMutex?.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to dispose the single-instance mutex on exit: " + ex.Message);
+                }
+            };
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (!instantiated)

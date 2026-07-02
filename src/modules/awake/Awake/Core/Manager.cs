@@ -47,7 +47,27 @@ namespace Awake.Core
 
         internal static int ProcessId { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the current keep-awake session is bound to a process
+        /// the user picked from the flyout (the "While app runs" mode). When true the session ends
+        /// automatically once <see cref="ProcessId"/> exits, reverting Awake to passive.
+        /// </summary>
+        internal static bool IsProcessBound { get; private set; }
+
+        /// <summary>
+        /// Gets the friendly name of the process the current session is bound to (for display in
+        /// the flyout/tray). Empty when not process-bound.
+        /// </summary>
+        internal static string BoundProcessName { get; private set; } = string.Empty;
+
         internal static DateTimeOffset ExpireAt { get; private set; }
+
+        /// <summary>
+        /// Gets the timestamp at which the current timed/expirable keep-awake session began.
+        /// Together with <see cref="ExpireAt"/> this lets the flyout render a determinate
+        /// countdown progress bar (elapsed = now - start, total = ExpireAt - start).
+        /// </summary>
+        internal static DateTimeOffset ModeStartedAt { get; private set; }
 
         /// <summary>
         /// Raised whenever the operating mode, screen state, or expiration target changes
@@ -177,6 +197,13 @@ namespace Awake.Core
             _timerSubscription?.Dispose();
             _timerSubscription = null;
 
+            // Clear any process binding. Callers that establish a new binding (the CLI --pid path
+            // and SetProcessBoundKeepAwake) re-set ProcessId afterwards, so this only clears stale
+            // bindings when switching to a non-process mode.
+            ProcessId = 0;
+            IsProcessBound = false;
+            BoundProcessName = string.Empty;
+
             Logger.LogInfo("Timer subscription disposed.");
         }
 
@@ -190,7 +217,9 @@ namespace Awake.Core
                 case AwakeMode.INDEFINITE:
                     string pidLine = ProcessId == 0
                         ? string.Empty
-                        : $"\nPID: {ProcessId}";
+                        : (IsProcessBound && BoundProcessName.Length > 0
+                            ? $"\n{BoundProcessName} (PID: {ProcessId})"
+                            : $"\nPID: {ProcessId}");
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_INDEFINITE}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}{pidLine}";
                     icon = TrayIconService.IndefiniteIcon;
                     break;
@@ -269,6 +298,46 @@ namespace Awake.Core
             SetModeShellIcon();
         }
 
+        /// <summary>
+        /// Keeps the system awake indefinitely while the process identified by <paramref name="processId"/>
+        /// is running, automatically reverting to passive once it exits. This is the in-flyout
+        /// counterpart of the CLI <c>--pid</c> path: it reuses the same indefinite keep-awake plus
+        /// <see cref="RunnerHelper.WaitForPowerToysRunner"/> process-watch primitives, but (1) the exit
+        /// callback reverts to passive instead of terminating Awake (the process must stay alive to host
+        /// the tray icon and flyout), and (2) it does not persist the mode to settings because a PID is
+        /// not stable across restarts.
+        /// </summary>
+        internal static void SetProcessBoundKeepAwake(int processId, string processName, bool keepDisplayOn = false, [CallerMemberName] string callerName = "")
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+
+            Logger.LogInfo($"Process-bound keep-awake starting for PID {processId} ({processName}), invoked by {callerName}...");
+
+            CancelExistingThread();
+
+            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.INDEFINITE;
+            ProcessId = processId;
+            IsProcessBound = true;
+            BoundProcessName = processName ?? string.Empty;
+
+            SetModeShellIcon();
+
+            // Watch the bound process; when it exits, revert to passive on this (long-lived) process.
+            // The callback runs on a background thread (same as the timed/expirable completion paths),
+            // and guards against stale watchers by checking we are still bound to this exact PID.
+            RunnerHelper.WaitForPowerToysRunner(processId, () =>
+            {
+                if (CurrentOperatingMode == AwakeMode.INDEFINITE && IsProcessBound && ProcessId == processId)
+                {
+                    Logger.LogInfo($"Bound process {processId} exited; reverting Awake to passive.");
+                    SetPassiveKeepAwake(updateSettings: false);
+                }
+            });
+        }
+
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
             Logger.LogInfo($"Expirable keep-awake invoked by {callerName}. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
@@ -318,13 +387,38 @@ namespace Awake.Core
             IsDisplayOn = keepDisplayOn;
             CurrentOperatingMode = AwakeMode.EXPIRABLE;
             ExpireAt = expireAt;
+            ModeStartedAt = DateTimeOffset.Now;
 
             SetModeShellIcon();
 
-            TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
+            // Use a 1s interval that completes once the expiry time passes, rather than a single
+            // Observable.Timer(remainingTime): a one-shot timer overflows for spans beyond ~49.7
+            // days (System.Threading.Timer dueTime is capped at uint.MaxValue ms). This also keeps
+            // the tray tooltip and flyout countdown ticking down.
+            var targetExpiryTime = expireAt;
 
-            _timerSubscription = Observable.Timer(remainingTime).Subscribe(
-                _ => HandleTimerCompletion("expirable"));
+            _timerSubscription = Observable.Interval(TimeSpan.FromSeconds(1))
+                .Select(_ => targetExpiryTime - DateTimeOffset.Now)
+                .TakeWhile(remaining => remaining.TotalSeconds > 0)
+                .Subscribe(
+                    remainingTimeSpan =>
+                    {
+                        TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
+
+                        AwakeApp.Current?.UpdateTrayIcon(
+                            TrayIconService.TimedIcon,
+                            $"{Constants.FullAppName}\n{remainingTimeSpan.ToHumanReadableString()} {Resources.AWAKE_TRAY_REMAINING}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}");
+
+                        try
+                        {
+                            ModeChanged?.Invoke(null, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Awake ModeChanged subscriber threw: {ex.Message}");
+                        }
+                    },
+                    () => HandleTimerCompletion("expirable"));
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
@@ -379,6 +473,10 @@ namespace Awake.Core
             SetModeShellIcon();
 
             var targetExpiryTime = DateTimeOffset.Now.AddSeconds(seconds);
+
+            // Expose the session bounds so the flyout can render a determinate countdown.
+            ModeStartedAt = DateTimeOffset.Now;
+            ExpireAt = targetExpiryTime;
 
             _timerSubscription = Observable.Interval(TimeSpan.FromSeconds(1))
                 .Select(_ => targetExpiryTime - DateTimeOffset.Now)

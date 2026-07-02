@@ -375,6 +375,144 @@ namespace Awake.Properties {
             }
         }
 
+        internal static string AWAKE_FLYOUT_DURATION_DAY {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_DAY", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_DURATION_DAYS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_DAYS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_DURATION_WEEK {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_WEEK", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_DURATION_WEEKS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_WEEKS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_DURATION_MONTH {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_MONTH", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_DURATION_MONTHS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_DURATION_MONTHS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_AWAKE_UNTIL {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_AWAKE_UNTIL", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_AWAKE_INDEFINITELY {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_AWAKE_INDEFINITELY", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_WHILE_APP_RUNS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_WHILE_APP_RUNS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_FOREVER {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_FOREVER", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_CUSTOM {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_CUSTOM", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_CARD_WHILE_APP {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_CARD_WHILE_APP", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_CARD_CUSTOM_UNTIL {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_CARD_CUSTOM_UNTIL", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_CUSTOM_DURATION {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_CUSTOM_DURATION", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_STOP {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_STOP", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_START {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_START", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_ACTIVE_UNTIL {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_ACTIVE_UNTIL", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_UNIT_MIN {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_UNIT_MIN", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_UNIT_HOUR {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_UNIT_HOUR", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_UNIT_HOURS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_UNIT_HOURS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_SUBTITLE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_SUBTITLE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_ACTIVE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_ACTIVE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_KEEP_SCREEN_ON_DESC {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_KEEP_SCREEN_ON_DESC", resourceCulture);
+            }
+        }
+
         internal static string AWAKE_FLYOUT_TIMED_HEADER {
             get {
                 return ResourceManager.GetString("AWAKE_FLYOUT_TIMED_HEADER", resourceCulture);
