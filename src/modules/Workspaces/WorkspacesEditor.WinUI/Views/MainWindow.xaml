@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="WorkspacesEditor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -15,8 +15,8 @@
             Height="48"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            AutomationProperties.Name="Loading"
             AutomationProperties.LiveSetting="Polite"
+            AutomationProperties.Name="Loading"
             IsActive="False"
             Visibility="Collapsed" />
     </Grid>

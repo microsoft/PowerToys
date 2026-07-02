@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="WorkspacesEditor.Views.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -123,9 +123,9 @@
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:Project">
                     <Grid
-                        DataContext="{x:Bind}"
                         HorizontalAlignment="Stretch"
-                        AutomationProperties.Name="{x:Bind Name}">
+                        AutomationProperties.Name="{x:Bind Name}"
+                        DataContext="{x:Bind}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -140,9 +140,7 @@
                                 FontWeight="SemiBold"
                                 Text="{x:Bind Name, Mode=OneWay}" />
                             <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
-                                <Image
-                                    Height="16"
-                                    Source="{x:Bind PreviewIcons, Mode=OneWay}" />
+                                <Image Height="16" Source="{x:Bind PreviewIcons, Mode=OneWay}" />
                                 <TextBlock
                                     Margin="8,0,8,0"
                                     VerticalAlignment="Center"
@@ -167,30 +165,26 @@
                             Margin="12"
                             Orientation="Horizontal">
                             <Button
+                                x:Uid="LaunchBtn"
                                 Margin="0,0,8,0"
                                 AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource LaunchButtonNameConverter}}"
-                                Click="LaunchButton_Click"
-                                x:Uid="LaunchBtn" />
+                                Click="LaunchButton_Click" />
                             <Button
-                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource MoreOptionsButtonNameConverter}}"
                                 x:Uid="MoreOptionsBtn"
-                                Padding="8">
+                                Padding="8"
+                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource MoreOptionsButtonNameConverter}}">
                                 <TextBlock
                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                     Text="&#xE712;" />
                                 <Button.Flyout>
                                     <MenuFlyout>
-                                        <MenuFlyoutItem
-                                            Click="EditButtonClicked"
-                                            x:Uid="EditFlyoutItem">
+                                        <MenuFlyoutItem x:Uid="EditFlyoutItem" Click="EditButtonClicked">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE70F;" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
-                                        <MenuFlyoutItem
-                                            Click="DeleteButtonClicked"
-                                            x:Uid="RemoveFlyoutItem">
+                                        <MenuFlyoutItem x:Uid="RemoveFlyoutItem" Click="DeleteButtonClicked">
                                             <MenuFlyoutItem.Icon>
                                                 <FontIcon Glyph="&#xE74D;" />
                                             </MenuFlyoutItem.Icon>

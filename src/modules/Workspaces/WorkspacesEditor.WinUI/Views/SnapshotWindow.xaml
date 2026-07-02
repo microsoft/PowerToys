@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="WorkspacesEditor.Views.SnapshotWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -22,8 +22,8 @@
             Grid.ColumnSpan="2"
             Margin="8"
             VerticalAlignment="Center"
-            IsTabStop="True"
-            AutomationProperties.Name="{Binding Text, ElementName=DescriptionText}">
+            AutomationProperties.Name="{Binding Text, ElementName=DescriptionText}"
+            IsTabStop="True">
             <TextBlock
                 x:Name="DescriptionText"
                 AutomationProperties.AccessibilityView="Raw"

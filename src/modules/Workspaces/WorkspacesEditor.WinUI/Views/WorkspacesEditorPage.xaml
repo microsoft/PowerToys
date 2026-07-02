@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="WorkspacesEditor.Views.WorkspacesEditorPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -97,13 +97,13 @@
                             Margin="0,16,0,0"
                             Orientation="Horizontal">
                             <TextBlock
+                                x:Uid="CliArgumentsLabel"
                                 VerticalAlignment="Center"
-                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                x:Uid="CliArgumentsLabel" />
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                             <TextBox
                                 x:Uid="CliArgsTextBox"
-                                Margin="12,0,0,0"
                                 MinWidth="200"
+                                Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
                                 Text="{Binding CommandLineArguments, Mode=TwoWay}"
@@ -115,9 +115,7 @@
                             Margin="0,16,0,0"
                             Orientation="Horizontal"
                             Spacing="8">
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                x:Uid="WindowPositionLabel" />
+                            <TextBlock x:Uid="WindowPositionLabel" VerticalAlignment="Center" />
                             <ComboBox
                                 x:Uid="WindowPositionComboBox"
                                 VerticalAlignment="Center"
@@ -126,28 +124,28 @@
                                 <ComboBoxItem x:Uid="MaximizedItem" />
                                 <ComboBoxItem x:Uid="MinimizedItem" />
                             </ComboBox>
-                            <TextBlock VerticalAlignment="Center" x:Uid="LeftLabel" />
+                            <TextBlock x:Uid="LeftLabel" VerticalAlignment="Center" />
                             <TextBox
                                 x:Uid="LeftTextBox"
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.X, Mode=OneWay}"
                                 TextChanged="LeftTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" x:Uid="TopLabel" />
+                            <TextBlock x:Uid="TopLabel" VerticalAlignment="Center" />
                             <TextBox
                                 x:Uid="TopTextBox"
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Y, Mode=OneWay}"
                                 TextChanged="TopTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" x:Uid="WidthLabel" />
+                            <TextBlock x:Uid="WidthLabel" VerticalAlignment="Center" />
                             <TextBox
                                 x:Uid="WidthTextBox"
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Width, Mode=OneWay}"
                                 TextChanged="WidthTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" x:Uid="HeightLabel" />
+                            <TextBlock x:Uid="HeightLabel" VerticalAlignment="Center" />
                             <TextBox
                                 x:Uid="HeightTextBox"
                                 MinWidth="60"
@@ -182,9 +180,9 @@
             </Grid.ColumnDefinitions>
             <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
                 <Button
-                    AutomationProperties.Name="Back to Workspaces"
                     Padding="0"
                     VerticalAlignment="Center"
+                    AutomationProperties.Name="Back to Workspaces"
                     Click="CancelButtonClicked"
                     FontSize="24">
                     <TextBlock x:Name="WorkspacesBackText" Text="Workspaces" />
@@ -198,10 +196,10 @@
                 <TextBlock
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
+                    AutomationProperties.HeadingLevel="Level1"
                     FontSize="24"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                    AutomationProperties.HeadingLevel="Level1"
                     Text="{Binding EditorWindowTitle, Mode=OneWay}" />
             </StackPanel>
             <StackPanel
@@ -258,14 +256,10 @@
                     KeyDown="EditNameTextBoxKeyDown"
                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextChanged="EditNameTextBox_TextChanged" />
-                <CheckBox
-                    VerticalAlignment="Bottom"
-                    IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}">
+                <CheckBox VerticalAlignment="Bottom" IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}">
                     <TextBlock x:Name="CreateShortcutLabel" Text="Create desktop shortcut" />
                 </CheckBox>
-                <CheckBox
-                    VerticalAlignment="Bottom"
-                    IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}">
+                <CheckBox VerticalAlignment="Bottom" IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}">
                     <TextBlock x:Name="MoveIfExistLabel" Text="Move existing windows" />
                 </CheckBox>
             </StackPanel>
@@ -278,9 +272,7 @@
             HorizontalAlignment="Right"
             Orientation="Horizontal"
             Spacing="8">
-            <Button
-                x:Name="LaunchEditButton"
-                Click="LaunchEditButtonClicked">
+            <Button x:Name="LaunchEditButton" Click="LaunchEditButtonClicked">
                 <TextBlock x:Name="LaunchEditText" Text="Launch &amp; edit" />
             </Button>
             <Button
