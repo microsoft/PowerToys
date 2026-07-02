@@ -89,8 +89,8 @@
             Grid.Row="1"
             Margin="4"
             HorizontalAlignment="Stretch"
-            Command="{Binding CancelLaunchCommand}"
             Click="CancelButton_Click"
+            Command="{Binding CancelLaunchCommand}"
             TabIndex="1" />
 
         <Button
