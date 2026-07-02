@@ -381,3 +381,4 @@ deps/vcpkg/
 
 # Superpowers-generated docs (specs, design, plans) — local-only, not committed
 docs/superpowers/
+.superpowers/

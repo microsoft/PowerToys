@@ -1,0 +1,45 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE file in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>PowerDisplay.Ipc.UnitTests</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\PowerDisplay.Ipc.UnitTests\</OutputPath>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="System.CodeDom">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Diagnostics.EventLog">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      NOTE: The test project references PowerDisplay.Contracts and PowerDisplay.Lib directly to avoid
+      pulling in the full WinUI3 app dependency chain in lightweight test scenarios; the projector
+      source is included via Compile link so the test assembly can access internal helpers.
+    -->
+    <ProjectReference Include="..\PowerDisplay.Contracts\PowerDisplay.Contracts.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
+    <ProjectReference Include="..\PowerDisplay\PowerDisplay.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+</Project>

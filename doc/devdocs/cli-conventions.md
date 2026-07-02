@@ -69,9 +69,23 @@ Reference implementations:
 
 ### Exit Codes
 
+Use `0` for success and a non-zero code for failure. A minimal CLI can use:
+
 - `0`: Success
 - `1`: General error (parsing, validation, runtime)
 - `2`: Invalid arguments (optional)
+
+Modules **MAY** define a richer, module-specific exit-code scheme when scripts benefit from
+distinguishing failure kinds (e.g. not-found vs. out-of-range vs. hardware failure). When you do:
+
+- Keep the code→meaning mapping in one place (a single source of truth) so an error's code and its
+  exit code cannot drift.
+- **Document it in the module's own docs** — do not assume the minimal `1`/`2` meanings above carry
+  over. In a richer scheme `2` may mean something else (e.g. "out of range"), so a consumer must read
+  the module's table, not this baseline.
+
+For a worked example see the PowerDisplay CLI ([`modules/powerdisplay/cli.md`](modules/powerdisplay/cli.md)),
+which maps ten distinct error codes to exit codes `1`–`10`.
 
 ### Exception Handling
 

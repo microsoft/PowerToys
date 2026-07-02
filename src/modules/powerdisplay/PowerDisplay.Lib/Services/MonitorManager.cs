@@ -13,18 +13,19 @@ using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Drivers.WMI;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
-namespace PowerDisplay.Helpers
+namespace PowerDisplay.Common.Services
 {
     /// <summary>
-    /// Monitor manager for unified control of all monitors
-    /// No interface abstraction - KISS principle (only one implementation needed)
+    /// Monitor manager for unified control of all monitors. Implements <see cref="IMonitorManager"/>
+    /// so consumers (e.g. the headless CLI) can depend on the abstraction and be unit-tested against a fake.
     /// </summary>
-    public partial class MonitorManager : IDisposable
+    // 'partial' is required by the CsWinRT source generator (CsWinRT1028) for AOT/trimming
+    // compatibility because the type crosses the WinRT ABI; do not remove it.
+    public partial class MonitorManager : IDisposable, IMonitorManager
     {
         private readonly List<Monitor> _monitors = new();
         private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
@@ -75,9 +76,9 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Pushes the max-compatibility-mode flag onto the DDC/CI controller. Called by
-        /// <see cref="ViewModels.MainViewModel"/> before each discovery so the value is
-        /// current. No-op if the DDC controller failed to initialize.
+        /// Pushes the max-compatibility-mode flag onto the DDC/CI controller. Callers (the GUI's
+        /// MainViewModel and the headless CLI) invoke this before discovery so the value is current.
+        /// No-op if the DDC controller failed to initialize.
         /// </summary>
         public void SetMaxCompatibilityMode(bool enabled)
         {
@@ -113,6 +114,12 @@ namespace PowerDisplay.Helpers
                 {
                     _monitorLookup[monitor.Id] = monitor;
                 }
+
+                // Controllers leave Orientation at its default (0) during discovery; query the
+                // live rotation here so the very first read reflects the panel's real orientation
+                // (the CLI relies on this for `get`/`set --orientation` round-tripping, and the GUI
+                // shows the correct value on initial load).
+                RefreshAllOrientations();
 
                 return _monitors.AsReadOnly();
             }
@@ -250,7 +257,14 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) => mon.CurrentBrightness = val,
+                (mon, val) =>
+                {
+                    // A successful write makes the value authoritatively known: set the read flag so
+                    // consumers (e.g. the CLI before/after display, relative up/down) can tell a real
+                    // value apart from the never-read default even if discovery's read had failed.
+                    mon.CurrentBrightness = val;
+                    mon.ReadValues |= MonitorReadFlags.Brightness;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -261,7 +275,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 contrast,
                 (ctrl, mon, val, ct) => ctrl.SetContrastAsync(mon, val, ct),
-                (mon, val) => mon.CurrentContrast = val,
+                (mon, val) =>
+                {
+                    mon.CurrentContrast = val;
+                    mon.ReadValues |= MonitorReadFlags.Contrast;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -272,7 +290,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 volume,
                 (ctrl, mon, val, ct) => ctrl.SetVolumeAsync(mon, val, ct),
-                (mon, val) => mon.CurrentVolume = val,
+                (mon, val) =>
+                {
+                    mon.CurrentVolume = val;
+                    mon.ReadValues |= MonitorReadFlags.Volume;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -283,7 +305,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 colorTemperature,
                 (ctrl, mon, val, ct) => ctrl.SetColorTemperatureAsync(mon, val, ct),
-                (mon, val) => mon.CurrentColorTemperature = val,
+                (mon, val) =>
+                {
+                    mon.CurrentColorTemperature = val;
+                    mon.ReadValues |= MonitorReadFlags.ColorTemperature;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -294,7 +320,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 inputSource,
                 (ctrl, mon, val, ct) => ctrl.SetInputSourceAsync(mon, val, ct),
-                (mon, val) => mon.CurrentInputSource = val,
+                (mon, val) =>
+                {
+                    mon.CurrentInputSource = val;
+                    mon.ReadValues |= MonitorReadFlags.InputSource;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -306,7 +336,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
-                (mon, val) => mon.CurrentPowerState = val,
+                (mon, val) =>
+                {
+                    mon.CurrentPowerState = val;
+                    mon.ReadValues |= MonitorReadFlags.PowerState;
+                },
                 cancellationToken);
 
         /// <summary>
@@ -361,9 +395,13 @@ namespace PowerDisplay.Helpers
                 }
 
                 var currentOrientation = _rotationService.GetCurrentOrientation(monitor.GdiDeviceName);
-                if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
+                if (currentOrientation >= 0)
                 {
+                    // Assigning an unchanged value is a no-op (the setter guards on equality), but the
+                    // read flag must be set whenever the query succeeds so consumers can tell a real
+                    // "0°/landscape" reading apart from the never-read default.
                     monitor.Orientation = currentOrientation;
+                    monitor.ReadValues |= MonitorReadFlags.Orientation;
                 }
             }
         }

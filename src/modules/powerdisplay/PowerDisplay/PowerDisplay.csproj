@@ -41,6 +41,9 @@
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="PowerDisplay.Ipc.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <!-- Hide build log files from Solution Explorer -->
     <None Remove="*.log" />
     <None Remove="*.binlog" />
@@ -93,6 +96,7 @@
     <!-- Removed ManagedCsWin32 - using CsWin32 directly for TrayIcon APIs -->
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Contracts\PowerDisplay.Contracts.csproj" />
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
     <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
   </ItemGroup>

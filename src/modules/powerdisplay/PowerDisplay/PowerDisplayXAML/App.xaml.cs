@@ -340,6 +340,13 @@ namespace PowerDisplay
         {
             Logger.LogInfo("PowerDisplay shutting down");
             _trayIconService?.Destroy();
+
+            // Stop the CLI pipe server before exiting.
+            if (_mainWindow is MainWindow mw)
+            {
+                mw.Dispose();
+            }
+
             Environment.Exit(0);
         }
 
