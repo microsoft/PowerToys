@@ -48,7 +48,6 @@
                                     Grid.Column="1"
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"
-                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name, Mode=OneWay}" />
                                 <tkcontrols:SwitchPresenter
                                     Grid.Column="2"
