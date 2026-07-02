@@ -20,7 +20,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
-    private readonly ListItem _bandItem;
+    private readonly NowDockBand _bandItem;
     private readonly ListItem _notificationCenterBandItem;
 
     public TimeDateCommandsProvider()
@@ -37,8 +37,11 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
 
-        _bandItem = new NowDockBand();
+        _bandItem = new NowDockBand(_settingsManager);
         _notificationCenterBandItem = new NotificationCenterDockBand();
+
+        // Update the band immediately when the user changes a setting (e.g. the week number toggle).
+        _settingsManager.Settings.SettingsChanged += (s, a) => _bandItem.Refresh();
     }
 
     private string GetTranslatedPluginDescription()
@@ -80,19 +83,22 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 internal sealed partial class NowDockBand : ListItem
 {
     private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
+    private static readonly CompositeFormat WeekNumberFormat = System.Text.CompositeFormat.Parse(Resources.timedate_dock_week_number_format);
+    private readonly ISettingsInterface _settings;
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
+    private CopyTextCommand _copyWeekNumberCommand;
+    private bool? _weekNumberShown;
 
-    public NowDockBand()
+    public NowDockBand(ISettingsInterface settings)
     {
+        _settings = settings;
+
         // Open Notification Center on click
         Command = new OpenUrlCommand("ms-actioncenter:") { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.timedate_show_notification_center_command_name, Result = CommandResult.Dismiss(), Icon = null };
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
-        MoreCommands = [
-            new CommandContextItem(_copyTimeCommand),
-            new CommandContextItem(_copyDateCommand)
-        ];
+        _copyWeekNumberCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_week_number_command_name };
         UpdateText();
 
         // Create a timer to update the time every minute
@@ -126,6 +132,8 @@ internal sealed partial class NowDockBand : ListItem
         UpdateText();
     }
 
+    internal void Refresh() => UpdateText();
+
     private void UpdateText()
     {
         var timeExtended = false; // timeLongFormat ?? settings.TimeWithSecond;
@@ -139,11 +147,41 @@ internal sealed partial class NowDockBand : ListItem
             TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
             CultureInfo.CurrentCulture);
 
+        var showWeekNumber = _settings.ShowWeekNumberInClockBand;
+        var subtitleString = dateString;
+
+        if (showWeekNumber)
+        {
+            var firstWeekRule = TimeAndDateHelper.GetCalendarWeekRule(_settings.FirstWeekOfYear);
+            var firstDayOfTheWeek = TimeAndDateHelper.GetFirstDayOfWeek(_settings.FirstDayOfWeek);
+            var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
+            var weekString = string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear);
+
+            subtitleString = $"{dateString} · {weekString}";
+            _copyWeekNumberCommand.Text = weekOfYear.ToString(CultureInfo.CurrentCulture);
+        }
+
         Title = timeString;
-        Subtitle = dateString;
+        Subtitle = subtitleString;
 
         _copyDateCommand.Text = dateString;
         _copyTimeCommand.Text = timeString;
+
+        // Only rebuild the context menu when the setting changed.
+        if (_weekNumberShown != showWeekNumber)
+        {
+            _weekNumberShown = showWeekNumber;
+            MoreCommands = showWeekNumber
+                ? [
+                    new CommandContextItem(_copyTimeCommand),
+                    new CommandContextItem(_copyDateCommand),
+                    new CommandContextItem(_copyWeekNumberCommand)
+                ]
+                : [
+                    new CommandContextItem(_copyTimeCommand),
+                    new CommandContextItem(_copyDateCommand)
+                ];
+        }
     }
 }
 

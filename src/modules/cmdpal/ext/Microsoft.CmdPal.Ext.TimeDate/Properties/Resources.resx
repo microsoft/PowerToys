@@ -432,6 +432,12 @@
   <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
     <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand" xml:space="preserve">
+    <value>Show week number in the Clock dock band</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description" xml:space="preserve">
+    <value>Show the calendar week next to the date in the dock's Clock band. The settings 'First week of the year' and 'First day of the week' are used for the calculation.</value>
+  </data>
   <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
     <value>Clock</value>
     <comment>Title for the time and date dock band</comment>
@@ -451,5 +457,13 @@
   <data name="timedate_notification_center_band_title" xml:space="preserve">
     <value>Notification center</value>
     <comment>Title for the notification center dock band</comment>
+  </data>
+  <data name="timedate_copy_week_number_command_name" xml:space="preserve">
+    <value>Copy week number</value>
+    <comment>Name of a command to copy the current calendar week number to the clipboard</comment>
+  </data>
+  <data name="timedate_dock_week_number_format" xml:space="preserve">
+    <value>Week {0}</value>
+    <comment>Shown next to the date in the Clock dock band. {0} is replaced by the calendar week number.</comment>
   </data>
 </root>

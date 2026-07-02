@@ -93,6 +93,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
+    private readonly ToggleSetting _showWeekNumberInClockBand = new(
+        Namespaced(nameof(ShowWeekNumberInClockBand)),
+        Resources.Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand,
+        Resources.Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description,
+        false);
+
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
@@ -145,6 +151,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
+    public bool ShowWeekNumberInClockBand => _showWeekNumberInClockBand.Value;
+
     public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
@@ -164,6 +172,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_dateWithWeekday);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
+        Settings.Add(_showWeekNumberInClockBand);
 
         _customFormats.Multiline = true;
         _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;

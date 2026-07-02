@@ -817,6 +817,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show week number in the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show the calendar week next to the date in the dock&apos;s Clock band. The settings &apos;First week of the year&apos; and &apos;First day of the week&apos; are used for the calculation..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Show time with seconds.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingTimeWithSeconds {
@@ -975,6 +993,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_notification_center_band_title {
             get {
                 return ResourceManager.GetString("timedate_notification_center_band_title", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy week number.
+        /// </summary>
+        public static string timedate_copy_week_number_command_name {
+            get {
+                return ResourceManager.GetString("timedate_copy_week_number_command_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Week {0}.
+        /// </summary>
+        public static string timedate_dock_week_number_format {
+            get {
+                return ResourceManager.GetString("timedate_dock_week_number_format", resourceCulture);
             }
         }
     }

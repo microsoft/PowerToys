@@ -14,6 +14,7 @@ public class Settings : ISettingsInterface
     private readonly bool enableFallbackItems;
     private readonly bool timeWithSecond;
     private readonly bool dateWithWeekday;
+    private readonly bool showWeekNumberInClockBand;
     private readonly List<string> customFormats;
 
     public Settings(
@@ -22,6 +23,7 @@ public class Settings : ISettingsInterface
         bool enableFallbackItems = true,
         bool timeWithSecond = false,
         bool dateWithWeekday = false,
+        bool showWeekNumberInClockBand = false,
         List<string> customFormats = null)
     {
         this.firstWeekOfYear = firstWeekOfYear;
@@ -29,6 +31,7 @@ public class Settings : ISettingsInterface
         this.enableFallbackItems = enableFallbackItems;
         this.timeWithSecond = timeWithSecond;
         this.dateWithWeekday = dateWithWeekday;
+        this.showWeekNumberInClockBand = showWeekNumberInClockBand;
         this.customFormats = customFormats ?? new List<string>();
     }
 
@@ -41,6 +44,8 @@ public class Settings : ISettingsInterface
     public bool TimeWithSecond => timeWithSecond;
 
     public bool DateWithWeekday => dateWithWeekday;
+
+    public bool ShowWeekNumberInClockBand => showWeekNumberInClockBand;
 
     public List<string> CustomFormats => customFormats;
 }
