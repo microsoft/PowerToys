@@ -3,12 +3,12 @@
 # PT modules that read IShellItemArray from the foreground Explorer window (Peek, Image Resizer,
 # PowerRename, File Locksmith, Workspaces).
 #
-# This bypasses needing a real mouse / interactive selection — Shell COM does the selection
+# This bypasses needing a real mouse / interactive selection - Shell COM does the selection
 # programmatically, then the PT hotkey (e.g. Ctrl+Space for Peek) fires the centralized hook
 # which reads Explorer's selection at the moment of activation.
 #
 # Requires an interactive desktop session. If GetForegroundWindow() returns 0 or no Explorer
-# windows are open, the functions return $null/$false instead of throwing — callers should
+# windows are open, the functions return $null/$false instead of throwing - callers should
 # treat that as a BLK-ENV signal (an environment block, not a product FAIL).
 
 function Get-PtExplorerWindows {
@@ -54,7 +54,7 @@ function Select-PtExplorerFiles {
     .EXAMPLE
     $win = Get-PtExplorerWindows | Select-Object -First 1
     Select-PtExplorerFiles -ExplorerWindow $win -FileNames 'test-markdown.md','test-html.html','test-source.cs'
-    Send-PtChord -Mods 0x11 -Key 0x20   # Ctrl+Space → Peek opens on 3 selected files
+    Send-PtChord -Mods 0x11 -Key 0x20   # Ctrl+Space -> Peek opens on 3 selected files
     #>
     [CmdletBinding()]
     param(
@@ -121,7 +121,7 @@ function Test-PtInteractiveDesktop {
     .EXAMPLE
     $env = Test-PtInteractiveDesktop
     if (-not $env.ForegroundOk -or -not $env.ShellComOk) {
-        Write-Warning "Non-interactive session — Explorer-driven techniques will fail."
+        Write-Warning "Non-interactive session - Explorer-driven techniques will fail."
     }
     #>
     Add-Type 'using System; using System.Runtime.InteropServices; public class FG3 { [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); }' -EA SilentlyContinue

@@ -12,4 +12,4 @@ One file per module; a verification run loads only its module's file.
 | Image Resizer | 18 | `image-resizer.md` |
 | New+ | 9 | `new-plus.md` |
 | Peek | 18 | `peek.md` |
-| PowerRename | 18 | `power-rename.md` |
+| PowerRename | 17 | `power-rename.md` |

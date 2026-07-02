@@ -2,7 +2,7 @@
 # Signal PowerToys modules via Win32 named events.
 # Catalog source: PowerToys repo src/common/interop/shared_constants.h
 # (Friendly-name mapping was originally surfaced by community frameworks; the values themselves
-# are stable PT public IPC names. This file is self-contained — no external repo required.)
+# are stable PT public IPC names. This file is self-contained - no external repo required.)
 # Reason: instead of pressing a hotkey (which is racey, foreground-sensitive, and UIPI-fragile),
 # directly SetEvent on the kernel event the module is waiting on. Same code path as the hotkey.
 
@@ -42,7 +42,7 @@ if (-not ('PtEv' -as [type])) {
 # Friendly-name -> full event name map (per Local\ namespace).
 # Source: <PT-repo>\src\common\interop\shared_constants.h
 $script:PtSharedEvents = @{
-    # ── Hotkey-activated module triggers ──
+    # -- Hotkey-activated module triggers --
     'AOT.Pin'                   = 'Local\AlwaysOnTopPinEvent-892e0aa2-cfa8-4cc4-b196-ddeb32314ce8'
     'AOT.IncreaseOpacity'       = 'Local\AlwaysOnTopIncreaseOpacityEvent-a1b2c3d4-e5f6-7890-abcd-ef1234567890'
     'AOT.DecreaseOpacity'       = 'Local\AlwaysOnTopDecreaseOpacityEvent-b2c3d4e5-f6a7-8901-bcde-f12345678901'
@@ -83,7 +83,7 @@ $script:PtSharedEvents = @{
     'ZoomIt.SnipOcr'            = 'Local\PowerToysZoomIt-SnipOcrEvent-a7c3b1d2-9e4f-4a6b-8d5c-1f2e3a4b5c6d'
     'ZoomIt.Record'             = 'Local\PowerToysZoomIt-RecordEvent-74539344-eaad-4711-8e83-23946e424512'
 
-    # ── Termination triggers (clean shutdown without process kill) ──
+    # -- Termination triggers (clean shutdown without process kill) --
     'AOT.Terminate'             = 'Local\AlwaysOnTopTerminateEvent-cfdf1eae-791f-4953-8021-2f18f3837eae'
     'Awake.Exit'                = 'Local\PowerToysAwakeExitEvent-c0d5e305-35fc-4fb5-83ec-f6070cfaf7fe'
     'CmdPal.Exit'               = 'Local\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd'

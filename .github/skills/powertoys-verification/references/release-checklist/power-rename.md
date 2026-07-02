@@ -20,17 +20,20 @@ Each item is annotated with two metadata tags:
 
 ---
 
-## PowerRename (18 items)
+## PowerRename (17 items)
 
 - [ ] **[ADMIN: NO]** (L393) Toggle the PowerRename enable switch **off**, then **on**, in PowerToys Settings. Confirm the `Rename with PowerRename` context-menu entry **disappears** when the module is disabled and **reappears** when it is enabled. (On Win11) With the module enabled, confirm `Rename with PowerRename` is present in **both** the Win11 tier-1 (modern) context menu **and** the classic "Show more options" (`#32768`) context menu.
-- [ ] **[ADMIN: NO]** (L394) Check that with the `Show icon on context menu` icon is shown and vice versa.
-- [ ] **[ADMIN: NO] [CLARITY: VAGUE-AMBIGUOUS]** (L395) Check if `Appear only in extended context menu` works.
+- [ ] **[ADMIN: NO]** (L394) **Shell integration — verify the `Show PowerRename in` dropdown together with the `Hide icon in context menu` checkbox across all 4 combinations.** Both live under Settings → PowerRename → *Shell integration*; **expand the "Show PowerRename in" row** (the ˅ at the far right, not the dropdown arrow) to reveal the "Hide icon in context menu" checkbox. The icon setting applies to **both** the modern (Win11 tier-1) and legacy/extended menus. Verify all four:
+  - **`Default and extended context menu` + `Hide icon` unchecked** → `Rename with PowerRename` appears in the **default (modern) right-click menu, with** its icon.
+  - **`Default and extended context menu` + `Hide icon` checked** → appears in the default menu, **without** an icon.
+  - **`Extended context menu only` + `Hide icon` unchecked** → **absent from the default menu**; appears **only under Shift + right-click, with** its icon.
+  - **`Extended context menu only` + `Hide icon` checked** → absent from the default menu; appears **only under Shift + right-click, without** an icon.
 - [ ] **[ADMIN: NO]** (L396) Enable/disable autocomplete.
 - [ ] **[ADMIN: NO]** (L397) Enable/disable `Show values from last use`.
 - [ ] **[ADMIN: NO]** (L399) Make Uppercase/Lowercase/Titlecase (could be selected only one at the time)
 - [ ] **[ADMIN: NO]** (L400) Exclude Folders/Files/Subfolder Items (could be selected several)
 - [ ] **[ADMIN: NO] [CLARITY: VAGUE-NO-STEPS]** (L401) Item Name/Extension Only (one at the time)
-- [ ] **[ADMIN: NO]** (L402) Enumerate Items. Test advanced enumeration using different values for every field ${start=10,increment=2,padding=4}.
+- [ ] **[ADMIN: NO]** (L402) Enumerate Items. Test advanced enumeration using different values for every field `${start=10,increment=2,padding=4}`. With Enumerate items on and Replace = `item_${start=10,increment=2,padding=4}` applied to a 5-file selection, the preview **Renamed** column must show `item_0010`, `item_0012`, `item_0014`, `item_0016`, `item_0018` (counter = `start + index*increment` for 0-based index, zero-padded to `padding` digits; verify each field independently: `start=10` → first value 0010 not 0, `increment=2` → step of 2 not 1, `padding=4` → 4-digit zero-pad not unpadded).
 - [ ] **[ADMIN: NO] [CLARITY: VAGUE-NO-STEPS]** (L403) Case Sensitive
 - [ ] **[ADMIN: NO]** (L404) Match All Occurrences. If checked, all matches of text in the `Search` field will be replaced with the Replace text. Otherwise, only the first instance of the `Search` for text in the file name will be replaced (left to right).
 - [ ] **[ADMIN: NO]** (L406) Search with an expression (e.g. `(.*).png`)

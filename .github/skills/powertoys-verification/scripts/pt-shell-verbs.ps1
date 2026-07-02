@@ -36,7 +36,7 @@ function Invoke-PtShellVerb {
     <#
     .SYNOPSIS
     Invoke a classic shell verb on a file by name-regex match. Returns $true on success.
-    Does NOT work for PT Win11 modern-menu items — see SCOPE WARNING at top.
+    Does NOT work for PT Win11 modern-menu items - see SCOPE WARNING at top.
     .EXAMPLE
     Invoke-PtShellVerb -Path 'D:\fixtures\img.png' -NamePattern '^Edit$'
     #>
@@ -46,7 +46,7 @@ function Invoke-PtShellVerb {
     )
     $verb = Get-PtShellVerbs -Path $Path | Where-Object { $_.Name -match $NamePattern } | Select-Object -First 1
     if (-not $verb) {
-        Write-Warning "No classic shell verb matching '$NamePattern' on '$Path'. (Win11 PT modern-menu items are NOT visible here — use pt-explorer-contextmenu.ps1 instead.)"
+        Write-Warning "No classic shell verb matching '$NamePattern' on '$Path'. (Win11 PT modern-menu items are NOT visible here - use pt-explorer-contextmenu.ps1 instead.)"
         return $false
     }
     $verb.Verb.DoIt()

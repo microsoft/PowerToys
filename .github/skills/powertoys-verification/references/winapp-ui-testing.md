@@ -207,6 +207,16 @@ Use `wait-for --value` as the primary assertion — it uses a smart fallback cha
 | Scroll item into view | `winapp ui scroll-into-view "Id" -a PID` — call before `wait-for` on virtualized ListView/repeater items below the fold |
 | Set keyboard focus | `winapp ui focus "Id" -a PID` — cleaner than clicking another control to trigger a TextBox `LostFocus` commit |
 
+### Selecting a ComboBox / dropdown item
+
+*Reading* a ComboBox's current value is one step (`wait-for "Cmb" --value "Dark"`); **changing** the selection takes three, because a collapsed ComboBox's options are not in the UIA tree until it is expanded:
+
+1. **Expand** - `winapp ui invoke <cmb-id>` (fires ExpandCollapsePattern; the dropdown opens).
+2. **Inspect while open** - the options now appear as `ListItem`s in a popup with their **own ids** (e.g. `itm-<option>-<suffix>`), distinct from the combo's id. Resolve the target: `winapp ui search '<option text>' -w <hwnd> --json` and pick the match with `type -eq 'ListItem'`.
+3. **Invoke that ListItem id** - `winapp ui invoke <itm-id>` (fires SelectionItemPattern). Verify with `wait-for <cmb-id> --value "<option>"`.
+
+**Trap:** after expanding, do **not** invoke the option by its caption text - the text match lands on the child `Text` label, not the selectable `ListItem`, and silently no-ops. Always resolve and invoke the `itm-...` id, not the caption and not the collapsed combo id.
+
 ### Testing File Pickers
 
 File/folder pickers (FileOpenPicker, FileSavePicker, FolderPicker) run in a separate `PickerHost` process but are fully interactable. The picker appears as an owned dialog window.

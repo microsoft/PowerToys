@@ -5,7 +5,7 @@
 This is the *true user flow*: open Explorer → select file(s) → right-click → click the module's menu item. Use it when an item's assertion is specifically about the **context menu** (e.g. "the entry appears / no longer appears", "right-click → X launches the module on the selection"). For the module's *internal* behavior you can still prefer a faster back-door (CLI / `last-run.log` / Named Event) — see each module profile — but the menu presence/launch itself can only be observed this way.
 
 All the machinery lives in **`scripts/pt-explorer-contextmenu.ps1`** — dot-source it and call the functions; this doc only shows the invocations, not re-implementations. Functions:
-`Test-PtDesktopInteractive`, `Open-PtExplorerWindow`, `Open-PtBackgroundContextMenu`, `Open-PtExplorerContextMenu`, `Open-PtClassicContextMenu`, `Get-PtContextMenuItems`, `Invoke-PtContextMenuItem`, `Set-PtModuleEnabledViaSettingsUI`.
+`Test-PtDesktopInteractive`, `Open-PtExplorerWindow`, `Open-PtBackgroundContextMenu`, `Open-PtExplorerContextMenu`, `Open-PtShowMoreOptionsMenu`, `Open-PtShiftRightClickMenu`, `Get-PtContextMenuItems`, `Invoke-PtContextMenuItem`, `Set-PtModuleEnabledViaSettingsUI`.
 
 **One pattern for every menu:** an `Open-Pt…ContextMenu` opener returns a menu HWND; then `Get-PtContextMenuItems -MenuHwnd <h>` reads it and `Invoke-PtContextMenuItem -MenuHwnd <h> -ItemName <n>` acts on it — identically for the background, file, and legacy `#32768` menus.
 
@@ -22,12 +22,14 @@ All the machinery lives in **`scripts/pt-explorer-contextmenu.ps1`** — dot-sou
 
 Net: for a context-menu module, **most items are behavior → CLI-first**; the **menu-presence/absence/launch/localization items → synthetic-first**; plus one golden-path synthetic launch.
 
+**Prefer selecting a real file over the folder-background menu for present/absent/icon observation.** Right-clicking a selected file (`Open-PtExplorerContextMenu -FileName <f>`) gives a **deterministic, verifiable** target (`Document.SelectedItems()`) and a stable ITEM menu, whereas the background menu depends on "focus in the file-list + nothing selected". Use `Open-PtBackgroundContextMenu` only when the entry lives **only** on the folder background (New+), or when specifically asserting background-menu presence. Two rules for either menu: **open one menu per fresh window**, and **assert the menu TYPE + focus, not module presence** — a wrong-menu open (tree node / preview pane) can still be a populated menu, so "module entry absent" alone doesn't tell you the right menu opened. Also note the Win11 menu **populates asynchronously**: base verbs (Open/Cut/Copy) render first; 3rd-party packaged entries (PowerRename, File Locksmith) land a beat later and lower — a too-early read can miss them. **Let the menu settle (~0.5s) and/or re-poll before asserting a module entry is absent.**
+
 ## Is it stable?
 
 **Yes — with the robust variant below.** Two rules make it reliable; ignore them and it gets flaky:
 
 1. **Invoke the menu item by UIA InvokePattern, not a coordinate left-click.** The menu item exposes `InvokePattern` (`isInvokable=True`). `winapp ui invoke <selector> -w <menuHwnd>` is robust and needs no foreground/coordinates for the *click*. A synthetic left-click at the item's pixel center also works but is the fragile part (DPI, menu repositioning near screen edges, scrolled menus).
-2. **The right-click that OPENS the menu still needs synthetic input on a foregrounded window — and occasionally a retry.** The first right-click right after Explorer opens sometimes misses (foreground not settled). `Open-PtExplorerContextMenu` retries up to 3×; that removed the flakiness in testing.
+2. **The OPEN step is coordinate-free too — Shift+F10 on the COM-selected item.** `Open-PtExplorerContextMenu` COM-selects the target (deterministic, verifiable via `Document.SelectedItems()`), restores keyboard focus to it (`winapp ui focus`), then presses **Shift+F10** — no pixel is clicked. A coordinate `winapp ui click --right` is kept only as a fallback (its resolved point can miss with an open preview pane / DPI change / wide Details row / screen-edge or scrolled row). Two rules keep the coordinate-free path reliable: (a) **open one menu per fresh Explorer window** — recycling a single window through many open→Esc cycles can drop later menus (menu-state decay); (b) **keyboard focus must be in the file-list** (not the nav tree / address bar), which the helper enforces via `winapp ui focus` — otherwise Shift+F10 opens the *focused pane's* menu instead (e.g. the OneDrive tree node's menu, where PowerRename is legitimately absent but File Locksmith shows — a false "entry missing"). Confirm with `winapp ui get-focused`.
 
 **Hard prerequisite — unlocked interactive desktop.** Synthetic right-click injects into the session input stream, so it requires foreground. If the workstation is locked / RDP minimized (`GetForegroundWindow()=0`), this flow is `BLK-ENV` — there is no foreground-free way to open a context menu. `Open-PtExplorerContextMenu` throws a clear BLK-ENV error in that case. (A 4-hour idle auto-lock is the common culprit — see `references/environment-setup.md`.)
 
@@ -124,53 +126,72 @@ the module profile says which opener to call and the exact caption to match.
   HWND (int), the handle the menu openers below take. (Discovery via `list-windows`; polls until the
   window appears.)
 - **`Open-PtBackgroundContextMenu -ExplorerHwnd <h>`** — folder-background menu via **Shift+F10 with
-  nothing selected**. Coordinate-free (can't miss a row or land in the preview pane); it *validates* it
-  opened a background menu (View/Sort by/Group by) or throws.
-- **`Open-PtExplorerContextMenu -ExplorerHwnd <h> -FileName <name>`** — a specific file's menu. It
-  COM-selects the item first (reliable, never opens/renames it), right-clicks it via
-  `winapp ui click --right` (winapp resolves the element point), and **validates it got a FILE menu
-  (Open/Cut/Copy/Delete)** — if it only got the background menu it retries, then **throws** rather than
+  nothing selected**. Coordinate-free; it first **focuses the file-list** (`winapp ui focus` on the
+  "Items View" list) so Shift+F10 can't open the nav-tree / address-bar menu instead, then *validates* it
+  opened a background menu (View/Sort by/Group by) or throws. Use for **background-only** entries (New+).
+- **`Open-PtExplorerContextMenu -ExplorerHwnd <h> -FileName <name>`** — a specific file's menu (the
+  **preferred** opener for present/absent/icon). It COM-selects the item (reliable, never opens/renames it),
+  restores keyboard focus to it, then opens the menu **coordinate-free via Shift+F10** (fallback:
+  `winapp ui click --right`, then a coordinate right-click on the row point), and **validates it got a FILE
+  menu (Open/Cut/Copy/Delete)** — if it only got the background menu it retries, then **throws** rather than
   passing a wrong menu off as the file menu.
-- **`Open-PtClassicContextMenu -MenuHwnd <modernMenu>`** — from an open modern menu, expands "Show more
-  options" and returns the legacy `#32768` menu's HWND (see [Reading the legacy menu](#reading-the-legacy-show-more-options-32768-menu)).
+- **`Open-PtShowMoreOptionsMenu -MenuHwnd <modernMenu>`** — from an open modern menu, expands "Show more
+  options" and returns the legacy `#32768` menu's HWND (**non-extended** verbs). See [Reading the legacy menu](#reading-the-legacy-show-more-options-32768-menu).
+- **`Open-PtShiftRightClickMenu -ExplorerHwnd <h> -FileName <name>`** — opens the **extended** `#32768`
+  menu (`CMF_EXTENDEDVERBS`) via a **genuine Shift+right-click** on the COM-selected file, and returns its
+  HWND. **Required** for any *"Extended context menu only"* entry — "Show more options" won't show those.
 
 **Operations** (take any menu HWND from the openers above — modern *or* classic):
 
 - **`Get-PtContextMenuItems -MenuHwnd <h>`** — returns the menu's item captions (present/absent).
 - **`Invoke-PtContextMenuItem -MenuHwnd <h> -ItemName <name>`** — invokes an entry by caption (`$false` = absent).
 
-> **Coordinates are not fully avoidable for the file menu.** `winapp ui click --right` still resolves
-> the element's bounding-rect point, so a wide Details row / an open **preview pane** / DPI scaling can
-> push the click into the preview pane → the file menu won't open. The helper now **fails loudly**
-> instead of silently returning the folder-background menu. Mitigations: close the preview pane
-> (Alt+P) for a deterministic layout, or if it still can't land, mark the item `BLK-ENV` — never accept
-> the background menu as a stand-in for the file menu.
+> **The OPEN step is now coordinate-free.** `Open-PtExplorerContextMenu` opens the file menu with
+> **Shift+F10 on the COM-selected, focus-restored item** — no pixel is clicked. The old coordinate `winapp ui click --right` is retained only as a fallback; in an *adverse*
+> layout (open **preview pane** / DPI change / wide Details row / scrolled or screen-edge row) its resolved
+> point can miss and open the background menu. The helper **fails loudly** rather than passing the
+> background menu off as the file menu. Mitigations if even the fallbacks miss: close the preview pane
+> (Alt+P) for a deterministic layout, or mark the item `BLK-ENV` — never accept the background menu as a
+> stand-in for the file menu.
 
 ## Reading the legacy "Show more options" (`#32768`) menu
 
 The two openers above (and `Get-PtContextMenuItems`) only reach the **modern** Win11 menu
-(`PopupWindowSiteBridge`). The legacy menu — what you get under **"Show more options"** (or on Win10,
-or when a module registers `ExtendedContextMenuOnly` / "Appear only in extended menu") — is a classic
-Win32 `#32768` popup with a different structure, and it needs a different read path.
+(`PopupWindowSiteBridge`). The legacy `#32768` classic Win32 popup — what you get under **"Show more
+options"**, or on Win10 — has a different structure and needs a different read path. **There are two
+distinct ways in, and they are NOT interchangeable:**
+
+| You need… | Opener | What it gives |
+|---|---|---|
+| The classic menu **without** extended verbs (e.g. "is X *also* in Show more options") | `Open-PtShowMoreOptionsMenu -MenuHwnd <modernMenu>` (invokes "Show more options") | `#32768` populated with `CMF_NORMAL` verbs. **Extended-verbs-only entries are (correctly) ABSENT here.** |
+| The **extended** menu (`CMF_EXTENDEDVERBS`) — REQUIRED for any *"Extended context menu only"* / "Appear only in extended menu" entry (e.g. PowerRename L394 combos 3–4) | `Open-PtShiftRightClickMenu -ExplorerHwnd <h> -FileName <f>` (**genuine Shift+right-click**) | `#32768` populated with normal **+ extended** verbs. |
+
+> **Do not use "Show more options" to look for an extended-only entry.** `Show more options` does **not**
+> pass `CMF_EXTENDEDVERBS`, so an entry a module registered as extended-only is legitimately missing there —
+> reading it that way yields a false "absent". Only a real **Shift+right-click** sets the flag. Neither
+> keyboard `Shift+F10` nor `Show more options` yields extended verbs; the extended menu needs the Shift +
+> mouse right-click, which `Open-PtShiftRightClickMenu` performs (Shift held around an element-resolved
+> right-click on the COM-selected file), then resolves the `#32768` HWND.
 
 **The one gotcha:** the `#32768` window is **not returned by `winapp ui list-windows`**. So
 `Get-PtContextMenuItems` (which discovers the menu HWND *from* `list-windows`) can't reach it, and
-neither can the openers above. That does **not** mean it's invisible to UIA — its item subtree is
-fully readable once you obtain the HWND another way. The helpers do this for you: they invoke
-"Show more options" on the modern menu, resolve the classic menu's HWND via Win32
-`FindWindow('#32768', $null)`, then read it with `winapp ui inspect -w <hwnd>` — an exact,
-locale-accurate present/absent signal, no OCR or screenshot guessing.
+neither can the modern openers above. That does **not** mean it's invisible to UIA — its item subtree is
+fully readable once you obtain the HWND, which both openers do via Win32
+`FindWindow('#32768', $null)`; then read it with `Get-PtContextMenuItems` / `winapp ui inspect -w <hwnd>` —
+an exact, locale-accurate present/absent signal, no OCR or screenshot guessing.
 
 ```powershell
 . "$skill\scripts\pt-explorer-contextmenu.ps1"
 
-# Same 2-step pattern as the modern menu: an opener returns a menu HWND, then the GENERIC reader/actor.
-# Open the modern menu (folder-background here; use Open-PtExplorerContextMenu -FileName <f> for a file's menu),
-# expand "Show more options" to get the classic #32768 HWND, then read it with Get-PtContextMenuItems.
-$menu    = Open-PtBackgroundContextMenu -ExplorerHwnd $hwnd
-$classic = Open-PtClassicContextMenu    -MenuHwnd $menu       # returns the #32768 HWND (int)
-$items   = Get-PtContextMenuItems       -MenuHwnd $classic    # SAME reader as the modern menu
-$present = $items -match 'Rename with PowerRename'            # exact caption match
+# (a) Non-extended classic menu — via "Show more options":
+$menu    = Open-PtExplorerContextMenu -ExplorerHwnd $hwnd -FileName 'a.txt'   # or Open-PtBackgroundContextMenu
+$classic = Open-PtShowMoreOptionsMenu  -MenuHwnd $menu        # returns the #32768 HWND (int)
+$items   = Get-PtContextMenuItems     -MenuHwnd $classic     # SAME reader as the modern menu
+
+# (b) EXTENDED menu — via a genuine Shift+right-click (use for extended-only entries):
+$ext     = Open-PtShiftRightClickMenu -ExplorerHwnd $hwnd -FileName 'a.txt'   # #32768 with CMF_EXTENDEDVERBS
+$items   = Get-PtContextMenuItems     -MenuHwnd $ext
+$present = $items -match 'Rename with PowerRename'           # exact caption match
 
 # Need to screenshot the classic menu? You already have its HWND:
 #   winapp ui screenshot -w $classic -o <png>
@@ -195,7 +216,7 @@ present/absent assertions.
 | `BLK-ENV: ... GetForegroundWindow()=0` | desktop locked / RDP minimized | unlock & keep mstsc un-minimized (`references/environment-setup.md`); mark `BLK-ENV`, not a test failure |
 | "popup not found after N attempts" | foreground not settled (esp. first right-click after Explorer opens) | the helper already retries 3×; raise `-MaxTries`, or pre-foreground the window once before calling |
 | menu item `invoke` returns but nothing launches | matched the wrong node / item disabled | match `type -eq 'MenuItem'` by exact Name; confirm the module is enabled |
-| caption not found though module enabled | wrong/old caption string, or it's only under "Show more options" (classic `#32768` menu — which `list-windows` can't see) | for the modern menu, `Get-PtContextMenuItems`; for the classic menu, `Open-PtClassicContextMenu` then the same `Get-PtContextMenuItems` — see [Reading the legacy menu](#reading-the-legacy-show-more-options-32768-menu) |
+| caption not found though module enabled | wrong/old caption string, or it's only under "Show more options" (classic `#32768` menu — which `list-windows` can't see) | for the modern menu, `Get-PtContextMenuItems`; for the classic menu, `Open-PtShowMoreOptionsMenu` then the same `Get-PtContextMenuItems` — see [Reading the legacy menu](#reading-the-legacy-show-more-options-32768-menu) |
 | launched UI shows nothing | menu-launched UI is non-elevated and can't see higher-IL targets | match target integrity (`scripts/pt-nonelevated.ps1`) |
 
 ## Referenced by

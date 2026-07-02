@@ -1,4 +1,4 @@
-# pt-nonelevated.ps1 — launch a process at MEDIUM integrity (non-elevated) from an
+# pt-nonelevated.ps1 - launch a process at MEDIUM integrity (non-elevated) from an
 # already-elevated agent shell. Needed for tests that assert elevation-dependent
 # visibility (e.g. File Locksmith L649/L650: a non-elevated module must NOT see
 # higher-integrity processes; an elevated one must).
