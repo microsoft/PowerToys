@@ -4,7 +4,7 @@ on:
   issues:
     types: [opened, reopened]
   pull_request_target:
-    types: [opened, reopened, edited, synchronize]
+    types: [opened, reopened, synchronize]
   # Manual trigger: go to Actions → "Automatic Triaging on Issue Creation" → Run workflow.
   # Enter one or more comma-separated issue numbers (e.g. "1234" or "1234,1235,1236")
   # to apply AI-generated area labels to existing untriaged issues.
@@ -17,6 +17,7 @@ on:
 permissions:
   models: read
   issues: write
+  pull-requests: write
 
 concurrency:
   # Each workflow run gets its own concurrency group.
@@ -31,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Apply area labels with AI
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           # actions/github-script does not propagate `github-token` to
           # process.env. Expose it explicitly so the inline script can
@@ -71,6 +72,13 @@ jobs:
               });
 
               const itemType = issue.pull_request ? 'Pull request' : 'Issue';
+
+              // Skip pull requests that already have labels applied.
+              if (issue.pull_request && issue.labels && issue.labels.length > 0) {
+                const existingLabels = issue.labels.map(l => l.name).join(', ');
+                console.log(`${itemType} #${issueNumber} already has labels (${existingLabels}); skipping.`);
+                return;
+              }
 
               const title = issue.title ?? '';
               const body  = issue.body  ?? '';
@@ -208,11 +216,25 @@ jobs:
                 return;
               }
 
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issueNumber,
-                labels: toApply,
-              });
-              console.log(`${itemType} #${issueNumber}: added labels: ${toApply.join(', ')}`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: toApply,
+                });
+                console.log(`${itemType} #${issueNumber}: added labels: ${toApply.join(', ')}`);
+              } catch (error) {
+                // Some contexts (for example, restricted integrations) can deny
+                // label writes even when workflow permissions request write scope.
+                // Skip without failing the entire triage workflow.
+                const status = error?.status;
+                const message = error?.message ?? String(error);
+                if (status === 403 && message.includes('Resource not accessible by integration')) {
+                  console.log(`${itemType} #${issueNumber}: skipping label write due to restricted token context (403).`);
+                  return;
+                }
+
+                throw error;
+              }
             }

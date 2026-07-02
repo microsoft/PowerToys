@@ -237,37 +237,54 @@ namespace ShortcutGuide
 
         private void SetWindowPosition()
         {
-            if (!this._hasMovedToRightMonitor)
+            try
             {
-                NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
-                AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
-                this._hasMovedToRightMonitor = true;
+                if (!this._hasMovedToRightMonitor)
+                {
+                    NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
+                    AppWindow.Move(new NativeMethods.POINT { Y = lpPoint.Y - ((int)Height / 2), X = lpPoint.X - ((int)Width / 2) });
+                    this._hasMovedToRightMonitor = true;
+                }
+
+                var hwnd = WindowNative.GetWindowHandle(this);
+                float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
+                Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+
+                var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+
+                // App.TaskBarWindow / its AppWindow can briefly be null during the reentrant
+                // Hide → Activate → BringToFront chain triggered from SelectionChanged. When the
+                // taskbar window is not currently observable, skip the overlap adjustment instead
+                // of crashing the overlay (issue #48448).
+                var taskbarWindow = App.TaskBarWindow?.AppWindow;
+                bool taskbarOnLeft = false;
+                bool taskbarOnRight = false;
+                if (taskbarWindow is not null)
+                {
+                    taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
+                    taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
+                }
+
+                double newHeight = monitorRect.Height / dpi;
+                if (taskbarWindow is not null && (taskbarOnLeft || taskbarOnRight))
+                {
+                    newHeight -= taskbarWindow.Size.Height;
+                }
+
+                MaxHeight = newHeight;
+                MinHeight = newHeight;
+                Height = newHeight;
+
+                int xPosition = windowPosition == ShortcutGuideWindowPosition.Right
+                    ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
+                    : (int)monitorRect.X;
+
+                this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
             }
-
-            var hwnd = WindowNative.GetWindowHandle(this);
-            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
-            Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-
-            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
-            var taskbarWindow = App.TaskBarWindow.AppWindow;
-            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
-            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
-
-            double newHeight = monitorRect.Height / dpi;
-            if (taskbarOnLeft || taskbarOnRight)
+            catch (Exception ex)
             {
-                newHeight -= taskbarWindow.Size.Height;
+                Logger.LogError("Failed to set Shortcut Guide window position; keeping previous layout.", ex);
             }
-
-            MaxHeight = newHeight;
-            MinHeight = newHeight;
-            Height = newHeight;
-
-            int xPosition = windowPosition == ShortcutGuideWindowPosition.Right
-                ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
-                : (int)monitorRect.X;
-
-            this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
         }
 
         /// <summary>
@@ -282,25 +299,35 @@ namespace ShortcutGuide
                 return;
             }
 
-            this._selectedAppName = selectedItem.Name;
-            App.CurrentAppName = this._selectedAppName;
-            this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
-
-            App.TaskBarWindow.Hide();
-            if (this._shortcutFile is ShortcutFile file)
+            try
             {
-                // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
-                if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
-                {
-                    this._taskBarWindowActivated = true;
-                    App.TaskBarWindow.Activate();
-                }
+                this._selectedAppName = selectedItem.Name;
+                App.CurrentAppName = this._selectedAppName;
+                this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
 
-                // Reposition before navigating so the taskbar window does not clip into the main window.
-                this.SetWindowPosition();
-                this.ContentFrame.Navigate(
-                    typeof(ShortcutsPage),
-                    new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                App.TaskBarWindow?.Hide();
+                if (this._shortcutFile is ShortcutFile file)
+                {
+                    // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
+                    if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
+                    {
+                        this._taskBarWindowActivated = true;
+                        App.TaskBarWindow?.Activate();
+                    }
+
+                    // Reposition before navigating so the taskbar window does not clip into the main window.
+                    this.SetWindowPosition();
+                    this.ContentFrame.Navigate(
+                        typeof(ShortcutsPage),
+                        new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Guard against exceptions during section navigation so the overlay does not close on the user.
+                // InitializeNavItemsAsync's catch interprets any exception bubbling out of the initial
+                // SelectedItem assignment as a fatal init failure and closes the window (issue #48448).
+                Logger.LogError($"Failed to handle Shortcut Guide section selection '{selectedItem.Name}'.", ex);
             }
         }
 

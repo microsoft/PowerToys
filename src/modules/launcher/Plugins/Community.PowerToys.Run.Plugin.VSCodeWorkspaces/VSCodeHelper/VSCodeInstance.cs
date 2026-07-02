@@ -22,6 +22,8 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper
 
         public string AppData { get; set; } = string.Empty;
 
+        public string SharedStorageDbPath { get; set; } = string.Empty;
+
         public ImageSource WorkspaceIcon() => WorkspaceIconBitMap;
 
         public ImageSource RemoteIcon() => RemoteIconBitMap;

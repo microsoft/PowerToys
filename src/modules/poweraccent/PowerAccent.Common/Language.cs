@@ -40,6 +40,7 @@ public enum Language
     PIE,
     PL,
     PT,
+    PJT,
     RO,
     ROM,
     SK,

@@ -1036,7 +1036,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 5
+            - "<5>"
       - Name: Redraw screen
         Shortcut:
         - Win: false
@@ -1060,7 +1060,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Switch to next/previous document window
         Shortcut:
         - Win: false
@@ -1155,7 +1155,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 6
+            - "<6>"
       - Name: Toggle Character/Paragraph text attributes mode
         Shortcut:
         - Win: false
@@ -1163,7 +1163,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 7
+            - "<7>"
       - Name: Display the pop-up menu that has focus
         Shortcut:
         - Win: false
@@ -1301,7 +1301,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 1
+            - "<1>"
       - Name: Show Magenta plate
         Shortcut:
         - Win: false
@@ -1309,7 +1309,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Show Yellow plate
         Shortcut:
         - Win: false
@@ -1317,7 +1317,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: Show Black plate
         Shortcut:
         - Win: false
@@ -1325,7 +1325,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 4
+            - "<4>"
       - Name: Show 1st Spot plate
         Shortcut:
         - Win: false
@@ -1333,7 +1333,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 5
+            - "<5>"
       - Name: Show 2nd Spot plate
         Shortcut:
         - Win: false
@@ -1341,7 +1341,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 6
+            - "<6>"
       - Name: Show 3rd Spot plate
         Shortcut:
         - Win: false
@@ -1349,7 +1349,7 @@ Shortcuts:
           Shift: true
           Alt: true
           Keys:
-            - 7
+            - "<7>"
   - SectionName: Transform panel
     Properties:
       - Name: Apply value and copy object
