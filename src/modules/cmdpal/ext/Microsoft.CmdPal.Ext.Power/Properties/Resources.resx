@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="power_display_name" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="power_page_title" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="power_mode_dock_band_title" xml:space="preserve">
+    <value>Power mode</value>
+  </data>
+  <data name="power_plan_dock_band_title" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
+  <data name="power_mode_dock_item_subtitle" xml:space="preserve">
+    <value>Power mode</value>
+  </data>
+  <data name="power_plan_dock_item_subtitle" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
+  <data name="power_mode_status_title" xml:space="preserve">
+    <value>Current status</value>
+  </data>
+  <data name="power_mode_status_command_name" xml:space="preserve">
+    <value>Refresh power mode status</value>
+  </data>
+  <data name="power_mode_set_efficiency_title" xml:space="preserve">
+    <value>Best power efficiency</value>
+  </data>
+  <data name="power_mode_set_balanced_title" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="power_mode_set_performance_title" xml:space="preserve">
+    <value>Best performance</value>
+  </data>
+  <data name="power_mode_set_efficiency_toast" xml:space="preserve">
+    <value>Power mode set to best power efficiency</value>
+  </data>
+  <data name="power_mode_set_balanced_toast" xml:space="preserve">
+    <value>Power mode set to balanced</value>
+  </data>
+  <data name="power_mode_set_performance_toast" xml:space="preserve">
+    <value>Power mode set to best performance</value>
+  </data>
+  <data name="power_mode_set_mode_subtitle_desktop" xml:space="preserve">
+    <value>Set this PC to </value>
+  </data>
+  <data name="power_mode_set_mode_subtitle_plugged_in" xml:space="preserve">
+    <value>Set plugged-in power mode to </value>
+  </data>
+  <data name="power_mode_set_mode_subtitle_on_battery" xml:space="preserve">
+    <value>Set on-battery power mode to </value>
+  </data>
+  <data name="power_mode_best_efficiency" xml:space="preserve">
+    <value>Best power efficiency</value>
+  </data>
+  <data name="power_mode_balanced" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="power_mode_best_performance" xml:space="preserve">
+    <value>Best performance</value>
+  </data>
+  <data name="power_mode_best_efficiency_short" xml:space="preserve">
+    <value>Efficiency</value>
+  </data>
+  <data name="power_mode_balanced_short" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="power_mode_best_performance_short" xml:space="preserve">
+    <value>Performance</value>
+  </data>
+  <data name="power_mode_unknown" xml:space="preserve">
+    <value>Unknown power mode</value>
+  </data>
+  <data name="power_mode_unknown_short" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="power_mode_profile_plugged_in" xml:space="preserve">
+    <value>Plugged-in profile</value>
+  </data>
+  <data name="power_mode_profile_on_battery" xml:space="preserve">
+    <value>On-battery profile</value>
+  </data>
+  <data name="power_mode_set_failed" xml:space="preserve">
+    <value>Failed to change power mode.</value>
+  </data>
+  <data name="power_mode_not_supported" xml:space="preserve">
+    <value>Power mode control is not available on this device.</value>
+    <comment>Shown when AC/DC overlay power mode APIs are unavailable on this device.</comment>
+  </data>
+  <data name="power_fallback_title" xml:space="preserve">
+    <value>Power</value>
+    <comment>Title for the Power extension fallback item shown in global Command Palette search.</comment>
+  </data>
+  <data name="power_fallback_subtitle" xml:space="preserve">
+    <value>View and change Windows power settings</value>
+    <comment>Subtitle for the Power extension fallback item shown in global Command Palette search.</comment>
+  </data>
+  <data name="power_plan_status_title" xml:space="preserve">
+    <value>Current status</value>
+  </data>
+  <data name="power_plan_status_command_name" xml:space="preserve">
+    <value>Refresh power plan status</value>
+  </data>
+  <data name="power_plan_status_active_prefix" xml:space="preserve">
+    <value>Active plan: </value>
+  </data>
+  <data name="power_plan_status_unavailable" xml:space="preserve">
+    <value>Power plans are not available on this device.</value>
+  </data>
+  <data name="power_plan_status_unknown" xml:space="preserve">
+    <value>Active power plan unknown</value>
+  </data>
+  <data name="power_plan_current" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="power_plan_power_saver_short" xml:space="preserve">
+    <value>Saver</value>
+  </data>
+  <data name="power_plan_balanced_short" xml:space="preserve">
+    <value>Balanced</value>
+  </data>
+  <data name="power_plan_high_performance_short" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="power_plan_ultimate_performance_short" xml:space="preserve">
+    <value>Ultimate</value>
+  </data>
+  <data name="power_plan_unknown_short" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="power_list_current" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="power_section_power_mode" xml:space="preserve">
+    <value>Power mode</value>
+  </data>
+  <data name="power_section_power_plan" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
+  <data name="power_plan_set_toast_prefix" xml:space="preserve">
+    <value>Power plan set to </value>
+  </data>
+  <data name="power_plan_set_failed" xml:space="preserve">
+    <value>Failed to change power plan.</value>
+  </data>
+  <data name="power_plan_desc_balanced" xml:space="preserve">
+    <value>Automatically balances performance with energy consumption on capable hardware.</value>
+  </data>
+  <data name="power_plan_desc_high_performance" xml:space="preserve">
+    <value>High performance. May use more energy.</value>
+  </data>
+  <data name="power_plan_desc_power_saver" xml:space="preserve">
+    <value>Saves energy by reducing computer performance and screen brightness.</value>
+  </data>
+  <data name="power_plan_desc_ultimate_performance" xml:space="preserve">
+    <value>Ultimate Performance. May use more energy.</value>
+  </data>
+</root>
