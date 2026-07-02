@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+    <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+    <PropertyGroup>
+        <AssemblyName>PowerToys.MouseJump.Kicker</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.Kicker</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.Kicker</AssemblyDescription>
+        <OutputType>WinExe</OutputType>
+        <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>disable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!--
+            add a dependency just to force the project to build
+            so the kicker launches the latest version, and so the
+            build fails if there are any compile errors in the main
+            UI project.
+        -->
+        <ProjectReference Include="..\MouseJump.WinUI3\MouseJump.WinUI3.csproj" />
+    </ItemGroup>
+</Project>

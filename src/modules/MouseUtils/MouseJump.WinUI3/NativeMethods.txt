@@ -1,0 +1,9 @@
+WINDOW_EX_STYLE
+WINDOW_STYLE
+GetWindowLong
+SetWindowLong
+
+USER_DEFAULT_SCREEN_DPI
+GetDpiForWindow
+
+SetLastError
