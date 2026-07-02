@@ -44,6 +44,29 @@ namespace
     const wchar_t JSON_KEY_SHIFT[] = L"shift";
     const wchar_t JSON_KEY_CODE[] = L"code";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
+
+    struct FindWindowByPidData
+    {
+        DWORD pid;
+        HWND hwnd;
+    };
+
+    // a callback function that can be used with EnumWindows to find the first
+    // top-level window belonging to a given PID. stores the HWND in data->hwnd
+    // and returns FALSE to stop enumeration when found, or TRUE to continue to
+    // the next window. works for hidden windows as well as visible ones.
+    BOOL CALLBACK FindWindowByPidProc(HWND hwnd, LPARAM lParam)
+    {
+        auto* data = reinterpret_cast<FindWindowByPidData*>(lParam);
+        DWORD windowPid = 0;
+        GetWindowThreadProcessId(hwnd, &windowPid);
+        if (windowPid == data->pid)
+        {
+            data->hwnd = hwnd;
+            return FALSE;
+        }
+        return TRUE;
+    }
 }
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -55,7 +78,7 @@ private:
 
     // Hotkey to invoke the module
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
@@ -237,7 +260,10 @@ public:
     {
         Logger::trace("MouseJump::enable()");
         ResetEvent(m_hInvokeEvent);
+
+        // pre-launch the ui exe so its window is ready before the first hotkey press
         launch_process();
+
         m_enabled = true;
         Trace::EnableJumpTool(true);
     }
@@ -262,11 +288,51 @@ public:
     {
         if (m_enabled)
         {
+            const auto hotkeyTime = std::chrono::steady_clock::now();
             Logger::trace(L"MouseJump hotkey pressed");
             Trace::InvokeJumpTool();
             if (!is_process_running())
             {
                 launch_process();
+            }
+
+            const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - hotkeyTime).count();
+            if (elapsedMs > 200)
+            {
+                Logger::warn(L"launch_process took {}ms - AllowSetForegroundWindow may fail (foreground lock timeout is ~200ms)", elapsedMs);
+            }
+            else
+            {
+                Logger::trace(L"launch_process took {}ms", elapsedMs);
+            }
+
+            // find the winui3 window by pid. if we don't find one (e.g. the
+            // process is still starting up), drop this activation — the user
+            // can press the hotkey again once it's ready
+            FindWindowByPidData findData{ GetProcessId(m_hProcess), nullptr };
+            EnumWindows(FindWindowByPidProc, reinterpret_cast<LPARAM>(&findData));
+            if (findData.hwnd == nullptr)
+            {
+                Logger::warn(L"WinUI3 window not ready yet - dropping activation. Press the hotkey again.");
+                return true;
+            }
+
+            // on_hotkey() is called by the "runner" process in response to a
+            // hotkey activation. the hotkey activation means the runner process
+            // hook thread has the "last input" status, which in turn means we
+            // can call SetForegroundWindow on the ui exe window to make it the
+            // foreground window. this is more reliable than other options like
+            // AllowSetForegroundWindow (which the runner invalidates by calling
+            // SendInput straight after it calls action()).
+            BOOL sfwResult = SetForegroundWindow(findData.hwnd);
+            if (sfwResult)
+            {
+                Logger::trace(L"SetForegroundWindow on WinUI3 window succeeded with result {}", sfwResult);
+            }
+            else
+            {
+                Logger::warn(L"SetForegroundWindow on WinUI3 window failed with result {}. {}", sfwResult, get_last_error_or_default(GetLastError()));
             }
 
             SetEvent(m_hInvokeEvent);

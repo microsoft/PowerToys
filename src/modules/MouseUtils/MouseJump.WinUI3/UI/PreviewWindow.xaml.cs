@@ -416,7 +416,6 @@ internal sealed partial class PreviewWindow : Window
             {
                 var presenter = this.AppWindow.Presenter as OverlappedPresenter
                     ?? throw new InvalidOperationException();
-
                 if (!this.Visible)
                 {
                     // we seem to need to turn off topmost and then re-enable it again
@@ -425,11 +424,44 @@ internal sealed partial class PreviewWindow : Window
                     presenter.IsAlwaysOnTop = true;
                 }
 
-                this.AppWindow.Show();
+                var hWnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(this);
 
-                // we have to activate the window to make sure the deactivate event fires
-                this.Activate();
-                this.PreviewImage.Focus(FocusState.Programmatic);
+                // use raw Win32 calls instead of WinUI3's AppWindow.Show()/Activate()/Focus()
+                // because WinUI3's activation sequence intermittently fails to transfer keyboard
+                // focus, which causes the Window.Activated "Deactivated" event to never fire
+                // when the user clicks away, leaving the preview window stuck open.
+                _ = PInvoke.ShowWindow(hWnd, SHOW_WINDOW_CMD.SW_SHOW);
+
+                var setForegroundResult = PInvoke.SetForegroundWindow(hWnd);
+                ResultHandler.HandleResult(
+                    (int)setForegroundResult,
+                    success: (bool)setForegroundResult,
+                    false,
+                    nameof(PInvoke.SetForegroundWindow));
+
+                PInvoke.SetLastError(0);
+                var setFocusResult = PInvoke.SetFocus(hWnd);
+                if (setFocusResult.IsNull)
+                {
+                    var lastError = Marshal.GetLastPInvokeError();
+                    ResultHandler.HandleResult(
+                        setFocusResult,
+                        success: lastError == 0,
+                        lastError,
+                        nameof(PInvoke.SetFocus));
+                }
+
+                PInvoke.SetLastError(0);
+                var setActiveResult = PInvoke.SetActiveWindow(hWnd);
+                if (setActiveResult.IsNull)
+                {
+                    var lastError = Marshal.GetLastPInvokeError();
+                    ResultHandler.HandleResult(
+                        setActiveResult,
+                        success: lastError == 0,
+                        lastError,
+                        nameof(PInvoke.SetActiveWindow));
+                }
             }).ConfigureAwait(false);
     }
 
