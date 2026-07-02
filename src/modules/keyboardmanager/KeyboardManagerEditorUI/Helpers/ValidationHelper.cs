@@ -248,9 +248,15 @@ namespace KeyboardManagerEditorUI.Helpers
                 }
             }
 
-            // Check shortcut mappings
+            // Check shortcut mappings. Only key-output remaps (RemapShortcut) can make a key
+            // reachable again; program/URL/text targets do not restore keyboard input.
             foreach (var mapping in mappingService.GetShortcutMappings())
             {
+                if (mapping.OperationType != ShortcutOperationType.RemapShortcut)
+                {
+                    continue;
+                }
+
                 string[] targetKeys = mapping.TargetKeys.Split(';');
                 if (targetKeys.Length == 1 && int.TryParse(targetKeys[0], out int shortcutTargetKey) && shortcutTargetKey == originalKey)
                 {

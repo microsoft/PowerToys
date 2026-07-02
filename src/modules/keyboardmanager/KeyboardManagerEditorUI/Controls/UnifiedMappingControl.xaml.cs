@@ -154,6 +154,7 @@ namespace KeyboardManagerEditorUI.Controls
             _triggerKeys.CollectionChanged += (_, _) =>
             {
                 UpdatePlaceholderVisibility();
+                UpdateAppSpecificCheckBoxState();
                 RaiseValidationStateChanged();
             };
 

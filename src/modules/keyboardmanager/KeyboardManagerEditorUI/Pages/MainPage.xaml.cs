@@ -861,7 +861,7 @@ namespace KeyboardManagerEditorUI.Pages
             bool saved = shortcut.Shortcut.Count == 1
                 ? _mappingService!.AddSingleKeyToTextMapping(_mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]), shortcutKeyMapping.TargetText)
                 : shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText
-                    ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText)
+                    ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText, exactMatch: shortcutKeyMapping.ExactMatch)
                     : _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
             if (saved)
