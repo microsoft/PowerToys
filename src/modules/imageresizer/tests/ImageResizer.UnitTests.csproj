@@ -26,6 +26,31 @@
     <ProjectReference Include="..\ui\ImageResizerUI.csproj" />
   </ItemGroup>
 
+  <!--
+    MSB3030 parallel-build race hardening.
+
+    ImageResizerUI is a self-contained WinUI 3 app whose PowerToys.ImageResizer.runtimeconfig.json
+    and PowerToys.ImageResizer.deps.json are written late into the shared WinUI3Apps output folder.
+    This unit test project references ImageResizerUI only for its types (see InternalsVisibleTo
+    "ImageResizer.Test" in ImageResizerUI.csproj); it never launches the app, so it does not need
+    those two app runtime json files. During a highly parallel "Build All" the test's
+    copy-to-output step can run before those files exist, producing:
+      MSB3030: Could not copy the file "...\PowerToys.ImageResizer.runtimeconfig.json" because it was not found.
+    Removing just those two never-needed files from this project's copy-to-output lists makes the
+    race impossible. The referenced PowerToys.ImageResizer.dll is still copied, so tests run normally.
+  -->
+  <Target Name="ExcludeReferencedAppRuntimeJsonFromCopy"
+          AfterTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <_SourceItemsToCopyToOutputDirectory
+        Remove="@(_SourceItemsToCopyToOutputDirectory)"
+        Condition="'%(Filename)%(Extension)' == 'PowerToys.ImageResizer.runtimeconfig.json' or '%(Filename)%(Extension)' == 'PowerToys.ImageResizer.deps.json'" />
+      <_SourceItemsToCopyToOutputDirectoryAlways
+        Remove="@(_SourceItemsToCopyToOutputDirectoryAlways)"
+        Condition="'%(Filename)%(Extension)' == 'PowerToys.ImageResizer.runtimeconfig.json' or '%(Filename)%(Extension)' == 'PowerToys.ImageResizer.deps.json'" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Content Include="Test.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
