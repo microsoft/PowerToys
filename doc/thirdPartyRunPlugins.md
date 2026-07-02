@@ -37,7 +37,6 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [UnicodeInput](https://github.com/nathancartlidge/powertoys-run-unicode) | [nathancartlidge](https://github.com/nathancartlidge) | Copy Unicode characters to the clipboard |
 | [PowerHexInspector](https://github.com/NaroZeol/PowerHexInspector) | [NaroZeol](https://github.com/NaroZeol) | Peek other forms of an input number |
 | [GitHubRepo](https://github.com/8LWXpg/PowerToysRun-GitHubRepo) | [8LWXpg](https://github.com/8LWXpg) | Search and open GitHub repositories |
-| [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
 | [ProcessKiller](https://github.com/8LWXpg/PowerToysRun-ProcessKiller) | [8LWXpg](https://github.com/8LWXpg) | Search and kill processes |
 | [ChatGPT](https://github.com/ferraridavide/ChatGPTPowerToys) | [ferraridavide](https://github.com/ferraridavide) | Ask a question to ChatGPT |
 | [CanIUse](https://github.com/skttl/ptrun-caniuse) | [skttl](https://github.com/skttl) | Look up browser feature support with caniuse.com |
@@ -55,6 +54,7 @@ Contact the developers of a plugin directly for assistance with a specific plugi
 | [Project Launcher Plugin](https://github.com/artickc/ProjectLauncherPowerToysPlugin) | [artickc](https://github.com/artickc) | Access your projects using Project Launcher and PowerToys Run |
 | [CheatSheets](https://github.com/ruslanlap/PowerToysRun-CheatSheets) | [ruslanlap](https://github.com/ruslanlap) | 📚 Find cheat sheets and command examples instantly from tldr pages, cheat.sh, and devhints.io. Features include favorites system, categories, offline mode, and smart caching. |
 | [QuickAI](https://github.com/ruslanlap/PowerToysRun-QuickAi) | [ruslanlap](https://github.com/ruslanlap) | AI-powered assistance with instant, smart responses from multiple providers (Groq, Together, Fireworks, OpenRouter, Cohere) |
+| [Launchy](https://github.com/PsychodelEKS/PowerToysRun-Launchy) | [PsychodelEKS](https://github.com/PsychodelEKS) | Index and launch files from configured folders |
 
 ## Extending software plugins
 
