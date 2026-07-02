@@ -27,7 +27,6 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class SearchBar : UserControl,
     INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
-    IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
     IRecipient<FocusParamMessage>,
     ICurrentPageAware
@@ -72,6 +71,8 @@ public sealed partial class SearchBar : UserControl,
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public event EventHandler? ActiveFocusTargetChanged;
+
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
@@ -102,8 +103,9 @@ public sealed partial class SearchBar : UserControl,
         @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
         @this?.PropertyChanged?.Invoke(@this, new(nameof(Parameters)));
 
-        // Attempt to focus us again, once we evaluate what input is visible
-        @this?.Focus();
+        // Let the shell decide if it's safe to restore focus after the
+        // SwitchPresenter swaps to a different top-bar input.
+        @this?.ActiveFocusTargetChanged?.Invoke(@this, EventArgs.Empty);
     }
 
     public string PageType => CurrentPageViewModel switch
@@ -120,7 +122,6 @@ public sealed partial class SearchBar : UserControl,
     {
         this.InitializeComponent();
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
-        WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
@@ -497,9 +498,7 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(FocusSearchBoxMessage message) => Focus();
-
-    private void Focus()
+    internal void FocusActiveControl()
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
