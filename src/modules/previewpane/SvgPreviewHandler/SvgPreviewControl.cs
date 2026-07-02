@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -106,7 +107,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                 return;
             }
 
-            CleanupWebView2UserDataFolder();
+            EnsureWebView2UserDataFolder();
 
             string svgData = null;
             bool blocked = false;
@@ -251,22 +252,26 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
                     _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                     _browser.CoreWebView2.WebResourceRequested += CoreWebView2_BlockExternalResources;
 
-                    string generatedPreview = _previewGenerator.GeneratePreview(svgData);
+                    var cacheKey = SvgPreviewCacheHelper.BuildCacheKey(
+                        "v1",
+                        VirtualHostName,
+                        svgData,
+                        _settings.ColorMode.ToString(),
+                        _settings.ThemeColor.ToArgb().ToString(),
+                        _settings.SolidColor.ToArgb().ToString(),
+                        _settings.CheckeredShade.ToString());
 
-                    // WebView2.NavigateToString() limitation
-                    // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
-                    // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                    if (generatedPreview.Length > 1_500_000)
+                    var cacheFolder = Path.Combine(_webView2UserDataFolder, "Cache");
+                    var cacheFilePath = SvgPreviewCacheHelper.GetCacheFilePath(cacheFolder, cacheKey);
+
+                    if (!File.Exists(cacheFilePath) || new FileInfo(cacheFilePath).Length == 0)
                     {
-                        string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
-                        File.WriteAllText(filename, generatedPreview);
-                        _localFileURI = new Uri(filename);
-                        _browser.Source = _localFileURI;
+                        string generatedPreview = _previewGenerator.GeneratePreview(svgData);
+                        File.WriteAllText(cacheFilePath, generatedPreview);
                     }
-                    else
-                    {
-                        _browser.NavigateToString(generatedPreview);
-                    }
+
+                    _localFileURI = new Uri(cacheFilePath);
+                    _browser.Source = _localFileURI;
 
                     Controls.Add(_browser);
                 }
@@ -318,17 +323,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         /// <summary>
         /// Cleanup the previously created tmp html files from svg files bigger than 2MB.
         /// </summary>
-        private void CleanupWebView2UserDataFolder()
+        private void EnsureWebView2UserDataFolder()
         {
             try
             {
-                // Cleanup temp dir
-                var dir = new DirectoryInfo(_webView2UserDataFolder);
-
-                foreach (var file in dir.EnumerateFiles("*.html"))
-                {
-                    file.Delete();
-                }
+                Directory.CreateDirectory(_webView2UserDataFolder);
             }
             catch (Exception)
             {
