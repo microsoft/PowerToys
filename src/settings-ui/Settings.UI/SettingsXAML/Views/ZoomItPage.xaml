@@ -404,10 +404,10 @@
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
-                        <tkcontrols:SettingsCard.Description>
-                            <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                        </tkcontrols:SettingsCard.Description>
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSnipSaveShortcut" x:Uid="ZoomIt_SnipSave_Shortcut">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipSaveToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
@@ -415,20 +415,15 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipPanoramaToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Panorama_Shortcut_Save}" />
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItPanoramaSaveShortcut" x:Uid="ZoomIt_PanoramaSave_Shortcut">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipPanoramaSaveToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
