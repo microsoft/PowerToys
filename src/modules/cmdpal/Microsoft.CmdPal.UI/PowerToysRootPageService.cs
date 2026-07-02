@@ -36,7 +36,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PreLoadAsync()
     {
-        await _tlcManager.LoadBuiltinsAsync();
+        await _tlcManager.LoadBuiltInProvidersAsync();
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -46,11 +46,11 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        _tlcManager.LoadExtensionsCommand.Execute(null);
+        // After loading built-ins, and starting navigation, kick off a thread to load external extensions.
+        _tlcManager.LoadExternalProvidersCommand.Execute(null);
 
-        await _tlcManager.LoadExtensionsCommand.ExecutionTask!;
-        if (_tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        await _tlcManager.LoadExternalProvidersCommand.ExecutionTask!;
+        if (_tlcManager.LoadExternalProvidersCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
         {
             // TODO: Handle failure case
         }

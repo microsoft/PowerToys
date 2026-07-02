@@ -160,20 +160,24 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
         }
 
-        if (pageType is not null)
+        if (pageType is null)
         {
-            NavFrame.Navigate(pageType);
+            return;
+        }
 
-            // Now, make sure to actually select the correct menu item too
-            foreach (var obj in NavView.MenuItems)
+        if (NavFrame.Content?.GetType() == pageType)
+        {
+            return;
+        }
+
+        NavFrame.Navigate(pageType);
+
+        // Now, make sure to actually select the correct menu item too
+        foreach (var obj in NavView.MenuItems)
+        {
+            if (obj is NavigationViewItem item && item.Tag is string s && s == page)
             {
-                if (obj is NavigationViewItem item)
-                {
-                    if (item.Tag is string s && s == page)
-                    {
-                        NavView.SelectedItem = item;
-                    }
-                }
+                NavView.SelectedItem = item;
             }
         }
     }

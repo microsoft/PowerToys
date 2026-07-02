@@ -195,9 +195,17 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
 
  A string array of all the keys that need to be pressed. If a number is supplied, it should be read as a [KeyCode](https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes) and displayed accordingly (based on the Keyboard Layout of the user).
 
+**Literal digit keys**:
+
+Because a bare number is interpreted as a virtual-key code, a literal digit key must be authored using the `<N>` notation (the digit enclosed between `<` and `>`), where `N` is `0`–`9`. For example, `<9>` represents the literal `9` key (as in the "switch to the last tab" shortcut), not the virtual-key code `9` (which is `Tab`). The interpreter strips the brackets and displays just the digit.
+
+This applies only to a single literal digit. A range such as `1 - 8` is a free-form label, not a key, and is supplied verbatim (the brackets would only be trimmed from the ends, so `<1> - <8>` would not render as intended).
+
 **Special keys**:
 
 Special keys are enclosed between `<` and `>` and correspond to a key that should be displayed in a certain way. If the interpreter of the manifest file can't understand the content, the brackets should be left out.
+
+By convention these tokens are written as double-quoted strings in the YAML (for example `"<Enter>"` and `"<9>"`), matching the quoting used for punctuation key values. YAML treats the quoted and unquoted forms identically, so quoting is for consistency rather than a strict requirement for bracketed tokens.
 
 |Name|Description|
 |----|-----------|
