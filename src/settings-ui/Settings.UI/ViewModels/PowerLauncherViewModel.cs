@@ -639,16 +639,87 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public int TitleFontSize
         {
-            get
-            {
-                return settings.Properties.TitleFontSize;
-            }
-
+            get => settings.Properties.TitleFontSize;
             set
             {
                 if (settings.Properties.TitleFontSize != value)
                 {
                     settings.Properties.TitleFontSize = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        private ObservableCollection<SoundOption> _availableSounds;
+
+        public ObservableCollection<SoundOption> AvailableSounds
+        {
+            get
+            {
+                if (_availableSounds == null)
+                {
+                    _availableSounds = GetAvailableSounds();
+                }
+
+                return _availableSounds;
+            }
+        }
+
+        private ObservableCollection<SoundOption> GetAvailableSounds()
+        {
+            var sounds = new ObservableCollection<SoundOption>
+    {
+        new SoundOption { Name = "Beep", Value = "Beep" },
+        new SoundOption { Name = "Asterisk", Value = "Asterisk" },
+        new SoundOption { Name = "Exclamation", Value = "Exclamation" },
+        new SoundOption { Name = "Hand", Value = "Hand" },
+        new SoundOption { Name = "Question", Value = "Question" },
+    };
+
+            return sounds;
+        }
+
+        public class SoundOption
+        {
+            public string Name { get; set; }
+
+            public string Value { get; set; }
+        }
+
+        public bool EnableAudibleFeedback
+        {
+            get => settings.Properties.EnableAudibleFeedback;
+            set
+            {
+                if (settings.Properties.EnableAudibleFeedback != value)
+                {
+                    settings.Properties.EnableAudibleFeedback = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public string OpeningSound
+        {
+            get => settings.Properties.OpeningSound;
+            set
+            {
+                if (settings.Properties.OpeningSound != value)
+                {
+                    settings.Properties.OpeningSound = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public string ClosingSound
+        {
+            get => settings.Properties.ClosingSound;
+            set
+            {
+                if (settings.Properties.ClosingSound != value)
+                {
+                    settings.Properties.ClosingSound = value;
                     UpdateSettings();
                 }
             }
