@@ -29,7 +29,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:AppLaunching">
                             <Grid
-                                Margin="0,2"
+                                Margin="0,4"
                                 Padding="4"
                                 AutomationProperties.Name="{Binding Name, Mode=OneWay}">
                                 <Grid.ColumnDefinitions>
@@ -52,7 +52,7 @@
                                     Text="{Binding Name, Mode=OneWay}" />
                                 <tkcontrols:SwitchPresenter
                                     Grid.Column="2"
-                                    Margin="10"
+                                    Margin="8"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     TargetType="x:Boolean"
