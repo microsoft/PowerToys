@@ -125,4 +125,40 @@ public class ProgramTokenTests
         var parsed = Parse("up", "--brightness", "false");
         Assert.IsTrue(parsed.Errors.Count > 0, "an attached value on a no-value flag must be a parse error");
     }
+
+    [TestMethod]
+    public void Quiet_DoesNotSwallowFollowingProfileName()
+    {
+        // Regression: --quiet is a global Option<bool>. With ArgumentArity.Zero it must NOT swallow a
+        // following bareword that parses as a bool, so `apply-profile --quiet true` binds "true" as the
+        // profile name (not as --quiet's value, which would leave apply-profile with no name).
+        var parsed = Parse("apply-profile", "--quiet", "true");
+
+        Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile name");
+        Assert.AreEqual("true", parsed.GetValueForArgument(CliOptions.ProfileName));
+        Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
+    }
+
+    [TestMethod]
+    public void ConfirmPowerOff_ResolvesToTrueWhenPresent()
+    {
+        // --confirm-power-off is a pure presence flag (ArgumentArity.Zero): present -> true, and it
+        // does not swallow the following power-state value.
+        var parsed = Parse("set", "--power-state", "0x04", "--confirm-power-off");
+
+        Assert.AreEqual(0, parsed.Errors.Count);
+        Assert.IsTrue(parsed.GetValueForOption(CliOptions.ConfirmPowerOff));
+        Assert.AreEqual("0x04", parsed.GetValueForOption(CliOptions.PowerState));
+    }
+
+    [TestMethod]
+    public void ConnectTimeout_IsStrictlyShorterThanOperationTimeout()
+    {
+        // Guards the connect-timeout fix: the pipe-connect bound must stay strictly below the overall
+        // deadline, or a not-running app is misreported as TIMEOUT (exit 8) after the full deadline
+        // instead of a fast PROVIDER_UNAVAILABLE (exit 10). See Program.ConnectTimeout / OperationTimeout.
+        Assert.IsTrue(
+            Program.ConnectTimeout < Program.OperationTimeout,
+            $"ConnectTimeout ({Program.ConnectTimeout}) must be < OperationTimeout ({Program.OperationTimeout})");
+    }
 }

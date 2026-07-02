@@ -30,20 +30,20 @@ public sealed class IpcDispatcher
 
     private readonly SendDelegate _send;
     private readonly ICliOutput _output;
-    private readonly TimeSpan _timeout;
+    private readonly TimeSpan _connectTimeout;
 
-    public IpcDispatcher(SendDelegate send, ICliOutput output, TimeSpan timeout)
+    public IpcDispatcher(SendDelegate send, ICliOutput output, TimeSpan connectTimeout)
     {
         _send = send;
         _output = output;
-        _timeout = timeout;
+        _connectTimeout = connectTimeout;
     }
 
     /// <summary>
     /// Convenience constructor that uses a real <see cref="CliPipeClient"/> instance.
     /// </summary>
-    public IpcDispatcher(ICliOutput output, TimeSpan timeout)
-        : this(new CliPipeClient().SendAsync, output, timeout)
+    public IpcDispatcher(ICliOutput output, TimeSpan connectTimeout)
+        : this(new CliPipeClient().SendAsync, output, connectTimeout)
     {
     }
 
@@ -88,7 +88,7 @@ public sealed class IpcDispatcher
         where T : class
     {
         var requestJson = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
-        var respJson = await _send(requestJson, _timeout, ct);
+        var respJson = await _send(requestJson, _connectTimeout, ct);
 
         if (respJson is null)
         {

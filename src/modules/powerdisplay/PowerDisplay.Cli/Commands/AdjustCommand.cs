@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
+
 namespace PowerDisplay.Cli.Commands;
 
 public static class AdjustCommand
@@ -12,22 +14,8 @@ public static class AdjustCommand
     /// </summary>
     public static int CountSelectedSettings(AdjustCommandInputs inputs)
     {
-        var count = 0;
-        if (inputs.Brightness)
-        {
-            count++;
-        }
-
-        if (inputs.Contrast)
-        {
-            count++;
-        }
-
-        if (inputs.Volume)
-        {
-            count++;
-        }
-
-        return count;
+        // Mirror SetCommand.CountSelectedSettings: list the candidate flags, then Count the selected.
+        bool[] flags = [inputs.Brightness, inputs.Contrast, inputs.Volume];
+        return flags.Count(f => f);
     }
 }

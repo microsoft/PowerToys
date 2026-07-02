@@ -125,18 +125,26 @@ public static class CliOptions
         Arity = ArgumentArity.ExactlyOne,
     };
 
+    // Arity is Zero (a pure presence flag), not ZeroOrOne: a ZeroOrOne bool greedily swallows a
+    // following bareword that parses as a bool. Since --quiet is a global option, `apply-profile
+    // --quiet true` would otherwise bind "true" as the flag value and leave apply-profile with no
+    // name (a misleading "Required argument missing"), so a profile literally named "true"/"false"
+    // could not be applied. Zero rejects any attached value while a bare --quiet still resolves to
+    // true. Mirrors the up/down setting flags above.
     public static readonly Option<bool> Quiet = new(
         ["--quiet"],
         "Suppress warning messages on stderr.")
     {
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.Zero,
     };
 
+    // Arity is Zero (a pure presence flag), not ZeroOrOne: same greedy-swallow reasoning as --quiet
+    // and the up/down setting flags. A bare --confirm-power-off resolves to true.
     public static readonly Option<bool> ConfirmPowerOff = new(
         ["--confirm-power-off"],
         "Required to apply a power-state that powers the display off or puts it to sleep (Standby/Suspend/Off).")
     {
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.Zero,
     };
 
     // --- apply-profile ---

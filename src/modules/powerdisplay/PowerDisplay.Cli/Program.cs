@@ -23,12 +23,22 @@ namespace PowerDisplay.Cli;
 
 public static class Program
 {
-    // Fixed wall-clock deadline for one CLI invocation (pipe connect + request/response). There is
-    // deliberately no --timeout option: the CLI is a thin client that blocks waiting on the app, and
-    // the app's DDC/CI writes are synchronous and cannot be cancelled mid-call, so the client must
-    // bound its own wait or a slow/stuck monitor (or a hung app) would hang it indefinitely. 5s
-    // covers a normal connect plus one VCP exchange with margin.
-    private static readonly TimeSpan OperationTimeout = TimeSpan.FromSeconds(5);
+    // Overall wall-clock deadline for one CLI invocation (pipe connect + request/response + any
+    // hardware write). There is deliberately no --timeout option: the CLI is a thin client that
+    // blocks waiting on the app, and the app's DDC/CI writes are synchronous and cannot be cancelled
+    // mid-call, so the client must bound its own wait or a slow/stuck monitor (or a hung app) would
+    // hang it indefinitely. 5s covers a normal connect plus one VCP exchange with margin. When it
+    // elapses the invocation is reported as TIMEOUT (exit 8).
+    internal static readonly TimeSpan OperationTimeout = TimeSpan.FromSeconds(5);
+
+    // Bound on just the pipe-connect phase. MUST stay strictly less than OperationTimeout:
+    // NamedPipeClientStream.ConnectAsync polls until either its own timeout (-> TimeoutException,
+    // which CliPipeClient maps to a null response -> PROVIDER_UNAVAILABLE, exit 10) or ct
+    // cancellation. If this equalled OperationTimeout, the deadline timer would cancel ct at the same
+    // instant and win the race, so a not-running app would be misreported as TIMEOUT (exit 8) after a
+    // full 5s wait instead of a fast, correct PROVIDER_UNAVAILABLE ("PowerDisplay is not running").
+    // A running app connects near-instantly, so the shorter bound never affects the normal path.
+    internal static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(2);
 
     // Canonical args for routing any version request through the default invocation pipeline's
     // version renderer (static readonly to satisfy CA1861 — the array is passed, never mutated).
@@ -146,7 +156,10 @@ public static class Program
                 OperationTimeout,
                 Timeout.InfiniteTimeSpan);
 
-            var dispatcher = new IpcDispatcher(output, OperationTimeout);
+            // The dispatcher's own timeout bounds only the pipe-connect phase (ConnectTimeout, shorter
+            // than OperationTimeout) so a not-running app surfaces as PROVIDER_UNAVAILABLE quickly
+            // rather than racing the overall deadline into a misleading TIMEOUT.
+            var dispatcher = new IpcDispatcher(output, ConnectTimeout);
 
             return await DispatchAsync(root, args, parseResult, dispatcher, output, cts.Token);
         }
