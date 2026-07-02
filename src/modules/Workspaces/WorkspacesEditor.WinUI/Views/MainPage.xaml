@@ -7,10 +7,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:WorkspacesEditor.Models"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+        <toolkit:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <toolkit:BoolToVisibilityConverter
+            x:Key="BooleanToInvertedVisibilityConverter"
+            FalseValue="Visible"
+            TrueValue="Collapsed" />
         <converters:LaunchButtonNameConverter x:Key="LaunchButtonNameConverter" />
         <converters:MoreOptionsButtonNameConverter x:Key="MoreOptionsButtonNameConverter" />
     </Page.Resources>
