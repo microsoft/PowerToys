@@ -39,7 +39,7 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _disposed;
         private bool _isEditMode;
         private EditingItem? _editingItem;
-        private string? _orphanWarningConfirmedKey;
+        private string? _pendingOrphanedKeyName;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
 
@@ -313,18 +313,32 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
-            _orphanWarningConfirmedKey = null;
+            _pendingOrphanedKeyName = null;
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
 
-            await RemappingDialog.ShowAsync();
+            ContentDialogResult result = await RemappingDialog.ShowAsync();
 
             RemappingDialog.PrimaryButtonClick -= RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
             _isEditMode = false;
             _editingItem = null;
             KeyboardHookHelper.Instance.CleanupHook();
+
+            if (result == ContentDialogResult.Primary && _pendingOrphanedKeyName != null)
+            {
+                ShowOrphanedKeyBanner(_pendingOrphanedKeyName);
+            }
+
+            _pendingOrphanedKeyName = null;
+        }
+
+        private void ShowOrphanedKeyBanner(string keyName)
+        {
+            OrphanedKeyBanner.Title = ResourceHelper.GetString("OrphanedKeyInfo_Title");
+            OrphanedKeyBanner.Message = ResourceHelper.GetString("Warning_OrphanedKeys").Replace("{0}", keyName, System.StringComparison.Ordinal);
+            OrphanedKeyBanner.IsOpen = true;
         }
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
@@ -389,18 +403,11 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                // Warn if this single-key remap will leave the original key without any assignment,
-                // mirroring the classic Remap Keys editor's orphaned-key confirmation. The warning is
-                // scoped to the specific key so changing the trigger re-triggers the check.
-                if (ShouldWarnOrphanedKeys(UnifiedMappingControl.CurrentActionType, triggerKeys, out string orphanedKeyName) &&
-                    !string.Equals(_orphanWarningConfirmedKey, orphanedKeyName, System.StringComparison.Ordinal))
-                {
-                    _orphanWarningConfirmedKey = orphanedKeyName;
-                    UnifiedMappingControl.ShowNotificationTip(
-                        ResourceHelper.GetString("Warning_OrphanedKeys").Replace("{0}", orphanedKeyName, System.StringComparison.Ordinal));
-                    args.Cancel = true;
-                    return;
-                }
+                // If this single-key remap leaves the original key with no assignment, remember it so a
+                // non-blocking notice can be shown after the dialog closes. Saving is not interrupted.
+                _pendingOrphanedKeyName = ShouldWarnOrphanedKeys(UnifiedMappingControl.CurrentActionType, triggerKeys, out string orphanedKeyName)
+                    ? orphanedKeyName
+                    : null;
 
                 if (_isEditMode && _editingItem != null)
                 {
@@ -424,6 +431,7 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
+                    _pendingOrphanedKeyName = null;
                     UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
                     args.Cancel = true;
                 }
