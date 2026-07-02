@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -87,6 +87,10 @@ public partial class CommandItem : BaseObservable, ICommandItem
     }
 
     public virtual IContextItem[] MoreCommands { get; set => SetProperty(ref field, value); } = [];
+
+    public virtual HoverActionsMode HomeHoverActionsMode { get; set => SetProperty(ref field, value); } = HoverActionsMode.Default;
+
+    public virtual int HomeMaxHoverActions { get; set => SetProperty(ref field, value); } = -1;
 
     public DataPackage? DataPackage
     {

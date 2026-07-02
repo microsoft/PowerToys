@@ -10,7 +10,8 @@ public abstract partial class CommandProvider :
     ICommandProvider,
     ICommandProvider2,
     ICommandProvider3,
-    ICommandProvider4
+    ICommandProvider4,
+    ICommandProvider5
 {
     public virtual string Id { get; protected set; } = string.Empty;
 
@@ -31,6 +32,10 @@ public abstract partial class CommandProvider :
     public virtual ICommandSettings? Settings { get; protected set; }
 
     public virtual bool Frozen { get; protected set; } = true;
+
+    public virtual HoverActionsMode DefaultHoverActionsMode { get; set; } = HoverActionsMode.Default;
+
+    public virtual int DefaultMaxHoverActions { get; set; } = -1;
 
     IIconInfo ICommandProvider.Icon => Icon;
 

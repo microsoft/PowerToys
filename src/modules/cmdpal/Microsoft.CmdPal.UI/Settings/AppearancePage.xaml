@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Page
     x:Class="Microsoft.CmdPal.UI.Settings.AppearancePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -309,6 +309,10 @@
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ListHoverActions_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_EnableListHoverActions" IsOn="{x:Bind ViewModel.EnableListHoverActions, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">

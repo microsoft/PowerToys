@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -349,6 +349,23 @@
             Separator="{StaticResource GridViewSeparatorItemStyle}"
             Small="{StaticResource IconGridViewItemStyle}" />
 
+        <DataTemplate x:Key="ListItemHoverActionTemplate" x:DataType="viewModels:CommandContextItemViewModel">
+            <Grid
+                Width="28"
+                Height="28"
+                AutomationProperties.AccessibilityView="Raw"
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
+                <cpcontrols:IconBox
+                    Width="16"
+                    Height="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+            </Grid>
+        </DataTemplate>
+
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
@@ -406,24 +423,67 @@
                 </Grid>
 
                 <!--
-                    An 8px right margin is added to visually match the spacing between the icon
-                    and the left margin of the list.
-                    Tags are capped at 3 with a [+N] overflow badge to prevent
-                    unbounded growth that pushes the title out of view.
+                    Tags and hover actions share one trailing column so the rightmost
+                    hover button lines up with static tags (??, file type, etc.).
                 -->
-                <ItemsRepeater
+                <Grid
                     Grid.Column="2"
                     Margin="0,0,8,0"
-                    VerticalAlignment="Center"
-                    IsHitTestVisible="False"
-                    IsTabStop="False"
-                    ItemTemplate="{StaticResource TagTemplate}"
-                    ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
-                    Visibility="{x:Bind HasTags, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Horizontal" Spacing="4" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <ItemsRepeater
+                        HorizontalAlignment="Right"
+                        IsHitTestVisible="False"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource TagTemplate}"
+                        ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowTagsWhenNotHovering), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="4" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+
+                    <ListView
+                        x:Name="HoverActionsList"
+                        x:Load="{x:Bind IsListHoverActionsEnabled, Mode=OneWay}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        AllowFocusOnInteraction="False"
+                        AutomationProperties.AccessibilityView="Raw"
+                        AutomationProperties.LiveSetting="Off"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        IsHitTestVisible="True"
+                        IsItemClickEnabled="True"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
+                        ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        SelectedIndex="{x:Bind HoverActionSelectedIndex, Mode=OneWay}"
+                        SelectionMode="Single"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="AllowFocusOnInteraction" Value="False" />
+                                <Setter Property="IsTabStop" Value="False" />
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="MinWidth" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
+                </Grid>
             </Grid>
         </DataTemplate>
 
@@ -616,6 +676,7 @@
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
                             CanDragItems="True"
+                            ContainerContentChanging="ItemsList_ContainerContentChanging"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"

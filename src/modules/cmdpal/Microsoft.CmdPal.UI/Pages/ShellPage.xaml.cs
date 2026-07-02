@@ -25,6 +25,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
@@ -890,8 +891,31 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else if (e.Key == VirtualKey.Enter)
         {
-            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-            e.Handled = true;
+            var activateHover = new TryActivateHoverActionMessage();
+            WeakReferenceMessenger.Default.Send(activateHover);
+            if (activateHover.Handled)
+            {
+                e.Handled = true;
+            }
+            else
+            {
+                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == VirtualKey.Tab && !mods.Ctrl && !mods.Alt && !mods.Win && sender is ShellPage shell)
+        {
+            if (shell.ShouldOfferHoverActionTabRouting())
+            {
+                var tabMessage = new NavigateHoverActionTabMessage(
+                    forward: !mods.Shift,
+                    searchBoxFocused: shell.IsSearchFilterFocused());
+                WeakReferenceMessenger.Default.Send(tabMessage);
+                if (tabMessage.Handled)
+                {
+                    e.Handled = true;
+                }
+            }
         }
         else if (mods.Ctrl && e.Key == VirtualKey.K)
         {
@@ -904,6 +928,49 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
             e.Handled = true;
         }
+    }
+
+    private bool IsSearchFilterFocused() => SearchBox.IsFilterBoxFocused();
+
+    private bool ShouldOfferHoverActionTabRouting()
+    {
+        if (ViewModel?.CurrentPage is not ListViewModel listViewModel || !listViewModel.EnableListHoverActions)
+        {
+            return false;
+        }
+
+        if (IsDetailsContentFocused())
+        {
+            return false;
+        }
+
+        return IsSearchFilterFocused();
+    }
+
+    private bool IsDetailsContentFocused()
+    {
+        if (FocusManager.GetFocusedElement(XamlRoot) is not DependencyObject focused)
+        {
+            return false;
+        }
+
+        return IsDescendantOf(focused, DetailsContent);
+    }
+
+    private static bool IsDescendantOf(DependencyObject element, DependencyObject ancestor)
+    {
+        var current = element;
+        while (current is not null)
+        {
+            if (ReferenceEquals(current, ancestor))
+            {
+                return true;
+            }
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return false;
     }
 
     private void ShellPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)

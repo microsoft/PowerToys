@@ -37,8 +37,12 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigatePageDownCommand>,
     IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSecondaryCommandMessage>,
+    IRecipient<TryActivateHoverActionMessage>,
+    IRecipient<NavigateHoverActionTabMessage>
 {
+    private readonly Dictionary<ListItemViewModel, Microsoft.UI.Dispatching.DispatcherQueueTimer> _hoverExitTimers = new();
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -58,6 +62,10 @@ public sealed partial class ListItemsView : UserControl,
     // force-first and is only cleared once selection stabilizes.
     private bool _forceFirstPending;
 
+    private bool _hoverActionClickInProgress;
+
+    private (string RowCommandId, int Index, string Title) _lastAnnouncedHoverActionKey = (string.Empty, -1, string.Empty);
+
     private bool _isLoaded;
     private bool _isMessengerRegistered;
 
@@ -73,12 +81,18 @@ public sealed partial class ListItemsView : UserControl,
 
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
+    private readonly TappedEventHandler _listItemRowTappedHandler;
+    private readonly ItemClickEventHandler _hoverActionsItemClickHandler;
+
     public ListItemsView()
     {
+        _listItemRowTappedHandler = ListItemRow_Tapped;
+        _hoverActionsItemClickHandler = HoverActionsList_ItemClick;
         this.InitializeComponent();
         this.ItemView.Loaded += Items_Loaded;
         this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
         this.ItemView.PointerPressed += Items_PointerPressed;
+        this.ItemView.PointerMoved += Items_PointerMoved;
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
@@ -95,6 +109,7 @@ public sealed partial class ListItemsView : UserControl,
         _isLoaded = false;
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
+        ClearHoverActionState(ViewModel?.FilteredItems);
     }
 
     private void RegisterMessenger()
@@ -113,6 +128,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Register<TryActivateHoverActionMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigateHoverActionTabMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -131,6 +148,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<TryActivateHoverActionMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigateHoverActionTabMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -176,10 +195,21 @@ public sealed partial class ListItemsView : UserControl,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_ItemClick(object sender, ItemClickEventArgs e)
     {
+        if (_hoverActionClickInProgress)
+        {
+            return;
+        }
+
         if (e.ClickedItem is ListItemViewModel item)
         {
             if (_lastInputSource == InputSource.Keyboard)
             {
+                if (item.TryGetSelectedHoverAction(out var hoverAction) && hoverAction is not null)
+                {
+                    InvokeHoverActionWithClickGuard(hoverAction, item);
+                    return;
+                }
+
                 ViewModel?.InvokeItemCommand.Execute(item);
                 return;
             }
@@ -220,6 +250,12 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        foreach (var removed in e.RemovedItems.OfType<ListItemViewModel>())
+        {
+            removed.SetListSelected(false);
+            removed.ClearHoverActionSelection();
+        }
+
         var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
 
@@ -230,7 +266,13 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        li.SetListSelected(true);
         _stickySelectedItem = li;
+        ResetHoverActionAnnouncement();
+        li.ClearHoverActionSelection();
+
+        // Hover actions for the selected row: SetSelectedItem slow-init + PropertyChanged
+        // (MoreCommands / IsSelectedInitialized) refresh on the UI thread only.
 
         // User explicitly changed selection — any pending force-first intent
         // is superseded by the user's navigation.
@@ -254,6 +296,353 @@ public sealed partial class ListItemsView : UserControl,
                 ItemsList,
                 li.Title,
                 "CommandPaletteSelectedItemChanged");
+        }
+    }
+
+    private void ItemsList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.InRecycleQueue)
+        {
+            if (args.ItemContainer is ListViewItem recycledContainer)
+            {
+                recycledContainer.PointerEntered -= ListItemContainer_PointerEntered;
+                recycledContainer.PointerExited -= ListItemContainer_PointerExited;
+
+                if (recycledContainer.Tag is ListItemViewModel recycledVm)
+                {
+                    CancelHoverExitTimer(recycledVm);
+                }
+
+                UnhookListItemRow(recycledContainer);
+                recycledContainer.Tag = null;
+            }
+
+            return;
+        }
+
+        if (args.Item is not ListItemViewModel vm || !vm.IsInteractive)
+        {
+            return;
+        }
+
+        if (args.Phase == 0)
+        {
+            args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
+            return;
+        }
+
+        if (args.ItemContainer is ListViewItem listItemContainer)
+        {
+            listItemContainer.Tag = vm;
+
+            if (ViewModel?.EnableListHoverActions != true)
+            {
+                return;
+            }
+
+            listItemContainer.PointerEntered -= ListItemContainer_PointerEntered;
+            listItemContainer.PointerExited -= ListItemContainer_PointerExited;
+            listItemContainer.PointerEntered += ListItemContainer_PointerEntered;
+            listItemContainer.PointerExited += ListItemContainer_PointerExited;
+            if (!TryHookListItemRow(listItemContainer, vm) && args.Phase < 3)
+            {
+                args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
+            }
+        }
+    }
+
+    private bool TryHookListItemRow(ListViewItem listItemContainer, ListItemViewModel vm)
+    {
+        var rowGrid = GetRowContentGrid(listItemContainer);
+        if (rowGrid is null)
+        {
+            return false;
+        }
+
+        UnhookListItemRow(listItemContainer);
+        rowGrid.Tag = vm;
+
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return true;
+        }
+
+        rowGrid.AddHandler(UIElement.TappedEvent, _listItemRowTappedHandler, handledEventsToo: true);
+
+        var hoverList = FindRowHoverActionsList(rowGrid);
+        if (hoverList is not null)
+        {
+            hoverList.Tag = vm;
+            hoverList.ItemClick -= _hoverActionsItemClickHandler;
+            hoverList.ItemClick += _hoverActionsItemClickHandler;
+        }
+
+        return true;
+    }
+
+    private void UnhookListItemRow(ListViewItem listItemContainer)
+    {
+        var rowGrid = GetRowContentGrid(listItemContainer);
+        if (rowGrid is null)
+        {
+            return;
+        }
+
+        rowGrid.RemoveHandler(UIElement.TappedEvent, _listItemRowTappedHandler);
+        rowGrid.Tag = null;
+
+        var hoverList = FindRowHoverActionsList(rowGrid);
+        if (hoverList is not null)
+        {
+            hoverList.ItemClick -= _hoverActionsItemClickHandler;
+            hoverList.Tag = null;
+        }
+    }
+
+    private static Grid? GetRowContentGrid(ListViewItem listItemContainer)
+    {
+        if (listItemContainer.ContentTemplateRoot is Grid templateRoot &&
+            FindRowHoverActionsList(templateRoot) is not null)
+        {
+            return templateRoot;
+        }
+
+        return FindRowContentGrid(listItemContainer);
+    }
+
+    private static Grid? FindRowContentGrid(DependencyObject? parent, int maxDepth = 8)
+    {
+        if (parent is null || maxDepth == 0)
+        {
+            return null;
+        }
+
+        if (parent is Grid grid && FindRowHoverActionsList(grid) is not null)
+        {
+            return grid;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var match = FindRowContentGrid(VisualTreeHelper.GetChild(parent, i), maxDepth - 1);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    private void ListItemRow_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (sender is not Grid { Tag: ListItemViewModel vm })
+        {
+            return;
+        }
+
+        var hoverList = FindRowHoverActionsList(sender as DependencyObject);
+        if (hoverList is null || hoverList.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        var point = e.GetPosition(hoverList);
+        if (!HoverActionClickHelper.IsPointInsideHoverList(point.X, point.Y, hoverList.ActualWidth, hoverList.ActualHeight))
+        {
+            return;
+        }
+
+        var action = ResolveHoverAction(vm, hoverList, point);
+        if (action is null)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        InvokeHoverActionWithClickGuard(action, vm);
+    }
+
+    private static CommandContextItemViewModel? ResolveHoverAction(
+        ListItemViewModel row,
+        ListView hoverList,
+        Point positionInHoverList)
+    {
+        foreach (var element in VisualTreeHelper.FindElementsInHostCoordinates(positionInHoverList, hoverList))
+        {
+            if (element is ListViewItem { DataContext: CommandContextItemViewModel actionFromItem })
+            {
+                return actionFromItem;
+            }
+        }
+
+        return HoverActionClickHelper.TryGetActionAtIndex(row.HoverActions, positionInHoverList.X);
+    }
+
+    private static ListView? FindRowHoverActionsList(DependencyObject? parent, int maxDepth = 8)
+    {
+        if (parent is null || maxDepth == 0)
+        {
+            return null;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ListView { Name: HoverActionsListName } listView)
+            {
+                return listView;
+            }
+
+            var match = FindRowHoverActionsList(child, maxDepth - 1);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    private const string HoverActionsListName = "HoverActionsList";
+
+    private void ClearHoverActionState(IEnumerable<ListItemViewModel>? itemsToReset = null)
+    {
+        _hoverActionClickInProgress = false;
+
+        foreach (var (vm, timer) in _hoverExitTimers.ToList())
+        {
+            timer.Stop();
+            vm.SetRowHovered(false);
+        }
+
+        _hoverExitTimers.Clear();
+
+        if (itemsToReset is null)
+        {
+            return;
+        }
+
+        foreach (var item in itemsToReset)
+        {
+            item.SetRowHovered(false);
+            item.SetListSelected(false);
+            item.ClearHoverActionSelection();
+        }
+    }
+
+    private void ListItemContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
+        if (sender is not ListViewItem { Tag: ListItemViewModel vm })
+        {
+            return;
+        }
+
+        CancelHoverExitTimer(vm);
+        vm.SetRowHovered(true);
+        ViewModel?.EnsureHoverActionsLoadedOnHover(vm);
+    }
+
+    private void ListItemContainer_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
+        if (sender is not ListViewItem { Tag: ListItemViewModel vm })
+        {
+            return;
+        }
+
+        CancelHoverExitTimer(vm);
+        ViewModel?.CancelHoverRowLoadFor(vm);
+
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = TimeSpan.FromMilliseconds(25);
+        timer.IsRepeating = false;
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            _hoverExitTimers.Remove(vm);
+            vm.SetRowHovered(false);
+        };
+
+        _hoverExitTimers[vm] = timer;
+        timer.Start();
+    }
+
+    private void CancelHoverExitTimer(ListItemViewModel vm)
+    {
+        if (_hoverExitTimers.Remove(vm, out var timer))
+        {
+            timer.Stop();
+        }
+    }
+
+    private void InvokeHoverAction(CommandContextItemViewModel action, ListItemViewModel? parentItem)
+    {
+        if (parentItem is not null)
+        {
+            CancelHoverExitTimer(parentItem);
+            parentItem.SetRowHovered(true);
+            ViewModel?.UpdateSelectedItemCommand.Execute(parentItem);
+        }
+
+        PerformCommandMessage message;
+
+        // Home top-level rows (TopLevelViewModel) need the row as IListItem context so
+        // GetHostForCommand resolves the extension host for IPage navigation (Settings,
+        // Create shortcut, etc.). Context-menu invokables (Run as admin, Copy path, …)
+        // must keep the ICommandContextItem context — passing AppListItem across the
+        // extension boundary crashes out-of-proc invokables.
+        if (parentItem?.Model.Unsafe is TopLevelViewModel)
+        {
+            message = new PerformCommandMessage(action.Command.Model, parentItem.Model);
+        }
+        else
+        {
+            message = new PerformCommandMessage(action.Command.Model, action.Model);
+        }
+
+        WeakReferenceMessenger.Default.Send(message);
+    }
+
+    private void HoverActionsList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (sender is not ListView { Tag: ListItemViewModel parent })
+        {
+            return;
+        }
+
+        if (e.ClickedItem is not CommandContextItemViewModel action)
+        {
+            return;
+        }
+
+        InvokeHoverActionWithClickGuard(action, parent);
+    }
+
+    private void InvokeHoverActionWithClickGuard(CommandContextItemViewModel action, ListItemViewModel parent)
+    {
+        _hoverActionClickInProgress = true;
+        try
+        {
+            InvokeHoverAction(action, parent);
+        }
+        finally
+        {
+            _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                _hoverActionClickInProgress = false;
+            });
         }
     }
 
@@ -335,7 +724,16 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     // Message-driven navigation should count as keyboard.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        SetSuppressNonSelectedRowHover(true);
+    }
+
+    private void SetSuppressNonSelectedRowHover(bool suppress)
+    {
+        ViewModel?.SetSuppressNonSelectedRowHover(suppress);
+    }
 
     private void PushSelectionToVm()
     {
@@ -443,6 +841,113 @@ public sealed partial class ListItemsView : UserControl,
         {
             ViewModel?.InvokeItemCommand.Execute(item);
         }
+    }
+
+    public void Receive(TryActivateHoverActionMessage message)
+    {
+        var item = ItemView.SelectedItem as ListItemViewModel ?? _stickySelectedItem;
+        if (item is not null &&
+            item.TryGetSelectedHoverAction(out var action) &&
+            action is not null)
+        {
+            InvokeHoverActionWithClickGuard(action, item);
+            message.Handled = true;
+        }
+    }
+
+    public void Receive(NavigateHoverActionTabMessage message)
+    {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
+        if (ItemView.SelectedItem is not ListItemViewModel item || !item.AreHoverActionsVisible)
+        {
+            return;
+        }
+
+        if (!message.SearchBoxFocused)
+        {
+            return;
+        }
+
+        if (!item.HasSelectedHoverAction)
+        {
+            return;
+        }
+
+        if (message.Forward)
+        {
+            message.Handled = item.SelectNextHoverAction();
+        }
+        else if (item.HoverActionSelectedIndex == ListItemViewModel.NoHoverActionSelectionIndex)
+        {
+            // Run parity: first Shift+Tab into a row with actions selects the last icon.
+            item.SelectLastHoverAction();
+            message.Handled = item.HasSelectedHoverAction;
+        }
+        else
+        {
+            message.Handled = item.SelectPrevHoverAction();
+        }
+
+        if (message.Handled)
+        {
+            if (item.HasSelectedHoverAction)
+            {
+                AnnounceSelectedHoverAction(item);
+            }
+            else
+            {
+                ResetHoverActionAnnouncement();
+            }
+        }
+    }
+
+    private void ResetHoverActionAnnouncement() =>
+        _lastAnnouncedHoverActionKey = (string.Empty, -1, string.Empty);
+
+    /// <summary>
+    /// Tab-driven hover icon selection is visual-only (focus stays in the search box),
+    /// so announce the highlighted action explicitly. The strip is hidden from UIA to
+    /// avoid competing with this single notification.
+    /// </summary>
+    private void AnnounceSelectedHoverAction(ListItemViewModel row)
+    {
+        if (!row.TryGetSelectedHoverAction(out var action) || action is null)
+        {
+            return;
+        }
+
+        if (FrameworkElementAutomationPeer.FromElement(ItemsList) is null)
+        {
+            return;
+        }
+
+        var rowId = row.Command.Id ?? string.Empty;
+        var index = row.HoverActionSelectedIndex;
+        var title = action.Title ?? string.Empty;
+        if (string.IsNullOrEmpty(title))
+        {
+            return;
+        }
+
+        var selectionKey = (rowId, index, title);
+        if (selectionKey == _lastAnnouncedHoverActionKey)
+        {
+            return;
+        }
+
+        _lastAnnouncedHoverActionKey = selectionKey;
+
+        var count = row.HoverActions.Count;
+        var announcement = count > 1 ? $"{title}, {index + 1} of {count}" : title;
+
+        UIHelper.AnnounceActionForAccessibility(
+            ItemsList,
+            announcement,
+            "CommandPaletteHoverActionSelectionChanged");
     }
 
     public void Receive(ActivateSecondaryCommandMessage message)
@@ -643,6 +1148,8 @@ public sealed partial class ListItemsView : UserControl,
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
+                @this._stickySelectedItem?.SetListSelected(false);
+                @this.ClearHoverActionState(old.FilteredItems);
             }
 
             // Reset latched state — selection sticky/last-pushed only make sense
@@ -1048,12 +1555,30 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
 
+    private void Items_PointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (ViewModel?.SuppressNonSelectedRowHover == true)
+        {
+            SetSuppressNonSelectedRowHover(false);
+        }
+    }
+
     private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         // Track keyboard as the last input source for activation logic.
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
             _lastInputSource = InputSource.Keyboard;
+
+            var selectedItem = ItemView.SelectedItem as ListItemViewModel ?? _stickySelectedItem;
+            if (selectedItem is not null &&
+                selectedItem.TryGetSelectedHoverAction(out var action) &&
+                action is not null)
+            {
+                InvokeHoverActionWithClickGuard(action, selectedItem);
+                e.Handled = true;
+            }
+
             return;
         }
 
@@ -1066,7 +1591,7 @@ public sealed partial class ListItemsView : UserControl,
                 case VirtualKey.Right:
                 case VirtualKey.Up:
                 case VirtualKey.Down:
-                    _lastInputSource = InputSource.Keyboard;
+                    MarkKeyboardNavigation();
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;
@@ -1076,7 +1601,7 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     /// <summary>
-    ///  Code stealed from <see cref="Controls.ContextMenu.NavigateUp"/>
+    ///  Code stolen from <see cref="Controls.ContextMenu.NavigateUp"/>
     /// </summary>
     private void NavigateUp()
     {
@@ -1184,7 +1709,7 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     /// <summary>
-    ///  Code stealed from <see cref="Controls.ContextMenu.NavigateDown"/>
+    ///  Code stolen from <see cref="Controls.ContextMenu.NavigateDown"/>
     /// </summary>
     private void NavigateDown()
     {

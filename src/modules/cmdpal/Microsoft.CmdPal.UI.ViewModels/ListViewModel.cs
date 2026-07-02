@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
@@ -43,6 +44,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private readonly ISettingsService? _settingsService;
 
     // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
     // CollectionChanged synchronously, and its layout pass can pump the message
@@ -128,12 +131,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, ISettingsService? settingsService = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
+        _settingsService = settingsService;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+        }
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -817,6 +826,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void SetSelectedItem(ListItemViewModel item)
     {
+        CancelHoverRowLoad();
         _lastSelectedItem = item;
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
 
@@ -868,8 +878,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 var suggestion = item.TextToSuggest;
                 DoOnUiThread(() =>
                 {
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     TextToSuggest = suggestion;
                     WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                    if (EnableListHoverActions)
+                    {
+                        item.RefreshHoverActions();
+                    }
                 });
             },
             ct);
@@ -906,12 +925,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.TextToSuggest):
                 TextToSuggest = item.TextToSuggest;
                 break;
+
+            // Raised when selection slow-init completes (possibly off the UI thread).
+            case "MoreCommands":
+            case "IsSelectedInitialized":
+                if (EnableListHoverActions)
+                {
+                    DoOnUiThread(() => item.RefreshHoverActions());
+                }
+
+                break;
         }
     }
 
     private void ClearSelectedItem()
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
@@ -1112,16 +1142,19 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void Dispose()
     {
+        DetachSettingsServiceHandler();
         GC.SuppressFinalize(this);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
     }
 
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
+        DetachSettingsServiceHandler();
 
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
@@ -1130,6 +1163,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
 
         lock (_listLock)
         {
@@ -1159,6 +1193,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
         if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
+        }
+    }
+
+    private void DetachSettingsServiceHandler()
+    {
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         }
     }
 
