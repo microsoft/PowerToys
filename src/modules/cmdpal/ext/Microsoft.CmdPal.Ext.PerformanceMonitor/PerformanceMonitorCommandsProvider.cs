@@ -29,6 +29,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private PerformanceWidgetsPage? _bandPage;
     private PerformanceWidgetsPage? _cpuBandPage;
     private PerformanceWidgetsPage? _memoryBandPage;
+    private PerformanceWidgetsPage? _diskBandPage;
     private PerformanceWidgetsPage? _networkBandPage;
     private PerformanceWidgetsPage? _gpuBandPage;
     private PerformanceWidgetsPage? _batteryBandPage;
@@ -138,6 +139,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu);
         _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory);
         _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network);
+        _diskBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Disk);
         _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
         _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
 
@@ -146,6 +148,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             new CommandItem(_cpuBandPage) { Title = Resources.GetResource("CPU_Usage_Title") },
             new CommandItem(_memoryBandPage) { Title = Resources.GetResource("Memory_Usage_Title") },
             new CommandItem(_networkBandPage) { Title = Resources.GetResource("Network_Usage_Title") },
+            new CommandItem(_diskBandPage) { Title = Resources.GetResource("Disk_Usage_Title") },
             new CommandItem(_gpuBandPage) { Title = Resources.GetResource("GPU_Usage_Title") }
         ];
         var batteryStats = new BatteryStats();
@@ -181,6 +184,9 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _memoryBandPage?.Dispose();
         _memoryBandPage = null;
+
+        _diskBandPage?.Dispose();
+        _diskBandPage = null;
 
         _networkBandPage?.Dispose();
         _networkBandPage = null;
