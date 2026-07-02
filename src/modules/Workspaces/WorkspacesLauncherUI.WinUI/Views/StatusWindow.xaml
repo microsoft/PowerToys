@@ -6,17 +6,11 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:WorkspacesLauncherUI.Models"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     Title="Workspaces"
     mc:Ignorable="d">
 
     <Grid Margin="4">
-        <Grid.Resources>
-            <tkconverters:BoolToVisibilityConverter x:Key="BoolToVis" />
-            <tkconverters:BoolToVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter"
-                TrueValue="Collapsed" FalseValue="Visible" />
-        </Grid.Resources>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -56,29 +50,33 @@
                                     AutomationProperties.AccessibilityView="Raw"
                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                     Text="{Binding Name, Mode=OneWay}" />
-                                <ProgressRing
+                                <tkcontrols:SwitchPresenter
                                     Grid.Column="2"
-                                    Width="20"
-                                    Height="20"
                                     Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    AutomationProperties.Name="Loading"
-                                    IsActive="True"
-                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
-                                <TextBlock
-                                    Grid.Column="2"
-                                    Width="20"
-                                    Height="20"
-                                    Margin="10"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    AutomationProperties.AccessibilityView="Raw"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                    FontSize="20"
-                                    Foreground="{Binding StateColor, Mode=OneWay}"
-                                    Text="{Binding StateGlyph, Mode=OneWay}"
-                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}" />
+                                    TargetType="x:Boolean"
+                                    Value="{Binding Loading, Mode=OneWay}">
+                                    <tkcontrols:Case Value="True">
+                                        <ProgressRing
+                                            Width="20"
+                                            Height="20"
+                                            AutomationProperties.Name="Loading"
+                                            IsActive="True" />
+                                    </tkcontrols:Case>
+                                    <tkcontrols:Case Value="False">
+                                        <TextBlock
+                                            Width="20"
+                                            Height="20"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            FontSize="20"
+                                            Foreground="{Binding StateColor, Mode=OneWay}"
+                                            Text="{Binding StateGlyph, Mode=OneWay}" />
+                                    </tkcontrols:Case>
+                                </tkcontrols:SwitchPresenter>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
