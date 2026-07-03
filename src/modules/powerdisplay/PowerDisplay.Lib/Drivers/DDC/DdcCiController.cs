@@ -14,6 +14,7 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -149,9 +150,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Discovers external DDC/CI-managed monitors. Each enumerated hMonitor runs its own
         /// async pipeline (filter → physical-handle retrieval → caps fetch + VCP init); all
         /// pipelines run concurrently via Task.WhenAll. Caller (MonitorManager) supplies the
-        /// pre-filtered external-target list from Phase 0.
+        /// displays it did not route to WMI — i.e. everything WmiMonitorBrightness did not expose.
         /// </summary>
-        /// <param name="targets">External-only display targets (pre-filtered by MonitorManager Phase 0).</param>
+        /// <param name="targets">Displays MonitorManager did not claim via WMI (not exposed by WmiMonitorBrightness).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>List of DDC/CI-managed external monitors.</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
@@ -171,19 +172,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return Enumerable.Empty<Monitor>();
             }
 
-            // Wrap the parallel discovery in a CrashDetectionScope. The scope writes
-            // discovery.lock on Begin and deletes it on Dispose. If the process is killed
-            // during capabilities I/O (BSOD, FailFast, TerminateProcess), Dispose never runs
-            // and the lock survives — next PowerDisplay.exe startup notices it via CrashRecovery.
-            //
-            // Scope scope note: the original three-phase design wrapped only Phase 2 (cap-string
-            // fetch). Main's per-handle pipeline interleaves Phase 1 (GDI/MultiMon enumeration)
-            // and Phase 3 (VCP init) with the fetch, so we wrap the whole Task.WhenAll. Phase 1
-            // GDI calls return null on failure (don't throw) and Phase 3 has its own catch-all
-            // in BuildMonitorFromPhysical, so false-positive quarantine from those paths is not
-            // observed in practice. Single Begin/Dispose per discovery is also required because
-            // CrashDetectionScope uses FileMode.CreateNew + FileShare.None and cannot be nested
-            // across the concurrent per-handle pipelines.
+            // Wrap the whole parallel discovery in a CrashDetectionScope: it writes discovery.lock
+            // on Begin and deletes it on Dispose, so if the process is killed during capabilities
+            // I/O (BSOD, FailFast, TerminateProcess) the surviving lock is picked up by
+            // CrashRecovery on the next startup. A single Begin/Dispose wraps the entire
+            // Task.WhenAll because CrashDetectionScope uses FileMode.CreateNew + FileShare.None
+            // and cannot be nested across the per-handle pipelines.
             IReadOnlyList<Monitor>[] results;
             CrashDetectionScope? scope;
             try
@@ -212,7 +206,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             var monitors = results.SelectMany(r => r).ToList();
-            var newHandleMap = new Dictionary<string, IntPtr>();
+            var newHandleMap = new Dictionary<string, IntPtr>(MonitorIdComparer.Instance);
             foreach (var m in monitors)
             {
                 newHandleMap[m.Id] = m.Handle;
@@ -669,8 +663,8 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 if (!targetsByGdi.TryGetValue(gdiName, out var matchingInfos))
                 {
-                    // GDI name not in the external targets list — either a Phase 0 internal
-                    // panel or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
+                    // GDI name not in the DDC target list — either a panel already claimed by
+                    // WMI or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
                     // expensive GetPhysicalMonitorsFromHMONITOR call.
                     Logger.LogDebug($"DDC skipping {gdiName}: not in external targets list");
                     return Array.Empty<Monitor>();

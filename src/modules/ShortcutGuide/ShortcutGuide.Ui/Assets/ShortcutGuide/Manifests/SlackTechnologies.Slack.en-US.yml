@@ -241,7 +241,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Browse DMs
         Shortcut:
         - Win: false
@@ -249,7 +249,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 2
+            - "<2>"
       - Name: Open the Activity view
         Shortcut:
         - Win: false
@@ -265,7 +265,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 0
+            - "<0>"
       - Name: Open the Threads view
         Shortcut:
         - Win: false
@@ -525,7 +525,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 9
+            - "<9>"
       - Name: Inline code selected text
         Shortcut:
         - Win: false
@@ -549,7 +549,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 8
+            - "<8>"
       - Name: Numbered list
         Shortcut:
         - Win: false
@@ -557,7 +557,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 7
+            - "<7>"
       - Name: Apply markdown formatting
         Shortcut:
         - Win: false
@@ -583,7 +583,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 0
+            - "<0>"
       - Name: Big heading
         Shortcut:
         - Win: false
@@ -591,7 +591,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 1
+            - "<1>"
       - Name: Medium heading
         Shortcut:
         - Win: false
@@ -599,7 +599,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Small heading
         Shortcut:
         - Win: false
@@ -607,7 +607,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: Checklist
         Shortcut:
         - Win: false
@@ -615,7 +615,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 0
+            - "<0>"
       - Name: Bulleted list
         Shortcut:
         - Win: false
@@ -623,7 +623,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 8
+            - "<8>"
       - Name: Numbered list
         Shortcut:
         - Win: false
@@ -631,7 +631,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 7
+            - "<7>"
       - Name: Toggle heading and list styles
         Shortcut:
         - Win: false

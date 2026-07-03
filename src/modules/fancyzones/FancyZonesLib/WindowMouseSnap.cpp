@@ -145,6 +145,14 @@ void WindowMouseSnap::MoveSizeEnd()
     SwitchSnappingMode(false);
 }
 
+void WindowMouseSnap::Abort()
+{
+    // End the drag WITHOUT snapping the window into a zone. Used when the dragged
+    // window is destroyed mid-drag: snapping a now-dead HWND would corrupt zone
+    // state, so we only tear down the overlays, highlights, and transparency.
+    SwitchSnappingMode(false);
+}
+
 void WindowMouseSnap::SwitchSnappingMode(bool isSnapping)
 {
     if (!m_snappingMode && isSnapping) // turn on
