@@ -30,6 +30,39 @@ public class PeekFilePreviewTests : UITestBase
     private const int MaxRetryAttempts = 3;
     private const int RetryDelayMs = 3000;
     private const int PinActionDelayMs = 500;
+    private const int WindowBehaviorUpdateTimeoutSeconds = 10;
+    private const string DefaultPeekSettingsContent = @"{
+        ""name"": ""Peek"",
+        ""version"": ""1.0"",
+        ""properties"": {
+            ""ActivationShortcut"": {
+                ""win"": false,
+                ""ctrl"": true,
+                ""alt"": false,
+                ""shift"": false,
+                ""code"": 32,
+                ""key"": ""Space""
+            },
+            ""AlwaysRunNotElevated"": {
+                ""value"": true
+            },
+            ""AlwaysOnTop"": {
+                ""value"": false
+            },
+            ""ShowTaskbarIcon"": {
+                ""value"": true
+            },
+            ""CloseAfterLosingFocus"": {
+                ""value"": false
+            },
+            ""ConfirmFileDelete"": {
+                ""value"": true
+            },
+            ""EnableSpaceToActivate"": {
+                ""value"": false
+            }
+        }
+    }";
 
     public PeekFilePreviewTests()
         : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical)
@@ -47,44 +80,10 @@ public class PeekFilePreviewTests : UITestBase
     {
         try
         {
-            // Default Peek settings
-            string peekSettingsContent = @"{
-                  ""name"": ""Peek"",
-                  ""version"": ""1.0"",
-                  ""properties"": {
-                    ""ActivationShortcut"": {
-                      ""win"": false,
-                      ""ctrl"": true,
-                      ""alt"": false,
-                      ""shift"": false,
-                      ""code"": 32,
-                      ""key"": ""Space""
-                    },
-                    ""AlwaysRunNotElevated"": {
-                      ""value"": true
-                    },
-                    ""AlwaysOnTop"": {
-                      ""value"": false
-                    },
-                    ""ShowTaskbarIcon"": {
-                      ""value"": true
-                    },
-                    ""CloseAfterLosingFocus"": {
-                      ""value"": false
-                    },
-                    ""ConfirmFileDelete"": {
-                      ""value"": true
-                    },
-                    ""EnableSpaceToActivate"": {
-                      ""value"": false
-                    }
-                  }
-                }";
-
             // Update Peek module settings
             SettingsConfigHelper.UpdateModuleSettings(
                 "Peek",
-                peekSettingsContent,
+                DefaultPeekSettingsContent,
                 (settings) =>
                 {
                     // Get or ensure properties section exists
@@ -159,6 +158,50 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsNotNull(peekWindow.Find<TextBlock>("File Type: File folder", 500), "Folder preview should be loaded successfully");
 
         ClosePeekAndExplorer();
+    }
+
+    /// <summary>
+    /// Verifies Peek reacts to live settings changes for window topmost and switcher visibility.
+    /// </summary>
+    [TestMethod("Peek.WindowBehavior.AppliesTopmostAndSwitcherVisibilitySettings")]
+    [TestCategory("Window Behavior")]
+    public void TestWindowBehaviorSettingsAreApplied()
+    {
+        string imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        Element? peekWindow = null;
+
+        try
+        {
+            peekWindow = OpenPeekWindow(imagePath);
+
+            AssertWindowBehavior(peekWindow, expectedAlwaysOnTop: false, expectedShownInSwitchers: true);
+
+            UpdatePeekWindowBehaviorSettings(alwaysOnTop: true, showTaskbarIcon: false);
+            WaitForWindowBehavior(peekWindow, expectedAlwaysOnTop: true, expectedShownInSwitchers: false);
+            AssertWindowBehavior(peekWindow, expectedAlwaysOnTop: true, expectedShownInSwitchers: false);
+
+            UpdatePeekWindowBehaviorSettings(alwaysOnTop: false, showTaskbarIcon: true);
+            WaitForWindowBehavior(peekWindow, expectedAlwaysOnTop: false, expectedShownInSwitchers: true);
+            AssertWindowBehavior(peekWindow, expectedAlwaysOnTop: false, expectedShownInSwitchers: true);
+        }
+        finally
+        {
+            try
+            {
+                UpdatePeekWindowBehaviorSettings(alwaysOnTop: false, showTaskbarIcon: true);
+
+                if (peekWindow != null)
+                {
+                    WaitForWindowBehavior(peekWindow, expectedAlwaysOnTop: false, expectedShownInSwitchers: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to restore Peek window behavior settings: {ex.Message}");
+            }
+
+            ClosePeekAndExplorer();
+        }
     }
 
     /// <summary>
@@ -966,4 +1009,85 @@ public class PeekFilePreviewTests : UITestBase
 
         return null;
     }
+
+    private static void UpdatePeekWindowBehaviorSettings(bool alwaysOnTop, bool showTaskbarIcon)
+    {
+        SettingsConfigHelper.UpdateModuleSettings(
+            "Peek",
+            DefaultPeekSettingsContent,
+            (settings) =>
+            {
+                if (!settings.TryGetValue("properties", out var propertiesObj) || propertiesObj is not Dictionary<string, object> properties)
+                {
+                    properties = new Dictionary<string, object>();
+                }
+
+                properties["AlwaysOnTop"] = new Dictionary<string, object>
+                {
+                    { "value", alwaysOnTop },
+                };
+
+                properties["ShowTaskbarIcon"] = new Dictionary<string, object>
+                {
+                    { "value", showTaskbarIcon },
+                };
+
+                settings["properties"] = properties;
+            });
+    }
+
+    private void WaitForWindowBehavior(Element window, bool expectedAlwaysOnTop, bool expectedShownInSwitchers)
+    {
+        WaitForCondition(
+            condition: () =>
+            {
+                try
+                {
+                    return HasExtendedWindowStyle(window, WindowExStyles.WS_EX_TOPMOST) == expectedAlwaysOnTop
+                        && HasExtendedWindowStyle(window, WindowExStyles.WS_EX_TOOLWINDOW) == !expectedShownInSwitchers;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"WaitForWindowBehavior exception: {ex.Message}");
+                    return false;
+                }
+            },
+            timeoutSeconds: WindowBehaviorUpdateTimeoutSeconds,
+            checkIntervalMs: 250,
+            timeoutMessage: $"Peek window behavior did not update to AlwaysOnTop={expectedAlwaysOnTop}, ShownInSwitchers={expectedShownInSwitchers}");
+    }
+
+    private static void AssertWindowBehavior(Element window, bool expectedAlwaysOnTop, bool expectedShownInSwitchers)
+    {
+        Assert.AreEqual(expectedAlwaysOnTop, HasExtendedWindowStyle(window, WindowExStyles.WS_EX_TOPMOST), "Peek topmost state should match the AlwaysOnTop setting.");
+        Assert.AreEqual(!expectedShownInSwitchers, HasExtendedWindowStyle(window, WindowExStyles.WS_EX_TOOLWINDOW), "Peek taskbar/switcher visibility should match the ShowTaskbarIcon setting.");
+    }
+
+    private static bool HasExtendedWindowStyle(Element window, nint style)
+    {
+        return (GetExtendedWindowStyles(window) & style) == style;
+    }
+
+    private static nint GetExtendedWindowStyles(Element window)
+    {
+        var nativeHandleText = window.GetAttribute("NativeWindowHandle");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(nativeHandleText), "Peek window should expose a native window handle.");
+
+        if (!long.TryParse(nativeHandleText, out long nativeHandleValue) || nativeHandleValue == 0)
+        {
+            Assert.Fail($"Failed to parse Peek NativeWindowHandle value: '{nativeHandleText}'.");
+        }
+
+        return GetWindowLongPtr(new IntPtr(nativeHandleValue), WindowExStyles.GWL_EXSTYLE);
+    }
+
+    private static class WindowExStyles
+    {
+        public const int GWL_EXSTYLE = -20;
+        public const nint WS_EX_TOPMOST = 0x00000008;
+        public const nint WS_EX_TOOLWINDOW = 0x00000080;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+    private static extern nint GetWindowLongPtr(IntPtr hWnd, int nIndex);
 }
