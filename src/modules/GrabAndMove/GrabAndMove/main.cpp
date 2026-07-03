@@ -135,6 +135,12 @@ static bool g_swallowNextRButtonUp = false;
 // real modifier key-up; this guard stops the key-down from being replayed a second time.
 static bool g_pendingModifierReplayed = false;
 
+// Set once a drag or resize has actually started during the current modifier hold.
+// While set, subsequent modifier+button presses skip the deferred/pending phase and
+// begin the drag/resize immediately - the user has already committed to Grab and Move.
+// Cleared when the modifier key is released.
+static bool g_activatedDuringHold = false;
+
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
 
@@ -244,6 +250,8 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
         g_winAbsorbed = false;
         g_altAbsorbed = false;
         g_dragConsumedAlt = false;
+        g_ignoreModifier = false;
+        g_activatedDuringHold = false;
         g_pendingDrag = false;
         g_pendingResize = false;
         g_pendingTarget = nullptr;
@@ -821,6 +829,7 @@ static void BeginDrag(HWND hwnd, POINT pt)
     g_dragging = true;
     g_dragFirstMove = true;
     g_dragConsumedAlt = true;
+    g_activatedDuringHold = true;
     g_dragTarget = hwnd;
     g_dragStart = pt;
     GetWindowRect(hwnd, &g_dragWndRect);
@@ -834,6 +843,7 @@ static void BeginResize(HWND hwnd, POINT pt)
     g_resizing = true;
     g_resizeFirstMove = true;
     g_dragConsumedAlt = true;
+    g_activatedDuringHold = true;
     g_resizeTarget = hwnd;
     g_resizeLast = pt;
     GetWindowRect(hwnd, &g_resizeWndRect);
@@ -1117,6 +1127,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             {
                 g_winPressed = false;
                 g_ignoreModifier = false;
+                g_activatedDuringHold = false;
                 // If a press was still pending (button held, no move), deliver it now.
                 FlushPendingClickOnModifierRelease();
                 bool wasDragging = g_dragging;
@@ -1188,6 +1199,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     g_altPressed = false;
                     g_ignoreModifier = false;
+                    g_activatedDuringHold = false;
                     // If a press was still pending (button held, no move), deliver it now.
                     FlushPendingClickOnModifierRelease();
                     bool wasDragging = g_dragging;
@@ -1377,6 +1389,13 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     goto forward;
                 }
 
+                // Already committed to Grab and Move this hold: start dragging immediately.
+                if (g_activatedDuringHold)
+                {
+                    BeginDrag(hwnd, pt);
+                    return 1; // swallow the press; the drag is now active
+                }
+
                 // Defer: absorb the button-down but do nothing until the cursor moves.
                 g_pendingDrag = true;
                 g_pendingResize = false;
@@ -1475,6 +1494,13 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 if (!(GetWindowLongW(hwnd, GWL_STYLE) & WS_THICKFRAME))
                 {
                     goto forward;
+                }
+
+                // Already committed to Grab and Move this hold: start resizing immediately.
+                if (g_activatedDuringHold)
+                {
+                    BeginResize(hwnd, pt);
+                    return 1; // swallow the press; the resize is now active
                 }
 
                 // Defer: absorb the button-down but do nothing until the cursor moves.
