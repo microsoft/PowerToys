@@ -6,6 +6,9 @@
 #include <windows.h>
 
 #include <algorithm>
+#include <string>
+#include <vector>
+#include <wchar.h>
 
 namespace AltWindowCycleLogic
 {
@@ -177,5 +180,77 @@ namespace AltWindowCycleLogic
         const int ch = (std::max)(1, static_cast<int>(aw / destA + 0.5));
         const int y = avail.top + (ah - ch) / 2;
         return { avail.left, y, avail.right, y + ch };
+    }
+
+    // =================== Same-process window selection ===================
+    //
+    // The live module queries Win32 for each window's state; these helpers own the
+    // pure decision + ordering logic so the Alt-Tab cycle set can be unit-tested
+    // without a live desktop.
+
+    struct WindowEligibility
+    {
+        bool isVisible = false;
+        bool isCloaked = false;
+        // True when the window is the representative window for its owner chain, i.e.
+        // the GetLastActivePopup walk from its root owner lands back on the window
+        // itself. Owned secondary windows (whose owner is visible) are not.
+        bool isAltTabRepresentative = false;
+        bool isToolWindow = false;
+    };
+
+    // Mirrors the classic "IsAltTabWindow" predicate: a window participates in the
+    // cycle only when it is visible, not cloaked, the representative window of its
+    // owner chain, and not a tool window.
+    constexpr bool IsAltTabEligible(const WindowEligibility& window)
+    {
+        return window.isVisible && !window.isCloaked && window.isAltTabRepresentative && !window.isToolWindow;
+    }
+
+    struct CandidateWindow
+    {
+        unsigned long long id = 0;
+        WindowEligibility eligibility;
+        // Resolved owning-process image path (UWP windows resolved to the real app,
+        // not ApplicationFrameHost). Empty when it could not be determined.
+        std::wstring processKey;
+    };
+
+    // Case-insensitive process-key match, mirroring the live _wcsicmp grouping. An
+    // empty candidate key never matches.
+    inline bool ProcessKeyEquals(const std::wstring& candidateKey, const std::wstring& foregroundKey)
+    {
+        return !candidateKey.empty() && _wcsicmp(candidateKey.c_str(), foregroundKey.c_str()) == 0;
+    }
+
+    // Given the foreground app's process key and the windows enumerated in Z-order
+    // (top-most first == MRU), return the ids that make up the Alt-Tab cycle set for
+    // that app, preserving enumeration order. Ineligible windows (invisible, cloaked,
+    // owned, or tool) and windows from other processes are dropped. Returns empty when
+    // the foreground key is unknown.
+    inline std::vector<unsigned long long> SelectCycleWindows(
+        const std::wstring& foregroundProcessKey,
+        const std::vector<CandidateWindow>& enumeratedInZOrder)
+    {
+        std::vector<unsigned long long> result;
+        if (foregroundProcessKey.empty())
+        {
+            return result;
+        }
+
+        for (const auto& candidate : enumeratedInZOrder)
+        {
+            if (!IsAltTabEligible(candidate.eligibility))
+            {
+                continue;
+            }
+
+            if (ProcessKeyEquals(candidate.processKey, foregroundProcessKey))
+            {
+                result.push_back(candidate.id);
+            }
+        }
+
+        return result;
     }
 }

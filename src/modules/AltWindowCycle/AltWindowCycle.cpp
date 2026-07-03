@@ -274,14 +274,21 @@ static std::wstring RealProcessImagePath(HWND hwnd)
     return path;
 }
 
-static bool IsAltTabWindow(HWND hwnd)
+// Queries the Win32 state that feeds the pure Alt-Tab eligibility predicate. Keeps
+// the original short-circuits so no extra system calls are made for windows that are
+// already disqualified (e.g. the DWM cloak query is skipped for invisible windows).
+static AltWindowCycleLogic::WindowEligibility QueryWindowEligibility(HWND hwnd)
 {
-    if (!IsWindowVisible(hwnd))
-        return false;
+    AltWindowCycleLogic::WindowEligibility eligibility;
+
+    eligibility.isVisible = IsWindowVisible(hwnd) != FALSE;
+    if (!eligibility.isVisible)
+        return eligibility;
 
     int cloaked = 0;
-    if (SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked)
-        return false;
+    eligibility.isCloaked = SUCCEEDED(DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloaked, sizeof(cloaked))) && cloaked;
+    if (eligibility.isCloaked)
+        return eligibility;
 
     HWND walk = GetAncestor(hwnd, GA_ROOTOWNER);
     HWND tryPopup = nullptr;
@@ -294,30 +301,34 @@ static bool IsAltTabWindow(HWND hwnd)
             break;
         walk = tryPopup;
     }
-    if (walk != hwnd)
-        return false;
+    eligibility.isAltTabRepresentative = (walk == hwnd);
+    if (!eligibility.isAltTabRepresentative)
+        return eligibility;
 
     LONG_PTR exStyle = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
-    if (exStyle & WS_EX_TOOLWINDOW)
-        return false;
-
-    return true;
+    eligibility.isToolWindow = (exStyle & WS_EX_TOOLWINDOW) != 0;
+    return eligibility;
 }
 
 struct EnumCtx
 {
-    std::wstring exe;
-    std::vector<HWND> windows;
+    std::vector<AltWindowCycleLogic::CandidateWindow> candidates;
 };
 
 static BOOL CALLBACK EnumProc(HWND hwnd, LPARAM lp)
 {
     EnumCtx* ctx = reinterpret_cast<EnumCtx*>(lp);
-    if (!IsAltTabWindow(hwnd))
-        return TRUE;
-    std::wstring exe = RealProcessImagePath(hwnd);
-    if (!exe.empty() && _wcsicmp(exe.c_str(), ctx->exe.c_str()) == 0)
-        ctx->windows.push_back(hwnd);
+
+    AltWindowCycleLogic::CandidateWindow candidate;
+    candidate.id = reinterpret_cast<uintptr_t>(hwnd);
+    candidate.eligibility = QueryWindowEligibility(hwnd);
+
+    // Resolve the owning process only for eligible windows, matching the original
+    // short-circuit (avoids an OpenProcess for windows that are dropped anyway).
+    if (AltWindowCycleLogic::IsAltTabEligible(candidate.eligibility))
+        candidate.processKey = RealProcessImagePath(hwnd);
+
+    ctx->candidates.push_back(std::move(candidate));
     return TRUE;
 }
 
@@ -329,13 +340,20 @@ static bool GetAppWindows(HWND& foreground, std::vector<HWND>& windows)
     if (!foreground)
         return false;
 
-    EnumCtx ctx;
-    ctx.exe = RealProcessImagePath(foreground);
-    if (ctx.exe.empty())
+    const std::wstring foregroundKey = RealProcessImagePath(foreground);
+    if (foregroundKey.empty())
         return false;
 
+    EnumCtx ctx;
     EnumWindows(EnumProc, reinterpret_cast<LPARAM>(&ctx));
-    windows = std::move(ctx.windows);
+
+    const std::vector<unsigned long long> selected =
+        AltWindowCycleLogic::SelectCycleWindows(foregroundKey, ctx.candidates);
+
+    windows.reserve(selected.size());
+    for (const unsigned long long id : selected)
+        windows.push_back(reinterpret_cast<HWND>(static_cast<uintptr_t>(id)));
+
     return !windows.empty();
 }
 
