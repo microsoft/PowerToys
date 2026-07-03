@@ -86,6 +86,38 @@ namespace PowerDisplay.Common.Drivers.WMI
 
         public string Name => "WMI Monitor Controller";
 
+        public event Action<string, int>? BrightnessChanged;
+
+        private WmiConnection? _eventConnection;
+        private IDisposable? _brightnessEventSubscription;
+
+        public WmiController()
+        {
+            try
+            {
+                _eventConnection = new WmiConnection(WmiNamespace);
+                _brightnessEventSubscription = _eventConnection.CreateEventSubscription(
+                    "SELECT * FROM WmiMonitorBrightnessEvent",
+                    eventObj =>
+                    {
+                        try
+                        {
+                            var instanceName = eventObj.GetPropertyValue<string>("InstanceName");
+                            var brightness = eventObj.GetPropertyValue<byte>("Brightness");
+                            BrightnessChanged?.Invoke(instanceName, brightness);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogWarning($"Error handling WMI brightness event: {ex.Message}");
+                        }
+                    });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInfo($"WMI brightness event subscription unavailable: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Get monitor brightness
         /// </summary>
@@ -306,8 +338,8 @@ namespace PowerDisplay.Common.Drivers.WMI
 
         public void Dispose()
         {
-            // WmiLight objects are created per-operation and disposed immediately via using statements.
-            // No instance-level resources require cleanup.
+            _brightnessEventSubscription?.Dispose();
+            _eventConnection?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

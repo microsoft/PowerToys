@@ -343,6 +343,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SyncBrightnessWithInternalDisplay
+        {
+            get => _settings.Properties.SyncBrightnessWithInternalDisplay;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.SyncBrightnessWithInternalDisplay, value, v => _settings.Properties.SyncBrightnessWithInternalDisplay = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"SyncBrightnessWithInternalDisplay changed to {value}");
+                }
+            }
+        }
+
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;

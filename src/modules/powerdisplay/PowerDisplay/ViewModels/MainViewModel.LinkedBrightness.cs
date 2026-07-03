@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
@@ -277,6 +278,52 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             Logger.LogError($"[LinkedBrightness] Broadcast failed: {ex.Message}");
+        }
+    }
+
+    private void MonitorManager_WmiBrightnessChanged(object? sender, WmiBrightnessChangedEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            HandleWmiBrightnessChanged(e.InstanceName, e.Brightness);
+        });
+    }
+
+    private void HandleWmiBrightnessChanged(string instanceName, int brightness)
+    {
+        if (!LinkedLevelsActive || !SyncBrightnessWithInternalDisplay)
+        {
+            return;
+        }
+
+        var lookupId = MonitorIdentity.FromInstanceName(instanceName);
+        if (string.IsNullOrEmpty(lookupId))
+        {
+            return;
+        }
+
+        var matchingMonitor = Monitors.FirstOrDefault(m => MonitorIdComparer.Instance.Equals(m.Id, lookupId));
+        if (matchingMonitor == null)
+        {
+            matchingMonitor = Monitors.FirstOrDefault(m => string.Equals(m.InstanceName, instanceName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (matchingMonitor != null && IsLinkedTarget(matchingMonitor))
+        {
+            if (matchingMonitor.Brightness != brightness)
+            {
+                Logger.LogInfo($"[WmiBrightness] Internal monitor brightness changed to {brightness}%. Syncing linked displays.");
+                matchingMonitor.UpdateBrightnessDisplay(brightness);
+                SetLinkedBrightnessSilently(brightness);
+
+                foreach (var vm in Monitors)
+                {
+                    if (vm != matchingMonitor && IsLinkedTarget(vm))
+                    {
+                        vm.Brightness = brightness;
+                    }
+                }
+            }
         }
     }
 }

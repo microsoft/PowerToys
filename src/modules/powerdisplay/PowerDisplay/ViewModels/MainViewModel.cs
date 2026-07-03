@@ -101,6 +101,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
+        _monitorManager.WmiBrightnessChanged += MonitorManager_WmiBrightnessChanged;
 
         // Load profiles for quick apply feature
         LoadProfiles();
@@ -148,6 +149,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(ShowLinkLevelsToggle))]
     [NotifyPropertyChangedFor(nameof(ShowLinkLevelsInactiveIcon))]
     public partial bool LinkedLevelsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to synchronize brightness with the internal display.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SyncBrightnessWithInternalDisplay { get; set; }
 
     /// <summary>
     /// Gets or sets the brightness value driving the linked "All Displays" slider. Setter is
@@ -421,7 +428,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            _monitorManager?.Dispose();
+            if (_monitorManager != null)
+            {
+                _monitorManager.WmiBrightnessChanged -= MonitorManager_WmiBrightnessChanged;
+                _monitorManager.Dispose();
+            }
         }
         catch
         {
@@ -488,6 +499,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
             MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
+            SyncBrightnessWithInternalDisplay = settings.Properties.SyncBrightnessWithInternalDisplay;
 
             // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
             // method runs after monitors are already discovered, the toggle hook can seed the master

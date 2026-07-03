@@ -26,6 +26,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowIdentifyMonitorsButton = true;
             MaxCompatibilityMode = false;
             LinkedLevelsActive = false;
+            SyncBrightnessWithInternalDisplay = false;
             ExcludedFromSyncMonitorIds = new List<string>();
             CustomVcpMappings = new List<CustomVcpValueMapping>();
 
@@ -108,6 +109,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("excluded_from_sync_monitor_ids")]
         public List<string> ExcludedFromSyncMonitorIds { get; set; }
+
+        [JsonPropertyName("sync_brightness_with_internal_display")]
+        public bool SyncBrightnessWithInternalDisplay { get; set; }
 
         /// <summary>
         /// Gets or sets custom VCP value name mappings shared across all monitors.

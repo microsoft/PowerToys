@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -5551,6 +5551,9 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
     <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplay_SyncBrightnessWithInternalDisplay.Content" xml:space="preserve">
+    <value>Sync external monitor brightness when laptop screen brightness changes</value>
   </data>
   <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>

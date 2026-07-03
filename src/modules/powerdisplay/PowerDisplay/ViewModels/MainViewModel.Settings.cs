@@ -53,6 +53,37 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Partial change hook fired by the source-generator for <see cref="SyncBrightnessWithInternalDisplay"/>.
+    /// Persists the new value to settings.json.
+    /// </summary>
+    partial void OnSyncBrightnessWithInternalDisplayChanged(bool value)
+    {
+        SaveSyncBrightnessWithInternalDisplay(value);
+    }
+
+    private void SaveSyncBrightnessWithInternalDisplay(bool value)
+    {
+        try
+        {
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            if (settings.Properties.SyncBrightnessWithInternalDisplay == value)
+            {
+                return;
+            }
+
+            settings.Properties.SyncBrightnessWithInternalDisplay = value;
+
+            _settingsUtils.SaveSettings(
+                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                PowerDisplaySettings.ModuleName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to save SyncBrightnessWithInternalDisplay: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Persist the linked-brightness exclusion set to settings.json. Called from
     /// <c>SetMonitorExcludedFromSync</c> in <c>MainViewModel.LinkedBrightness.cs</c> after the
     /// runtime <c>_excludedMonitorIds</c> set has been mutated.

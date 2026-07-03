@@ -253,6 +253,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public string Id => _monitor.Id;
 
+    public string InstanceName => _monitor.InstanceName;
+
     public string Name => IsInternal
         ? ResourceLoaderInstance.ResourceLoader.GetString("BuiltInDisplayName")
         : _monitor.Name;

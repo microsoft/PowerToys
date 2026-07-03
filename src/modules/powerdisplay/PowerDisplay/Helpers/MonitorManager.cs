@@ -41,6 +41,8 @@ namespace PowerDisplay.Helpers
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
 
+        public event EventHandler<WmiBrightnessChangedEventArgs>? WmiBrightnessChanged;
+
         public MonitorManager()
         {
             // Initialize controllers
@@ -67,6 +69,7 @@ namespace PowerDisplay.Helpers
                 // WMI controller (internal monitors)
                 // Always create - DiscoverMonitorsAsync returns empty list if WMI is unavailable
                 _wmiController = new WmiController();
+                _wmiController.BrightnessChanged += WmiController_BrightnessChanged;
             }
             catch (Exception ex)
             {
@@ -449,12 +452,21 @@ namespace PowerDisplay.Helpers
 
                 // Release controllers
                 _ddcController?.Dispose();
-                _wmiController?.Dispose();
+                if (_wmiController != null)
+                {
+                    _wmiController.BrightnessChanged -= WmiController_BrightnessChanged;
+                    _wmiController.Dispose();
+                }
 
                 _monitors.Clear();
                 _monitorLookup.Clear();
                 _disposed = true;
             }
+        }
+
+        private void WmiController_BrightnessChanged(string instanceName, int brightness)
+        {
+            WmiBrightnessChanged?.Invoke(this, new WmiBrightnessChangedEventArgs(instanceName, brightness));
         }
     }
 }
