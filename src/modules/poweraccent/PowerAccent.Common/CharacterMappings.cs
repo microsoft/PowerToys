@@ -100,7 +100,7 @@ public static class CharacterMappings
             [LetterKey.VK_E] = ["ё"],
             [LetterKey.VK_G] = ["ґ"],
             [LetterKey.VK_I] = ["і"],
-            [LetterKey.VK_L] = ["ў"],
+            [LetterKey.VK_U] = ["ў"],
             [LetterKey.VK_COMMA] = ["’", "„", "“", "«", "»"],
         }),
 
