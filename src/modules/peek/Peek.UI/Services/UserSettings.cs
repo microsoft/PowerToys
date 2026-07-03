@@ -41,8 +41,8 @@ namespace Peek.UI
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
                     ShowFilePreviewTooltip = _settings.Properties.ShowFilePreviewTooltip.Value;
-
                 }
+
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
