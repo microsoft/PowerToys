@@ -288,23 +288,11 @@ public:
     {
         if (m_enabled)
         {
-            const auto hotkeyTime = std::chrono::steady_clock::now();
             Logger::trace(L"MouseJump hotkey pressed");
             Trace::InvokeJumpTool();
             if (!is_process_running())
             {
                 launch_process();
-            }
-
-            const auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                std::chrono::steady_clock::now() - hotkeyTime).count();
-            if (elapsedMs > 200)
-            {
-                Logger::warn(L"launch_process took {}ms - AllowSetForegroundWindow may fail (foreground lock timeout is ~200ms)", elapsedMs);
-            }
-            else
-            {
-                Logger::trace(L"launch_process took {}ms", elapsedMs);
             }
 
             // find the winui3 window by pid. if we don't find one (e.g. the
