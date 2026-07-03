@@ -24,6 +24,7 @@ public partial class PowerAccent : IDisposable
     private const double ScreenMinPadding = 150;
 
     private bool _visible;
+    private int _showGeneration;
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
@@ -101,6 +102,10 @@ public partial class PowerAccent : IDisposable
 
         bool isPressAndHold = _settingService.ActivationKey == PowerAccentActivationKey.PressAndHold;
 
+        // Each summon gets a generation id so a delayed render queued by an earlier
+        // press can't fire for a newer one (or after the toolbar was hidden).
+        int generation = ++_showGeneration;
+
         // Trigger modes navigate the instant the toolbar is summoned, so the character data must
         // be ready synchronously. Press-and-hold can't navigate until the popup is actually shown,
         // so defer the (relatively expensive) character/description build to the delayed render and
@@ -115,7 +120,7 @@ public partial class PowerAccent : IDisposable
         Task.Delay(displayDelay).ContinueWith(
         t =>
         {
-            if (_visible)
+            if (_visible && generation == _showGeneration)
             {
                 if (isPressAndHold)
                 {
@@ -260,6 +265,7 @@ public partial class PowerAccent : IDisposable
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;
+        _showGeneration++;
     }
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)

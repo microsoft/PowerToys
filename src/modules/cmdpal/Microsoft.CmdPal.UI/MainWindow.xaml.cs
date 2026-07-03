@@ -192,7 +192,7 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
-        RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
+        RootElement.ActualThemeChanged += RootElement_ActualThemeChanged;
 
         // Hardcoding event name to avoid bringing in the PowerToys.interop dependency. Event name must match CMDPAL_SHOW_EVENT from shared_constants.h
         NativeEventWaiter.WaitForEventLoop("Local\\PowerToysCmdPal-ShowEvent-62336fcd-8611-4023-9b30-091a6af4cc5a", () =>
@@ -220,6 +220,11 @@ public sealed partial class MainWindow : WindowEx,
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
         UpdateBackdrop();
+    }
+
+    private void RootElement_ActualThemeChanged(FrameworkElement sender, object args)
+    {
+        DispatcherQueue.TryEnqueue(UpdateBackdrop);
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -1683,6 +1688,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
+        _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
+        App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
+
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
