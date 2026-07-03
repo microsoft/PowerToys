@@ -170,6 +170,13 @@ namespace AdvancedPaste.Settings
                                 pythonScripts.MigrateLegacyIfNeeded();
 
                                 var mode = pythonScripts.Mode ?? "disabled";
+
+                                // Enforce GPO: if Python scripts are disallowed by policy, force disabled.
+                                if (PowerToys.GPOWrapper.GPOWrapper.GetAllowedAdvancedPastePythonScriptsValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+                                {
+                                    mode = "disabled";
+                                }
+
                                 IsPythonScriptsEnabled = !string.Equals(mode, "disabled", StringComparison.OrdinalIgnoreCase);
                                 PythonUseWsl = string.Equals(mode, "wsl", StringComparison.OrdinalIgnoreCase);
 

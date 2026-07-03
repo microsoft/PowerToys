@@ -392,11 +392,25 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_PythonScripts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <InfoBar
+                            x:Name="PythonScriptsGpoInfoBar"
+                            x:Uid="GPO_SettingIsManaged"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.ShowPythonScriptsGpoConfiguredInfoBar, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.ShowPythonScriptsGpoConfiguredInfoBar, Mode=OneWay}"
+                            Severity="Informational">
+                            <InfoBar.IconSource>
+                                <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                            </InfoBar.IconSource>
+                        </InfoBar>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonScripts_RuntimeCard">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
-                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
+                            <ComboBox
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                IsEnabled="{x:Bind ViewModel.IsPythonScriptsDisallowedByGPO, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeOff" />
                                 <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeWindows" />
                                 <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_ModeWsl" />

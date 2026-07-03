@@ -718,6 +718,16 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
+    <policy name="AllowAdvancedPastePythonScripts" class="Both" displayName="$(string.AllowAdvancedPastePythonScripts)" explainText="$(string.AllowAdvancedPastePythonScriptsDescription)" key="Software\Policies\PowerToys" valueName="AllowAdvancedPastePythonScripts">
+      <parentCategory ref="AdvancedPaste" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_99_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
     <policy name="MwbClipboardSharingEnabled" class="Both" displayName="$(string.MwbClipboardSharingEnabled)" explainText="$(string.MwbClipboardSharingEnabledDescription)" key="Software\Policies\PowerToys" valueName="MwbClipboardSharingEnabled">
       <parentCategory ref="MouseWithoutBorders" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_83_0" />
