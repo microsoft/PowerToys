@@ -543,9 +543,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             ViewModel.GoHome(withAnimation, focusSearch);
         }
 
-        if (focusSearch)
+        // Only move focus when the palette is actually on screen. FocusInput uses keyboard
+        // focus so the screen reader announces the box; doing that while the window is hidden
+        // would announce it prematurely.
+        if (focusSearch && HostWindow?.IsVisibleToUser == true)
         {
-            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            SearchBox.FocusInput();
             SearchBox.SelectSearch();
         }
     }
@@ -560,10 +563,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             GoBack(withAnimation, focusSearch: false);
         }
 
-        // focus search box, even if we were already home
-        if (focusSearch)
+        // focus search box, even if we were already home (but only when the palette is on
+        // screen - see GoBack; keyboard focus while hidden announces prematurely).
+        if (focusSearch && HostWindow?.IsVisibleToUser == true)
         {
-            SearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            SearchBox.FocusInput();
             SearchBox.SelectSearch();
         }
     }
@@ -733,7 +737,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 return;
             }
 
-            SearchBox.Focus(FocusState.Programmatic);
+            SearchBox.FocusInput();
             SearchBox.SelectSearch();
         }
         else
