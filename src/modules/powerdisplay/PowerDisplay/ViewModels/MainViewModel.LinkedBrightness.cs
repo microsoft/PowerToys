@@ -291,7 +291,7 @@ public partial class MainViewModel
 
     private void HandleWmiBrightnessChanged(string instanceName, int brightness)
     {
-        if (!LinkedLevelsActive || !SyncBrightnessWithInternalDisplay)
+        if (!SyncBrightnessWithInternalDisplay)
         {
             return;
         }
@@ -308,17 +308,21 @@ public partial class MainViewModel
             matchingMonitor = Monitors.FirstOrDefault(m => string.Equals(m.InstanceName, instanceName, StringComparison.OrdinalIgnoreCase));
         }
 
-        if (matchingMonitor != null && IsLinkedTarget(matchingMonitor))
+        if (matchingMonitor != null)
         {
             if (matchingMonitor.Brightness != brightness)
             {
-                Logger.LogInfo($"[WmiBrightness] Internal monitor brightness changed to {brightness}%. Syncing linked displays.");
+                Logger.LogInfo($"[WmiBrightness] Internal monitor brightness changed to {brightness}%. Syncing displays.");
                 matchingMonitor.UpdateBrightnessDisplay(brightness);
-                SetLinkedBrightnessSilently(brightness);
+
+                if (LinkedLevelsActive)
+                {
+                    SetLinkedBrightnessSilently(brightness);
+                }
 
                 foreach (var vm in Monitors)
                 {
-                    if (vm != matchingMonitor && IsLinkedTarget(vm))
+                    if (vm != matchingMonitor && vm.SupportsBrightness && !_excludedMonitorIds.Contains(vm.Id))
                     {
                         vm.Brightness = brightness;
                     }
