@@ -38,6 +38,7 @@ static GrabAndMoveModifier g_modifierKey = GrabAndMoveModifier::Alt;
 
 static bool g_altPressed = false;
 static bool g_winPressed = false;  // true while LWIN or RWIN is held (Win modifier mode)
+static bool g_ignoreModifier = false; // true if the user pressed the modifier then clicked the mouse without dragging
 static bool g_winAbsorbed = false; // true if we absorbed a Win keydown
 static bool g_dragging = false;
 static bool g_dragFirstMove = false; // true until first WM_MOUSEMOVE of a drag
@@ -115,6 +116,24 @@ static HWND g_resizeTarget = nullptr;
 static POINT g_resizeLast = {};   // cursor pos from previous frame
 static RECT g_resizeWndRect = {}; // current window rect (updated each frame)
 static ResizeHandle g_currentHandle = RESIZE_NONE;
+
+// Deferred activation state: a modifier+button press is held "pending" until the
+// cursor moves past the drag threshold (promoting it to a real drag/resize) or the
+// button is released first (replaying a normal modifier+click to the target).
+static bool g_pendingDrag = false;
+static bool g_pendingResize = false;
+static HWND g_pendingTarget = nullptr;
+static POINT g_pendingDownPt = {};
+
+// Set when a pending press was replayed to the target on modifier release while the
+// physical button was still down; the matching physical button-up is then swallowed.
+static bool g_swallowNextLButtonUp = false;
+static bool g_swallowNextRButtonUp = false;
+
+// Set once ReplayPendingClick has replayed the absorbed modifier key-down for a pending
+// click. The absorbed-modifier flags stay set so the keyboard hook still forwards the
+// real modifier key-up; this guard stops the key-down from being replayed a second time.
+static bool g_pendingModifierReplayed = false;
 
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
@@ -225,6 +244,12 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
         g_winAbsorbed = false;
         g_altAbsorbed = false;
         g_dragConsumedAlt = false;
+        g_pendingDrag = false;
+        g_pendingResize = false;
+        g_pendingTarget = nullptr;
+        g_swallowNextLButtonUp = false;
+        g_swallowNextRButtonUp = false;
+        g_pendingModifierReplayed = false;
         EndInteraction(true, true);
     }
 }
@@ -242,6 +267,10 @@ static bool IsSuppressedByGameMode()
 
 static bool IsActivationModifierPressed()
 {
+    if (g_ignoreModifier)
+    {
+        return false;
+    }
     if (g_modifierKey == GrabAndMoveModifier::Win)
         return g_winPressed;
     return g_altPressed;
@@ -781,6 +810,83 @@ static void ReplayAbsorbedModifier(bool alsoKeyUp)
 }
 
 // ---------------------------------------------------------------------------
+// Deferred activation helpers.
+// A modifier+button press does not start an interaction immediately; it is held
+// "pending" until the cursor moves past the drag threshold (then it becomes a
+// real drag/resize) or the button is released first (then the absorbed input is
+// replayed so the target application receives a normal modifier+click).
+// ---------------------------------------------------------------------------
+static void BeginDrag(HWND hwnd, POINT pt)
+{
+    g_dragging = true;
+    g_dragFirstMove = true;
+    g_dragConsumedAlt = true;
+    g_dragTarget = hwnd;
+    g_dragStart = pt;
+    GetWindowRect(hwnd, &g_dragWndRect);
+    PrepareOverlayMetrics(hwnd);
+    ShowOverlay(g_dragWndRect, g_curSizeAll);
+    TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
+}
+
+static void BeginResize(HWND hwnd, POINT pt)
+{
+    g_resizing = true;
+    g_resizeFirstMove = true;
+    g_dragConsumedAlt = true;
+    g_resizeTarget = hwnd;
+    g_resizeLast = pt;
+    GetWindowRect(hwnd, &g_resizeWndRect);
+    PrepareOverlayMetrics(hwnd);
+    g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
+    ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
+    TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
+}
+
+// Replays a modifier+click to the target: first the absorbed modifier key-down
+// (if it was swallowed), then the button click. The modifier key-up is not
+// synthesized here - the real key-up still reaches the target when the user
+// releases the modifier. The absorbed-modifier flags are intentionally left set so
+// the keyboard hook forwards that real key-up; g_pendingModifierReplayed guards
+// against replaying the key-down more than once (e.g. across repeated clicks).
+static void ReplayPendingClick(bool isRight)
+{
+    if ((g_altAbsorbed || g_winAbsorbed) && !g_pendingModifierReplayed)
+    {
+        g_pendingModifierReplayed = true;
+        ReplayAbsorbedModifier(false); // modifier down only
+    }
+
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_MOUSE;
+    inputs[0].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
+    inputs[1].type = INPUT_MOUSE;
+    inputs[1].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
+// Called when the modifier is released while a press is still pending (button
+// held, no move yet). Delivers the click to the target now and swallows the
+// matching physical button-up that will arrive later.
+static void FlushPendingClickOnModifierRelease()
+{
+    if (g_pendingDrag)
+    {
+        g_pendingDrag = false;
+        g_pendingTarget = nullptr;
+        ReplayPendingClick(false);
+        g_swallowNextLButtonUp = true;
+    }
+    else if (g_pendingResize)
+    {
+        g_pendingResize = false;
+        g_pendingTarget = nullptr;
+        ReplayPendingClick(true);
+        g_swallowNextRButtonUp = true;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // System tray helpers
 // ---------------------------------------------------------------------------
 static NOTIFYICONDATAW g_nid = {};
@@ -1000,6 +1106,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     g_winAbsorbed = true;
                     g_dragConsumedAlt = false;
+                    g_pendingModifierReplayed = false;
                     g_absorbedVk = kb->vkCode;
                     g_absorbedScanCode = kb->scanCode;
                     g_absorbedFlags = kb->flags;
@@ -1009,6 +1116,9 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
                 g_winPressed = false;
+                g_ignoreModifier = false;
+                // If a press was still pending (button held, no move), deliver it now.
+                FlushPendingClickOnModifierRelease();
                 bool wasDragging = g_dragging;
                 bool wasResizing = g_resizing;
                 EndInteraction(true, true);
@@ -1021,9 +1131,18 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         g_dragConsumedAlt = false;
                         return 1;
                     }
-                    // No drag happened; replay the keydown, THEN the keyup
-                    ReplayAbsorbedModifier(true);
-                    return 1; // swallow this keyup since the replay already sent one
+                    if (g_pendingModifierReplayed)
+                    {
+                        // The key-down was already replayed for a pending click; let the
+                        // real key-up reach the target (falls through to goto forward).
+                        g_pendingModifierReplayed = false;
+                    }
+                    else
+                    {
+                        // No drag happened; replay the keydown, THEN the keyup
+                        ReplayAbsorbedModifier(true);
+                        return 1; // swallow this keyup since the replay already sent one
+                    }
                 }
             }
             goto forward; // let Win keyup pass through
@@ -1057,6 +1176,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         {
                             g_altAbsorbed = true;
                             g_dragConsumedAlt = false;
+                            g_pendingModifierReplayed = false;
                             g_absorbedVk = kb->vkCode;
                             g_absorbedScanCode = kb->scanCode;
                             g_absorbedFlags = kb->flags;
@@ -1067,6 +1187,9 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
                 {
                     g_altPressed = false;
+                    g_ignoreModifier = false;
+                    // If a press was still pending (button held, no move), deliver it now.
+                    FlushPendingClickOnModifierRelease();
                     bool wasDragging = g_dragging;
                     bool wasResizing = g_resizing;
                     EndInteraction(true, true);
@@ -1079,15 +1202,24 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                             g_dragConsumedAlt = false;
                             return 1;
                         }
-                        // No drag happened; replay the keydown, then let keyup through
-                        ReplayAbsorbedModifier(false);
+                        if (g_pendingModifierReplayed)
+                        {
+                            // The key-down was already replayed for a pending click; let
+                            // the real key-up reach the target.
+                            g_pendingModifierReplayed = false;
+                        }
+                        else
+                        {
+                            // No drag happened; replay the keydown, then let keyup through
+                            ReplayAbsorbedModifier(false);
+                        }
                     }
                 }
             }
             else
             {
                 // Non-Alt key while Alt was absorbed without a drag: replay Alt first
-                if (g_altAbsorbed && !g_dragConsumedAlt)
+                if (g_altAbsorbed && !g_dragConsumedAlt && !g_pendingModifierReplayed)
                 {
                     g_altAbsorbed = false;
                     g_altPressed = false;
@@ -1097,7 +1229,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         // Non-Win key while Win was absorbed without a drag: replay Win first
-        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey)
+        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey && !g_pendingModifierReplayed)
         {
             g_winAbsorbed = false;
             g_winPressed = false;
@@ -1199,9 +1331,26 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         if (ms->flags & LLMHF_INJECTED)
             goto forward;
 
-        // Recovery path: if a non-modifier click occurs while stale drag/resize state exists, clear it.
+        // Deliver-as-click bookkeeping: swallow the physical button-up that matches a
+        // press we already replayed to the target on modifier release.
+        if (wParam == WM_LBUTTONUP && g_swallowNextLButtonUp)
+        {
+            g_swallowNextLButtonUp = false;
+            return 1;
+        }
+        if (wParam == WM_RBUTTONUP && g_swallowNextRButtonUp)
+        {
+            g_swallowNextRButtonUp = false;
+            return 1;
+        }
+
+        // Recovery path: if a non-modifier click occurs while stale drag/resize/pending state exists, clear it.
         if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
         {
+            g_pendingDrag = false;
+            g_pendingResize = false;
+            g_pendingTarget = nullptr;
+            g_pendingModifierReplayed = false;
             EndInteraction(true, true);
         }
 
@@ -1210,7 +1359,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             HideOverlay();
         }
 
-        // ----- Alt + Left Button Down: start drag -----
+        // ----- Modifier + Left Button Down: arm a pending drag (deferred until move) -----
         if (wParam == WM_LBUTTONDOWN && IsActivationModifierPressed())
         {
             if (IsSuppressedByGameMode())
@@ -1228,21 +1377,43 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     goto forward;
                 }
 
-                g_dragging = true;
-                g_dragFirstMove = true;
-                g_dragConsumedAlt = true;
-                g_dragTarget = hwnd;
-                g_dragStart = pt;
-                GetWindowRect(hwnd, &g_dragWndRect);
-                PrepareOverlayMetrics(hwnd);
-
-                // Show the semi-transparent overlay on top of the target (persistent window – fix #9)
-                ShowOverlay(g_dragWndRect, g_curSizeAll);
-
-                // Swallow the click so the target window doesn't get it
-                TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
-                return 1;
+                // Defer: absorb the button-down but do nothing until the cursor moves.
+                g_pendingDrag = true;
+                g_pendingResize = false;
+                g_pendingTarget = hwnd;
+                g_pendingDownPt = pt;
+                return 1; // swallow the press for now; replayed on release if no move
             }
+        }
+
+        // ----- Promote a pending press to a real drag/resize once past the threshold -----
+        if (wParam == WM_MOUSEMOVE && (g_pendingDrag || g_pendingResize))
+        {
+            int ddx = ms->pt.x - g_pendingDownPt.x;
+            int ddy = ms->pt.y - g_pendingDownPt.y;
+            if (ddx < 0) ddx = -ddx;
+            if (ddy < 0) ddy = -ddy;
+            if (ddx >= GetSystemMetrics(SM_CXDRAG) || ddy >= GetSystemMetrics(SM_CYDRAG))
+            {
+                bool wasResize = g_pendingResize;
+                HWND target = g_pendingTarget;
+                POINT downPt = g_pendingDownPt;
+                g_pendingDrag = false;
+                g_pendingResize = false;
+                g_pendingTarget = nullptr;
+
+                if (wasResize)
+                {
+                    BeginResize(target, downPt);
+                    HandleDragResize(ms->pt);
+                }
+                else
+                {
+                    BeginDrag(target, downPt);
+                    HandleDragMove(ms->pt);
+                }
+            }
+            return 0; // keep the cursor moving while waiting for the threshold
         }
 
         // ----- Mouse Move while dragging -----
@@ -1255,6 +1426,16 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 HandleDragMove(ms->pt);
             }
             return 0;
+        }
+
+        // ----- Left Button Up while a drag is pending (no move): deliver the click -----
+        if (wParam == WM_LBUTTONUP && g_pendingDrag)
+        {
+            g_ignoreModifier = true;
+            g_pendingDrag = false;
+            g_pendingTarget = nullptr;
+            ReplayPendingClick(false);
+            return 1; // swallow the physical up; the injected click replaces it
         }
 
         // ----- Left Button Up: end drag -----
@@ -1273,7 +1454,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             return 1; // swallow the release
         }
 
-        // ----- Alt + Right Button Down: start resize -----
+        // ----- Modifier + Right Button Down: arm a pending resize (deferred until move) -----
         if (wParam == WM_RBUTTONDOWN && g_useAltResize && IsActivationModifierPressed())
         {
             if (IsSuppressedByGameMode())
@@ -1296,19 +1477,12 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     goto forward;
                 }
 
-                g_resizing = true;
-                g_resizeFirstMove = true;
-                g_dragConsumedAlt = true;
-                g_resizeTarget = hwnd;
-                g_resizeLast = pt;
-                GetWindowRect(hwnd, &g_resizeWndRect);
-                PrepareOverlayMetrics(hwnd);
-
-                g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
-                ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
-
-                TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
-                return 1; // swallow the right button press
+                // Defer: absorb the button-down but do nothing until the cursor moves.
+                g_pendingResize = true;
+                g_pendingDrag = false;
+                g_pendingTarget = hwnd;
+                g_pendingDownPt = pt;
+                return 1; // swallow the press for now; replayed on release if no move
             }
         }
 
@@ -1322,6 +1496,16 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 HandleDragResize(ms->pt);
             }
             return 0;
+        }
+
+        // ----- Right Button Up while a resize is pending (no move): deliver the click -----
+        if (wParam == WM_RBUTTONUP && g_pendingResize)
+        {
+            g_ignoreModifier = true;
+            g_pendingResize = false;
+            g_pendingTarget = nullptr;
+            ReplayPendingClick(true);
+            return 1; // swallow the physical up; the injected click replaces it
         }
 
         // ----- Right Button Up: end resize -----
