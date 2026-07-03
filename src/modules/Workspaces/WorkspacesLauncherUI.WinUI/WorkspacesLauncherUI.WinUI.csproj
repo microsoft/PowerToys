@@ -61,6 +61,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="System.Drawing.Common" />
     <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="WinUIEx" />
   </ItemGroup>
 
 </Project>
