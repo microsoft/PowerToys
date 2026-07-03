@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private GpoRuleConfigured _onlineAIModelsGpoRuleConfiguration;
         private bool _onlineAIModelsDisallowedByGPO;
+        private bool _pythonScriptsDisallowedByGPO;
         private bool _isEnabled;
 
         private Func<string, int> SendConfigMSG { get; }
@@ -175,6 +176,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 // disable AI if it was enabled
                 DisableAI();
+            }
+
+            _pythonScriptsDisallowedByGPO = GPOWrapper.GetAllowedAdvancedPastePythonScriptsValue() == GpoRuleConfigured.Disabled;
+
+            if (_pythonScriptsDisallowedByGPO)
+            {
+                // Force Python scripts to disabled mode when blocked by GPO
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                if (scripts != null && !string.Equals(scripts.Mode, "disabled", StringComparison.OrdinalIgnoreCase))
+                {
+                    scripts.Mode = "disabled";
+                }
             }
         }
 
@@ -321,6 +334,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             set
             {
+                if (_pythonScriptsDisallowedByGPO)
+                {
+                    return;
+                }
+
                 var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
                 var newMode = value switch
                 {
@@ -778,6 +796,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool ShowOnlineAIModelsGpoConfiguredInfoBar
         {
             get => _onlineAIModelsDisallowedByGPO && _isEnabled;
+        }
+
+        public bool IsPythonScriptsDisallowedByGPO
+        {
+            get => _pythonScriptsDisallowedByGPO || _enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+        }
+
+        public bool ShowPythonScriptsGpoConfiguredInfoBar
+        {
+            get => _pythonScriptsDisallowedByGPO && _isEnabled;
         }
 
         private bool IsClipboardHistoryEnabled()
