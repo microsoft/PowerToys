@@ -838,6 +838,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -1234,6 +1235,8 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
+NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH

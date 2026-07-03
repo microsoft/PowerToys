@@ -71,12 +71,25 @@ This component:
 
 ### Activation Mechanism
 
-The Quick Accent is activated when:
+Quick Accent supports two activation styles, selected by the **Activation key** setting.
+
+**Trigger-key modes** (`Left/Right arrow`, `Space`, or `Both` — the default):
 1. A user presses and holds a character key (e.g., 'a')
 2. User presses the trigger key
 3. After a brief delay (around 300ms per setting), the accent toolbar appears
 4. The user can select an accented variant using the trigger key
 5. Upon releasing the keys, the selected accented character is inserted
+
+**Press-and-hold mode** (`Press and hold the letter`, iOS/macOS style, opt-in):
+1. A user presses and holds an accent-capable character key (e.g., 'a'); the base
+   letter is typed immediately
+2. After the configured **Hold duration** (around 500ms per setting), the accent
+   toolbar appears automatically — no separate trigger key is required
+3. The user navigates the options with the arrow keys or Space
+4. Upon releasing the letter, the selected accent replaces the base letter; if no
+   option was selected, the base letter that was already typed simply remains
+5. A quick tap (shorter than the Hold duration) types the base letter only, and
+   modifier combinations (Ctrl/Alt/AltGr/Win + letter) are left untouched
 
 ### Character Sets
 
