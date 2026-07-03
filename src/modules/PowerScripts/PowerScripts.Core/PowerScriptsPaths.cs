@@ -34,6 +34,19 @@ public static class PowerScriptsPaths
         }
     }
 
+    /// <summary>
+    /// The PowerToys settings file (<c>%LOCALAPPDATA%\Microsoft\PowerToys\settings.json</c>) that
+    /// records which modules are enabled. Read by <see cref="ModuleState"/> to gate execution.
+    /// </summary>
+    public static string PowerToysSettingsFilePath
+    {
+        get
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return Path.Combine(localAppData, "Microsoft", "PowerToys", "settings.json");
+        }
+    }
+
     /// <summary>The user-settings file that persists the chosen scripts root.</summary>
     public static string ConfigFilePath => Path.Combine(ModuleDirectory, ConfigFileName);
 

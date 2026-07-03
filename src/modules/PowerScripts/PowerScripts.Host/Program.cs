@@ -134,6 +134,15 @@ internal static class Program
             return 1;
         }
 
+        // Central enabled gate: every surface runs scripts through this path, so a single check here
+        // makes all bindings (Keyboard Manager, context menu, future modules) inert when the user
+        // turns PowerScripts off — without deleting or rewriting them. Re-enabling restores them.
+        if (!ModuleState.IsPowerScriptsEnabled())
+        {
+            Console.Error.WriteLine("run: PowerScripts is disabled in PowerToys settings; refusing to run. Enable PowerScripts to use this binding.");
+            return 4;
+        }
+
         var files = options.TryGetValue("files", out var f) ? f : new List<string>();
 
         // Trust-on-first-use gate. This is the single enforcement point for the manifest's declared
@@ -344,6 +353,12 @@ internal static class Program
     /// </summary>
     private static int RunShellMenu(ScriptRegistry registry, IReadOnlyDictionary<string, List<string>> options)
     {
+        // When the module is disabled, emit nothing so the Explorer submenu has no items to show.
+        if (!ModuleState.IsPowerScriptsEnabled())
+        {
+            return 0;
+        }
+
         var files = options.TryGetValue("files", out var f) ? f : new List<string>();
         if (files.Count == 0)
         {
