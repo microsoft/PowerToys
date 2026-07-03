@@ -1149,6 +1149,12 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Description" xml:space="preserve">
+    <value>Choose the highlight style and customize its appearance</value>
+  </data>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
   </data>
@@ -2811,17 +2817,29 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Fade delay (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before the highlight begins to fade (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (ms)</value>
-    <comment>ms = milliseconds</comment>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
+    <value>Size (px)</value>
+    <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
+    <value>Intensity</value>
+    <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
+    <value>Duration (ms)</value>
+    <comment>Ripple mode only. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
+    <value>Follow cursor while held</value>
+    <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
+    <value>Show crosshairs on right-click release</value>
+    <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
@@ -3344,8 +3362,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter</value>
-    <comment>key refers to a physical key on a keyboard</comment>
+    <value>Choose how the accent menu opens</value>
+    <comment>The accent menu is the Quick Accent character picker</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -3358,6 +3376,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
     <value>Left, Right or Space</value>
     <comment>All are keys on a keyboard</comment>
+  </data>
+  <data name="QuickAccent_Activation_Key_PressAndHold.Content" xml:space="preserve">
+    <value>Press and hold the letter</value>
+    <comment>Activation mode where holding the letter key itself opens the accent menu, like on iOS or macOS</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
@@ -3401,6 +3423,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>How long a key must be held before the accent menu appears</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Description" xml:space="preserve">
+    <value>How long to hold the letter before the accent menu appears</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
@@ -4422,22 +4452,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus.ModuleDescription" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates</value>
   </data>
   <data name="NewPlus_Product_Name.Content" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>
-    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
     <value>New+</value>
-    <comment>Localize product name in accordance with Windows New</comment>
+    <comment>Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
@@ -4524,7 +4554,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus.Title" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="Oobe_NewPlus.Description" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates.</value>
@@ -4932,11 +4962,11 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip activation</value>
   </data>
-  <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the snip to a file</value>
+  <data name="ZoomIt_SnipSave_Shortcut.Header" xml:space="preserve">
+    <value>Save snip to file</value>
   </data>
-  <data name="ZoomIt_Panorama_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the scrolling screenshot to a file</value>
+  <data name="ZoomIt_PanoramaSave_Shortcut.Header" xml:space="preserve">
+    <value>Save scrolling screenshot to file</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
     <value>Text recognition and extraction</value>
@@ -5196,7 +5226,7 @@ The break timer font matches the text font.</value>
     <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
-    <value>Highlight the cursor or dim the screen to spotlight it</value>
+    <value>Highlight the cursor, dim the screen to spotlight it, or pulse a ripple on each click</value>
   </data>
   <data name="HighlightMode.Header" xml:space="preserve">
     <value>Highlight mode</value>
@@ -5206,6 +5236,10 @@ The break timer font matches the text font.</value>
   </data>
   <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
     <value>Spotlight</value>
+  </data>
+  <data name="HighlightMode_Ripple_Mode.Content" xml:space="preserve">
+    <value>Ripple</value>
+    <comment>Name of the highlight mode that draws an expanding ring pulse on each click.</comment>
   </data>
   <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
@@ -5546,6 +5580,12 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
+    <value>Mouse wheel increment</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
+    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
   </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>

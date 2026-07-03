@@ -866,6 +866,14 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         std::vector<FancyZonesDataTypes::MonitorId> monitors = { FancyZonesDataTypes::MonitorId{ .monitor = nullptr, .deviceId = { .id = ZonedWindowProperties::MultiMonitorName, .instanceId = ZonedWindowProperties::MultiMonitorInstance } } };
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, m_workAreaConfiguration.GetAllWorkAreas()))
         {
+            // WindowMouseSnap caches a raw WorkArea* in m_currentWorkArea and the
+            // WorkArea map by reference. WorkAreaConfiguration::Clear() destroys
+            // every unique_ptr<WorkArea> (and hence the inner ZonesOverlay and
+            // its std::mutex). If a drag is in flight, the next MoveSizeUpdate
+            // would dereference that dangling WorkArea* and lock the freed
+            // mutex. Drain the active drag first so subsequent drag messages
+            // hit the snapper's `if (m_windowMouseSnapper)` guard and no-op.
+            MoveSizeEnd();
             m_workAreaConfiguration.Clear();
 
             FancyZonesDataTypes::WorkAreaId workAreaId;
@@ -882,6 +890,8 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
         {
+            // See comment above the matching Clear() in the span-zones branch.
+            MoveSizeEnd();
             m_workAreaConfiguration.Clear();
             for (const auto& monitor : monitors)
             {
@@ -1094,6 +1104,9 @@ void FancyZones::SettingsUpdate(SettingId id)
     break;
     case SettingId::SpanZonesAcrossMonitors:
     {
+        // See UpdateWorkAreas() — same WindowMouseSnap dangling-WorkArea*
+        // hazard if the user toggles this setting mid-drag.
+        MoveSizeEnd();
         m_workAreaConfiguration.Clear();
         PostMessageW(m_window, WM_PRIV_INIT, NULL, NULL);
     }

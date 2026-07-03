@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.CmdPalMainControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:cpcontrols="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    IsTabStop="False"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ThemeShadow x:Key="CardShadow" />
+    </UserControl.Resources>
+
+    <!--  Outer transparent host. Padding leaves room for the drop shadow.  -->
+    <Grid x:Name="ShadowHost" Padding="{x:Bind ShadowPadding, Mode=OneWay}">
+
+        <!--
+            The "card" — this is what looks like the cmdpal window.
+            Border draws the 1px stroke and clips children to the rounded shape.
+            ThemeShadow + a Translation on Z casts the drop shadow outside the card.
+        -->
+        <Border
+            x:Name="CardBorder"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{x:Bind CardCornerRadius, Mode=OneWay}"
+            Shadow="{StaticResource CardShadow}"
+            Translation="0,0,32">
+
+            <Grid x:Name="CardContent">
+                <!--  System backdrop (Mica / Acrylic / etc.) drawn only behind the card  -->
+                <controls:SystemBackdropElement x:Name="BackdropElement" CornerRadius="{x:Bind CardCornerRadius, Mode=OneWay}" />
+
+                <!--  Optional background image (sits between backdrop and content)  -->
+                <ContentPresenter
+                    x:Name="BackgroundLayerPresenter"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Content="{x:Bind BackgroundLayer, Mode=OneWay}"
+                    IsHitTestVisible="False" />
+
+                <!--  Main UI content (e.g. ShellPage)  -->
+                <ContentPresenter
+                    x:Name="MainContentPresenter"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Content="{x:Bind MainContent, Mode=OneWay}" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
