@@ -863,6 +863,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.PowerScript => GetSelectedPowerScript() != null,
                 ActionType.Disable => true,
                 _ => false,
             };
@@ -921,6 +922,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenApp => "OpenApp",
                 ActionType.Disable => "Disable",
                 ActionType.MouseClick => "MouseClick",
+                ActionType.PowerScript => "PowerScript",
                 _ => "KeyOrShortcut",
             };
 
