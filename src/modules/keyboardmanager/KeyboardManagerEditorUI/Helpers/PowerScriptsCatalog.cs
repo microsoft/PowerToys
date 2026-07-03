@@ -143,5 +143,82 @@ namespace KeyboardManagerEditorUI.Helpers
                 return Array.Empty<PowerScriptInfo>();
             }
         }
+
+        /// <summary>
+        /// Records the user's trust for a script's current content, so the engine can run it silently
+        /// via <c>Host.exe run &lt;id&gt; --no-consent</c>. Assigning a script to a hotkey is itself an
+        /// explicit consent, so we approve it here rather than popping a dialog from the (hidden)
+        /// engine-launched process. If the script's contents later change, the non-interactive run
+        /// simply no-ops until the user re-assigns it.
+        /// </summary>
+        public static void ApproveTrust(string id)
+        {
+            var hostPath = ResolveHostPath();
+            if (hostPath is null || string.IsNullOrEmpty(id))
+            {
+                return;
+            }
+
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = hostPath,
+                    Arguments = $"trust approve {id}",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+
+                using var process = Process.Start(psi);
+                process?.WaitForExit(5000);
+            }
+            catch (Exception)
+            {
+                // Prototype: if trust can't be recorded the hotkey just won't run; not fatal.
+            }
+        }
+
+        /// <summary>
+        /// True when a Keyboard Manager "Run Program" mapping actually launches a PowerScript, i.e. its
+        /// program path is <c>PowerScripts.Host.exe</c>. Used to present these mappings as first-class
+        /// PowerScript actions instead of raw run-program cards.
+        /// </summary>
+        public static bool IsPowerScriptProgramPath(string? programPath) =>
+            !string.IsNullOrEmpty(programPath) &&
+            string.Equals(Path.GetFileName(programPath), HostExeName, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Extracts the script id from a PowerScript mapping's arguments (<c>run &lt;id&gt; ...</c>),
+        /// or null if the arguments aren't a recognizable PowerScript run command.
+        /// </summary>
+        public static string? ParseScriptId(string? programArgs)
+        {
+            if (string.IsNullOrWhiteSpace(programArgs))
+            {
+                return null;
+            }
+
+            var tokens = programArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length >= 2 && string.Equals(tokens[0], "run", StringComparison.OrdinalIgnoreCase))
+            {
+                return tokens[1];
+            }
+
+            return null;
+        }
+
+        /// <summary>Resolves a script's display name from its id, falling back to the id itself.</summary>
+        public static string GetScriptName(string id)
+        {
+            foreach (var script in GetSystemScripts())
+            {
+                if (string.Equals(script.Id, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return script.Name;
+                }
+            }
+
+            return id;
+        }
     }
 }
