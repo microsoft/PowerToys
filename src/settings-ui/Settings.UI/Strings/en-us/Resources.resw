@@ -3354,8 +3354,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter</value>
-    <comment>key refers to a physical key on a keyboard</comment>
+    <value>Choose how the accent menu opens</value>
+    <comment>The accent menu is the Quick Accent character picker</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -3368,6 +3368,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
     <value>Left, Right or Space</value>
     <comment>All are keys on a keyboard</comment>
+  </data>
+  <data name="QuickAccent_Activation_Key_PressAndHold.Content" xml:space="preserve">
+    <value>Press and hold the letter</value>
+    <comment>Activation mode where holding the letter key itself opens the accent menu, like on iOS or macOS</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
@@ -3411,6 +3415,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>How long a key must be held before the accent menu appears</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Description" xml:space="preserve">
+    <value>How long to hold the letter before the accent menu appears</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
