@@ -54,7 +54,19 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         base.OnSourceInitialized(e);
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
         _powerAccent.OnSelectCharacter += PowerAccent_OnSelectionCharacter;
+        this.Deactivated += Selector_Deactivated;
         this.Visibility = Visibility.Hidden;
+    }
+
+    private void Selector_Deactivated(object sender, EventArgs e)
+    {
+        // Only reset when the selector is still visible (stuck state).
+        // During normal dismiss, Hide() is called before Deactivated fires,
+        // so IsVisible will be false and we skip the redundant reset.
+        if (this.IsVisible)
+        {
+            _powerAccent.ForceResetKeyboardState();
+        }
     }
 
     private void PowerAccent_OnSelectionCharacter(int index, string character)
