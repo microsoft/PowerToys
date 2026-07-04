@@ -1396,6 +1396,14 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     return 1; // swallow the press; the drag is now active
                 }
 
+                // A press is already pending (the other button is still held): don't
+                // overwrite it. Forward this one so we never strand the already-swallowed
+                // button-down (which would leak an unmatched button-up to the target).
+                if (g_pendingDrag || g_pendingResize)
+                {
+                    goto forward;
+                }
+
                 // Defer: absorb the button-down but do nothing until the cursor moves.
                 g_pendingDrag = true;
                 g_pendingResize = false;
@@ -1501,6 +1509,14 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     BeginResize(hwnd, pt);
                     return 1; // swallow the press; the resize is now active
+                }
+
+                // A press is already pending (the other button is still held): don't
+                // overwrite it. Forward this one so we never strand the already-swallowed
+                // button-down (which would leak an unmatched button-up to the target).
+                if (g_pendingDrag || g_pendingResize)
+                {
+                    goto forward;
                 }
 
                 // Defer: absorb the button-down but do nothing until the cursor moves.
