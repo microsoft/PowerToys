@@ -1759,17 +1759,26 @@ public sealed partial class MainWindow : WindowEx,
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
-        // Only the compact + centered configuration needs a screen-fit clamp. There the card
-        // is anchored near the vertical center of the display, so an expanded list could run
-        // off the bottom edge; cap its height so it always fits. In every other case the card
-        // is free to fill the (fixed-size) HWND as before.
-        if (expanded && settings.CompactMode && IsCenteringSummon(settings))
+        if (!settings.CompactMode)
         {
-            RootElement.SetCardMaxHeight(ComputeExpandedCardMaxHeightDip());
+            // When compact mode is off the card is always static and fills the entire window,
+            // regardless of how much content is currently displayed.
+            RootElement.SetCardStretch(true);
+            RootElement.SetCardMaxHeight(double.PositiveInfinity);
         }
         else
         {
-            RootElement.SetCardMaxHeight(double.PositiveInfinity);
+            // In compact mode the card sizes itself to its content and anchors to the top.
+            RootElement.SetCardStretch(false);
+
+            // Only the compact + centered configuration needs a screen-fit clamp. There the card
+            // is anchored near the vertical center of the display, so an expanded list could run
+            // off the bottom edge; cap its height so it always fits. In every other case the card
+            // is free to fill the (fixed-size) HWND as before.
+            var cardMaxHeight = expanded && IsCenteringSummon(settings)
+                ? ComputeExpandedCardMaxHeightDip()
+                : double.PositiveInfinity;
+            RootElement.SetCardMaxHeight(cardMaxHeight);
         }
     }
 
