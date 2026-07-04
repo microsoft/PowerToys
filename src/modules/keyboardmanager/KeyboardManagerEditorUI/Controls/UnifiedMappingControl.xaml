@@ -139,6 +139,17 @@
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
                 Visibility="Collapsed" />
+            <!--  Single-key remap condition (dual-key / tap-alone). Only meaningful for single-key remaps.
+                  TODO(localization): replace literal Content with x:Uid + resw entries.  -->
+            <ComboBox
+                x:Name="ConditionComboBox"
+                Margin="0,4,0,0"
+                HorizontalAlignment="Stretch"
+                Header="Condition"
+                SelectedIndex="0">
+                <ComboBoxItem Content="Always" />
+                <ComboBoxItem Content="Alone (tap)" />
+            </ComboBox>
         </StackPanel>
         <!--  Arrow Separator  -->
         <Grid

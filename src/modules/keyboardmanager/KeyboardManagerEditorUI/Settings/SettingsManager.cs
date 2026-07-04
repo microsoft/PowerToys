@@ -109,6 +109,7 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 };
                 AddShortcutMapping(settings, shortcutMapping);
             }
@@ -156,6 +157,7 @@ namespace KeyboardManagerEditorUI.Settings
                     OperationType = ShortcutOperationType.RemapShortcut,
                     OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
                     TargetKeys = mapping.TargetKey,
+                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
                 };
 
                 if (!MappingExists(shortcutMapping))

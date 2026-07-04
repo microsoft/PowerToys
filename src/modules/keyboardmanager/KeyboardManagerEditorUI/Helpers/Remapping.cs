@@ -28,6 +28,9 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public bool IsActive { get; set; } = true;
 
+        // Condition for a single-key remap (Always/Alone dual-key). Only meaningful when Shortcut.Count == 1.
+        public Interop.SingleKeyRemapCondition Condition { get; set; } = Interop.SingleKeyRemapCondition.Always;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool IsEnabled

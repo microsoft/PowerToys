@@ -186,6 +186,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.SetActionType(UnifiedMappingControl.ActionType.KeyOrShortcut);
             UnifiedMappingControl.SetActionKeys(remapping.RemappedKeys.ToList());
             UnifiedMappingControl.SetAppSpecific(!remapping.IsAllApps, remapping.AppName);
+            UnifiedMappingControl.SetCondition(remapping.Condition);
             RemappingDialog.Title = ResourceHelper.GetString("RemappingDialog_TitleEdit");
             await ShowRemappingDialog();
         }
@@ -508,7 +509,9 @@ namespace KeyboardManagerEditorUI.Pages
                 triggerKeys,
                 actionKeys,
                 UnifiedMappingControl.GetIsAppSpecific(),
-                UnifiedMappingControl.GetAppName());
+                UnifiedMappingControl.GetAppName(),
+                true,
+                UnifiedMappingControl.GetCondition());
         }
 
         private bool SaveDisableMapping(List<string> triggerKeys)
@@ -919,6 +922,7 @@ namespace KeyboardManagerEditorUI.Pages
                     AppName = mapping.TargetApp ?? string.Empty,
                     Id = shortcutSettings.Id,
                     IsActive = shortcutSettings.IsActive,
+                    Condition = mapping.Condition,
                 };
 
                 if (isDisabled)
