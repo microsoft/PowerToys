@@ -147,6 +147,7 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     {
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
         ClearSingleKeyRemaps();
+        ClearSingleKeyAloneRemaps();
 
         if (remapKeysData)
         {
@@ -158,16 +159,30 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                     auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                     auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
 
-                    // If remapped to a shortcut
-                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
-                    {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
-                    }
+                    // Optional dual-key condition. Missing field defaults to "always" (legacy behavior),
+                    // so pre-existing settings files load unchanged. "alone" routes to the alone table.
+                    auto condition = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RemapConditionSettingName, KeyboardManagerConstants::RemapConditionAlways);
+                    const bool isAloneCondition = (std::wstring(condition) == KeyboardManagerConstants::RemapConditionAlone);
 
-                    // If remapped to a key
+                    // Parse the target: a ';'-separated value is a shortcut, otherwise a single key.
+                    const bool remapToShortcut = (std::wstring(newRemapKey).find(L";") != std::string::npos);
+                    KeyShortcutTextUnion target;
+                    if (remapToShortcut)
+                    {
+                        target = Shortcut(newRemapKey.c_str());
+                    }
                     else
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                        target = static_cast<DWORD>(std::stoul(newRemapKey.c_str()));
+                    }
+
+                    if (isAloneCondition)
+                    {
+                        AddSingleKeyAloneRemap(std::stoul(originalKey.c_str()), target);
+                    }
+                    else
+                    {
+                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), target);
                     }
                 }
                 catch (...)
