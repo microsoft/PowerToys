@@ -28,8 +28,8 @@ internal static class MouseJumpEventLoop
                     try
                     {
                         Logger.LogDebug($"[{eventName}] - invoking callback");
-                        var tcs = new TaskCompletionSource();
-                        dispatcherQueue.TryEnqueue(() =>
+                        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                        if (!dispatcherQueue.TryEnqueue(() =>
                         {
                             try
                             {
@@ -40,7 +40,11 @@ internal static class MouseJumpEventLoop
                             {
                                 tcs.SetException(ex);
                             }
-                        });
+                        }))
+                        {
+                            tcs.SetException(new InvalidOperationException("DispatcherQueue is not accepting work items."));
+                        }
+
                         tcs.Task.GetAwaiter().GetResult();
                     }
                     catch (Exception ex)
@@ -83,27 +87,38 @@ internal static class MouseJumpEventLoop
                     try
                     {
                         Logger.LogDebug($"[{eventName}] - invoking callback");
-                        var tcs = new TaskCompletionSource();
-                        dispatcherQueue.TryEnqueue(() =>
+                        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                        if (!dispatcherQueue.TryEnqueue(() =>
                         {
-                            callback().ContinueWith(
-                                t =>
-                                {
-                                    if (t.IsFaulted)
+                            try
+                            {
+                                _ = callback().ContinueWith(
+                                    t =>
                                     {
-                                        tcs.SetException(t.Exception!.InnerExceptions);
-                                    }
-                                    else if (t.IsCanceled)
-                                    {
-                                        tcs.SetCanceled();
-                                    }
-                                    else
-                                    {
-                                        tcs.SetResult();
-                                    }
-                                },
-                                TaskScheduler.Default);
-                        });
+                                        if (t.IsFaulted)
+                                        {
+                                            tcs.SetException(t.Exception!.InnerExceptions);
+                                        }
+                                        else if (t.IsCanceled)
+                                        {
+                                            tcs.SetCanceled();
+                                        }
+                                        else
+                                        {
+                                            tcs.SetResult();
+                                        }
+                                    },
+                                    TaskScheduler.Default);
+                            }
+                            catch (Exception ex)
+                            {
+                                tcs.SetException(ex);
+                            }
+                        }))
+                        {
+                            tcs.SetException(new InvalidOperationException("DispatcherQueue is not accepting work items."));
+                        }
+
                         tcs.Task.GetAwaiter().GetResult(); // block until callback completes
                     }
                     catch (Exception ex)
