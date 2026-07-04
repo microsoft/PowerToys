@@ -486,46 +486,53 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-					<tkcontrols:SettingsCard
-                        Name="PowerLauncherEnableAudibleFeedback"
-                        x:Uid="PowerLauncher_EnableAudibleFeedback"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
-						<ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableAudibleFeedback, Mode=TwoWay}" />
-					</tkcontrols:SettingsCard>
+					<tkcontrols:SettingsExpander
+    Name="PowerLauncherEnableAudibleFeedback"
+    x:Uid="PowerLauncher_EnableAudibleFeedback"
+    HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
+						<ToggleSwitch IsOn="{x:Bind ViewModel.EnableAudibleFeedback, Mode=TwoWay}" />
+						<tkcontrols:SettingsExpander.Items>
+							<tkcontrols:SettingsCard
+								Name="PowerLauncherOpeningSound"
+								x:Uid="PowerLauncher_OpeningSound"
+								IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+								<StackPanel Orientation="Horizontal" Spacing="10">
+									<ComboBox
+										MinWidth="{StaticResource SettingActionControlMinWidth}"
+										ItemsSource="{x:Bind ViewModel.AvailableSounds}"
+										DisplayMemberPath="Name"
+										SelectedValuePath="Value"
+										SelectedValue="{x:Bind ViewModel.OpeningSound, Mode=TwoWay}" />
+									<Button
+										Style="{StaticResource SubtleButtonStyle}"
+										ToolTipService.ToolTip="Preview"
+										Click="PreviewOpeningSound_Click">
+										<FontIcon Glyph="&#xE768;" />
+									</Button>
+								</StackPanel>
+							</tkcontrols:SettingsCard>
 
-					<tkcontrols:SettingsCard
-						Name="PowerLauncherOpeningSound"
-						x:Uid="PowerLauncher_OpeningSound"
-						HeaderIcon="{ui:FontIcon Glyph=&#xEA8F;}"
-						Visibility="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
-						<StackPanel Orientation="Horizontal" Spacing="10">
-							<ComboBox
-								x:Uid="PowerLauncher_OpeningSound_ComboBox"
-								ItemsSource="{x:Bind ViewModel.AvailableSounds}"
-								DisplayMemberPath="Name"
-								SelectedValuePath="Value"
-								SelectedValue="{x:Bind ViewModel.OpeningSound, Mode=TwoWay}"
-								Width="200" />
-							<Button Content="Preview" Click="PreviewOpeningSound_Click" />
-						</StackPanel>
-					</tkcontrols:SettingsCard>
-
-					<tkcontrols:SettingsCard
-						Name="PowerLauncherClosingSound"
-						x:Uid="PowerLauncher_ClosingSound"
-						HeaderIcon="{ui:FontIcon Glyph=&#xEA8F;}"
-						Visibility="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
-						<StackPanel Orientation="Horizontal" Spacing="10">
-							<ComboBox
-								x:Uid="PowerLauncher_ClosingSound_ComboBox"
-								ItemsSource="{x:Bind ViewModel.AvailableSounds}"
-								DisplayMemberPath="Name"
-								SelectedValuePath="Value"
-								SelectedValue="{x:Bind ViewModel.ClosingSound, Mode=TwoWay}"
-								Width="200" />
-							<Button Content="Preview" Click="PreviewClosingSound_Click" />
-						</StackPanel>
-					</tkcontrols:SettingsCard>
+							<tkcontrols:SettingsCard
+								Name="PowerLauncherClosingSound"
+								x:Uid="PowerLauncher_ClosingSound"
+								IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+								<StackPanel Orientation="Horizontal" Spacing="10">
+									<ComboBox
+										MinWidth="{StaticResource SettingActionControlMinWidth}"
+										ItemsSource="{x:Bind ViewModel.AvailableSounds}"
+										DisplayMemberPath="Name"
+										SelectedValuePath="Value"
+										SelectedValue="{x:Bind ViewModel.ClosingSound, Mode=TwoWay}" />
+									<Button
+										Style="{StaticResource SubtleButtonStyle}"
+										ToolTipService.ToolTip="Preview"
+										Click="PreviewClosingSound_Click">
+										<FontIcon Glyph="&#xE768;" />
+									</Button>
+								</StackPanel>
+							</tkcontrols:SettingsCard>
+						</tkcontrols:SettingsExpander.Items>
+					</tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"

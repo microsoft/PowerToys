@@ -807,28 +807,15 @@ opera.exe</value>
     <value>Enable audible feedback</value>
   </data>
   <data name="PowerLauncher_EnableAudibleFeedback.Description" xml:space="preserve">
-    <value>Play a sound when PowerToys Run opens and close</value>
+    <value>Play a sound when PowerToys Run opens and closes</value>
   </data>
   <data name="PowerLauncher_OpeningSound.Header" xml:space="preserve">
-    <value>Opening Sound</value>
+    <value>Sound played when opening Run</value>
   </data>
-  <data name="PowerLauncher_OpeningSound.Description" xml:space="preserve">
-    <value>Select the sound to play when PowerToys Run opens</value>
-  </data>
-  <data name="PowerLauncher_OpeningSound_ComboBox" xml:space="preserve">
-    <value>Opening Sound</value>
-  </data>
-
   <data name="PowerLauncher_ClosingSound.Header" xml:space="preserve">
-    <value>Closing Sound</value>
+    <value>Sound played when closing Run</value>
   </data>
-  <data name="PowerLauncher_ClosingSound.Description" xml:space="preserve">
-    <value>Select the sound to play when PowerToys Run closes</value>
-  </data>
-  <data name="PowerLauncher_ClosingSound_ComboBox" xml:space="preserve">
-    <value>Closing Sound</value>
-  </data>
-	<data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
+  <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>
