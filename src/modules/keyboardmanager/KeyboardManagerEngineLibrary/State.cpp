@@ -26,6 +26,51 @@ std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD orig
     }
 }
 
+// Function to get the iterator of an "Alone" single key remap given the source key. Returns nullopt if it isn't remapped
+std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyAloneRemap(const DWORD& originalKey)
+{
+    auto it = aloneSingleKeyReMap.find(originalKey);
+    if (it != aloneSingleKeyReMap.end())
+    {
+        return it;
+    }
+
+    return std::nullopt;
+}
+
+void State::SetAlonePending(const DWORD key)
+{
+    aloneCombinationKeys.erase(key);
+    alonePendingKeys.insert(key);
+}
+
+bool State::IsAlonePending(const DWORD key) const
+{
+    return alonePendingKeys.find(key) != alonePendingKeys.end();
+}
+
+void State::SetAloneCombination(const DWORD key)
+{
+    alonePendingKeys.erase(key);
+    aloneCombinationKeys.insert(key);
+}
+
+bool State::IsAloneCombination(const DWORD key) const
+{
+    return aloneCombinationKeys.find(key) != aloneCombinationKeys.end();
+}
+
+void State::ClearAloneKeyState(const DWORD key)
+{
+    alonePendingKeys.erase(key);
+    aloneCombinationKeys.erase(key);
+}
+
+std::vector<DWORD> State::GetPendingAloneKeys() const
+{
+    return std::vector<DWORD>(alonePendingKeys.begin(), alonePendingKeys.end());
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

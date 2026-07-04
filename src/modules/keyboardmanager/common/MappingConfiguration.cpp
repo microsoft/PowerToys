@@ -24,6 +24,12 @@ void MappingConfiguration::ClearSingleKeyRemaps()
     scanMap.clear();
 }
 
+// Function to clear the "Alone" single key remapping table.
+void MappingConfiguration::ClearSingleKeyAloneRemaps()
+{
+    aloneSingleKeyReMap.clear();
+}
+
 // Function to clear the Keys remapping table.
 void MappingConfiguration::ClearSingleKeyToTextRemaps()
 {
@@ -74,6 +80,19 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
             scanMap[MapVirtualKey(originalKey, MAPVK_VK_TO_VSC)] = originalKey;
         }
     }
+    return true;
+}
+
+bool MappingConfiguration::AddSingleKeyAloneRemap(const DWORD& originalKey, const KeyShortcutTextUnion& aloneRemapKey)
+{
+    // Reject a duplicate source key within the alone table.
+    auto it = aloneSingleKeyReMap.find(originalKey);
+    if (it != aloneSingleKeyReMap.end())
+    {
+        return false;
+    }
+
+    aloneSingleKeyReMap[originalKey] = aloneRemapKey;
     return true;
 }
 

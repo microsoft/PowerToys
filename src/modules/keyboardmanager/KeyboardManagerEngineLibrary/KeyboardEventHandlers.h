@@ -20,6 +20,11 @@ namespace KeyboardEventHandlers
     // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
+    // Function to handle an "Alone" single key remap (dual-key / Karabiner to_if_alone): applies the
+    // remapped action only when the source key is tapped alone; in combination the original key passes
+    // through. Must run before HandleSingleKeyRemapEvent in the hook dispatch chain.
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
     /* This feature has not been enabled (code from proof of concept stage)
         // Function to change a key's behavior from toggle to modifier
         __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
