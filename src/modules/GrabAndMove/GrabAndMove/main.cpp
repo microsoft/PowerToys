@@ -373,6 +373,13 @@ static int g_overlayRenderedH = 0;
 // Always On Top (WindowCornerUtils::CornersRadius).
 static int CornerRadiusForWindow(HWND hwnd)
 {
+    // Remote sessions draw square windows even on Win11, yet still report DWMWCP_DEFAULT. Match the
+    // window: a remote session gets square (radius 0) so the overlay border doesn't round off the corner.
+    if (GetSystemMetrics(SM_REMOTESESSION))
+    {
+        return 0;
+    }
+
     int pref = 0; // DWMWCP_DEFAULT
     if (DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref)) != S_OK)
     {
@@ -1352,6 +1359,7 @@ static void HandleDragMove(POINT pt)
             RECT maxRect;
             GetWindowRect(g_dragTarget, &maxRect);
             int maxW = maxRect.right - maxRect.left;
+            int maxH = maxRect.bottom - maxRect.top;
 
             ShowWindow(g_dragTarget, SW_RESTORE);
 
@@ -1359,9 +1367,12 @@ static void HandleDragMove(POINT pt)
             int restoredW = g_dragWndRect.right - g_dragWndRect.left;
             int restoredH = g_dragWndRect.bottom - g_dragWndRect.top;
 
-            float ratio = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
-            int newX = g_dragStart.x - static_cast<int>(restoredW * ratio);
-            int newY = g_dragStart.y - (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) / 2);
+            // Preserve the relative grab position in both axes so the cursor stays
+            // at the same proportional spot within the restored window.
+            float ratioL = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
+            float ratioT = (maxH > 0) ? static_cast<float>(g_dragStart.y - maxRect.top) / maxH : 0.5f;
+            int newX = g_dragStart.x - static_cast<int>(restoredW * ratioL);
+            int newY = g_dragStart.y - static_cast<int>(restoredH * ratioT);
             SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
                          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 

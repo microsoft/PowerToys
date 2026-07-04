@@ -77,7 +77,17 @@ namespace ShortcutGuide
             // The base TransparentWindow already applies the
             // TransparentTintBackdrop, extends content into the title bar and
             // collapses it, and strips the native chrome.
-            this.Title = ResourceLoaderInstance.ResourceLoader.GetString("Title");
+            var title = ResourceLoaderInstance.ResourceLoader.GetString("Title");
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = "Shortcut Guide";
+            }
+
+            this.Title = title;
 
             // Install the message hook BEFORE the first MoveAndResize so the
             // WM_DPICHANGED suppression is in place from the very first

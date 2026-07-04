@@ -67,6 +67,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
+    private readonly ISettingsService _settingsService;
+
+    // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
+    // settings and only re-evaluate the layout when compact mode itself changes.
+    private bool _compactMode;
+
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
 
@@ -91,8 +97,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public ShellPage()
     {
-        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-        this.ExpandedMode = !settings.CompactMode;
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _compactMode = _settingsService.Settings.CompactMode;
+        this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
 
@@ -118,6 +125,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
+
+        // The compact-mode setting can be toggled while the palette is open. React to the
+        // hot-reload so the expanded/collapsed layout updates immediately instead of waiting
+        // for the next navigation or search-text change.
+        _settingsService.SettingsChanged += OnSettingsChanged;
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -674,6 +686,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode)
         {
+            // Compact mode is off: the shell always shows the full expanded UI. Set it
+            // explicitly (rather than trusting the constructor's initial value) so toggling
+            // the setting off at runtime restores the list and command bar when the palette
+            // was collapsed.
+            HandleExpandCompactOnUiThread(true);
             return;
         }
 
@@ -936,6 +953,24 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.DispatcherQueue.TryEnqueue(UpdateCompactModeForCurrentPage);
     }
 
+    private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
+    {
+        // Only the compact-mode setting affects the expanded/collapsed layout, so ignore
+        // hot-reloads that leave it unchanged. Comparing and updating _compactMode on the UI
+        // thread keeps it single-threaded regardless of which thread raises the event.
+        var compactMode = args.CompactMode;
+        this.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (compactMode == _compactMode)
+            {
+                return;
+            }
+
+            _compactMode = compactMode;
+            UpdateCompactModeForCurrentPage();
+        });
+    }
+
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
@@ -979,6 +1014,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        _settingsService.SettingsChanged -= OnSettingsChanged;
 
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
