@@ -3,7 +3,8 @@ This file contains documentation for all the methods involved in key/shortcut re
 
 ## Table of Contents:
 1. [HandleSingleKeyRemapEvent](#HandleSingleKeyRemapEvent)
-2. [HandleShortcutRemapEvent](#HandleShortcutRemapEvent)
+2. [HandleSingleKeyAloneRemapEvent](#HandleSingleKeyAloneRemapEvent)
+3. [HandleShortcutRemapEvent](#HandleShortcutRemapEvent)
 3. [HandleOSLevelShortcutRemapEvent](#HandleOSLevelShortcutRemapEvent)
 4. [HandleAppSpecificShortcutRemapEvent](#HandleAppSpecificShortcutRemapEvent)
 5. [HandleSingleKeyToggleToModEvent (Obsolete))](#HandleSingleKeyToggleToModEvent-(Obsolete---Code-from-PoC-which-is-commented-out))
@@ -19,6 +20,18 @@ This file contains documentation for all the methods involved in key/shortcut re
 - If it is remapped to a key, we send the key down/up message for the target key and suppress the current key event. We have a check for filtering artificial keys, such as `VK_WIN` (which is a keycode added by us), so that it is translated to `VK_LWIN` instead.
 - If it is remapped to a shortcut, for key down we set the target modifiers first, followed by the target action key, and for key up we release the action key first, followed by the modifiers.
 - All the remapped key events that we send above are sent with `KEYBOARDMANAGER_SINGLEKEY_FLAG` on the `dwExtraInfo` field.
+
+## HandleSingleKeyAloneRemapEvent
+This method implements a "dual-key" single key remap (equivalent to Karabiner-Elements' `to_if_alone`): a key can carry an **Alone** action that is applied only when the key is *tapped alone*, while using it *in combination* with another key passes the original key through (e.g. Right Ctrl alone → IME On, but Right Ctrl + H → Ctrl+H). Alone remaps live in a separate `aloneSingleKeyReMap` table (distinct from `singleKeyReMap`), so the regular remap path is untouched. This handler is called **before** `HandleSingleKeyRemapEvent` in the hook dispatch (`KeyboardManager::HandleKeyboardHookEvent`) so it can decide first. The approach is "lazy + release-fire", which keeps the combination path at zero added latency:
+- Check the `KEYBOARDMANAGER_INJECTED_FLAG` bit (same as the other handlers) and ignore our own injected events.
+- **On key-down of a *different* key while any Alone key is held as a tap candidate:** those Alone keys are now being used in combination, so we inject their *original* key-down (as a real key/modifier, with `KEYBOARDMANAGER_SINGLEKEY_FLAG`) and promote them from "pending" to "combination".
+- **On key-down of an Alone-mapped key:** suppress the physical key-down (lazy — nothing is injected yet) and mark the key as a tap candidate ("pending"). Auto-repeat while already in a combination is simply suppressed.
+- **On key-up of an Alone-mapped key:**
+    - If it is still "pending" (no other key intervened) this was a tap: inject the Alone action as a tap (target key down + up; a `VK_DISABLED` target injects nothing) and suppress the original key-up.
+    - If it is in "combination" (its original key-down was injected earlier), inject the matching original key-up to release the real key/modifier, and suppress the original key-up.
+- Because key-down and key-up arrive as separate hook invocations, the per-key "pending" vs "combination" state is tracked in `State` (`alonePendingKeys` / `aloneCombinationKeys`), which is only accessed from the serialized hook thread.
+- The Alone condition is loaded from an optional `condition` field on each single key remap in the settings (`"alone"` routes the entry to the Alone table; a missing field, or `"always"`, keeps the legacy unconditional behavior, so existing settings files load unchanged).
+- **Out of scope for now:** timeout-based cancellation (holding the key too long should stop counting as a tap) requires an injectable clock to be unit-testable and is not yet implemented; Shortcut- and text-valued Alone targets are also a later phase. There is no editor UI yet — Alone remaps are configured by adding `"condition": "alone"` to a `remapKeys.inProcess` entry in the settings JSON.
 
 ## HandleShortcutRemapEvent
 [This method](https://github.com/microsoft/PowerToys/blob/b80578b1b9a4b24c9945bddac33c771204280107/src/modules/keyboardmanager/dll/KeyboardEventHandlers.cpp#L178-L739) is used for handling the shortcut to shortcut and shortcut to key remapping logic. The general logic is as follows:

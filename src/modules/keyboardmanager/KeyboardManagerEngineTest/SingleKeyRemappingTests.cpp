@@ -671,5 +671,48 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
             Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // A disabled alone target ("do nothing when tapped alone") injects nothing on tap, yet the
+        // source key is still fully suppressed (it never leaks as its original key).
+        TEST_METHOD (AloneRemap_DisabledAloneTarget_ShouldInjectNothing_OnTap)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)CommonSharedConstants::VK_DISABLED);
+
+            // Count every event that reaches SendVirtualInput.
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent*) { return true; });
+
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+
+            // Only the two driving events flowed through; the handler injected nothing extra.
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+        }
+
+        // Runtime state must reset cleanly between presses: after using the key in a combination, a
+        // later solo tap still fires the alone action.
+        TEST_METHOD (AloneRemap_ShouldTapAgain_AfterPreviousCombinationCycle)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)VK_IME_ON);
+
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            std::vector<INPUT> hDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x48 } } };
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+
+            // Cycle 1: combination (Right Ctrl + H) — resolves without firing the alone action.
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            mockedInputHandler.SendVirtualInput(hDown);
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+
+            // Start counting IME On injections for cycle 2.
+            CountImeOnInjections();
+
+            // Cycle 2: solo tap — the alone action fires again (down + up = 2 injected events).
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
     };
 }
