@@ -520,6 +520,30 @@ bool MappingConfiguration::SaveSettingsToFile()
         inProcessRemapKeysArray.Append(keys);
     }
 
+    // Serialize "Alone" (dual-key) single key remaps into the same inProcess array, tagged with an
+    // explicit condition field so they round-trip back into aloneSingleKeyReMap on load. Regular
+    // remaps above omit the field, which the loader treats as "always" (backward compatible).
+    for (const auto& it : aloneSingleKeyReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(it.first))));
+
+        // For key to key remapping
+        if (it.second.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
+        }
+        // For key to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
+        }
+
+        keys.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(KeyboardManagerConstants::RemapConditionAlone));
+
+        inProcessRemapKeysArray.Append(keys);
+    }
+
     for (const auto& [code, text] : singleKeyToTextReMap)
     {
         json::JsonObject keys;
