@@ -93,23 +93,25 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _showWeekNumberInClockBand = new(
-        Namespaced(nameof(ShowWeekNumberInClockBand)),
-        Resources.Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand,
-        Resources.Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description,
-        false);
-
-    private static readonly List<ChoiceSetSetting.Choice> _weekNumberFormatChoices = new()
+    private static readonly List<ChoiceSetSetting.Choice> _clockBandDateModeChoices = new()
     {
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation, "0"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly, "1"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate, "0"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber, "1"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly, "2"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "3"),
     };
 
-    private readonly ChoiceSetSetting _weekNumberFormatInClockBand = new(
-        Namespaced(nameof(WeekNumberFormatInClockBand)),
-        Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat,
-        Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat,
-        _weekNumberFormatChoices);
+    private readonly ChoiceSetSetting _clockBandDateMode = new(
+        Namespaced(nameof(ClockBandDateMode)),
+        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode,
+        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_Description,
+        _clockBandDateModeChoices);
+
+    private readonly TextSetting _customDateFormatInClockBand = new(
+        Namespaced(nameof(CustomDateFormatInClockBand)),
+        Resources.Microsoft_plugin_timedate_SettingClockBandCustomFormat,
+        Resources.Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description,
+        string.Empty);
 
     private readonly ToggleSetting _clockBandOpensNotificationCenter = new(
         Namespaced(nameof(ClockBandOpensNotificationCenter)),
@@ -169,20 +171,20 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
-    public bool ShowWeekNumberInClockBand => _showWeekNumberInClockBand.Value;
-
-    public int WeekNumberFormatInClockBand
+    public int ClockBandDateMode
     {
         get
         {
-            if (string.IsNullOrEmpty(_weekNumberFormatInClockBand.Value))
+            if (string.IsNullOrEmpty(_clockBandDateMode.Value))
             {
                 return 0;
             }
 
-            return int.TryParse(_weekNumberFormatInClockBand.Value, out var result) ? result : 0;
+            return int.TryParse(_clockBandDateMode.Value, out var result) ? result : 0;
         }
     }
+
+    public string CustomDateFormatInClockBand => _customDateFormatInClockBand.Value ?? string.Empty;
 
     public bool ClockBandOpensNotificationCenter => _clockBandOpensNotificationCenter.Value;
 
@@ -205,8 +207,9 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_dateWithWeekday);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
-        Settings.Add(_showWeekNumberInClockBand);
-        Settings.Add(_weekNumberFormatInClockBand);
+        Settings.Add(_clockBandDateMode);
+        _customDateFormatInClockBand.Placeholder = "ddd dd.MM \\W WOY";
+        Settings.Add(_customDateFormatInClockBand);
         Settings.Add(_clockBandOpensNotificationCenter);
 
         _customFormats.Multiline = true;

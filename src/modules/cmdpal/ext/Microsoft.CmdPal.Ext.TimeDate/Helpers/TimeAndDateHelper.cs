@@ -389,6 +389,70 @@ internal static class TimeAndDateHelper
     }
 
     /// <summary>
+    /// Formats a single date/time using our custom format syntax (same syntax as the
+    /// 'Custom formats' setting). Used for the Clock dock band.
+    /// </summary>
+    /// <param name="dateTimeNow">Date/time to format (local time).</param>
+    /// <param name="formatSyntax">Format definition, optionally prefixed with "UTC:".</param>
+    /// <param name="firstWeekRule">Rule for the first week of the year.</param>
+    /// <param name="firstDayOfTheWeek">First day of the week.</param>
+    /// <param name="result">The formatted string on success.</param>
+    /// <returns>True on success; otherwise, false (e.g. empty or invalid format).</returns>
+    internal static bool TryFormatCustomString(DateTime dateTimeNow, string formatSyntax, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek, out string result)
+    {
+        result = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(formatSyntax))
+        {
+            return false;
+        }
+
+        try
+        {
+            var calendar = CultureInfo.CurrentCulture.Calendar;
+            var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
+            var dtObject = dateTimeNow;
+            var syntax = formatSyntax.Trim();
+
+            if (syntax.StartsWith("UTC:", StringComparison.InvariantCulture))
+            {
+                dtObject = dateTimeNowUtc;
+                syntax = syntax.Substring(4);
+            }
+
+            var weekOfYear = calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
+            var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
+            var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
+            var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
+            var containsCustomSyntax = StringContainsCustomFormatSyntax(syntax);
+
+            var value = ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, syntax, firstWeekRule, firstDayOfTheWeek);
+            try
+            {
+                value = dtObject.ToString(value, CultureInfo.CurrentCulture);
+            }
+            catch (Exception)
+            {
+                if (!containsCustomSyntax)
+                {
+                    return false;
+                }
+
+                // Do not fail as we have custom format syntax. Instead fix backslashes.
+                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+            }
+
+            result = value;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to format the custom Clock band format '{formatSyntax}': {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Returns a CalendarWeekRule enum value based on the plugin setting.
     /// </summary>
     internal static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)

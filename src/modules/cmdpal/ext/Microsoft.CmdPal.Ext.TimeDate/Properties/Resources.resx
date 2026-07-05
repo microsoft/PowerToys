@@ -432,21 +432,30 @@
   <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
     <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand" xml:space="preserve">
-    <value>Show week number in the Clock dock band</value>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode" xml:space="preserve">
+    <value>Date shown in the Clock dock band</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description" xml:space="preserve">
-    <value>Show the calendar week next to the date in the dock's Clock band. The settings 'First week of the year' and 'First day of the week' are used for the calculation.</value>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_Description" xml:space="preserve">
+    <value>The settings 'First week of the year' and 'First day of the week' are used to calculate the week number.</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat" xml:space="preserve">
-    <value>Week number format in the Clock dock band</value>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate" xml:space="preserve">
+    <value>System date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation" xml:space="preserve">
-    <value>Abbreviation and number (e.g. 'CW 27')</value>
-    <comment>'CW' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber" xml:space="preserve">
+    <value>System date and week number (e.g. '05.07.2026 · W27')</value>
+    <comment>'W27' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly" xml:space="preserve">
-    <value>Number only (e.g. '27')</value>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly" xml:space="preserve">
+    <value>System date and week number, number only (e.g. '05.07.2026 · 27')</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat" xml:space="preserve">
+    <value>Custom format (defined in the field below)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandCustomFormat" xml:space="preserve">
+    <value>Custom date format for the Clock dock band</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description" xml:space="preserve">
+    <value>Only used when 'Custom format' is selected above. Uses the same syntax as 'Custom formats', e.g. 'ddd dd.MM \W WOY' shows 'Sat 05.07 W 27'.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter" xml:space="preserve">
     <value>Open notification center when clicking the Clock dock band</value>
@@ -479,7 +488,7 @@
     <comment>Name of a command to copy the current calendar week number to the clipboard</comment>
   </data>
   <data name="timedate_dock_week_number_format" xml:space="preserve">
-    <value>CW {0}</value>
-    <comment>Shown next to the date in the Clock dock band. {0} is replaced by the calendar week number. "CW" is the abbreviation of "calendar week" - please use the local abbreviation (e.g. "KW {0}" in German).</comment>
+    <value>W{0}</value>
+    <comment>Shown next to the date in the Clock dock band. {0} is replaced by the calendar week number. "W" is the abbreviation of "week" (ISO 8601 style) - please use the local abbreviation (e.g. "KW{0}" in German).</comment>
   </data>
 </root>

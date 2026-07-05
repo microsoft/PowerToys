@@ -22,9 +22,9 @@ public interface ISettingsInterface
 
     public bool DateWithWeekday { get; }
 
-    public bool ShowWeekNumberInClockBand { get; }
+    public int ClockBandDateMode { get; }
 
-    public int WeekNumberFormatInClockBand { get; }
+    public string CustomDateFormatInClockBand { get; }
 
     public bool ClockBandOpensNotificationCenter { get; }
 

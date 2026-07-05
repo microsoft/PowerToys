@@ -33,11 +33,16 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = originalUiCulture;
         }
 
+        private static int CurrentWeek() => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
+            DateTime.Now,
+            DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
+            DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+
         [TestMethod]
-        public void SubtitleShowsOnlyDateWhenWeekNumberSettingIsDisabled()
+        public void SystemDateModeShowsOnlyTheDate()
         {
             // Setup
-            var settings = new Settings(showWeekNumberInClockBand: false);
+            var settings = new Settings(clockBandDateMode: 0);
 
             // Act
             var band = new NowDockBand(settings);
@@ -49,28 +54,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         }
 
         [TestMethod]
-        public void SubtitleContainsWeekNumberWhenSettingIsEnabled()
+        public void WeekNumberModeAppendsTheWeekNumber()
         {
             // Setup
-            var settings = new Settings(showWeekNumberInClockBand: true);
+            var settings = new Settings(clockBandDateMode: 1);
 
             // Act
             var band = new NowDockBand(settings);
 
             // Assert
-            var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
-                DateTime.Now,
-                DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
-                DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
-            StringAssert.Contains(band.Subtitle, expectedWeek.ToString(CultureInfo.CurrentCulture));
+            StringAssert.Contains(band.Subtitle, CurrentWeek().ToString(CultureInfo.CurrentCulture));
             Assert.AreEqual(3, band.MoreCommands.Length);
         }
 
         [TestMethod]
-        public void WeekNumberRespectsFirstWeekAndFirstDaySettings()
+        public void WeekNumberModeRespectsFirstWeekAndFirstDaySettings()
         {
             // Setup: ISO 8601 week numbering (first four day week, Monday as first day)
-            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, showWeekNumberInClockBand: true);
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 1);
 
             // Act
             var band = new NowDockBand(settings);
@@ -84,21 +85,75 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         }
 
         [TestMethod]
-        public void SubtitleShowsNumberOnlyWhenNumberOnlyFormatIsSelected()
+        public void NumberOnlyModeAppendsTheBareWeekNumber()
         {
             // Setup
-            var settings = new Settings(showWeekNumberInClockBand: true, weekNumberFormatInClockBand: 1);
+            var settings = new Settings(clockBandDateMode: 2);
 
             // Act
             var band = new NowDockBand(settings);
 
             // Assert
             var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            Assert.AreEqual($"{expectedDate} · {CurrentWeek().ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+        }
+
+        [TestMethod]
+        public void CustomFormatModeOverridesTheDateLine()
+        {
+            // Setup
+            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "yyyy-MM-dd");
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            Assert.AreEqual(DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.CurrentCulture), band.Subtitle);
+        }
+
+        [TestMethod]
+        public void CustomFormatModeSupportsWeekOfYearPlaceholder()
+        {
+            // Setup: ISO 8601 week numbering
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 3, customDateFormatInClockBand: "\\W WOY");
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
             var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
                 DateTime.Now,
-                DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
-                DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
-            Assert.AreEqual($"{expectedDate} · {expectedWeek.ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+                CalendarWeekRule.FirstFourDayWeek,
+                DayOfWeek.Monday);
+            Assert.AreEqual($"W {expectedWeek.ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+        }
+
+        [TestMethod]
+        public void CustomFormatModeWithEmptyFormatFallsBackToDefaultDate()
+        {
+            // Setup
+            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: string.Empty);
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            Assert.AreEqual(expectedDate, band.Subtitle);
+        }
+
+        [TestMethod]
+        public void CustomFormatModeWithInvalidFormatFallsBackToDefaultDate()
+        {
+            // Setup: an unclosed literal quote is an invalid .NET date format
+            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "'unclosed");
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            Assert.AreEqual(expectedDate, band.Subtitle);
         }
 
         [TestMethod]
@@ -131,21 +186,17 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         public void CopyWeekNumberCommandHoldsWeekNumber()
         {
             // Setup
-            var settings = new Settings(showWeekNumberInClockBand: true);
+            var settings = new Settings(clockBandDateMode: 1);
 
             // Act
             var band = new NowDockBand(settings);
 
             // Assert
-            var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
-                DateTime.Now,
-                DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
-                DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
             var copyWeekItem = band.MoreCommands[2] as CommandContextItem;
             Assert.IsNotNull(copyWeekItem);
             var copyWeekCommand = copyWeekItem.Command as CopyTextCommand;
             Assert.IsNotNull(copyWeekCommand);
-            Assert.AreEqual(expectedWeek.ToString(CultureInfo.CurrentCulture), copyWeekCommand.Text);
+            Assert.AreEqual(CurrentWeek().ToString(CultureInfo.CurrentCulture), copyWeekCommand.Text);
         }
     }
 }

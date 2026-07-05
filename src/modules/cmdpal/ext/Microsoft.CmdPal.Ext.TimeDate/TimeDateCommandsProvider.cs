@@ -151,21 +151,29 @@ internal sealed partial class NowDockBand : ListItem
             TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
             CultureInfo.CurrentCulture);
 
-        var showWeekNumber = _settings.ShowWeekNumberInClockBand;
+        var dateMode = _settings.ClockBandDateMode;
         var subtitleString = dateString;
 
-        if (showWeekNumber)
-        {
-            var firstWeekRule = TimeAndDateHelper.GetCalendarWeekRule(_settings.FirstWeekOfYear);
-            var firstDayOfTheWeek = TimeAndDateHelper.GetFirstDayOfWeek(_settings.FirstDayOfWeek);
-            var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
-            var numberOnly = _settings.WeekNumberFormatInClockBand == 1;
-            var weekString = numberOnly
-                ? weekOfYear.ToString(CultureInfo.CurrentCulture)
-                : string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear);
+        var firstWeekRule = TimeAndDateHelper.GetCalendarWeekRule(_settings.FirstWeekOfYear);
+        var firstDayOfTheWeek = TimeAndDateHelper.GetFirstDayOfWeek(_settings.FirstDayOfWeek);
+        var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
+        _copyWeekNumberCommand.Text = weekOfYear.ToString(CultureInfo.CurrentCulture);
 
-            subtitleString = $"{dateString} · {weekString}";
-            _copyWeekNumberCommand.Text = weekOfYear.ToString(CultureInfo.CurrentCulture);
+        switch (dateMode)
+        {
+            case 1: // System date and week number
+                subtitleString = $"{dateString} · {string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear)}";
+                break;
+            case 2: // System date and week number, number only
+                subtitleString = $"{dateString} · {weekOfYear.ToString(CultureInfo.CurrentCulture)}";
+                break;
+            case 3: // Custom format; falls back to the system date if the format is empty or invalid
+                if (TimeAndDateHelper.TryFormatCustomString(dateTimeNow, _settings.CustomDateFormatInClockBand, firstWeekRule, firstDayOfTheWeek, out var customString))
+                {
+                    subtitleString = customString;
+                }
+
+                break;
         }
 
         Title = timeString;
@@ -182,6 +190,7 @@ internal sealed partial class NowDockBand : ListItem
         }
 
         // Only rebuild the context menu when the setting changed.
+        var showWeekNumber = dateMode == 1 || dateMode == 2;
         if (_weekNumberShown != showWeekNumber)
         {
             _weekNumberShown = showWeekNumber;
