@@ -139,16 +139,18 @@
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
                 Visibility="Collapsed" />
-            <!--  Single-key remap condition (dual-key / tap-alone). Only meaningful for single-key remaps.
-                  TODO(localization): replace literal Content with x:Uid + resw entries.  -->
+            <!--  Single-key remap condition (dual-key / tap-alone). Only meaningful for a single-key
+                  remap whose action is a key/shortcut; visibility is gated in code-behind
+                  (UpdateConditionVisibility) and it starts collapsed.  -->
             <ComboBox
                 x:Name="ConditionComboBox"
+                x:Uid="ConditionComboBox"
                 Margin="0,4,0,0"
                 HorizontalAlignment="Stretch"
-                Header="Condition"
-                SelectedIndex="0">
-                <ComboBoxItem Content="Always" />
-                <ComboBoxItem Content="Alone (tap)" />
+                SelectedIndex="0"
+                Visibility="Collapsed">
+                <ComboBoxItem x:Uid="Condition_Always" />
+                <ComboBoxItem x:Uid="Condition_Alone" />
             </ComboBox>
         </StackPanel>
         <!--  Arrow Separator  -->

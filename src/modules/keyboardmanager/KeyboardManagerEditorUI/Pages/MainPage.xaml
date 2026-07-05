@@ -68,6 +68,7 @@
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -204,6 +205,18 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
+                                                                <Border
+                                                                    Padding="6,1,6,1"
+                                                                    VerticalAlignment="Center"
+                                                                    Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                                                                    CornerRadius="4"
+                                                                    Visibility="{x:Bind IsAlone, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                                    <TextBlock
+                                                                        x:Uid="AloneBadge"
+                                                                        VerticalAlignment="Center"
+                                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                        Style="{StaticResource CaptionTextBlockStyle}" />
+                                                                </Border>
                                                                 <StackPanel
                                                                     Orientation="Horizontal"
                                                                     Spacing="8"

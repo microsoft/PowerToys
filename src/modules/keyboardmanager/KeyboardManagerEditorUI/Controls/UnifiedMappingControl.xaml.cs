@@ -154,6 +154,7 @@ namespace KeyboardManagerEditorUI.Controls
             _triggerKeys.CollectionChanged += (_, _) =>
             {
                 UpdatePlaceholderVisibility();
+                UpdateConditionVisibility();
                 RaiseValidationStateChanged();
             };
 
@@ -207,6 +208,8 @@ namespace KeyboardManagerEditorUI.Controls
                     UncheckAllToggleButtons();
                 }
             }
+
+            UpdateConditionVisibility();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -264,6 +267,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             HideValidationMessage();
+            UpdateConditionVisibility();
             RaiseValidationStateChanged();
         }
 
@@ -1064,6 +1068,29 @@ namespace KeyboardManagerEditorUI.Controls
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// Shows the single-key remap "Condition" (Always / Alone) combo box only when the mapping is a
+        /// single-key remap whose action is a key/shortcut — the only case where the alone condition is
+        /// meaningful and supported by the engine. Only toggles visibility; never changes the selection,
+        /// so a condition set via <see cref="SetCondition"/> during load is preserved.
+        /// </summary>
+        private void UpdateConditionVisibility()
+        {
+            if (ConditionComboBox == null)
+            {
+                return;
+            }
+
+            int nonEmptyTriggerKeys = _triggerKeys.Count(k => !string.IsNullOrEmpty(k));
+            bool isSingleKeyRemap = CurrentTriggerType == TriggerType.KeyOrShortcut
+                && nonEmptyTriggerKeys == 1
+                && CurrentActionType == ActionType.KeyOrShortcut;
+
+            ConditionComboBox.Visibility = isSingleKeyRemap
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private void RaiseValidationStateChanged()
