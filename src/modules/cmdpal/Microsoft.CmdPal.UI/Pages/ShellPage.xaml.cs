@@ -38,6 +38,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateBackMessage>,
     IRecipient<OpenSettingsMessage>,
     IRecipient<HotkeySummonMessage>,
+    IRecipient<FocusSearchBoxMessage>,
     IRecipient<ShowDetailsMessage>,
     IRecipient<HideDetailsMessage>,
     IRecipient<ClearSearchMessage>,
@@ -85,13 +86,38 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // select-all the character the user just typed (which triggered the expand). This
     // one-shot flag suppresses that select for the expand-driven load.
     private bool _suppressSelectOnNextLoad;
+    private bool _pendingTopBarFocusRestore;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public IHostWindow? HostWindow { get; set; }
+    private IHostWindow? _hostWindow;
+
+    public IHostWindow? HostWindow
+    {
+        get => _hostWindow;
+        set
+        {
+            if (ReferenceEquals(_hostWindow, value))
+            {
+                return;
+            }
+
+            if (_hostWindow is not null)
+            {
+                _hostWindow.IsVisibleToUserChanged -= HostWindow_IsVisibleToUserChanged;
+            }
+
+            _hostWindow = value;
+
+            if (_hostWindow is not null)
+            {
+                _hostWindow.IsVisibleToUserChanged += HostWindow_IsVisibleToUserChanged;
+            }
+        }
+    }
 
     public bool ExpandedMode { get; set; }
 
@@ -107,6 +133,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
         WeakReferenceMessenger.Default.Register<OpenSettingsMessage>(this);
         WeakReferenceMessenger.Default.Register<HotkeySummonMessage>(this);
+        WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<SettingsWindowClosedMessage>(this);
 
         WeakReferenceMessenger.Default.Register<ShowDetailsMessage>(this);
@@ -442,6 +469,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ClearSearchMessage message) => SearchBox.ClearSearch();
 
+    public void Receive(FocusSearchBoxMessage message) => RequestTopBarFocusRestore();
+
     public void Receive(HotkeySummonMessage message) => _ = DispatcherQueue.TryEnqueue(() => SummonOnUiThread(message));
 
     public void Receive(SettingsWindowClosedMessage message) => _settingsWindow = null;
@@ -620,6 +649,40 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             FiltersDropDown.OpenDropDown();
         }
+    }
+
+    private void SearchBox_ActiveFocusTargetChanged(object? sender, EventArgs e)
+    {
+        RequestTopBarFocusRestore();
+    }
+
+    private void HostWindow_IsVisibleToUserChanged(object? sender, EventArgs e)
+    {
+        if (HostWindow?.IsVisibleToUser == true &&
+            _pendingTopBarFocusRestore &&
+            ViewModel.CurrentPage?.HasSearchBox == true)
+        {
+            _pendingTopBarFocusRestore = false;
+            SearchBox.FocusActiveControl();
+        }
+    }
+
+    private void RequestTopBarFocusRestore()
+    {
+        if (ViewModel.CurrentPage?.HasSearchBox != true)
+        {
+            _pendingTopBarFocusRestore = false;
+            return;
+        }
+
+        if (HostWindow?.IsVisibleToUser == true)
+        {
+            _pendingTopBarFocusRestore = false;
+            SearchBox.FocusActiveControl();
+            return;
+        }
+
+        _pendingTopBarFocusRestore = true;
     }
 
     private void BackButton_Clicked(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
@@ -1015,6 +1078,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _settingsService.SettingsChanged -= OnSettingsChanged;
+
+        if (_hostWindow is not null)
+        {
+            _hostWindow.IsVisibleToUserChanged -= HostWindow_IsVisibleToUserChanged;
+            _hostWindow = null;
+        }
 
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
