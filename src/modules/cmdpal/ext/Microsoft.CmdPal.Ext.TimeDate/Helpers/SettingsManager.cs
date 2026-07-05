@@ -99,6 +99,24 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description,
         false);
 
+    private static readonly List<ChoiceSetSetting.Choice> _weekNumberFormatChoices = new()
+    {
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation, "0"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly, "1"),
+    };
+
+    private readonly ChoiceSetSetting _weekNumberFormatInClockBand = new(
+        Namespaced(nameof(WeekNumberFormatInClockBand)),
+        Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat,
+        Resources.Microsoft_plugin_timedate_SettingWeekNumberFormat,
+        _weekNumberFormatChoices);
+
+    private readonly ToggleSetting _clockBandOpensNotificationCenter = new(
+        Namespaced(nameof(ClockBandOpensNotificationCenter)),
+        Resources.Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter,
+        Resources.Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description,
+        true);
+
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
@@ -153,6 +171,21 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool ShowWeekNumberInClockBand => _showWeekNumberInClockBand.Value;
 
+    public int WeekNumberFormatInClockBand
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_weekNumberFormatInClockBand.Value))
+            {
+                return 0;
+            }
+
+            return int.TryParse(_weekNumberFormatInClockBand.Value, out var result) ? result : 0;
+        }
+    }
+
+    public bool ClockBandOpensNotificationCenter => _clockBandOpensNotificationCenter.Value;
+
     public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
@@ -173,6 +206,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
         Settings.Add(_showWeekNumberInClockBand);
+        Settings.Add(_weekNumberFormatInClockBand);
+        Settings.Add(_clockBandOpensNotificationCenter);
 
         _customFormats.Multiline = true;
         _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;

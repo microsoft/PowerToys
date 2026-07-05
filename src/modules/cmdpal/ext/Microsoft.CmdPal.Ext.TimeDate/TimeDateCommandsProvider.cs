@@ -85,17 +85,21 @@ internal sealed partial class NowDockBand : ListItem
     private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
     private static readonly CompositeFormat WeekNumberFormat = System.Text.CompositeFormat.Parse(Resources.timedate_dock_week_number_format);
     private readonly ISettingsInterface _settings;
+    private readonly OpenUrlCommand _notificationCenterCommand;
+    private readonly NoOpCommand _noOpCommand;
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
     private CopyTextCommand _copyWeekNumberCommand;
     private bool? _weekNumberShown;
+    private bool? _notificationCenterOnClick;
 
     public NowDockBand(ISettingsInterface settings)
     {
         _settings = settings;
 
-        // Open Notification Center on click
-        Command = new OpenUrlCommand("ms-actioncenter:") { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.timedate_show_notification_center_command_name, Result = CommandResult.Dismiss(), Icon = null };
+        // Open Notification Center on click (can be turned off in the settings)
+        _notificationCenterCommand = new OpenUrlCommand("ms-actioncenter:") { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.timedate_show_notification_center_command_name, Result = CommandResult.Dismiss(), Icon = null };
+        _noOpCommand = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand", Icon = null };
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         _copyWeekNumberCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_week_number_command_name };
@@ -155,7 +159,10 @@ internal sealed partial class NowDockBand : ListItem
             var firstWeekRule = TimeAndDateHelper.GetCalendarWeekRule(_settings.FirstWeekOfYear);
             var firstDayOfTheWeek = TimeAndDateHelper.GetFirstDayOfWeek(_settings.FirstDayOfWeek);
             var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
-            var weekString = string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear);
+            var numberOnly = _settings.WeekNumberFormatInClockBand == 1;
+            var weekString = numberOnly
+                ? weekOfYear.ToString(CultureInfo.CurrentCulture)
+                : string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear);
 
             subtitleString = $"{dateString} · {weekString}";
             _copyWeekNumberCommand.Text = weekOfYear.ToString(CultureInfo.CurrentCulture);
@@ -166,6 +173,13 @@ internal sealed partial class NowDockBand : ListItem
 
         _copyDateCommand.Text = dateString;
         _copyTimeCommand.Text = timeString;
+
+        var notificationCenterOnClick = _settings.ClockBandOpensNotificationCenter;
+        if (_notificationCenterOnClick != notificationCenterOnClick)
+        {
+            _notificationCenterOnClick = notificationCenterOnClick;
+            Command = notificationCenterOnClick ? _notificationCenterCommand : _noOpCommand;
+        }
 
         // Only rebuild the context menu when the setting changed.
         if (_weekNumberShown != showWeekNumber)

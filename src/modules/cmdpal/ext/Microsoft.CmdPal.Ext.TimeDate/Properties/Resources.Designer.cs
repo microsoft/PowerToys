@@ -817,6 +817,51 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open notification center when clicking the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to When turned off, clicking the Clock band does nothing..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Week number format in the Clock dock band.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingWeekNumberFormat {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingWeekNumberFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Abbreviation and number (e.g. &apos;CW 27&apos;).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Number only (e.g. &apos;27&apos;).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Show week number in the Clock dock band.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand {
@@ -1006,7 +1051,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Week {0}.
+        ///   Looks up a localized string similar to CW {0}.
         /// </summary>
         public static string timedate_dock_week_number_format {
             get {

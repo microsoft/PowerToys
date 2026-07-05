@@ -438,6 +438,22 @@
   <data name="Microsoft_plugin_timedate_SettingShowWeekNumberInClockBand_Description" xml:space="preserve">
     <value>Show the calendar week next to the date in the dock's Clock band. The settings 'First week of the year' and 'First day of the week' are used for the calculation.</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat" xml:space="preserve">
+    <value>Week number format in the Clock dock band</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat_Abbreviation" xml:space="preserve">
+    <value>Abbreviation and number (e.g. 'CW 27')</value>
+    <comment>'CW' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingWeekNumberFormat_NumberOnly" xml:space="preserve">
+    <value>Number only (e.g. '27')</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter" xml:space="preserve">
+    <value>Open notification center when clicking the Clock dock band</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter_Description" xml:space="preserve">
+    <value>When turned off, clicking the Clock band does nothing.</value>
+  </data>
   <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
     <value>Clock</value>
     <comment>Title for the time and date dock band</comment>
@@ -463,7 +479,7 @@
     <comment>Name of a command to copy the current calendar week number to the clipboard</comment>
   </data>
   <data name="timedate_dock_week_number_format" xml:space="preserve">
-    <value>Week {0}</value>
-    <comment>Shown next to the date in the Clock dock band. {0} is replaced by the calendar week number.</comment>
+    <value>CW {0}</value>
+    <comment>Shown next to the date in the Clock dock band. {0} is replaced by the calendar week number. "CW" is the abbreviation of "calendar week" - please use the local abbreviation (e.g. "KW {0}" in German).</comment>
   </data>
 </root>

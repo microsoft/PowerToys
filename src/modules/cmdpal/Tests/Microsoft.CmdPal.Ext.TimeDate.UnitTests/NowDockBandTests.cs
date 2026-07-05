@@ -84,6 +84,50 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         }
 
         [TestMethod]
+        public void SubtitleShowsNumberOnlyWhenNumberOnlyFormatIsSelected()
+        {
+            // Setup
+            var settings = new Settings(showWeekNumberInClockBand: true, weekNumberFormatInClockBand: 1);
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
+            var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
+                DateTime.Now,
+                DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
+                DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+            Assert.AreEqual($"{expectedDate} · {expectedWeek.ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+        }
+
+        [TestMethod]
+        public void ClickOpensNotificationCenterByDefault()
+        {
+            // Setup
+            var settings = new Settings();
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            Assert.IsInstanceOfType(band.Command, typeof(OpenUrlCommand));
+        }
+
+        [TestMethod]
+        public void ClickDoesNothingWhenNotificationCenterSettingIsDisabled()
+        {
+            // Setup
+            var settings = new Settings(clockBandOpensNotificationCenter: false);
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            Assert.IsInstanceOfType(band.Command, typeof(NoOpCommand));
+        }
+
+        [TestMethod]
         public void CopyWeekNumberCommandHoldsWeekNumber()
         {
             // Setup
