@@ -1,0 +1,14 @@
+# Build artifacts
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.lib
+*.exp
+
+# C++/WinRT projection headers generated at build time (see README.md)
+generated/
+
+# Test / run logs
+*.out.txt
+*.err.txt
