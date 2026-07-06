@@ -158,6 +158,14 @@
     <value>no setting specified; pass one of --brightness/--contrast/--volume</value>
     <comment>The flag names are CLI syntax and must not be translated.</comment>
   </data>
+  <data name="Error_InvalidMonitorNumber" xml:space="preserve">
+    <value>invalid monitor number(s) '{0}'; use comma-separated 1-based indices, e.g. 1,2,3</value>
+    <comment>{0} = the raw value the user passed to -n/--monitor-number. -n/--monitor-number and the example indices are CLI syntax and must not be translated.</comment>
+  </data>
+  <data name="Error_SingleMonitorOnly" xml:space="preserve">
+    <value>this command accepts a single monitor; comma-separated monitor numbers are only supported by set/up/down</value>
+    <comment>set/up/down are CLI command names and must not be translated.</comment>
+  </data>
   <data name="Label_Error" xml:space="preserve">
     <value>Error</value>
     <comment>Prefix label for an error line, e.g. "Error: unknown setting foo".</comment>

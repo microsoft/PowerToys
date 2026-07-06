@@ -2,7 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Globalization;
 using PowerDisplay.Cli.Properties;
 
@@ -15,9 +18,11 @@ namespace PowerDisplay.Cli.Options;
 /// </summary>
 public static class CliOptions
 {
-    public static readonly Option<int?> MonitorNumber = new(
-        ["--monitor-number", "-n"],
-        "Index of the monitor (1-based). Run 'powerdisplay list' to discover.")
+    public static readonly Option<int[]> MonitorNumber = new(
+        new[] { "--monitor-number", "-n" },
+        ParseMonitorNumbers,
+        isDefault: false,
+        description: "Index(es) of the monitor(s) (1-based), comma-separated for multiple (e.g. 1,2,3). Multiple monitors are applied together by set/up/down. Run 'powerdisplay list' to discover.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
@@ -168,5 +173,38 @@ public static class CliOptions
                 result.ErrorMessage = Resources.Error_NegativeStep;
             }
         });
+    }
+
+    // Parses the single --monitor-number/-n token as a comma-separated list of 1-based indices
+    // (e.g. "1,2,3"). Duplicates are collapsed preserving first-seen order; any empty or non-integer
+    // element flows through the single ArgumentError envelope like other parse failures. Returns an
+    // empty array only when the option is absent.
+    private static int[] ParseMonitorNumbers(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
+        {
+            return Array.Empty<int>();
+        }
+
+        var raw = result.Tokens[0].Value;
+        var parts = raw.Split(',');
+        var numbers = new List<int>(parts.Length);
+        foreach (var part in parts)
+        {
+            var trimmed = part.Trim();
+            if (trimmed.Length == 0
+                || !int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+            {
+                result.ErrorMessage = Resources.Error_InvalidMonitorNumber(raw);
+                return Array.Empty<int>();
+            }
+
+            if (!numbers.Contains(number))
+            {
+                numbers.Add(number);
+            }
+        }
+
+        return numbers.ToArray();
     }
 }

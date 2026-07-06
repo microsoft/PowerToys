@@ -74,6 +74,10 @@ internal static class Resources
 
     internal static string Error_NoAdjustSettingSpecified => Get(nameof(Error_NoAdjustSettingSpecified));
 
+    internal static string Error_InvalidMonitorNumber(string value) => Format(nameof(Error_InvalidMonitorNumber), value);
+
+    internal static string Error_SingleMonitorOnly => Get(nameof(Error_SingleMonitorOnly));
+
     // ---- error-line labels (no arguments) ----
     internal static string Label_Error => Get(nameof(Label_Error));
 

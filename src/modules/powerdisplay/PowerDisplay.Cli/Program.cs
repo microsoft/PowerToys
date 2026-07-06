@@ -40,6 +40,11 @@ public static class Program
     // A running app connects near-instantly, so the shorter bound never affects the normal path.
     internal static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(2);
 
+    // Extra wall-clock budget added per additional monitor in a comma-separated -n batch (set/up/down).
+    // The base OperationTimeout covers the first target (connect + one VCP exchange); each further
+    // monitor is a fast reconnect plus one more exchange, so a smaller per-monitor increment suffices.
+    internal static readonly TimeSpan PerAdditionalMonitorTimeout = TimeSpan.FromSeconds(3);
+
     // Canonical args for routing any version request through the default invocation pipeline's
     // version renderer (static readonly to satisfy CA1861 — the array is passed, never mutated).
     private static readonly string[] VersionArgs = { "--version" };
@@ -56,6 +61,32 @@ public static class Program
         => parseResult.CommandResult.Command is RootCommand
             ? ProgramCommandLabel
             : parseResult.CommandResult.Command.Name;
+
+    // Overall deadline for one invocation, scaled by the number of per-monitor IPC round-trips. A
+    // comma-separated -n batch (set/up/down) dispatches once per monitor, so each additional target
+    // adds PerAdditionalMonitorTimeout; a single-target invocation keeps the base OperationTimeout.
+    internal static TimeSpan ComputeOperationTimeout(int targetCount)
+        => OperationTimeout + (PerAdditionalMonitorTimeout * Math.Max(0, targetCount - 1));
+
+    // Counts how many per-monitor dispatches a parsed invocation will make, so the overall deadline
+    // can scale with a -n batch. Only the write commands (set/up/down) batch; a monitor id wins and
+    // collapses to one target. Everything else is a single round-trip.
+    internal static int CountDispatchTargets(ParseResult parseResult)
+    {
+        var command = parseResult.CommandResult.Command.Name;
+        if (command is not (CliCommandNames.Set or CliCommandNames.Up or CliCommandNames.Down))
+        {
+            return 1;
+        }
+
+        if (!string.IsNullOrEmpty(parseResult.GetValueForOption(CliOptions.MonitorId)))
+        {
+            return 1;
+        }
+
+        var numbers = parseResult.GetValueForOption(CliOptions.MonitorNumber);
+        return numbers is { Length: > 1 } ? numbers.Length : 1;
+    }
 
     public static async Task<int> Main(string[] args)
     {
@@ -117,6 +148,10 @@ public static class Program
         Timer? timeoutTimer = null;
         ConsoleCancelEventHandler? cancelHandler = null;
 
+        // A comma-separated -n batch (set/up/down) performs one IPC round-trip per monitor, so the
+        // overall deadline scales with the number of targets (a single-target invocation keeps 5s).
+        var operationTimeout = ComputeOperationTimeout(CountDispatchTargets(parseResult));
+
         using var cts = new CancellationTokenSource();
         try
         {
@@ -153,7 +188,7 @@ public static class Program
                     }
                 },
                 null,
-                OperationTimeout,
+                operationTimeout,
                 Timeout.InfiniteTimeSpan);
 
             // The dispatcher's own timeout bounds only the pipe-connect phase (ConnectTimeout, shorter
@@ -165,7 +200,7 @@ public static class Program
         }
         catch (OperationCanceledException)
         {
-            output.WriteError(BuildTimeoutErrorResult(CommandLabelFor(parseResult), timedOut));
+            output.WriteError(BuildTimeoutErrorResult(CommandLabelFor(parseResult), timedOut, operationTimeout));
             return CliExitCodes.Timeout;
         }
         catch (Exception ex)
@@ -217,9 +252,13 @@ public static class Program
             // ── get ───────────────────────────────────────────────────────────
             case CliCommandNames.Get:
             {
-                var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
                 var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
                 var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+
+                if (!TryGetSingleMonitorNumber(parseResult, output, CliCommandNames.Get, out var monitorNumber))
+                {
+                    return CliExitCodes.ArgumentError;
+                }
 
                 // CLI-side syntactic validation: reject unknown --setting names here so the error
                 // is surfaced without a round-trip and matches the existing ARGUMENT_ERROR (7) shape.
@@ -243,10 +282,13 @@ public static class Program
             // ── set ───────────────────────────────────────────────────────────
             case CliCommandNames.Set:
             {
-                var inputs = new SetCommandInputs
+                var monitorNumbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+
+                SetCommandInputs MakeSetInputs(int? number) => new()
                 {
-                    MonitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber),
-                    MonitorId = parseResult.GetValueForOption(CliOptions.MonitorId),
+                    MonitorNumber = number,
+                    MonitorId = monitorId,
                     Brightness = parseResult.GetValueForOption(CliOptions.Brightness),
                     Contrast = parseResult.GetValueForOption(CliOptions.Contrast),
                     Volume = parseResult.GetValueForOption(CliOptions.Volume),
@@ -257,8 +299,9 @@ public static class Program
                     ConfirmPowerOff = parseResult.GetValueForOption(CliOptions.ConfirmPowerOff),
                 };
 
-                // CLI-side syntactic validation: exactly one setting must be specified.
-                var selected = SetCommand.CountSelectedSettings(inputs);
+                // CLI-side syntactic validation: exactly one setting must be specified. The setting is
+                // independent of the monitor selection, so validate it once before any per-monitor dispatch.
+                var selected = SetCommand.CountSelectedSettings(MakeSetInputs(null));
                 if (selected == 0)
                 {
                     output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_NoSettingSpecified));
@@ -271,29 +314,34 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, inputs.MonitorNumber, inputs.MonitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumbers.Length > 0 ? monitorNumbers[0] : (int?)null, monitorId);
 
-                return await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), cancellationToken);
+                return await DispatchWriteTargetsAsync(
+                    monitorNumbers,
+                    monitorId,
+                    number => dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(MakeSetInputs(number)), cancellationToken));
             }
 
             // ── up / down ─────────────────────────────────────────────────────
             case CliCommandNames.Up:
             case CliCommandNames.Down:
             {
-                var inputs = new AdjustCommandInputs
+                var monitorNumbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+                var commandName = parseResult.CommandResult.Command.Name;
+
+                AdjustCommandInputs MakeAdjustInputs(int? number) => new()
                 {
-                    MonitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber),
-                    MonitorId = parseResult.GetValueForOption(CliOptions.MonitorId),
+                    MonitorNumber = number,
+                    MonitorId = monitorId,
                     Brightness = parseResult.GetValueForOption(CliOptions.BrightnessFlag),
                     Contrast = parseResult.GetValueForOption(CliOptions.ContrastFlag),
                     Volume = parseResult.GetValueForOption(CliOptions.VolumeFlag),
                     Step = parseResult.GetValueForOption(CliOptions.Step),
                 };
 
-                var commandName = parseResult.CommandResult.Command.Name;
-
                 // CLI-side syntactic validation: exactly one continuous setting must be specified.
-                var selected = AdjustCommand.CountSelectedSettings(inputs);
+                var selected = AdjustCommand.CountSelectedSettings(MakeAdjustInputs(null));
                 if (selected == 0)
                 {
                     output.WriteError(ArgumentError(commandName, Resources.Error_NoAdjustSettingSpecified));
@@ -306,17 +354,24 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, inputs.MonitorNumber, inputs.MonitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumbers.Length > 0 ? monitorNumbers[0] : (int?)null, monitorId);
 
-                return await dispatcher.SendAdjustAsync(CliRequestBuilder.BuildAdjust(commandName, inputs), cancellationToken);
+                return await DispatchWriteTargetsAsync(
+                    monitorNumbers,
+                    monitorId,
+                    number => dispatcher.SendAdjustAsync(CliRequestBuilder.BuildAdjust(commandName, MakeAdjustInputs(number)), cancellationToken));
             }
 
             // ── capabilities ──────────────────────────────────────────────────
             case CliCommandNames.Capabilities:
             {
-                var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
                 var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
                 var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+
+                if (!TryGetSingleMonitorNumber(parseResult, output, CliCommandNames.Capabilities, out var monitorNumber))
+                {
+                    return CliExitCodes.ArgumentError;
+                }
 
                 WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
 
@@ -353,6 +408,70 @@ public static class Program
         {
             output.WriteWarning(Resources.Warn_MonitorNumberIgnored(monitorNumber.GetValueOrDefault()));
         }
+    }
+
+    // Resolves the -n option to a single optional 1-based index for the single-monitor read commands
+    // (get, capabilities). A comma-separated batch is rejected with an ARGUMENT_ERROR — only the write
+    // commands (set/up/down) apply to multiple monitors. Returns false (and emits the error) on a batch.
+    private static bool TryGetSingleMonitorNumber(ParseResult parseResult, ICliOutput output, string command, out int? monitorNumber)
+    {
+        var numbers = parseResult.GetValueForOption(CliOptions.MonitorNumber) ?? System.Array.Empty<int>();
+        if (numbers.Length > 1)
+        {
+            output.WriteError(ArgumentError(command, Resources.Error_SingleMonitorOnly));
+            monitorNumber = null;
+            return false;
+        }
+
+        monitorNumber = numbers.Length == 1 ? numbers[0] : (int?)null;
+        return true;
+    }
+
+    // Dispatches a write command (set/up/down) to each selected monitor, rendering each per-monitor
+    // result/error via <paramref name="dispatchOne"/> and returning the aggregated exit code. A monitor
+    // id (when present) wins and collapses to a single dispatch; 0 or 1 monitor numbers also dispatch
+    // once (preserving the single-monitor path). For a real batch (>1 numbers, no id) it dispatches per
+    // number, aborting early on PROVIDER_UNAVAILABLE (the app is not running) and otherwise aggregating
+    // the worst outcome (see WorseBatchExit). Extracted (internal) so the routing/aggregation is testable.
+    internal static async Task<int> DispatchWriteTargetsAsync(
+        IReadOnlyList<int> monitorNumbers,
+        string? monitorId,
+        Func<int?, Task<int>> dispatchOne)
+    {
+        var hasId = !string.IsNullOrEmpty(monitorId);
+        if (hasId || monitorNumbers.Count <= 1)
+        {
+            int? single = !hasId && monitorNumbers.Count == 1 ? monitorNumbers[0] : (int?)null;
+            return await dispatchOne(single);
+        }
+
+        var worst = CliExitCodes.Ok;
+        foreach (var number in monitorNumbers)
+        {
+            var exit = await dispatchOne(number);
+            if (exit == CliExitCodes.ProviderUnavailable)
+            {
+                return exit;
+            }
+
+            worst = WorseBatchExit(worst, exit);
+        }
+
+        return worst;
+    }
+
+    // Folds a per-monitor exit code into the running batch exit code. UNSUPPORTED_FEATURE does not count
+    // as a batch failure (a monitor that lacks the setting is skipped, mirroring apply-profile), and a
+    // higher exit code ranks as more severe (HardwareFailure > InvalidDiscreteValue > OutOfRange >
+    // MonitorNotFound), so the batch reports its worst outcome.
+    internal static int WorseBatchExit(int current, int next)
+    {
+        if (next == CliExitCodes.Ok || next == CliExitCodes.UnsupportedFeature)
+        {
+            return current;
+        }
+
+        return next > current ? next : current;
     }
 
     public static bool HasHelpToken(ParseResult parseResult)
@@ -411,8 +530,9 @@ public static class Program
         };
 
     // Shared TIMEOUT envelope for the OperationCanceledException catch path. Distinguishes the fixed
-    // deadline elapsing (timedOut) from a Ctrl+C cancellation; both map to exit 8.
-    private static CliErrorResult BuildTimeoutErrorResult(string command, bool timedOut)
+    // deadline elapsing (timedOut) from a Ctrl+C cancellation; both map to exit 8. The deadline is the
+    // per-invocation timeout (scaled by monitor count for a -n batch), so the message reports it verbatim.
+    private static CliErrorResult BuildTimeoutErrorResult(string command, bool timedOut, TimeSpan operationTimeout)
         => new()
         {
             Command = command,
@@ -420,7 +540,7 @@ public static class Program
             {
                 Code = CliErrorCodes.Timeout,
                 Message = timedOut
-                    ? Resources.Error_TimedOut((int)OperationTimeout.TotalSeconds)
+                    ? Resources.Error_TimedOut((int)operationTimeout.TotalSeconds)
                     : Resources.Error_Cancelled,
             },
         };
