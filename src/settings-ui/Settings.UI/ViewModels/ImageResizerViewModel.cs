@@ -319,29 +319,13 @@ public partial class ImageResizerViewModel : Observable
 
     public void AddImageSize(string namePrefix = "")
     {
-        if (string.IsNullOrEmpty(namePrefix))
-        {
-            namePrefix = DefaultPresetNamePrefix;
-        }
-
-        Sizes.Add(new ImageSize(
-            _nextId,
-            GenerateNameForNewSize(namePrefix),
-            _customSize.Fit,
-            _customSize.Width,
-            _customSize.Height,
-            _customSize.Unit));
-
-        _nextId++;
-
-        // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
-        IsListViewFocusRequested = true;
+        AddImageSize(CreateNewImageSizeModel(namePrefix));
     }
 
     /// <summary>
     /// Creates a new preset populated with default values and a generated unique name, without
-    /// adding it to the <see cref="Sizes"/> collection. Used as the working copy for the add dialog,
-    /// so nothing is committed until the user confirms.
+    /// adding it to the <see cref="Sizes"/> collection. Used as the working copy for the add dialog
+    /// (so nothing is committed until the user confirms) and as the source for <see cref="AddImageSize(string)"/>.
     /// </summary>
     public ImageSize CreateNewImageSizeModel(string namePrefix = "")
     {
