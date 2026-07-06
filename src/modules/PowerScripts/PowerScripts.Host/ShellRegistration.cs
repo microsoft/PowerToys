@@ -9,7 +9,7 @@ using PowerScripts.Core.Registry;
 namespace PowerScripts.Host;
 
 /// <summary>
-/// Registers / unregisters the Explorer right-click "PowerScript" cascading submenu for file
+/// Registers / unregisters the Explorer right-click "PowerScripts" cascading submenu for file
 /// PowerScripts. For each file extension declared by a script, it writes a per-user shell verb under
 /// <c>HKCU\Software\Classes\SystemFileAssociations\&lt;ext&gt;\shell\PowerScripts</c> whose nested
 /// sub-verbs (one per matching script) invoke <c>PowerScripts.Host.exe run &lt;id&gt; --files "%1"</c>.
@@ -24,6 +24,10 @@ internal static class ShellRegistration
     private const string RootVerb = "PowerScripts";
     private const string MenuLabel = "PowerScripts";
     private const string ClassesRoot = @"Software\Classes\SystemFileAssociations";
+
+    /// <summary>Root under HKCU\Software\Classes that holds the per-extension cascade command trees.</summary>
+    private const string CascadeRoot = @"Software\Classes";
+    private const string CascadeKeyPrefix = "PowerScripts.Cascade.";
 
     /// <summary>Marker value so uninstall only removes keys this tool created.</summary>
     private const string OwnerMarkerName = "PowerScriptsOwned";
@@ -62,15 +66,22 @@ internal static class ShellRegistration
         {
             RemoveVerbForExtension(ext);
 
+            // Explorer renders a cascading submenu when the verb points at an "ExtendedSubCommandsKey":
+            // a key (relative to HKCU\Software\Classes) whose \shell subtree holds the child commands.
+            // This is the documented per-user pattern and is reliable on Windows 11, unlike an empty
+            // "SubCommands" value which frequently renders nothing.
+            var cascadeName = CascadeKeyPrefix + ext.TrimStart('.');
+
             var verbPath = $@"{ClassesRoot}\{ext}\shell\{RootVerb}";
-            using var verbKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(verbPath)!;
-            verbKey.SetValue("MUIVerb", MenuLabel);
-            verbKey.SetValue(OwnerMarkerName, 1, RegistryValueKind.DWord);
+            using (var verbKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(verbPath)!)
+            {
+                verbKey.SetValue("MUIVerb", MenuLabel);
+                verbKey.SetValue(OwnerMarkerName, 1, RegistryValueKind.DWord);
+                verbKey.SetValue("ExtendedSubCommandsKey", cascadeName);
+            }
 
-            // Presence of "SubCommands" makes Explorer render the nested \shell verbs as a submenu.
-            verbKey.SetValue("SubCommands", string.Empty);
-
-            using var subShell = verbKey.CreateSubKey("shell")!;
+            var cascadeShellPath = $@"{CascadeRoot}\{cascadeName}\shell";
+            using var subShell = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(cascadeShellPath)!;
             foreach (var script in scripts)
             {
                 using var item = subShell.CreateSubKey(script.Id)!;
@@ -109,26 +120,27 @@ internal static class ShellRegistration
     private static void RemoveVerbForExtension(string ext)
     {
         var verbParent = $@"{ClassesRoot}\{ext}\shell";
-        using var shellKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(verbParent, writable: true);
-        if (shellKey is null)
+        using (var shellKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(verbParent, writable: true))
         {
-            return;
-        }
-
-        // Only delete the verb if we own it.
-        using (var verbKey = shellKey.OpenSubKey(RootVerb))
-        {
-            if (verbKey is null)
+            if (shellKey is not null)
             {
-                return;
-            }
+                // Only delete the verb if we own it.
+                var owned = false;
+                using (var verbKey = shellKey.OpenSubKey(RootVerb))
+                {
+                    owned = verbKey is not null && verbKey.GetValue(OwnerMarkerName) is not null;
+                }
 
-            if (verbKey.GetValue(OwnerMarkerName) is null)
-            {
-                return;
+                if (owned)
+                {
+                    shellKey.DeleteSubKeyTree(RootVerb, throwOnMissingSubKey: false);
+                }
             }
         }
 
-        shellKey.DeleteSubKeyTree(RootVerb, throwOnMissingSubKey: false);
+        // Remove the associated cascade command tree.
+        var cascadeName = CascadeKeyPrefix + ext.TrimStart('.');
+        using var cascadeParent = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(CascadeRoot, writable: true);
+        cascadeParent?.DeleteSubKeyTree(cascadeName, throwOnMissingSubKey: false);
     }
 }
