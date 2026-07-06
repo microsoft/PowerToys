@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -211,40 +209,5 @@ public class AdjustCommandExecutorTests
 
         Assert.IsNull(result);
         Assert.AreEqual(CliExitCodes.HardwareFailure, error!.Error.ExitCode);
-    }
-
-    // ─── Fakes ────────────────────────────────────────────────────────────────
-    private sealed class NoOpManager : IMonitorManager
-    {
-        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Success());
-    }
-
-    private sealed class FailingManager : IMonitorManager
-    {
-        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
-
-        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default) => Task.FromResult(MonitorOperationResult.Failure("simulated hardware failure"));
     }
 }

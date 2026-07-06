@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,15 +26,11 @@ public class IpcDispatchTests
     private static readonly TimeSpan AnyTimeout = TimeSpan.FromSeconds(30);
 
     // ── helpers ──────────────────────────────────────────────────────────────
-    private sealed class CaptureOutput : ICliOutput, IDisposable
+    private sealed class CaptureOutput : ICliOutput
     {
         private readonly List<string> stdoutLines = new();
 
         private readonly List<string> stderrLines = new();
-
-        private readonly StringWriter stdout = new();
-
-        private readonly StringWriter stderr = new();
 
         public IReadOnlyList<string> StdoutLines => this.stdoutLines;
 
@@ -56,12 +51,6 @@ public class IpcDispatchTests
         public void WriteError(CliErrorResult r) => this.stderrLines.Add("error:" + r.Error.Code + ":" + r.Error.ExitCode);
 
         public void WriteWarning(string message) => this.stderrLines.Add("warn:" + message);
-
-        public void Dispose()
-        {
-            this.stdout.Dispose();
-            this.stderr.Dispose();
-        }
     }
 
     private static IpcDispatcher MakeDispatcher(string? stubResponse, CaptureOutput output)

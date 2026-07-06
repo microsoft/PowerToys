@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
 using PowerDisplay.Models;
@@ -47,42 +46,6 @@ public class CliRequestHandlerTests
         };
 
     /// <summary>
-    /// Fake no-op <see cref="IMonitorManager"/> that records set calls without performing hardware writes.
-    /// </summary>
-    private sealed class FakeManager : IMonitorManager
-    {
-        public bool FailWrites { get; set; }
-
-        public string FailureMessage { get; set; } = "hardware error";
-
-        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default)
-            => Respond();
-
-        private Task<MonitorOperationResult> Respond()
-            => Task.FromResult(FailWrites
-                ? MonitorOperationResult.Failure(FailureMessage)
-                : MonitorOperationResult.Success());
-    }
-
-    /// <summary>
     /// Builds a minimal <see cref="CliRequestEnvelope"/> for the given command.
     /// </summary>
     private static CliRequestEnvelope MakeEnvelope(string command) => new() { Command = command };
@@ -103,7 +66,7 @@ public class CliRequestHandlerTests
             monitors ?? new[] { MakeMon() },
             NoHidden,
             Array.Empty<CustomVcpValueMapping>(),
-            new FakeManager(),
+            new NoOpManager(),
             defaultStep,
             () => profiles ?? EmptyProfiles,
             applyProfile ?? ((_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(Array.Empty<ProfileApplyOutcome>())),

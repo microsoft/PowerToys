@@ -3,11 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -556,63 +554,5 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
-    }
-
-    // ─── Fake IMonitorManager implementations ────────────────────────────────
-    /// <summary>Always returns Success for all write operations.</summary>
-    private sealed class NoOpManager : IMonitorManager
-    {
-        public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-
-        public Task<MonitorOperationResult> SetRotationAsync(string monitorId, int orientation, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Success());
-    }
-
-    /// <summary>Always returns Failure for all write operations.</summary>
-    private sealed class FailingManager : IMonitorManager
-    {
-        private readonly string _errorMessage;
-
-        public FailingManager(string errorMessage = "simulated hardware failure")
-        {
-            _errorMessage = errorMessage;
-        }
-
-        public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
-
-        public Task<MonitorOperationResult> SetRotationAsync(string monitorId, int orientation, CancellationToken cancellationToken = default)
-            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
     }
 }

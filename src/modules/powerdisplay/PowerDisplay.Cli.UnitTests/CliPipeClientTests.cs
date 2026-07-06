@@ -50,7 +50,7 @@ public class CliPipeClientTests
             using var reader = new StreamReader(server, CliPipeProtocol.PipeEncoding, false, CliPipeProtocol.BufferSize, leaveOpen: true);
             using var writer = new StreamWriter(server, CliPipeProtocol.PipeEncoding, CliPipeProtocol.BufferSize, leaveOpen: true) { AutoFlush = true };
 
-            var line = await reader.ReadLineAsync();
+            _ = await reader.ReadLineAsync();
 
             // Echo back the canned response regardless of what was sent
             await writer.WriteLineAsync(ResponseJson);

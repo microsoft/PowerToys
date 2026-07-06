@@ -28,9 +28,9 @@ public sealed class CliError
 
     /// <summary>
     /// Optional English fallback message. The app leaves this empty and sends only <see cref="Code"/>
-    /// plus the structured fields below; the CLI composes the localized, human-readable message from
-    /// <see cref="Code"/> (see <c>Resources</c>). This is populated only as a last-resort fallback for
-    /// a <see cref="Code"/> the CLI does not recognize.
+    /// and <see cref="MessageId"/> plus the structured fields below; the CLI composes the localized,
+    /// human-readable message from <see cref="MessageId"/> (see <c>Resources</c>). This is populated
+    /// only as a last-resort fallback for a <see cref="MessageId"/> the CLI does not recognize.
     /// </summary>
     public string Message { get; init; } = string.Empty;
 
@@ -64,8 +64,8 @@ public sealed class CliError
 
     /// <summary>
     /// Optional English fallback hint. Like <see cref="Message"/>, the app normally leaves this empty
-    /// and the CLI derives the localized hint from <see cref="Code"/>; used only as a fallback for an
-    /// unrecognized <see cref="Code"/>.
+    /// and the CLI derives the localized hint from <see cref="MessageId"/>; used only as a fallback for
+    /// an unrecognized <see cref="MessageId"/>.
     /// </summary>
     public string? Hint { get; init; }
 }
