@@ -415,51 +415,91 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Select a toolbar tool by LOCATING its button via UIA (winappcli <c>search</c> gives the button's
-    /// screen rectangle) and then clicking it with a REAL mouse click at its centre — deliberately NOT a
-    /// UIA Invoke. A synthetic Invoke toggles the button programmatically without moving the mouse or
-    /// generating real WM_LBUTTONDOWN/UP, which can leave the Measure Tool's mouse-driven capture/tracking
-    /// state uninitialised so the following measuring gesture never registers. Clicking the button the way
-    /// a user would keeps the whole interaction on the real-input path. Falls back to a UIA invoke only if
-    /// the button reports no usable bounds. After selecting, move the cursor onto the capture surface and
-    /// CONFIRM the tool engaged by polling for the full-screen overlay window
-    /// (<c>PowerToys.MeasureToolOverlay</c>) — its presence means a following gesture will actually measure.
+    /// Select a toolbar tool and CONFIRM it actually engaged, retrying until the full-screen overlay
+    /// window (<c>PowerToys.MeasureToolOverlay</c>) appears — the authoritative "tool engaged" signal.
+    /// Each attempt LOCATES the button via UIA (winappcli <c>search</c> → its screen rect) and clicks it
+    /// with a REAL mouse click at its centre (not a UIA Invoke, so the whole interaction stays on the
+    /// real-input path the Measure Tool's mouse-driven capture needs), then moves the cursor onto the
+    /// capture surface and checks for the overlay. The toolbar's UIA tree exists within a second of the
+    /// process starting, but on a slow/headless CI agent the window isn't INTERACTIVE for a few more
+    /// seconds — a click that lands before then is silently dropped (the tool never engages, no overlay).
+    /// So a single click isn't enough; we retry. The tool buttons are ToggleButtons (clicking a SELECTED
+    /// one deselects it via ResetState), so we only click when <c>ToggleState</c> is Off — a retry must
+    /// never toggle an already-engaged tool back off. Falls back to a UIA invoke if the button reports no
+    /// usable bounds.
     /// </summary>
     private static void SelectToolAndVerify(Session ruler, string buttonId, string testName)
     {
-        var button = ruler.Find<Element>(By.AccessibilityId(buttonId), 15000);
-        if (button.Width > 0 && button.Height > 0)
-        {
-            var btnX = button.X + (button.Width / 2);
-            var btnY = button.Y + (button.Height / 2);
-            Log($"SelectToolAndVerify[{testName}]: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height}; real mouse click at ({btnX},{btnY})");
-            MouseHelper.MoveTo(btnX, btnY);
-            Thread.Sleep(200);
-            MouseHelper.LeftClick();
-            Thread.Sleep(300);
-        }
-        else
-        {
-            Log($"SelectToolAndVerify[{testName}]: {buttonId} reported no usable bounds ({button.Width}x{button.Height}); falling back to a UIA invoke");
-            button.Click(msPostAction: 300);
-        }
-
-        Log($"SelectToolAndVerify[{testName}]: {buttonId} selected");
-
-        // Moving the cursor off the toolbar onto the capture surface is what makes the overlay appear.
-        // ActivateScreenRuler parked the cursor at the screen centre, so move to an offset to produce a
-        // real tracked move (moving to the centre would be a no-op). The overlay shows right after the
-        // move, so just settle briefly and confirm once — no need to poll.
         var (cx, cy) = ScreenCenter();
-        MouseHelper.MoveTo(cx, cy);
-        Log($"SelectToolAndVerify[{testName}]: cursor moved to ({cx},{cy}); settling 500ms before the overlay check");
-        Thread.Sleep(500);
+        var deadline = DateTime.UtcNow.AddSeconds(25);
+        var attempt = 0;
 
-        Log($"SelectToolAndVerify[{testName}]: checking for the measurement overlay");
-        Assert.IsTrue(
-            IsMeasureOverlayPresent(),
-            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after the " +
-            "tool invoke — the Measure Tool never entered capture state, so a measurement can't be taken.");
+        while (true)
+        {
+            attempt++;
+
+            Element button;
+            try
+            {
+                button = ruler.Find<Element>(By.AccessibilityId(buttonId), 8000);
+            }
+            catch (Exception ex)
+            {
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} not found yet ({ex.GetType().Name}); the toolbar may still be coming up — retrying");
+                if (DateTime.UtcNow >= deadline)
+                {
+                    break;
+                }
+
+                Thread.Sleep(500);
+                continue;
+            }
+
+            // ToggleButton: clicking a SELECTED tool deselects it (ResetState), so only click when it
+            // isn't already engaged — otherwise a retry would toggle the tool back off.
+            var toggleState = button.GetProperty("ToggleState");
+            if (string.Equals(toggleState, "On", StringComparison.OrdinalIgnoreCase))
+            {
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} already engaged (ToggleState=On); not re-clicking");
+            }
+            else if (button.Width > 0 && button.Height > 0)
+            {
+                var btnX = button.X + (button.Width / 2);
+                var btnY = button.Y + (button.Height / 2);
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height} (offscreen={button.IsOffscreen}, toggle={toggleState}); real mouse click at ({btnX},{btnY})");
+                MouseHelper.MoveTo(btnX, btnY);
+                Thread.Sleep(200);
+                MouseHelper.LeftClick();
+                Thread.Sleep(300);
+            }
+            else
+            {
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} reported no usable bounds ({button.Width}x{button.Height}); falling back to a UIA invoke");
+                button.Click(msPostAction: 300);
+            }
+
+            // The overlay only shows once the cursor leaves the toolbar onto the capture surface.
+            MouseHelper.MoveTo(cx, cy);
+            Thread.Sleep(500);
+
+            if (IsMeasureOverlayPresent())
+            {
+                Log($"SelectToolAndVerify[{testName}]: overlay present after attempt {attempt} — tool engaged");
+                return;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                break;
+            }
+
+            Log($"SelectToolAndVerify[{testName}]: overlay not up after attempt {attempt} — the toolbar was likely not interactive when clicked; retrying");
+            Thread.Sleep(500);
+        }
+
+        Assert.Fail(
+            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after {attempt} " +
+            "tool-selection attempts — the Measure Tool never entered capture state, so a measurement can't be taken.");
     }
 
     /// <summary>
