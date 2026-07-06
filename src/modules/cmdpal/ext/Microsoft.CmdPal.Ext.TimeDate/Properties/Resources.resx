@@ -435,27 +435,35 @@
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode" xml:space="preserve">
     <value>Date shown in the Clock dock band</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_Description" xml:space="preserve">
-    <value>The settings 'First week of the year' and 'First day of the week' are used to calculate the week number.</value>
-  </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate" xml:space="preserve">
     <value>System date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber" xml:space="preserve">
-    <value>System date and week number (e.g. '05.07.2026 · W27')</value>
-    <comment>'W27' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek" xml:space="preserve">
+    <value>Date and ISO 8601 week number (e.g. '06.07.2026 · W28')</value>
+    <comment>'W28' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly" xml:space="preserve">
-    <value>System date and week number, number only (e.g. '05.07.2026 · 27')</value>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek" xml:space="preserve">
+    <value>Date and US week number (week 1 contains January 1st)</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek" xml:space="preserve">
+    <value>Date and week number based on the two settings above</value>
+    <comment>Refers to the settings 'First week of the year' and 'First day of the week' shown above this setting.</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate" xml:space="preserve">
+    <value>ISO 8601 week date (e.g. '2026-W28-1')</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat" xml:space="preserve">
     <value>Custom format (defined in the field below)</value>
+  </data>
+  <data name="timedate_dock_date_week_format" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Date line of the Clock dock band when a week number is shown. {0} is the date, {1} is the week number (e.g. "W27").</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandCustomFormat" xml:space="preserve">
     <value>Custom date format for the Clock dock band</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description" xml:space="preserve">
-    <value>Only used when 'Custom format' is selected above. Uses the same syntax as 'Custom formats', e.g. 'ddd dd.MM \W WOY' shows 'Sat 05.07 W 27'.</value>
+    <value>Only used when 'Custom format' is selected above. Date format syntax plus WOY for the week of the year, e.g. 'ddd dd.MM \KW WOY' shows 'Mon 06.07 KW 28' and 'dd.MM.yyyy · WOY' shows the plain week number after the date.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter" xml:space="preserve">
     <value>Open notification center when clicking the Clock dock band</value>

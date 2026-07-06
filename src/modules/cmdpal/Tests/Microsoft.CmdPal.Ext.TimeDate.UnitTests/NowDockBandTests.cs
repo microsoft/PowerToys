@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -33,10 +34,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             CultureInfo.CurrentUICulture = originalUiCulture;
         }
 
-        private static int CurrentWeek() => CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
-            DateTime.Now,
-            DateTimeFormatInfo.CurrentInfo.CalendarWeekRule,
-            DateTimeFormatInfo.CurrentInfo.FirstDayOfWeek);
+        // Default numbering system is ISO 8601.
+        private static int CurrentWeek() => ISOWeek.GetWeekOfYear(DateTime.Now);
 
         [TestMethod]
         public void SystemDateModeShowsOnlyTheDate()
@@ -68,10 +67,10 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         }
 
         [TestMethod]
-        public void WeekNumberModeRespectsFirstWeekAndFirstDaySettings()
+        public void WeekNumberModeRespectsCustomFirstWeekAndFirstDaySettings()
         {
-            // Setup: ISO 8601 week numbering (first four day week, Monday as first day)
-            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 1);
+            // Setup: custom week mode with first day rule and Monday
+            var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 1, clockBandDateMode: 3);
 
             // Act
             var band = new NowDockBand(settings);
@@ -79,13 +78,27 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             // Assert
             var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
                 DateTime.Now,
-                CalendarWeekRule.FirstFourDayWeek,
+                CalendarWeekRule.FirstDay,
                 DayOfWeek.Monday);
             StringAssert.Contains(band.Subtitle, expectedWeek.ToString(CultureInfo.CurrentCulture));
         }
 
         [TestMethod]
-        public void NumberOnlyModeAppendsTheBareWeekNumber()
+        public void IsoWeekDateModeShowsTheIsoWeekDate()
+        {
+            // Setup
+            var settings = new Settings(clockBandDateMode: 4);
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            Assert.AreEqual(TimeAndDateHelper.GetIsoWeekDateString(DateTime.Now), band.Subtitle);
+            Assert.AreEqual(3, band.MoreCommands.Length);
+        }
+
+        [TestMethod]
+        public void UsWeekModeAppendsTheUsWeekNumber()
         {
             // Setup
             var settings = new Settings(clockBandDateMode: 2);
@@ -94,15 +107,19 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             var band = new NowDockBand(settings);
 
             // Assert
-            var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
-            Assert.AreEqual($"{expectedDate} · {CurrentWeek().ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+            var expectedWeek = CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+                DateTime.Now,
+                CalendarWeekRule.FirstDay,
+                DayOfWeek.Sunday);
+            StringAssert.Contains(band.Subtitle, expectedWeek.ToString(CultureInfo.CurrentCulture));
+            Assert.AreEqual(3, band.MoreCommands.Length);
         }
 
         [TestMethod]
         public void CustomFormatModeOverridesTheDateLine()
         {
             // Setup
-            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "yyyy-MM-dd");
+            var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: "yyyy-MM-dd");
 
             // Act
             var band = new NowDockBand(settings);
@@ -114,25 +131,21 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         [TestMethod]
         public void CustomFormatModeSupportsWeekOfYearPlaceholder()
         {
-            // Setup: ISO 8601 week numbering
-            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 3, customDateFormatInClockBand: "\\W WOY");
+            // Setup: ISO-like first week/first day settings feed the WOY placeholder
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 5, customDateFormatInClockBand: "\\W WOY");
 
             // Act
             var band = new NowDockBand(settings);
 
             // Assert
-            var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
-                DateTime.Now,
-                CalendarWeekRule.FirstFourDayWeek,
-                DayOfWeek.Monday);
-            Assert.AreEqual($"W {expectedWeek.ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
+            Assert.AreEqual($"W {CurrentWeek().ToString(CultureInfo.CurrentCulture)}", band.Subtitle);
         }
 
         [TestMethod]
         public void CustomFormatModeWithEmptyFormatFallsBackToDefaultDate()
         {
             // Setup
-            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: string.Empty);
+            var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: string.Empty);
 
             // Act
             var band = new NowDockBand(settings);
@@ -146,7 +159,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
         public void CustomFormatModeWithInvalidFormatFallsBackToDefaultDate()
         {
             // Setup: an unclosed literal quote is an invalid .NET date format
-            var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "'unclosed");
+            var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: "'unclosed");
 
             // Act
             var band = new NowDockBand(settings);
@@ -154,6 +167,21 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             // Assert
             var expectedDate = DateTime.Now.ToString("d", CultureInfo.CurrentCulture);
             Assert.AreEqual(expectedDate, band.Subtitle);
+        }
+
+        [TestMethod]
+        public void CustomFormatModeRendersUnrecognizedLettersLiterally()
+        {
+            // 'W' is no date format specifier and is copied to the output unchanged, so
+            // a German user can write '\KW WOY' to get 'KW 27' without escaping the W.
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 5, customDateFormatInClockBand: "dd.MM \\KW WOY");
+
+            // Act
+            var band = new NowDockBand(settings);
+
+            // Assert
+            StringAssert.Contains(band.Subtitle, "KW ");
+            StringAssert.Contains(band.Subtitle, CurrentWeek().ToString(CultureInfo.CurrentCulture));
         }
 
         [TestMethod]

@@ -826,7 +826,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Only used when &apos;Custom format&apos; is selected above. Uses the same syntax as &apos;Custom formats&apos;, e.g. &apos;ddd dd.MM \W WOY&apos; shows &apos;Sat 05.07 W 27&apos;..
+        ///   Looks up a localized string similar to Only used when &apos;Custom format&apos; is selected above. Date format syntax plus WOY for the week of the year, e.g. &apos;ddd dd.MM \KW WOY&apos; shows &apos;Mon 06.07 KW 28&apos; and &apos;dd.MM.yyyy · WOY&apos; shows the plain week number after the date..
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description {
             get {
@@ -844,11 +844,29 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The settings &apos;First week of the year&apos; and &apos;First day of the week&apos; are used to calculate the week number..
+        ///   Looks up a localized string similar to Date and ISO 8601 week number (e.g. &apos;06.07.2026 · W28&apos;).
         /// </summary>
-        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_Description {
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek {
             get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_Description", resourceCulture);
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Date and US week number (week 1 contains January 1st).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Date and week number based on the two settings above.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek", resourceCulture);
             }
         }
 
@@ -862,29 +880,20 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to ISO 8601 week date (e.g. &apos;2026-W28-1&apos;).
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to System date.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to System date and week number (e.g. &apos;05.07.2026 · W27&apos;).
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to System date and week number, number only (e.g. &apos;05.07.2026 · 27&apos;).
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly", resourceCulture);
             }
         }
 
@@ -1075,6 +1084,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_copy_week_number_command_name {
             get {
                 return ResourceManager.GetString("timedate_copy_week_number_command_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} · {1}.
+        /// </summary>
+        public static string timedate_dock_date_week_format {
+            get {
+                return ResourceManager.GetString("timedate_dock_date_week_format", resourceCulture);
             }
         }
 

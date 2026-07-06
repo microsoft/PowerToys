@@ -96,15 +96,19 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     private static readonly List<ChoiceSetSetting.Choice> _clockBandDateModeChoices = new()
     {
         new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate, "0"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber, "1"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumberOnly, "2"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "3"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek, "1"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek, "2"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek, "3"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate, "4"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "5"),
     };
 
+    // Choice sets render the description as the visible line above the dropdown,
+    // so label and description carry the same text (same pattern as _firstDayOfWeek).
     private readonly ChoiceSetSetting _clockBandDateMode = new(
         Namespaced(nameof(ClockBandDateMode)),
         Resources.Microsoft_plugin_timedate_SettingClockBandDateMode,
-        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_Description,
+        Resources.Microsoft_plugin_timedate_SettingClockBandDateMode,
         _clockBandDateModeChoices);
 
     private readonly TextSetting _customDateFormatInClockBand = new(
@@ -125,45 +129,9 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
         string.Empty);
 
-    public int FirstWeekOfYear
-    {
-        get
-        {
-            if (_firstWeekOfYear.Value is null || string.IsNullOrEmpty(_firstWeekOfYear.Value))
-            {
-                return -1;
-            }
+    public int FirstWeekOfYear => ParseIntSetting(_firstWeekOfYear.Value, -1);
 
-            var success = int.TryParse(_firstWeekOfYear.Value, out var result);
-
-            if (!success)
-            {
-                return -1;
-            }
-
-            return result;
-        }
-    }
-
-    public int FirstDayOfWeek
-    {
-        get
-        {
-            if (_firstDayOfWeek.Value is null || string.IsNullOrEmpty(_firstDayOfWeek.Value))
-            {
-                return -1;
-            }
-
-            var success = int.TryParse(_firstDayOfWeek.Value, out var result);
-
-            if (!success)
-            {
-                return -1;
-            }
-
-            return result;
-        }
-    }
+    public int FirstDayOfWeek => ParseIntSetting(_firstDayOfWeek.Value, -1);
 
     public bool EnableFallbackItems => _enableFallbackItems.Value;
 
@@ -171,17 +139,16 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
-    public int ClockBandDateMode
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(_clockBandDateMode.Value))
-            {
-                return 0;
-            }
+    public int ClockBandDateMode => ParseIntSetting(_clockBandDateMode.Value, 0);
 
-            return int.TryParse(_clockBandDateMode.Value, out var result) ? result : 0;
+    private static int ParseIntSetting(string value, int fallback)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return fallback;
         }
+
+        return int.TryParse(value, out var result) ? result : fallback;
     }
 
     public string CustomDateFormatInClockBand => _customDateFormatInClockBand.Value ?? string.Empty;
@@ -208,7 +175,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
         Settings.Add(_clockBandDateMode);
-        _customDateFormatInClockBand.Placeholder = "ddd dd.MM \\W WOY";
+        _customDateFormatInClockBand.Placeholder = "ddd dd.MM \\KW WOY";
         Settings.Add(_customDateFormatInClockBand);
         Settings.Add(_clockBandOpensNotificationCenter);
 

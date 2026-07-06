@@ -40,7 +40,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         _bandItem = new NowDockBand(_settingsManager);
         _notificationCenterBandItem = new NotificationCenterDockBand();
 
-        // Update the band immediately when the user changes a setting (e.g. the week number toggle).
+        // Update the band immediately when the user changes a setting (e.g. the week number mode).
         _settingsManager.Settings.SettingsChanged += (s, a) => _bandItem.Refresh();
     }
 
@@ -83,7 +83,6 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 internal sealed partial class NowDockBand : ListItem
 {
     private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
-    private static readonly CompositeFormat WeekNumberFormat = System.Text.CompositeFormat.Parse(Resources.timedate_dock_week_number_format);
     private readonly ISettingsInterface _settings;
     private readonly OpenUrlCommand _notificationCenterCommand;
     private readonly NoOpCommand _noOpCommand;
@@ -152,28 +151,14 @@ internal sealed partial class NowDockBand : ListItem
             CultureInfo.CurrentCulture);
 
         var dateMode = _settings.ClockBandDateMode;
-        var subtitleString = dateString;
+        var subtitleString = TimeAndDateHelper.GetClockBandDateLine(dateTimeNow, _settings);
 
-        var firstWeekRule = TimeAndDateHelper.GetCalendarWeekRule(_settings.FirstWeekOfYear);
-        var firstDayOfTheWeek = TimeAndDateHelper.GetFirstDayOfWeek(_settings.FirstDayOfWeek);
-        var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
-        _copyWeekNumberCommand.Text = weekOfYear.ToString(CultureInfo.CurrentCulture);
-
-        switch (dateMode)
+        // The week number is part of the band (subtitle or copy command) in the week
+        // number and ISO week date modes only.
+        var showWeekNumber = dateMode is >= 1 and <= 4;
+        if (showWeekNumber)
         {
-            case 1: // System date and week number
-                subtitleString = $"{dateString} · {string.Format(CultureInfo.CurrentCulture, WeekNumberFormat, weekOfYear)}";
-                break;
-            case 2: // System date and week number, number only
-                subtitleString = $"{dateString} · {weekOfYear.ToString(CultureInfo.CurrentCulture)}";
-                break;
-            case 3: // Custom format; falls back to the system date if the format is empty or invalid
-                if (TimeAndDateHelper.TryFormatCustomString(dateTimeNow, _settings.CustomDateFormatInClockBand, firstWeekRule, firstDayOfTheWeek, out var customString))
-                {
-                    subtitleString = customString;
-                }
-
-                break;
+            _copyWeekNumberCommand.Text = TimeAndDateHelper.GetDockWeekOfYear(dateTimeNow, _settings).ToString(CultureInfo.CurrentCulture);
         }
 
         Title = timeString;
@@ -190,7 +175,6 @@ internal sealed partial class NowDockBand : ListItem
         }
 
         // Only rebuild the context menu when the setting changed.
-        var showWeekNumber = dateMode == 1 || dateMode == 2;
         if (_weekNumberShown != showWeekNumber)
         {
             _weekNumberShown = showWeekNumber;
