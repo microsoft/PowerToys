@@ -498,22 +498,18 @@ internal static class TimeAndDateHelper
             var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
             var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
             var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
-            var containsCustomSyntax = StringContainsCustomFormatSyntax(syntax);
-
             var value = ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, syntax, firstWeekRule, firstDayOfTheWeek);
             try
             {
                 value = dtObject.ToString(value, CultureInfo.CurrentCulture);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (!containsCustomSyntax)
-                {
-                    return false;
-                }
-
-                // Do not fail as we have custom format syntax. Instead fix backslashes.
-                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
+                // Unlike a transient search result, the dock shows this string permanently,
+                // so an invalid format falls back to the plain system date instead of
+                // showing the raw pattern text.
+                Logger.LogWarning($"Invalid custom Clock band format '{formatSyntax}': {ex.Message}");
+                return false;
             }
 
             result = value;
