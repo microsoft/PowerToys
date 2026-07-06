@@ -429,6 +429,30 @@ namespace Awake.Properties {
             }
         }
 
+        internal static string AWAKE_FLYOUT_WHILE_AGENT_WORKS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_WHILE_AGENT_WORKS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_TAB_APPS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_TAB_APPS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_TAB_AGENTS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_TAB_AGENTS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_AGENTS_EMPTY {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_AGENTS_EMPTY", resourceCulture);
+            }
+        }
+
         internal static string AWAKE_FLYOUT_FOREVER {
             get {
                 return ResourceManager.GetString("AWAKE_FLYOUT_FOREVER", resourceCulture);

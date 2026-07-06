@@ -25,6 +25,7 @@ namespace Awake.ViewModels
         Forever,
         Custom,
         WhileApp,
+        WhileAgent,
     }
 
     /// <summary>
@@ -45,6 +46,9 @@ namespace Awake.ViewModels
 
         private static readonly CompositeFormat AwakeWhileAppFormat =
             CompositeFormat.Parse(Resources.AWAKE_FLYOUT_WHILE_APP_RUNS);
+
+        private static readonly CompositeFormat AwakeWhileAgentFormat =
+            CompositeFormat.Parse(Resources.AWAKE_FLYOUT_WHILE_AGENT_WORKS);
 
         private static readonly CompositeFormat CustomUntilCardFormat =
             CompositeFormat.Parse(Resources.AWAKE_FLYOUT_CARD_CUSTOM_UNTIL);
@@ -91,6 +95,14 @@ namespace Awake.ViewModels
         private string _boundAppName = string.Empty;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(ActiveAgentIconVisibility))]
+        [NotifyPropertyChangedFor(nameof(ActiveCountdownVisibility))]
+        private bool _isAgentBound;
+
+        [ObservableProperty]
+        private string _boundAgentName = string.Empty;
+
+        [ObservableProperty]
         private string _customCardText = Resources.AWAKE_FLYOUT_CUSTOM;
 
         [ObservableProperty]
@@ -108,8 +120,14 @@ namespace Awake.ViewModels
                 ? Microsoft.UI.Xaml.Visibility.Visible
                 : Microsoft.UI.Xaml.Visibility.Collapsed;
 
+        // Agents have no bitmap icon, so surface a glyph in the header while agent-bound.
+        public Microsoft.UI.Xaml.Visibility ActiveAgentIconVisibility =>
+            IsAgentBound
+                ? Microsoft.UI.Xaml.Visibility.Visible
+                : Microsoft.UI.Xaml.Visibility.Collapsed;
+
         public Microsoft.UI.Xaml.Visibility ActiveCountdownVisibility =>
-            IsProcessBound && WhileAppCardIcon != null
+            (IsProcessBound && WhileAppCardIcon != null) || IsAgentBound
                 ? Microsoft.UI.Xaml.Visibility.Collapsed
                 : Microsoft.UI.Xaml.Visibility.Visible;
 
@@ -152,6 +170,8 @@ namespace Awake.ViewModels
                 // which needs the correct IsProcessBound to map INDEFINITE to "While app" vs. "Forever".
                 IsProcessBound = Manager.IsProcessBound;
                 BoundAppName = Manager.BoundProcessName;
+                IsAgentBound = Manager.IsAgentBound;
+                BoundAgentName = Manager.BoundAgentName;
                 Mode = Manager.CurrentOperatingMode;
                 KeepDisplayOn = Manager.IsDisplayOn;
 
@@ -370,6 +390,10 @@ namespace Awake.ViewModels
 
         public string PendingProcessName { get; set; } = string.Empty;
 
+        public string PendingAgentId { get; set; } = string.Empty;
+
+        public string PendingAgentName { get; set; } = string.Empty;
+
         /// <summary>
         /// Records a custom duration / until-date selection (without starting it) and updates the
         /// Custom card label. The session only starts when the user presses Start, except when a
@@ -393,6 +417,21 @@ namespace Awake.ViewModels
             PendingProcessId = processId;
             PendingProcessName = processName ?? string.Empty;
             WhileAppCardText = string.IsNullOrEmpty(processName) ? Resources.AWAKE_FLYOUT_CARD_WHILE_APP : processName;
+            WhileAppCardIcon = icon;
+            ApplyPendingIfActive();
+        }
+
+        /// <summary>
+        /// Records a "while agent works" selection (without starting it). Reuses the While-app card
+        /// as the surface: the card shows the agent's name and, on Start, binds keep-awake to the
+        /// agent's activity via <see cref="Manager.SetAgentBoundKeepAwake"/>.
+        /// </summary>
+        public void SetPendingAgent(string agentId, string agentName, Microsoft.UI.Xaml.Media.ImageSource? icon = null)
+        {
+            PendingSelection = FlyoutSelectionKind.WhileAgent;
+            PendingAgentId = agentId ?? string.Empty;
+            PendingAgentName = agentName ?? string.Empty;
+            WhileAppCardText = string.IsNullOrEmpty(agentName) ? Resources.AWAKE_FLYOUT_CARD_WHILE_APP : agentName;
             WhileAppCardIcon = icon;
             ApplyPendingIfActive();
         }
@@ -429,6 +468,17 @@ namespace Awake.ViewModels
         {
             switch (Mode)
             {
+                case AwakeMode.INDEFINITE when IsAgentBound:
+                    PendingSelection = FlyoutSelectionKind.WhileAgent;
+                    PendingAgentId = Manager.BoundAgentId;
+                    PendingAgentName = BoundAgentName;
+                    if (!string.IsNullOrEmpty(BoundAgentName))
+                    {
+                        WhileAppCardText = BoundAgentName;
+                    }
+
+                    break;
+
                 case AwakeMode.INDEFINITE when IsProcessBound:
                     PendingSelection = FlyoutSelectionKind.WhileApp;
                     PendingProcessName = BoundAppName;
@@ -514,6 +564,14 @@ namespace Awake.ViewModels
 
                     break;
 
+                case FlyoutSelectionKind.WhileAgent:
+                    if (!string.IsNullOrEmpty(PendingAgentId))
+                    {
+                        ApplyAgentBinding(PendingAgentId, PendingAgentName);
+                    }
+
+                    break;
+
                 case FlyoutSelectionKind.Custom when PendingCustomIsUntil:
                     ApplyUntilDate();
                     break;
@@ -559,6 +617,18 @@ namespace Awake.ViewModels
             }
         }
 
+        public void ApplyAgentBinding(string agentId, string agentName)
+        {
+            try
+            {
+                Manager.SetAgentBoundKeepAwake(agentId, agentName, KeepDisplayOn);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to bind keep-awake to agent {agentId}: {ex.Message}");
+            }
+        }
+
         /// <see cref="Manager.ModeStartedAt"/> / <see cref="Manager.ExpireAt"/>. Intended to be
         /// called once per second by the flyout while it is visible.
         /// </summary>
@@ -578,9 +648,11 @@ namespace Awake.ViewModels
             {
                 // No finite end: surface the infinity glyph instead of a countdown.
                 CountdownTime = "\u221E";
-                OffAtText = IsProcessBound
-                    ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAppFormat, BoundAppName)
-                    : Resources.AWAKE_FLYOUT_AWAKE_INDEFINITELY;
+                OffAtText = IsAgentBound
+                    ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAgentFormat, BoundAgentName)
+                    : IsProcessBound
+                        ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAppFormat, BoundAppName)
+                        : Resources.AWAKE_FLYOUT_AWAKE_INDEFINITELY;
                 OffAtVisibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
             else
@@ -711,9 +783,11 @@ namespace Awake.ViewModels
         {
             StatusText = Mode switch
             {
-                AwakeMode.INDEFINITE => IsProcessBound
-                    ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAppFormat, BoundAppName)
-                    : Resources.AWAKE_FLYOUT_STATUS_INDEFINITE,
+                AwakeMode.INDEFINITE => IsAgentBound
+                    ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAgentFormat, BoundAgentName)
+                    : IsProcessBound
+                        ? string.Format(CultureInfo.CurrentCulture, AwakeWhileAppFormat, BoundAppName)
+                        : Resources.AWAKE_FLYOUT_STATUS_INDEFINITE,
                 AwakeMode.TIMED => string.Format(
                     CultureInfo.CurrentCulture,
                     StatusTimedFormat,

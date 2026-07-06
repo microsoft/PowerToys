@@ -117,6 +117,7 @@ namespace Awake
                 FlyoutSelectionKind.Forever => CardForever,
                 FlyoutSelectionKind.Custom => CardCustom,
                 FlyoutSelectionKind.WhileApp => CardWhileApp,
+                FlyoutSelectionKind.WhileAgent => CardWhileApp,
                 _ => CardForMinutes(ViewModel.PendingMinutes),
             };
 
@@ -124,12 +125,15 @@ namespace Awake
         }
 
         // Shows the captured app icon on the While-app card when one is available, otherwise falls
-        // back to the generic glyph.
+        // back to a glyph (the agent robot glyph when an agent is selected, else the generic app glyph).
         private void RefreshWhileAppVisuals()
         {
             bool hasIcon = ViewModel?.WhileAppCardIcon is not null;
             CardWhileAppIcon.Visibility = hasIcon ? Visibility.Visible : Visibility.Collapsed;
             CardWhileAppGlyph.Visibility = hasIcon ? Visibility.Collapsed : Visibility.Visible;
+
+            bool isAgent = ViewModel?.PendingSelection == FlyoutSelectionKind.WhileAgent;
+            CardWhileAppGlyph.Glyph = isAgent ? "\uE99A" : "\uE7F4";
         }
 
         private ToggleButton? CardForMinutes(uint minutes) => minutes switch

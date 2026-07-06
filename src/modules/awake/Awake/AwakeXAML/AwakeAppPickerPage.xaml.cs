@@ -30,6 +30,7 @@ namespace Awake
         private List<RunningAppInfo> _windowedApps = new();
         private List<RunningAppInfo> _allProcesses = new();
         private bool _allProcessesLoaded;
+        private bool _agentsSubscribed;
         private const int MaxResults = 100;
 
         public AwakeAppPickerPage()
@@ -50,6 +51,17 @@ namespace Awake
             }
 
             _ = LoadRunningAppsAsync();
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+
+            if (_agentsSubscribed)
+            {
+                AgentStatusStore.Changed -= OnAgentStatusChanged;
+                _agentsSubscribed = false;
+            }
         }
 
         private async Task LoadRunningAppsAsync()
@@ -131,6 +143,57 @@ namespace Awake
             if (e.ClickedItem is RunningAppInfo app)
             {
                 ViewModel.SetPendingApp(app.ProcessId, app.DisplayName, app.Icon);
+                GoBack();
+            }
+        }
+
+        private void OnSourceSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // The Segmented control raises SelectionChanged while its items are being added during
+            // InitializeComponent(), before the named panels exist. Ignore those early events.
+            if (AppsPanel is null || AgentsPanel is null)
+            {
+                return;
+            }
+
+            // Index 0 = Apps, index 1 = Agents.
+            bool showAgents = SourceSelector.SelectedIndex == 1;
+
+            AppsPanel.Visibility = showAgents ? Visibility.Collapsed : Visibility.Visible;
+            AgentsPanel.Visibility = showAgents ? Visibility.Visible : Visibility.Collapsed;
+
+            if (showAgents)
+            {
+                AgentStatusStore.EnsureWatching();
+                if (!_agentsSubscribed)
+                {
+                    AgentStatusStore.Changed += OnAgentStatusChanged;
+                    _agentsSubscribed = true;
+                }
+
+                LoadAgents();
+            }
+        }
+
+        private void OnAgentStatusChanged(object? sender, EventArgs e)
+        {
+            // The watcher fires on a background thread; refresh on the UI thread.
+            _ = DispatcherQueue.TryEnqueue(LoadAgents);
+        }
+
+        private void LoadAgents()
+        {
+            List<AgentInfo> agents = AgentStatusStore.GetAgents().ToList();
+
+            AgentListView.ItemsSource = agents;
+            AgentEmptyText.Visibility = agents.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void OnAgentSelected(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is AgentInfo agent)
+            {
+                ViewModel.SetPendingAgent(agent.Id, agent.DisplayName);
                 GoBack();
             }
         }

@@ -281,6 +281,22 @@
     <value>Awake while {0} runs</value>
     <comment>Status line shown while keep-awake is bound to a running app. {0} is the app name.</comment>
   </data>
+  <data name="AWAKE_FLYOUT_WHILE_AGENT_WORKS" xml:space="preserve">
+    <value>Awake while {0} works</value>
+    <comment>Status line shown while keep-awake is bound to a CLI agent. {0} is the agent name.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_TAB_APPS" xml:space="preserve">
+    <value>Apps</value>
+    <comment>Label for the tab on the picker page that lists running applications.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_TAB_AGENTS" xml:space="preserve">
+    <value>Agents</value>
+    <comment>Label for the tab on the picker page that lists active AI CLI agents.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_AGENTS_EMPTY" xml:space="preserve">
+    <value>No active agents found</value>
+    <comment>Placeholder shown on the Agents tab when no AI CLI agent sessions are detected.</comment>
+  </data>
   <data name="AWAKE_FLYOUT_FOREVER" xml:space="preserve">
     <value>Forever</value>
     <comment>Label for the flyout chip that keeps the machine awake indefinitely.</comment>

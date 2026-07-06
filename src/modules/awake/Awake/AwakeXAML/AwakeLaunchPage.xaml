@@ -244,6 +244,12 @@
                             VerticalAlignment="Center"
                             Source="{x:Bind ViewModel.WhileAppCardIcon, Mode=OneWay}"
                             Visibility="{x:Bind ViewModel.ActiveAppIconVisibility, Mode=OneWay}" />
+                        <FontIcon
+                            VerticalAlignment="Center"
+                            FontSize="22"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Glyph="&#xE99A;"
+                            Visibility="{x:Bind ViewModel.ActiveAgentIconVisibility, Mode=OneWay}" />
                         <TextBlock
                             VerticalAlignment="Bottom"
                             FontSize="20"

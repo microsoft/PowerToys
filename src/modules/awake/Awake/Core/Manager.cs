@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
@@ -60,6 +61,21 @@ namespace Awake.Core
         /// </summary>
         internal static string BoundProcessName { get; private set; } = string.Empty;
 
+        /// <summary>
+        /// Gets a value indicating whether the current keep-awake session is bound to a CLI agent
+        /// picked from the flyout's Agents tab (the "While agent works" mode). When true, the
+        /// system is held awake only while <see cref="BoundAgentId"/> reports
+        /// <see cref="AgentActivity.Working"/>; the hold is released when the agent goes idle and
+        /// the session reverts to passive once the agent ends. See <see cref="AgentStatusStore"/>.
+        /// </summary>
+        internal static bool IsAgentBound { get; private set; }
+
+        internal static string BoundAgentId { get; private set; } = string.Empty;
+
+        internal static string BoundAgentName { get; private set; } = string.Empty;
+
+        internal static AgentActivity BoundAgentStatus { get; private set; } = AgentActivity.Unknown;
+
         internal static DateTimeOffset ExpireAt { get; private set; }
 
         /// <summary>
@@ -81,8 +97,17 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
+
+        // While an agent is bound, brief non-working dips (idle/attention between turns) should not
+        // immediately let the machine sleep. We keep the hold for this grace window and only release
+        // once the agent has stayed non-working for the whole duration. Overridable for testing via
+        // the AWAKE_AGENT_IDLE_GRACE_SECONDS environment variable (0 = release immediately).
+        private static readonly TimeSpan _agentIdleGrace = ResolveAgentIdleGrace();
         private static CancellationTokenSource _monitorTokenSource;
         private static IDisposable? _timerSubscription;
+        private static CancellationTokenSource? _agentMonitorTokenSource;
+        private static bool _agentHoldArmed;
+        private static DateTime? _agentIdleSince;
 
         static Manager()
         {
@@ -203,6 +228,14 @@ namespace Awake.Core
             ProcessId = 0;
             IsProcessBound = false;
             BoundProcessName = string.Empty;
+
+            // Tear down any agent-bound monitor and clear its binding for the same reason. The
+            // SetAgentBoundKeepAwake caller re-establishes the binding immediately afterwards.
+            StopAgentMonitor();
+            IsAgentBound = false;
+            BoundAgentId = string.Empty;
+            BoundAgentName = string.Empty;
+            BoundAgentStatus = AgentActivity.Unknown;
 
             Logger.LogInfo("Timer subscription disposed.");
         }
@@ -336,6 +369,194 @@ namespace Awake.Core
                     SetPassiveKeepAwake(updateSettings: false);
                 }
             });
+        }
+
+        /// <summary>
+        /// Keeps the system awake while the CLI agent identified by <paramref name="agentId"/> is
+        /// actively working, and lets the machine sleep when the agent is idle or waiting for input.
+        /// The session reverts to passive automatically once the agent ends (disappears from the
+        /// <see cref="AgentStatusStore"/> snapshot). This is the "While agent works" counterpart of
+        /// <see cref="SetProcessBoundKeepAwake"/>: instead of watching a PID for exit, it polls the
+        /// agent's reported activity and toggles the OS keep-awake hold accordingly. The mode is not
+        /// persisted to settings because an agent id is not stable across restarts.
+        /// </summary>
+        internal static void SetAgentBoundKeepAwake(string agentId, string agentName, bool keepDisplayOn = false, [CallerMemberName] string callerName = "")
+        {
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeIndefinitelyKeepAwakeEvent());
+
+            Logger.LogInfo($"Agent-bound keep-awake starting for agent '{agentId}' ({agentName}), invoked by {callerName}...");
+
+            // Resets the ES hold, stops any prior monitor, and clears any prior binding.
+            CancelExistingThread();
+
+            IsDisplayOn = keepDisplayOn;
+            CurrentOperatingMode = AwakeMode.INDEFINITE;
+            IsAgentBound = true;
+            BoundAgentId = agentId ?? string.Empty;
+            BoundAgentName = string.IsNullOrEmpty(agentName) ? BoundAgentId : agentName;
+            BoundAgentStatus = AgentActivity.Unknown;
+            _agentHoldArmed = false;
+            _agentIdleSince = null;
+
+            SetModeShellIcon();
+
+            StartAgentMonitor(BoundAgentId, keepDisplayOn);
+        }
+
+        /// <summary>
+        /// Background loop that tracks a bound agent's activity and toggles the keep-awake hold:
+        /// arm (ES_SYSTEM_REQUIRED) while <see cref="AgentActivity.Working"/>, and release
+        /// (ES_CONTINUOUS) once the agent has stayed non-working for the idle grace window (so brief
+        /// inter-turn pauses don't nap the machine mid-task), then revert to passive when the agent
+        /// ends. Wakes on <see cref="AgentStatusStore.Changed"/> for responsiveness, with a periodic
+        /// poll as a safety net (also used to expire the grace countdown).
+        /// </summary>
+        private static void StartAgentMonitor(string agentId, bool keepDisplayOn)
+        {
+            var cts = new CancellationTokenSource();
+            _agentMonitorTokenSource = cts;
+
+            AgentStatusStore.EnsureWatching();
+
+            var wake = new ManualResetEventSlim(false);
+            void OnChanged(object? sender, EventArgs e) => wake.Set();
+            AgentStatusStore.Changed += OnChanged;
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    while (!cts.IsCancellationRequested)
+                    {
+                        // Bail out if we were rebound to a different agent or a different mode.
+                        if (!IsAgentBound || !string.Equals(BoundAgentId, agentId, StringComparison.Ordinal))
+                        {
+                            break;
+                        }
+
+                        AgentActivity activity = AgentStatusStore.GetActivity(agentId);
+                        bool statusChanged = activity != BoundAgentStatus;
+                        BoundAgentStatus = activity;
+
+                        if (activity == AgentActivity.Ended)
+                        {
+                            Logger.LogInfo($"Bound agent '{agentId}' ended; reverting Awake to passive.");
+                            SetPassiveKeepAwake(updateSettings: false);
+                            break;
+                        }
+
+                        bool isWorking = activity == AgentActivity.Working;
+                        bool holdChanged = false;
+
+                        if (isWorking)
+                        {
+                            // Active work: cancel any pending grace countdown and (re)arm the hold.
+                            _agentIdleSince = null;
+                            if (!_agentHoldArmed)
+                            {
+                                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+                                _agentHoldArmed = true;
+                                holdChanged = true;
+                                Logger.LogInfo($"Agent '{agentId}' is working; holding the system awake.");
+                            }
+                        }
+                        else if (_agentHoldArmed)
+                        {
+                            // Non-working (idle / attention / error): keep the hold for a grace window so
+                            // brief inter-turn pauses don't let the machine nap mid-task. Release only once
+                            // the agent has stayed non-working for the full grace period.
+                            _agentIdleSince ??= DateTime.UtcNow;
+                            TimeSpan idleFor = DateTime.UtcNow - _agentIdleSince.Value;
+
+                            if (idleFor >= _agentIdleGrace)
+                            {
+                                _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
+                                _agentHoldArmed = false;
+                                _agentIdleSince = null;
+                                holdChanged = true;
+                                Logger.LogInfo($"Agent '{agentId}' stayed {activity} for {idleFor.TotalSeconds:F0}s (>= {_agentIdleGrace.TotalSeconds:F0}s grace); releasing the keep-awake hold.");
+                            }
+                            else if (statusChanged)
+                            {
+                                Logger.LogInfo($"Agent '{agentId}' is {activity}; keeping the hold for up to {(_agentIdleGrace - idleFor).TotalSeconds:F0}s more (grace period).");
+                            }
+                        }
+
+                        // The operating mode stays INDEFINITE throughout, so only nudge the UI when
+                        // the reported activity actually changes or the hold is armed/released (keeps
+                        // the flyout status fresh without redundant per-tick refreshes).
+                        if (statusChanged || holdChanged)
+                        {
+                            ModeChanged?.Invoke(null, EventArgs.Empty);
+                        }
+
+                        try
+                        {
+                            wake.Wait(2000, cts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+
+                        wake.Reset();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Agent monitor for '{agentId}' failed: {ex.Message}");
+                }
+                finally
+                {
+                    AgentStatusStore.Changed -= OnChanged;
+                    wake.Dispose();
+                }
+            });
+        }
+
+        private static void StopAgentMonitor()
+        {
+            if (_agentMonitorTokenSource is not null)
+            {
+                try
+                {
+                    _agentMonitorTokenSource.Cancel();
+                    _agentMonitorTokenSource.Dispose();
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+
+                _agentMonitorTokenSource = null;
+            }
+
+            _agentHoldArmed = false;
+            _agentIdleSince = null;
+        }
+
+        /// <summary>
+        /// Resolves the idle grace window used before releasing the keep-awake hold for a bound
+        /// agent. Defaults to 5 minutes; overridable via the <c>AWAKE_AGENT_IDLE_GRACE_SECONDS</c>
+        /// environment variable (useful for testing or power users; 0 releases immediately).
+        /// </summary>
+        private static TimeSpan ResolveAgentIdleGrace()
+        {
+            const int defaultSeconds = 300;
+
+            try
+            {
+                string? raw = Environment.GetEnvironmentVariable("AWAKE_AGENT_IDLE_GRACE_SECONDS");
+                if (!string.IsNullOrWhiteSpace(raw) && int.TryParse(raw, out int seconds) && seconds >= 0)
+                {
+                    return TimeSpan.FromSeconds(seconds);
+                }
+            }
+            catch (Exception)
+            {
+                // Fall through to the default on any environment-access failure.
+            }
+
+            return TimeSpan.FromSeconds(defaultSeconds);
         }
 
         internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")

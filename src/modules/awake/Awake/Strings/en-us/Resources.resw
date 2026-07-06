@@ -193,6 +193,18 @@
     <value>No running apps found</value>
     <comment>Shown in the running-app picker when no apps match the search.</comment>
   </data>
+  <data name="AppsTab.Content" xml:space="preserve">
+    <value>Apps</value>
+    <comment>Label for the tab that lists running applications on the picker page.</comment>
+  </data>
+  <data name="AgentsTab.Content" xml:space="preserve">
+    <value>Agents</value>
+    <comment>Label for the tab that lists active AI CLI agent sessions on the picker page.</comment>
+  </data>
+  <data name="AgentEmptyText.Text" xml:space="preserve">
+    <value>No active agents found</value>
+    <comment>Shown on the Agents tab when no AI CLI agent sessions are detected.</comment>
+  </data>
   <data name="CustomDurationRadio.Content" xml:space="preserve">
     <value>Duration</value>
     <comment>Option to keep awake for a custom number of hours and minutes.</comment>
@@ -254,7 +266,7 @@
     <comment>Title of the page where the user sets a custom keep-awake duration or end time.</comment>
   </data>
   <data name="AppPickerTitle.Text" xml:space="preserve">
-    <value>While app runs</value>
-    <comment>Title of the page where the user picks an app to keep the PC awake while it runs.</comment>
+    <value>Keep awake while active</value>
+    <comment>Title of the page where the user picks an app or agent to keep the PC awake while it is active.</comment>
   </data>
 </root>

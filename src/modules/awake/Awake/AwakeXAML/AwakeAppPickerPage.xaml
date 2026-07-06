@@ -4,7 +4,16 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:Awake.Core.Models"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     KeyDown="OnKeyDown">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
         <Grid.RowDefinitions>
@@ -36,60 +45,136 @@
                 VerticalAlignment="Center" />
         </Grid>
 
-        <AutoSuggestBox
-            x:Name="AppSearchBox"
-            x:Uid="AppSearchBox"
+        <!--  Apps | Agents tab switcher  -->
+        <tkcontrols:Segmented
+            x:Name="SourceSelector"
             Grid.Row="1"
             Margin="16,0,16,8"
-            QueryIcon="Find"
-            TextChanged="OnAppSearchTextChanged" />
+            HorizontalAlignment="Stretch"
+            SelectedIndex="0"
+            SelectionChanged="OnSourceSelectionChanged">
+            <tkcontrols:SegmentedItem x:Name="AppsSegment" x:Uid="AppsTab" />
+            <tkcontrols:SegmentedItem x:Name="AgentsSegment" x:Uid="AgentsTab" />
+        </tkcontrols:Segmented>
 
-        <Grid Grid.Row="2">
+        <!--  Apps panel  -->
+        <Grid x:Name="AppsPanel" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <AutoSuggestBox
+                x:Name="AppSearchBox"
+                x:Uid="AppSearchBox"
+                Margin="16,0,16,8"
+                QueryIcon="Find"
+                TextChanged="OnAppSearchTextChanged" />
+
+            <Grid Grid.Row="1">
+                <ListView
+                    x:Name="AppListView"
+                    Padding="8,0,8,12"
+                    IsItemClickEnabled="True"
+                    ItemClick="OnAppSelected"
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:RunningAppInfo">
+                            <Grid Padding="0,4" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                    Grid.Column="0"
+                                    Width="16"
+                                    Height="16"
+                                    VerticalAlignment="Center"
+                                    Source="{x:Bind Icon}" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <ProgressRing
+                    x:Name="AppLoadingRing"
+                    Width="32"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsActive="False"
+                    Visibility="Collapsed" />
+
+                <TextBlock
+                    x:Name="AppEmptyText"
+                    x:Uid="AppEmptyText"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Visibility="Collapsed" />
+            </Grid>
+        </Grid>
+
+        <!--  Agents panel  -->
+        <Grid
+            x:Name="AgentsPanel"
+            Grid.Row="2"
+            Visibility="Collapsed">
             <ListView
-                x:Name="AppListView"
+                x:Name="AgentListView"
                 Padding="8,0,8,12"
                 IsItemClickEnabled="True"
-                ItemClick="OnAppSelected"
+                ItemClick="OnAgentSelected"
                 SelectionMode="None">
                 <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:RunningAppInfo">
+                    <DataTemplate x:DataType="models:AgentInfo">
                         <Grid Padding="0,4" ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Image
+                            <FontIcon
                                 Grid.Column="0"
-                                Width="16"
-                                Height="16"
                                 VerticalAlignment="Center"
-                                Source="{x:Bind Icon}" />
+                                FontSize="16"
+                                Glyph="{x:Bind Glyph}" />
                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                 <TextBlock Text="{x:Bind DisplayName}" TextTrimming="CharacterEllipsis" />
-                                <!--<TextBlock
+                                <TextBlock
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Style="{ThemeResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind WindowTitle}"
+                                    Text="{x:Bind Subtitle}"
                                     TextTrimming="CharacterEllipsis"
-                                    TextWrapping="NoWrap" />-->
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="6">
+                                <Ellipse
+                                    Width="8"
+                                    Height="8"
+                                    VerticalAlignment="Center"
+                                    Fill="{x:Bind StatusBrush}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind StatusText}" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
 
-            <ProgressRing
-                x:Name="AppLoadingRing"
-                Width="32"
-                Height="32"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                IsActive="False"
-                Visibility="Collapsed" />
-
             <TextBlock
-                x:Name="AppEmptyText"
-                x:Uid="AppEmptyText"
+                x:Name="AgentEmptyText"
+                x:Uid="AgentEmptyText"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
