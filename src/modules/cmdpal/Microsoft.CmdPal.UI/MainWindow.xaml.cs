@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
@@ -80,6 +81,11 @@ public sealed partial class MainWindow : WindowEx,
     private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
+
+    // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
+    // hot-reloads when a SettingsChanged notification touches settings this window doesn't
+    // care about (theme, provider config, aliases, and so on).
+    private SettingsModel? _lastAppliedSettings;
 
     // Session tracking for telemetry
     private Stopwatch? _sessionStopwatch;
@@ -239,6 +245,14 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
+        // Only rebuild window state when a setting HotReloadSettings actually consumes has
+        // changed. Most SettingsChanged notifications (theme, provider config, aliases, ...)
+        // don't affect the host window, so hot-reloading on every one is wasteful.
+        if (MainWindowSettingsComparer.Instance.Equals(_lastAppliedSettings, args))
+        {
+            return;
+        }
+
         DispatcherQueue.TryEnqueue(HotReloadSettings);
     }
 
@@ -464,7 +478,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
+        // NOTE: SettingsChangedHandler skips this method when nothing relevant changed, using
+        // MainWindowSettingsComparer. When you start consuming a new setting below, add it to
+        // that comparer too — otherwise changes to it won't trigger a hot-reload.
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        _lastAppliedSettings = settings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -488,6 +506,87 @@ public sealed partial class MainWindow : WindowEx,
     /// </summary>
     private static bool ShouldShowHwndFrame(SettingsModel settings) =>
         !BuildInfo.IsCiBuild && settings.ShowHwndFrame;
+
+    /// <summary>
+    /// Compares two <see cref="SettingsModel"/> instances by only the settings that
+    /// <see cref="HotReloadSettings"/> (and the methods it calls) actually consume. Any change
+    /// to a setting outside this set is invisible to the host window, so treating such models
+    /// as equal lets <see cref="SettingsChangedHandler"/> skip a redundant hot-reload.
+    /// </summary>
+    /// <remarks>
+    /// Keep this in sync with the settings read by <see cref="HotReloadSettings"/>,
+    /// <see cref="SetupHotkey"/>, <see cref="ShouldShowHwndFrame"/>, and
+    /// <see cref="HandleExpandCompactOnUiThread"/>.
+    /// </remarks>
+    private sealed class MainWindowSettingsComparer : IEqualityComparer<SettingsModel>
+    {
+        public static MainWindowSettingsComparer Instance { get; } = new();
+
+        public bool Equals(SettingsModel? x, SettingsModel? y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (x is null || y is null)
+            {
+                return false;
+            }
+
+            return x.UseLowLevelGlobalHotkey == y.UseLowLevelGlobalHotkey
+                && x.ShowSystemTrayIcon == y.ShowSystemTrayIcon
+                && x.IgnoreShortcutWhenFullscreen == y.IgnoreShortcutWhenFullscreen
+                && x.IgnoreShortcutWhenBusy == y.IgnoreShortcutWhenBusy
+                && x.AllowBreakthroughShortcut == y.AllowBreakthroughShortcut
+                && x.AutoGoHomeInterval == y.AutoGoHomeInterval
+                && x.ShowHwndFrame == y.ShowHwndFrame
+                && x.CompactMode == y.CompactMode
+                && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
+                && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
+        }
+
+        // TopLevelHotkey is a record (value equality); compare element-wise. ImmutableList
+        // itself only implements reference equality, so we can't rely on ==.
+        private static bool CommandHotkeysEqual(ImmutableList<TopLevelHotkey> x, ImmutableList<TopLevelHotkey> y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (x.Count != y.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < x.Count; i++)
+            {
+                if (x[i] != y[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(SettingsModel obj)
+        {
+            var hash = default(HashCode);
+            hash.Add(obj.UseLowLevelGlobalHotkey);
+            hash.Add(obj.ShowSystemTrayIcon);
+            hash.Add(obj.IgnoreShortcutWhenFullscreen);
+            hash.Add(obj.IgnoreShortcutWhenBusy);
+            hash.Add(obj.AllowBreakthroughShortcut);
+            hash.Add(obj.AutoGoHomeInterval);
+            hash.Add(obj.ShowHwndFrame);
+            hash.Add(obj.CompactMode);
+            hash.Add(obj.Hotkey);
+            hash.Add(obj.CommandHotkeys.Count);
+            return hash.ToHashCode();
+        }
+    }
 
     /// <summary>
     /// Configures the HWND for the borderless / transparent main-window mode and (when
