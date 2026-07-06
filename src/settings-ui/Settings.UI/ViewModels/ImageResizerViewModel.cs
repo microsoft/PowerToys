@@ -338,6 +338,67 @@ public partial class ImageResizerViewModel : Observable
         IsListViewFocusRequested = true;
     }
 
+    /// <summary>
+    /// Creates a new preset populated with default values and a generated unique name, without
+    /// adding it to the <see cref="Sizes"/> collection. Used as the working copy for the add dialog,
+    /// so nothing is committed until the user confirms.
+    /// </summary>
+    public ImageSize CreateNewImageSizeModel(string namePrefix = "")
+    {
+        if (string.IsNullOrEmpty(namePrefix))
+        {
+            namePrefix = DefaultPresetNamePrefix;
+        }
+
+        return new ImageSize(
+            _nextId,
+            GenerateNameForNewSize(namePrefix),
+            _customSize.Fit,
+            _customSize.Width,
+            _customSize.Height,
+            _customSize.Unit);
+    }
+
+    /// <summary>
+    /// Commits a preset created via <see cref="CreateNewImageSizeModel"/> to the <see cref="Sizes"/>
+    /// collection, assigning it the next available unique ID.
+    /// </summary>
+    public void AddImageSize(ImageSize size)
+    {
+        ArgumentNullException.ThrowIfNull(size);
+
+        size.Id = _nextId;
+        Sizes.Add(size);
+
+        _nextId++;
+
+        // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
+        IsListViewFocusRequested = true;
+    }
+
+    /// <summary>
+    /// Applies the values from an edited working copy back onto the original preset, saving once.
+    /// </summary>
+    public void UpdateImageSize(ImageSize original, ImageSize updated)
+    {
+        ArgumentNullException.ThrowIfNull(original);
+        ArgumentNullException.ThrowIfNull(updated);
+
+        // Temporarily detach the per-item save handler so the individual property updates below
+        // don't each trigger a save; persist once at the end instead.
+        original.PropertyChanged -= SizePropertyChanged;
+
+        original.Name = updated.Name;
+        original.Fit = updated.Fit;
+        original.Width = updated.Width;
+        original.Height = updated.Height;
+        original.Unit = updated.Unit;
+
+        original.PropertyChanged += SizePropertyChanged;
+
+        SaveImageSizes();
+    }
+
     public void DeleteImageSize(int id)
     {
         ImageSize size = _sizes.First(x => x.Id == id);
