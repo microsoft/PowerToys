@@ -45,9 +45,9 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         // During NowDockBand construction, UpdateText() runs synchronously.
         // At that point wrappedBand is still null so the callback is a no-op.
         // On subsequent timer ticks, wrappedBand is non-null and SetItems fires
-        // RaiseItemsChanged — the framework marshals to the UI thread in
+        // RaiseItemsChanged - the framework marshals to the UI thread in
         // DockBandViewModel.InitializeFromList via DoOnUiThread.
-        _nowDockBand = new NowDockBand(onUpdated: () =>
+        _nowDockBand = new NowDockBand(_settingsManager.TimeWithSecond, onUpdated: () =>
         {
             if (wrappedBand is not null)
             {
@@ -69,10 +69,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         _notificationCenterBandItem = new WrappedDockItem(
             [notificationCenterBand],
             "com.microsoft.cmdpal.timedate.notificationCenterBand",
-            Resources.timedate_notification_center_band_title)
-        {
-            Icon = Icons.NotificationCenterIcon,
-        };
+            Resources.timedate_notification_center_band_title);
     }
 
     private string GetTranslatedPluginDescription()

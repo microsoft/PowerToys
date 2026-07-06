@@ -101,5 +101,16 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.IsTrue(bands.Length > 0, "GetDockBands should return at least one item");
             Assert.IsNotNull(bands[0], "First dock band should not be null");
         }
+
+        [TestMethod]
+        public void GetDockBands_NotificationCenterBandDoesNotSetDockIcon()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            Assert.IsTrue(bands.Length > 1, "Expected notification center band to be present");
+            Assert.IsNull(bands[1].Icon, "Notification center band should not set a dock icon");
+        }
     }
 }

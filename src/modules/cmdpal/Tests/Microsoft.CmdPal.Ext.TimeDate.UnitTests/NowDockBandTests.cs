@@ -42,14 +42,14 @@ public class NowDockBandTests
     {
         _band = new NowDockBand(clock: () => FixedTime);
 
-        Assert.AreEqual("2:05:32 PM", _band.Title);
+        Assert.AreEqual("2:05 PM", _band.Title);
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle));
     }
 
     [TestMethod]
     public void UpdateText_LongTimeFormat_TitleContainsSeconds()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
 
         _band.UpdateText();
 

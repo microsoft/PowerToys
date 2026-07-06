@@ -11,9 +11,13 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class NowDockBand : ListItem, IDisposable
 {
+    private static readonly TimeSpan PerSecondUpdateInterval = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan PerMinuteUpdateInterval = TimeSpan.FromMinutes(1);
+
     private readonly System.Timers.Timer _timer;
     private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
+    private readonly bool _timeWithSeconds;
 
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
@@ -22,8 +26,9 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     internal CopyTextCommand CopyDateCommand => _copyDateCommand;
 
-    internal NowDockBand(Action? onUpdated = null, Func<DateTime>? clock = null)
+    internal NowDockBand(bool timeWithSeconds = false, Action? onUpdated = null, Func<DateTime>? clock = null)
     {
+        _timeWithSeconds = timeWithSeconds;
         _onUpdated = onUpdated;
         _clock = clock ?? (() => DateTime.Now);
 
@@ -43,16 +48,44 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
         UpdateText();
 
-        _timer = new System.Timers.Timer(1000) { AutoReset = true };
-        _timer.Elapsed += (_, _) => UpdateText();
+        _timer = new System.Timers.Timer() { AutoReset = true };
+        if (_timeWithSeconds)
+        {
+            _timer.Interval = PerSecondUpdateInterval.TotalMilliseconds;
+            _timer.Elapsed += Timer_Elapsed;
+        }
+        else
+        {
+            var now = _clock();
+            _timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
+            _timer.Elapsed += Timer_ElapsedFirstMinuteTick;
+        }
+
         _timer.Start();
+    }
+
+    private void Timer_ElapsedFirstMinuteTick(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (sender is System.Timers.Timer timer)
+        {
+            timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds;
+            timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
+            timer.Elapsed += Timer_Elapsed;
+        }
+
+        Timer_Elapsed(sender, e);
+    }
+
+    private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        UpdateText();
     }
 
     internal void UpdateText()
     {
         var now = _clock();
         var timeString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, true, false),
+            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false),
             CultureInfo.CurrentCulture);
         var dateString = now.ToString(
             TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false),
