@@ -20,7 +20,10 @@
     <!-- Globalization is enabled (not invariant) so the human-readable text output can be localized
          via satellite resources. The machine contract (JSON keys, error codes, status strings, exit
          codes, VCP names) stays culture-independent because every parse/format site passes
-         CultureInfo.InvariantCulture explicitly. -->
+         CultureInfo.InvariantCulture explicitly. Set explicitly below (rather than relying on the
+         SDK default) so a future default flip — or copying the common AOT "set it true to shrink the
+         binary" guidance — cannot silently disable satellite-resource localization. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
   <!-- Native AOT Configuration -->
   <PropertyGroup>

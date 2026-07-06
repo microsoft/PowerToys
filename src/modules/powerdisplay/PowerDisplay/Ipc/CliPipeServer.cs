@@ -38,8 +38,10 @@ namespace PowerDisplay.Ipc;
 /// <para>
 /// <b>Concurrency:</b> the accept loop serves one request at a time — it waits for a connection,
 /// runs it to completion, then accepts the next. This is sufficient for the one-shot CLI client.
-/// <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed only to avoid an
-/// artificial single-instance cap, not to serve requests concurrently.
+/// To keep the well-known pipe name owned continuously (see <see cref="CreateServerStream"/>), the
+/// replacement instance is created before the just-served one is disposed, so up to two instances
+/// exist briefly; <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed to allow
+/// that overlap, not to serve requests concurrently.
 /// </para>
 /// <para>
 /// <b>Limitation:</b> because the loop is single-instance, one in-flight request holds the sole
@@ -93,52 +95,103 @@ public sealed class CliPipeServer
 
         Logger.LogInfo($"[PowerDisplay CLI IPC] Server starting on pipe '{pipeName}'");
 
-        while (!ct.IsCancellationRequested)
+        // Keep one instance of the well-known pipe name alive at all times so it is never left
+        // unowned between requests. Only the FIRST instance uses PipeOptions.FirstPipeInstance, which
+        // fails loudly if another (possibly malicious) process already owns the predictable,
+        // session-scoped name at startup. Every later instance is stood up BEFORE the just-served one
+        // is disposed, so at least one instance always holds the name — closing the gap a per-request
+        // create/dispose would otherwise reopen after every request. Without this, a same- or
+        // cross-user process could win that gap with CreateNamedPipe, take the name under its own ACL,
+        // and thereafter both deny the real server (its FirstPipeInstance create would fail forever)
+        // and intercept/spoof CLI traffic (the client connects by name only, it does not verify the
+        // server).
+        NamedPipeServerStream? listener = null;
+        try
         {
-            try
+            while (!ct.IsCancellationRequested)
             {
-                // FirstPipeInstance makes Create fail (rather than silently join) if another process
-                // already owns this pipe name. The name is predictable (session id), so without it a
-                // same-user process could pre-create the pipe and intercept/spoof CLI traffic — the
-                // current-user ACL below would be moot. The accept loop's catch surfaces the failure
-                // and backs off.
-                using var server = NamedPipeServerStreamAcl.Create(
-                    pipeName,
-                    PipeDirection.InOut,
-                    NamedPipeServerStream.MaxAllowedServerInstances,
-                    PipeTransmissionMode.Byte,
-                    PipeOptions.Asynchronous | PipeOptions.FirstPipeInstance,
-                    inBufferSize: 0,
-                    outBufferSize: 0,
-                    security);
-
-                await server.WaitForConnectionAsync(ct).ConfigureAwait(false);
-                await ServeOneAsync(server, ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
-
-                // Continue — a single bad connection must not kill the server. Back off briefly so a
-                // persistent create failure (e.g. another process holding the pipe name, which
-                // FirstPipeInstance now surfaces as an exception instead of silently joining it) does
-                // not spin the loop.
                 try
                 {
-                    await Task.Delay(500, ct).ConfigureAwait(false);
+                    // First create (startup, or post-error recovery when no instance of ours is alive)
+                    // asserts first-instance ownership; the overlap create below deliberately does not.
+                    listener ??= CreateServerStream(pipeName, security, firstInstance: true);
+
+                    await listener.WaitForConnectionAsync(ct).ConfigureAwait(false);
+
+                    // A client is connected to `listener`. Stand up the replacement instance now, while
+                    // the connected one still holds the name, so ownership is continuous; then serve
+                    // and dispose the connected instance.
+                    var connected = listener;
+                    listener = CreateServerStream(pipeName, security, firstInstance: false);
+
+                    try
+                    {
+                        await ServeOneAsync(connected, ct).ConfigureAwait(false);
+                    }
+                    finally
+                    {
+                        connected.Dispose();
+                    }
                 }
                 catch (OperationCanceledException)
                 {
                     break;
                 }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
+
+                    // Drop the (possibly broken) current instance and back off before retrying, so a
+                    // persistent create failure — e.g. another process holding the name, which
+                    // FirstPipeInstance surfaces as an exception — does not spin the loop. The next
+                    // iteration recreates with FirstPipeInstance (no instance of ours is alive here).
+                    listener?.Dispose();
+                    listener = null;
+
+                    try
+                    {
+                        await Task.Delay(500, ct).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
             }
+        }
+        finally
+        {
+            listener?.Dispose();
         }
 
         Logger.LogInfo("[PowerDisplay CLI IPC] Server stopped.");
+    }
+
+    /// <summary>
+    /// Creates one server-stream instance for the CLI pipe. Only the first instance for the process
+    /// lifetime passes <see cref="PipeOptions.FirstPipeInstance"/> (to fail loudly if the predictable,
+    /// session-scoped name is already owned by another process at startup); every subsequent instance
+    /// omits it, because by design an instance of ours is always already alive when the next is
+    /// created, so <see cref="PipeOptions.FirstPipeInstance"/> would spuriously fail. Internal so the
+    /// ownership mechanic can be unit-tested.
+    /// </summary>
+    internal static NamedPipeServerStream CreateServerStream(string pipeName, PipeSecurity security, bool firstInstance)
+    {
+        var options = PipeOptions.Asynchronous;
+        if (firstInstance)
+        {
+            options |= PipeOptions.FirstPipeInstance;
+        }
+
+        return NamedPipeServerStreamAcl.Create(
+            pipeName,
+            PipeDirection.InOut,
+            NamedPipeServerStream.MaxAllowedServerInstances,
+            PipeTransmissionMode.Byte,
+            options,
+            inBufferSize: 0,
+            outBufferSize: 0,
+            security);
     }
 
     private async Task ServeOneAsync(NamedPipeServerStream server, CancellationToken ct)

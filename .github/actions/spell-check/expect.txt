@@ -504,7 +504,6 @@ EREOF
 EResize
 ERRORIMAGE
 ERRORTITLE
-esac
 esrp
 etd
 ETDT
