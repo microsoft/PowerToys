@@ -10,7 +10,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class DetailsViewModel : ExtensionObjectViewModel
 {
     private readonly ExtensionObject<IDetails> _detailsModel;
-    private readonly bool _isObservable;
+    private INotifyPropChanged? _observableDetails;
     private bool _isSubscribed;
 
     // Remember - "observable" properties from the model (via PropChanged)
@@ -31,7 +31,6 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         : base(context)
     {
         _detailsModel = new(details);
-        _isObservable = details is INotifyPropChanged;
     }
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)
@@ -112,9 +111,10 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
         }
 
         // Subscribe to PropChanged if the model supports it (only subscribe once)
-        if (_isObservable && !_isSubscribed)
+        if (!_isSubscribed && model is INotifyPropChanged observable)
         {
-            ((INotifyPropChanged)model).PropChanged += Model_PropChanged;
+            observable.PropChanged += Model_PropChanged;
+            _observableDetails = observable;
             _isSubscribed = true;
         }
 
@@ -149,14 +149,10 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     {
         base.UnsafeCleanup();
 
-        if (_isObservable && _isSubscribed)
+        if (_isSubscribed && _observableDetails is not null)
         {
-            var model = _detailsModel.Unsafe;
-            if (model is not null)
-            {
-                ((INotifyPropChanged)model).PropChanged -= Model_PropChanged;
-            }
-
+            _observableDetails.PropChanged -= Model_PropChanged;
+            _observableDetails = null;
             _isSubscribed = false;
         }
     }
