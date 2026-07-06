@@ -22,7 +22,7 @@ namespace PowerScripts.Host;
 internal static class ShellRegistration
 {
     private const string RootVerb = "PowerScripts";
-    private const string MenuLabel = "PowerScript";
+    private const string MenuLabel = "PowerScripts";
     private const string ClassesRoot = @"Software\Classes\SystemFileAssociations";
 
     /// <summary>Marker value so uninstall only removes keys this tool created.</summary>

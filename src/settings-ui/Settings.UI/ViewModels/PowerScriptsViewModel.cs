@@ -41,7 +41,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _generalSettingsRepository = generalSettingsRepository;
             _sendConfigMsg = sendConfigMsg;
-            _isEnabled = generalSettingsRepository.SettingsConfig.Enabled.PowerScripts;
+
+            // The module-owned config.json override (if present) is authoritative, since the runner
+            // strips PowerScripts from settings.json on launch; fall back to the settings flag.
+            _isEnabled = ReadEnabledOverride() ?? generalSettingsRepository.SettingsConfig.Enabled.PowerScripts;
             _scriptsFolder = ResolveScriptsFolder();
 
             Scripts = new ObservableCollection<PowerScriptListItem>();
@@ -98,6 +101,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         var outgoing = new OutGoingGeneralSettings(generalSettings);
                         _sendConfigMsg(outgoing.ToString());
                     }
+
+                    // Also persist the enabled state into the module's own config.json. The runner
+                    // rewrites settings.json on launch and drops entries for modules it does not host
+                    // (the prototype is not yet a registered runner module), so the config.json flag is
+                    // the authoritative, restart-durable gate that every surface (hotkey, context menu,
+                    // Advanced Paste) honors.
+                    SaveEnabledOverride(value);
 
                     // Prototype: wire the Explorer right-click submenu directly from Settings, so
                     // enabling/disabling PowerScripts installs/removes the context-menu entries even
@@ -294,6 +304,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             Directory.CreateDirectory(ModuleDirectory);
             File.WriteAllText(ConfigFilePath, config.ToJsonString(WriteJsonOptions));
+        }
+
+        /// <summary>Reads the module-owned enabled override from config.json, or null when absent.</summary>
+        private static bool? ReadEnabledOverride()
+        {
+            try
+            {
+                var config = LoadConfigNode();
+                if (config["enabled"] is JsonValue value && value.TryGetValue<bool>(out var enabled))
+                {
+                    return enabled;
+                }
+            }
+            catch (Exception)
+            {
+                // A corrupt/unreadable config yields no override.
+            }
+
+            return null;
+        }
+
+        /// <summary>Persists the enabled override into config.json, preserving all other keys.</summary>
+        private static void SaveEnabledOverride(bool enabled)
+        {
+            var config = LoadConfigNode();
+            config["enabled"] = enabled;
+            WriteConfigNode(config);
         }
 
         private void LoadPythonSettings()

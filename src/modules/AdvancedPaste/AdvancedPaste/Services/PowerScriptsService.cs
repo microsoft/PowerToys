@@ -156,15 +156,23 @@ internal static class PowerScriptsService
         };
 
     /// <summary>
-    /// Reads <c>enabled.PowerScripts</c> from the PowerToys settings. Mirrors the host's own gate so a
-    /// disabled module never surfaces scripts. A missing settings file (dev/test) is treated as enabled;
-    /// an absent key means the module is off by default.
+    /// Whether PowerScripts is enabled. The module-owned <c>config.json</c> <c>enabled</c> flag is
+    /// authoritative when present (it survives the runner rewriting <c>settings.json</c>); otherwise
+    /// the PowerToys <c>settings.json</c> <c>enabled.PowerScripts</c> flag is consulted. A missing
+    /// settings file (dev/test) or an absent key is treated as enabled, matching the host's own gate,
+    /// so a disabled module never surfaces scripts while an ambiguous state keeps them working.
     /// </summary>
     private static bool IsPowerScriptsEnabled()
     {
         if (Environment.GetEnvironmentVariable("POWERSCRIPTS_IGNORE_ENABLED") == "1")
         {
             return true;
+        }
+
+        var configOverride = ReadConfigEnabledOverride();
+        if (configOverride.HasValue)
+        {
+            return configOverride.Value;
         }
 
         try
@@ -189,13 +197,47 @@ internal static class PowerScriptsService
                 return value.GetBoolean();
             }
 
-            return false;
+            // Absent key: the runner strips unknown modules, so treat as enabled (matches the host).
+            return true;
         }
         catch (Exception)
         {
             // A corrupt/unreadable settings file falls back to allowing the module (matches host behavior).
             return true;
         }
+    }
+
+    /// <summary>Reads the module-owned <c>enabled</c> override from PowerScripts' <c>config.json</c>, or null when absent.</summary>
+    private static bool? ReadConfigEnabledOverride()
+    {
+        try
+        {
+            string configPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys",
+                "PowerScripts",
+                "config.json");
+
+            if (!File.Exists(configPath))
+            {
+                return null;
+            }
+
+            using var stream = File.OpenRead(configPath);
+            using var document = JsonDocument.Parse(stream);
+            if (document.RootElement.TryGetProperty("enabled", out var value) &&
+                value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return value.GetBoolean();
+            }
+        }
+        catch (Exception)
+        {
+            // A corrupt/unreadable config yields no override.
+        }
+
+        return null;
     }
 
     private static string ResolveHostPath()

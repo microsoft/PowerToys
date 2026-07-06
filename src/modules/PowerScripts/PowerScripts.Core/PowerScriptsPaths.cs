@@ -119,10 +119,49 @@ public static class PowerScriptsPaths
     /// </summary>
     public static void SaveConfiguredScriptsRoot(string? root)
     {
-        Directory.CreateDirectory(ModuleDirectory);
         var normalized = string.IsNullOrWhiteSpace(root) ? string.Empty : root.Trim();
+        MergeConfigValue("scriptsRoot", JsonSerializer.SerializeToElement(normalized));
+    }
 
-        // Preserve any other keys (e.g. the "python" section) rather than overwriting the whole file.
+    /// <summary>
+    /// Reads the module's own enabled override from <see cref="ConfigFilePath"/>, or <c>null</c> when
+    /// it is missing/unreadable. This is written by Settings and, unlike the PowerToys
+    /// <c>settings.json</c> <c>enabled.PowerScripts</c> flag, it is owned solely by this module so it
+    /// survives the runner rewriting <c>settings.json</c> (which drops entries for modules the runner
+    /// does not itself host — as the prototype is not yet a registered runner module).
+    /// </summary>
+    public static bool? ReadEnabledOverride()
+    {
+        try
+        {
+            if (!File.Exists(ConfigFilePath))
+            {
+                return null;
+            }
+
+            using var stream = File.OpenRead(ConfigFilePath);
+            using var document = JsonDocument.Parse(stream);
+            if (document.RootElement.TryGetProperty("enabled", out var value) &&
+                value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                return value.GetBoolean();
+            }
+        }
+        catch (Exception)
+        {
+            // A corrupt or unreadable config simply yields no override.
+        }
+
+        return null;
+    }
+
+    /// <summary>Persists the module's enabled override to <see cref="ConfigFilePath"/>, preserving other keys.</summary>
+    public static void SaveEnabled(bool enabled) => MergeConfigValue("enabled", JsonSerializer.SerializeToElement(enabled));
+
+    /// <summary>Merges a single top-level key into <see cref="ConfigFilePath"/> without clobbering the rest.</summary>
+    private static void MergeConfigValue(string key, JsonElement value)
+    {
+        Directory.CreateDirectory(ModuleDirectory);
         var options = new JsonSerializerOptions { WriteIndented = true };
         var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         try
@@ -142,7 +181,7 @@ public static class PowerScriptsPaths
             // Overwrite a corrupt config rather than fail.
         }
 
-        merged["scriptsRoot"] = JsonSerializer.SerializeToElement(normalized);
+        merged[key] = value;
         File.WriteAllText(ConfigFilePath, JsonSerializer.Serialize(merged, options));
     }
 }

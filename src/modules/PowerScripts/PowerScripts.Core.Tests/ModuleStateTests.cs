@@ -57,10 +57,14 @@ public class ModuleStateTests
     }
 
     [TestMethod]
-    public void KeyAbsent_Refuses_BecauseModuleDefaultsOff()
+    public void KeyAbsent_Allows_BecauseRunnerStripsUnknownModules()
     {
+        // The runner rewrites settings.json and drops entries for modules it does not itself host,
+        // so an absent PowerScripts key is ambiguous rather than a deliberate "off". The settings-file
+        // overload therefore falls back to enabled; a deliberate "off" is expressed either as an
+        // explicit false here or via the module-owned config.json override.
         var path = WriteSettings("{ \"enabled\": { \"Keyboard Manager\": true } }");
-        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path));
+        Assert.IsTrue(ModuleState.IsPowerScriptsEnabled(path));
     }
 
     [TestMethod]

@@ -104,7 +104,7 @@ dotnet test PowerScripts.Core.Tests\PowerScripts.Core.Tests.csproj
 
 `PowerScripts.Core.Tests` (MSTest) covers manifest serialization/validation and the registry
 (extension + wildcard matching, multi-file selection min/max, kind filtering, invalid-script
-skipping). 9 tests, all passing.
+skipping). 27 tests, all passing.
 
 ## Surface integration plans
 

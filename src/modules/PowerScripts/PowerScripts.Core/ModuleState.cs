@@ -44,6 +44,15 @@ public static class ModuleState
             return true;
         }
 
+        // The module's own config.json is authoritative when present: it is written by the Settings
+        // toggle and, unlike settings.json, is never rewritten by the runner, so an explicit on/off
+        // survives PowerToys restarts even though the prototype is not yet a registered runner module.
+        var configOverride = PowerScriptsPaths.ReadEnabledOverride();
+        if (configOverride.HasValue)
+        {
+            return configOverride.Value;
+        }
+
         return IsPowerScriptsEnabled(PowerScriptsPaths.PowerToysSettingsFilePath);
     }
 
@@ -70,8 +79,12 @@ public static class ModuleState
                 return flag.ValueKind == JsonValueKind.True;
             }
 
-            // Settings file present but no PowerScripts entry: the module is off by default.
-            return false;
+            // Settings file present but no PowerScripts entry. Because the runner strips unknown
+            // modules from settings.json on launch, an absent key is ambiguous rather than a
+            // deliberate "off"; fall back to enabled so a hotkey/context-menu binding keeps working
+            // across restarts. An explicit off is still honored via the config.json override above
+            // (and via an explicit false here).
+            return true;
         }
         catch (Exception)
         {
