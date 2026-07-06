@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Ipc;
-using PowerDisplay.Cli.Output;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.UnitTests;
@@ -26,34 +25,7 @@ public class IpcDispatchTests
     private static readonly TimeSpan AnyTimeout = TimeSpan.FromSeconds(30);
 
     // ── helpers ──────────────────────────────────────────────────────────────
-    private sealed class CaptureOutput : ICliOutput
-    {
-        private readonly List<string> stdoutLines = new();
-
-        private readonly List<string> stderrLines = new();
-
-        public IReadOnlyList<string> StdoutLines => this.stdoutLines;
-
-        public IReadOnlyList<string> StderrLines => this.stderrLines;
-
-        public void WriteListResult(CliListResult r) => this.stdoutLines.Add("list:" + r.Command);
-
-        public void WriteSetResult(CliSetResult r) => this.stdoutLines.Add("set:" + r.Setting);
-
-        public void WriteGetResult(CliGetResult r) => this.stdoutLines.Add("get");
-
-        public void WriteCapabilitiesResult(CliCapabilitiesResult r) => this.stdoutLines.Add("capabilities");
-
-        public void WriteProfileListResult(CliProfileListResult r) => this.stdoutLines.Add("profiles");
-
-        public void WriteApplyProfileResult(CliApplyProfileResult r) => this.stdoutLines.Add("apply-profile:" + r.ExitCode);
-
-        public void WriteError(CliErrorResult r) => this.stderrLines.Add("error:" + r.Error.Code + ":" + r.Error.ExitCode);
-
-        public void WriteWarning(string message) => this.stderrLines.Add("warn:" + message);
-    }
-
-    private static IpcDispatcher MakeDispatcher(string? stubResponse, CaptureOutput output)
+    private static IpcDispatcher MakeDispatcher(string? stubResponse, RecordingCliOutput output)
     {
         Task<string?> StubSend(string requestJson, TimeSpan timeout, CancellationToken cancellationToken) =>
             Task.FromResult(stubResponse);
@@ -70,7 +42,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task When_provider_unavailable_list_exits_10()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var dispatcher = MakeDispatcher(null, output);
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
@@ -84,7 +56,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task Success_set_renders_result_exits_0()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var responseJson = SerializeSuccess(
             new CliSetResult { Setting = "brightness", Monitor = new CliMonitorRef { Number = 1, Id = "x", Name = "N" }, AfterDisplay = "80%" },
             ContractsJsonContext.Default.CliSetResult);
@@ -101,7 +73,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task Error_response_renders_error_and_returns_its_exit_code()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var errorResponse = new CliErrorResult
         {
             Command = "list",
@@ -134,7 +106,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task ApplyProfile_OutOfRange_partial_failure_exits_2()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var responseJson = SerializeSuccess(
             new CliApplyProfileResult
             {
@@ -168,7 +140,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task ApplyProfile_full_success_exits_0()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var responseJson = SerializeSuccess(
             new CliApplyProfileResult
             {
@@ -187,7 +159,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task Malformed_json_response_exits_internal_error()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var dispatcher = MakeDispatcher("{ this is not valid json", output);
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
@@ -201,7 +173,7 @@ public class IpcDispatchTests
     {
         // Valid JSON with isError:false, but the success payload cannot deserialize as the expected
         // type (monitors is a string, not an array) — the version-skew fallback path.
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var dispatcher = MakeDispatcher("{\"isError\":false,\"monitors\":\"oops\"}", output);
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
@@ -294,7 +266,7 @@ public class IpcDispatchTests
     [TestMethod]
     public async Task Success_adjust_renders_result_exits_0()
     {
-        var output = new CaptureOutput();
+        var output = new RecordingCliOutput();
         var responseJson = SerializeSuccess(
             new CliSetResult { Command = "up", Setting = "brightness", Monitor = new CliMonitorRef { Number = 1, Id = "x", Name = "N" }, AfterDisplay = "60%" },
             ContractsJsonContext.Default.CliSetResult);

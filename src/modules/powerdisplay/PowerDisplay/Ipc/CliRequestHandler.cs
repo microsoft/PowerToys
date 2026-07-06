@@ -366,7 +366,7 @@ public sealed class CliRequestHandler
         => JsonSerializer.Serialize(value, typeInfo);
 
     // ─── Error factory ────────────────────────────────────────────────────────
-    private static CliErrorResult MakeError(string command, string code, string message, string? hint = null)
+    private static CliErrorResult MakeError(string command, string code, string message)
         => new()
         {
             Command = command,
@@ -374,7 +374,6 @@ public sealed class CliRequestHandler
             {
                 Code = code,
                 Message = message,
-                Hint = hint,
             },
         };
 

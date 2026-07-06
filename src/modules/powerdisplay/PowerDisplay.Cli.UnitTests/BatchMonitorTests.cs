@@ -13,7 +13,6 @@ using PowerDisplay.Cli;
 using PowerDisplay.Cli.Commands;
 using PowerDisplay.Cli.Ipc;
 using PowerDisplay.Cli.Options;
-using PowerDisplay.Cli.Output;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.UnitTests;
@@ -256,7 +255,7 @@ public class BatchMonitorTests
         var root = new PowerDisplayRootCommand();
         var args = new[] { command, "-n", "1,2" };
         var parseResult = new Parser(root).Parse(args);
-        var output = new RecordingOutput();
+        var output = new RecordingCliOutput();
 
         // The dispatcher must never be reached: the batch is rejected CLI-side before any IPC.
         var dispatcher = new IpcDispatcher(
@@ -269,46 +268,5 @@ public class BatchMonitorTests
         Assert.AreEqual(CliExitCodes.ArgumentError, exit);
         Assert.AreEqual(1, output.ErrorCount);
         Assert.AreEqual(CliErrorCodes.ArgumentError, output.LastError!.Error.Code);
-    }
-
-    private sealed class RecordingOutput : ICliOutput
-    {
-        public int ErrorCount { get; private set; }
-
-        public CliErrorResult? LastError { get; private set; }
-
-        public void WriteListResult(CliListResult result)
-        {
-        }
-
-        public void WriteSetResult(CliSetResult result)
-        {
-        }
-
-        public void WriteGetResult(CliGetResult result)
-        {
-        }
-
-        public void WriteCapabilitiesResult(CliCapabilitiesResult result)
-        {
-        }
-
-        public void WriteProfileListResult(CliProfileListResult result)
-        {
-        }
-
-        public void WriteApplyProfileResult(CliApplyProfileResult result)
-        {
-        }
-
-        public void WriteError(CliErrorResult result)
-        {
-            this.ErrorCount++;
-            this.LastError = result;
-        }
-
-        public void WriteWarning(string message)
-        {
-        }
     }
 }
