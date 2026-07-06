@@ -10,7 +10,6 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
-ACR
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -26,6 +25,7 @@ advapi
 advfirewall
 AFeature
 affordances
+afterfx
 AFX
 agentskills
 AGGREGATABLE
@@ -63,6 +63,7 @@ APPEXECLINK
 appext
 apphost
 APPLICATIONFRAMEHOST
+Applocal
 appmanifest
 APPMODEL
 APPNAME
@@ -81,6 +82,7 @@ ARPPRODUCTICON
 ARRAYSIZE
 ARROWKEYS
 arrowshape
+artboard
 ARTIFACTSTAGINGDIRECTORY
 asf
 Ashcraft
@@ -88,7 +90,6 @@ AShortcut
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
-ASUS
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -119,7 +120,6 @@ Badmode
 Badparam
 bbwe
 BCIE
-bck
 BESTEFFORT
 bezelled
 bhid
@@ -158,6 +158,7 @@ breadcrumb
 Browsable
 BROWSEINFO
 bsd
+BSOD
 bthprops
 bti
 BTNFACE
@@ -165,6 +166,7 @@ bugreport
 bugreportfile
 BUILDARCH
 BUILDNUMBER
+buildsystems
 buildtransitive
 builttoroam
 BUNDLEINFO
@@ -202,7 +204,7 @@ checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-Chunghwa
+chu
 CIBUILD
 cidl
 CIELCh
@@ -218,12 +220,14 @@ clickable
 clickonce
 clientedge
 clientside
+cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
+CLSIDs
 clsids
 Clusion
 cmder
@@ -308,7 +312,6 @@ Crossdevice
 crt
 csdevkit
 cso
-CSOT
 CSRW
 cswin
 CTEXT
@@ -335,6 +338,7 @@ dacl
 DAffine
 DAFFINETRANSFORM
 datareader
+Datasheet
 datatracker
 Dayof
 dbcc
@@ -364,14 +368,14 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-defaulttonearest
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELD
+deld
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -396,6 +400,7 @@ DEVMODE
 DEVMODEW
 DEVNODES
 devpal
+devpackages
 DEVTYP
 dfx
 DIALOGEX
@@ -411,6 +416,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -438,11 +444,12 @@ drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 DROPFILES
+DSPDLOG
 DSTINVERT
 DString
-DSVG
 dto
 DUMMYUNIONNAME
+dumpbin
 dutil
 DVASPECT
 DVASPECTINFO
@@ -503,7 +510,6 @@ ETDT
 etl
 etw
 eula
-eurochange
 eventvwr
 evt
 EWXFORCE
@@ -544,6 +550,7 @@ FFFF
 fffffffzzz
 FFh
 Figma
+figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -633,9 +640,11 @@ gpu
 grabandmove
 GRABANDMOVEMODULEINTERFACE
 gradians
+GRC
 grctlext
 GRGX
 Gridcustomlayout
+gridlines
 GSM
 gtm
 guiddata
@@ -644,7 +653,6 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
-Hann
 Hantai
 Hanzi
 Hardlines
@@ -714,6 +722,7 @@ HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+hostfxr
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -722,6 +731,7 @@ hotkeys
 hotlight
 hotspot
 HPAINTBUFFER
+HPS
 HRAWINPUT
 HREDRAW
 hres
@@ -746,7 +756,6 @@ HWNDLAST
 HWNDNEXT
 HWNDPARENT
 HWNDPREV
-HWP
 hyjiacan
 IAI
 icf
@@ -786,6 +795,7 @@ imgflip
 inapp
 inbox
 INCONTACT
+indesign
 Indo
 inetcpl
 Infobar
@@ -796,6 +806,7 @@ INITDIALOG
 INITGUID
 initialfile
 INITTOLOGFONTSTRUCT
+inkscape
 INLINEPREFIX
 inlines
 Inno
@@ -839,24 +850,27 @@ issecret
 ISSEPARATOR
 issuecomment
 istep
+Italicise
 ith
 IUI
 IUWP
-IVO
 IWIC
 jeli
 jfif
 jgeosdfsdsgmkedfgdfgdfgbkmhcgcflmi
+JIDEA
 jjw
 jobject
 JOBOBJECT
 jpe
+JPN
 jpnime
 jrsoftware
 Jsons
 jsonval
 jxr
 Kantai
+KBSC
 keybd
 KEYBDDATA
 KEYBDINPUT
@@ -874,6 +888,7 @@ keynum
 keyremaps
 keyring
 keyvault
+kfull
 KILLFOCUS
 killrunner
 kmph
@@ -977,9 +992,11 @@ lstrcmpi
 lstrcpyn
 lstrlen
 LTEXT
+LTM
 LTRREADING
 luid
 lusrmgr
+LVDS
 LWA
 LWIN
 LZero
@@ -1026,10 +1043,12 @@ Metadatas
 metafile
 metapackage
 mfc
+mfcm
 Mgmt
 Microwaved
 middleclickaction
 midl
+midtones
 mii
 MIIM
 mikeclayton
@@ -1043,6 +1062,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+miracast
 mkdn
 mlcfg
 mmc
@@ -1073,6 +1093,7 @@ MOVESIZEEND
 MOVESIZESTART
 MRM
 mru
+msaccess
 MSAL
 msc
 mscorlib
@@ -1081,8 +1102,6 @@ msdata
 msdia
 MSDL
 MSGFLT
-MSHCTX
-MSHLFLAGS
 msiexec
 MSIFASTINSTALL
 MSIHANDLE
@@ -1092,13 +1111,16 @@ msixbundle
 MSIXCA
 MSLLHOOKSTRUCT
 Mso
+mspub
 msrc
 msstore
 mstsc
 msvcp
 mswhql
+MT
 MTND
 multimonitor
+Multiplayer
 MULTIPLEUSE
 multizone
 muxc
@@ -1116,7 +1138,6 @@ myorg
 myrepo
 NAMECHANGE
 namespaceanddescendants
-Nanjing
 nao
 NCACTIVATE
 ncc
@@ -1142,7 +1163,6 @@ netcpl
 netframework
 netsetup
 netsh
-newcolor
 NEWDIALOGSTYLE
 NEWFILE
 NEWFILEHEADER
@@ -1203,6 +1223,7 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
+NOSIZE
 nosize
 notdefault
 NOTHOUSANDS
@@ -1217,7 +1238,6 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
-NOTXORPEN
 nowarn
 NOZORDER
 NPH
@@ -1244,7 +1264,6 @@ OFN
 ofs
 OICI
 OICIIO
-oldcolor
 olditem
 oldpath
 oldtheme
@@ -1311,6 +1330,7 @@ pchast
 PCIDLIST
 PCTSTR
 PCWSTR
+pdbs
 PDBs
 PDEVMODE
 PDFs
@@ -1338,8 +1358,8 @@ pguid
 phbm
 phbmp
 phicon
-PHL
 Photoshop
+photoshop
 phwnd
 pici
 pidl
@@ -1367,13 +1387,15 @@ POINTERID
 POINTERUPDATE
 Pokedex
 Pomodoro
-Popups
+popups
 POPUPWINDOW
+portfile
 POSITIONITEM
 POWERBROADCAST
 powerdisplay
 POWERDISPLAYMODULEINTERFACE
 powerocr
+powerpnt
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1429,6 +1451,7 @@ projectname
 PROPERTYKEY
 PROPVARIANT
 prot
+Prt
 PRTL
 prvpane
 psapi
@@ -1454,6 +1477,7 @@ ptcontrols
 ptd
 PTOKEN
 ptstr
+ptsym
 pui
 pvct
 PWAs
@@ -1462,7 +1486,6 @@ PWSTR
 pwsz
 pwtd
 qdc
-QDS
 qit
 QITAB
 QITABENT
@@ -1474,6 +1497,7 @@ QUERYOPEN
 QUEUESYNC
 quickaccent
 quicklinks
+quickmask
 QUNS
 RAII
 randi
@@ -1494,7 +1518,6 @@ READMODE
 READOBJECTS
 recents
 RECTDESTINATION
-rectp
 RECTSOURCE
 recursesubdirs
 recyclebin
@@ -1539,6 +1562,7 @@ resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
 RETURNONLYFSDIRS
+Revalidates
 RGBQUAD
 rgbs
 rgelt
@@ -1581,14 +1605,15 @@ SAMESHORTCUTPREVIOUSLYMAPPED
 samsung
 sancov
 SAVEFAILED
-scanled
 schedtasks
 SCID
+SCL
 Scode
 SCREENFONTS
 screenruler
 screensaver
 screenshots
+Scrollback
 scrollviewer
 sddl
 SDKDDK
@@ -1758,6 +1783,7 @@ STDAPI
 stdc
 stdcpp
 stdcpplatest
+stdext
 STDMETHODCALLTYPE
 STDMETHODIMP
 steamapps
@@ -1795,6 +1821,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVIDEO
 SVSI
 SWFO
 swp
@@ -1860,8 +1887,8 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
-Tianma
 TILEDWINDOW
 TILLSON
 timedate
@@ -1879,6 +1906,7 @@ TNP
 Toggleable
 tontrager
 Toolhelp
+toolsets
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF
@@ -1899,6 +1927,7 @@ trx
 tsa
 tskill
 tstoi
+tsv
 tweakable
 TWF
 tymed
@@ -1916,6 +1945,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -1926,6 +1956,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+ungroup
 UNICODETEXT
 unins
 uninsdeletekey
@@ -1936,8 +1967,11 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
-unsubscribes
+Unsend
+Unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -1964,12 +1998,14 @@ vabdq
 validmodulename
 valuegenerator
 VARTYPE
+vbcscompiler
 vcamp
 VCENTER
 vcgtq
 VCINSTALLDIR
 vcp
 Vcpkg
+vcpkg
 vcpname
 VCRT
 vcruntime
@@ -1992,6 +2028,7 @@ VIRTKEY
 VIRTUALDESK
 VISEGRADRELAY
 visiblecolorformats
+visio
 visualeffects
 vkey
 vmovl
@@ -2076,13 +2113,16 @@ winlogon
 winmd
 winml
 WINNT
+winproj
 winres
 winrt
 winsdk
 winsta
 WINTHRESHOLD
 WINVER
+winword
 winxamlmanager
+wireframes
 withinrafael
 Withscript
 wixproj
@@ -2153,8 +2193,10 @@ xxxxxx
 ycombinator
 yinle
 yinyue
+yoko
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable

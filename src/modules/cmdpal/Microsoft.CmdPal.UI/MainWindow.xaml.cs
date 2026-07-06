@@ -58,6 +58,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
+    IRecipient<GetHwndMessage>,
     IDisposable,
     IHostWindow
 {
@@ -163,6 +164,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -1424,5 +1426,10 @@ public sealed partial class MainWindow : WindowEx,
         {
             PInvoke.SetForegroundWindow(_hwnd);
         }
+    }
+
+    public void Receive(GetHwndMessage message)
+    {
+        message.Hwnd = this.GetWindowHandle();
     }
 }

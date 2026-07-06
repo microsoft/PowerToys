@@ -63,7 +63,6 @@ public sealed partial class TaskbarWindow : WindowEx,
         _bandsControl = new TaskbarBandControl(viewModel);
 
         InitializeComponent();
-
         ApplySystemTheme();
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
 
@@ -75,6 +74,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         wMTASKBARRESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
         _hwnd = new HWND(WindowNative.GetWindowHandle(this));
+        _bandsControl.OwnerHwnd = (nint)_hwnd;
 
         // Hide from alt-tab. Must be set early, before WinUI manages
         // the window, to avoid fighting with the framework.
@@ -819,8 +819,8 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
     {
-        // Only handle messages originating from our own TaskbarBandControl.
-        if (message.Source is not null && !ReferenceEquals(message.Source, _bandsControl))
+        // Only handle messages targeting this taskbar window.
+        if (_disposed || message.OwnerHwnd != (nint)_hwnd)
         {
             return;
         }

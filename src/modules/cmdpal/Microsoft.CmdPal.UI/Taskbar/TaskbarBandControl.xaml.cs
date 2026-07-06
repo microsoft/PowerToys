@@ -39,6 +39,12 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     internal DockViewModel ViewModel => _viewModel;
 
+    /// <summary>
+    /// Gets or sets the HWND of the parent <see cref="TaskbarWindow"/> that owns this control.
+    /// Used to target palette-show messages to the correct window.
+    /// </summary>
+    internal IntPtr OwnerHwnd { get; set; }
+
     internal TaskbarBandControl(DockViewModel viewModel)
     {
         _viewModel = viewModel;
@@ -426,7 +432,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             var isPage = command.Model.Unsafe is not IInvokableCommand;
             if (isPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, this));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
             }
         }
         catch (COMException e)

@@ -579,14 +579,16 @@ static void StopResizing()
     HideOverlay();
 }
 
-static void ReplayAbsorbedAlt()
+static void ReplayAbsorbedModifier(bool alsoKeyUp)
 {
-    INPUT keyboardInput = {};
-    keyboardInput.type = INPUT_KEYBOARD;
-    keyboardInput.ki.wVk = static_cast<WORD>(g_absorbedVk);
-    keyboardInput.ki.wScan = static_cast<WORD>(g_absorbedScanCode);
-    keyboardInput.ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
-    SendInput(1, &keyboardInput, sizeof(INPUT));
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = static_cast<WORD>(g_absorbedVk);
+    inputs[0].ki.wScan = static_cast<WORD>(g_absorbedScanCode);
+    inputs[0].ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    inputs[1] = inputs[0];
+    inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
+    SendInput(alsoKeyUp ? 2 : 1, inputs, sizeof(INPUT));
 }
 
 // ---------------------------------------------------------------------------
@@ -632,15 +634,110 @@ static void ShowTrayMenu(HWND hwnd)
 
 static bool IsSystemClass(HWND hwnd)
 {
-    wchar_t cls[64] = {};
-    GetClassNameW(hwnd, cls, 64);
-    return (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0);
+    wchar_t cls[256] = {};
+    GetClassNameW(hwnd, cls, ARRAYSIZE(cls));
+
+    // Desktop and primary/secondary taskbars
+    if (wcscmp(cls, L"Progman") == 0 ||
+        wcscmp(cls, L"Shell_TrayWnd") == 0 ||
+        wcscmp(cls, L"Shell_SecondaryTrayWnd") == 0)
+        return true;
+
+    // System tray / notification area popups and overflow
+    if (wcscmp(cls, L"NotifyIconOverflowWindow") == 0 ||
+        wcscmp(cls, L"TopLevelWindowForOverflowXamlIsland") == 0)
+        return true;
+
+    // Tooltips (e.g. "Show hidden icons" tooltip)
+    if (wcscmp(cls, L"tooltips_class32") == 0)
+        return true;
+
+    // Task View (Win+Tab)
+    if (wcscmp(cls, L"MultitaskingViewFrame") == 0 ||
+        wcscmp(cls, L"XamlExplorerHostIslandWindow") == 0)
+        return true;
+
+    // System tray flyouts (Quick Settings, calendar, input switcher)
+    if (wcscmp(cls, L"Windows.UI.Composition.DesktopWindowContentBridge") == 0 ||
+        wcscmp(cls, L"Shell_InputSwitchTopLevelWindow") == 0)
+        return true;
+
+    return false;
+}
+
+
+std::wstring ToUpperInvariant(std::wstring_view input)
+{
+    int required = LCMapStringEx(
+        LOCALE_NAME_INVARIANT,
+        LCMAP_UPPERCASE,
+        input.data(),
+        static_cast<int>(input.size()),
+        nullptr,
+        0,
+        nullptr,
+        nullptr,
+        0);
+
+    std::wstring result(required, L'\0');
+
+    LCMapStringEx(
+        LOCALE_NAME_INVARIANT,
+        LCMAP_UPPERCASE,
+        input.data(),
+        static_cast<int>(input.size()),
+        result.data(),
+        required,
+        nullptr,
+        nullptr,
+        0);
+
+    return result;
 }
 
 static bool IsExcluded(HWND hwnd)
 {
     if (IsSystemClass(hwnd))
         return true;
+
+    // To identify these for adding a new exception:
+    // 1. Resolve the hwnd class name.
+    // 2. Resolve the process path.
+    // 3. Add OutputDebugStringW() for the class name and process path.
+    // 4. Build the executable.
+    // 5. Check with the debugger (or with Sysinternals DebugView) the outputs.
+    // 6. Delete the added code.
+    // 7. Add the exception below, according to the pattern there.
+    //
+    // Shell experience windows: Start menu, Notifications (Win+N), Search,
+    // Quick Settings (volume / network / battery).
+    // These use the generic Windows.UI.Core.CoreWindow class, so filter by process.
+    {
+        wchar_t cls[256] = {};
+        GetClassNameW(hwnd, cls, ARRAYSIZE(cls));
+        if (wcscmp(cls, L"Windows.UI.Core.CoreWindow") == 0)
+        {
+            std::wstring processPath = ToUpperInvariant(get_process_path(hwnd));
+            if (processPath.find(L"STARTMENUEXPERIENCEHOST.EXE") != std::wstring::npos ||
+                processPath.find(L"SHELLEXPERIENCEHOST.EXE") != std::wstring::npos ||
+                processPath.find(L"SEARCHHOST.EXE") != std::wstring::npos)
+                return true;
+        }
+        else if (wcscmp(cls, L"ControlCenterWindow") == 0)
+        {
+            // The Quick Settings flyout.
+            std::wstring processPath = ToUpperInvariant(get_process_path(hwnd));
+            if (processPath.find(L"SHELLHOST.EXE") != std::wstring::npos)
+                return true;
+        }
+        else if (wcscmp(cls, L"WindowsDashboard") == 0)
+        {
+            // The Windows 11 Widgets flyout.
+            std::wstring processPath = ToUpperInvariant(get_process_path(hwnd));
+            if (processPath.find(L"WIDGETBOARD.EXE") != std::wstring::npos)
+                return true;
+        }
+    }
 
     auto apps = g_excludedApps.load();
     if (!apps || apps->empty())
@@ -735,8 +832,9 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         g_dragConsumedAlt = false;
                         return 1;
                     }
-                    // No drag happened; replay the keydown, then let keyup through
-                    ReplayAbsorbedAlt();
+                    // No drag happened; replay the keydown, THEN the keyup
+                    ReplayAbsorbedModifier(true);
+                    return 1; // swallow this keyup since the replay already sent one
                 }
             }
             goto forward; // let Win keyup pass through
@@ -793,7 +891,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                             return 1;
                         }
                         // No drag happened; replay the keydown, then let keyup through
-                        ReplayAbsorbedAlt();
+                        ReplayAbsorbedModifier(false);
                     }
                 }
             }
@@ -803,7 +901,8 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 if (g_altAbsorbed && !g_dragConsumedAlt)
                 {
                     g_altAbsorbed = false;
-                    ReplayAbsorbedAlt();
+                    g_altPressed = false;
+                    ReplayAbsorbedModifier(false);
                 }
             }
         }
@@ -813,7 +912,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         {
             g_winAbsorbed = false;
             g_winPressed = false;
-            ReplayAbsorbedAlt();
+            ReplayAbsorbedModifier(false);
         }
 
         // Track held non-modifier keys (used to suppress GrabAndMove when the modifier

@@ -2093,7 +2093,7 @@
     <value>Navigate to specific Windows settings</value>
   </data>
   <data name="settings_fallback_title" xml:space="preserve">
-    <value>Search for "{0}" in Windows settings</value>
+    <value>Search for {0}</value>
   </data>
   <data name="settings_fallback_subtitle" xml:space="preserve">
     <value>Search Windows settings for this device</value>
