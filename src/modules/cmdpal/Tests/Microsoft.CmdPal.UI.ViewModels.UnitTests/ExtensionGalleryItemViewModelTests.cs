@@ -119,6 +119,7 @@ public class ExtensionGalleryItemViewModelTests
         var viewModel = CreateViewModel(entry);
 
         Assert.IsFalse(viewModel.HasHomepage);
+        Assert.IsNull(viewModel.HomepageUri);
         Assert.IsFalse(viewModel.HasAuthorUrl);
         Assert.IsFalse(viewModel.HasUrlSource);
         Assert.IsFalse(viewModel.HasActionableSourceDetails);
@@ -129,6 +130,32 @@ public class ExtensionGalleryItemViewModelTests
         Assert.IsFalse(viewModel.OpenHomepageCommand.CanExecute(null));
         Assert.IsFalse(viewModel.OpenAuthorPageCommand.CanExecute(null));
         Assert.IsFalse(viewModel.OpenInstallUrlCommand.CanExecute(null));
+    }
+
+    [TestMethod]
+    public void Constructor_SetsHomepageUri_WhenHomepageIsWebUri()
+    {
+        var entry = CreateEntry(iconUrl: null);
+        entry.Homepage = "https://example.com/extension";
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsTrue(viewModel.HasHomepage);
+        Assert.AreEqual(new Uri("https://example.com/extension"), viewModel.HomepageUri);
+        Assert.IsTrue(viewModel.OpenHomepageCommand.CanExecute(null));
+    }
+
+    [TestMethod]
+    public void Constructor_LeavesHomepageUriNull_WhenHomepageIsMissing()
+    {
+        var entry = CreateEntry(iconUrl: null);
+        entry.Homepage = null;
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsFalse(viewModel.HasHomepage);
+        Assert.IsNull(viewModel.HomepageUri);
+        Assert.IsFalse(viewModel.OpenHomepageCommand.CanExecute(null));
     }
 
     [TestMethod]

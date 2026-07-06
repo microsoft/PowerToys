@@ -34,7 +34,7 @@ internal sealed class SettingsManager : JsonSettingsManager
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{Namespace}.settings.json");
     }
 
     public SettingsManager()

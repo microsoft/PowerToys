@@ -39,6 +39,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     /// </summary>
     internal IntPtr OwnerHwnd { get; set; }
 
+    internal bool HasOpenTransientUi =>
+        ContextMenuFlyout.IsOpen ||
+        AddBandFlyout.IsOpen ||
+        EditModeContextMenu.IsOpen ||
+        EditButtonsTeachingTip.IsOpen;
+
+    internal bool IsDragOperationActive => _draggedBand is not null;
+
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
 
@@ -501,9 +509,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
+        // Focus the filter box so the flyout captures keyboard input,
+        // then fire a single consolidated Narrator announcement.
         ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
     }
 
     public void Receive(CloseContextMenuMessage message)

@@ -21,6 +21,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
     private readonly ListItem _bandItem;
+    private readonly ListItem _notificationCenterBandItem;
 
     public TimeDateCommandsProvider()
     {
@@ -37,6 +38,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         Settings = _settingsManager.Settings;
 
         _bandItem = new NowDockBand();
+        _notificationCenterBandItem = new NotificationCenterDockBand();
     }
 
     private string GetTranslatedPluginDescription()
@@ -54,7 +56,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     public override ICommandItem[] GetDockBands()
     {
-        var wrappedBand = new WrappedDockItem(
+        var clockBand = new WrappedDockItem(
             [_bandItem],
             "com.microsoft.cmdpal.timedate.dockBand",
             Resources.Microsoft_plugin_timedate_dock_band_title)
@@ -62,7 +64,15 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
             Icon = Icons.TimeDateExtIcon,
         };
 
-        return new ICommandItem[] { wrappedBand };
+        var notificationBand = new WrappedDockItem(
+            [_notificationCenterBandItem],
+            "com.microsoft.cmdpal.timedate.notificationCenterBand",
+            Resources.timedate_notification_center_band_title)
+        {
+            Icon = Icons.NotificationCenterIcon,
+        };
+
+        return new ICommandItem[] { clockBand, notificationBand };
     }
 }
 #pragma warning disable SA1402 // File may only contain a single type
@@ -75,7 +85,8 @@ internal sealed partial class NowDockBand : ListItem
 
     public NowDockBand()
     {
-        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand" };
+        // Open Notification Center on click
+        Command = new OpenUrlCommand("ms-actioncenter:") { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.timedate_show_notification_center_command_name, Result = CommandResult.Dismiss(), Icon = null };
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         MoreCommands = [
@@ -135,4 +146,20 @@ internal sealed partial class NowDockBand : ListItem
         _copyTimeCommand.Text = timeString;
     }
 }
+
+internal sealed partial class NotificationCenterDockBand : ListItem
+{
+    public NotificationCenterDockBand()
+    {
+        Icon = Icons.NotificationCenterIcon; // Notification bell
+        Title = Resources.timedate_notification_center_band_title;
+        Command = new OpenUrlCommand("ms-actioncenter:")
+        {
+            Id = "com.microsoft.cmdpal.timedate.notificationCenterBand",
+            Name = Resources.timedate_show_notification_center_command_name,
+            Result = CommandResult.Dismiss(),
+        };
+    }
+}
+
 #pragma warning restore SA1402 // File may only contain a single type

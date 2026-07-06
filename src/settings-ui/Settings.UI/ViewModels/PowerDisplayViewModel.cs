@@ -380,6 +380,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
+        /// <summary>
+        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// </summary>
+        public int MouseWheelIncrement
+        {
+            get => _settings.Properties.MouseWheelIncrement;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelIncrement, value, v => _settings.Properties.MouseWheelIncrement = v))
+                {
+                    // Push to the (possibly open) flyout so the new step takes effect immediately.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
+
+        public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
+
         public ObservableCollection<MonitorInfo> Monitors
         {
             get => _monitors;
@@ -639,7 +659,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
@@ -988,6 +1008,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SignalSettingsUpdated();
         }
 
+        /// <summary>
+        /// Re-read the flyout-owned runtime fields (linked brightness enabled + per-monitor
+        /// exclusion list) from disk into <see cref="_settings"/> so a save originating from an
+        /// unrelated Settings toggle does not overwrite them with the page's stale snapshot.
+        /// These fields have no Settings UI surface — the PowerDisplay flyout is their sole editor.
+        /// </summary>
+        private void PreserveFlyoutOwnedState()
+        {
+            try
+            {
+                var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
+                _settings.Properties.ExcludedFromSyncMonitorIds = current.Properties.ExcludedFromSyncMonitorIds;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to preserve flyout-owned PowerDisplay state before save: {ex.Message}");
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Skip during initialization when SendConfigMSG is not yet set
@@ -995,6 +1035,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return;
             }
+
+            // linked_levels_active and excluded_from_sync_monitor_ids are owned by the PowerDisplay
+            // flyout (the only UI that toggles them); the Settings page has no surface for them.
+            // _settings was loaded once at page construction, so serializing it would otherwise
+            // clobber flyout changes made meanwhile — both on disk and in the IPC config pushed
+            // to the module. Re-read the current on-disk values and carry them forward untouched.
+            PreserveFlyoutOwnedState();
 
             // Persist locally first so settings survive even if the module DLL isn't loaded yet.
             SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);

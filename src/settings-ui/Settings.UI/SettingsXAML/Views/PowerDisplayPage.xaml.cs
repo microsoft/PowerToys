@@ -57,6 +57,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void CopyMonitorDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is MonitorInfo monitor)
+            {
+                var diagnosticsText = monitor.GetDiagnosticsAsText();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(diagnosticsText);
+                Clipboard.SetContent(dataPackage);
+            }
+        }
+
         // Profile button event handlers
         private void ProfileButton_Click(object sender, RoutedEventArgs e)
         {

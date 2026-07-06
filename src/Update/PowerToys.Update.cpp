@@ -95,6 +95,9 @@ std::optional<fs::path> CopySelfToTempDir()
     return dst_path;
 }
 
+// The installer filename read from UpdateState.json is validated by
+// updating::IsSafeDownloadedInstallerFilename (common/updating/updateLifecycle.h)
+// so it can be unit-tested. See ObtainInstaller below for how it's used.
 std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 {
     using namespace updating;
@@ -107,7 +110,25 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     // so we don't need a GitHub API call (which may fail if offline).
     if (state.state == UpdateState::readyToInstall)
     {
-        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (!IsSafeDownloadedInstallerFilename(state.downloadedInstallerFilename))
+        {
+            Logger::error(L"Ignoring unexpected downloadedInstallerFilename from update state: {}", state.downloadedInstallerFilename);
+            return std::nullopt;
+        }
+
+        const fs::path updatesDir = get_pending_updates_path();
+        fs::path installer{ updatesDir / state.downloadedInstallerFilename };
+
+        // Make sure the resolved path actually stays within the Updates directory.
+        std::error_code ec;
+        const fs::path normalizedInstaller = fs::weakly_canonical(installer, ec);
+        const fs::path normalizedUpdatesDir = fs::weakly_canonical(updatesDir, ec);
+        if (ec || normalizedInstaller.parent_path() != normalizedUpdatesDir)
+        {
+            Logger::error(L"Resolved installer path is outside the updates directory: {}", installer.native());
+            return std::nullopt;
+        }
+
         if (fs::is_regular_file(installer))
         {
             return std::move(installer);
