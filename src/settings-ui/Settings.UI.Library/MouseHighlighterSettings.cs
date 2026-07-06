@@ -23,7 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             Name = ModuleName;
             Properties = new MouseHighlighterProperties();
-            Version = "1.2";
+            Version = "1.3";
         }
 
         public string GetModuleName()
@@ -49,6 +49,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // This can be utilized in the future if the settings.json file is to be modified/deleted.
         public bool UpgradeSettingsConfiguration()
         {
+            bool upgraded = false;
+
             if (Version == "1.0" || Version == "1.1")
             {
                 string opacity;
@@ -65,10 +67,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Properties.LeftButtonClickColor = new StringProperty(string.Concat("#", opacity, Properties.LeftButtonClickColor.Value.ToString().Substring(1, 6)));
                 Properties.RightButtonClickColor = new StringProperty(string.Concat("#", opacity, Properties.RightButtonClickColor.Value.ToString().Substring(1, 6)));
                 Version = "1.2";
-                return true;
+                upgraded = true;
             }
 
-            return false;
+            // 1.2 -> 1.3: Mouse Highlighter becomes "Input Highlighter" (adds keystroke
+            // overlay). Existing users keep their current mouse-only behavior; the new
+            // keystroke half stays off until they opt in.
+            if (Version == "1.2")
+            {
+                Properties.ShowKeystrokes = new BoolProperty(false);
+                Version = "1.3";
+                upgraded = true;
+            }
+
+            return upgraded;
         }
     }
 }

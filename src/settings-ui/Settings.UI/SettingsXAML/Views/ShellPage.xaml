@@ -318,6 +318,12 @@
                             AutomationProperties.AutomationId="MouseUtilitiesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
                         <NavigationViewItem
+                            x:Name="InputHighlighterNavigationItem"
+                            x:Uid="Shell_InputHighlighter"
+                            helpers:NavHelper.NavigateTo="views:InputHighlighterPage"
+                            AutomationProperties.AutomationId="InputHighlighterNavItem"
+                            Icon="{ui:FontIcon Glyph=&#xE765;}" />
+                        <NavigationViewItem
                             x:Name="MouseWithoutBordersNavigationItem"
                             x:Uid="Shell_MouseWithoutBorders"
                             helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"

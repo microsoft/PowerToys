@@ -89,6 +89,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlightFadeDurationMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDurationMs.Value;
             _highlighterAutoActivate = MouseHighlighterSettingsConfig.Properties.AutoActivate.Value;
 
+            // Input Highlighter keystroke-overlay settings.
+            _showMouse = MouseHighlighterSettingsConfig.Properties.ShowMouse.Value;
+            _showKeystrokes = MouseHighlighterSettingsConfig.Properties.ShowKeystrokes.Value;
+            _keystrokeDisplayMode = MouseHighlighterSettingsConfig.Properties.KeystrokeDisplayMode.Value;
+            _keystrokePosition = MouseHighlighterSettingsConfig.Properties.KeystrokePosition.Value;
+            _keystrokeTimeoutMs = MouseHighlighterSettingsConfig.Properties.KeystrokeTimeoutMs.Value;
+            _keystrokeTextSize = MouseHighlighterSettingsConfig.Properties.KeystrokeTextSize.Value;
+            string keystrokeTextColor = MouseHighlighterSettingsConfig.Properties.KeystrokeTextColor.Value;
+            _keystrokeTextColor = !string.IsNullOrEmpty(keystrokeTextColor) ? keystrokeTextColor : "#FFFFFFFF";
+            string keystrokeBackgroundColor = MouseHighlighterSettingsConfig.Properties.KeystrokeBackgroundColor.Value;
+            _keystrokeBackgroundColor = !string.IsNullOrEmpty(keystrokeBackgroundColor) ? keystrokeBackgroundColor : "#80000000";
+            string keystrokeStrokeColor = MouseHighlighterSettingsConfig.Properties.KeystrokeStrokeColor.Value;
+            _keystrokeStrokeColor = !string.IsNullOrEmpty(keystrokeStrokeColor) ? keystrokeStrokeColor : "#00FFFFFF";
+            _keystrokeStrokeThickness = MouseHighlighterSettingsConfig.Properties.KeystrokeStrokeThickness.Value;
+            _keystrokeDraggable = MouseHighlighterSettingsConfig.Properties.KeystrokeDraggable.Value;
+
             this.InitializeMouseJumpSettings(mouseJumpSettingsRepository);
 
             ArgumentNullException.ThrowIfNull(mousePointerCrosshairsSettingsRepository);
@@ -814,6 +830,189 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowMouse
+        {
+            get => _showMouse;
+            set
+            {
+                if (value != _showMouse)
+                {
+                    _showMouse = value;
+                    MouseHighlighterSettingsConfig.Properties.ShowMouse.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool ShowKeystrokes
+        {
+            get => _showKeystrokes;
+            set
+            {
+                if (value != _showKeystrokes)
+                {
+                    _showKeystrokes = value;
+                    MouseHighlighterSettingsConfig.Properties.ShowKeystrokes.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings KeystrokeSwitchMonitorHotkey
+        {
+            get => MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchMonitorHotkey;
+            set
+            {
+                if (MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchMonitorHotkey != value)
+                {
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchMonitorHotkey = value ?? MouseHighlighterSettingsConfig.Properties.DefaultKeystrokeSwitchMonitorHotkey;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public HotkeySettings KeystrokeSwitchDisplayModeHotkey
+        {
+            get => MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchDisplayModeHotkey;
+            set
+            {
+                if (MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchDisplayModeHotkey != value)
+                {
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeSwitchDisplayModeHotkey = value ?? MouseHighlighterSettingsConfig.Properties.DefaultKeystrokeSwitchDisplayModeHotkey;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int KeystrokeDisplayMode
+        {
+            get => _keystrokeDisplayMode;
+            set
+            {
+                if (value != _keystrokeDisplayMode)
+                {
+                    _keystrokeDisplayMode = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeDisplayMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int KeystrokePosition
+        {
+            get => _keystrokePosition;
+            set
+            {
+                if (value != _keystrokePosition)
+                {
+                    _keystrokePosition = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokePosition.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int KeystrokeTimeoutMs
+        {
+            get => _keystrokeTimeoutMs;
+            set
+            {
+                if (value != _keystrokeTimeoutMs)
+                {
+                    _keystrokeTimeoutMs = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeTimeoutMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int KeystrokeTextSize
+        {
+            get => _keystrokeTextSize;
+            set
+            {
+                if (value != _keystrokeTextSize)
+                {
+                    _keystrokeTextSize = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeTextSize.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string KeystrokeTextColor
+        {
+            get => _keystrokeTextColor;
+            set
+            {
+                value = SettingsUtilities.ToARGBHex(value);
+                if (!value.Equals(_keystrokeTextColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _keystrokeTextColor = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeTextColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string KeystrokeBackgroundColor
+        {
+            get => _keystrokeBackgroundColor;
+            set
+            {
+                value = SettingsUtilities.ToARGBHex(value);
+                if (!value.Equals(_keystrokeBackgroundColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _keystrokeBackgroundColor = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeBackgroundColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public string KeystrokeStrokeColor
+        {
+            get => _keystrokeStrokeColor;
+            set
+            {
+                value = SettingsUtilities.ToARGBHex(value);
+                if (!value.Equals(_keystrokeStrokeColor, StringComparison.OrdinalIgnoreCase))
+                {
+                    _keystrokeStrokeColor = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeStrokeColor.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int KeystrokeStrokeThickness
+        {
+            get => _keystrokeStrokeThickness;
+            set
+            {
+                if (value != _keystrokeStrokeThickness)
+                {
+                    _keystrokeStrokeThickness = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeStrokeThickness.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool KeystrokeDraggable
+        {
+            get => _keystrokeDraggable;
+            set
+            {
+                if (value != _keystrokeDraggable)
+                {
+                    _keystrokeDraggable = value;
+                    MouseHighlighterSettingsConfig.Properties.KeystrokeDraggable.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1358,6 +1557,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
         private bool _highlighterAutoActivate;
+
+        // Input Highlighter keystroke-overlay backing fields.
+        private bool _showMouse;
+        private bool _showKeystrokes;
+        private int _keystrokeDisplayMode;
+        private int _keystrokePosition;
+        private int _keystrokeTimeoutMs;
+        private int _keystrokeTextSize;
+        private string _keystrokeTextColor;
+        private string _keystrokeBackgroundColor;
+        private string _keystrokeStrokeColor;
+        private int _keystrokeStrokeThickness;
+        private bool _keystrokeDraggable;
 
         private GpoRuleConfigured _mousePointerCrosshairsEnabledGpoRuleConfiguration;
         private bool _mousePointerCrosshairsEnabledStateGPOConfigured;

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -541,6 +541,10 @@ opera.exe</value>
   <data name="Shell_MouseUtilities.Content" xml:space="preserve">
     <value>Mouse Utilities</value>
     <comment>Product name: Navigation view item name for Mouse utilities</comment>
+  </data>
+  <data name="Shell_InputHighlighter.Content" xml:space="preserve">
+    <value>Input Highlighter</value>
+    <comment>Product name: Navigation view item name for Input Highlighter</comment>
   </data>
   <data name="Shell_NavigationMenu_Announce_Collapse" xml:space="preserve">
     <value>Navigation closed</value>
@@ -2785,15 +2789,15 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Determines how far the pointer must move, relative to the screen diagonal, to count as a shake. Lower values make it more sensitive.</value>
   </data>
   <data name="MouseUtils_MouseHighlighter.Header" xml:space="preserve">
-    <value>Mouse Highlighter</value>
+    <value>Input Highlighter</value>
     <comment>Refers to the utility name</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter.Description" xml:space="preserve">
-    <value>Highlight mouse clicks.</value>
+    <value>Highlight mouse clicks and visualize keystrokes on screen.</value>
     <comment>"Mouse Highlighter" is the name of the utility. Mouse is the hardware mouse.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseHighlighter.Header" xml:space="preserve">
-    <value>Mouse Highlighter</value>
+    <value>Input Highlighter</value>
     <comment>"Find My Mouse" is the name of the utility.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_ActivationShortcut.Header" xml:space="preserve">
@@ -5541,6 +5545,36 @@ The break timer font matches the text font.</value>
     <value>Power Display</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
+  <data name="InputHighlighter.ModuleTitle" xml:space="preserve">
+    <value>Input Highlighter</value>
+    <comment>{Locked="Input Highlighter"}</comment>
+  </data>
+  <data name="InputHighlighter.ModuleDescription" xml:space="preserve">
+    <value>Show keys and shortcuts on screen as you type</value>
+  </data>
+  <data name="InputHighlighter_ModuleDisabledInfoBar.Title" xml:space="preserve">
+    <value>Mouse Highlighter is turned off</value>
+    <comment>{Locked="Mouse Highlighter"}</comment>
+  </data>
+  <data name="InputHighlighter_ModuleDisabledInfoBar.Message" xml:space="preserve">
+    <value>Input Highlighter runs as part of the Mouse Highlighter module. Turn on Mouse Highlighter to use it.</value>
+    <comment>{Locked="Input Highlighter","Mouse Highlighter"}</comment>
+  </data>
+  <data name="InputHighlighter_Activation.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="InputHighlighter_Enable.Header" xml:space="preserve">
+    <value>Show keystrokes</value>
+  </data>
+  <data name="InputHighlighter_Enable.Description" xml:space="preserve">
+    <value>Display the keys and shortcuts you press as an on-screen overlay</value>
+  </data>
+  <data name="InputHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="InputHighlighter_Shortcuts.Header" xml:space="preserve">
+    <value>Overlay shortcuts</value>
+  </data>
   <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
     <value>A display management utility for brightness and power control</value>
   </data>
@@ -6249,5 +6283,89 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
+  </data>
+  <data name="MouseUtils_InputHighlighter_ShowMouse.Header" xml:space="preserve">
+    <value>Highlight mouse clicks</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_ShowMouse.Description" xml:space="preserve">
+    <value>Show visual highlights when mouse buttons are clicked</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Keystrokes.Header" xml:space="preserve">
+    <value>Show keystrokes</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Keystrokes.Description" xml:space="preserve">
+    <value>Display the keys you press as an on-screen overlay</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_DisplayMode.Header" xml:space="preserve">
+    <value>Display mode</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_DisplayMode_Last5.Content" xml:space="preserve">
+    <value>Recent keys</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_DisplayMode_SingleChars.Content" xml:space="preserve">
+    <value>Single key</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_DisplayMode_Shortcuts.Content" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_DisplayMode_Stream.Content" xml:space="preserve">
+    <value>Text stream</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_TopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_BottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Position_BottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_TextColor.Header" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_BackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_StrokeColor.Header" xml:space="preserve">
+    <value>Border color</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_StrokeThickness.Header" xml:space="preserve">
+    <value>Border thickness</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_StrokeThickness.Description" xml:space="preserve">
+    <value>Set to 0 to hide the border</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_TextSize.Header" xml:space="preserve">
+    <value>Font size</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Timeout.Header" xml:space="preserve">
+    <value>Duration (ms)</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Timeout.Description" xml:space="preserve">
+    <value>How long each keystroke stays on screen</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Draggable.Header" xml:space="preserve">
+    <value>Allow dragging the overlay</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_Draggable.Description" xml:space="preserve">
+    <value>Let you reposition the keystroke overlay by dragging it</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_SwitchMonitorHotkey.Header" xml:space="preserve">
+    <value>Move to next monitor shortcut</value>
+  </data>
+  <data name="MouseUtils_InputHighlighter_SwitchDisplayModeHotkey.Header" xml:space="preserve">
+    <value>Cycle display mode shortcut</value>
   </data>
 </root>

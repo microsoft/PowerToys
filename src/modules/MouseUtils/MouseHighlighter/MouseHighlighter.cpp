@@ -4,6 +4,9 @@
 #include "pch.h"
 #include "MouseHighlighter.h"
 #include "trace.h"
+#include "Keystrokes/KeyboardCapture.h"
+#include "Keystrokes/KeystrokeProcessor.h"
+#include "Keystrokes/KeystrokeRenderer.h"
 #include <cmath>
 #include <algorithm>
 #include <memory>
@@ -62,6 +65,17 @@ private:
     // a mouse button is held and restores it on release.
     void SpotlightAnimatePress();
     void SpotlightAnimateRelease();
+
+    // Keystroke overlay (Input Highlighter) lifecycle + draining.
+    void StartKeystrokes();
+    void StopKeystrokes();
+    void DrainKeystrokes();
+    D2D1_RECT_F ComputeKeystrokeAnchorRect() const;
+    // Overlay control-shortcut actions (posted from the capture hook).
+    void CycleKeystrokeMonitor();
+    void CycleKeystrokeDisplayMode();
+    static BOOL CALLBACK MonitorEnumProc(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) noexcept;
+
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
     // Helpers for spotlight overlay
@@ -74,6 +88,10 @@ private:
     HWND m_hwnd = NULL;
     HINSTANCE m_hinstance = NULL;
     static constexpr DWORD WM_SWITCH_ACTIVATION_MODE = WM_APP;
+    static constexpr DWORD WM_DRAIN_KEYSTROKES = WM_APP + 1;
+    static constexpr DWORD WM_KEYSTROKE_HOTKEY = WM_APP + 2;
+    static constexpr UINT_PTR KEYSTROKE_TICK_TIMER_ID = 130;
+    static constexpr UINT KEYSTROKE_TICK_INTERVAL_MS = 100;
 
     winrt::DispatcherQueueController m_dispatcherQueueController{ nullptr };
     winrt::Compositor m_compositor{ nullptr };
@@ -137,6 +155,18 @@ private:
     winrt::Windows::UI::Color m_leftClickColor = MOUSE_HIGHLIGHTER_DEFAULT_LEFT_BUTTON_COLOR;
     winrt::Windows::UI::Color m_rightClickColor = MOUSE_HIGHLIGHTER_DEFAULT_RIGHT_BUTTON_COLOR;
     winrt::Windows::UI::Color m_alwaysColor = MOUSE_HIGHLIGHTER_DEFAULT_ALWAYS_COLOR;
+
+    // Input Highlighter: sub-toggles + keystroke overlay pipeline.
+    bool m_showMouse = INPUT_HIGHLIGHTER_DEFAULT_SHOW_MOUSE;
+    bool m_showKeystrokes = INPUT_HIGHLIGHTER_DEFAULT_SHOW_KEYSTROKES;
+    InputHighlighter::KeystrokeRendererSettings m_keystrokeSettings;
+    InputHighlighter::KeyboardCapture m_keyboardCapture;
+    InputHighlighter::KeystrokeProcessor m_keystrokeProcessor;
+    InputHighlighter::KeystrokeRenderer m_keystrokeRenderer;
+    // Overlay control shortcuts + current monitor override (-1 = follow cursor).
+    InputHighlighter::HotkeyChord m_switchMonitorHotkey;
+    InputHighlighter::HotkeyChord m_switchDisplayModeHotkey;
+    int m_keystrokeMonitorOverride = -1;
 };
 static const uint32_t BRING_TO_FRONT_TIMER_ID = 123;
 static const uint32_t HOLD_RIPPLE_TIMER_LEFT = 124;
@@ -204,6 +234,18 @@ bool Highlighter::CreateHighlighter()
         m_overlay.Brush(m_spotlightMask);
         m_overlay.IsVisible(false);
         m_root.Children().InsertAtTop(m_overlay);
+
+        // Initialize the keystroke overlay renderer on the same visual tree. If it
+        // fails (e.g. no D3D device), keystroke display is disabled but mouse
+        // highlighting continues to work.
+        if (!m_keystrokeRenderer.Initialize(m_compositor, m_root, m_hwnd))
+        {
+            Logger::warn("Keystroke renderer initialization failed; keystroke overlay disabled.");
+        }
+        else
+        {
+            m_keystrokeRenderer.ApplySettings(m_keystrokeSettings);
+        }
 
         return true;
     }
@@ -638,9 +680,16 @@ void Highlighter::StartDrawing()
     ClearDrawing();
     ShowWindow(m_hwnd, SW_SHOWNOACTIVATE);
 
-    instance->AddDrawingPoint(Highlighter::MouseButton::None);
+    if (m_showMouse)
+    {
+        instance->AddDrawingPoint(Highlighter::MouseButton::None);
+        m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
+    }
 
-    m_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, m_hinstance, 0);
+    if (m_showKeystrokes)
+    {
+        StartKeystrokes();
+    }
 }
 
 void Highlighter::StopDrawing()
@@ -664,15 +713,194 @@ void Highlighter::StopDrawing()
         m_overlay.IsVisible(false);
     }
     ShowWindow(m_hwnd, SW_HIDE);
-    UnhookWindowsHookEx(m_mouseHook);
+    if (m_mouseHook)
+    {
+        UnhookWindowsHookEx(m_mouseHook);
+        m_mouseHook = NULL;
+    }
+    StopKeystrokes();
     ClearDrawing();
-    m_mouseHook = NULL;
 }
 
 void Highlighter::SwitchActivationMode()
 {
     PostMessage(m_hwnd, WM_SWITCH_ACTIVATION_MODE, 0, 0);
 }
+
+// Compute the anchor rectangle (in overlay client coordinates) for the keystroke
+// stack. Anchors to the override monitor if the user cycled displays, otherwise
+// to the monitor under the cursor. The overlay's client origin is the
+// virtual-screen top-left (+1px, see StartDrawing).
+D2D1_RECT_F Highlighter::ComputeKeystrokeAnchorRect() const
+{
+    const int originX = GetSystemMetrics(SM_XVIRTUALSCREEN) + 1;
+    const int originY = GetSystemMetrics(SM_YVIRTUALSCREEN) + 1;
+
+    RECT work{};
+
+    // If the user cycled to a specific monitor, anchor there.
+    if (m_keystrokeMonitorOverride >= 0)
+    {
+        std::vector<MONITORINFO> monitors;
+        EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
+        if (m_keystrokeMonitorOverride < static_cast<int>(monitors.size()))
+        {
+            work = monitors[m_keystrokeMonitorOverride].rcWork;
+        }
+    }
+
+    // Otherwise anchor to the monitor under the cursor so the overlay follows the
+    // user across displays; fall back to the primary work area.
+    if (work.right == 0 && work.bottom == 0)
+    {
+        POINT pt{};
+        HMONITOR mon = nullptr;
+        if (GetCursorPos(&pt))
+        {
+            mon = MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY);
+        }
+        if (mon)
+        {
+            MONITORINFO mi{ sizeof(mi) };
+            if (GetMonitorInfo(mon, &mi))
+            {
+                work = mi.rcWork;
+            }
+        }
+    }
+
+    if (work.right == 0 && work.bottom == 0)
+    {
+        if (!SystemParametersInfo(SPI_GETWORKAREA, 0, &work, 0))
+        {
+            work = { 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN) };
+        }
+    }
+
+    return D2D1_RECT_F{
+        static_cast<float>(work.left - originX),
+        static_cast<float>(work.top - originY),
+        static_cast<float>(work.right - originX),
+        static_cast<float>(work.bottom - originY),
+    };
+}
+
+BOOL CALLBACK Highlighter::MonitorEnumProc(HMONITOR monitor, HDC /*hdc*/, LPRECT /*rect*/, LPARAM data) noexcept
+{
+    auto* monitors = reinterpret_cast<std::vector<MONITORINFO>*>(data);
+    MONITORINFO mi{ sizeof(mi) };
+    if (GetMonitorInfo(monitor, &mi))
+    {
+        monitors->push_back(mi);
+    }
+    return TRUE;
+}
+
+// Move the keystroke overlay to the next monitor (wrapping). Starts from the
+// monitor under the cursor the first time the user cycles.
+void Highlighter::CycleKeystrokeMonitor()
+{
+    std::vector<MONITORINFO> monitors;
+    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumProc, reinterpret_cast<LPARAM>(&monitors));
+    const int count = static_cast<int>(monitors.size());
+    if (count == 0)
+    {
+        return;
+    }
+
+    int index = m_keystrokeMonitorOverride;
+    if (index < 0 || index >= count)
+    {
+        // Seed from the monitor currently under the cursor.
+        index = 0;
+        POINT pt{};
+        if (GetCursorPos(&pt))
+        {
+            for (int i = 0; i < count; ++i)
+            {
+                if (PtInRect(&monitors[i].rcMonitor, pt))
+                {
+                    index = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    m_keystrokeMonitorOverride = (index + 1) % count;
+    m_keystrokeRenderer.SetAnchorRect(ComputeKeystrokeAnchorRect());
+}
+
+// Cycle to the next keystroke display mode at runtime (not persisted).
+void Highlighter::CycleKeystrokeDisplayMode()
+{
+    const int next = (static_cast<int>(m_keystrokeSettings.displayMode) + 1) % 4;
+    m_keystrokeSettings.displayMode = static_cast<InputHighlighter::DisplayMode>(next);
+    m_keystrokeProcessor.ResetBuffer();
+    m_keystrokeRenderer.Clear();
+    m_keystrokeRenderer.ApplySettings(m_keystrokeSettings);
+}
+
+void Highlighter::StartKeystrokes()
+{
+    if (!m_keystrokeRenderer.IsInitialized())
+    {
+        return;
+    }
+
+    m_keystrokeProcessor.ResetBuffer();
+    m_keystrokeRenderer.ApplySettings(m_keystrokeSettings);
+    m_keystrokeRenderer.SetAnchorRect(ComputeKeystrokeAnchorRect());
+
+    HWND hwnd = m_hwnd;
+    m_keyboardCapture.SetHotkeyHandler([hwnd](int hotkeyId) {
+        // Runs on the capture thread: hand off to the composition thread.
+        PostMessage(hwnd, WM_KEYSTROKE_HOTKEY, static_cast<WPARAM>(hotkeyId), 0);
+    });
+    m_keyboardCapture.SetHotkeys(m_switchMonitorHotkey, m_switchDisplayModeHotkey);
+    const bool started = m_keyboardCapture.Start([hwnd]() {
+        // Runs on the capture thread: hand off to the composition thread to drain.
+        PostMessage(hwnd, WM_DRAIN_KEYSTROKES, 0, 0);
+    });
+
+    if (started)
+    {
+        SetTimer(m_hwnd, KEYSTROKE_TICK_TIMER_ID, KEYSTROKE_TICK_INTERVAL_MS, nullptr);
+    }
+    else
+    {
+        Logger::warn("Failed to start keyboard capture for keystroke overlay.");
+    }
+}
+
+void Highlighter::StopKeystrokes()
+{
+    m_keyboardCapture.Stop();
+    KillTimer(m_hwnd, KEYSTROKE_TICK_TIMER_ID);
+    m_keystrokeRenderer.Clear();
+    m_keystrokeProcessor.ResetBuffer();
+    m_keystrokeMonitorOverride = -1;
+}
+
+void Highlighter::DrainKeystrokes()
+{
+    if (!m_keystrokeRenderer.IsInitialized())
+    {
+        return;
+    }
+
+    const auto mode = static_cast<InputHighlighter::DisplayMode>(m_keystrokeSettings.displayMode);
+    InputHighlighter::KeystrokeEvent e;
+    while (m_keyboardCapture.TryPop(e))
+    {
+        const auto result = m_keystrokeProcessor.Process(e, mode);
+        if (result.action != InputHighlighter::KeystrokeAction::None)
+        {
+            m_keystrokeRenderer.OnResult(result);
+        }
+    }
+}
+
 
 void Highlighter::ApplySettings(MouseHighlighterSettings settings)
 {
@@ -692,6 +920,41 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     m_rippleDurationMs = (settings.rippleDurationMs > 0) ? settings.rippleDurationMs : MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_DURATION_MS;
     m_rippleShowDragTrail = settings.rippleShowDragTrail;
     m_rippleShowReleasePulse = settings.rippleShowReleasePulse;
+
+    // Input Highlighter sub-toggles.
+    m_showMouse = settings.showMouse;
+    m_showKeystrokes = settings.showKeystrokes;
+
+    // Translate keystroke settings into the renderer's settings snapshot.
+    m_keystrokeSettings.displayMode = static_cast<InputHighlighter::DisplayMode>(settings.keystrokeDisplayMode);
+    m_keystrokeSettings.position = static_cast<InputHighlighter::KeystrokePosition>(settings.keystrokePosition);
+    m_keystrokeSettings.timeoutMs = settings.keystrokeTimeoutMs;
+    m_keystrokeSettings.textSize = static_cast<float>(settings.keystrokeTextSize);
+    m_keystrokeSettings.textColor = settings.keystrokeTextColor;
+    m_keystrokeSettings.backgroundColor = settings.keystrokeBackgroundColor;
+    m_keystrokeSettings.strokeColor = settings.keystrokeStrokeColor;
+    m_keystrokeSettings.strokeThickness = settings.keystrokeStrokeThickness;
+
+    // Overlay control shortcuts; push live so changes take effect without restart.
+    m_switchMonitorHotkey = settings.keystrokeSwitchMonitorHotkey;
+    m_switchDisplayModeHotkey = settings.keystrokeSwitchDisplayModeHotkey;
+    m_keyboardCapture.SetHotkeys(m_switchMonitorHotkey, m_switchDisplayModeHotkey);
+
+    if (m_keystrokeRenderer.IsInitialized())
+    {
+        m_keystrokeRenderer.ApplySettings(m_keystrokeSettings);
+    }
+
+    // When the mouse half is disabled, force all pointer visuals off so only the
+    // keystroke overlay is active.
+    if (!m_showMouse)
+    {
+        m_leftPointerEnabled = false;
+        m_rightPointerEnabled = false;
+        m_alwaysPointerEnabled = false;
+        m_spotlightMode = false;
+        m_rippleMode = false;
+    }
 
     // Reset transient pressed-state flag so a settings change while a button
     // happens to be down doesn't leave the spotlight stuck at a shrunken size.
@@ -753,6 +1016,19 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             instance->StartDrawing();
         }
         break;
+    case WM_DRAIN_KEYSTROKES:
+        instance->DrainKeystrokes();
+        break;
+    case WM_KEYSTROKE_HOTKEY:
+        if (wParam == 0)
+        {
+            instance->CycleKeystrokeMonitor();
+        }
+        else if (wParam == 1)
+        {
+            instance->CycleKeystrokeDisplayMode();
+        }
+        break;
     case WM_DESTROY:
         instance->DestroyHighlighter();
         break;
@@ -793,6 +1069,9 @@ LRESULT CALLBACK Highlighter::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             {
                 instance->SpawnRippleHoldDot(MouseButton::Right);
             }
+            break;
+        case KEYSTROKE_TICK_TIMER_ID:
+            instance->m_keystrokeRenderer.Tick();
             break;
         }
         break;

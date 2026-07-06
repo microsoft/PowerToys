@@ -13,6 +13,18 @@
     <ClCompile Include="MouseHighlighter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Keystrokes\KeystrokeFormatter.cpp">
+      <Filter>Keystrokes</Filter>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeystrokeProcessor.cpp">
+      <Filter>Keystrokes</Filter>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeyboardCapture.cpp">
+      <Filter>Keystrokes</Filter>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeystrokeRenderer.cpp">
+      <Filter>Keystrokes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -27,6 +39,21 @@
     <ClInclude Include="MouseHighlighter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Keystrokes\KeystrokeTypes.h">
+      <Filter>Keystrokes</Filter>
+    </ClInclude>
+    <ClInclude Include="Keystrokes\KeystrokeFormatter.h">
+      <Filter>Keystrokes</Filter>
+    </ClInclude>
+    <ClInclude Include="Keystrokes\KeystrokeProcessor.h">
+      <Filter>Keystrokes</Filter>
+    </ClInclude>
+    <ClInclude Include="Keystrokes\KeyboardCapture.h">
+      <Filter>Keystrokes</Filter>
+    </ClInclude>
+    <ClInclude Include="Keystrokes\KeystrokeRenderer.h">
+      <Filter>Keystrokes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -36,6 +63,9 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{c8345550-9836-40a0-b473-0f4bf6129568}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Keystrokes">
+      <UniqueIdentifier>{a4f2d3e1-6b7c-4c9a-8f2e-2d1c3b4a5e6f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{7934ee5b-8427-486d-9324-73b6bcf60eed}</UniqueIdentifier>

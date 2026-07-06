@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module Source">
+      <UniqueIdentifier>{7E4A9C21-1D3B-4E5F-8A6C-2B9D0E1F3A45}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeystrokeFormatter.Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeystrokeProcessor.Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MouseHighlighter\Keystrokes\KeystrokeFormatter.cpp">
+      <Filter>Module Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\MouseHighlighter\Keystrokes\KeystrokeProcessor.cpp">
+      <Filter>Module Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MouseHighlighter\Keystrokes\KeystrokeTypes.h">
+      <Filter>Module Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MouseHighlighter\Keystrokes\KeystrokeFormatter.h">
+      <Filter>Module Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MouseHighlighter\Keystrokes\KeystrokeProcessor.h">
+      <Filter>Module Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

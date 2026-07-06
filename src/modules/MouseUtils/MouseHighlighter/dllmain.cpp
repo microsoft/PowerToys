@@ -27,6 +27,20 @@ namespace
     const wchar_t JSON_KEY_RIPPLE_DURATION_MS[] = L"ripple_duration_ms";
     const wchar_t JSON_KEY_RIPPLE_SHOW_DRAG_TRAIL[] = L"ripple_show_drag_trail";
     const wchar_t JSON_KEY_RIPPLE_SHOW_RELEASE_PULSE[] = L"ripple_show_release_pulse";
+    // Input Highlighter keystroke-overlay keys.
+    const wchar_t JSON_KEY_SHOW_MOUSE[] = L"show_mouse";
+    const wchar_t JSON_KEY_SHOW_KEYSTROKES[] = L"show_keystrokes";
+    const wchar_t JSON_KEY_KEYSTROKE_DISPLAY_MODE[] = L"keystroke_display_mode";
+    const wchar_t JSON_KEY_KEYSTROKE_POSITION[] = L"keystroke_position";
+    const wchar_t JSON_KEY_KEYSTROKE_TIMEOUT_MS[] = L"keystroke_timeout_ms";
+    const wchar_t JSON_KEY_KEYSTROKE_TEXT_SIZE[] = L"keystroke_text_size";
+    const wchar_t JSON_KEY_KEYSTROKE_TEXT_COLOR[] = L"keystroke_text_color";
+    const wchar_t JSON_KEY_KEYSTROKE_BACKGROUND_COLOR[] = L"keystroke_background_color";
+    const wchar_t JSON_KEY_KEYSTROKE_STROKE_COLOR[] = L"keystroke_stroke_color";
+    const wchar_t JSON_KEY_KEYSTROKE_STROKE_THICKNESS[] = L"keystroke_stroke_thickness";
+    const wchar_t JSON_KEY_KEYSTROKE_DRAGGABLE[] = L"keystroke_draggable";
+    const wchar_t JSON_KEY_KEYSTROKE_SWITCH_MONITOR_HOTKEY[] = L"keystroke_switch_monitor_hotkey";
+    const wchar_t JSON_KEY_KEYSTROKE_SWITCH_DISPLAY_MODE_HOTKEY[] = L"keystroke_switch_display_mode_hotkey";
 }
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -481,6 +495,199 @@ public:
             catch (...)
             {
                 Logger::warn("Failed to initialize ripple show release pulse from settings. Will use default value");
+            }
+
+            // ---- Input Highlighter sub-toggles + keystroke overlay ----
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_MOUSE);
+                highlightSettings.showMouse = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize show mouse from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_SHOW_KEYSTROKES);
+                highlightSettings.showKeystrokes = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize show keystrokes from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_DISPLAY_MODE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0 && value <= 3)
+                {
+                    highlightSettings.keystrokeDisplayMode = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid keystroke display mode value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke display mode from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_POSITION);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0 && value <= 5)
+                {
+                    highlightSettings.keystrokePosition = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid keystroke position value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke position from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_TIMEOUT_MS);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value > 0)
+                {
+                    highlightSettings.keystrokeTimeoutMs = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid keystroke timeout value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke timeout from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_TEXT_SIZE);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value > 0)
+                {
+                    highlightSettings.keystrokeTextSize = value;
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid keystroke text size value");
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke text size from settings. Will use default value");
+            }
+            // Text/background/stroke colors are stored as "#AARRGGBB" (alpha baked in).
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_TEXT_COLOR);
+                auto textColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t a, r, g, b;
+                if (!checkValidARGB(textColor, &a, &r, &g, &b))
+                {
+                    Logger::error("Keystroke text color ARGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    highlightSettings.keystrokeTextColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke text color from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_BACKGROUND_COLOR);
+                auto backgroundColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t a, r, g, b;
+                if (!checkValidARGB(backgroundColor, &a, &r, &g, &b))
+                {
+                    Logger::error("Keystroke background color ARGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    highlightSettings.keystrokeBackgroundColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke background color from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_STROKE_COLOR);
+                auto strokeColor = (std::wstring)jsonPropertiesObject.GetNamedString(JSON_KEY_VALUE);
+                uint8_t a, r, g, b;
+                if (!checkValidARGB(strokeColor, &a, &r, &g, &b))
+                {
+                    Logger::error("Keystroke stroke color ARGB value is invalid. Will use default value");
+                }
+                else
+                {
+                    highlightSettings.keystrokeStrokeColor = winrt::Windows::UI::ColorHelper::FromArgb(a, r, g, b);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke stroke color from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_STROKE_THICKNESS);
+                int value = static_cast<int>(jsonPropertiesObject.GetNamedNumber(JSON_KEY_VALUE));
+                if (value >= 0)
+                {
+                    highlightSettings.keystrokeStrokeThickness = value;
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke stroke thickness from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_DRAGGABLE);
+                highlightSettings.keystrokeDraggable = jsonPropertiesObject.GetNamedBoolean(JSON_KEY_VALUE);
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke draggable from settings. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_SWITCH_MONITOR_HOTKEY);
+                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+                highlightSettings.keystrokeSwitchMonitorHotkey.win = hotkey.win_pressed();
+                highlightSettings.keystrokeSwitchMonitorHotkey.ctrl = hotkey.ctrl_pressed();
+                highlightSettings.keystrokeSwitchMonitorHotkey.shift = hotkey.shift_pressed();
+                highlightSettings.keystrokeSwitchMonitorHotkey.alt = hotkey.alt_pressed();
+                highlightSettings.keystrokeSwitchMonitorHotkey.vk = hotkey.get_code();
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke switch-monitor shortcut. Will use default value");
+            }
+            try
+            {
+                auto jsonPropertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES).GetNamedObject(JSON_KEY_KEYSTROKE_SWITCH_DISPLAY_MODE_HOTKEY);
+                auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonPropertiesObject);
+                highlightSettings.keystrokeSwitchDisplayModeHotkey.win = hotkey.win_pressed();
+                highlightSettings.keystrokeSwitchDisplayModeHotkey.ctrl = hotkey.ctrl_pressed();
+                highlightSettings.keystrokeSwitchDisplayModeHotkey.shift = hotkey.shift_pressed();
+                highlightSettings.keystrokeSwitchDisplayModeHotkey.alt = hotkey.alt_pressed();
+                highlightSettings.keystrokeSwitchDisplayModeHotkey.vk = hotkey.get_code();
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize keystroke switch-display-mode shortcut. Will use default value");
             }
         }
         else

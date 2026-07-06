@@ -427,6 +427,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "ImageResizer": return typeof(ImageResizerPage);
                 case "KBM": return typeof(KeyboardManagerPage);
                 case "MouseUtils": return typeof(MouseUtilsPage);
+                case "InputHighlighter": return typeof(InputHighlighterPage);
                 case "MouseWithoutBorders": return typeof(MouseWithoutBordersPage);
                 case "Peek": return typeof(PeekPage);
                 case "PowerAccent": return typeof(PowerAccentPage);

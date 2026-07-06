@@ -87,6 +87,11 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Keystrokes\KeystrokeTypes.h" />
+    <ClInclude Include="Keystrokes\KeystrokeFormatter.h" />
+    <ClInclude Include="Keystrokes\KeystrokeProcessor.h" />
+    <ClInclude Include="Keystrokes\KeyboardCapture.h" />
+    <ClInclude Include="Keystrokes\KeystrokeRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -95,6 +100,18 @@
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="Keystrokes\KeystrokeFormatter.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeystrokeProcessor.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeyboardCapture.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Keystrokes\KeystrokeRenderer.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MouseHighlighter.rc" />
