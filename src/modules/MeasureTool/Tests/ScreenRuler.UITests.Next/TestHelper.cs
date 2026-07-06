@@ -380,7 +380,7 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, testName);
 
-        SelectToolAndVerify(ruler, buttonId, testName);
+        SelectToolAndVerify(ruler, buttonId, testName, useMouseClick: false);
 
         var clipboardText = MeasureWithRetry(testName, PerformMeasurementAction);
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), $"{testName}: Clipboard should contain measurement data");
@@ -400,7 +400,7 @@ public static class TestHelper
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, "bounds test");
 
-        SelectToolAndVerify(ruler, BoundsButtonId, "Bounds");
+        SelectToolAndVerify(ruler, BoundsButtonId, "Bounds", useMouseClick: true);
 
         var clipboardText = MeasureWithRetry("Bounds", PerformBoundsMeasurement);
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
@@ -415,20 +415,23 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Select a toolbar tool and CONFIRM it actually engaged, retrying until the full-screen overlay
-    /// window (<c>PowerToys.MeasureToolOverlay</c>) appears — the authoritative "tool engaged" signal.
-    /// Each attempt LOCATES the button via UIA (winappcli <c>search</c> → its screen rect) and clicks it
-    /// with a REAL mouse click at its centre (not a UIA Invoke, so the whole interaction stays on the
-    /// real-input path the Measure Tool's mouse-driven capture needs), then moves the cursor onto the
-    /// capture surface and checks for the overlay. The toolbar's UIA tree exists within a second of the
-    /// process starting, but on a slow/headless CI agent the window isn't INTERACTIVE for a few more
-    /// seconds — a click that lands before then is silently dropped (the tool never engages, no overlay).
-    /// So a single click isn't enough; we retry. The tool buttons are ToggleButtons (clicking a SELECTED
-    /// one deselects it via ResetState), so we only click when <c>ToggleState</c> is Off — a retry must
-    /// never toggle an already-engaged tool back off. Falls back to a UIA invoke if the button reports no
-    /// usable bounds.
+    /// Select a toolbar tool and CONFIRM it engaged, retrying until the full-screen overlay window
+    /// (<c>PowerToys.MeasureToolOverlay</c>) appears — the authoritative "tool engaged" signal. On a
+    /// slow/headless CI agent the toolbar's UIA tree exists a second after the process starts but the
+    /// window isn't INTERACTIVE for a few more seconds, so a press that lands early is silently dropped;
+    /// we retry until the overlay confirms.
+    /// <para>
+    /// <paramref name="useMouseClick"/> chooses HOW the button is pressed. Bounds uses a REAL mouse click
+    /// at the button's centre — its measurement is a cursor DRAG, so the whole interaction must be real
+    /// mouse input (a UIA Invoke left the drag unregistered on Win10). The spacing tools use a coordinate-
+    /// free UIA Invoke: their measurement comes from the screen-capture pipeline, and moving the real
+    /// cursor up to the toolbar to click regressed that capture on Win11 — an Invoke keeps the cursor
+    /// parked on the capture surface (screen centre) and preserves the behaviour that always passed. Either
+    /// way the buttons are ToggleButtons (clicking a SELECTED one deselects it via ResetState), so we only
+    /// press when <c>ToggleState</c> is Off — a retry must never toggle an engaged tool back off.
+    /// </para>
     /// </summary>
-    private static void SelectToolAndVerify(Session ruler, string buttonId, string testName)
+    private static void SelectToolAndVerify(Session ruler, string buttonId, string testName, bool useMouseClick)
     {
         var (cx, cy) = ScreenCenter();
         var deadline = DateTime.UtcNow.AddSeconds(25);
@@ -455,14 +458,14 @@ public static class TestHelper
                 continue;
             }
 
-            // ToggleButton: clicking a SELECTED tool deselects it (ResetState), so only click when it
+            // ToggleButton: clicking a SELECTED tool deselects it (ResetState), so only press when it
             // isn't already engaged — otherwise a retry would toggle the tool back off.
             var toggleState = button.GetProperty("ToggleState");
             if (string.Equals(toggleState, "On", StringComparison.OrdinalIgnoreCase))
             {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} already engaged (ToggleState=On); not re-clicking");
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} already engaged (ToggleState=On); not re-pressing");
             }
-            else if (button.Width > 0 && button.Height > 0)
+            else if (useMouseClick && button.Width > 0 && button.Height > 0)
             {
                 var btnX = button.X + (button.Width / 2);
                 var btnY = button.Y + (button.Height / 2);
@@ -474,7 +477,7 @@ public static class TestHelper
             }
             else
             {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} reported no usable bounds ({button.Width}x{button.Height}); falling back to a UIA invoke");
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: UIA invoke of {buttonId} (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
                 button.Click(msPostAction: 300);
             }
 
@@ -493,7 +496,7 @@ public static class TestHelper
                 break;
             }
 
-            Log($"SelectToolAndVerify[{testName}]: overlay not up after attempt {attempt} — the toolbar was likely not interactive when clicked; retrying");
+            Log($"SelectToolAndVerify[{testName}]: overlay not up after attempt {attempt} — the toolbar was likely not interactive when pressed; retrying");
             Thread.Sleep(500);
         }
 
@@ -529,12 +532,15 @@ public static class TestHelper
     /// <summary>
     /// Take a measuring gesture and return the resulting clipboard text, retrying the gesture IN PLACE
     /// (without closing/reopening the tool) while the clipboard comes back empty. The Measure Tool only
-    /// produces a measurement after its screen-capture and cursor-tracking threads have delivered data
-    /// for the gesture point; the FIRST overlay of each kind pays a one-time cold start (slowest on
-    /// Win10), so the very first gesture can fire before any frame is processed and yield an empty
-    /// clipboard. The gesture itself (cursor move + click/drag) drives those threads, so simply repeating
-    /// it on the SAME overlay succeeds once the pipeline is warm — closing and reopening would reset the
-    /// cold start every time.
+    /// produces a measurement once its screen capture has delivered a frame: the spacing tools copy
+    /// <c>measuredEdges</c>, which is set only after the tool's <c>CaptureSingleFrame()</c> lands the
+    /// first Windows.Graphics.Capture frame (then edge-detected at the cursor every frame — no cursor
+    /// movement needed). That WGC first frame cold-starts: instant when warm, but several seconds on a
+    /// slow/headless CI agent, and the FIRST MeasureToolOverlay of the run pays it — so an early click
+    /// reads an empty clipboard. We keep the SAME overlay/capture session alive and retry with generous
+    /// cumulative time; re-engaging (or closing/reopening) would restart the capture and RESET the cold
+    /// start every time (the lesson from the old close/reopen retry that never recovered). Bounds needs
+    /// no captured frame (it measures cursor deltas), so it succeeds on attempt 1 and returns early.
     /// </summary>
     private static string MeasureWithRetry(string testName, Action gesture, int maxAttempts = 3)
     {
@@ -551,7 +557,7 @@ public static class TestHelper
 
             if (attempt < maxAttempts)
             {
-                Log($"{testName}: clipboard empty — retrying the measurement in place");
+                Log($"{testName}: clipboard empty — the screen capture likely hasn't delivered its first frame yet; waiting and retrying in place");
                 Thread.Sleep(1000);
             }
         }
