@@ -374,15 +374,40 @@ public static class TestHelper
         return ruler;
     }
 
-    /// <summary>Run a spacing-tool measurement and validate the clipboard output.</summary>
+    /// <summary>
+    /// Run a spacing-tool measurement and validate the clipboard output. Spacing depends on the WGC
+    /// screen capture: the tool copies <c>measuredEdges</c>, set only after <c>CaptureSingleFrame()</c>
+    /// lands the first Windows.Graphics.Capture frame. On a slow/headless CI agent that first frame can
+    /// be slow (the in-place retry gives it time) or the capture session can stall outright (no frame at
+    /// all) — so if the in-place retries produce nothing, we RE-ENGAGE the tool once: toggling it off and
+    /// on tears down and re-creates the capture session, and a fresh session can succeed where a stalled
+    /// one never will. Each spacing test uses its own MeasureToolUI process, so every one pays this WGC
+    /// start independently (no cross-test warming). Re-engaging only ONCE, after a generous in-place
+    /// window, avoids fighting a genuine cold start (the lesson from the old restart-every-attempt retry).
+    /// </summary>
     public static void PerformSpacingToolTest(UITestBase testBase, string buttonId, string testName)
     {
         var activationKeys = ReadActivationShortcut(testBase);
         var ruler = ActivateScreenRuler(testBase, activationKeys, testName);
 
-        SelectToolAndVerify(ruler, buttonId, testName, useMouseClick: false);
+        var clipboardText = string.Empty;
+        const int captureCycles = 2;
+        for (var cycle = 1; cycle <= captureCycles; cycle++)
+        {
+            if (cycle > 1)
+            {
+                Log($"{testName}: no measurement after cycle {cycle - 1} — re-engaging the tool to restart the screen capture");
+                ReengageTool(ruler, buttonId, testName);
+            }
 
-        var clipboardText = MeasureWithRetry(testName, PerformMeasurementAction);
+            SelectToolAndVerify(ruler, buttonId, testName, useMouseClick: false);
+            clipboardText = MeasureWithRetry(testName, PerformMeasurementAction, maxAttempts: 5);
+            if (!string.IsNullOrEmpty(clipboardText))
+            {
+                break;
+            }
+        }
+
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), $"{testName}: Clipboard should contain measurement data");
         Assert.IsTrue(
             ValidateSpacingClipboardContent(clipboardText, testName),
@@ -503,6 +528,34 @@ public static class TestHelper
         Assert.Fail(
             $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after {attempt} " +
             "tool-selection attempts — the Measure Tool never entered capture state, so a measurement can't be taken.");
+    }
+
+    /// <summary>
+    /// Toggle the currently-engaged tool OFF so the next <see cref="SelectToolAndVerify"/> starts a FRESH
+    /// capture. A UIA invoke on an engaged ToggleButton hits the Measure Tool's ResetState path, tearing
+    /// down the overlay and its WGC capture session; re-selecting re-creates them. Used to recover a
+    /// stuck capture (first frame never delivered) — a new session can succeed where the stalled one won't.
+    /// </summary>
+    private static void ReengageTool(Session ruler, string buttonId, string testName)
+    {
+        try
+        {
+            var button = ruler.Find<Element>(By.AccessibilityId(buttonId), 8000);
+            if (string.Equals(button.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
+            {
+                Log($"ReengageTool[{testName}]: toggling {buttonId} off to tear down the stalled capture");
+                button.Click(msPostAction: 300);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log($"ReengageTool[{testName}]: {ex.GetType().Name} toggling off — re-selecting anyway");
+        }
+
+        // Park the cursor at centre and let the overlay tear down before re-selecting.
+        var (cx, cy) = ScreenCenter();
+        MouseHelper.MoveTo(cx, cy);
+        Thread.Sleep(700);
     }
 
     /// <summary>
