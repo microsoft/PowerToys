@@ -415,17 +415,36 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Select a toolbar tool with a coordinate-free winappcli UIA invoke, move the cursor onto the
-    /// capture surface (a single tracked move), then CONFIRM the tool engaged by polling for the
-    /// full-screen measurement overlay window (<c>PowerToys.MeasureToolOverlay</c>) — its presence
-    /// means a following drag/click will actually measure. The overlay only shows once the cursor
-    /// leaves the toolbar onto the surface.
+    /// Select a toolbar tool by LOCATING its button via UIA (winappcli <c>search</c> gives the button's
+    /// screen rectangle) and then clicking it with a REAL mouse click at its centre — deliberately NOT a
+    /// UIA Invoke. A synthetic Invoke toggles the button programmatically without moving the mouse or
+    /// generating real WM_LBUTTONDOWN/UP, which can leave the Measure Tool's mouse-driven capture/tracking
+    /// state uninitialised so the following measuring gesture never registers. Clicking the button the way
+    /// a user would keeps the whole interaction on the real-input path. Falls back to a UIA invoke only if
+    /// the button reports no usable bounds. After selecting, move the cursor onto the capture surface and
+    /// CONFIRM the tool engaged by polling for the full-screen overlay window
+    /// (<c>PowerToys.MeasureToolOverlay</c>) — its presence means a following gesture will actually measure.
     /// </summary>
     private static void SelectToolAndVerify(Session ruler, string buttonId, string testName)
     {
-        Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId}");
-        ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
-        Log($"SelectToolAndVerify[{testName}]: UIA invoke of {buttonId} successful");
+        var button = ruler.Find<Element>(By.AccessibilityId(buttonId), 15000);
+        if (button.Width > 0 && button.Height > 0)
+        {
+            var btnX = button.X + (button.Width / 2);
+            var btnY = button.Y + (button.Height / 2);
+            Log($"SelectToolAndVerify[{testName}]: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height}; real mouse click at ({btnX},{btnY})");
+            MouseHelper.MoveTo(btnX, btnY);
+            Thread.Sleep(200);
+            MouseHelper.LeftClick();
+            Thread.Sleep(300);
+        }
+        else
+        {
+            Log($"SelectToolAndVerify[{testName}]: {buttonId} reported no usable bounds ({button.Width}x{button.Height}); falling back to a UIA invoke");
+            button.Click(msPostAction: 300);
+        }
+
+        Log($"SelectToolAndVerify[{testName}]: {buttonId} selected");
 
         // Moving the cursor off the toolbar onto the capture surface is what makes the overlay appear.
         // ActivateScreenRuler parked the cursor at the screen centre, so move to an offset to produce a
@@ -513,10 +532,10 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Bounds measuring gesture: drag a 100x100 box from the centre. The drag's button-up is what copies
-    /// the measurement to the clipboard, so no right-click is needed — and we deliberately skip it so a
-    /// retry can re-drag on the SAME overlay (a right-click with no pending selection closes the bounds
-    /// tool). The 99px delta measures 100x100 inclusive on a per-monitor-DPI-aware host (app.manifest).
+    /// Bounds measuring gesture: drag a 100x100 box from the centre. The drag's button-up copies the
+    /// measurement to the clipboard, so no right-click is needed — we deliberately skip it so a retry can
+    /// re-drag on the SAME overlay (a right-click with no pending selection closes the bounds tool). The
+    /// 99px delta measures 100x100 inclusive on a per-monitor-DPI-aware host (app.manifest).
     /// </summary>
     private static void PerformBoundsMeasurement()
     {
