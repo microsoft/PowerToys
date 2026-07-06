@@ -99,7 +99,11 @@ public sealed class PowerScriptManifest
 {
     public int SchemaVersion { get; set; } = 1;
 
-    /// <summary>Stable identifier; must match the containing folder name.</summary>
+    /// <summary>
+    /// Stable, portable identifier. Intentionally decoupled from the containing folder name so a
+    /// script can be renamed on disk (or dropped into a differently-named folder to avoid a local
+    /// clash) without changing its identity. Must be unique across the catalogue.
+    /// </summary>
     public string Id { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
