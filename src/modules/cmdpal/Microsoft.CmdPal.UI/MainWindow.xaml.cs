@@ -113,6 +113,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public bool IsVisibleToUser { get; private set; } = true;
 
+    public event EventHandler? IsVisibleToUserChanged;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -731,6 +733,10 @@ public sealed partial class MainWindow : WindowEx,
         // forces the NC repaint every time we show, so the frame is gone from
         // the very first summon.
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED);
+
+        // Treat the overall show/hide lifecycle as the authoritative
+        // visibility transition, not the lower-level cloak/uncloak helpers.
+        SetIsVisibleToUser(true);
     }
 
     private static DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -915,6 +921,10 @@ public sealed partial class MainWindow : WindowEx,
             // Sure, it's not ideal, but at least it's not visible.
         }
 
+        // Treat the overall show/hide lifecycle as the authoritative
+        // visibility transition, not the lower-level cloak/uncloak helpers.
+        SetIsVisibleToUser(false);
+
         WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
         // Start auto-go-home timer
@@ -948,10 +958,6 @@ public sealed partial class MainWindow : WindowEx,
             {
                 Logger.LogWarning($"DWM cloaking of the main window failed. HRESULT: {hr.Value}.");
             }
-            else
-            {
-                IsVisibleToUser = false;
-            }
 
             wasCloaked = hr.Succeeded;
         }
@@ -965,8 +971,18 @@ public sealed partial class MainWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
-            IsVisibleToUser = true;
         }
+    }
+
+    private void SetIsVisibleToUser(bool isVisibleToUser)
+    {
+        if (IsVisibleToUser == isVisibleToUser)
+        {
+            return;
+        }
+
+        IsVisibleToUser = isVisibleToUser;
+        IsVisibleToUserChanged?.Invoke(this, EventArgs.Empty);
     }
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -1502,6 +1518,7 @@ public sealed partial class MainWindow : WindowEx,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
                 Cloak();
                 this.Hide();
+                SetIsVisibleToUser(false);
                 WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
                 return;
@@ -1759,17 +1776,26 @@ public sealed partial class MainWindow : WindowEx,
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
-        // Only the compact + centered configuration needs a screen-fit clamp. There the card
-        // is anchored near the vertical center of the display, so an expanded list could run
-        // off the bottom edge; cap its height so it always fits. In every other case the card
-        // is free to fill the (fixed-size) HWND as before.
-        if (expanded && settings.CompactMode && IsCenteringSummon(settings))
+        if (!settings.CompactMode)
         {
-            RootElement.SetCardMaxHeight(ComputeExpandedCardMaxHeightDip());
+            // When compact mode is off the card is always static and fills the entire window,
+            // regardless of how much content is currently displayed.
+            RootElement.SetCardStretch(true);
+            RootElement.SetCardMaxHeight(double.PositiveInfinity);
         }
         else
         {
-            RootElement.SetCardMaxHeight(double.PositiveInfinity);
+            // In compact mode the card sizes itself to its content and anchors to the top.
+            RootElement.SetCardStretch(false);
+
+            // Only the compact + centered configuration needs a screen-fit clamp. There the card
+            // is anchored near the vertical center of the display, so an expanded list could run
+            // off the bottom edge; cap its height so it always fits. In every other case the card
+            // is free to fill the (fixed-size) HWND as before.
+            var cardMaxHeight = expanded && IsCenteringSummon(settings)
+                ? ComputeExpandedCardMaxHeightDip()
+                : double.PositiveInfinity;
+            RootElement.SetCardMaxHeight(cardMaxHeight);
         }
     }
 
