@@ -47,6 +47,49 @@
                     </StackPanel>
                 </tkcontrols:SettingsCard>
 
+                <controls:SettingsGroup Header="Python runtime" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Description="Run Python PowerScripts (scripts whose manifest sets &quot;runtime&quot;: &quot;python&quot;) natively on Windows or inside WSL."
+                        Header="Python execution"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE943;}">
+                        <ComboBox MinWidth="160" SelectedIndex="{x:Bind ViewModel.PythonModeIndex, Mode=TwoWay}">
+                            <ComboBoxItem Content="Disabled" />
+                            <ComboBoxItem Content="Windows" />
+                            <ComboBoxItem Content="WSL" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Description="Optional. Leave empty to auto-detect via the Python launcher (py.exe) or python.exe on PATH."
+                        Header="Python interpreter path"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                        Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox
+                                MinWidth="300"
+                                HorizontalAlignment="Stretch"
+                                Text="{x:Bind ViewModel.PythonInterpreterPath, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                            <Button
+                                x:Name="BrowsePythonInterpreterButton"
+                                VerticalAlignment="Center"
+                                Click="BrowsePythonInterpreterButton_Click"
+                                Content="Browse..." />
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Description="The WSL distribution scripts run in. Leave empty to use the default distribution."
+                        Header="WSL distribution"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEC7A;}"
+                        Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ComboBox
+                            MinWidth="200"
+                            IsEditable="True"
+                            ItemsSource="{x:Bind ViewModel.WslDistributions, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         IsClosable="False"

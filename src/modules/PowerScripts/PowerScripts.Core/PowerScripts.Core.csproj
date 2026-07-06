@@ -4,4 +4,10 @@
     <RootNamespace>PowerScripts.Core</RootNamespace>
     <AssemblyName>PowerScripts.Core</AssemblyName>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The Python bootstrap ships next to the executor and any project that references Core. -->
+    <None Update="Execution\_runner.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

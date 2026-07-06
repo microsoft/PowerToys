@@ -121,7 +121,28 @@ public static class PowerScriptsPaths
     {
         Directory.CreateDirectory(ModuleDirectory);
         var normalized = string.IsNullOrWhiteSpace(root) ? string.Empty : root.Trim();
-        var json = JsonSerializer.Serialize(new { scriptsRoot = normalized }, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(ConfigFilePath, json);
+
+        // Preserve any other keys (e.g. the "python" section) rather than overwriting the whole file.
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        try
+        {
+            if (File.Exists(ConfigFilePath))
+            {
+                using var stream = File.OpenRead(ConfigFilePath);
+                using var existing = JsonDocument.Parse(stream);
+                foreach (var property in existing.RootElement.EnumerateObject())
+                {
+                    merged[property.Name] = property.Value.Clone();
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Overwrite a corrupt config rather than fail.
+        }
+
+        merged["scriptsRoot"] = JsonSerializer.SerializeToElement(normalized);
+        File.WriteAllText(ConfigFilePath, JsonSerializer.Serialize(merged, options));
     }
 }

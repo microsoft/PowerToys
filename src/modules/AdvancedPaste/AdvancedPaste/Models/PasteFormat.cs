@@ -24,6 +24,15 @@ public sealed class PasteFormat
         IsEnabled = SupportsClipboardFormats(clipboardFormats) && (isAIServiceEnabled || !Metadata.RequiresAIService);
     }
 
+    // Per-instance constructor for PowerScripts, whose supported clipboard formats vary per script
+    // (derived from the script's own transform contract) rather than from the static enum metadata.
+    private PasteFormat(PasteFormats format, ClipboardFormat scriptSupportedFormats, ClipboardFormat availableClipboardFormats, bool perScript)
+    {
+        _ = perScript;
+        Format = format;
+        IsEnabled = (availableClipboardFormats & scriptSupportedFormats) != ClipboardFormat.None;
+    }
+
     public static PasteFormat CreateStandardFormat(PasteFormats format, ClipboardFormat clipboardFormats, bool isAIServiceEnabled, Func<string, string> resourceLoader) =>
         new(format, clipboardFormats, isAIServiceEnabled)
         {
@@ -40,6 +49,19 @@ public sealed class PasteFormat
             IsSavedQuery = isSavedQuery,
         };
 
+    /// <summary>
+    /// Creates a paste format backed by a user-authored PowerScript. The script's own transform
+    /// contract determines which clipboard formats it accepts, so enablement is computed per instance.
+    /// </summary>
+    public static PasteFormat CreatePowerScriptFormat(string scriptId, string name, ClipboardFormat scriptSupportedFormats, ClipboardFormat availableClipboardFormats) =>
+        new(PasteFormats.PowerScript, scriptSupportedFormats, availableClipboardFormats, perScript: true)
+        {
+            Name = name,
+            Prompt = string.Empty,
+            IsSavedQuery = false,
+            ScriptId = scriptId,
+        };
+
     public PasteFormatMetadataAttribute Metadata => MetadataDict[Format];
 
     public string IconGlyph => Metadata.IconGlyph;
@@ -51,6 +73,9 @@ public sealed class PasteFormat
     public string Prompt { get; private init; }
 
     public bool IsSavedQuery { get; private init; }
+
+    /// <summary>The PowerScript id backing this format, when <see cref="Format"/> is <see cref="PasteFormats.PowerScript"/>.</summary>
+    public string ScriptId { get; private init; }
 
     public bool IsEnabled { get; private init; }
 

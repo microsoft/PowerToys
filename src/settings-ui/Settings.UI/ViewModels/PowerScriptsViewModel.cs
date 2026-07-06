@@ -8,7 +8,9 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -29,6 +31,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private bool _isEnabled;
         private string _scriptsFolder;
+        private int _pythonModeIndex;
+        private string _pythonInterpreterPath;
+        private string _wslDistribution;
 
         public PowerScriptsViewModel(ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> sendConfigMsg)
         {
@@ -40,10 +45,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _scriptsFolder = ResolveScriptsFolder();
 
             Scripts = new ObservableCollection<PowerScriptListItem>();
+            WslDistributions = new ObservableCollection<string>();
+
+            LoadPythonSettings();
+            LoadWslDistributions();
             ReloadScripts();
         }
 
         public ObservableCollection<PowerScriptListItem> Scripts { get; }
+
+        /// <summary>The WSL distributions detected via <c>wsl.exe -l -q</c>, offered when Python runs in WSL mode.</summary>
+        public ObservableCollection<string> WslDistributions { get; }
 
         public bool HasScripts => Scripts.Count > 0;
 
@@ -94,6 +106,71 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     OnPropertyChanged();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Python execution mode: 0 = Disabled, 1 = Windows, 2 = WSL. Persisted to the shared
+        /// <c>config.json</c>'s <c>python.mode</c> so the Host runs Python PowerScripts the same way from
+        /// every surface (a hotkey, the context menu, or Advanced Paste).
+        /// </summary>
+        public int PythonModeIndex
+        {
+            get => _pythonModeIndex;
+            set
+            {
+                if (_pythonModeIndex != value)
+                {
+                    _pythonModeIndex = value;
+                    SavePythonSettings();
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsWindowsMode));
+                    OnPropertyChanged(nameof(IsWslMode));
+                }
+            }
+        }
+
+        public bool IsWindowsMode => _pythonModeIndex == 1;
+
+        public bool IsWslMode => _pythonModeIndex == 2;
+
+        /// <summary>Optional explicit Windows interpreter path; empty means auto-detect (py.exe / python.exe).</summary>
+        public string PythonInterpreterPath
+        {
+            get => _pythonInterpreterPath;
+            set
+            {
+                var normalized = value ?? string.Empty;
+                if (_pythonInterpreterPath != normalized)
+                {
+                    _pythonInterpreterPath = normalized;
+                    SavePythonSettings();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>The WSL distribution scripts run in; empty means the default distribution.</summary>
+        public string WslDistribution
+        {
+            get => _wslDistribution;
+            set
+            {
+                var normalized = value ?? string.Empty;
+                if (_wslDistribution != normalized)
+                {
+                    _wslDistribution = normalized;
+                    SavePythonSettings();
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public void SetPythonInterpreterPath(string path)
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                PythonInterpreterPath = path.Trim();
             }
         }
 
@@ -185,10 +262,136 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static void SaveConfiguredScriptsRoot(string folder)
         {
-            Directory.CreateDirectory(ModuleDirectory);
             var normalized = string.IsNullOrWhiteSpace(folder) ? string.Empty : folder.Trim();
-            var json = JsonSerializer.Serialize(new { scriptsRoot = normalized }, WriteJsonOptions);
-            File.WriteAllText(ConfigFilePath, json);
+            var config = LoadConfigNode();
+            config["scriptsRoot"] = normalized;
+            WriteConfigNode(config);
+        }
+
+        /// <summary>Reads the module <c>config.json</c> into a mutable node, preserving unknown keys.</summary>
+        private static JsonObject LoadConfigNode()
+        {
+            try
+            {
+                if (File.Exists(ConfigFilePath))
+                {
+                    var text = File.ReadAllText(ConfigFilePath);
+                    if (JsonNode.Parse(text) is JsonObject existing)
+                    {
+                        return existing;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // A corrupt config is replaced rather than blocking the write.
+            }
+
+            return new JsonObject();
+        }
+
+        private static void WriteConfigNode(JsonObject config)
+        {
+            Directory.CreateDirectory(ModuleDirectory);
+            File.WriteAllText(ConfigFilePath, config.ToJsonString(WriteJsonOptions));
+        }
+
+        private void LoadPythonSettings()
+        {
+            _pythonModeIndex = 0;
+            _pythonInterpreterPath = string.Empty;
+            _wslDistribution = string.Empty;
+
+            try
+            {
+                var config = LoadConfigNode();
+                if (config["python"] is JsonObject python)
+                {
+                    var mode = python["mode"]?.GetValue<string>() ?? "disabled";
+                    _pythonModeIndex = mode.ToLowerInvariant() switch
+                    {
+                        "windows" => 1,
+                        "wsl" => 2,
+                        _ => 0,
+                    };
+
+                    _pythonInterpreterPath = python["windows"]?["interpreterPath"]?.GetValue<string>() ?? string.Empty;
+                    _wslDistribution = python["wsl"]?["distribution"]?.GetValue<string>() ?? string.Empty;
+                }
+            }
+            catch (Exception)
+            {
+                // Missing/corrupt config leaves Python disabled with default paths.
+            }
+        }
+
+        /// <summary>
+        /// Persists the Python section into <c>config.json</c>, preserving <c>scriptsRoot</c> and any
+        /// timeout the Host may have written. Mode is stored as "disabled"/"windows"/"wsl".
+        /// </summary>
+        private void SavePythonSettings()
+        {
+            var config = LoadConfigNode();
+
+            var mode = _pythonModeIndex switch
+            {
+                1 => "windows",
+                2 => "wsl",
+                _ => "disabled",
+            };
+
+            var existingTimeout = (config["python"] as JsonObject)?["timeoutSeconds"]?.GetValue<int>() ?? 30;
+
+            config["python"] = new JsonObject
+            {
+                ["mode"] = mode,
+                ["windows"] = new JsonObject { ["interpreterPath"] = _pythonInterpreterPath ?? string.Empty },
+                ["wsl"] = new JsonObject { ["distribution"] = _wslDistribution ?? string.Empty },
+                ["timeoutSeconds"] = existingTimeout,
+            };
+
+            WriteConfigNode(config);
+        }
+
+        /// <summary>Populates <see cref="WslDistributions"/> from <c>wsl.exe -l -q</c> (best-effort).</summary>
+        private void LoadWslDistributions()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "wsl.exe",
+                    Arguments = "-l -q",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+
+                    // wsl.exe emits UTF-16LE for list output.
+                    StandardOutputEncoding = Encoding.Unicode,
+                };
+
+                using var process = Process.Start(psi);
+                if (process is null)
+                {
+                    return;
+                }
+
+                string output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit(5000);
+
+                foreach (var line in output.Split('\n'))
+                {
+                    var distro = line.Trim().Trim('\0', '\r');
+                    if (!string.IsNullOrWhiteSpace(distro) && !WslDistributions.Contains(distro))
+                    {
+                        WslDistributions.Add(distro);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // WSL not installed / unavailable: leave the list empty.
+            }
         }
 
         private static string ResolveHostPath()

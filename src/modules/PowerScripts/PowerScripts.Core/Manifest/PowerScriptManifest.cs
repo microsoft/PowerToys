@@ -19,12 +19,19 @@ public enum ScriptKind
 }
 
 /// <summary>
-/// The runtime used to execute a PowerScript. Only PowerShell is supported in the prototype;
-/// the field exists so Python / Node can be added without a schema break.
+/// The runtime used to execute a PowerScript. PowerShell and Python are supported; the enum exists
+/// so further runtimes (e.g. Node) can be added without a schema break.
 /// </summary>
 public enum ScriptRuntime
 {
     PowerShell,
+
+    /// <summary>
+    /// A Python script whose entry file exposes a single
+    /// <c>powerscript_from_&lt;input&gt;_to_&lt;output&gt;</c> function. Runs on native Windows Python or
+    /// inside WSL depending on the user's PowerScripts Python settings.
+    /// </summary>
+    Python,
 }
 
 /// <summary>

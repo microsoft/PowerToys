@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -49,6 +50,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ResetScriptsFolderButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ResetScriptsFolder();
+        }
+
+        private void BrowsePythonInterpreterButton_Click(object sender, RoutedEventArgs e)
+        {
+            var file = PickFileDialog(
+                "Python Executable\0python.exe;python3.exe;py.exe\0All Executables\0*.exe\0",
+                "Select Python interpreter");
+            if (!string.IsNullOrWhiteSpace(file))
+            {
+                ViewModel.SetPythonInterpreterPath(file);
+            }
+        }
+
+        // Uses the Win32 OpenFileName dialog as FileOpenPicker doesn't work when Settings runs elevated.
+        private static string PickFileDialog(string filter, string title)
+        {
+            OpenFileName openFileName = new OpenFileName();
+            openFileName.StructSize = Marshal.SizeOf(openFileName);
+            openFileName.Filter = filter;
+
+            // Make buffer double MAX_PATH since it can use 2 chars per char.
+            openFileName.File = new string(new char[260 * 2]);
+            openFileName.MaxFile = openFileName.File.Length;
+            openFileName.FileTitle = new string(new char[260 * 2]);
+            openFileName.MaxFileTitle = openFileName.FileTitle.Length;
+            openFileName.Title = title;
+            openFileName.DefExt = null;
+            openFileName.Flags = (int)OpenFileNameFlags.OFN_NOCHANGEDIR;
+            openFileName.Hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+
+            return NativeMethods.GetOpenFileName(openFileName) ? openFileName.File : null;
         }
 
         private async Task<string> PickSingleFolderDialog()

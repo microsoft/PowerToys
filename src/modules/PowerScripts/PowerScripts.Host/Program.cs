@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using PowerScripts.Core;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
@@ -45,6 +46,7 @@ internal static class Program
             {
                 "list" => RunList(registry, options.ContainsKey("json")),
                 "run" => RunScript(registry, positional, options),
+                "transform" => RunTransform(registry, positional, options),
                 "trust" => RunTrust(registry, positional),
                 "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
                 "set-extensions" => RunSetExtensions(registry, positional, options),
@@ -69,21 +71,37 @@ internal static class Program
             // Structured, permissioned capability list — also the shape the KBM editor picker and
             // future agents/MCP servers consume.
             var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
-            var projection = registry.Scripts.Select(s => new
+            var projection = registry.Scripts.Select(s =>
             {
-                s.Id,
-                s.Name,
-                s.Description,
-                kind = s.Kind.ToString(),
-                runtime = s.Runtime.ToString(),
-                s.Publisher,
-                s.Version,
-                s.Source,
-                s.Surfaces,
-                s.Capabilities,
-                trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
-                input = s.Input,
-                parameters = s.Parameters,
+                // For Python scripts, derive the transform contract from the single
+                // powerscript_from_<input>_to_<output> function so surfaces (e.g. Advanced Paste) know
+                // which data shapes the script consumes/produces without running it.
+                var signature = s.Runtime == ScriptRuntime.Python
+                    ? PowerScriptPythonConvention.ParseFile(s.EntryFullPath)
+                    : null;
+
+                return new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Description,
+                    kind = s.Kind.ToString(),
+                    runtime = s.Runtime.ToString(),
+                    s.Publisher,
+                    s.Version,
+                    s.Source,
+                    s.Surfaces,
+                    s.Capabilities,
+                    trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
+                    input = s.Input,
+                    parameters = s.Parameters,
+                    transform = signature is null ? null : new
+                    {
+                        function = signature.FunctionName,
+                        inputFormat = signature.Input.ToString(),
+                        outputFormat = signature.Output.ToString(),
+                    },
+                };
             });
 
             Console.WriteLine(JsonSerializer.Serialize(
@@ -134,49 +152,12 @@ internal static class Program
             return 1;
         }
 
-        // Central enabled gate: every surface runs scripts through this path, so a single check here
-        // makes all bindings (Keyboard Manager, context menu, future modules) inert when the user
-        // turns PowerScripts off — without deleting or rewriting them. Re-enabling restores them.
-        if (!ModuleState.IsPowerScriptsEnabled())
-        {
-            Console.Error.WriteLine("run: PowerScripts is disabled in PowerToys settings; refusing to run. Enable PowerScripts to use this binding.");
-            return 4;
-        }
-
         var files = options.TryGetValue("files", out var f) ? f : new List<string>();
 
-        // Trust-on-first-use gate. This is the single enforcement point for the manifest's declared
-        // capabilities: a script only runs once the user has approved its exact current content, and
-        // is re-prompted whenever the script body or its declared capabilities change (the content
-        // hash then no longer matches the stored approval).
-        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
-        var contentHash = ScriptIntegrity.ComputeHash(manifest);
-        if (!trustStore.IsTrusted(id, contentHash))
+        var gate = EnsureRunnable(manifest, options, "run");
+        if (gate != 0)
         {
-            var nonInteractive = options.ContainsKey("no-consent")
-                || string.Equals(Environment.GetEnvironmentVariable("POWERSCRIPTS_NO_CONSENT"), "1", StringComparison.Ordinal);
-
-            if (nonInteractive)
-            {
-                Console.Error.WriteLine($"run: script '{id}' is not trusted and consent is disabled; refusing to run. Approve it with 'trust approve {id}'.");
-                return 3;
-            }
-
-            if (!ConsentPrompt.Confirm(manifest))
-            {
-                Console.Error.WriteLine($"run: user declined to trust script '{id}'.");
-                return 3;
-            }
-
-            trustStore.Trust(new TrustRecord
-            {
-                Id = manifest.Id,
-                Hash = contentHash,
-                Capabilities = manifest.Capabilities,
-                Source = manifest.Source,
-                Publisher = manifest.Publisher,
-                ApprovedUtc = DateTimeOffset.UtcNow,
-            });
+            return gate;
         }
 
         var parameters = new Dictionary<string, string?>();
@@ -210,6 +191,143 @@ internal static class Program
 
         return result.ExitCode;
     }
+
+    /// <summary>
+    /// The shared enabled + trust gate for any surface that runs a script. Returns 0 when the script
+    /// may run, or a non-zero exit code (with a message on stderr) when it must not. Records trust on
+    /// first interactive approval, exactly like <c>run</c>.
+    /// </summary>
+    private static int EnsureRunnable(
+        PowerScriptManifest manifest,
+        IReadOnlyDictionary<string, List<string>> options,
+        string command)
+    {
+        // Central enabled gate: every surface runs scripts through this path, so a single check here
+        // makes all bindings (Keyboard Manager, context menu, Advanced Paste, future modules) inert
+        // when the user turns PowerScripts off — without deleting or rewriting them.
+        if (!ModuleState.IsPowerScriptsEnabled())
+        {
+            Console.Error.WriteLine($"{command}: PowerScripts is disabled in PowerToys settings; refusing to run. Enable PowerScripts to use this binding.");
+            return 4;
+        }
+
+        // Trust-on-first-use gate. A script only runs once the user has approved its exact current
+        // content, and is re-prompted whenever the script body or its declared capabilities change.
+        var trustStore = new TrustStore(PowerScriptsPaths.TrustFilePath);
+        var contentHash = ScriptIntegrity.ComputeHash(manifest);
+        if (trustStore.IsTrusted(manifest.Id, contentHash))
+        {
+            return 0;
+        }
+
+        var nonInteractive = options.ContainsKey("no-consent")
+            || string.Equals(Environment.GetEnvironmentVariable("POWERSCRIPTS_NO_CONSENT"), "1", StringComparison.Ordinal);
+
+        if (nonInteractive)
+        {
+            Console.Error.WriteLine($"{command}: script '{manifest.Id}' is not trusted and consent is disabled; refusing to run. Approve it with 'trust approve {manifest.Id}'.");
+            return 3;
+        }
+
+        if (!ConsentPrompt.Confirm(manifest))
+        {
+            Console.Error.WriteLine($"{command}: user declined to trust script '{manifest.Id}'.");
+            return 3;
+        }
+
+        trustStore.Trust(new TrustRecord
+        {
+            Id = manifest.Id,
+            Hash = contentHash,
+            Capabilities = manifest.Capabilities,
+            Source = manifest.Source,
+            Publisher = manifest.Publisher,
+            ApprovedUtc = DateTimeOffset.UtcNow,
+        });
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Runs a script as a typed data transform for surfaces like Advanced Paste. Reads a single JSON
+    /// payload from stdin (<c>text</c>, <c>html</c>, <c>image_path</c>, <c>file_paths</c>,
+    /// <c>params</c>), runs the script through the shared runtime, and writes a single JSON result
+    /// object (<c>text</c>, <c>html</c>, <c>image_path</c>, <c>file_paths</c>, ...) to stdout. This
+    /// is the same execution + trust path as <c>run</c>, so a script behaves identically whether it
+    /// is triggered by a hotkey, the context menu, or a paste.
+    /// </summary>
+    private static int RunTransform(
+        ScriptRegistry registry,
+        IReadOnlyList<string> positional,
+        IReadOnlyDictionary<string, List<string>> options)
+    {
+        if (positional.Count == 0)
+        {
+            Console.Error.WriteLine("transform: missing <id>.");
+            return 1;
+        }
+
+        var manifest = registry.Get(positional[0]);
+        if (manifest is null)
+        {
+            Console.Error.WriteLine($"transform: no script with id '{positional[0]}'. Try 'list'.");
+            return 1;
+        }
+
+        var gate = EnsureRunnable(manifest, options, "transform");
+        if (gate != 0)
+        {
+            return gate;
+        }
+
+        var stdin = Console.In.ReadToEnd();
+        PythonTransformInput input;
+        try
+        {
+            input = string.IsNullOrWhiteSpace(stdin)
+                ? new PythonTransformInput()
+                : JsonSerializer.Deserialize<PythonTransformInput>(stdin, TransformJsonOptions) ?? new PythonTransformInput();
+        }
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine($"transform: invalid input JSON: {ex.Message}");
+            return 1;
+        }
+
+        if (manifest.Runtime == ScriptRuntime.Python)
+        {
+            var result = new PythonRuntime().Run(manifest, input);
+            if (!string.IsNullOrEmpty(result.StdErr))
+            {
+                Console.Error.Write(result.StdErr);
+            }
+
+            Console.Out.Write(JsonSerializer.Serialize(result, TransformJsonOptions));
+            return result.ExitCode;
+        }
+
+        // PowerShell transform: hand the text/html in as parameters and any files, and return the
+        // script's stdout as the transformed text.
+        var parameters = new Dictionary<string, string?>
+        {
+            ["Text"] = input.Text ?? string.Empty,
+            ["Html"] = input.Html ?? string.Empty,
+        };
+
+        var psResult = new ScriptExecutor().Execute(manifest, input.FilePaths, parameters);
+        if (!string.IsNullOrEmpty(psResult.StdErr))
+        {
+            Console.Error.Write(psResult.StdErr);
+        }
+
+        Console.Out.Write(JsonSerializer.Serialize(new PythonTransformResult { Text = psResult.StdOut }, TransformJsonOptions));
+        return psResult.ExitCode;
+    }
+
+    private static readonly JsonSerializerOptions TransformJsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     /// <summary>
     /// Manages the trust store — the record of which script contents the user has approved to run.
@@ -485,6 +603,7 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine("  list [--json] [--root <dir>]");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
+        Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
         Console.WriteLine("  set-extensions <id> --ext <.md .txt ...>  (set a file script's trigger extensions)");

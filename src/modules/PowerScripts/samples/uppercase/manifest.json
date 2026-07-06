@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "uppercase",
+  "name": "Uppercase Text",
+  "description": "Convert clipboard text to UPPERCASE. A Python PowerScript usable from Advanced Paste or a hotkey.",
+  "kind": "system",
+  "runtime": "python",
+  "entry": "run.py",
+  "publisher": "PowerToys samples",
+  "version": "1.0.0",
+  "surfaces": ["advancedPaste", "keyboardManager"],
+  "capabilities": [],
+  "elevation": "asInvoker"
+}

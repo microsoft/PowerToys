@@ -39,6 +39,11 @@ public sealed class ScriptExecutor
         IReadOnlyList<string>? files = null,
         IReadOnlyDictionary<string, string?>? parameters = null)
     {
+        if (manifest.Runtime == ScriptRuntime.Python)
+        {
+            return ExecutePython(manifest, files, parameters);
+        }
+
         if (manifest.Runtime != ScriptRuntime.PowerShell)
         {
             throw new NotSupportedException($"Runtime '{manifest.Runtime}' is not supported in the prototype.");
@@ -103,6 +108,56 @@ public sealed class ScriptExecutor
             ExitCode = process.ExitCode,
             StdOut = stdOutTask.GetAwaiter().GetResult(),
             StdErr = stdErrTask.GetAwaiter().GetResult(),
+        };
+    }
+
+    /// <summary>
+    /// Runs a Python PowerScript for the file/hotkey surfaces by adapting the file list + parameters
+    /// onto the shared <see cref="PythonRuntime"/> transform contract. Text/HTML outputs are returned
+    /// as stdout; produced file/image paths are returned newline-separated so the CLI surfaces can
+    /// report them.
+    /// </summary>
+    private static ScriptExecutionResult ExecutePython(
+        PowerScriptManifest manifest,
+        IReadOnlyList<string>? files,
+        IReadOnlyDictionary<string, string?>? parameters)
+    {
+        var input = new PythonTransformInput
+        {
+            FilePaths = files?.ToList() ?? new List<string>(),
+            Params = parameters?
+                .Where(kv => kv.Value is not null)
+                .ToDictionary(kv => kv.Key, kv => kv.Value!),
+        };
+
+        var result = new PythonRuntime().Run(manifest, input);
+
+        var stdoutParts = new List<string>();
+        if (!string.IsNullOrEmpty(result.Text))
+        {
+            stdoutParts.Add(result.Text);
+        }
+
+        if (!string.IsNullOrEmpty(result.Html))
+        {
+            stdoutParts.Add(result.Html);
+        }
+
+        if (!string.IsNullOrEmpty(result.ImagePath))
+        {
+            stdoutParts.Add(result.ImagePath);
+        }
+
+        if (result.FilePaths is { Count: > 0 })
+        {
+            stdoutParts.AddRange(result.FilePaths);
+        }
+
+        return new ScriptExecutionResult
+        {
+            ExitCode = result.ExitCode,
+            StdOut = string.Join(Environment.NewLine, stdoutParts),
+            StdErr = result.StdErr,
         };
     }
 
