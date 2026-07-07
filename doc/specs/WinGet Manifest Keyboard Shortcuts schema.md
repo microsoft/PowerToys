@@ -109,7 +109,7 @@ Per Application/Package one or more Keyboard manifests can be declared. Every ma
 <details>
  <summary><b>SectionName</b> - Name of the category of shortcuts</summary>
 
- Name of the section of shortcuts. 
+ Name of the section of shortcuts. Use sentence case, the same convention described under `Name` below.
 
 **Special sections**:
 
@@ -125,6 +125,10 @@ Special sections start with an identifier enclosed between `<` and `>`. This dec
  <summary><b>Name</b> - Name of the shortcut</summary>
 
  Name of the shortcut. This is the name that will be displayed in the interpreter.
+
+**Casing**:
+
+By convention, shortcut names (and `SectionName` values) use **sentence case**: capitalize only the first word plus any proper nouns or product/feature names. For example, prefer `Reopen last closed tab` over `Reopen Last Closed Tab`, but keep `Open History`, `Quit Slack`, and `Show Quick Access` capitalized because those are application feature names. Match the casing the application uses for its own features rather than copying the title-case styling some apps apply to their entire shortcut list.
 
 </details>
 

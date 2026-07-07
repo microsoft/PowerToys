@@ -19,6 +19,16 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     public const string ProviderLoadGuardBlockId = ProviderIdValue + ".ProviderLoad";
     public const string PageIdValue = "com.microsoft.cmdpal.performanceWidget";
 
+    private static readonly PerformanceMetricKind?[] BandMetrics =
+    [
+        null,
+        PerformanceMetricKind.Cpu,
+        PerformanceMetricKind.Memory,
+        PerformanceMetricKind.Network,
+        PerformanceMetricKind.Gpu,
+        PerformanceMetricKind.Battery,
+    ];
+
     internal static ProviderCrashSentinel CrashSentinel { get; } = new(ProviderIdValue);
 
     private readonly Lock _stateLock = new();
@@ -109,15 +119,26 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         DisposeActivePages();
 
         var page = new PerformanceMonitorDisabledPage(this);
-        var band = new PerformanceMonitorDisabledPage(this);
-        _bands =
-        [
-            new CommandItem(band)
+
+        // Mirror the compact form of the real bands, and keep texts short
+        var disabledValue = Resources.GetResource("Performance_Monitor_Disabled_Band_Title");
+        var bands = new List<ICommandItem>(BandMetrics.Length);
+        foreach (var metric in BandMetrics)
+        {
+            var icon = GetBandIcon(metric);
+            var item = new ListItem(page)
             {
-                Title = Resources.GetResource("Performance_Monitor_Disabled_Band_Title"),
-                Subtitle = DisplayName,
-            },
-        ];
+                Title = disabledValue,
+                Subtitle = GetBandSubtitle(metric),
+                Icon = icon,
+            };
+            bands.Add(new WrappedDockItem([item], PerformanceWidgetsPage.GetBandId(metric), GetBandDisplayTitle(metric))
+            {
+                Icon = icon,
+            });
+        }
+
+        _bands = bands.ToArray();
         _commands =
         [
             new CommandItem(page)
@@ -127,6 +148,45 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
             },
         ];
         _softDisabled = true;
+    }
+
+    private string GetBandDisplayTitle(PerformanceMetricKind? metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Cpu => Resources.GetResource("CPU_Usage_Title"),
+            PerformanceMetricKind.Memory => Resources.GetResource("Memory_Usage_Title"),
+            PerformanceMetricKind.Network => Resources.GetResource("Network_Usage_Title"),
+            PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Title"),
+            PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Title"),
+            _ => DisplayName,
+        };
+    }
+
+    private string GetBandSubtitle(PerformanceMetricKind? metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Cpu => Resources.GetResource("CPU_Usage_Subtitle"),
+            PerformanceMetricKind.Memory => Resources.GetResource("Memory_Usage_Subtitle"),
+            PerformanceMetricKind.Network => Resources.GetResource("Network_Usage_Subtitle"),
+            PerformanceMetricKind.Gpu => Resources.GetResource("GPU_Usage_Subtitle"),
+            PerformanceMetricKind.Battery => Resources.GetResource("Battery_Usage_Subtitle"),
+            _ => string.Empty,
+        };
+    }
+
+    private static IconInfo GetBandIcon(PerformanceMetricKind? metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Cpu => Icons.CpuIcon,
+            PerformanceMetricKind.Memory => Icons.MemoryIcon,
+            PerformanceMetricKind.Network => Icons.NetworkIcon,
+            PerformanceMetricKind.Gpu => Icons.GpuIcon,
+            PerformanceMetricKind.Battery => Icons.BatteryIcon,
+            _ => Icons.PerformanceMonitorIcon,
+        };
     }
 
     private void SetEnabledState()
