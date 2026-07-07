@@ -112,7 +112,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    ViewModel.UpdateProfile(profile.Name, dialog.ResultProfile);
+                    // Preserve the edited profile's stable id so the update replaces it in place.
+                    dialog.ResultProfile.Id = profile.Id;
+                    ViewModel.UpdateProfile(dialog.ResultProfile);
                 }
             }
         }
@@ -137,7 +139,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    ViewModel.DeleteProfile(profile.Name);
+                    ViewModel.DeleteProfile(profile.Id);
                 }
             }
         }
