@@ -34,7 +34,7 @@ Installed artifact is immutable; mutate only through the shipped UI and restore 
 ## Scope rule
 
 **One module per run.** Never chain multiple modules into one report. (For "verify a whole
-release", that's **Scenario B**, which fans out across PRs/modules with per-PR folders.)
+release", that's **Scenario B — PR validation**, which fans out across the release's PRs with per-PR folders.)
 
 ## Report
 

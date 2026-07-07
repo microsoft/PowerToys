@@ -1,6 +1,6 @@
 ---
 name: powertoys-verification
-description: "Verify PowerToys behavior end-to-end with the winapp CLI across three scenarios: (A) a single module's full release checklist; (B) sign-off of the PRs in a release or hotfix (derive each PR's checklist from its description + diff, drive the installed build); (C) an active/unmerged PR (build + sideload the affected module, then validate). Drive each item via UIA invoke / Named Events / settings.json edits / clipboard / GPO / SendInput, and emit a structured PASS / FAIL / BLOCKED verdict per item with evidence (FAIL distinguishes product defects from stale/ambiguous checklist items). Use when asked to verify a PowerToys module checklist, sign off a release or hotfix's PRs, validate a PowerToys PR, or QA installed/sideloaded PowerToys bits. Combines generic winapp ui mechanics (references/winapp-ui-testing.md) with PT-specific recipes, per-scenario playbooks (references/scenarios/), and the helper .ps1 files shipped with this skill."
+description: "Verify PowerToys behavior end-to-end with the winapp CLI across two scenarios: (A) a module's release checklist against the installed build; (B) PR validation — derive each PR's checklist from its description + diff, then drive it against the installed build (a merged/shipped PR, or a whole release/hotfix set) or by building + sideloading the module when the PR isn't in the build yet (unmerged or not-yet-released). Drive each item via UIA invoke / Named Events / settings.json edits / clipboard / GPO / SendInput, and emit a structured PASS / FAIL / BLOCKED verdict per item with evidence (FAIL distinguishes product defects from stale/ambiguous checklist items). Use when asked to verify a module checklist, validate a PR, sign off a release/hotfix's PRs, or QA installed/sideloaded PowerToys bits. Combines generic winapp ui mechanics (references/winapp-ui-testing.md) with PT-specific recipes, per-scenario playbooks (references/scenarios/), and the helper .ps1 files shipped with this skill."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -8,32 +8,30 @@ license: Complete terms in LICENSE.txt
 
 Use this skill whenever you need to **verify PowerToys behavior with the winapp CLI** and emit a
 structured PASS / FAIL / BLOCKED verdict with evidence (UIA enumeration, log line, settings.json
-diff, screenshot, etc.). It runs in **three scenarios** that share the same drive techniques,
-helpers, taxonomy and report format — and differ only on what the checklist is, what bits you test,
-and the test discipline:
+diff, screenshot, etc.). It runs in **two scenarios** that share the same drive techniques,
+helpers, taxonomy and report format — and differ only on what the checklist is and what bits you test:
 
 | Scenario | Trigger | Checklist source | Bits under test |
 |---|---|---|---|
 | **A — Module checklist** | "verify all `<Module>` items", "sign off Color Picker" | Supplied file (`references/release-checklist/<module>.md`) | Installed shipped artifact (read-only) |
-| **B — Release/hotfix PR sign-off** | "verify the PRs in this release/hotfix", "sign off 0.X.Y" | **Derived** from each PR's description + diff | Installed shipped artifact (read-only) |
-| **C — Active PR validation** | "validate PR #N", "build it and test the fix" | **Derived** from one PR's description + diff | **Your local build, sideloaded** |
+| **B — PR validation** | "validate PR #N" (open or merged), "build it and test the fix", "verify the PRs in this release/hotfix", "sign off 0.X.Y" | **Derived** from each PR's description + diff | **Installed** shipped artifact if the code is already in the build; **build + sideload** if it isn't (unmerged / not-yet-released) |
 
 > **Step 0 for every run — pick the scenario.** Read **`references/scenarios/index.md`** (the
-> router + the per-scenario "bits under test" contract + the verdict-vocabulary mapping), then read
-> the one matching scenario doc (`references/scenarios/{module-checklist,release-pr-signoff,active-pr-validation}.md`).
-> This `SKILL.md` is the *shared engine* (drive techniques, helpers, taxonomy, pitfalls) common to
-> all three.
+> router + the "bits under test" contract + the verdict-vocabulary mapping), then read the one
+> matching scenario doc (`references/scenarios/{module-checklist,pr-validation}.md`). For **B**, also
+> resolve the bits sub-decision ("is the PR's code in the build under test?") before driving.
+> This `SKILL.md` is the *shared engine* (drive techniques, helpers, taxonomy, pitfalls) common to both.
 
 Each item produces a PASS / FAIL / BLOCKED verdict with evidence. For **A** the checklist is
-supplied; for **B / C** you derive it from the PR(s). The skill is the *how* — independent of any
+supplied; for **B** you derive it from the PR(s). The skill is the *how* — independent of any
 specific checklist.
 
 ## Required reads (in order)
 
-1. **`references/scenarios/index.md`** — **read FIRST**: the scenario router (A/B/C), the
-   per-scenario **"bits under test" contract** (installed-and-immutable for A/B vs build-and-sideload
-   for C), and the verdict-vocabulary mapping. Then read the **one** matching scenario doc:
-   `references/scenarios/module-checklist.md` (A) · `release-pr-signoff.md` (B) · `active-pr-validation.md` (C).
+1. **`references/scenarios/index.md`** — **read FIRST**: the scenario router (A/B), the
+   **"bits under test" contract** (installed-and-immutable, vs build-and-sideload for a PR whose code
+   isn't in the build under test), and the verdict-vocabulary mapping. Then read the **one** matching
+   scenario doc: `references/scenarios/module-checklist.md` (A) · `pr-validation.md` (B).
 2. **`references/winapp-ui-testing.md`** — the **prerequisite** UIA mechanics doc (winapp ui verbs, scripted batch testing, file pickers, accessibility audits, screenshots, click-vs-invoke, PostMessage, SendInput cb=40, stunted-UIA recovery, settings-mutation safety contract). **Read this first** — this skill assumes you know its content and only adds PT-specific extensions.
 3. **This `SKILL.md`** — the shared engine: the 3-bucket drive-technique selector (Step 2), classification taxonomy, critical pitfalls, helper-script catalog.
 4. **`references/modules/<module>.md` IF IT EXISTS** — per-module entry-paths, item-by-item recipes, common BLOCKED traps, fixture lists, source citations. **Always check `references/modules/` first.** If no profile exists, fall back to this SKILL.md and create one after you finish (template in `references/modules/README.md`).
@@ -41,7 +39,7 @@ specific checklist.
 6. **`references/pre-flight.md`** — pre-flight checks, bootstrap snippet, state-hygiene cleanup, final wrap-up, hard rules.
 7. **`references/reporting-format.md`** — per-item table template, top-of-report summary, step-table rules, anti-patterns, worked example.
 8. **`references/environment-setup.md`** — RDP/sleep/screensaver/session-attachment gotchas. Cite in BLK-ENV verdicts.
-9. **`references/release-checklist/<module>.md` — SCENARIO A ONLY** — the supplied checklist for the module under test (one file per module; see `references/release-checklist/index.md`). Each item carries `[ADMIN: …]` + `[CLARITY: …]` metadata. **This file IS the set of items to verify.** For B/C the checklist is derived from the PR(s) instead (see the scenario doc).
+9. **`references/release-checklist/<module>.md` — SCENARIO A ONLY** — the supplied checklist for the module under test (one file per module; see `references/release-checklist/index.md`). Each item carries `[ADMIN: …]` + `[CLARITY: …]` metadata. **This file IS the set of items to verify.** For B the checklist is derived from the PR(s) instead (see the scenario doc).
 
 ## Helper scripts shipped with this skill
 
@@ -87,8 +85,8 @@ $rn = Test-PtRunnerAdmin
 
 # The checklist source depends on the scenario (see references/scenarios/):
 #   A - read the supplied references/release-checklist/<module>.md
-#   B - derive 1-3 items from each PR's `gh pr view/diff` (release-pr-signoff.md)
-#   C - derive items from the PR, after build+sideload (active-pr-validation.md)
+#   B - derive 1-3 items from each PR's `gh pr view/diff`; then drive the installed bits, OR
+#       build+sideload if the code isn't in the build under test (pr-validation.md)
 # Then iterate the items (see Step 6 - Verifier loop).
 ```
 
@@ -272,28 +270,28 @@ Print the **moved** report path (under `…\PowerToys\Module-Signoff\`) as the l
 
 ## Invocation & placeholders
 
-This skill auto-activates for any of the three scenarios above (verify a module checklist, sign off
-a release/hotfix's PRs, or validate a PR). **Step 0: resolve the scenario via
-`references/scenarios/index.md` and set the `BITS:` contract** before driving anything. Scope rule:
-**one module per run for Scenario A**, **one PR per report folder for B/C**. Resolve these
-placeholders:
+This skill auto-activates for either of the two scenarios above (verify a module checklist, or
+validate a PR — open, merged, or a whole release/hotfix set). **Step 0: resolve the scenario via
+`references/scenarios/index.md` and set the `BITS:` contract** (for B, also the bits sub-decision:
+"is the PR's code in the build under test?") before driving anything. Scope rule: **one module per
+run for Scenario A**, **one PR per report folder for B**. Resolve these placeholders:
 
 | Placeholder | Substitute with |
 |---|---|
 | `<Module>` | Exact display name, e.g. `Color Picker`, `Command Palette`, `PowerToys Run`, `FancyZones` (see `references/release-checklist/index.md`). |
 | `<module>` | Lowercase-kebab-case for file lookup, e.g. `color-picker`, `command-palette`, `power-rename` — used for BOTH `references/release-checklist/<module>.md` (A's checklist) and `references/modules/<module>.md` (profile, if any). |
 | `<ModuleDir>` | settings.json sub-dir under `%LOCALAPPDATA%\Microsoft\PowerToys\` (e.g. `AdvancedPaste`, `FancyZones`, `PowerToys Run` (with space)). |
-| `<N>` | Scenario A: total item count for the module. Scenario B/C: the GitHub PR number. |
+| `<N>` | Scenario A: total item count for the module. Scenario B: the GitHub PR number. |
 
 **Execution order:** `references/scenarios/index.md` (pick scenario + set `BITS`) → the matching
-`references/scenarios/<scenario>.md` (inputs, discipline, deploy steps for C) → `references/pre-flight.md`
+`references/scenarios/<scenario>.md` (inputs, discipline, and build+sideload deploy steps for B when the code isn't in the build) → `references/pre-flight.md`
 → per item, the §2 drive-stack (this file) → `references/reporting-format.md` per-item table →
 Step 6 verifier loop → `references/pre-flight.md` §Final wrap-up → Step 7 archive → print the final report path.
 
 ## What NOT to do
 
-- Do NOT skip Step 0 — drive nothing until you've set the scenario and the `BITS:` contract. A run that mutates the wrong bits (sideloads in B, or drives the installed binary in C) is invalid regardless of the verdict.
-- Do NOT chain multiple modules in one report (Scenario A) — one module per run. For B/C, one PR per report folder.
+- Do NOT skip Step 0 — drive nothing until you've set the scenario and the `BITS:` contract. A run that mutates the wrong bits (sideloads when the code is already installed, or drives the stale installed binary when validating unreleased code) is invalid regardless of the verdict.
+- Do NOT chain multiple modules in one report (Scenario A) — one module per run. For B, one PR per report folder.
 - Do NOT mark an item BLOCKED without a concrete, named obstacle (see §3 and `references/pre-flight.md` §Hard rules).
 - Do NOT invent steps for a VAGUE checklist item — if the spec is too ambiguous to judge, that is FAIL (cause=checklist), not a guess.
 - All other rules (foreground guard, always restore mutated state, etc.) live in `references/pre-flight.md` §Hard rules — follow them.
