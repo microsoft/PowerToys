@@ -5,5 +5,5 @@ namespace PowerDisplay.Contracts;
 
 public sealed class ApplyProfileRequest
 {
-    public string ProfileName { get; set; } = string.Empty;
+    public int ProfileId { get; set; }
 }

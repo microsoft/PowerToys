@@ -10,6 +10,8 @@ namespace PowerDisplay.Contracts;
 /// </summary>
 public sealed class CliProfileInfo
 {
+    public int Id { get; init; }
+
     public string Name { get; init; } = string.Empty;
 
     public int MonitorCount { get; init; }

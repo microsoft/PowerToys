@@ -14,5 +14,7 @@ public sealed class CliApplyProfileResult
 
     public string Command { get; init; } = CliCommandNames.ApplyProfile;
 
+    public int ProfileId { get; init; }
+
     public string Profile { get; init; } = string.Empty;
 }

@@ -296,7 +296,7 @@ public class RoundTripTests
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileName = "Gaming" },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 7 },
         };
 
         var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
@@ -304,7 +304,7 @@ public class RoundTripTests
 
         Assert.IsNotNull(back);
         Assert.AreEqual(CliCommandNames.ApplyProfile, back!.Command);
-        Assert.AreEqual("Gaming", back.ApplyProfile!.ProfileName);
+        Assert.AreEqual(7, back.ApplyProfile!.ProfileId);
     }
 
     [TestMethod]
@@ -341,5 +341,25 @@ public class RoundTripTests
 
         Assert.AreEqual(CliCommandNames.Down, back!.Command);
         Assert.IsNull(back.Adjust!.Step, "omitted --step must serialize/deserialize as null so the app applies the settings default");
+    }
+
+    [TestMethod]
+    public void ApplyProfileRequest_And_ProfileInfo_And_ApplyResult_RoundTripIds()
+    {
+        var req = new ApplyProfileRequest { ProfileId = 7 };
+        var reqBack = JsonSerializer.Deserialize(
+            JsonSerializer.Serialize(req, ContractsJsonContext.Default.ApplyProfileRequest),
+            ContractsJsonContext.Default.ApplyProfileRequest);
+        Assert.AreEqual(7, reqBack!.ProfileId);
+
+        var info = new CliProfileInfo { Id = 3, Name = "Gaming", MonitorCount = 2 };
+        var infoJson = JsonSerializer.Serialize(info, ContractsJsonContext.Default.CliProfileInfo);
+        Assert.IsTrue(infoJson.Contains("\"id\":3"));
+
+        var applied = new CliApplyProfileResult { ProfileId = 3, Profile = "Gaming" };
+        var appliedBack = JsonSerializer.Deserialize(
+            JsonSerializer.Serialize(applied, ContractsJsonContext.Default.CliApplyProfileResult),
+            ContractsJsonContext.Default.CliApplyProfileResult);
+        Assert.AreEqual(3, appliedBack!.ProfileId);
     }
 }

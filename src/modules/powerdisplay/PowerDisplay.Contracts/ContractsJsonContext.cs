@@ -10,11 +10,13 @@ namespace PowerDisplay.Contracts;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(CliRequestEnvelope))]
+[JsonSerializable(typeof(ApplyProfileRequest))]
 [JsonSerializable(typeof(CliListResult))]
 [JsonSerializable(typeof(CliGetResult))]
 [JsonSerializable(typeof(CliSetResult))]
 [JsonSerializable(typeof(CliCapabilitiesResult))]
 [JsonSerializable(typeof(CliProfileListResult))]
+[JsonSerializable(typeof(CliProfileInfo))]
 [JsonSerializable(typeof(CliApplyProfileResult))]
 [JsonSerializable(typeof(CliErrorResult))]
 [JsonSerializable(typeof(CliResponseHeader))]
