@@ -727,6 +727,21 @@ public partial class MainViewModel
             ProfileService.SaveProfiles(profiles);
             Logger.LogInfo("[LegacyMigration] profiles.json updated with stable profile ids.");
         }
+
+        try
+        {
+            var lightSwitch = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(LightSwitchSettings.ModuleName);
+            if (lightSwitch?.Properties != null
+                && LightSwitchProfileResolver.MigrateNamesToIds(lightSwitch.Properties, profiles))
+            {
+                SettingsUtils.Default.SaveSettings(lightSwitch.ToJsonString(), LightSwitchSettings.ModuleName);
+                Logger.LogInfo("[LegacyMigration] LightSwitch profile references migrated to ids.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LegacyMigration] Failed to migrate LightSwitch profile references: {ex.Message}");
+        }
     }
 
     /// <summary>
