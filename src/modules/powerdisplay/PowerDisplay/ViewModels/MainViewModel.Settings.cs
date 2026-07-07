@@ -157,33 +157,31 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply profile by name (called via Named Pipe from Settings UI).
-    /// This is the existing void-equivalent entry point; it preserves GUI behavior unchanged.
+    /// Apply profile by id (called via Named Pipe from Settings UI). Preserves GUI behavior;
+    /// only the lookup key changed from name to the stable id.
     /// </summary>
-    /// <param name="profileName">The name of the profile to apply.</param>
-    public async Task ApplyProfileByNameAsync(string profileName)
+    /// <param name="profileId">The stable id of the profile to apply.</param>
+    public async Task ApplyProfileByIdAsync(int profileId)
     {
         try
         {
-            Logger.LogInfo($"[Profile] Applying profile by name: {profileName}");
+            Logger.LogInfo($"[Profile] Applying profile by id: {profileId}");
 
-            // Load profiles and find the requested one
             var profilesData = ProfileService.LoadProfiles();
-            var profile = profilesData.GetProfile(profileName);
+            var profile = profilesData.GetById(profileId);
 
             if (profile == null || !profile.IsValid())
             {
-                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid");
+                Logger.LogWarning($"[Profile] Profile id {profileId} not found or invalid");
                 return;
             }
 
-            // Apply the profile settings to monitors
             await ApplyProfileAsync(profile.MonitorSettings);
-            Logger.LogInfo($"[Profile] Successfully applied profile: {profileName}");
+            Logger.LogInfo($"[Profile] Successfully applied profile id: {profileId}");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[Profile] Failed to apply profile '{profileName}': {ex.Message}");
+            Logger.LogError($"[Profile] Failed to apply profile id {profileId}: {ex.Message}");
         }
     }
 
@@ -306,7 +304,7 @@ public partial class MainViewModel
     /// <para>
     /// This method is the GUI code path. It is preserved exactly as-is: settings are dispatched
     /// in parallel via <c>Task.WhenAll</c> and no per-setting outcome is captured. All existing
-    /// callers (<see cref="ApplyProfileByNameAsync"/>, <see cref="ApplyProfileAndCompleteAsync"/>)
+    /// callers (<see cref="ApplyProfileByIdAsync"/>, <see cref="ApplyProfileAndCompleteAsync"/>)
     /// continue to call this overload.
     /// </para>
     /// </summary>

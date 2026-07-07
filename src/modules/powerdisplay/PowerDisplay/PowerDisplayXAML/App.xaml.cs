@@ -384,12 +384,12 @@ namespace PowerDisplay
             }
             else if (messageType == Constants.PowerDisplayApplyProfileMessage())
             {
-                // Apply profile by name
-                if (messageParts.Length > 1 && _mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                // Apply profile by id
+                if (messageParts.Length > 1 && _mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null
+                    && int.TryParse(messageParts[1].Trim(), out var profileId))
                 {
-                    var profileName = messageParts[1].Trim();
-                    Logger.LogInfo($"[NamedPipe] Applying profile: {profileName}");
-                    await mainWindow.ViewModel.ApplyProfileByNameAsync(profileName);
+                    Logger.LogInfo($"[NamedPipe] Applying profile id: {profileId}");
+                    await mainWindow.ViewModel.ApplyProfileByIdAsync(profileId);
                 }
             }
             else if (messageType == Constants.PowerDisplayTerminateAppMessage())
