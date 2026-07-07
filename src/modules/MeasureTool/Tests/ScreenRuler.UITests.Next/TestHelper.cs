@@ -503,7 +503,7 @@ public static class TestHelper
             else
             {
                 Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: UIA invoke of {buttonId} (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
-                button.Click(msPostAction: 300);
+                button.Invoke(msPostAction: 300);
             }
 
             // The overlay only shows once the cursor leaves the toolbar onto the capture surface.
@@ -544,7 +544,7 @@ public static class TestHelper
             if (string.Equals(button.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
             {
                 Log($"ReengageTool[{testName}]: toggling {buttonId} off to tear down the stalled capture");
-                button.Click(msPostAction: 300);
+                button.Invoke(msPostAction: 300);
             }
         }
         catch (Exception ex)
