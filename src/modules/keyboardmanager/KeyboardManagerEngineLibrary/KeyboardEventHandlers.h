@@ -25,6 +25,14 @@ namespace KeyboardEventHandlers
     // through. Must run before HandleSingleKeyRemapEvent in the hook dispatch chain.
     intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
+    // Promote every currently-pending ("tap candidate") "Alone" key into a started combination by
+    // injecting its original key-down as a real key/modifier, so in-combination behavior works (e.g.
+    // Right Ctrl acting as Ctrl for Ctrl+H, Ctrl+Click or Ctrl+Wheel). Shared by the keyboard
+    // combination path (another key was pressed) and the low-level mouse hook (a click/scroll while an
+    // alone key is held). `exceptKey` is left pending (used to skip the alone key's own auto-repeat);
+    // pass 0 to promote all pending keys.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0) noexcept;
+
     /* This feature has not been enabled (code from proof of concept stage)
         // Function to change a key's behavior from toggle to modifier
         __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;

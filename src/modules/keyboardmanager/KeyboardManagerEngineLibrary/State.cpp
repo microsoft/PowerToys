@@ -71,6 +71,11 @@ std::vector<DWORD> State::GetPendingAloneKeys() const
     return std::vector<DWORD>(alonePendingKeys.begin(), alonePendingKeys.end());
 }
 
+bool State::HasPendingAloneKeys() const
+{
+    return !alonePendingKeys.empty();
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

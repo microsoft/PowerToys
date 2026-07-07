@@ -714,5 +714,54 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(rctrlUp);
             Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // A click (or scroll) while the alone-mapped key is held must promote it to a real modifier
+        // just like a keyboard key would, so combinations like Ctrl+Click / Ctrl+Wheel work. This is
+        // the mouse-hook entry point (PromotePendingAloneKeysToCombination); the alone action must NOT
+        // fire and the original key must pass through as a real modifier.
+        TEST_METHOD (AloneRemap_MousePromotion_ShouldPassOriginalKeyThrough_OnClick)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)VK_IME_ON);
+            CountImeOnInjections();
+
+            // Right Ctrl down (held, tap candidate) — nothing injected yet.
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            // A mouse button-down/scroll arrives while Right Ctrl is held: the mouse hook promotes the
+            // held key to a real modifier (Right Ctrl is now injected as a real Ctrl).
+            KeyboardEventHandlers::PromotePendingAloneKeysToCombination(mockedInputHandler, testState);
+
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+            // The alone action must NOT have fired.
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+
+            // Releasing Right Ctrl releases the real modifier; still no alone action.
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // A click with NO alone key held is a no-op for promotion (nothing pending), and a later solo
+        // tap still fires the alone action — i.e. a stray click never disturbs the tap machinery.
+        TEST_METHOD (AloneRemap_MousePromotion_NoHeldKey_IsNoOp_AndTapStillFires)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)VK_IME_ON);
+
+            // Click while nothing is held: promotion has no pending keys, so it injects nothing.
+            KeyboardEventHandlers::PromotePendingAloneKeysToCombination(mockedInputHandler, testState);
+
+            CountImeOnInjections();
+
+            // Solo tap afterwards still fires the alone action (down + up = 2 injected events).
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
     };
 }

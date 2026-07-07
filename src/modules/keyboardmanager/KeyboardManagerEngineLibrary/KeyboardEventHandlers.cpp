@@ -88,6 +88,27 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
+    // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
+    // modifier held. Its matching real key-up is injected later when the alone key is released.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey) noexcept
+    {
+        for (const DWORD pendingKey : state.GetPendingAloneKeys())
+        {
+            if (pendingKey == exceptKey)
+            {
+                // Auto-repeat of the alone key itself; keep it a tap candidate.
+                continue;
+            }
+
+            std::vector<INPUT> keyEventList;
+            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(pendingKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+            ii.SendVirtualInput(keyEventList);
+
+            state.SetAloneCombination(pendingKey);
+        }
+    }
+
     // Handle an "Alone" single key remap (dual-key / Karabiner to_if_alone). Semantics:
     //  - Pressing an alone-mapped key does NOT inject anything yet (lazy): we wait to see whether it
     //    is tapped alone or used in combination. The physical key-down is suppressed meanwhile.
@@ -112,23 +133,11 @@ namespace KeyboardEventHandlers
 
         // Step 1: a key-down of a DIFFERENT key while alone keys are pending means those pending keys
         // are now being used in combination. Flush them by injecting their original key-down as a real
-        // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works.
+        // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works. (A click
+        // or scroll does the same via the mouse hook; see PromotePendingAloneKeysToCombination.)
         if (isKeyDown)
         {
-            for (const DWORD pendingKey : state.GetPendingAloneKeys())
-            {
-                if (pendingKey == vk)
-                {
-                    // Auto-repeat of the alone key itself; keep it a tap candidate.
-                    continue;
-                }
-
-                std::vector<INPUT> keyEventList;
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(pendingKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                ii.SendVirtualInput(keyEventList);
-
-                state.SetAloneCombination(pendingKey);
-            }
+            PromotePendingAloneKeysToCombination(ii, state, vk);
         }
 
         // Step 2: handle the alone-mapped key's own events.

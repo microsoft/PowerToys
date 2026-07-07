@@ -43,6 +43,9 @@ public:
     void ClearAloneKeyState(const DWORD key);
     // Snapshot of currently pending (tap-candidate) alone keys, for flushing when another key arrives.
     std::vector<DWORD> GetPendingAloneKeys() const;
+    // Cheap check for whether any alone key is currently held as a tap candidate. Used by the mouse
+    // hook to early-out before doing any work on the common (no alone key held) path.
+    bool HasPendingAloneKeys() const;
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 
