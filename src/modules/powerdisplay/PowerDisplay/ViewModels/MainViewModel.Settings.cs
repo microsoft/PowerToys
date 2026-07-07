@@ -234,9 +234,9 @@ public partial class MainViewModel
     /// <param name="isLightMode">Whether the theme changed to light mode.</param>
     public void ApplyLightSwitchProfile(bool isLightMode)
     {
-        var profileName = LightSwitchService.GetProfileForTheme(isLightMode);
+        var profileId = LightSwitchService.GetProfileForTheme(isLightMode);
 
-        if (string.IsNullOrEmpty(profileName))
+        if (profileId is null)
         {
             return;
         }
@@ -245,15 +245,15 @@ public partial class MainViewModel
         {
             try
             {
-                Logger.LogInfo($"[LightSwitch Integration] Applying profile: {profileName}");
+                Logger.LogInfo($"[LightSwitch Integration] Applying profile id: {profileId.Value}");
 
                 // Load and apply the profile
                 var profilesData = ProfileService.LoadProfiles();
-                var profile = profilesData.GetProfile(profileName);
+                var profile = profilesData.GetById(profileId.Value);
 
                 if (profile == null || !profile.IsValid())
                 {
-                    Logger.LogWarning($"[LightSwitch Integration] Profile '{profileName}' not found or invalid");
+                    Logger.LogWarning($"[LightSwitch Integration] Profile id {profileId.Value} not found or invalid");
                     return;
                 }
 
