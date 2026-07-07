@@ -446,14 +446,15 @@ public static class TestHelper
     /// window isn't INTERACTIVE for a few more seconds, so a press that lands early is silently dropped;
     /// we retry until the overlay confirms.
     /// <para>
-    /// <paramref name="useMouseClick"/> chooses HOW the button is pressed. Bounds uses a REAL mouse click
-    /// at the button's centre — its measurement is a cursor DRAG, so the whole interaction must be real
-    /// mouse input (a UIA Invoke left the drag unregistered on Win10). The spacing tools use a coordinate-
-    /// free UIA Invoke: their measurement comes from the screen-capture pipeline, and moving the real
-    /// cursor up to the toolbar to click regressed that capture on Win11 — an Invoke keeps the cursor
-    /// parked on the capture surface (screen centre) and preserves the behaviour that always passed. Either
-    /// way the buttons are ToggleButtons (clicking a SELECTED one deselects it via ResetState), so we only
-    /// press when <c>ToggleState</c> is Off — a retry must never toggle an engaged tool back off.
+    /// <paramref name="useMouseClick"/> chooses HOW the button is pressed. Bounds uses a dedicated REAL
+    /// mouse click at the button's centre — its measurement is a cursor DRAG, so the whole interaction
+    /// must be real mouse input (a UIA Invoke left the drag unregistered on Win10). The spacing tools
+    /// press via the shared <see cref="Element.Click"/> (also a real mouse click, falling back to a
+    /// coordinate-free UIA Invoke only when the button has no on-screen size) — the spacing empties were
+    /// the WGC capture cold-start (recovered by the re-engage below), not the cursor path, so a physical
+    /// press is fine. Either way the buttons are ToggleButtons (clicking a SELECTED one deselects it via
+    /// ResetState), so we only press when <c>ToggleState</c> is Off — a retry must never toggle an
+    /// engaged tool back off.
     /// </para>
     /// </summary>
     private static void SelectToolAndVerify(Session ruler, string buttonId, string testName, bool useMouseClick)
@@ -502,8 +503,8 @@ public static class TestHelper
             }
             else
             {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: UIA invoke of {buttonId} (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
-                button.Invoke(msPostAction: 300);
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: click {buttonId} via Element.Click (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
+                button.Click(msPostAction: 300);
             }
 
             // The overlay only shows once the cursor leaves the toolbar onto the capture surface.
@@ -532,9 +533,9 @@ public static class TestHelper
 
     /// <summary>
     /// Toggle the currently-engaged tool OFF so the next <see cref="SelectToolAndVerify"/> starts a FRESH
-    /// capture. A UIA invoke on an engaged ToggleButton hits the Measure Tool's ResetState path, tearing
-    /// down the overlay and its WGC capture session; re-selecting re-creates them. Used to recover a
-    /// stuck capture (first frame never delivered) — a new session can succeed where the stalled one won't.
+    /// capture. Clicking an engaged ToggleButton hits the Measure Tool's ResetState path, tearing down
+    /// the overlay and its WGC capture session; re-selecting re-creates them. Used to recover a stuck
+    /// capture (first frame never delivered) — a new session can succeed where the stalled one won't.
     /// </summary>
     private static void ReengageTool(Session ruler, string buttonId, string testName)
     {
@@ -544,7 +545,7 @@ public static class TestHelper
             if (string.Equals(button.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
             {
                 Log($"ReengageTool[{testName}]: toggling {buttonId} off to tear down the stalled capture");
-                button.Invoke(msPostAction: 300);
+                button.Click(msPostAction: 300);
             }
         }
         catch (Exception ex)
