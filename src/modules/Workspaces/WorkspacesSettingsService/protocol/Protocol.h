@@ -26,7 +26,9 @@ namespace PTSettingsSvc
 {
     // Wire constants ---------------------------------------------------------
 
-    constexpr const wchar_t* kPipeName    = L"\\\\.\\pipe\\PTSettingsSvc";
+    // Per-user pipe naming lives in PipeName.h (\\.\pipe\PTSettingsSvc_<SID>);
+    // there is no single fixed pipe name under Approach 4 (§12.8).  kServiceName
+    // is the BASE service key; the registrar appends _<SID> per user.
     constexpr const wchar_t* kServiceName = L"PTSettingsSvc";
 
     // Payload size guard rails.  A typical settings blob sits in the low

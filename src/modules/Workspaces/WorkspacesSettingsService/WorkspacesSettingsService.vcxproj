@@ -75,6 +75,7 @@
     <ClInclude Include="FileGuard.h" />
     <ClInclude Include="Paths.h" />
     <ClInclude Include="protocol\Protocol.h" />
+    <ClInclude Include="protocol\PipeName.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WorkspacesSettingsService.rc" />

@@ -7,6 +7,7 @@
 #include "FileGuard.h"
 #include "Paths.h"
 #include "protocol/Protocol.h"
+#include "protocol/PipeName.h"
 
 #include <windows.h>
 #include <sddl.h>
@@ -21,15 +22,21 @@ namespace PTSettingsSvc
 {
     namespace
     {
-        // Pipe SD: Authenticated Users may connect; SYSTEM and BUILTIN\Administrators
-        // get full control for diagnostics; everyone else is implicitly denied
-        // because the DACL doesn't grant them anything.  The protocol layer
-        // does the real access control (caller image + allow-list).
-        constexpr const wchar_t* kPipeSddl =
-            L"D:"
-            L"(A;;GRGW;;;AU)"   // Authenticated Users : connect/read/write
-            L"(A;;GA;;;SY)"     // SYSTEM : full
-            L"(A;;GA;;;BA)";    // BUILTIN\Administrators : full
+        // Pipe SD (Approach 4): connect/read/write is granted to the OWNING
+        // user's SID only (the per-user service instance serves exactly that
+        // user); SYSTEM and BUILTIN\Administrators get full control for
+        // diagnostics.  Everyone else is implicitly denied.  The protocol layer
+        // still does the real access control (owner-SID match + caller image +
+        // allow-list).  If the owner SID is unknown (dev/standalone), fall back
+        // to Authenticated Users so console smoke tests still work.
+        std::wstring BuildPipeSddl(const std::wstring& ownerSid)
+        {
+            const std::wstring grantee = ownerSid.empty() ? std::wstring(L"AU") : ownerSid;
+            return L"D:"
+                   L"(A;;GRGW;;;" + grantee + L")"   // owning user : connect/read/write
+                   L"(A;;GA;;;SY)"                    // SYSTEM : full
+                   L"(A;;GA;;;BA)";                   // BUILTIN\Administrators : full
+        }
 
         bool ReadExact(HANDLE pipe, void* buf, DWORD len)
         {
@@ -220,9 +227,20 @@ namespace PTSettingsSvc
 
         HANDLE CreateProtectedPipe()
         {
+            // Owner SID this instance serves; fall back to the current process
+            // user for console/dev runs (see PipeName.h).
+            std::wstring ownerSid = GetServiceOwnerSid();
+            if (ownerSid.empty())
+            {
+                ownerSid = CurrentProcessUserSidString();
+            }
+
+            const std::wstring sddl = BuildPipeSddl(ownerSid);
+            const std::wstring pipeName = BuildPipeName(ownerSid);
+
             PSECURITY_DESCRIPTOR sd = nullptr;
             if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                    kPipeSddl, SDDL_REVISION_1, &sd, nullptr))
+                    sddl.c_str(), SDDL_REVISION_1, &sd, nullptr))
             {
                 return INVALID_HANDLE_VALUE;
             }
@@ -233,7 +251,7 @@ namespace PTSettingsSvc
             sa.bInheritHandle = FALSE;
 
             HANDLE pipe = CreateNamedPipeW(
-                kPipeName,
+                pipeName.c_str(),
                 PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT |
                     PIPE_REJECT_REMOTE_CLIENTS,

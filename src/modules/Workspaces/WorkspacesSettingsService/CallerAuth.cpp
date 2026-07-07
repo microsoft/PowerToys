@@ -19,6 +19,21 @@ namespace PTSettingsSvc
 {
     namespace
     {
+        std::wstring g_serviceOwnerSid;
+    }
+
+    void SetServiceOwnerSid(const std::wstring& sidString)
+    {
+        g_serviceOwnerSid = sidString;
+    }
+
+    std::wstring GetServiceOwnerSid()
+    {
+        return g_serviceOwnerSid;
+    }
+
+    namespace
+    {
         HRESULT RejectionForToken(HANDLE token, std::wstring& outSidString)
         {
             DWORD size = 0;
@@ -144,6 +159,20 @@ namespace PTSettingsSvc
             return hr;
         }
 
+        // 2b) Owner-SID binding (Design §12.8 / Approach 4).  This per-user
+        //     service instance serves exactly ONE user — the SID it was
+        //     registered for.  Reject any caller whose token user SID differs,
+        //     so a caller that reached us via a forged pipe name (running as a
+        //     different user) is denied here even if the pipe DACL let it
+        //     connect.  Empty owner SID => enforcement disabled (dev/standalone).
+        const std::wstring ownerSid = GetServiceOwnerSid();
+        if (!ownerSid.empty() &&
+            _wcsicmp(outIdentity.userSidString.c_str(), ownerSid.c_str()) != 0)
+        {
+            RevertToSelf();
+            return E_ACCESSDENIED;
+        }
+
         // 3) While still impersonating: open the client process and read its
         //    image path.  Hold the handle for the rest of validation so the
         //    PID can't be reused under us.
@@ -190,25 +219,25 @@ namespace PTSettingsSvc
 
         outIdentity.imagePath = canonical;
 
-        // 4) Caller-image trust anchor (UNIFIED — Design §7/§12.7, updated 2026-06-30).
-        //    EVERY caller, per-machine and per-user alike, must be Microsoft-
-        //    signed AND its version must satisfy the floor + max-delta policy
-        //    against the service's own version (IsCallerVersionAcceptable).
+        // 4) Caller-image trust anchor (Design §7 / §12.7, Approach 4 2026-07-07).
+        //    EVERY caller must be Microsoft-signed AND its version must EXACTLY
+        //    equal the service's own version.
         //
-        //    Why a version POLICY, not exact equality:
-        //      * The machine-wide service is a singleton (one version).  Exact
-        //        `caller == service` broke multi-user / multi-version: the
-        //        latest install would reject every other-version caller (§12.7).
-        //      * The real goal is anti-DOWNGRADE — block old vulnerable signed
-        //        binaries — which a minimum-version FLOOR achieves, while a
-        //        bounded max-delta keeps callers reasonably current.
-        //      * The signature is verified by this LocalSystem service against
-        //        the MACHINE trust store (CallerVerify.cpp), so it is NOT
-        //        forgeable by a non-admin user-store root (defeats the §13
-        //        per-user TrustedPeople objection that argued path > signature).
-        //      * Binary immutability is already guaranteed by deployment
-        //        (WindowsApps for the service, %ProgramFiles% for per-machine
-        //        callers), so it need not be re-proven during authentication.
+        //    Why EXACT equality (not a floor + max-delta policy):
+        //      * Under Approach 4 the service is per-user (PTSettingsSvc_<SID>),
+        //        so a user's caller and service are 1:1 and upgrade together —
+        //        the only legitimate caller version IS the service's own
+        //        version.  The multi-user / multi-version tension that forced
+        //        the earlier floor+delta magic numbers no longer exists (§12.7),
+        //        so exact-match is false-positive-free and removes a tunable
+        //        threshold from a security boundary.
+        //      * Exact-match is the anti-DOWNGRADE control: signature alone would
+        //        accept a planted old-but-still-Microsoft-signed caller (a real
+        //        threat since per-user callers live in user-writable
+        //        %LocalAppData%); requiring caller == service rejects it.
+        //      * The signature is verified by the service against the MACHINE
+        //        trust store (CallerVerify.cpp), so it is NOT forgeable by a
+        //        non-admin user-store root (defeats the §13 objection).
         //
         //    sigMicrosoft and callerVersion were captured above under
         //    impersonation so a user-profile image is readable.
@@ -219,14 +248,16 @@ namespace PTSettingsSvc
         // builds and is physically absent from Release, so there is no bypass to
         // abuse in shipped binaries.  Local/smoke-test builds are not
         // Microsoft-signed, so a Debug build accepts an unsigned caller — but
-        // the version policy below STILL applies, so the anchor's logic is
-        // exercised.  Production is always Release + ESRP-signed, where a real
-        // Microsoft signature is mandatory.
+        // the exact version-match below STILL applies (a locally-built caller
+        // and service share the same version, so it passes).  Production is
+        // always Release + ESRP-signed, where a real Microsoft signature is
+        // mandatory.
         sigOk = true;
 #endif
         const bool accepted =
             sigOk &&
-            IsCallerVersionAcceptable(callerVersion, serviceVersion);
+            serviceVersion != 0 &&
+            callerVersion == serviceVersion;
 
         if (!accepted)
         {

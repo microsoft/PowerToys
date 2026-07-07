@@ -39,8 +39,17 @@ public static class PTSettingsClient
         IoError,
     }
 
-    // Mirror of PTSettingsSvc::kPipeName (server side strips the \\.\pipe\ prefix).
-    public const string PipeName = "PTSettingsSvc";
+    // Mirror of PTSettingsSvc pipe naming (Approach 4 / §12.8): each user has
+    // their own service instance PTSettingsSvc_<SID>, reachable at
+    // \\.\pipe\PTSettingsSvc_<SID>.  We derive <SID> from OUR OWN token so we
+    // always reach our own user's instance.  NamedPipeClientStream takes the
+    // name without the \\.\pipe\ prefix.  Computed lazily and cached.
+    private const string PipeNamePrefix = "PTSettingsSvc_";
+
+    private static readonly Lazy<string> _pipeName = new(() =>
+        PipeNamePrefix + (WindowsIdentity.GetCurrent().User?.Value ?? string.Empty));
+
+    public static string PipeName => _pipeName.Value;
 
     // Mirror of PTSettingsSvc::kMaxPayloadBytes (1 MiB).
     private const int MaxPayloadBytes = 1 * 1024 * 1024;

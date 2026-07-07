@@ -49,30 +49,11 @@ namespace PTSettingsSvc
                static_cast<unsigned long long>(revision);
     }
 
-    // --- Version-acceptance policy (Design §12.7, decided 2026-06-30) ----------
-    // Replaces the exact `caller == service` rule, which broke multi-user /
-    // multi-version (a machine-wide singleton service can be only one version,
-    // so the latest install would reject every other-version caller).  A caller
-    // is version-acceptable iff BOTH bounds hold:
-    //   1. ABSOLUTE FLOOR: callerVersion >= kMinSupportedCallerVersion.  This is
-    //      the real anti-downgrade control — set it to exclude any version known
-    //      to be vulnerable.  Bump it when a bad old version must be cut off.
-    //   2. BOUNDED STALENESS (max delta): the caller's MINOR-release number is
-    //      within kMaxMinorVersionDelta of the service's, so a caller can be at
-    //      most N monthly releases away from the running service.
-    // The signature check (VerifyMicrosoftSignature) is still required and is
-    // what makes the version fields trustworthy.
-
-    // Oldest caller MINOR release still accepted.  PowerToys versions are
-    // 0.<minor>.<build>; the minor is the monthly release train.  Set to the
-    // first v6 shipping minor at release; placeholder baseline below.
-    constexpr unsigned long long kMinSupportedCallerVersion = MakeVersion(0, 100, 0, 0);
-
-    // Max number of MINOR releases a caller may trail (or lead) the service.
-    constexpr unsigned int kMaxMinorVersionDelta = 3;
-
-    // True iff `callerVersion` satisfies the floor + max-delta policy against the
-    // running `serviceVersion`.  Both are packed (GetBinaryVersion layout).
-    bool IsCallerVersionAcceptable(unsigned long long callerVersion,
-                                   unsigned long long serviceVersion);
+    // NOTE (Approach 4, 2026-07-07): the caller-auth version check is now EXACT
+    // equality (callerVersion == GetServiceOwnVersion()), inlined in
+    // CallerAuth.cpp.  The former tunable floor + max-delta policy
+    // (IsCallerVersionAcceptable / kMinSupportedCallerVersion /
+    // kMaxMinorVersionDelta) existed only to tolerate several caller versions
+    // under a shared machine-wide service; per-user (per-SID) service instances
+    // make caller and service 1:1, so it was removed (Design §12.7).
 }

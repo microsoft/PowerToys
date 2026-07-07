@@ -14,9 +14,12 @@
 #include <windows.h>
 #include <tchar.h>
 #include <atomic>
+#include <string>
 
 #include "PipeServer.h"
+#include "CallerAuth.h"
 #include "protocol/Protocol.h"
+#include "protocol/PipeName.h"
 
 namespace
 {
@@ -113,14 +116,32 @@ int wmain(int argc, wchar_t* argv[])
     // `--console` runs the pipe server in the foreground for local debugging
     // and prototype testing without going through SCM.  Production launch
     // always goes through StartServiceCtrlDispatcher.
+    //
+    // The first positional argument is the owner SID this instance serves
+    // (Approach 4 / §12.8): the registrar creates the service with
+    //   binPath = "...PowerToys.PTSettingsSvc.exe" <SID>
+    // so it arrives here as argv[1].  When absent (console/dev), we fall back to
+    // the current process user's SID, so a dev client (same user) derives the
+    // matching pipe name and round-trips.
     bool console = false;
+    std::wstring ownerSid;
     for (int i = 1; i < argc; ++i)
     {
         if (wcscmp(argv[i], L"--console") == 0)
         {
             console = true;
         }
+        else if (argv[i][0] != L'-' && ownerSid.empty())
+        {
+            ownerSid = argv[i];
+        }
     }
+
+    if (ownerSid.empty())
+    {
+        ownerSid = PTSettingsSvc::CurrentProcessUserSidString();
+    }
+    PTSettingsSvc::SetServiceOwnerSid(ownerSid);
 
     if (console)
     {

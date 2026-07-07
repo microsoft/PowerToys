@@ -3,19 +3,30 @@
 
 #include "PTSettingsClient.h"
 #include "../WorkspacesSettingsService/protocol/Protocol.h"
+#include "../WorkspacesSettingsService/protocol/PipeName.h"
 
 #include <windows.h>
 #include <vector>
 #include <cstring>
+#include <string>
 
 namespace PTSettingsClient
 {
     namespace
     {
-        using PTSettingsSvc::kPipeName;
         using PTSettingsSvc::kMaxPayloadBytes;
         using PTSettingsSvc::Opcode;
         using PTSettingsSvc::Status;
+
+        // This client reaches ITS OWN user's service instance, whose pipe is
+        // \\.\pipe\PTSettingsSvc_<SID> where <SID> is our own token SID
+        // (Approach 4 / §12.8).  Computed once per process.
+        const std::wstring& OwnPipeName()
+        {
+            static const std::wstring name =
+                PTSettingsSvc::BuildPipeName(PTSettingsSvc::CurrentProcessUserSidString());
+            return name;
+        }
 
         struct PipeHandle
         {
@@ -28,9 +39,10 @@ namespace PTSettingsClient
 
         bool Connect(PipeHandle& out)
         {
+            const std::wstring& pipeName = OwnPipeName();
             for (int attempt = 0; attempt < 3; ++attempt)
             {
-                HANDLE h = CreateFileW(kPipeName,
+                HANDLE h = CreateFileW(pipeName.c_str(),
                                        GENERIC_READ | GENERIC_WRITE,
                                        0,
                                        nullptr,
@@ -51,7 +63,7 @@ namespace PTSettingsClient
                 {
                     return false;
                 }
-                WaitNamedPipeW(kPipeName, 2000);
+                WaitNamedPipeW(pipeName.c_str(), 2000);
             }
             return false;
         }

@@ -47,4 +47,13 @@ namespace PTSettingsSvc
     //   any other HRESULT                        — Win32 failure (token read,
     //                                              OpenProcess, etc.)
     HRESULT AuthenticateCaller(HANDLE pipeHandle, CallerIdentity& outIdentity);
+
+    // Owner SID this service instance was registered to serve
+    // (PTSettingsSvc_<SID>, Design §12.8 / Approach 4).  Set once at startup
+    // from the service's SID argument (or, for console/dev runs, the current
+    // process user).  The auth pipeline rejects any caller whose token user SID
+    // != this owner SID, and the pipe is named/scoped to it.  Empty => not set
+    // (no owner-SID enforcement; dev/standalone only).
+    void SetServiceOwnerSid(const std::wstring& sidString);
+    std::wstring GetServiceOwnerSid();
 }
