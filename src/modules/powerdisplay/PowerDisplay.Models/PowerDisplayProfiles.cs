@@ -138,5 +138,52 @@ namespace PowerDisplay.Models
 
             return true;
         }
+
+        /// <summary>
+        /// One-shot upgrade: assigns a stable id to every profile still missing one (Id == 0), in
+        /// list order, and advances NextId past the highest id in use (self-healing a corrupt or
+        /// legacy counter). Returns true when anything changed. Idempotent on subsequent calls.
+        /// </summary>
+        public bool EnsureIds()
+        {
+            var changed = false;
+
+            var maxId = 0;
+            foreach (var p in Profiles)
+            {
+                if (p is not null && p.Id > maxId)
+                {
+                    maxId = p.Id;
+                }
+            }
+
+            var next = NextId;
+            if (next < 1)
+            {
+                next = 1;
+            }
+
+            if (next <= maxId)
+            {
+                next = maxId + 1;
+            }
+
+            foreach (var p in Profiles)
+            {
+                if (p is not null && p.Id == 0)
+                {
+                    p.Id = next++;
+                    changed = true;
+                }
+            }
+
+            if (NextId != next)
+            {
+                NextId = next;
+                changed = true;
+            }
+
+            return changed;
+        }
     }
 }

@@ -96,4 +96,32 @@ public class PowerDisplayProfilesTests
         Assert.AreSame(replacement, profiles.GetById(5));
         Assert.IsTrue(profiles.NextId > 5); // healed past the explicit id
     }
+
+    [TestMethod]
+    public void EnsureIds_BackfillsInOrder_SetsNextId_AndIsIdempotent()
+    {
+        var profiles = new PowerDisplayProfiles(); // NextId defaults to 0 (legacy file)
+        profiles.Profiles.Add(MakeProfile("A")); // Id 0
+        profiles.Profiles.Add(MakeProfile("B")); // Id 0
+
+        Assert.IsTrue(profiles.EnsureIds());
+        Assert.AreEqual(1, profiles.Profiles[0].Id);
+        Assert.AreEqual(2, profiles.Profiles[1].Id);
+        Assert.AreEqual(3, profiles.NextId);
+
+        Assert.IsFalse(profiles.EnsureIds()); // second run: no change
+    }
+
+    [TestMethod]
+    public void EnsureIds_SelfHealsNextId_AndPreservesExistingIds()
+    {
+        var profiles = new PowerDisplayProfiles { NextId = 2 }; // corrupt: <= existing max
+        profiles.Profiles.Add(MakeProfile("A", id: 5));
+        profiles.Profiles.Add(MakeProfile("B")); // Id 0
+
+        Assert.IsTrue(profiles.EnsureIds());
+        Assert.AreEqual(5, profiles.Profiles[0].Id); // preserved
+        Assert.AreEqual(6, profiles.Profiles[1].Id); // assigned above max
+        Assert.AreEqual(7, profiles.NextId);
+    }
 }
