@@ -245,7 +245,7 @@
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
+                                        DisplayMemberPath="DisplayName"
                                         IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedDarkModeProfile, Mode=TwoWay}" />
@@ -259,7 +259,7 @@
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
+                                        DisplayMemberPath="DisplayName"
                                         IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />

@@ -160,7 +160,7 @@
                                 ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
                                 <tkcontrols:SettingsExpander.ItemTemplate>
                                     <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
-                                        <tkcontrols:SettingsCard Header="{x:Bind Name}">
+                                        <tkcontrols:SettingsCard Header="{x:Bind DisplayName}">
                                             <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
                                                 <Button
                                                     x:Uid="PowerDisplay_Profile_ApplyButton"
