@@ -59,12 +59,12 @@ public class ProgramTokenTests
         => Assert.IsFalse(Program.IsVersionRequest(Parse("set", "-n", "1", "--version")));
 
     [TestMethod]
-    public void IsVersionRequest_VersionUnderApplyProfile_False()
+    public void IsVersionRequest_VersionUnderApplyProfile_True()
     {
         // `apply-profile <id>` is an int argument, so it can no longer greedily bind "--version" as
-        // a profile id. The token is detected by HasVersionToken, but IsVersionRequest requires the
-        // command to be RootCommand, so this returns False (version is only shown for root --version).
-        Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "--version")));
+        // a profile id. The token is detected by HasVersionToken, and IsVersionRequest now allows
+        // both RootCommand and apply-profile, so this returns True (version is shown for apply-profile --version).
+        Assert.IsTrue(Program.IsVersionRequest(Parse("apply-profile", "--version")));
     }
 
     [TestMethod]
@@ -185,5 +185,13 @@ public class ProgramTokenTests
         var parse = Parse("apply-profile", "--help");
 
         Assert.IsTrue(Program.HasHelpToken(parse));
+    }
+
+    [TestMethod]
+    public void ApplyProfile_VersionToken_IsRecognizedAsVersion()
+    {
+        var parse = Parse("apply-profile", "--version");
+
+        Assert.IsTrue(Program.IsVersionRequest(parse));
     }
 }
