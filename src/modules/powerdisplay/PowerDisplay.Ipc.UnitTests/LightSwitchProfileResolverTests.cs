@@ -104,4 +104,21 @@ public class LightSwitchProfileResolverTests
         Assert.AreEqual(0, props.LightModeProfileId.Value);
         Assert.AreEqual(string.Empty, props.LightModeProfile.Value);
     }
+
+    [TestMethod]
+    public void LightSwitchSettings_Clone_PreservesProfileIds()
+    {
+        var settings = new LightSwitchSettings();
+        settings.Properties.DarkModeProfileId.Value = 7;
+        settings.Properties.LightModeProfileId.Value = 3;
+        settings.Properties.DarkModeProfile.Value = "Night";
+        settings.Properties.LightModeProfile.Value = "Day";
+
+        var clone = (LightSwitchSettings)settings.Clone();
+
+        Assert.AreEqual(7, clone.Properties.DarkModeProfileId.Value);
+        Assert.AreEqual(3, clone.Properties.LightModeProfileId.Value);
+        Assert.AreEqual("Night", clone.Properties.DarkModeProfile.Value);
+        Assert.AreEqual("Day", clone.Properties.LightModeProfile.Value);
+    }
 }
