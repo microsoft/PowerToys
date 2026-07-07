@@ -650,11 +650,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _selectedDarkModeProfile = value;
 
-                    // Sync with the string property stored in settings
-                    var newProfileName = value?.Name ?? string.Empty;
-                    if (ModuleSettings.Properties.DarkModeProfile.Value != newProfileName)
+                    // Sync both the canonical id and the display/fallback name into settings.
+                    var newId = value?.Id ?? 0;
+                    var newName = value?.Name ?? string.Empty;
+                    if (ModuleSettings.Properties.DarkModeProfileId.Value != newId
+                        || ModuleSettings.Properties.DarkModeProfile.Value != newName)
                     {
-                        ModuleSettings.Properties.DarkModeProfile.Value = newProfileName;
+                        ModuleSettings.Properties.DarkModeProfileId.Value = newId;
+                        ModuleSettings.Properties.DarkModeProfile.Value = newName;
                         SaveSettings();
                     }
 
@@ -672,11 +675,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _selectedLightModeProfile = value;
 
-                    // Sync with the string property stored in settings
-                    var newProfileName = value?.Name ?? string.Empty;
-                    if (ModuleSettings.Properties.LightModeProfile.Value != newProfileName)
+                    // Sync both the canonical id and the display/fallback name into settings.
+                    var newId = value?.Id ?? 0;
+                    var newName = value?.Name ?? string.Empty;
+                    if (ModuleSettings.Properties.LightModeProfileId.Value != newId
+                        || ModuleSettings.Properties.LightModeProfile.Value != newName)
                     {
-                        ModuleSettings.Properties.LightModeProfile.Value = newProfileName;
+                        ModuleSettings.Properties.LightModeProfileId.Value = newId;
+                        ModuleSettings.Properties.LightModeProfile.Value = newName;
                         SaveSettings();
                     }
 
@@ -696,7 +702,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.DarkModeProfile.Value = value;
 
                     // Sync with the object property
-                    UpdateSelectedProfileFromName(value, isDarkMode: true);
+                    SelectByStoredReference(isDarkMode: true);
 
                     NotifyPropertyChanged();
                 }
@@ -713,7 +719,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ModuleSettings.Properties.LightModeProfile.Value = value;
 
                     // Sync with the object property
-                    UpdateSelectedProfileFromName(value, isDarkMode: false);
+                    SelectByStoredReference(isDarkMode: false);
 
                     NotifyPropertyChanged();
                 }
@@ -735,9 +741,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Loaded {profilesData.Profiles.Count} PowerDisplay profiles");
 
-                // Sync selected profiles from settings
-                UpdateSelectedProfileFromName(ModuleSettings.Properties.DarkModeProfile.Value, isDarkMode: true);
-                UpdateSelectedProfileFromName(ModuleSettings.Properties.LightModeProfile.Value, isDarkMode: false);
+                // Sync selected profiles from settings (id-first, name fallback).
+                SelectByStoredReference(isDarkMode: true);
+                SelectByStoredReference(isDarkMode: false);
             }
             catch (Exception ex)
             {
@@ -747,49 +753,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Helper method to sync the selected profile object from the profile name stored in settings.
-        /// If the configured profile no longer exists, clears the selection and updates settings.
+        /// Selects the profile object for the given theme from settings, preferring the stable id and
+        /// falling back to the stored name only when no id is set. A stored id that no longer matches
+        /// any profile clears the selection (it does NOT fall back to the name), mirroring the
+        /// app-side <c>LightSwitchProfileResolver.Resolve</c>.
         /// </summary>
-        private void UpdateSelectedProfileFromName(string profileName, bool isDarkMode)
+        private void SelectByStoredReference(bool isDarkMode)
         {
-            PowerDisplayProfile? matchingProfile = null;
+            var storedId = isDarkMode
+                ? ModuleSettings.Properties.DarkModeProfileId.Value
+                : ModuleSettings.Properties.LightModeProfileId.Value;
+            var storedName = isDarkMode
+                ? ModuleSettings.Properties.DarkModeProfile.Value
+                : ModuleSettings.Properties.LightModeProfile.Value;
 
-            if (!string.IsNullOrEmpty(profileName))
+            PowerDisplayProfile? match = null;
+            if (storedId >= 1)
             {
-                matchingProfile = AvailableProfiles.FirstOrDefault(p =>
-                    p.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase));
-
-                // If the configured profile no longer exists, clear it from settings
-                if (matchingProfile == null)
-                {
-                    Logger.LogWarning($"Configured {(isDarkMode ? "dark" : "light")} mode profile '{profileName}' no longer exists, clearing selection");
-
-                    if (isDarkMode)
-                    {
-                        ModuleSettings.Properties.DarkModeProfile.Value = string.Empty;
-                    }
-                    else
-                    {
-                        ModuleSettings.Properties.LightModeProfile.Value = string.Empty;
-                    }
-
-                    SaveSettings();
-                }
+                match = AvailableProfiles.FirstOrDefault(p => p.Id == storedId);
+            }
+            else if (!string.IsNullOrEmpty(storedName) && storedName != "(None)")
+            {
+                match = AvailableProfiles.FirstOrDefault(p => p.Name.Equals(storedName, StringComparison.OrdinalIgnoreCase));
             }
 
             if (isDarkMode)
             {
-                if (_selectedDarkModeProfile != matchingProfile)
+                if (_selectedDarkModeProfile != match)
                 {
-                    _selectedDarkModeProfile = matchingProfile;
+                    _selectedDarkModeProfile = match;
                     NotifyPropertyChanged(nameof(SelectedDarkModeProfile));
                 }
             }
             else
             {
-                if (_selectedLightModeProfile != matchingProfile)
+                if (_selectedLightModeProfile != match)
                 {
-                    _selectedLightModeProfile = matchingProfile;
+                    _selectedLightModeProfile = match;
                     NotifyPropertyChanged(nameof(SelectedLightModeProfile));
                 }
             }
