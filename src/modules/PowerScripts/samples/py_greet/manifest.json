@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "py_greet",
+  "name": "Greet (Python)",
+  "description": "Show a greeting. Demonstrates prompted parameters passed to a Python PowerScript.",
+  "kind": "system",
+  "runtime": "python",
+  "entry": "run.py",
+  "publisher": "PowerToys samples",
+  "version": "1.0.0",
+  "surfaces": ["keyboardManager", "commandPalette"],
+  "capabilities": ["ui"],
+  "elevation": "asInvoker",
+  "promptForParameters": true,
+  "parameters": [
+    {
+      "name": "greeting",
+      "type": "choice",
+      "label": "Greeting",
+      "description": "Pick how to say hello.",
+      "options": ["Hello", "Hi", "Hey", "Howdy"],
+      "default": "Hello"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Name",
+      "description": "Who to greet.",
+      "default": "World"
+    },
+    {
+      "name": "shout",
+      "type": "bool",
+      "label": "Shout (UPPERCASE)",
+      "default": "false"
+    }
+  ]
+}

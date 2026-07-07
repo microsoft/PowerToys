@@ -84,4 +84,115 @@ public class ManifestTests
         var errors = ManifestValidator.Validate(manifest, "abc");
         Assert.IsTrue(errors.Any(e => e.Contains("maxFiles")));
     }
+
+    [TestMethod]
+    public void Serializer_RoundTrips_ChoiceParameter_WithOptions()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "demo",
+            Name = "Demo",
+            Entry = "run.ps1",
+            PromptForParameters = true,
+            Parameters =
+            {
+                new ScriptParameter
+                {
+                    Name = "greeting",
+                    Type = ScriptParameter.ParameterTypeChoice,
+                    Label = "Greeting",
+                    Options = { "Hello", "Hi" },
+                    Default = "Hello",
+                },
+            },
+        };
+
+        var json = ManifestSerializer.Serialize(manifest);
+        StringAssert.Contains(json, "\"promptForParameters\": true");
+        StringAssert.Contains(json, "\"type\": \"choice\"");
+
+        var back = ManifestSerializer.Deserialize(json);
+        Assert.IsNotNull(back);
+        Assert.IsTrue(back!.PromptForParameters);
+        var p = back.Parameters.Single();
+        Assert.IsTrue(p.IsChoice);
+        CollectionAssert.AreEqual(new[] { "Hello", "Hi" }, p.Options);
+        Assert.AreEqual("Greeting", p.DisplayLabel);
+    }
+
+    [TestMethod]
+    public void Validator_Flags_ChoiceParameter_WithoutOptions()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            Parameters = { new ScriptParameter { Name = "mode", Type = ScriptParameter.ParameterTypeChoice } },
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("must declare at least one 'options'")));
+    }
+
+    [TestMethod]
+    public void Validator_Flags_ChoiceDefault_NotInOptions()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            Parameters =
+            {
+                new ScriptParameter
+                {
+                    Name = "mode",
+                    Type = ScriptParameter.ParameterTypeChoice,
+                    Options = { "a", "b" },
+                    Default = "c",
+                },
+            },
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("not one of its options")));
+    }
+
+    [TestMethod]
+    public void Validator_Flags_UnknownParameterType()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            Parameters = { new ScriptParameter { Name = "p", Type = "date" } },
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("unknown type")));
+    }
+
+    [TestMethod]
+    public void Validator_Allows_ValidParameters()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            PromptForParameters = true,
+            Parameters =
+            {
+                new ScriptParameter { Name = "greeting", Type = ScriptParameter.ParameterTypeChoice, Options = { "Hi" }, Default = "Hi" },
+                new ScriptParameter { Name = "name", Type = ScriptParameter.ParameterTypeString, Default = "World" },
+                new ScriptParameter { Name = "count", Type = ScriptParameter.ParameterTypeInt, Min = 1, Max = 5, Default = "2" },
+                new ScriptParameter { Name = "shout", Type = ScriptParameter.ParameterTypeBool, Default = "false" },
+            },
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.AreEqual(0, errors.Count);
+    }
 }

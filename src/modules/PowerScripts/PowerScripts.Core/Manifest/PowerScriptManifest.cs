@@ -75,20 +75,54 @@ public sealed class ScriptOutput
 }
 
 /// <summary>
-/// A typed, user-editable parameter passed to the script.
+/// A typed, user-editable parameter passed to the script. When the owning manifest sets
+/// <see cref="PowerScriptManifest.PromptForParameters"/>, PowerScripts shows a small dialog before
+/// running so the user can pick/enter values; the chosen values are passed to the script (PowerShell
+/// as <c>-Name value</c>, Python as keyword arguments). Values reach the script as strings, so a
+/// <see cref="ParameterTypeBool"/> parameter arrives as the literal "true" or "false".
 /// </summary>
 public sealed class ScriptParameter
 {
+    public const string ParameterTypeString = "string";
+    public const string ParameterTypeInt = "int";
+    public const string ParameterTypeBool = "bool";
+    public const string ParameterTypeChoice = "choice";
+
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>One of: "string", "int", "bool".</summary>
-    public string Type { get; set; } = "string";
+    /// <summary>One of: "string", "int", "bool", "choice".</summary>
+    public string Type { get; set; } = ParameterTypeString;
+
+    /// <summary>Optional display label shown in the prompt dialog; falls back to <see cref="Name"/>.</summary>
+    public string? Label { get; set; }
+
+    /// <summary>Optional help text shown under the control in the prompt dialog.</summary>
+    public string? Description { get; set; }
 
     public string? Default { get; set; }
+
+    /// <summary>Allowed values for a <see cref="ParameterTypeChoice"/> parameter (rendered as a dropdown).</summary>
+    public List<string> Options { get; set; } = new();
 
     public int? Min { get; set; }
 
     public int? Max { get; set; }
+
+    /// <summary>The display label to use in UI (label if set, otherwise the name).</summary>
+    [JsonIgnore]
+    public string DisplayLabel => string.IsNullOrWhiteSpace(Label) ? Name : Label!;
+
+    /// <summary>True when <see cref="Type"/> is the choice type (case-insensitive).</summary>
+    [JsonIgnore]
+    public bool IsChoice => string.Equals(Type, ParameterTypeChoice, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True when <see cref="Type"/> is the bool type (case-insensitive).</summary>
+    [JsonIgnore]
+    public bool IsBool => string.Equals(Type, ParameterTypeBool, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True when <see cref="Type"/> is the int type (case-insensitive).</summary>
+    [JsonIgnore]
+    public bool IsInt => string.Equals(Type, ParameterTypeInt, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -135,6 +169,13 @@ public sealed class PowerScriptManifest
     public ScriptOutput? Output { get; set; }
 
     public List<ScriptParameter> Parameters { get; set; } = new();
+
+    /// <summary>
+    /// When true and <see cref="Parameters"/> is non-empty, PowerScripts shows a prompt dialog before
+    /// running so the user can pick/enter parameter values. When false (the default) no UI is shown and
+    /// behavior is unchanged: parameters only come from an explicit <c>--set name=value</c>.
+    /// </summary>
+    public bool PromptForParameters { get; set; }
 
     /// <summary>Where the script appears, e.g. "contextMenu", "keyboardManager", "commandPalette".</summary>
     public List<string> Surfaces { get; set; } = new();

@@ -57,6 +57,63 @@ public static class ManifestValidator
             }
         }
 
+        ValidateParameters(manifest, errors);
+
         return errors;
+    }
+
+    private static void ValidateParameters(PowerScriptManifest manifest, List<string> errors)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var p in manifest.Parameters)
+        {
+            if (string.IsNullOrWhiteSpace(p.Name))
+            {
+                errors.Add("each parameter must have a non-empty 'name'.");
+                continue;
+            }
+
+            if (!seen.Add(p.Name))
+            {
+                errors.Add($"duplicate parameter name '{p.Name}'.");
+            }
+
+            var type = p.Type ?? string.Empty;
+            var known = type.Equals(ScriptParameter.ParameterTypeString, StringComparison.OrdinalIgnoreCase)
+                || type.Equals(ScriptParameter.ParameterTypeInt, StringComparison.OrdinalIgnoreCase)
+                || type.Equals(ScriptParameter.ParameterTypeBool, StringComparison.OrdinalIgnoreCase)
+                || type.Equals(ScriptParameter.ParameterTypeChoice, StringComparison.OrdinalIgnoreCase);
+            if (!known)
+            {
+                errors.Add($"parameter '{p.Name}' has unknown type '{p.Type}' (expected string, int, bool or choice).");
+                continue;
+            }
+
+            if (p.IsChoice)
+            {
+                if (p.Options.Count == 0)
+                {
+                    errors.Add($"choice parameter '{p.Name}' must declare at least one 'options' value.");
+                }
+                else if (!string.IsNullOrEmpty(p.Default) &&
+                    !p.Options.Contains(p.Default, StringComparer.Ordinal))
+                {
+                    errors.Add($"choice parameter '{p.Name}' has a default '{p.Default}' that is not one of its options.");
+                }
+            }
+
+            if (p.IsInt)
+            {
+                if (p.Min is { } min && p.Max is { } max && max < min)
+                {
+                    errors.Add($"int parameter '{p.Name}' has max < min.");
+                }
+
+                if (!string.IsNullOrEmpty(p.Default) && !int.TryParse(p.Default, out _))
+                {
+                    errors.Add($"int parameter '{p.Name}' has a non-integer default '{p.Default}'.");
+                }
+            }
+        }
     }
 }

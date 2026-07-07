@@ -62,20 +62,41 @@ authored once and appears everywhere it's declared.
 ```jsonc
 {
   "schemaVersion": 1,
-  "id": "heic-to-jpg",            // must match the folder name
+  "id": "heic-to-jpg",            // portable identity; need not match the folder name
   "name": "Convert HEIC to JPG",
   "description": "…",
   "kind": "file",                 // "system" | "file"
-  "runtime": "powershell",        // prototype: powershell only
+  "runtime": "powershell",        // "powershell" | "python"
   "entry": "run.ps1",
   "input": { "extensions": [".heic"], "minFiles": 1, "maxFiles": 0 }, // file kind
   "output": { "type": "convertedFile", "extension": ".jpg" },
-  "parameters": [ { "name": "quality", "type": "int", "default": "90", "min": 1, "max": 100 } ],
+  "promptForParameters": true,    // optional: show a dialog to collect parameters before running
+  "parameters": [
+    { "name": "quality", "type": "int", "default": "90", "min": 1, "max": 100 },
+    { "name": "mode", "type": "choice", "options": ["fast", "best"], "default": "best", "label": "Mode" },
+    { "name": "overwrite", "type": "bool", "default": "false" }
+  ],
   "surfaces": ["contextMenu", "keyboardManager"],
   "capabilities": ["fileWrite"],  // consent string + agent permission contract
   "elevation": "asInvoker"        // prototype always runs non-elevated
 }
 ```
+
+### Parameters (optional)
+
+A script may declare typed `parameters`. When `promptForParameters` is `true`, PowerScripts shows a
+small dialog before running so the user can pick/enter values; the chosen values are passed to the
+script (PowerShell as `-Name value`, Python as keyword arguments). Values arrive as **strings**, so a
+`bool` parameter is passed as the literal `"true"`/`"false"`. Supported types:
+
+- `choice` — one value from a fixed `options` list (rendered as a dropdown).
+- `bool` — a checkbox.
+- `int` — a numeric box honoring `min`/`max`.
+- `string` — a text box.
+
+When `promptForParameters` is omitted/`false`, no UI shows and parameters only come from an explicit
+`--set name=value` (unchanged behavior). Pass `--no-prompt` to `run` to suppress the dialog for
+automated invocations. See the `greet` (PowerShell) and `py_greet` (Python) samples.
 
 ## Build & run
 
@@ -104,7 +125,7 @@ dotnet test PowerScripts.Core.Tests\PowerScripts.Core.Tests.csproj
 
 `PowerScripts.Core.Tests` (MSTest) covers manifest serialization/validation and the registry
 (extension + wildcard matching, multi-file selection min/max, kind filtering, invalid-script
-skipping). 27 tests, all passing.
+skipping). 32 tests, all passing.
 
 ## Surface integration plans
 

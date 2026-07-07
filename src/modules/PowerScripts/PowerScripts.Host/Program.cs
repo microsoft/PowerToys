@@ -26,6 +26,7 @@ namespace PowerScripts.Host;
 /// </summary>
 internal static class Program
 {
+    [STAThread]
     private static int Main(string[] args)
     {
         try
@@ -95,6 +96,7 @@ internal static class Program
                     trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
                     input = s.Input,
                     parameters = s.Parameters,
+                    promptForParameters = s.PromptForParameters,
                     transform = signature is null ? null : new
                     {
                         function = signature.FunctionName,
@@ -173,6 +175,31 @@ internal static class Program
                 }
 
                 parameters[kv[..idx]] = kv[(idx + 1)..];
+            }
+        }
+
+        // Optional parameter prompt: only when the manifest opts in and declares parameters. The
+        // dialog is pre-filled with each parameter's default and any --set override. --no-prompt
+        // suppresses it (e.g. for automated runs), keeping the current --set-only behavior.
+        if (manifest.PromptForParameters &&
+            manifest.Parameters.Count > 0 &&
+            !options.ContainsKey("no-prompt"))
+        {
+            var initial = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (var p in manifest.Parameters)
+            {
+                initial[p.Name] = parameters.TryGetValue(p.Name, out var overridden) ? overridden : p.Default;
+            }
+
+            if (!ParameterPromptDialog.TryPrompt(manifest, initial, out var chosen))
+            {
+                Console.Error.WriteLine("run: cancelled at the parameter prompt.");
+                return 2;
+            }
+
+            foreach (var (name, value) in chosen)
+            {
+                parameters[name] = value;
             }
         }
 
@@ -602,7 +629,7 @@ internal static class Program
         Console.WriteLine("PowerScripts.Host — run and enumerate PowerScripts.");
         Console.WriteLine();
         Console.WriteLine("  list [--json] [--root <dir>]");
-        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-consent] [--root <dir>]");
+        Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--no-prompt] [--no-consent] [--root <dir>]");
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
