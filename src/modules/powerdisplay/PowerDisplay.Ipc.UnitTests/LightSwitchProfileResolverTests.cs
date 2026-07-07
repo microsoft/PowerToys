@@ -76,4 +76,32 @@ public class LightSwitchProfileResolverTests
         Assert.IsNull(PowerDisplay.Services.LightSwitchProfileResolver.Resolve(0, string.Empty, profiles));
         Assert.IsNull(PowerDisplay.Services.LightSwitchProfileResolver.Resolve(0, "missing", profiles));
     }
+
+    [TestMethod]
+    public void Migrate_ResolvesNameToId_StoresBoth_AndIsIdempotent()
+    {
+        var profiles = ProfilesWith((3, "Gaming"), (4, "Movie"));
+        var props = new LightSwitchProperties();
+        props.LightModeProfile.Value = "Gaming";
+        props.DarkModeProfile.Value = "Movie";
+
+        Assert.IsTrue(PowerDisplay.Services.LightSwitchProfileResolver.MigrateNamesToIds(props, profiles));
+        Assert.AreEqual(3, props.LightModeProfileId.Value);
+        Assert.AreEqual("Gaming", props.LightModeProfile.Value);
+        Assert.AreEqual(4, props.DarkModeProfileId.Value);
+
+        Assert.IsFalse(PowerDisplay.Services.LightSwitchProfileResolver.MigrateNamesToIds(props, profiles)); // idempotent
+    }
+
+    [TestMethod]
+    public void Migrate_UnknownName_ClearsToNone()
+    {
+        var profiles = ProfilesWith((3, "Gaming"));
+        var props = new LightSwitchProperties();
+        props.LightModeProfile.Value = "Deleted";
+
+        Assert.IsTrue(PowerDisplay.Services.LightSwitchProfileResolver.MigrateNamesToIds(props, profiles));
+        Assert.AreEqual(0, props.LightModeProfileId.Value);
+        Assert.AreEqual(string.Empty, props.LightModeProfile.Value);
+    }
 }

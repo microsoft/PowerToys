@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Models;
 
 namespace PowerDisplay.Services
@@ -42,6 +43,52 @@ namespace PowerDisplay.Services
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// One-shot upgrade of a LightSwitch mapping from name-only to id+name. For each of light and
+        /// dark: when the id is unset (0) and the stored name resolves to a profile, store its id and
+        /// re-sync the name; when the name does not resolve, clear to "none" (id 0, empty name).
+        /// Returns true when anything changed. Idempotent.
+        /// </summary>
+        public static bool MigrateNamesToIds(LightSwitchProperties props, PowerDisplayProfiles profiles)
+        {
+            if (props is null || profiles is null)
+            {
+                return false;
+            }
+
+            var changed = false;
+            changed |= MigrateOne(profiles, props.LightModeProfileId, props.LightModeProfile);
+            changed |= MigrateOne(profiles, props.DarkModeProfileId, props.DarkModeProfile);
+            return changed;
+        }
+
+        private static bool MigrateOne(PowerDisplayProfiles profiles, IntProperty idProp, StringProperty nameProp)
+        {
+            if (idProp.Value >= 1)
+            {
+                return false; // already migrated
+            }
+
+            var name = nameProp.Value;
+            if (string.IsNullOrEmpty(name) || name == NoneSentinel)
+            {
+                return false; // already "none"
+            }
+
+            var match = profiles.GetProfile(name);
+            if (match is not null && match.Id >= 1)
+            {
+                idProp.Value = match.Id;
+                nameProp.Value = match.Name;
+            }
+            else
+            {
+                nameProp.Value = string.Empty; // unknown/deleted -> none
+            }
+
+            return true;
         }
     }
 }
