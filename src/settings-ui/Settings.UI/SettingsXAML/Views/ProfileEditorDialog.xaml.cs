@@ -62,6 +62,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Set profile name
             ViewModel.ProfileName = profile.Name;
 
+            // Carry the edited profile's stable id so saving replaces it in place (a rename keeps the id).
+            ViewModel.EditingId = profile.Id;
+
             // Pre-fill monitor settings from existing profile
             foreach (var monitorSetting in profile.MonitorSettings)
             {

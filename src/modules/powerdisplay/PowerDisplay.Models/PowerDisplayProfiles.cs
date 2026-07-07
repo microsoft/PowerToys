@@ -120,26 +120,6 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Checks if a profile name is valid and available
-        /// </summary>
-        public bool IsNameAvailable(string name, string? excludeName = null)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return false;
-            }
-
-            // Check if name is already used (excluding the profile being renamed)
-            var existing = GetProfile(name);
-            if (existing != null && (excludeName == null || !existing.Name.Equals(excludeName, StringComparison.OrdinalIgnoreCase)))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// One-shot upgrade: assigns a stable id to every profile still missing one (Id == 0), in
         /// list order, and advances NextId past the highest id in use (self-healing a corrupt or
         /// legacy counter). Returns true when anything changed. Idempotent on subsequent calls.
