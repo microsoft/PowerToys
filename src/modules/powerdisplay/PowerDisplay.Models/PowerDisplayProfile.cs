@@ -59,5 +59,12 @@ namespace PowerDisplay.Models
         {
             LastModified = DateTime.UtcNow;
         }
+
+        /// <summary>
+        /// Gets a human-readable label that disambiguates duplicate names, e.g. "Gaming (#4)".
+        /// Not serialized; UI display only.
+        /// </summary>
+        [JsonIgnore]
+        public string DisplayName => $"{Name} (#{Id})";
     }
 }

@@ -124,4 +124,11 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(6, profiles.Profiles[1].Id); // assigned above max
         Assert.AreEqual(7, profiles.NextId);
     }
+
+    [TestMethod]
+    public void DisplayName_CombinesNameAndId()
+    {
+        var p = MakeProfile("Gaming", id: 4);
+        Assert.AreEqual("Gaming (#4)", p.DisplayName);
+    }
 }
