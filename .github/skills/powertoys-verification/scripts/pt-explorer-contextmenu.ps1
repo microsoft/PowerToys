@@ -65,8 +65,27 @@ function Test-PtDesktopInteractive {
 function Open-PtExplorerContextMenu {
     param([Parameter(Mandatory)][int]$ExplorerHwnd, [Parameter(Mandatory)][string]$FileName, [int]$MaxTries = 3)
     if (-not (Test-PtDesktopInteractive)) { throw 'BLK-ENV: desktop is locked / no foreground (GetForegroundWindow()=0). Unlock and retry.' }
+    # Turn off the preview pane (best-effort) so a fallback coordinate right-click can't land in the
+    # preview surface -> folder-BACKGROUND menu (rejected by the honesty guard below).
+    try { Disable-PtPreviewPane -ExplorerHwnd $ExplorerHwnd | Out-Null } catch { }
+    $fgEverOk = $false
     for ($try = 1; $try -le $MaxTries; $try++) {
-        [PtCtx]::ForceForeground([IntPtr]$ExplorerHwnd); Start-Sleep -Milliseconds 500
+        # Bring Explorer to the foreground AND confirm it actually stuck. Shift+F10 and the coordinate
+        # fallback both need the target window to OWN the foreground + keyboard focus. If the input
+        # desktop is detached (RDP minimized/disconnected, workstation locked -> GetForegroundWindow()=0)
+        # or another process holds the foreground-lock, ForceForeground silently no-ops, the keystrokes
+        # go nowhere, and the menu never opens. Track whether foreground ever stuck so the throw below
+        # can distinguish this environment problem from a genuine wrong-menu open.
+        $fgThisTry = $false
+        for ($f = 0; $f -lt 3; $f++) {
+            [PtCtx]::ForceForeground([IntPtr]$ExplorerHwnd); Start-Sleep -Milliseconds 400
+            if ([PtCtx]::GetForegroundWindow() -eq [IntPtr]$ExplorerHwnd) { $fgThisTry = $true; $fgEverOk = $true; break }
+        }
+        # HARD GATE: Explorer must actually OWN the foreground before we synthesize input. If it never
+        # stuck (locked/secure desktop, or another window holds the foreground-lock), the Shift+F10 /
+        # coordinate-click below would go nowhere - so skip them and retry rather than waste keystrokes.
+        # If it never sticks across all $MaxTries, $fgEverOk stays $false and we throw BLK-ENV (below).
+        if (-not $fgThisTry) { Start-Sleep -Milliseconds 500; continue }
         # Select the target via Shell COM first (reliable, coordinate-free, scrolls it into view) so the
         # right-click has a guaranteed-visible selected row - never opens the file / never renames it.
         try {
@@ -86,9 +105,14 @@ function Open-PtExplorerContextMenu {
         # targets the file and not the nav tree / address bar (verified: focus-in-tree -> wrong menu).
         winapp ui focus $item.selector -w $ExplorerHwnd 2>$null | Out-Null; Start-Sleep -Milliseconds 200
         [PtCtx]::ShiftF10()
-        Start-Sleep -Milliseconds 1200
-        $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
-            Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        # Poll for the Shift+F10 menu (the PopupHost can take >1.2s to render under RDP / slow foreground)
+        # before degrading to the fragile coordinate fallback below. ~3.6s budget (12 x 300ms).
+        $menu = $null
+        for ($poll = 0; $poll -lt 12 -and -not $menu; $poll++) {
+            Start-Sleep -Milliseconds 300
+            $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+                Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        }
         if (-not $menu) {   # Shift+F10 produced nothing - fall back to the coordinate right-click by selector
             winapp ui click --right $item.selector -w $ExplorerHwnd 2>$null | Out-Null
             Start-Sleep -Seconds 2
@@ -112,7 +136,10 @@ function Open-PtExplorerContextMenu {
         }
         Start-Sleep -Milliseconds 500
     }
-    throw "Could not open the FILE context menu for '$FileName' after $MaxTries attempts (got background/none). If the module's entry appears on the folder menu (PowerRename, New+), use Open-PtBackgroundContextMenu instead."
+    if (-not $fgEverOk) {
+        throw "BLK-ENV: could not bring Explorer (HWND $ExplorerHwnd) to the foreground after $MaxTries attempts - GetForegroundWindow() never matched it. This is a detached/locked input desktop (RDP minimized or disconnected, workstation locked, screensaver) or another window holds the foreground-lock; Shift+F10 keystrokes are dropped in this state. Restore an attached interactive desktop and retry. See references/environment-setup.md and SKILL.md pitfall #7."
+    }
+    throw "Could not open the FILE context menu for '$FileName' after $MaxTries attempts (got background/none) even though Explorer had the foreground. If the module's entry appears on the folder menu (PowerRename, New+), use Open-PtBackgroundContextMenu instead."
 }
 
 # Opens the folder-BACKGROUND context menu (no file needed) via Shift+F10 with nothing selected -
@@ -133,9 +160,13 @@ function Open-PtBackgroundContextMenu {
             Where-Object { $_.type -eq 'List' } | Select-Object -First 1 -ExpandProperty selector
         if ($listSel) { winapp ui focus $listSel -w $ExplorerHwnd 2>$null | Out-Null; Start-Sleep -Milliseconds 200 }
         [PtCtx]::ShiftF10()
-        Start-Sleep -Seconds 2
-        $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
-            Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        # Poll for the background menu (PopupHost can take >2s to render under RDP / slow foreground). ~3.6s budget.
+        $menu = $null
+        for ($poll = 0; $poll -lt 12 -and -not $menu; $poll++) {
+            Start-Sleep -Milliseconds 300
+            $menu = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+                Where-Object { $_.className -match 'PopupWindowSiteBridge' } | Sort-Object height -Descending | Select-Object -First 1
+        }
         if ($menu) {
             # Confirm it's the BACKGROUND menu (View/Sort by/Group by), not an item menu.
             $names = Get-PtContextMenuItems -MenuHwnd $menu.hwnd
@@ -171,6 +202,44 @@ function Get-PtContextMenuItems {
 
 # Open an Explorer window on $Path and return its CabinetWClass HWND (int) - the handle the context-menu
 # openers need. Polls until the window appears (or throws). Use at the start of a synthetic-menu flow.
+# Detect whether the Explorer preview (reading) pane is currently shown. Heuristic: when the preview
+# pane is open it occupies the right portion of the window, so the "Shell Folder View" list pane's
+# right edge falls well short of the window's right edge (>200px gap). Returns $true/$false; best-effort
+# $false on any error. Uses UIA only (no foreground / keystrokes needed).
+function Get-PtPreviewPaneOn {
+    param([Parameter(Mandatory)][int]$ExplorerHwnd)
+    try {
+        $win = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+            Where-Object { $_.hwnd -eq $ExplorerHwnd } | Select-Object -First 1
+        if (-not $win) { return $false }
+        $line = (winapp ui inspect -w $ExplorerHwnd --depth 10 2>$null | Out-String) -split "`r?`n" |
+            Where-Object { $_ -match 'Shell Folder View' } | Select-Object -First 1
+        if ($line -match '\((\d+),(\d+)\s+(\d+)x(\d+)\)') {
+            $right = [int]$matches[1] + [int]$matches[3]
+            return (($win.width - $right) -gt 200)
+        }
+    } catch { }
+    return $false
+}
+
+# Turn the Explorer preview (reading) pane OFF if it's on. An open preview pane is the top cause of the
+# coordinate right-click FALLBACK (in Open-PtExplorerContextMenu, used when Shift+F10 doesn't produce a
+# menu) landing in the preview surface -> the folder-BACKGROUND menu, which the honesty guard rejects
+# (looks like "got background/none"). Toggles via the command-bar "PreviewPaneToggleButton" using UIA
+# InvokePattern (no foreground needed, unlike the Alt+P keystroke). Best-effort: never throws, so it
+# can't break the menu flow. Returns $true if the pane ends up OFF. Note: on a very narrow window the
+# button can collapse into the "..." More menu and the invoke may miss - the width heuristic then simply
+# reports the unchanged state and the caller proceeds (Shift+F10 is unaffected either way).
+function Disable-PtPreviewPane {
+    param([Parameter(Mandatory)][int]$ExplorerHwnd)
+    for ($i = 0; $i -lt 2; $i++) {
+        if (-not (Get-PtPreviewPaneOn -ExplorerHwnd $ExplorerHwnd)) { return $true }
+        winapp ui invoke PreviewPaneToggleButton -w $ExplorerHwnd 2>$null | Out-Null
+        Start-Sleep -Milliseconds 900
+    }
+    return (-not (Get-PtPreviewPaneOn -ExplorerHwnd $ExplorerHwnd))
+}
+
 function Open-PtExplorerWindow {
     param([Parameter(Mandatory)][string]$Path, [int]$TimeoutSec = 10)
     if (-not (Test-Path $Path)) { throw "Path not found: $Path" }
@@ -184,6 +253,9 @@ function Open-PtExplorerWindow {
             Select-Object -First 1).hwnd
     } while (-not $h -and (Get-Date) -lt $deadline)
     if (-not $h) { throw "Explorer window for '$Path' did not appear within $TimeoutSec s." }
+    # Turn off the preview pane so the coordinate right-click fallback in Open-PtExplorerContextMenu
+    # can't land in the preview surface (-> folder-background menu). Best-effort; ignore failures.
+    try { Disable-PtPreviewPane -ExplorerHwnd ([int]$h) | Out-Null } catch { }
     [int]$h
 }
 
@@ -202,6 +274,56 @@ function Open-PtShowMoreOptionsMenu {
     while ($classic -eq [IntPtr]::Zero -and (Get-Date) -lt $deadline)
     if ($classic -eq [IntPtr]::Zero) { throw 'Classic #32768 menu did not appear after invoking "Show more options".' }
     [int64]$classic
+}
+
+# From an already-open MODERN menu (HWND from Open-PtBackgroundContextMenu / Open-PtExplorerContextMenu),
+# expand a submenu-parent item (e.g. New+'s "New+") and return the child submenu's HWND (int). This is the
+# MODERN-menu sibling of Open-PtShowMoreOptionsMenu: same "invoke a parent item -> wait -> return the child
+# menu's HWND" shape, but the child is a WinUI PopupWindowSiteBridge popup (NOT the legacy #32768 window),
+# so it's resolved by enumerating windows rather than FindWindow('#32768'). It reuses Invoke-PtContextMenuItem
+# for the click and Get-PtContextMenuItems to disambiguate the popup; the returned HWND is a normal menu HWND
+# you read/act on with Get-PtContextMenuItems / Invoke-PtContextMenuItem, exactly like the parent menu.
+#   -MenuHwnd    the parent modern menu's HWND
+#   -ItemName    the submenu-parent MenuItem to invoke (e.g. 'New+')
+#   -ContainsItem an item name known to live in the CHILD submenu (e.g. New+'s always-present 'Open templates'),
+#                used to pick the right popup when several PopupWindowSiteBridge windows are open (parent + child).
+# Throws if the parent item is absent, or if no child popup containing -ContainsItem appears within TimeoutSec.
+function Expand-PtModernSubmenu {
+    param(
+        [Parameter(Mandatory)][int]$MenuHwnd,
+        [Parameter(Mandatory)][string]$ItemName,
+        [string]$ContainsItem,
+        [int]$TimeoutSec = 6
+    )
+    # Record the popups already open so we can distinguish the NEW child popup from the parent menu.
+    $before = @(winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+        Where-Object { $_.className -match 'PopupWindowSiteBridge' } | ForEach-Object { [int]$_.hwnd })
+    # Poll for the parent item before invoking: Win11 menus populate asynchronously and 3rd-party
+    # packaged entries (New+, PowerRename, ...) land a beat AFTER the base verbs, so a too-early invoke
+    # on a freshly-opened menu can miss the item (a transient race, esp. right after enabling the module).
+    $invoked = $false; $itemDeadline = (Get-Date).AddSeconds([Math]::Max(2, [Math]::Floor($TimeoutSec / 2)))
+    do {
+        if (Invoke-PtContextMenuItem -MenuHwnd $MenuHwnd -ItemName $ItemName) { $invoked = $true; break }
+        Start-Sleep -Milliseconds 400
+    } while ((Get-Date) -lt $itemDeadline)
+    if (-not $invoked) {
+        throw "No '$ItemName' entry on the modern menu (HWND $MenuHwnd) to expand (still absent after waiting for late-populating packaged entries)."
+    }
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    do {
+        Start-Sleep -Milliseconds 300
+        $popups = winapp ui list-windows --json 2>$null | ConvertFrom-Json |
+            Where-Object { $_.className -match 'PopupWindowSiteBridge' }
+        # Prefer a popup that actually contains the known child item (unambiguous). Otherwise, take a
+        # newly-appeared popup (one not open before the invoke) as the child submenu.
+        if ($ContainsItem) {
+            foreach ($p in $popups) { if ((Get-PtContextMenuItems -MenuHwnd $p.hwnd) -contains $ContainsItem) { return [int]$p.hwnd } }
+        } else {
+            $new = $popups | Where-Object { [int]$_.hwnd -notin $before } | Sort-Object height -Descending | Select-Object -First 1
+            if ($new) { return [int]$new.hwnd }
+        }
+    } while ((Get-Date) -lt $deadline)
+    throw "Submenu for '$ItemName' did not appear within $TimeoutSec s (looked for a PopupWindowSiteBridge$(if($ContainsItem){" containing '$ContainsItem'"}))."
 }
 
 # Open the EXTENDED (CMF_EXTENDEDVERBS) legacy #32768 menu for a file via a GENUINE Shift+right-click, and

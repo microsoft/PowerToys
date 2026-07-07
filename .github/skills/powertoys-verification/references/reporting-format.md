@@ -154,6 +154,6 @@ Example:
 
 | # | Friction | Source | Severity | Cost | Suggested fix |
 |---|---|---|---|---|---|
-| 1 | `winapp ui inspect --depth 7 -w $hwnd` threw "Cannot bind argument" until I moved `-w` after `--depth`. | `WINAPP-TOOL-BUG` | MED | ~6 min · 3 attempts | Already noted in pitfall #13, but the tool should parse flag order — file against winapp. |
-| 2 | SKILL.md §2.A says "wait 4s debounce" but PowerRename needed a full `Restart-PtRunner`; the module-owned-file note (pitfall #17) wasn't cross-linked from §2.A. | `SKILL-UNCLEAR` | HIGH | ~12 min · 4 attempts | Add an explicit "shell-ext modules → see pitfall #17" pointer inside §2.A. |
+| 1 | `winapp ui inspect --depth 7 -w $hwnd` threw "Cannot bind argument" until I moved `-w` after `--depth`. | `WINAPP-TOOL-BUG` | MED | ~6 min · 3 attempts | Already noted in pitfall #8, but the tool should parse flag order — file against winapp. |
+| 2 | SKILL.md §2.A says "wait 4s debounce" but PowerRename needed a full `Restart-PtRunner`; the module-owned-file note (pitfall #12) wasn't cross-linked from §2.A. | `SKILL-UNCLEAR` | HIGH | ~12 min · 4 attempts | Add an explicit "shell-ext modules → see pitfall #12" pointer inside §2.A. |
 ```

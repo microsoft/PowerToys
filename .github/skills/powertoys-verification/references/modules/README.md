@@ -28,6 +28,7 @@ Some flows are common to several modules and live in their own top-level docs (n
 | Image Resizer | `image-resizer.md` | ✅ written 2026-06-09 |
 | PowerRename | `power-rename.md` | ✅ written 2026-06-10 (first to cite `../context-menu-cookbook.md` for shared mechanics) |
 | New+ | `new-plus.md` | ✅ written 2026-06-18 (registration-gate for menu presence; Settings-UI toggle drives template auto-copy) |
+| Command Palette | `command-palette.md` | ✅ written 2026-07-07 (CmdPal AppX foreground-lock / TextChanged-broken / alias-keystroke / Esc-filtered quirks — moved out of the global SKILL.md pitfalls) |
 | (other modules to be added as we encounter sign-off needs) | — | — |
 
 ## For Explorer-context-menu modules: read the canonical flow doc first

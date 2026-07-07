@@ -6,7 +6,7 @@
 **Enable flag**: `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` → `enabled."Image Resizer"` (runner-owned; **read-only for verification** — flip enable/disable via the Settings-UI toggle).
 **Logs**: `%LOCALAPPDATA%\Microsoft\PowerToys\Image Resizer\Logs\…`
 **Exes**: GUI = `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.ImageResizer.exe`; **CLI = `%LOCALAPPDATA%\PowerToys\WinUI3Apps\PowerToys.ImageResizerCLI.exe`**.
-**Context menu**: Win11 packaged `IExplorerCommand` (sparse pkg `ImageResizerContextMenuPackage.msix`, dllmain.cpp) + legacy classic `ImageResizerExt.dll` (`dll/ContextMenuHandler.cpp`). **Shipped caption = "Resize with Image Resizer"** (`IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY`; checklist's "Resize images" is STALE).
+**Context menu**: Win11 packaged `IExplorerCommand` (sparse pkg `ImageResizerContextMenuPackage.msix`, dllmain.cpp) + legacy classic `ImageResizerExt.dll` (`dll/ContextMenuHandler.cpp`). **Shipped caption = "Resize with Image Resizer"** (`IDS_IMAGERESIZER_CONTEXT_MENU_ENTRY`.
 **No global hotkey / no Named Event / no DSC for the engine** — entry is the Explorer menu (or direct exe launch).
 
 **Context-menu routing (Image Resizer-specific):** appears **only on a selected image file** — NOT on
@@ -66,7 +66,6 @@ Shares the exact `ResizeBatch.FromCliOptions` → `ResizeBatch.ProcessAsync` →
 - **Don't mark the resize-behavior items BLOCKED for "needs a real right-click".** The CLI fully drives them with the identical engine; the menu is just the trigger (prove the menu→launch wiring once with the golden path in Recipe 2).
 - **PowerShell `ConvertTo-Json` writes computed numbers as doubles (`"Id": 3.0`)** → `System.Text.Json` rejects `imageresizer_sizes` and the app silently falls back to the 4 built-in default presets (Small/Medium/Large/Phone). Cast Ids to `[int]` or regex-strip `\.0`. This bit the remove-size-add-custom item (Recipe 3) the first time.
 - **cm/inch outputs depend on the fixture's DPI, not 96.** System.Drawing saves at the session display DPI (here 120). Compute expectations from the actual DPI.
-- **Caption is "Resize with Image Resizer", not the checklist's "Resize images"** (both menus). Hard-match the real caption.
 - **Idle auto-lock = BLK-ENV for the disabled-absent + enabled-present items (Recipes 1-2)** (synthetic right-click needs foreground). Disable lock/sleep before the run (`references/environment-setup.md`).
 - Don't expect `Shell.Application.Verbs()` to list the entry — Win11 packaged command (`CoCreate` → `REGDB_E_CLASSNOTREGISTERED`). Kill by `-Id <pid>` not name. Restore by re-toggling **on** via `Set-PtModuleEnabledViaSettingsUI -PageTag ImageResizer -Enabled $true`; revert any `settings.json`/`sizes.json` edits and close the Settings window.
 

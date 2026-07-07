@@ -2,7 +2,7 @@
 
 **PT module**: `NewPlus` (Explorer right-click → "New+" submenu that creates files/folders from a user templates folder)
 **Source**: `<PT-repo>\src\modules\NewPlus\` (shell ext) + `<PT-repo>\src\settings-ui\Settings.UI\ViewModels\NewPlusViewModel.cs` (Settings UI)
-**Module-owned settings file**: `%LOCALAPPDATA%\Microsoft\PowerToys\NewPlus\settings.json` — **folder is `NewPlus`, NOT `New`** (matches SKILL.md pitfall #17 table). Keys: `HideFileExtension`, `HideStartingDigits`, `TemplateLocation`, `ReplaceVariables`, `BuiltInNewHidePreference`.
+**Module-owned settings file**: `%LOCALAPPDATA%\Microsoft\PowerToys\NewPlus\settings.json` — **folder is `NewPlus`, NOT `New`** (matches SKILL.md pitfall #12 table). Keys: `HideFileExtension`, `HideStartingDigits`, `TemplateLocation`, `ReplaceVariables`, `BuiltInNewHidePreference`.
 **Templates folder (default)**: `%LOCALAPPDATA%\Microsoft\PowerToys\NewPlus\Templates` (per `TemplateLocation`)
 **Default-templates source**: `%LOCALAPPDATA%\PowerToys\WinUI3Apps\Assets\NewPlus\Templates` (also `%ProgramFiles%\PowerToys\...` on machine installs)
 **Logs**: `%LOCALAPPDATA%\Microsoft\PowerToys\NewPlus\NewPlus.ShellExtension\Logs\v<ver>\log_<date>.log`
@@ -17,7 +17,7 @@
 Drive enable/disable through the **Settings-UI toggle** (entry-path 2 / the shared helper) — it's the faithful user flow, runs the Settings→runner IPC path, and (uniquely for New+) triggers the enable-time `CopyTemplateExamples` that seeds the default templates. Observe the gate:
 - CLSID registered ⇒ `Test-Path "HKCU:\Software\Classes\CLSID\{FF90D477-E32A-4BE8-8CC5-A502A97F5401}"` is `True` (enabled) / `False` (disabled).
 - Log lines `New+ context menu registered` / `... unregistered` + `Runtime registration completed for CLSID ...`.
-- Sparse package stays `Status Ok` even when disabled (hidden dynamically — SKILL.md pitfall #16).
+- Sparse package stays `Status Ok` even when disabled (hidden dynamically — SKILL.md pitfall #11).
 
 > The toggle needs an unlocked interactive desktop. If it's locked / RDP-minimized so the Settings UI can't be driven, mark the item `BLK-ENV` (`references/environment-setup.md`).
 
@@ -30,15 +30,19 @@ Use `Set-PtModuleEnabledViaSettingsUI -PageTag NewPlus -EnabledKey NewPlus` (`sc
 New+ lives in the folder-background ("New") menu, **not** a file's context menu — so
 `Open-PtExplorerContextMenu` (which right-clicks a *file item*) is the wrong entry. Use
 **`Open-PtBackgroundContextMenu -ExplorerHwnd <h>`** (coordinate-free Shift+F10 with nothing selected;
-validates it got the background menu), then expand the `New+` submenu (a popup one level deeper):
+validates it got the background menu), then expand the `New+` submenu with
+**`Expand-PtModernSubmenu`** (the modern-menu sibling of `Open-PtShowMoreOptionsMenu`; both in
+`scripts/pt-explorer-contextmenu.ps1`):
 ```powershell
-$bg = Open-PtBackgroundContextMenu -ExplorerHwnd $hwnd     # folder-background ("New") menu
-$np = (winapp ui search 'New+' -w $bg --json).matches | ? type -eq MenuItem | select -First 1
-winapp ui invoke $np.selector -w $bg                        # expands the New+ submenu
-# the submenu is the PopupWindowSiteBridge popup that contains 'Open templates' but NOT 'Sort by'
-# enumerate its MenuItems (templates are 1:1 with the Templates-folder entries) / invoke one by name
+$bg  = Open-PtBackgroundContextMenu -ExplorerHwnd $hwnd            # folder-background ("New") menu
+$sub = Expand-PtModernSubmenu -MenuHwnd $bg -ItemName 'New+' `     # invokes New+, returns the child popup HWND
+                              -ContainsItem 'Open templates'       # disambiguates parent vs child PopupWindowSiteBridge
+Get-PtContextMenuItems -MenuHwnd $sub                              # templates are 1:1 with the Templates-folder entries
+# Invoke-PtContextMenuItem -MenuHwnd $sub -ItemName '<template>'   # select a template (creates it in the current folder)
 ```
-Template items render with **caption transforms applied** (HideFileExtension strips `.txt`; HideStartingDigits strips `01. `). Selecting a template creates it in the current folder + enters rename mode. BLK-ENV only if `Test-PtDesktopInteractive` is False. **No Explorer restart needed** for setting A/B — the handler re-reads `NewPlus\settings.json` on each menu build.
+`Expand-PtModernSubmenu` reuses `Invoke-PtContextMenuItem` for the click and resolves the child
+`PopupWindowSiteBridge` popup (preferring the one that contains `-ContainsItem`, else a newly-appeared
+popup). Template items render with **caption transforms applied** (HideFileExtension strips `.txt`; HideStartingDigits strips `01. `). Selecting a template creates it in the current folder + enters rename mode. BLK-ENV only if `Test-PtDesktopInteractive` is False. **No Explorer restart needed** for setting A/B — the handler re-reads `NewPlus\settings.json` on each menu build.
 
 ## Recipes — a control/observation map, NOT an answer key
 

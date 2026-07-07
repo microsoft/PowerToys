@@ -13,11 +13,24 @@
 
 ### 1. CLI back-door — fastest, no Explorer needed
 ```powershell
+# MUST run non-elevated (see the elevation warning below) — from an elevated agent shell use:
+#   . "$skill\scripts\pt-nonelevated.ps1"; Start-PtNonElevated -Exe $peekExe -Arguments '"<file>"'
 Start-Process "$env:LOCALAPPDATA\PowerToys\WinUI3Apps\PowerToys.Peek.UI.exe" -ArgumentList "<file>"
 ```
 **Source**: `Peek.UI\PeekXAML\App.xaml.cs:106-134` — when last arg is not int (=runner PID) and is an existing file, it sets `_launchedFromCli=true`, builds `SelectedItemByPath`, calls `OnShowPeek()`. Bypasses hotkey + Explorer foreground.
 
 **Use for**: single-file previewer rendering tests (Recipes 1-2) and the CLI-accepts-path assertion (Recipe 8).
+
+> **⚠️ ELEVATION — launch Peek NON-ELEVATED for previewer tests.** If you `Start-Process` the exe
+> from an **elevated** agent shell, Peek runs at high IL and its **WebView2** host fails to
+> initialize: `BrowserControl.xaml.cs::PreviewWV2_Loaded` logs *"WebView2 loading failed. Object
+> reference not set to an instance of an object."* and the dev/text, **markdown, PDF and HTML**
+> previews spin forever on the "Busy" `ProgressBar` (only the non-WebView2 **image** previewer works).
+> This is **not** a product bug — a real user's Peek is spawned non-elevated by the runner. Launch it
+> the same way for CLI tests via `Start-PtNonElevated -Exe <peekExe> -Arguments '"<file>"'`
+> (`scripts/pt-nonelevated.ps1`), and confirm medium IL with `Test-ProcessElevated`. Verified 2026-07-07
+> on 0.100.1.0: elevated → NRE + endless Busy; non-elevated → `PreviewBrowser` + `RootWebArea` render.
+> The Shell-COM + Ctrl+Space path (entry-path 2) already spawns Peek non-elevated via the runner.
 
 **Cannot use for**: navigation tests (Recipes 4-7, 10-11) — source has `if (_isFromCli) return;` guard that disables arrow navigation, and CLI mode spawns a fresh process every call (no pin-state-across-reopen).
 
@@ -78,9 +91,10 @@ Wakes the resident Peek process (different from CLI back-door — respects curre
 
 If the agent only tried the CLI back-door and marked the pin / navigation tests BLOCKED → **misdiagnosis**, try entry-path #2 (Shell.Application COM + Ctrl+Space).
 
-If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver). See `SKILL.md` pitfall #12 and `references/environment-setup.md`. Mark BLK-ENV with mitigation citation.
+If the agent tried Shell COM + Ctrl+Space and got `GetForegroundWindow()=0` + `SendInput → ACCESS_DENIED (5)` → **environment**, not framework. The session has no attached input desktop (RDP minimized, screen locked, screensaver). See `SKILL.md` pitfall #7 and `references/environment-setup.md`. Mark BLK-ENV with mitigation citation.
 
 Module quirks that mislead driving:
+- **Elevated Peek breaks WebView2 previews.** Launching `Peek.UI.exe` from an elevated shell → high-IL Peek → `PreviewWV2_Loaded` NRE + endless "Busy" for dev/md/PDF/HTML (image still works). Launch **non-elevated** (`Start-PtNonElevated`); NOT a product bug. See entry-path 1 warning.
 - **Activation-shortcut is NOT hot-reloaded.** Editing `Peek\settings.json` `ActivationShortcut` does nothing until `Restart-PtRunner`. Restart after the change AND after restoring.
 - **PinButton spawns a `PopupHost` teaching-tip** (~192x63) that surfaces first in `list-windows`. Match by title suffix `- Peek`, or cache the Peek HWND before invoking PinButton.
 - **Win11 Notepad tabs/session-restore** muddy open-with-default tests: spawned Notepad restores prior tabs. Match `"<file> - Notepad"` explicitly.

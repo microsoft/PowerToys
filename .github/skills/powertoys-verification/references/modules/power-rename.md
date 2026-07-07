@@ -37,6 +37,7 @@ Start-Process "$env:LOCALAPPDATA\PowerToys\WinUI3Apps\PowerToys.PowerRename.exe"
     -ArgumentList "$($tmp.FullName)\file1.txt","$($tmp.FullName)\file2.txt","$($tmp.FullName)\file3.txt"
 
 Start-Sleep -Milliseconds 1500
+Force-PtForeground -AppId PowerToys.PowerRename   # bring PR to top — else it opens BEHIND the temp Explorer window (pitfall #13); needed for recordings + reliable screenshots
 $pr = (winapp ui list-windows -a PowerToys.PowerRename 2>$null | Out-String) -split "`r?`n" |
       ForEach-Object { if ($_ -match 'HWND (\d+):') { [int64]$matches[1] } } | Select-Object -First 1
 winapp ui inspect -w $pr --depth 5 -i 2>$null | Out-String | Select-String 'CheckBox "file\d\.txt"'
@@ -117,6 +118,7 @@ Always copy fixtures to a disposable temp folder before running actual rename op
 - **Boost library is read at PR process start** — close + relaunch PR after toggling.
 - **Icon-on-menu and extended-only checks prefer registry over screenshot** — read HKCR `Extended` / `Icon` REG_SZ; more reliable + locale-independent.
 - **Disk mutation is real** — run renames against `$env:TEMP\pr-test-<random>`, not real fixtures.
+- **Foreground + window hygiene (pitfall #13):** the PR window (and Settings) can open **behind** the temp Explorer window you opened for the context-menu test, so a recording/screenshot shows the wrong window. **(a)** After `Start-Process …PowerToys.PowerRename.exe` (or opening Settings), call `Force-PtForeground -AppId PowerToys.PowerRename` (or `-AppId PowerToys.Settings`) before observing. **(b)** Since each menu test opens a **fresh** Explorer window, close them **per item** so they don't stack in the foreground: `(New-Object -ComObject Shell.Application).Windows() | Where-Object { $_.LocationURL -match 'pr-fixture|pr-enum' } | ForEach-Object { $_.Quit() }` (match your disposable-fixture folder name so you never close the user's Explorer windows).
 - **COM cache staleness** when re-checking verbs after enable/disable — call `Reset-PtShellComCache` from `scripts/pt-shell-verbs.ps1`.
 - **Don't** try `Invoke-PtShellVerb 'PowerRename'` — returns False on Win11 (no classic registration). Use synthetic menu via `Invoke-PtContextMenuItem` or direct-CLI.
 - **Don't** run renames against reusable fixtures — copy to a disposable temp folder. Don't trust screenshot-only for icon/extended checks (use registry). Don't skip the synthetic-menu test for menu-presence — CLI back-door false-PASSes when the entry is correctly hidden (see `references/explorer-context-menu-flow.md`).
