@@ -19,6 +19,9 @@ namespace PowerDisplay.Models
         [JsonPropertyName("profiles")]
         public List<PowerDisplayProfile> Profiles { get; set; }
 
+        [JsonPropertyName("nextId")]
+        public int NextId { get; set; }
+
         [JsonPropertyName("lastUpdated")]
         public DateTime LastUpdated { get; set; }
 
