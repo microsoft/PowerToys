@@ -51,13 +51,13 @@ public class CliRequestHandlerTests
     private static CliRequestEnvelope MakeEnvelope(string command) => new() { Command = command };
 
     /// <summary>
-    /// Calls <c>BuildResponseAsync</c> with a single monitor snapshot and no hidden IDs.
+    /// Calls <c>BuildResponseAsync</c> with the int-based apply-profile delegate signature.
     /// </summary>
     private static Task<string> Dispatch(
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
-        Func<string, CancellationToken, Task<bool>>? applyProfile = null,
+        Func<int, CancellationToken, Task<bool>>? applyProfile = null,
         int defaultStep = 5,
         CancellationToken ct = default)
     {
@@ -282,19 +282,28 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_FoundProfile_ReturnsCliApplyProfileResult()
     {
-        Func<string, CancellationToken, Task<bool>> applyFn = (_, _) => Task.FromResult(true);
+        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
+
+        var profiles = new PowerDisplayProfiles
+        {
+            Profiles = new List<PowerDisplayProfile>
+            {
+                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 1 },
+            },
+        };
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileName = "Night" },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
         };
 
-        var json = await Dispatch(envelope, applyProfile: applyFn);
+        var json = await Dispatch(envelope, profiles: profiles, applyProfile: applyFn);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
         Assert.AreEqual("apply-profile", result.Command);
+        Assert.AreEqual(1, result.ProfileId);
         Assert.AreEqual("Night", result.Profile);
     }
 
@@ -302,12 +311,12 @@ public class CliRequestHandlerTests
     public async Task ApplyProfile_ProfileNotFound_ReturnsArgumentError()
     {
         // false = profile not found
-        Func<string, CancellationToken, Task<bool>> applyFn = (_, _) => Task.FromResult(false);
+        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(false);
 
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileName = "NoSuchProfile" },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
         };
 
         var json = await Dispatch(envelope, applyProfile: applyFn);
@@ -318,7 +327,7 @@ public class CliRequestHandlerTests
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
         Assert.AreEqual("apply-profile", error.Command);
         Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
-        Assert.AreEqual("NoSuchProfile", error.Error.Value);
+        Assert.AreEqual("99", error.Error.Value);
     }
 
     [TestMethod]
@@ -327,7 +336,7 @@ public class CliRequestHandlerTests
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.ApplyProfile,
-            ApplyProfile = new ApplyProfileRequest { ProfileName = string.Empty },
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
         };
 
         var json = await Dispatch(envelope);
@@ -335,6 +344,73 @@ public class CliRequestHandlerTests
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+    }
+
+    // ─── apply-profile by id ──────────────────────────────────────────────────
+    [TestMethod]
+    public async Task ApplyProfile_UnknownId_ReturnsArgumentError()
+    {
+        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(false);
+
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.ApplyProfile,
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 99 },
+        };
+
+        var json = await Dispatch(envelope, applyProfile: applyFn);
+
+        var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(error, "should deserialize to CliErrorResult");
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+        Assert.AreEqual(CliMessageIds.ProfileNotFound, error.Error.MessageId);
+        Assert.AreEqual("99", error.Error.Value);
+    }
+
+    [TestMethod]
+    public async Task ApplyProfile_NonPositiveId_ReturnsArgumentError()
+    {
+        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
+
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.ApplyProfile,
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 0 },
+        };
+
+        var json = await Dispatch(envelope, applyProfile: applyFn);
+
+        var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(error, "should deserialize to CliErrorResult");
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task ApplyProfile_FoundId_ReturnsSuccessWithId()
+    {
+        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
+
+        var profiles = new PowerDisplayProfiles
+        {
+            Profiles = new List<PowerDisplayProfile>
+            {
+                new PowerDisplayProfile { Name = "Gaming", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 3 },
+            },
+        };
+
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.ApplyProfile,
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 3 },
+        };
+
+        var json = await Dispatch(envelope, profiles: profiles, applyProfile: applyFn);
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
+        Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
+        Assert.AreEqual("apply-profile", result.Command);
+        Assert.AreEqual(3, result.ProfileId);
+        Assert.AreEqual("Gaming", result.Profile);
     }
 
     // ─── up / down commands ───────────────────────────────────────────────────

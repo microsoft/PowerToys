@@ -23,6 +23,7 @@ public static class ProfileDtoProjector
     /// Projects each <see cref="PowerDisplayProfile"/> in <paramref name="profiles"/> to a
     /// <see cref="CliProfileInfo"/>:
     /// <list type="bullet">
+    ///   <item><see cref="CliProfileInfo.Id"/> — profile id.</item>
     ///   <item><see cref="CliProfileInfo.Name"/> — profile name.</item>
     ///   <item><see cref="CliProfileInfo.MonitorCount"/> — <c>MonitorSettings.Count</c>.</item>
     ///   <item><see cref="CliProfileInfo.LastModified"/> — <see cref="PowerDisplayProfile.LastModified"/>
@@ -44,6 +45,7 @@ public static class ProfileDtoProjector
 
             infos.Add(new CliProfileInfo
             {
+                Id = profile.Id,
                 Name = profile.Name ?? string.Empty,
                 MonitorCount = profile.MonitorSettings?.Count ?? 0,
 

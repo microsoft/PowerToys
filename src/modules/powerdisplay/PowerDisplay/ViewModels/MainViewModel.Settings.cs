@@ -186,41 +186,41 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Applies a saved profile by name for the CLI/IPC path (best-effort). Loads the profile and,
+    /// Applies a saved profile by id for the CLI/IPC path (best-effort). Loads the profile and,
     /// when found, applies it through the shared fire-and-forget <see cref="ApplyProfileAsync"/>
     /// path (identical to the GUI). Per-setting hardware failures are not surfaced: apply-profile is
-    /// a best-effort convenience command that reports success once the named profile exists.
+    /// a best-effort convenience command that reports success once the id profile exists.
     /// </summary>
-    /// <param name="profileName">The name of the profile to apply.</param>
+    /// <param name="profileId">The id of the profile to apply.</param>
     /// <param name="ct">Cancellation token; observed before the writes begin.</param>
     /// <returns>
-    /// <c>true</c> when the profile was found and applied; <c>false</c> when the profile name is
+    /// <c>true</c> when the profile was found and applied; <c>false</c> when the profile id is
     /// unknown. The IPC handler maps <c>false</c> to ARGUMENT_ERROR / exit code 7.
     /// </returns>
-    public async Task<bool> ApplyProfileForCliAsync(string profileName, CancellationToken ct = default)
+    public async Task<bool> ApplyProfileForCliAsync(int profileId, CancellationToken ct = default)
     {
         try
         {
-            Logger.LogInfo($"[Profile] Applying profile for CLI: {profileName}");
+            Logger.LogInfo($"[Profile] Applying profile for CLI: id {profileId}");
 
             var profilesData = ProfileService.LoadProfiles();
-            var profile = profilesData.GetProfile(profileName);
+            var profile = profilesData.GetById(profileId);
 
             if (profile == null || !profile.IsValid())
             {
-                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid (CLI path)");
+                Logger.LogWarning($"[Profile] Profile id {profileId} not found or invalid (CLI path)");
                 return false;
             }
 
             ct.ThrowIfCancellationRequested();
 
             await ApplyProfileAsync(profile.MonitorSettings);
-            Logger.LogInfo($"[Profile] Completed applying profile for CLI: {profileName}");
+            Logger.LogInfo($"[Profile] Completed applying profile for CLI: id {profileId}");
             return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[Profile] Failed to apply profile for CLI '{profileName}': {ex.Message}");
+            Logger.LogError($"[Profile] Failed to apply profile for CLI id {profileId}: {ex.Message}");
             throw;
         }
     }

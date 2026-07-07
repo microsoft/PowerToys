@@ -63,4 +63,21 @@ public class ProfileDtoProjectorTests
         Assert.ThrowsException<ArgumentNullException>(
             () => ProfileDtoProjector.BuildProfileListResult(null!));
     }
+
+    [TestMethod]
+    public void BuildProfileListResult_IncludesId()
+    {
+        var profiles = new PowerDisplayProfiles();
+        var p = new PowerDisplayProfile("Gaming", new List<ProfileMonitorSetting>
+        {
+            new ProfileMonitorSetting("MON1", 50, null, null, null),
+        });
+        p.Id = 4;
+        profiles.Profiles.Add(p);
+
+        var result = ProfileDtoProjector.BuildProfileListResult(profiles);
+
+        Assert.AreEqual(4, result.Profiles[0].Id);
+        Assert.AreEqual("Gaming", result.Profiles[0].Name);
+    }
 }

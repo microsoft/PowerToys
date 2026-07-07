@@ -143,29 +143,26 @@ internal static class CliCommandHandlers
     {
         public async Task<string> ExecuteAsync(CliCommandContext context, CancellationToken ct)
         {
-            var profileName = context.Envelope.ApplyProfile?.ProfileName ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(profileName))
+            var profileId = context.Envelope.ApplyProfile?.ProfileId ?? 0;
+            if (profileId <= 0)
             {
                 return CliResponse.SerializeError(
-                    CliResponse.MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile name must not be empty"));
+                    CliResponse.MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile id must be positive"));
             }
 
-            var applied = await context.ApplyProfileAsync(profileName, ct).ConfigureAwait(false);
+            var applied = await context.ApplyProfileAsync(profileId, ct).ConfigureAwait(false);
             if (!applied)
             {
-                // Profile not found — ARGUMENT_ERROR / exit code 7.
                 return CliResponse.SerializeError(
                     CliResponse.MakeCodedError(
                         CliCommandNames.ApplyProfile,
                         CliErrorCodes.ArgumentError,
                         CliMessageIds.ProfileNotFound,
-                        value: profileName));
+                        value: profileId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             }
 
-            // apply-profile is best-effort: once the profile exists it is applied via the shared
-            // fire-and-forget path and always reports success (exit 0). Per-setting hardware
-            // failures are intentionally not surfaced.
-            var applyResult = new CliApplyProfileResult { Profile = profileName };
+            var name = context.LoadProfiles().GetById(profileId)?.Name ?? string.Empty;
+            var applyResult = new CliApplyProfileResult { ProfileId = profileId, Profile = name };
             return CliResponse.Serialize(applyResult, ContractsJsonContext.Default.CliApplyProfileResult);
         }
     }

@@ -104,9 +104,9 @@ public sealed class CliRequestHandler
     /// pay for synchronous disk I/O they never use. Maps to <c>ProfileService.LoadProfiles</c>.
     /// </param>
     /// <param name="applyProfileAsync">
-    /// Delegate that applies a profile by name (best-effort) and returns <c>true</c> when the
+    /// Delegate that applies a profile by id (best-effort) and returns <c>true</c> when the
     /// profile was found and applied, or <c>false</c> when it does not exist. Receives the profile
-    /// name and a <see cref="CancellationToken"/>. Maps to
+    /// id and a <see cref="CancellationToken"/>. Maps to
     /// <c>MainViewModel.ApplyProfileForCliAsync</c> in production.
     /// </param>
     /// <param name="ct">Cancellation token.</param>
@@ -119,7 +119,7 @@ public sealed class CliRequestHandler
         IMonitorManager manager,
         int defaultStep,
         Func<PowerDisplayProfiles> loadProfiles,
-        Func<string, CancellationToken, Task<bool>> applyProfileAsync,
+        Func<int, CancellationToken, Task<bool>> applyProfileAsync,
         CancellationToken ct)
     {
         try
@@ -194,7 +194,7 @@ public sealed class CliRequestHandler
                 manager,
                 _vm.MouseWheelIncrement,
                 ProfileService.LoadProfiles,
-                (name, token) => _vm.ApplyProfileForCliAsync(name, token),
+                (id, token) => _vm.ApplyProfileForCliAsync(id, token),
                 ct).ConfigureAwait(false);
         }).ConfigureAwait(false);
     }
