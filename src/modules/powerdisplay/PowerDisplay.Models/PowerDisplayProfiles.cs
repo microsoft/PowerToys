@@ -48,7 +48,9 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Adds or updates a profile
+        /// Adds or updates a profile, keyed by its stable id. When the incoming profile has no id
+        /// (Id == 0) a new one is assigned from the monotonic NextId counter. Names are not required
+        /// to be unique.
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
         {
@@ -57,10 +59,27 @@ namespace PowerDisplay.Models
                 throw new ArgumentException("Profile is invalid");
             }
 
-            var existing = GetProfile(profile.Name);
-            if (existing != null)
+            if (profile.Id == 0)
             {
-                Profiles.Remove(existing);
+                if (NextId < 1)
+                {
+                    NextId = 1;
+                }
+
+                profile.Id = NextId++;
+            }
+            else
+            {
+                var existing = GetById(profile.Id);
+                if (existing != null)
+                {
+                    Profiles.Remove(existing);
+                }
+
+                if (NextId <= profile.Id)
+                {
+                    NextId = profile.Id + 1;
+                }
             }
 
             profile.Touch();

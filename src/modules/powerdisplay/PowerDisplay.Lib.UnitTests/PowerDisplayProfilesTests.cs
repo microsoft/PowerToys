@@ -65,4 +65,35 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(1, profiles.Profiles.Count);
         Assert.IsFalse(profiles.RemoveProfile(2));
     }
+
+    [TestMethod]
+    public void SetProfile_AssignsIncreasingIds_AndAllowsDuplicateNames()
+    {
+        var profiles = new PowerDisplayProfiles { NextId = 1 };
+        var a = MakeProfile("Same");
+        var b = MakeProfile("Same");
+
+        profiles.SetProfile(a);
+        profiles.SetProfile(b);
+
+        Assert.AreEqual(1, a.Id);
+        Assert.AreEqual(2, b.Id);
+        Assert.AreEqual(3, profiles.NextId);
+        Assert.AreEqual(2, profiles.Profiles.Count); // both kept: duplicate names allowed
+    }
+
+    [TestMethod]
+    public void SetProfile_WithExplicitId_ReplacesSameIdAndHealsNextId()
+    {
+        var profiles = new PowerDisplayProfiles { NextId = 1 };
+        var original = MakeProfile("A", id: 5);
+        profiles.SetProfile(original); // explicit id 5
+
+        var replacement = MakeProfile("A-edited", id: 5);
+        profiles.SetProfile(replacement);
+
+        Assert.AreEqual(1, profiles.Profiles.Count);
+        Assert.AreSame(replacement, profiles.GetById(5));
+        Assert.IsTrue(profiles.NextId > 5); // healed past the explicit id
+    }
 }
