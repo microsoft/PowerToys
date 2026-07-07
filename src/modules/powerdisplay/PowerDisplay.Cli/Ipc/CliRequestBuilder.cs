@@ -111,9 +111,9 @@ public static class CliRequestBuilder
     };
 
     /// <summary>Builds an <c>apply-profile</c> request envelope.</summary>
-    public static CliRequestEnvelope BuildApplyProfile(string profileName) => new()
+    public static CliRequestEnvelope BuildApplyProfile(int profileId) => new()
     {
         Command = CliCommandNames.ApplyProfile,
-        ApplyProfile = new ApplyProfileRequest { ProfileName = profileName },
+        ApplyProfile = new ApplyProfileRequest { ProfileId = profileId },
     };
 }

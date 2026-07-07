@@ -139,11 +139,11 @@ public sealed class TextCliOutput : ICliOutput
             return;
         }
 
-        _stdout.WriteLine($"{"Name",-24} {"Monitors",-9} {"Last modified"}");
+        _stdout.WriteLine($"{"Id",-4} {"Name",-24} {"Monitors",-9} {"Last modified"}");
         foreach (var p in result.Profiles)
         {
             var name = Truncate(p.Name, 24);
-            _stdout.WriteLine($"{name,-24} {p.MonitorCount,-9} {p.LastModified}");
+            _stdout.WriteLine($"{p.Id,-4} {name,-24} {p.MonitorCount,-9} {p.LastModified}");
         }
     }
 

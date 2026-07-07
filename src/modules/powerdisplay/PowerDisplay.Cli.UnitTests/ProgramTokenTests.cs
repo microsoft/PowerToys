@@ -35,8 +35,8 @@ public class ProgramTokenTests
         => Assert.IsTrue(Program.HasHelpToken(Parse("apply-profile", "--help")));
 
     [TestMethod]
-    public void ApplyProfileWithRealName_IsNotHelp()
-        => Assert.IsFalse(Program.HasHelpToken(Parse("apply-profile", "Night")));
+    public void ApplyProfileWithId_IsNotHelp()
+        => Assert.IsFalse(Program.HasHelpToken(Parse("apply-profile", "5")));
 
     [TestMethod]
     public void VersionFlag_IsDetected()
@@ -59,17 +59,17 @@ public class ProgramTokenTests
         => Assert.IsFalse(Program.IsVersionRequest(Parse("set", "-n", "1", "--version")));
 
     [TestMethod]
-    public void IsVersionRequest_VersionUnderApplyProfile_True()
+    public void IsVersionRequest_VersionUnderApplyProfile_False()
     {
-        // `apply-profile <name>` greedily binds "--version" as the profile name, so it never reaches
-        // UnmatchedTokens. It must still be treated as a version request (mirrors the --help carve-out)
-        // rather than dispatched as "apply a profile literally named --version".
-        Assert.IsTrue(Program.IsVersionRequest(Parse("apply-profile", "--version")));
+        // `apply-profile <id>` is an int argument, so it can no longer greedily bind "--version" as
+        // a profile id. The token is detected by HasVersionToken, but IsVersionRequest requires the
+        // command to be RootCommand, so this returns False (version is only shown for root --version).
+        Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "--version")));
     }
 
     [TestMethod]
-    public void ApplyProfileWithRealName_IsNotVersion()
-        => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "Night")));
+    public void ApplyProfileWithId_IsNotVersion()
+        => Assert.IsFalse(Program.IsVersionRequest(Parse("apply-profile", "5")));
 
     [TestMethod]
     public void BuildParseErrorResult_CollapsesMultipleMessagesIntoOneEnvelope()
@@ -127,15 +127,15 @@ public class ProgramTokenTests
     }
 
     [TestMethod]
-    public void Quiet_DoesNotSwallowFollowingProfileName()
+    public void Quiet_DoesNotSwallowFollowingArgument()
     {
         // Regression: --quiet is a global Option<bool>. With ArgumentArity.Zero it must NOT swallow a
-        // following bareword that parses as a bool, so `apply-profile --quiet true` binds "true" as the
-        // profile name (not as --quiet's value, which would leave apply-profile with no name).
-        var parsed = Parse("apply-profile", "--quiet", "true");
+        // following bareword that parses as a bool, so `apply-profile --quiet 1` binds "1" as the
+        // profile id (not as --quiet's value, which would leave apply-profile with no argument).
+        var parsed = Parse("apply-profile", "--quiet", "1");
 
-        Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile name");
-        Assert.AreEqual("true", parsed.GetValueForArgument(CliOptions.ProfileName));
+        Assert.AreEqual(0, parsed.Errors.Count, "--quiet must not consume the profile id");
+        Assert.AreEqual(1, parsed.GetValueForArgument(CliOptions.ProfileId));
         Assert.IsTrue(parsed.GetValueForOption(CliOptions.Quiet), "a bare --quiet resolves to true");
     }
 
@@ -160,5 +160,30 @@ public class ProgramTokenTests
         Assert.IsTrue(
             Program.ConnectTimeout < Program.OperationTimeout,
             $"ConnectTimeout ({Program.ConnectTimeout}) must be < OperationTimeout ({Program.OperationTimeout})");
+    }
+
+    [TestMethod]
+    public void ApplyProfile_ParsesIntegerId()
+    {
+        var parse = Parse("apply-profile", "5");
+
+        Assert.AreEqual(0, parse.Errors.Count);
+        Assert.AreEqual(5, parse.GetValueForArgument(CliOptions.ProfileId));
+    }
+
+    [TestMethod]
+    public void ApplyProfile_NonInteger_IsParseError()
+    {
+        var parse = Parse("apply-profile", "Gaming");
+
+        Assert.IsTrue(parse.Errors.Count > 0);
+    }
+
+    [TestMethod]
+    public void ApplyProfile_HelpToken_IsRecognizedAsHelp()
+    {
+        var parse = Parse("apply-profile", "--help");
+
+        Assert.IsTrue(Program.HasHelpToken(parse));
     }
 }

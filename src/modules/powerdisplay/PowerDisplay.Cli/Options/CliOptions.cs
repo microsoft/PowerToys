@@ -153,9 +153,9 @@ public static class CliOptions
     };
 
     // --- apply-profile ---
-    public static readonly Argument<string> ProfileName = new(
-        "name",
-        "Name of the profile to apply (case-insensitive). Run 'powerdisplay profiles' to list them.")
+    public static readonly Argument<int> ProfileId = new(
+        "id",
+        "Numeric id of the profile to apply. Run 'powerdisplay profiles' to list them.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };

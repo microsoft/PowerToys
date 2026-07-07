@@ -252,8 +252,8 @@
     <comment>{0} = the setting name (not translated). Shown when up/down cannot read the starting value.</comment>
   </data>
   <data name="ErrMsg_ProfileNotFound" xml:space="preserve">
-    <value>profile {0} not found</value>
-    <comment>{0} = the profile name the user passed (not translated).</comment>
+    <value>no profile with id {0}</value>
+    <comment>{0} = the profile id</comment>
   </data>
   <data name="ErrMsg_UnknownCommand" xml:space="preserve">
     <value>unknown command {0}</value>

@@ -105,7 +105,7 @@ public class IpcDispatchTests
             new CliApplyProfileResult { Profile = "Work" },
             ContractsJsonContext.Default.CliApplyProfileResult);
         var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Work"), CancellationToken.None);
+        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile(42), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.Ok, exit, "apply-profile is best-effort and always exits 0 once the profile exists");
 
@@ -183,11 +183,11 @@ public class IpcDispatchTests
     }
 
     [TestMethod]
-    public void BuildApplyProfile_Maps_ProfileName()
+    public void BuildApplyProfile_Maps_ProfileId()
     {
-        var envelope = CliRequestBuilder.BuildApplyProfile("Night");
+        var envelope = CliRequestBuilder.BuildApplyProfile(7);
         Assert.AreEqual(CliCommandNames.ApplyProfile, envelope.Command);
-        Assert.AreEqual("Night", envelope.ApplyProfile!.ProfileName);
+        Assert.AreEqual(7, envelope.ApplyProfile!.ProfileId);
     }
 
     // ── BuildAdjust round-trips ──────────────────────────────────────────────

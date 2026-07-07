@@ -79,7 +79,7 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
     private static Command BuildApplyProfile()
     {
         var cmd = new Command(CliCommandNames.ApplyProfile, "Apply a saved profile's per-monitor settings to the connected monitors.");
-        cmd.AddArgument(CliOptions.ProfileName);
+        cmd.AddArgument(CliOptions.ProfileId);
         return cmd;
     }
 

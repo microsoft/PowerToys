@@ -389,9 +389,9 @@ public static class Program
             // ── apply-profile ─────────────────────────────────────────────────
             case CliCommandNames.ApplyProfile:
             {
-                var profileName = parseResult.GetValueForArgument(CliOptions.ProfileName);
+                var profileId = parseResult.GetValueForArgument(CliOptions.ProfileId);
                 return await dispatcher.SendApplyProfileAsync(
-                    CliRequestBuilder.BuildApplyProfile(profileName),
+                    CliRequestBuilder.BuildApplyProfile(profileId),
                     cancellationToken);
             }
 
@@ -475,35 +475,85 @@ public static class Program
     }
 
     public static bool HasHelpToken(ParseResult parseResult)
-        => parseResult.UnmatchedTokens.Any(IsHelpToken)
-            || HelpBoundToProfileNameArgument(parseResult);
+    {
+        // Check unmatched tokens first (the common case).
+        if (parseResult.UnmatchedTokens.Any(IsHelpToken))
+        {
+            return true;
+        }
+
+        // When a command has a required positional argument and the user provides a help token
+        // (e.g., `apply-profile --help`), System.CommandLine attempts to parse it as that argument.
+        // This fails (Type=Argument, parse error), but the token is consumed. Detect this by checking
+        // if any error involves parsing a help token as an argument. We can't just check all Argument
+        // tokens because option *values* (e.g., `set -i -h`) are also Type=Argument.
+        if (parseResult.Errors.Any(e => e.Message != null && IsHelpToken(ExtractFailedArgumentFromError(e.Message))))
+        {
+            return true;
+        }
+
+        // System.CommandLine's built-in help option: when --help is recognized as an option
+        // (not consumed as an argument value), check if it was parsed.
+        foreach (var option in parseResult.CommandResult.Command.Options)
+        {
+            if (option.Aliases.Any(IsHelpToken) && parseResult.FindResultFor(option) != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private static bool IsHelpToken(string token)
         => token is "--help" or "-h" or "-?" or "/?";
 
-    // The `apply-profile <name>` positional argument greedily captures a "--help" token (it binds to
-    // the argument, so it never reaches UnmatchedTokens). Without this, `apply-profile --help` would
-    // be dispatched as "apply a profile literally named --help" instead of printing help like every
-    // other command. Option *values* that look like help (e.g. `set -i -h`) are unaffected: they are
-    // matched to an option, not to this argument.
-    private static bool HelpBoundToProfileNameArgument(ParseResult parseResult)
-        => parseResult.CommandResult.Command.Name == CliCommandNames.ApplyProfile
-            && IsHelpToken(parseResult.GetValueForArgument(CliOptions.ProfileName) ?? string.Empty);
+    // Extracts the failed argument value from a parse error message like:
+    // "Cannot parse argument '--help' for command 'apply-profile' as expected type 'System.Int32'."
+    private static string ExtractFailedArgumentFromError(string errorMessage)
+    {
+        var start = errorMessage.IndexOf('\'');
+        if (start < 0)
+        {
+            return string.Empty;
+        }
+
+        var end = errorMessage.IndexOf('\'', start + 1);
+        if (end < 0)
+        {
+            return string.Empty;
+        }
+
+        return errorMessage.Substring(start + 1, end - start - 1);
+    }
 
     public static bool HasVersionToken(ParseResult parseResult)
-        => parseResult.UnmatchedTokens.Any(t => t == "--version");
+    {
+        if (parseResult.UnmatchedTokens.Any(t => t == "--version"))
+        {
+            return true;
+        }
+
+        // Similar to help: check if --version failed to parse as an argument.
+        if (parseResult.Errors.Any(e => e.Message != null && ExtractFailedArgumentFromError(e.Message) == "--version"))
+        {
+            return true;
+        }
+
+        // Check if the --version option was parsed.
+        foreach (var option in parseResult.CommandResult.Command.Options)
+        {
+            if (option.Aliases.Contains("--version") && parseResult.FindResultFor(option) != null)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static bool IsVersionRequest(ParseResult parseResult)
-        => (HasVersionToken(parseResult) && parseResult.CommandResult.Command is RootCommand)
-            || VersionBoundToProfileNameArgument(parseResult);
-
-    // Mirror of HelpBoundToProfileNameArgument for "--version": the `apply-profile <name>` positional
-    // argument greedily captures a "--version" token (it binds to the argument, so it never reaches
-    // UnmatchedTokens and IsVersionRequest's RootCommand gate cannot see it). Without this,
-    // `apply-profile --version` would be dispatched as "apply a profile literally named --version".
-    private static bool VersionBoundToProfileNameArgument(ParseResult parseResult)
-        => parseResult.CommandResult.Command.Name == CliCommandNames.ApplyProfile
-            && parseResult.GetValueForArgument(CliOptions.ProfileName) == "--version";
+        => HasVersionToken(parseResult) && parseResult.CommandResult.Command is RootCommand;
 
     /// <summary>
     /// Collapses one or more System.CommandLine parse-error messages into a single
