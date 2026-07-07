@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -663,6 +662,8 @@ public sealed partial class MainWindow : WindowEx,
             var borderColor = showFrame ? DWMWA_COLOR_DEFAULT : DWMWA_COLOR_NONE;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColor, sizeof(uint));
         }
+
+        RedrawWindow(_hwnd);
     }
 
     private void InitializeBackdropSupport()
@@ -727,7 +728,7 @@ public sealed partial class MainWindow : WindowEx,
         var positionWindowForAnchor = (HWND hwnd) =>
         {
             PInvoke.GetWindowRect(hwnd, out var bounds);
-            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER;
+            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED;
             switch (anchorCorner)
             {
                 case AnchorPoint.TopLeft:
@@ -827,15 +828,31 @@ public sealed partial class MainWindow : WindowEx,
         // topmost status when we hide the window (because we cloak it instead
         // of hiding it).
         //
-        // SWP_FRAMECHANGED is load-bearing for the borderless look on a cold
-        // start.  Asking for SWP_FRAMECHANGED here re-sends WM_NCCALCSIZE and
-        // forces the NC repaint every time we show, so the frame is gone from
-        // the very first summon.
+        // SWP_FRAMECHANGED re-sends WM_NCCALCSIZE so the OS recomputes the
+        // (zero-width) frame. But on this cloak->show path it doesn't reliably
+        // *repaint* the non-client area, so the WS_THICKFRAME border that was
+        // painted earlier survives on the top/left/right edges (the bottom is
+        // clipped away by the card region). A real resize fixes it because it
+        // forces that NC repaint - so we do the same explicitly below.
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED);
+
+        // Force the non-client frame to actually redraw (RDW_FRAME) and the
+        // client to repaint over wherever it used to be. Without this the stale
+        // border lingers until the user resizes the window.
+        RedrawWindow(hwnd);
 
         // Treat the overall show/hide lifecycle as the authoritative
         // visibility transition, not the lower-level cloak/uncloak helpers.
         SetIsVisibleToUser(true);
+    }
+
+    private static void RedrawWindow(HWND hwnd)
+    {
+        const uint RDW_INVALIDATE = 0x0001;
+        const uint RDW_UPDATENOW = 0x0100;
+        const uint RDW_ALLCHILDREN = 0x0080;
+        const uint RDW_FRAME = 0x0400;
+        _ = RedrawWindow(hwnd, IntPtr.Zero, IntPtr.Zero, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME);
     }
 
     private static DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -1302,6 +1319,10 @@ public sealed partial class MainWindow : WindowEx,
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool DeleteObject(IntPtr hObject);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, uint flags);
+
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
@@ -1667,6 +1688,17 @@ public sealed partial class MainWindow : WindowEx,
             // real OS chrome appears.
             case PInvoke.WM_NCCALCSIZE when wParam.Value != 0 && _hwndFrameVisible != true:
                 return (LRESULT)0;
+
+            // On every activation change the OS repaints the non-client frame to
+            // flip between the active / inactive caption. With WS_THICKFRAME still
+            // present that paints the OS border back over our borderless window each
+            // time we lose (or gain) focus - which is the frame that reappears when
+            // another window steals focus, and the one that shows up shortly after
+            // startup (the first activation flip). Passing -1 as the update-region
+            // (lParam) to DefWindowProc keeps the correct activation result while
+            // telling it to skip the non-client repaint entirely.
+            case PInvoke.WM_NCACTIVATE when _hwndFrameVisible != true:
+                return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, new LPARAM(-1));
 
             case PInvoke.WM_HOTKEY:
                 {
