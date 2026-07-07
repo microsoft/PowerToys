@@ -9,26 +9,50 @@
 
 namespace PTSettingsSvc
 {
+    // --- Provisioning (elevated register path, Approach 4 §12.8) ---------------
+    // These run from the service exe's `--register` mode under an elevated actor
+    // (the installer CA as SYSTEM, or the per-user provisioner elevated), NOT at
+    // service runtime — the low-privilege virtual account cannot set owner=SYSTEM
+    // or a protected DACL itself (Design §12.8, Blocker-1 resolution: store
+    // provisioning moved out of the runtime service into the elevated registrar).
+
     // Creates the store root (<ProgramData>\Microsoft\PowerToys\Settings) if it
     // doesn't exist and applies the root DACL: SYSTEM/Admins Full, Authenticated
-    // Users RX (traverse so each user reaches their own <sid> node).  Idempotent;
-    // the per-user MSIX install has no installer step so the LocalSystem service
-    // creates the root lazily on first PutBlob (Design §12.1).
+    // Users RX (traverse so each user reaches their own <sid> node).  Idempotent.
     HRESULT EnsureStoreRoot(const std::wstring& root);
 
-    // Creates `folder` if it doesn't exist and applies the DACL that locks
-    // the directory to:
-    //   * the service account             — Full Control
-    //   * BUILTIN\Administrators          — Read & Execute (audit/backup)
-    //   * the user whose SID is passed in — Read & Execute (Launcher needs to read)
-    //   * Everyone else                   — denied (DACL is protected, no inherit)
+    // Creates `folder` (the per-user <sid> node) if needed and applies the
+    // PROTECTED DACL that locks it to:
+    //   * owner                                = SYSTEM (recovery; low-priv svc
+    //                                            cannot rewrite the DACL)
+    //   * the service virtual account          = Full Control (sole writer)
+    //   * BUILTIN\Administrators               = Full Control (audit/backup)
+    //   * the owning user (SID passed in)      = Read & Execute (callers read)
+    //   * everyone else                        = denied (protected, no inherit)
+    // `serviceAccountName` is the virtual account, e.g.
+    // L"NT SERVICE\\PTSettingsSvc_<SID>".  Requires SeRestore/SeTakeOwnership to
+    // set the SYSTEM owner; the register path enables them.
     HRESULT EnsureUserFolder(const std::wstring& folder,
-                             const std::wstring& userSidString);
+                             const std::wstring& userSidString,
+                             const std::wstring& serviceAccountName);
+
+    // Convenience: provision root + per-user node in one call (register path).
+    HRESULT ProvisionStore(const std::wstring& root,
+                           const std::wstring& userFolder,
+                           const std::wstring& userSidString,
+                           const std::wstring& serviceAccountName);
+
+    // --- Runtime (the low-privilege service) -----------------------------------
+
+    // Creates `dir` if it doesn't exist WITHOUT touching owner/DACL — the
+    // register path already provisioned the protected parent, and the running
+    // virtual account only has (and only needs) Full Control to create children
+    // and write files that inherit the parent's protected DACL.
+    HRESULT EnsureDirectory(const std::wstring& dir);
 
     // Atomically replaces `targetFile` with `bytes`.  Internally writes to
     // a sibling .tmp and uses ReplaceFileW so a crash during write never
-    // leaves the file in a half-written state.  Re-asserts the directory's
-    // protective DACL after the write in case something has tampered with it.
+    // leaves the file in a half-written state.
     HRESULT WriteFileAtomically(const std::wstring& targetFile,
                                 const std::vector<BYTE>& bytes);
 

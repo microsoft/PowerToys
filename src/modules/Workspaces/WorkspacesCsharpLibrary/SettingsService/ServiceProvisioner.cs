@@ -73,7 +73,10 @@ public static class ServiceProvisioner
     /// </summary>
     public delegate ElevationResult ElevationRunner(string fileName, string arguments);
 
-    /// <summary>True when the service answers (installed and running).</summary>
+    /// <summary>True when the service answers Ping with Ok (installed, running,
+    /// AND accepts this caller's version).  A version mismatch after an upgrade
+    /// surfaces as AuthRejected (not Ok), so it is treated as "needs
+    /// (re-)provisioning" — that is what drives the upgrade re-point (§12.8).</summary>
     public static bool IsServiceAvailable()
     {
         // Fast pre-check: if the named pipe doesn't exist, the service isn't
@@ -86,7 +89,7 @@ public static class ServiceProvisioner
             return false;
         }
 
-        return PTSettingsClient.Ping() != PTSettingsClient.Result.Unavailable;
+        return PTSettingsClient.Ping() == PTSettingsClient.Result.Ok;
     }
 
     private static bool PipeExists()
@@ -150,11 +153,13 @@ public static class ServiceProvisioner
         }
 
         // Record the attempt up front so a crash mid-elevation doesn't make us
-        // re-prompt on the next trigger.
+        // re-prompt on the next trigger.  The sentinel is VERSION-SCOPED, so a
+        // later upgrade (new version) legitimately re-prompts once to re-point
+        // the service to the new binary (§12.8 upgrade path).
         TryWriteAttemptSentinel();
 
         var runner = options.ElevationRunner ?? RunElevatedPowerShell;
-        var arguments = BuildInstallArguments(serviceMsix);
+        var arguments = BuildInstallArguments(serviceMsix, userSid!);
 
         var elevation = runner("powershell.exe", arguments);
         switch (elevation)
@@ -172,25 +177,32 @@ public static class ServiceProvisioner
     }
 
     /// <summary>
-    /// Builds the elevated install command. Deploys the SIGNED service MSIX via
-    /// <c>Add-AppxPackage</c> — an inline command (in our signed binary, NOT a
-    /// user-writable script) whose only payload is the signed .msix; the OS
-    /// verifies its signature on deploy, so this cannot run attacker code. The
-    /// packaged windows.service extension auto-registers PTSettingsSvc; DACL and
-    /// migration are then done by the LocalSystem service (Design §12.1) — no
-    /// extra elevation. Replaces the retired user-writable Harden-PtSettings ps1.
+    /// Builds the elevated provisioning command (Approach 4, §12.8).  In ONE
+    /// elevation it (1) stages/updates the SIGNED service MSIX into immutable
+    /// WindowsApps via <c>Add-AppxPackage</c> (the OS verifies its signature on
+    /// deploy, so this cannot run attacker code), then (2) launches the staged,
+    /// signed service exe with <c>--register &lt;SID&gt;</c>, which self-registers
+    /// the per-user virtual-account service (NT SERVICE\PTSettingsSvc_&lt;SID&gt;),
+    /// provisions the protected %ProgramData% store, and starts it.  The exe
+    /// resolves its OWN path (never a caller argument), so a non-admin cannot aim
+    /// the service at a malicious binary.  The same command handles the upgrade
+    /// re-point: Add-AppxPackage updates the binary and --register is idempotent
+    /// (re-points binPath + restarts).
     /// </summary>
-    public static string BuildInstallArguments(string serviceMsix)
+    public static string BuildInstallArguments(string serviceMsix, string userSid)
     {
-        // -ForceApplicationShutdown is REQUIRED for the upgrade case: a packaged
-        // windows.service holds its binaries while running, so replacing them on
-        // an in-place update fails with 0x80073D02 ("resources ... currently in
-        // use") unless the running service is force-stopped first. The flag stops
-        // the old service so the new version's files can be laid down; the service
-        // then auto-restarts pointing at the new exe (verified 2026-06-30,
-        // Design §12.6). -ForceUpdateFromAnyVersion allows same/again deploys.
+        // -ForceApplicationShutdown / -ForceUpdateFromAnyVersion make the staging
+        // step tolerate an in-place update of a running package.  The service
+        // itself is stopped/re-pointed by the exe's --register path.
         return "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
-             + "\"Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown\"";
+             + "\""
+             + "Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown; "
+             + "$loc = (Get-AppxPackage -Name 'Microsoft.PowerToys.SettingsService' | Select-Object -First 1).InstallLocation; "
+             + "if (-not $loc) { exit 3 }; "
+             + "$exe = Join-Path $loc 'PowerToys.PTSettingsSvc.exe'; "
+             + "& $exe --register '" + userSid + "'; "
+             + "exit $LASTEXITCODE"
+             + "\"";
     }
 
     /// <summary>

@@ -18,6 +18,7 @@
 
 #include "PipeServer.h"
 #include "CallerAuth.h"
+#include "SelfRegister.h"
 #include "protocol/Protocol.h"
 #include "protocol/PipeName.h"
 
@@ -113,17 +114,17 @@ namespace
 
 int wmain(int argc, wchar_t* argv[])
 {
-    // `--console` runs the pipe server in the foreground for local debugging
-    // and prototype testing without going through SCM.  Production launch
-    // always goes through StartServiceCtrlDispatcher.
-    //
-    // The first positional argument is the owner SID this instance serves
-    // (Approach 4 / §12.8): the registrar creates the service with
-    //   binPath = "...PowerToys.PTSettingsSvc.exe" <SID>
-    // so it arrives here as argv[1].  When absent (console/dev), we fall back to
-    // the current process user's SID, so a dev client (same user) derives the
-    // matching pipe name and round-trips.
+    // Verbs:
+    //   --console          run the pipe server in the foreground (local debug).
+    //   --register  <SID>  elevated: create/re-point the per-user service +
+    //                      provision the protected store + start (Approach 4).
+    //   --repoint   <SID>  elevated: re-point binPath to this exe + restart.
+    //   --unregister <SID> elevated: stop + delete the per-user service.
+    // The first positional argument is the owner SID.  When running AS the
+    // service (no verb), it flows in from the registered binPath as argv[1] and
+    // is used as the pipe/owner SID; console/dev falls back to the current user.
     bool console = false;
+    const wchar_t* verb = nullptr;
     std::wstring ownerSid;
     for (int i = 1; i < argc; ++i)
     {
@@ -131,10 +132,34 @@ int wmain(int argc, wchar_t* argv[])
         {
             console = true;
         }
+        else if (wcscmp(argv[i], L"--register") == 0 ||
+                 wcscmp(argv[i], L"--repoint") == 0 ||
+                 wcscmp(argv[i], L"--unregister") == 0)
+        {
+            verb = argv[i];
+        }
         else if (argv[i][0] != L'-' && ownerSid.empty())
         {
             ownerSid = argv[i];
         }
+    }
+
+    // Self-management verbs run elevated and exit; they never start the pipe.
+    if (verb)
+    {
+        if (ownerSid.empty())
+        {
+            return static_cast<int>(E_INVALIDARG);
+        }
+        if (wcscmp(verb, L"--register") == 0)
+        {
+            return PTSettingsSvc::RunRegister(ownerSid);
+        }
+        if (wcscmp(verb, L"--repoint") == 0)
+        {
+            return PTSettingsSvc::RunRepoint(ownerSid);
+        }
+        return PTSettingsSvc::RunUnregister(ownerSid);
     }
 
     if (ownerSid.empty())

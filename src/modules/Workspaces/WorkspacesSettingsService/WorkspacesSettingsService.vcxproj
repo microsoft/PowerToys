@@ -66,6 +66,7 @@
     <ClCompile Include="Bindings.cpp" />
     <ClCompile Include="FileGuard.cpp" />
     <ClCompile Include="Paths.cpp" />
+    <ClCompile Include="SelfRegister.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PipeServer.h" />
@@ -74,6 +75,7 @@
     <ClInclude Include="Bindings.h" />
     <ClInclude Include="FileGuard.h" />
     <ClInclude Include="Paths.h" />
+    <ClInclude Include="SelfRegister.h" />
     <ClInclude Include="protocol\Protocol.h" />
     <ClInclude Include="protocol\PipeName.h" />
   </ItemGroup>

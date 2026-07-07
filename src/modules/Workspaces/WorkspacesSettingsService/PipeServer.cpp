@@ -123,22 +123,22 @@ namespace PTSettingsSvc
             // payload-agnostic; the caller is responsible for whatever
             // shape it wants on disk.  See Design-v6-Final.md §4.
 
-            // Ensure the store root exists with the traverse DACL (no installer
-            // creates it in the per-user MSIX case; LocalSystem does it lazily).
-            HRESULT hr = EnsureStoreRoot(GetSettingsRoot());
+            // The protected store root and per-user <sid> node are provisioned by
+            // the elevated register path (owner=SYSTEM, protected DACL granting
+            // this service's virtual account Full + the user RX — §12.8).  The
+            // low-privilege runtime service only needs to create the namespace
+            // child (which inherits that DACL) and write the file; it does NOT
+            // touch owner/DACL (it lacks the privilege and doesn't need to).
+            // EnsureDirectory is a best-effort no-op when the register path
+            // already created these.
+            HRESULT hr = EnsureDirectory(GetSettingsRoot());
             if (FAILED(hr))
             {
                 SendStatus(pipe, Status::IoError);
                 return;
             }
 
-            // Ensure the per-user node <storeRoot>\<sid> exists and carries the
-            // PROTECTED, user-isolating DACL (svc:F, admin:F, this-user:RX).
-            // It is applied once here and inherited by the namespace folder and
-            // the file below — that single tightening is what stops user A from
-            // reading user B's data (Design §9).
-            hr = EnsureUserFolder(GetUserFolder(id.userSidString),
-                                  id.userSidString);
+            hr = EnsureDirectory(GetUserFolder(id.userSidString));
             if (FAILED(hr))
             {
                 SendStatus(pipe, Status::IoError);
@@ -149,14 +149,11 @@ namespace PTSettingsSvc
             // DACL from the per-user node, so no tightening is needed here.
             std::wstring nsFolder = GetUserNamespaceFolder(id.userSidString,
                                                            id.binding->namespaceId);
-            if (!CreateDirectoryW(nsFolder.c_str(), nullptr))
+            hr = EnsureDirectory(nsFolder);
+            if (FAILED(hr))
             {
-                DWORD err = GetLastError();
-                if (err != ERROR_ALREADY_EXISTS)
-                {
-                    SendStatus(pipe, Status::IoError);
-                    return;
-                }
+                SendStatus(pipe, Status::IoError);
+                return;
             }
 
             hr = WriteFileAtomically(

@@ -22,38 +22,37 @@ namespace PTSettingsSvc
             void operator()(void* p) const noexcept { if (p) LocalFree(p); }
         };
 
-        HRESULT GetServiceSid(PSID& outSid)
+        // Enables a privilege (e.g. SeRestore/SeTakeOwnership) on the current
+        // process token so the register path can set the store owner to SYSTEM.
+        // The elevated registrar (SYSTEM CA, or elevated admin provisioner) holds
+        // these privileges; they are merely disabled by default.
+        void EnablePrivilege(const wchar_t* name)
         {
-            // The service runs as LocalSystem (S-1-5-18) under MSIX, whose
-            // windows.service extension only allows LocalSystem/LocalService/
-            // NetworkService start accounts (no virtual NT SERVICE\<name>
-            // account — Design §12.1).  Grant the writer ACE to SYSTEM.
-            BYTE buf[SECURITY_MAX_SID_SIZE];
-            DWORD cb = sizeof(buf);
-            if (!CreateWellKnownSid(WinLocalSystemSid, nullptr, buf, &cb))
+            HANDLE token = nullptr;
+            if (!OpenProcessToken(GetCurrentProcess(),
+                                  TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
             {
-                return HRESULT_FROM_WIN32(GetLastError());
+                return;
             }
-            outSid = static_cast<PSID>(LocalAlloc(LMEM_FIXED, cb));
-            if (!outSid)
+            LUID luid{};
+            if (LookupPrivilegeValueW(nullptr, name, &luid))
             {
-                return E_OUTOFMEMORY;
+                TOKEN_PRIVILEGES tp{};
+                tp.PrivilegeCount = 1;
+                tp.Privileges[0].Luid = luid;
+                tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+                AdjustTokenPrivileges(token, FALSE, &tp, sizeof(tp), nullptr, nullptr);
             }
-            CopySid(cb, outSid, buf);
-            return S_OK;
+            CloseHandle(token);
         }
 
+        // Applies the PROTECTED per-user DACL and sets owner = SYSTEM.
+        //   serviceAccountName = the virtual account, e.g.
+        //   L"NT SERVICE\\PTSettingsSvc_<SID>" (Full Control writer).
         HRESULT ApplyProtectiveDacl(const std::wstring& target,
-                                    const std::wstring& userSidString)
+                                    const std::wstring& userSidString,
+                                    const std::wstring& serviceAccountName)
         {
-            PSID serviceSid = nullptr;
-            HRESULT hr = GetServiceSid(serviceSid);
-            if (FAILED(hr))
-            {
-                return hr;
-            }
-            std::unique_ptr<void, LocalFreeDeleter> serviceSidGuard(serviceSid);
-
             PSID userSid = nullptr;
             if (!ConvertStringSidToSidW(userSidString.c_str(), &userSid))
             {
@@ -68,22 +67,29 @@ namespace PTSettingsSvc
             }
             std::unique_ptr<void, LocalFreeDeleter> adminSidGuard(adminSid);
 
-            // Per Design-v6-Final.md §9 the per-user folder DACL is:
-            //   svc:F, admin:F, <specific user>:RX
-            // Everyone else implicitly denied because we PROTECT the DACL
-            // below (no inheritance from <storeRoot>\, so the blanket
-            // AuthUsers:RX granted at the store root does NOT carry through
-            // here — that's how user A can't read user B's data).  Applied at
-            // the per-user <sid> node, it inherits down to the namespace folder
-            // and the file.
-            EXPLICIT_ACCESS_W ea[3] = {};
+            PSID systemSid = nullptr;
+            if (!ConvertStringSidToSidW(L"S-1-5-18", &systemSid))
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+            std::unique_ptr<void, LocalFreeDeleter> systemGuard(systemSid);
+
+            // Per Design-v6-Final.md §9 / §12.8 the per-user folder DACL is:
+            //   svc-vaccount:F, admin:F, SYSTEM:F, <specific user>:RX
+            // Owner = SYSTEM so the low-privilege virtual account cannot rewrite
+            // the DACL.  PROTECTED below blocks inheritance from the store root
+            // (its blanket AuthUsers:RX does NOT carry through here — that's how
+            // user A can't read user B's data).  The virtual account is named
+            // (TRUSTEE_IS_NAME) because it exists only after CreateService.
+            std::wstring svcAccount = serviceAccountName;
+            EXPLICIT_ACCESS_W ea[4] = {};
 
             ea[0].grfAccessPermissions = GENERIC_ALL;
             ea[0].grfAccessMode = SET_ACCESS;
             ea[0].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
-            ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+            ea[0].Trustee.TrusteeForm = TRUSTEE_IS_NAME;
             ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
-            ea[0].Trustee.ptstrName = static_cast<LPWSTR>(serviceSid);
+            ea[0].Trustee.ptstrName = svcAccount.data();
 
             ea[1].grfAccessPermissions = GENERIC_ALL;
             ea[1].grfAccessMode = SET_ACCESS;
@@ -92,12 +98,19 @@ namespace PTSettingsSvc
             ea[1].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
             ea[1].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
 
-            ea[2].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+            ea[2].grfAccessPermissions = GENERIC_ALL;
             ea[2].grfAccessMode = SET_ACCESS;
             ea[2].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
             ea[2].Trustee.TrusteeForm = TRUSTEE_IS_SID;
             ea[2].Trustee.TrusteeType = TRUSTEE_IS_USER;
-            ea[2].Trustee.ptstrName = static_cast<LPWSTR>(userSid);
+            ea[2].Trustee.ptstrName = static_cast<LPWSTR>(systemSid);
+
+            ea[3].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+            ea[3].grfAccessMode = SET_ACCESS;
+            ea[3].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+            ea[3].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+            ea[3].Trustee.TrusteeType = TRUSTEE_IS_USER;
+            ea[3].Trustee.ptstrName = static_cast<LPWSTR>(userSid);
 
             PACL acl = nullptr;
             DWORD rc = SetEntriesInAclW(ARRAYSIZE(ea), ea, nullptr, &acl);
@@ -107,15 +120,17 @@ namespace PTSettingsSvc
             }
             std::unique_ptr<void, LocalFreeDeleter> aclGuard(acl);
 
-            // PROTECTED_DACL_SECURITY_INFORMATION blocks inheritance from
-            // <root>\<namespace>\.  SetNamedSecurityInfoW takes a non-const
-            // LPWSTR by historical signature; copy into a local mutable buffer.
+            EnablePrivilege(SE_RESTORE_NAME);
+            EnablePrivilege(SE_TAKE_OWNERSHIP_NAME);
+
             std::vector<wchar_t> mutableName(target.begin(), target.end());
             mutableName.push_back(L'\0');
             rc = SetNamedSecurityInfoW(mutableName.data(),
                                        SE_FILE_OBJECT,
-                                       DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
-                                       nullptr, nullptr, acl, nullptr);
+                                       OWNER_SECURITY_INFORMATION |
+                                           DACL_SECURITY_INFORMATION |
+                                           PROTECTED_DACL_SECURITY_INFORMATION,
+                                       systemSid, nullptr, acl, nullptr);
             return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
         }
     }
@@ -196,7 +211,8 @@ namespace PTSettingsSvc
     }
 
     HRESULT EnsureUserFolder(const std::wstring& folder,
-                             const std::wstring& userSidString)
+                             const std::wstring& userSidString,
+                             const std::wstring& serviceAccountName)
     {
         if (!CreateDirectoryW(folder.c_str(), nullptr))
         {
@@ -206,7 +222,33 @@ namespace PTSettingsSvc
                 return HRESULT_FROM_WIN32(err);
             }
         }
-        return ApplyProtectiveDacl(folder, userSidString);
+        return ApplyProtectiveDacl(folder, userSidString, serviceAccountName);
+    }
+
+    HRESULT ProvisionStore(const std::wstring& root,
+                           const std::wstring& userFolder,
+                           const std::wstring& userSidString,
+                           const std::wstring& serviceAccountName)
+    {
+        HRESULT hr = EnsureStoreRoot(root);
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+        return EnsureUserFolder(userFolder, userSidString, serviceAccountName);
+    }
+
+    HRESULT EnsureDirectory(const std::wstring& dir)
+    {
+        if (!CreateDirectoryW(dir.c_str(), nullptr))
+        {
+            DWORD err = GetLastError();
+            if (err != ERROR_ALREADY_EXISTS)
+            {
+                return HRESULT_FROM_WIN32(err);
+            }
+        }
+        return S_OK;
     }
 
     HRESULT WriteFileAtomically(const std::wstring& targetFile,

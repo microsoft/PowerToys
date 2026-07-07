@@ -45,11 +45,32 @@ public static class WorkspacesStorage
         }
     }
 
+    /// <summary>Outcome of a strict-mode save (Approach 4, §12.8 decision).</summary>
+    public enum SaveOutcome
+    {
+        /// <summary>Persisted through the protected service.</summary>
+        Saved,
+
+        /// <summary>The service is unavailable or rejected this caller (e.g. a
+        /// pending upgrade re-point).  The caller should prompt to (re-)enable
+        /// protection (elevation) rather than write unprotected — we deliberately
+        /// do NOT silently fall back to plaintext.</summary>
+        ProtectionUnavailable,
+
+        /// <summary>A protocol/IO error; the save did not happen.</summary>
+        Failed,
+    }
+
     /// <summary>
-    /// Persists the workspaces through the service.  Returns true on success.
-    /// Falls back to a direct legacy-file write only when no service exists.
+    /// Persists the workspaces through the protected service (STRICT mode).
+    /// Unlike the old best-effort behaviour, a missing/incompatible service does
+    /// NOT silently write plaintext to %LocalAppData%; it returns
+    /// <see cref="SaveOutcome.ProtectionUnavailable"/> so the caller can prompt
+    /// the user to enable protection (elevation).  A genuinely cannot-elevate
+    /// user (non-admin) may opt into the unprotected write via
+    /// <see cref="SaveUnprotected"/> (§10 last resort).
     /// </summary>
-    public static bool Save(IReadOnlyList<ProjectWrapper> workspaces)
+    public static SaveOutcome Save(IReadOnlyList<ProjectWrapper> workspaces)
     {
         byte[] bytes = Serialise(workspaces);
 
@@ -57,14 +78,28 @@ public static class WorkspacesStorage
         switch (rc)
         {
             case PTSettingsClient.Result.Ok:
-                return true;
+                return SaveOutcome.Saved;
 
             case PTSettingsClient.Result.Unavailable:
-                return WriteLegacyBytes(bytes);
+            case PTSettingsClient.Result.AuthRejected:
+                // No usable protected writer (not installed / declined elevation /
+                // pending upgrade re-point).  Do NOT write plaintext silently.
+                return SaveOutcome.ProtectionUnavailable;
 
             default:
-                return false;
+                return SaveOutcome.Failed;
         }
+    }
+
+    /// <summary>
+    /// Explicit unprotected write to the legacy %LocalAppData% file — the §10
+    /// last resort for users who genuinely cannot elevate to create the service.
+    /// Callers must only use this after the user has acknowledged the reduced
+    /// protection.  Returns true on success.
+    /// </summary>
+    public static bool SaveUnprotected(IReadOnlyList<ProjectWrapper> workspaces)
+    {
+        return WriteLegacyBytes(Serialise(workspaces));
     }
 
     private static IReadOnlyList<ProjectWrapper> ParseDefensive(byte[] bytes)

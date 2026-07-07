@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security.Principal;
 
 namespace WorkspacesCsharpLibrary.SettingsService;
@@ -88,14 +89,17 @@ public static class SettingsPaths
 
     /// <summary>
     /// Sentinel recording that deferred service provisioning has already been
-    /// attempted for this user, so repeated trigger points don't re-prompt for
-    /// elevation.  Lives under %LocalAppData% (user-writable): it only governs
-    /// UX back-off, never security.
+    /// attempted for this user AT THIS VERSION, so repeated trigger points don't
+    /// re-prompt for elevation — but a later upgrade (new version) legitimately
+    /// re-prompts once to re-point the service to the new binary (§12.8 upgrade
+    /// path).  Lives under %LocalAppData% (user-writable): it only governs UX
+    /// back-off, never security.
     /// </summary>
     public static string ProvisionAttemptSentinel()
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(localAppData, LegacySubpath, ".svc-provision-attempted");
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0";
+        return Path.Combine(localAppData, LegacySubpath, ".svc-provision-attempted-" + version);
     }
 
     /// <summary>Folder under the install root that carries the settings-service payload.</summary>

@@ -21,12 +21,14 @@
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
 #include <winrt/Windows.Security.Credentials.h>
+#include <winrt/Windows.Storage.h>
 
 #include <wtsapi32.h>
 #include <processthreadsapi.h>
 #include <UserEnv.h>
 #include <winnt.h>
 #include <shellapi.h>
+#include <sddl.h>
 
 using namespace std;
 
@@ -807,79 +809,173 @@ LExit:
     return WcaFinalize(er);
 }
 
-// --- PTSettingsSvc MSIX (Design-v6-Final.md §12.4 unification) ---------------
-// Per-MACHINE registration of the PowerToys Settings Service MSIX.  Replaces the
-// former MSI <ServiceInstall> of the loose exe: provisioning the MSIX for all
-// users makes the MSIX windows.service extension the single owner of the
-// machine-wide PTSettingsSvc, so per-machine and per-user no longer compete for
-// the service name.  Per-USER registration stays in the deferred managed
-// ServiceProvisioner (a non-elevated per-user MSI cannot register a service).
+// --- PTSettingsSvc (Design-v6-Final.md §12.8, Approach 4) --------------------
+// The MSIX now STAGES THE BINARY ONLY (no windows.service extension).  The
+// service is a per-user virtual-account instance (PTSettingsSvc_<SID>) that the
+// signed service exe self-registers when launched elevated with
+// `--register <SID>` (store provisioning + CreateService + start).  Per-MACHINE
+// installs stage/provision the binary for all users here and re-point existing
+// per-user services on upgrade (as SYSTEM, no UAC); per-USER service creation
+// stays in the deferred managed provisioner (one-time UAC).  Uninstall deletes
+// the per-SID service(s) explicitly — removing the package no longer does it.
 namespace
 {
     const wchar_t* const kPTSettingsSvcFamilyName = L"Microsoft.PowerToys.SettingsService_8wekyb3d8bbwe";
     const wchar_t* const kPTSettingsSvcPackageName = L"Microsoft.PowerToys.SettingsService";
     const wchar_t* const kPTSettingsSvcMsixRelative = L"WorkspacesSettingsService\\PTSettingsSvc.msix";
+    const wchar_t* const kPTSettingsSvcExeName = L"PowerToys.PTSettingsSvc.exe";
+    const wchar_t* const kPTSettingsSvcKeyPrefix = L"PTSettingsSvc_";
 
-    // Best-effort STOP (not delete) of a service so its (packaged) exe is not
-    // held open while a new MSIX version is staged/registered — a running
-    // packaged windows.service otherwise blocks an in-place update with
-    // 0x80073D02 ("resources ... currently in use").  No-op on a fresh install.
-    void StopServiceIfRunning(const wchar_t* serviceName)
+    // Resolves the staged WindowsApps exe path for the current package version.
+    // The registrar (service exe) is invoked from this path; it then re-resolves
+    // its OWN module path, so a bad value here only fails the launch, it cannot
+    // point the service at an attacker binary.
+    std::wstring ResolveStagedExePath()
     {
-        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT);
-        if (!scm)
+        using namespace winrt::Windows::Management::Deployment;
+        try
         {
-            return;
-        }
-        SC_HANDLE svc = OpenServiceW(scm, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
-        if (svc)
-        {
-            SERVICE_STATUS ss{};
-            if (ControlService(svc, SERVICE_CONTROL_STOP, &ss))
+            PackageManager pm;
+            auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
+            for (const auto& package : packages)
             {
-                for (int i = 0; i < 10; ++i)
+                auto loc = package.InstalledLocation().Path();
+                std::filesystem::path exe = std::filesystem::path(std::wstring(loc)) / kPTSettingsSvcExeName;
+                if (std::filesystem::exists(exe))
                 {
-                    if (!QueryServiceStatus(svc, &ss) || ss.dwCurrentState == SERVICE_STOPPED)
-                    {
-                        break;
-                    }
-                    Sleep(500);
+                    return exe.wstring();
                 }
             }
-            CloseServiceHandle(svc);
         }
-        CloseServiceHandle(scm);
+        catch (...)
+        {
+        }
+        return {};
     }
 
-    // Prompts UAC once to remove the PTSettingsSvc package elevated (deleting a
-    // service-bearing package needs admin, which a per-user uninstall lacks).
-    // Mirrors the shared run_elevated() helper (common/utils/elevation.h) — the
-    // same UAC-via-ShellExecute("runas") mechanism used elsewhere in the product
-    // — kept self-contained here so the installer CA project need not take a new
-    // WIL/header dependency (elevation.h transitively pulls in wil/resource.h).
-    // Returns true only if the elevated removal completed (exit 0).  False if the
-    // user declines UAC, there is no interactive session (silent uninstall), or
-    // removal fails — the caller then leaves the signed/immutable orphan WITHOUT
-    // blocking the uninstall (Design §12.5).
-    bool TryRemovePackageElevated(const wchar_t* packageName)
+    // Runs "<exe> <verb> <sid>" synchronously in the CA's (already elevated,
+    // e.g. SYSTEM for a per-machine deferred CA) context and returns true on
+    // exit code 0.  Used for the per-machine, no-UAC service register/re-point.
+    bool RunExeVerb(const std::wstring& exePath, const wchar_t* verb, const std::wstring& sid)
+    {
+        std::wstring cmd = L"\"" + exePath + L"\" " + verb + L" \"" + sid + L"\"";
+        std::vector<wchar_t> mutableCmd(cmd.begin(), cmd.end());
+        mutableCmd.push_back(L'\0');
+
+        STARTUPINFOW si{};
+        si.cb = sizeof(si);
+        PROCESS_INFORMATION pi{};
+        if (!CreateProcessW(exePath.c_str(), mutableCmd.data(), nullptr, nullptr, FALSE,
+                            CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
+        {
+            return false;
+        }
+        WaitForSingleObject(pi.hProcess, 120000);
+        DWORD exitCode = 1;
+        GetExitCodeProcess(pi.hProcess, &exitCode);
+        CloseHandle(pi.hThread);
+        CloseHandle(pi.hProcess);
+        return exitCode == 0;
+    }
+
+    // Enumerates the SIDs of all registered per-user services (PTSettingsSvc_<SID>).
+    std::vector<std::wstring> EnumeratePerUserServiceSids()
+    {
+        std::vector<std::wstring> sids;
+        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE);
+        if (!scm)
+        {
+            return sids;
+        }
+
+        DWORD bytesNeeded = 0, count = 0, resume = 0;
+        EnumServicesStatusExW(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL,
+                              nullptr, 0, &bytesNeeded, &count, &resume, nullptr);
+        if (GetLastError() == ERROR_MORE_DATA && bytesNeeded > 0)
+        {
+            std::vector<BYTE> buf(bytesNeeded);
+            if (EnumServicesStatusExW(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL,
+                                      buf.data(), bytesNeeded, &bytesNeeded, &count, &resume, nullptr))
+            {
+                auto* svcs = reinterpret_cast<ENUM_SERVICE_STATUS_PROCESSW*>(buf.data());
+                const size_t prefixLen = wcslen(kPTSettingsSvcKeyPrefix);
+                for (DWORD i = 0; i < count; ++i)
+                {
+                    const wchar_t* name = svcs[i].lpServiceName;
+                    if (name && wcsncmp(name, kPTSettingsSvcKeyPrefix, prefixLen) == 0)
+                    {
+                        sids.emplace_back(name + prefixLen);
+                    }
+                }
+            }
+        }
+        CloseServiceHandle(scm);
+        return sids;
+    }
+
+    // Current (impersonated) user's SID string.  The per-user uninstall CA runs
+    // impersonated, so this is the real target user — captured BEFORE any UAC so
+    // an admin-cred elevation can't retarget a different SID's service.
+    std::wstring GetImpersonatedUserSidString()
+    {
+        std::wstring result;
+        HANDLE token = nullptr;
+        if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token))
+        {
+            if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+            {
+                return result;
+            }
+        }
+        DWORD size = 0;
+        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+        if (size > 0)
+        {
+            std::vector<BYTE> buf(size);
+            if (GetTokenInformation(token, TokenUser, buf.data(), size, &size))
+            {
+                LPWSTR s = nullptr;
+                if (ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(buf.data())->User.Sid, &s))
+                {
+                    result = s;
+                    LocalFree(s);
+                }
+            }
+        }
+        CloseHandle(token);
+        return result;
+    }
+
+    // Per-user teardown (non-elevated uninstall): prompt UAC ONCE to run the
+    // staged service exe `--unregister <SID>` (deletes the per-SID service) and
+    // remove the package.  The SID is captured pre-UAC.  Returns true only if the
+    // elevated step completed; false if declined / no session (harmless orphan).
+    bool TryUnregisterAndRemoveElevated(const std::wstring& userSid, const wchar_t* packageName)
     {
         std::wstring params =
-            L"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
-            L"\"Get-AppxPackage -Name '";
+            L"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \""
+            L"$loc = (Get-AppxPackage -Name '";
+        params += packageName;
+        params += L"' | Select-Object -First 1).InstallLocation; "
+                  L"if ($loc) { & (Join-Path $loc '";
+        params += kPTSettingsSvcExeName;
+        params += L"') --unregister '";
+        params += userSid;
+        params += L"' }; "
+                  L"Get-AppxPackage -Name '";
         params += packageName;
         params += L"' | Remove-AppxPackage\"";
 
         SHELLEXECUTEINFOW sei{};
         sei.cbSize = sizeof(sei);
         sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_NOASYNC;
-        sei.lpVerb = L"runas"; // triggers the UAC consent prompt
+        sei.lpVerb = L"runas";
         sei.lpFile = L"powershell.exe";
         sei.lpParameters = params.c_str();
         sei.nShow = SW_HIDE;
 
         if (!ShellExecuteExW(&sei) || !sei.hProcess)
         {
-            // ERROR_CANCELLED (1223) == user declined UAC; or no shell/session.
             return false;
         }
         WaitForSingleObject(sei.hProcess, 120000);
@@ -889,6 +985,10 @@ namespace
         return exitCode == 0;
     }
 }
+
+// Defined later in this file; forward-declared for the per-machine uninstall
+// branch below (which deletes each per-user PTSettingsSvc_<SID> service).
+UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName);
 
 UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
 {
@@ -918,14 +1018,9 @@ UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
         Uri packageUri{ msixPath.wstring() };
         PackageManager pm;
 
-        // Upgrade case: if a previous version's service is still running, stop it
-        // first so its packaged exe isn't held open (else the update fails with
-        // 0x80073D02).  No-op on a fresh install.  The service auto-restarts
-        // (AUTO_START) once the new version is registered (Design §12.6).
-        StopServiceIfRunning(L"PTSettingsSvc");
-
-        // Per-machine: stage once, then provision for all users.  The MSIX
-        // windows.service extension registers the machine-wide PTSettingsSvc.
+        // Per-machine: stage once, then provision the binary-only package for all
+        // users so the signed exe is present in immutable WindowsApps for every
+        // user (Approach 4 — no windows.service extension registers anything).
         StagePackageOptions stageOptions;
         auto stageResult = pm.StagePackageByUriAsync(packageUri, stageOptions).get();
         uint32_t stageErrorCode = static_cast<uint32_t>(stageResult.ExtendedErrorCode());
@@ -945,7 +1040,24 @@ UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
             ExitFunction();
         }
 
-        Logger::info(L"PTSettingsSvc MSIX staged + provisioned for all users.");
+        Logger::info(L"PTSettingsSvc MSIX staged + provisioned for all users (binary only).");
+
+        // Upgrade path: re-point any EXISTING per-user services to the new
+        // versioned exe (their old binPath now dangles).  Runs as SYSTEM here, so
+        // no UAC.  On a fresh install there are none — services are created
+        // lazily per user by the managed provisioner.  Users who are not logged
+        // in / have no service yet are handled by that lazy per-user path.
+        std::wstring exePath = ResolveStagedExePath();
+        if (!exePath.empty())
+        {
+            for (const auto& sid : EnumeratePerUserServiceSids())
+            {
+                if (!RunExeVerb(exePath, L"--repoint", sid))
+                {
+                    Logger::warn(L"PTSettingsSvc re-point failed for SID {}", sid);
+                }
+            }
+        }
     }
     catch (const winrt::hresult_error& ex)
     {
@@ -999,7 +1111,14 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
 
         if (isMachineLevel)
         {
-            // Per-machine: deprovision, then remove for all users.
+            // Per-machine (elevated): delete every per-user service explicitly
+            // (removing the package no longer deletes it — no windows.service
+            // extension), then deprovision + remove the package for all users.
+            for (const auto& sid : EnumeratePerUserServiceSids())
+            {
+                RemoveWindowsServiceByName(std::wstring(kPTSettingsSvcKeyPrefix) + sid);
+            }
+
             try
             {
                 pm.DeprovisionPackageForAllUsersAsync(kPTSettingsSvcFamilyName).get();
@@ -1029,42 +1148,33 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
         }
         else
         {
-            // Per-user uninstall is non-elevated, but deleting a service-bearing
-            // package needs admin.  1) Try in-proc removal (succeeds only if this
-            // uninstall already happens to be elevated).  2) If anything remains,
-            // prompt UAC ONCE to remove it elevated.  3) If the user declines or
-            // there's no interactive session (silent uninstall), leave the
-            // signed/immutable orphan WITHOUT blocking the uninstall (Design §12.5).
+            // Per-user uninstall is non-elevated, but deleting the per-SID service
+            // needs admin.  Capture THIS user's SID pre-UAC, then prompt UAC ONCE
+            // to run `<exe> --unregister <SID>` (deletes the service) and remove
+            // the package.  If declined / no interactive session (silent
+            // uninstall), leave the signed/immutable orphan WITHOUT blocking the
+            // uninstall (Design §12.5); a per-machine install or an elevated
+            // Remove-AppxPackage + sc delete cleans it up later.
+            const std::wstring userSid = GetImpersonatedUserSidString();
+
             bool foundAny = false;
-            bool removed = false;
             auto packages = pm.FindPackagesForUserWithPackageTypes({}, kPTSettingsSvcFamilyName, PackageTypes::Main);
             for (const auto& package : packages)
             {
                 foundAny = true;
-                try
-                {
-                    auto removeResult = pm.RemovePackageAsync(package.Id().FullName()).get();
-                    if (static_cast<uint32_t>(removeResult.ExtendedErrorCode()) == 0)
-                    {
-                        removed = true;
-                    }
-                }
-                catch (const winrt::hresult_error&)
-                {
-                    // Expected when non-elevated; fall through to the UAC prompt.
-                }
+                (void)package;
             }
 
-            if (foundAny && !removed)
+            if (foundAny || !userSid.empty())
             {
-                if (TryRemovePackageElevated(kPTSettingsSvcPackageName))
+                if (!userSid.empty() && TryUnregisterAndRemoveElevated(userSid, kPTSettingsSvcPackageName))
                 {
-                    Logger::info(L"PTSettingsSvc removed via one-time elevation at uninstall.");
+                    Logger::info(L"PTSettingsSvc service deleted + package removed via one-time elevation at uninstall.");
                 }
                 else
                 {
-                    Logger::warn(L"PTSettingsSvc left registered (UAC declined or no interactive session); "
-                                 L"removable later by an elevated Remove-AppxPackage or a per-machine install.");
+                    Logger::warn(L"PTSettingsSvc left registered (UAC declined, no session, or SID unavailable); "
+                                 L"removable later by an elevated 'sc delete' + Remove-AppxPackage or a per-machine install.");
                 }
             }
         }

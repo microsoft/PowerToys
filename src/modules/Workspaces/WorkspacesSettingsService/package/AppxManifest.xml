@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MSIX package for the PowerToys Settings Service (Design-v6-Final.md §12.1).
-  The service binary lives in the immutable, signed WindowsApps store so a
-  non-admin same-user attacker cannot replace it.  The windows.service
-  extension auto-registers PTSettingsSvc; it runs as LocalSystem (the only
-  start account MSIX allows that can own/protect the per-SID store DACL).
-  Data is written to real %ProgramData% by the service, not virtualized.
+  MSIX package for the PowerToys Settings Service (Design-v6-Final.md §12.1/§12.8,
+  Approach 4).  The package STAGES THE BINARY ONLY into the immutable, signed
+  WindowsApps store so a non-admin same-user attacker cannot replace it.  It does
+  NOT use the windows.service extension: that extension's StartAccount is a closed
+  enum (localSystem/localService/networkService) and cannot express the dedicated
+  low-privilege VIRTUAL ACCOUNT (NT SERVICE\PTSettingsSvc_<SID>) the design
+  requires.  The service is instead SELF-REGISTERED per user by an elevated actor
+  (the service exe's own `--register <SID>` mode, launched by the installer CA or
+  the per-user provisioner).  Data is written to real %ProgramData% by the
+  service, not virtualized.
 
   Publisher must match the signing certificate subject.  For production this
   is the Microsoft cert; for local validation the dev cert subject is used.
@@ -13,8 +17,7 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-  xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6">
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
 
   <Identity Name="Microsoft.PowerToys.SettingsService"
             Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
@@ -37,8 +40,6 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <rescap:Capability Name="packagedServices" />
-    <rescap:Capability Name="localSystemServices" />
   </Capabilities>
 
   <Applications>
@@ -49,17 +50,9 @@
         Description="Sole writer of the protected PowerToys settings store (EoP defense)."
         BackgroundColor="transparent" Square150x150Logo="logo.png" Square44x44Logo="logo.png"
         AppListEntry="none" />
-      <Extensions>
-        <desktop6:Extension Category="windows.service"
-          Executable="PowerToys.PTSettingsSvc.exe"
-          EntryPoint="Windows.FullTrustApplication">
-          <desktop6:Service Name="PTSettingsSvc"
-            StartupType="auto"
-            StartAccount="localSystem" />
-        </desktop6:Extension>
-      </Extensions>
     </Application>
   </Applications>
 </Package>
+
 
 
