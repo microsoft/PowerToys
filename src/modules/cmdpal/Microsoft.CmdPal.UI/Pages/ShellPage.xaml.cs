@@ -121,6 +121,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public bool ExpandedMode { get; set; }
 
+    // Item keybindings act on the selected item, which is hidden while collapsed — only honor them when expanded.
+    private bool ItemActionsAllowed => !_compactMode || ExpandedMode;
+
     public ShellPage()
     {
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
@@ -952,12 +955,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 break;
             default:
                 {
-                    // The CommandBar is responsible for handling all the item keybindings,
-                    // since the bound context item may need to then show another
-                    // context menu
-                    TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                    WeakReferenceMessenger.Default.Send(msg);
-                    e.Handled = msg.Handled;
+                    // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
+                    if (((ShellPage)sender).ItemActionsAllowed)
+                    {
+                        TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
+                        WeakReferenceMessenger.Default.Send(msg);
+                        e.Handled = msg.Handled;
+                    }
+
                     break;
                 }
         }
@@ -965,10 +970,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        // Item actions are only forwarded when the palette is expanded. In compact mode the
-        // user can't see which item is active, so activating one would be surprising.
-        var itemActionsAllowed = !_compactMode || ExpandedMode;
-        if (itemActionsAllowed && TryHandleItemAction(e))
+        if (ItemActionsAllowed && TryHandleItemAction(e))
         {
             return;
         }
