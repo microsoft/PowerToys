@@ -950,6 +950,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 ((ShellPage)sender).ToggleFilterFocus();
                 e.Handled = true;
                 break;
+            case VirtualKey.Down when modifiers.None:
+            case VirtualKey.Tab when modifiers.None:
+                // In a collapsed compact palette, Down/Tab reveals the top-level items so the
+                // user can browse and discover them. Only swallow the key when we actually
+                // expand; otherwise let it fall through to normal list navigation / focus move.
+                if (((ShellPage)sender).TryExpandCollapsedCompact())
+                {
+                    e.Handled = true;
+                }
+
+                break;
             default:
                 {
                     // The CommandBar is responsible for handling all the item keybindings,
@@ -1053,6 +1064,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         this.ExpandedMode = newExpanded;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+    }
+
+    /// <summary>
+    /// Expands a collapsed compact palette on demand (via Down/Tab) so the user can browse the
+    /// top-level items. Returns <see langword="false"/> and does nothing unless compact mode is
+    /// on and the palette is currently collapsed, letting the caller keep the key's normal
+    /// meaning (list navigation / focus traversal) in every other case.
+    /// </summary>
+    private bool TryExpandCollapsedCompact()
+    {
+        if (!_compactMode || ExpandedMode)
+        {
+            return false;
+        }
+
+        HandleExpandCompactOnUiThread(true);
+        return true;
     }
 
     /// <summary>
