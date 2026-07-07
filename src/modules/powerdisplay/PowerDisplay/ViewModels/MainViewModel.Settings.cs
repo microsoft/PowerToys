@@ -154,33 +154,31 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply profile by name (called via Named Pipe from Settings UI)
-    /// This is the new direct method that receives the profile name via IPC.
+    /// Apply profile by id (called via Named Pipe from Settings UI). Preserves GUI behavior;
+    /// only the lookup key changed from name to the stable id.
     /// </summary>
-    /// <param name="profileName">The name of the profile to apply.</param>
-    public async Task ApplyProfileByNameAsync(string profileName)
+    /// <param name="profileId">The stable id of the profile to apply.</param>
+    public async Task ApplyProfileByIdAsync(int profileId)
     {
         try
         {
-            Logger.LogInfo($"[Profile] Applying profile by name: {profileName}");
+            Logger.LogInfo($"[Profile] Applying profile by id: {profileId}");
 
-            // Load profiles and find the requested one
             var profilesData = ProfileService.LoadProfiles();
-            var profile = profilesData.GetProfile(profileName);
+            var profile = profilesData.GetById(profileId);
 
             if (profile == null || !profile.IsValid())
             {
-                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid");
+                Logger.LogWarning($"[Profile] Profile id {profileId} not found or invalid");
                 return;
             }
 
-            // Apply the profile settings to monitors
             await ApplyProfileAsync(profile.MonitorSettings);
-            Logger.LogInfo($"[Profile] Successfully applied profile: {profileName}");
+            Logger.LogInfo($"[Profile] Successfully applied profile id: {profileId}");
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[Profile] Failed to apply profile '{profileName}': {ex.Message}");
+            Logger.LogError($"[Profile] Failed to apply profile id {profileId}: {ex.Message}");
         }
     }
 
@@ -191,9 +189,9 @@ public partial class MainViewModel
     /// <param name="isLightMode">Whether the theme changed to light mode.</param>
     public void ApplyLightSwitchProfile(bool isLightMode)
     {
-        var profileName = LightSwitchService.GetProfileForTheme(isLightMode);
+        var profileId = LightSwitchService.GetProfileForTheme(isLightMode);
 
-        if (string.IsNullOrEmpty(profileName))
+        if (profileId is null)
         {
             return;
         }
@@ -202,15 +200,15 @@ public partial class MainViewModel
         {
             try
             {
-                Logger.LogInfo($"[LightSwitch Integration] Applying profile: {profileName}");
+                Logger.LogInfo($"[LightSwitch Integration] Applying profile id: {profileId.Value}");
 
                 // Load and apply the profile
                 var profilesData = ProfileService.LoadProfiles();
-                var profile = profilesData.GetProfile(profileName);
+                var profile = profilesData.GetById(profileId.Value);
 
                 if (profile == null || !profile.IsValid())
                 {
-                    Logger.LogWarning($"[LightSwitch Integration] Profile '{profileName}' not found or invalid");
+                    Logger.LogWarning($"[LightSwitch Integration] Profile id {profileId.Value} not found or invalid");
                     return;
                 }
 
@@ -260,6 +258,12 @@ public partial class MainViewModel
     /// <summary>
     /// Apply profile settings to monitors. Profiles are per-monitor snapshots, so applying one
     /// turns off linked brightness before writing individual monitor values.
+    /// <para>
+    /// This method is the GUI code path. It is preserved exactly as-is: settings are dispatched
+    /// in parallel via <c>Task.WhenAll</c> and no per-setting outcome is captured. All existing
+    /// callers (<see cref="ApplyProfileByIdAsync"/>, <see cref="ApplyProfileAndCompleteAsync"/>)
+    /// continue to call this overload.
+    /// </para>
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
@@ -576,6 +580,17 @@ public partial class MainViewModel
     /// </summary>
     private void MigrateLegacyMonitorIdsInSideFiles()
     {
+        // Assign stable ids to any pre-id profiles. Independent of monitor discovery, so it runs
+        // before the "no monitors" early-return below.
+        try
+        {
+            BackfillProfileIds();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LegacyMigration] Failed to back-fill profile ids: {ex.Message}");
+        }
+
         var discovered = Monitors
             .Where(m => !string.IsNullOrEmpty(m.Id))
             .Select(m => (m.Id, m.MonitorNumber))
@@ -653,6 +668,36 @@ public partial class MainViewModel
         {
             ProfileService.SaveProfiles(profiles);
             Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
+        }
+    }
+
+    private static void BackfillProfileIds()
+    {
+        var profiles = ProfileService.LoadProfiles();
+        if (profiles is null)
+        {
+            return;
+        }
+
+        if (profiles.EnsureIds())
+        {
+            ProfileService.SaveProfiles(profiles);
+            Logger.LogInfo("[LegacyMigration] profiles.json updated with stable profile ids.");
+        }
+
+        try
+        {
+            var lightSwitch = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(LightSwitchSettings.ModuleName);
+            if (lightSwitch?.Properties != null
+                && LightSwitchProfileResolver.MigrateNamesToIds(lightSwitch.Properties, profiles))
+            {
+                SettingsUtils.Default.SaveSettings(lightSwitch.ToJsonString(), LightSwitchSettings.ModuleName);
+                Logger.LogInfo("[LegacyMigration] LightSwitch profile references migrated to ids.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LegacyMigration] Failed to migrate LightSwitch profile references: {ex.Message}");
         }
     }
 

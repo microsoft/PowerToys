@@ -5,6 +5,7 @@
 using System;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerDisplay.Common.Services;
 using Settings.UI.Library;
 
 namespace PowerDisplay.Services
@@ -18,11 +19,11 @@ namespace PowerDisplay.Services
         private const string LogPrefix = "[LightSwitch]";
 
         /// <summary>
-        /// Get the profile name to apply for the given theme.
+        /// Get the profile id to apply for the given theme.
         /// </summary>
         /// <param name="isLightMode">Whether the theme changed to light mode.</param>
-        /// <returns>The profile name to apply, or null if no profile is configured.</returns>
-        public static string? GetProfileForTheme(bool isLightMode)
+        /// <returns>The profile id to apply, or null if no profile is configured.</returns>
+        public static int? GetProfileForTheme(bool isLightMode)
         {
             try
             {
@@ -36,36 +37,37 @@ namespace PowerDisplay.Services
                     return null;
                 }
 
-                string? profileName;
+                bool enabled;
+                int storedId;
+                string? storedName;
                 if (isLightMode)
                 {
-                    if (!settings.Properties.EnableLightModeProfile.Value)
-                    {
-                        Logger.LogInfo($"{LogPrefix} Light mode profile is disabled");
-                        return null;
-                    }
-
-                    profileName = settings.Properties.LightModeProfile.Value;
+                    enabled = settings.Properties.EnableLightModeProfile.Value;
+                    storedId = settings.Properties.LightModeProfileId.Value;
+                    storedName = settings.Properties.LightModeProfile.Value;
                 }
                 else
                 {
-                    if (!settings.Properties.EnableDarkModeProfile.Value)
-                    {
-                        Logger.LogInfo($"{LogPrefix} Dark mode profile is disabled");
-                        return null;
-                    }
-
-                    profileName = settings.Properties.DarkModeProfile.Value;
+                    enabled = settings.Properties.EnableDarkModeProfile.Value;
+                    storedId = settings.Properties.DarkModeProfileId.Value;
+                    storedName = settings.Properties.DarkModeProfile.Value;
                 }
 
-                if (string.IsNullOrEmpty(profileName) || profileName == "(None)")
+                if (!enabled)
                 {
-                    Logger.LogInfo($"{LogPrefix} No profile configured for {(isLightMode ? "light" : "dark")} mode");
+                    Logger.LogInfo($"{LogPrefix} {(isLightMode ? "Light" : "Dark")} mode profile is disabled");
                     return null;
                 }
 
-                Logger.LogInfo($"{LogPrefix} Profile to apply: {profileName}");
-                return profileName;
+                var id = LightSwitchProfileResolver.Resolve(storedId, storedName, ProfileService.LoadProfiles());
+                if (id is null)
+                {
+                    Logger.LogInfo($"{LogPrefix} No profile resolved for {(isLightMode ? "light" : "dark")} mode");
+                    return null;
+                }
+
+                Logger.LogInfo($"{LogPrefix} Profile id to apply: {id.Value}");
+                return id;
             }
             catch (Exception ex)
             {

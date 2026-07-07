@@ -803,10 +803,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Logger.LogInfo($"Applying profile: {profile.Name}");
+                Logger.LogInfo($"Applying profile: {profile.DisplayName}");
 
                 // Send custom action to trigger profile application
-                // The profile name is passed via Named Pipe IPC to PowerDisplay.exe
+                // The profile id is passed via Named Pipe IPC to PowerDisplay.exe
                 var actionMessage = new PowerDisplayActionMessage
                 {
                     Action = new PowerDisplayActionMessage.ActionData
@@ -814,14 +814,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
                         {
                             ActionName = "ApplyProfile",
-                            Value = profile.Name,
+                            Value = profile.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
                         },
                     },
                 };
 
                 SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
-                Logger.LogInfo($"Profile '{profile.Name}' apply request sent via IPC");
+                Logger.LogInfo($"Profile '{profile.DisplayName}' apply request sent via IPC");
             }
             catch (Exception ex)
             {
@@ -861,21 +861,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Update an existing profile
+        /// Update an existing profile. The profile's stable id is the key, so this replaces the
+        /// matching entry in place (a rename keeps the same id).
         /// </summary>
-        public void UpdateProfile(string oldName, PowerDisplayProfile newProfile)
+        public void UpdateProfile(PowerDisplayProfile updatedProfile)
         {
             try
             {
-                if (newProfile == null || !newProfile.IsValid())
+                if (updatedProfile == null || !updatedProfile.IsValid())
                 {
                     Logger.LogWarning("Invalid profile");
                     return;
                 }
 
-                Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
+                Logger.LogInfo($"Updating profile: {updatedProfile.DisplayName}");
 
-                ProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
+                ProfileHelper.AddOrUpdateProfile(updatedProfile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -883,7 +884,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Signal PowerDisplay to reload profiles
                 SignalSettingsUpdated();
 
-                Logger.LogInfo($"Profile updated to '{newProfile.Name}' successfully");
+                Logger.LogInfo($"Profile '{updatedProfile.DisplayName}' updated successfully");
             }
             catch (Exception ex)
             {
@@ -892,20 +893,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Delete a profile
+        /// Delete a profile by its stable id.
         /// </summary>
-        public void DeleteProfile(string profileName)
+        public void DeleteProfile(int id)
         {
             try
             {
-                if (string.IsNullOrEmpty(profileName))
+                if (id < 1)
                 {
                     return;
                 }
 
-                Logger.LogInfo($"Deleting profile: {profileName}");
+                Logger.LogInfo($"Deleting profile id: {id}");
 
-                ProfileHelper.RemoveProfile(profileName);
+                ProfileHelper.RemoveProfileById(id);
 
                 // Reload profile list
                 LoadProfiles();
@@ -913,7 +914,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Signal PowerDisplay to reload profiles
                 SignalSettingsUpdated();
 
-                Logger.LogInfo($"Profile '{profileName}' deleted successfully");
+                Logger.LogInfo($"Profile id {id} deleted successfully");
             }
             catch (Exception ex)
             {

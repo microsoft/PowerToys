@@ -122,6 +122,24 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
+        /// Removes a profile by its stable id and persists to disk atomically.
+        /// </summary>
+        public static bool RemoveProfileById(int id)
+        {
+            lock (_lock)
+            {
+                var profiles = LoadProfilesCore();
+                bool removed = profiles.RemoveProfile(id);
+                if (removed)
+                {
+                    SaveProfilesCore(profiles);
+                }
+
+                return removed;
+            }
+        }
+
+        /// <summary>
         /// Gets a profile by name.
         /// </summary>
         /// <param name="profileName">The name of the profile to retrieve.</param>

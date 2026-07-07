@@ -112,7 +112,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    ViewModel.UpdateProfile(profile.Name, dialog.ResultProfile);
+                    ViewModel.UpdateProfile(dialog.ResultProfile);
                 }
             }
         }
@@ -137,7 +137,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    ViewModel.DeleteProfile(profile.Name);
+                    ViewModel.DeleteProfile(profile.Id);
                 }
             }
         }

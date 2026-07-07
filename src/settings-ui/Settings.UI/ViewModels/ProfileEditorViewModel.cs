@@ -70,6 +70,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets the stable id of the profile being edited. 0 for a brand-new profile
+        /// (the store assigns a fresh id on save); the existing id when editing, so the update
+        /// replaces the same profile in place.
+        /// </summary>
+        public int EditingId { get; set; }
+
         public ObservableCollection<MonitorSelectionItem> Monitors
         {
             get => _monitors;
@@ -103,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null))
                 .ToList();
 
-            return new PowerDisplayProfile(_profileName, settings);
+            return new PowerDisplayProfile(_profileName, settings) { Id = EditingId };
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
