@@ -22,6 +22,7 @@ public sealed partial class ExtensionsPage : Page
 
     private readonly SettingsViewModel? viewModel;
     private readonly Dictionary<string, WeakReference<SettingsCard>> _vmToCardMap = new();
+    private readonly Dictionary<SettingsCard, ProviderSettingsViewModel> _cardToVmMap = new();
 
     public ExtensionsPage()
     {
@@ -31,6 +32,23 @@ public sealed partial class ExtensionsPage : Page
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         viewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+
+        Unloaded += ExtensionsPage_Unloaded;
+    }
+
+    private void ExtensionsPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        // ProviderSettingsViewModel subscribes to its CommandProviderWrapper (owned by the
+        // singleton TopLevelCommandManager), so a live VM roots this page through the
+        // PropertyChanged handler below. Drain any VMs still hooked when the page is torn
+        // down; SettingsCard_DataContextChanged only unhooks the ones that get recycled.
+        foreach (var vm in _cardToVmMap.Values)
+        {
+            vm.PropertyChanged -= ProviderViewModel_PropertyChanged;
+        }
+
+        _cardToVmMap.Clear();
+        _vmToCardMap.Clear();
     }
 
     private void SettingsCard_Click(object sender, RoutedEventArgs e)
@@ -46,16 +64,28 @@ public sealed partial class ExtensionsPage : Page
 
     private void SettingsCard_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
     {
-        // Store the card reference keyed by Id (not the VM itself) to avoid leaking VM references
-        if (sender is SettingsCard card && card.DataContext is ProviderSettingsViewModel newVm)
+        if (sender is SettingsCard card)
         {
-            _vmToCardMap[newVm.Id] = new WeakReference<SettingsCard>(card);
-            newVm.PropertyChanged += ProviderViewModel_PropertyChanged;
-
-            // Immediately update automation name in case DisplayName is already available
-            if (card.Content is ToggleSwitch toggle && !string.IsNullOrEmpty(newVm.DisplayName))
+            // Unsubscribe from the previous ViewModel to prevent handler accumulation
+            // when virtualization recycles items with a new DataContext.
+            if (_cardToVmMap.TryGetValue(card, out var oldVm))
             {
-                AutomationProperties.SetName(toggle, newVm.DisplayName);
+                oldVm.PropertyChanged -= ProviderViewModel_PropertyChanged;
+                _cardToVmMap.Remove(card);
+            }
+
+            // Store the card reference keyed by Id (not the VM itself) to avoid leaking VM references
+            if (card.DataContext is ProviderSettingsViewModel newVm)
+            {
+                _vmToCardMap[newVm.Id] = new WeakReference<SettingsCard>(card);
+                _cardToVmMap[card] = newVm;
+                newVm.PropertyChanged += ProviderViewModel_PropertyChanged;
+
+                // Immediately update automation name in case DisplayName is already available
+                if (card.Content is ToggleSwitch toggle && !string.IsNullOrEmpty(newVm.DisplayName))
+                {
+                    AutomationProperties.SetName(toggle, newVm.DisplayName);
+                }
             }
         }
     }

@@ -135,6 +135,7 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
+Blackmagic
 bla
 BLENDFUNCTION
 blittable
@@ -539,6 +540,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+Fairlight
 FARPROC
 fdw
 fdx
@@ -836,6 +838,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -1232,6 +1235,8 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
+NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH
@@ -2178,6 +2183,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi

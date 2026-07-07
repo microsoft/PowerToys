@@ -219,6 +219,11 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
+        if (_settings == args.DockSettings)
+        {
+            return;
+        }
+
         _settings = args.DockSettings;
         RefreshSideOverride();
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
