@@ -625,6 +625,17 @@ public partial class MainViewModel
     /// </summary>
     private void MigrateLegacyMonitorIdsInSideFiles()
     {
+        // Assign stable ids to any pre-id profiles. Independent of monitor discovery, so it runs
+        // before the "no monitors" early-return below.
+        try
+        {
+            BackfillProfileIds();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LegacyMigration] Failed to back-fill profile ids: {ex.Message}");
+        }
+
         var discovered = Monitors
             .Where(m => !string.IsNullOrEmpty(m.Id))
             .Select(m => (m.Id, m.MonitorNumber))
@@ -702,6 +713,21 @@ public partial class MainViewModel
         {
             ProfileService.SaveProfiles(profiles);
             Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
+        }
+    }
+
+    private static void BackfillProfileIds()
+    {
+        var profiles = ProfileService.LoadProfiles();
+        if (profiles is null)
+        {
+            return;
+        }
+
+        if (profiles.EnsureIds())
+        {
+            ProfileService.SaveProfiles(profiles);
+            Logger.LogInfo("[LegacyMigration] profiles.json updated with stable profile ids.");
         }
     }
 
