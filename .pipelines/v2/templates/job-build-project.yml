@@ -454,17 +454,11 @@ jobs:
         msbuildArchitecture: x64
         maximumCpuCount: true
 
-  # CLI shims: publish ONE Native AOT binary and stage one exe per command name into
-  # <BuildPlatform>\<BuildConfiguration>\cli so the files exist BEFORE the signing step
-  # (ESRPSigning_core.json) and the installer harvest. The shared script owns the command
-  # list (single source of truth) and the drift validation; it is the same code path the
-  # local installer build (tools/build/build-installer.ps1) uses.
-  - pwsh: |-
-      & "$(Build.SourcesDirectory)\tools\build\publish-cli-shims.ps1" `
-        -Platform '$(BuildPlatform)' `
-        -Configuration '$(BuildConfiguration)' `
-        -OutDir "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\cli"
-    displayName: Publish CLI shims (Native AOT)
+  # CLI shims (fancyzones/imageresizer/filelocksmith) are built by the main PowerToys.slnx
+  # build above (tools/CliShim/CliShim.vcxproj). Its StageCliShims target copies one exe per
+  # command name into <BuildPlatform>\<BuildConfiguration>\cli, and ValidateCliShimManifest
+  # keeps that set in sync with CliShims.wxs and ESRPSigning_core.json, so the files exist and
+  # match the signing list before the signing and installer-harvest steps run.
 
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2

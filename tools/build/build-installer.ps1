@@ -382,11 +382,16 @@ try {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
 
-        # CLI shims: publish ONE Native AOT binary and stage one exe per command name into
-        # <Platform>\<Configuration>\cli for the installer to harvest. The shared script owns
-        # the single-source-of-truth command list and the drift validation; AOT linking relies
-        # on the VC toolchain already set up by the installer build environment.
-        & (Join-Path $repoRoot 'tools\build\publish-cli-shims.ps1') -Platform $Platform -Configuration $Configuration -OutDir (Join-Path $buildOutputPath 'cli')
+        # CLI shims (fancyzones/imageresizer/filelocksmith) are built by the main PowerToys.slnx
+        # build (tools\CliShim\CliShim.vcxproj), whose StageCliShims target stages one exe per
+        # command name into <Platform>\<Configuration>\cli for the installer to harvest. Fail
+        # fast with an actionable message if that build hasn't run, instead of a later opaque
+        # WiX harvest error on a missing cli\*.exe source.
+        $cliStageDir = Join-Path $buildOutputPath 'cli'
+        if (-not (Test-Path $cliStageDir) -or -not (Get-ChildItem $cliStageDir -Filter *.exe -ErrorAction SilentlyContinue)) {
+            Write-Error "No CLI shims found in '$cliStageDir'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
+            exit 1
+        }
     }
 
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
