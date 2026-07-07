@@ -19,7 +19,8 @@ namespace ColorPicker.Helpers
     /// <summary>
     /// Drives the zoom magnifier: captures a small screen region around the cursor with GDI,
     /// hands it to the Win2D-backed <see cref="Views.ZoomView"/> (via <see cref="ZoomWindow"/>),
-    /// and positions the transparent magnifier window centered on the cursor.
+    /// and centers the transparent magnifier window on the cursor once, when the zoom session first
+    /// starts. The window then stays put while the wheel keeps zooming the region it opened over.
     /// </summary>
     public class ZoomWindowHelper
     {
@@ -166,24 +167,26 @@ namespace ColorPicker.Helpers
 
             _zoomWindow ??= new ZoomWindow();
 
-            // The window is a constant max size; only set it on first show. Win2D is drawn at the
-            // FINAL factor now — the compositor scales that crisp texture during the tween.
-            if (!_zoomWindowVisible)
-            {
-                _zoomWindow.SetWindowSize(MaxWindowSize, MaxWindowSize);
-            }
-
+            // Draw the capture at the FINAL zoom factor now; the compositor scales that crisp texture
+            // during the resize tween (see ZoomView.AnimateResize).
             _zoomWindow.ZoomViewControl.SetZoom(_capturedBitmap, _zoomFactorValue);
 
-            // Re-center the fixed-size window on the cursor every step (AppWindow.Size and the cursor
-            // are both physical pixels). The card is centred inside, so it stays on the cursor.
-            var appWindow = _zoomWindow.AppWindow;
-            appWindow.Move(new PointInt32((int)point.X - (appWindow.Size.Width / 2), (int)point.Y - (appWindow.Size.Height / 2)));
-
             if (!_zoomWindowVisible)
             {
-                // First appearance this session: the card shows directly at the current size (no
-                // tween), so there is no scale animation to race against the async Show().
+                // First appearance this session. Give the window its constant max size (the level-4
+                // bounding box, so the centred card never clips) and center it on the cursor ONCE,
+                // then leave it there for the rest of the session — matching the WPF behavior, which
+                // only repositions the window while it is still transparent (Opacity < 0.5). Moving
+                // it on every scroll step would drag the magnifier to wherever the cursor currently
+                // is instead of keeping it on — and zooming — the region it was first opened over.
+                // (AppWindow.Size and the cursor are both physical pixels; the card is centred inside.)
+                _zoomWindow.SetWindowSize(MaxWindowSize, MaxWindowSize);
+
+                var appWindow = _zoomWindow.AppWindow;
+                appWindow.Move(new PointInt32((int)point.X - (appWindow.Size.Width / 2), (int)point.Y - (appWindow.Size.Height / 2)));
+
+                // The card shows directly at the current size (no tween), so there is no scale
+                // animation to race against the async Show().
                 _zoomWindow.ZoomViewControl.ResetScale();
                 _zoomWindow.Show();
                 _zoomWindowVisible = true;
