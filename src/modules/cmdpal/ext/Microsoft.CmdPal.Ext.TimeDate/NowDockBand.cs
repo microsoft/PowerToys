@@ -17,7 +17,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private readonly System.Timers.Timer _timer;
     private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
-    private readonly bool _timeWithSeconds;
+    private bool _timeWithSeconds;
 
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
@@ -49,6 +49,31 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         UpdateText();
 
         _timer = new System.Timers.Timer() { AutoReset = true };
+        ConfigureTimer();
+    }
+
+    // Reads the current "show seconds" preference and, if it changed, reconfigures
+    // the timer cadence and refreshes the displayed text. Safe to call at any time
+    // (e.g. from a settings-changed handler) so the dock clock stays in sync without
+    // requiring the app to restart.
+    internal void UpdateSettings(bool timeWithSeconds)
+    {
+        if (_timeWithSeconds == timeWithSeconds)
+        {
+            return;
+        }
+
+        _timeWithSeconds = timeWithSeconds;
+        ConfigureTimer();
+        UpdateText();
+    }
+
+    private void ConfigureTimer()
+    {
+        _timer.Stop();
+        _timer.Elapsed -= Timer_Elapsed;
+        _timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
+
         if (_timeWithSeconds)
         {
             _timer.Interval = PerSecondUpdateInterval.TotalMilliseconds;
@@ -56,6 +81,8 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         }
         else
         {
+            // Align the first tick to the next minute boundary so the clock flips
+            // exactly when the system clock does, then fall back to a per-minute cadence.
             var now = _clock();
             _timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
             _timer.Elapsed += Timer_ElapsedFirstMinuteTick;

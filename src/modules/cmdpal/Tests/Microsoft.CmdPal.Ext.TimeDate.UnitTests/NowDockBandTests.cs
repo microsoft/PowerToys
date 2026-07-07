@@ -120,4 +120,41 @@ public class NowDockBandTests
         Assert.IsFalse(string.IsNullOrEmpty(_band.Title), $"Title should be non-empty for culture '{cultureName}'");
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle), $"Subtitle should be non-empty for culture '{cultureName}'");
     }
+
+    [TestMethod]
+    public void UpdateSettings_EnablingSeconds_TitleIncludesSeconds()
+    {
+        _band = new NowDockBand(timeWithSeconds: false, clock: () => FixedTime);
+
+        Assert.AreEqual("2:05 PM", _band.Title, "Precondition: seconds hidden by default");
+
+        _band.UpdateSettings(timeWithSeconds: true);
+
+        Assert.AreEqual("2:05:32 PM", _band.Title, "Title should update live to include seconds");
+    }
+
+    [TestMethod]
+    public void UpdateSettings_DisablingSeconds_TitleDropsSeconds()
+    {
+        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
+
+        Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: seconds shown");
+
+        _band.UpdateSettings(timeWithSeconds: false);
+
+        Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
+    }
+
+    [TestMethod]
+    public void UpdateSettings_NoChange_FiresNoCallback()
+    {
+        var callbackCount = 0;
+        _band = new NowDockBand(timeWithSeconds: false, onUpdated: () => callbackCount++, clock: () => FixedTime);
+
+        callbackCount = 0; // reset after construction callback
+
+        _band.UpdateSettings(timeWithSeconds: false);
+
+        Assert.AreEqual(0, callbackCount, "A no-op settings change should not refresh the band");
+    }
 }
