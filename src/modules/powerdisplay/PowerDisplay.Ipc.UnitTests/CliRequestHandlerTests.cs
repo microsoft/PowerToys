@@ -57,7 +57,7 @@ public class CliRequestHandlerTests
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
-        Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>>? applyProfile = null,
+        Func<string, CancellationToken, Task<bool>>? applyProfile = null,
         int defaultStep = 5,
         CancellationToken ct = default)
     {
@@ -69,7 +69,7 @@ public class CliRequestHandlerTests
             new NoOpManager(),
             defaultStep,
             () => profiles ?? EmptyProfiles,
-            applyProfile ?? ((_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(Array.Empty<ProfileApplyOutcome>())),
+            applyProfile ?? ((_, _) => Task.FromResult(true)),
             ct);
     }
 
@@ -282,12 +282,7 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_FoundProfile_ReturnsCliApplyProfileResult()
     {
-        var outcomes = new ProfileApplyOutcome[]
-        {
-            new ProfileApplyOutcome("A", Connected: true, Changes: Array.Empty<CliProfileChange>()),
-        };
-        Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyFn =
-            (_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(outcomes);
+        Func<string, CancellationToken, Task<bool>> applyFn = (_, _) => Task.FromResult(true);
 
         var envelope = new CliRequestEnvelope
         {
@@ -306,9 +301,8 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_ProfileNotFound_ReturnsArgumentError()
     {
-        // null outcomes = profile not found
-        Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyFn =
-            (_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(null);
+        // false = profile not found
+        Func<string, CancellationToken, Task<bool>> applyFn = (_, _) => Task.FromResult(false);
 
         var envelope = new CliRequestEnvelope
         {

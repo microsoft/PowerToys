@@ -259,79 +259,17 @@ public class RoundTripTests
     }
 
     [TestMethod]
-    public void CliApplyProfileResult_round_trips_with_outcomes()
+    public void CliApplyProfileResult_round_trips()
     {
-        var result = new CliApplyProfileResult
-        {
-            Profile = "Gaming",
-            Monitors = new List<CliProfileMonitorOutcome>
-            {
-                new CliProfileMonitorOutcome
-                {
-                    Monitor = new CliMonitorRef { Number = 1, Id = "MON1", Name = "Monitor A" },
-                    Connected = true,
-                    Changes = new List<CliProfileChange>
-                    {
-                        new CliProfileChange { Setting = "brightness", Value = 80, Display = "80%", Status = CliProfileChange.StatusApplied },
-                        new CliProfileChange { Setting = "volume", Value = 0, Status = CliProfileChange.StatusUnsupported },
-                    },
-                },
-                new CliProfileMonitorOutcome
-                {
-                    Monitor = new CliMonitorRef { Number = 2, Id = "MON2", Name = "Monitor B" },
-                    Connected = false,
-                    Changes = new List<CliProfileChange>(),
-                },
-            },
-        };
+        var result = new CliApplyProfileResult { Profile = "Gaming" };
 
         var json = JsonSerializer.Serialize(result, ContractsJsonContext.Default.CliApplyProfileResult);
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
 
         Assert.IsNotNull(back);
-        Assert.AreEqual(CliExitCodes.Ok, back!.ExitCode);
+        Assert.IsFalse(back!.IsError, "apply-profile is a success envelope (isError=false)");
         Assert.AreEqual("apply-profile", back.Command);
         Assert.AreEqual("Gaming", back.Profile);
-        Assert.AreEqual(2, back.Monitors.Count);
-        Assert.IsTrue(back.Monitors[0].Connected);
-        Assert.AreEqual(2, back.Monitors[0].Changes.Count);
-        Assert.AreEqual(CliProfileChange.StatusApplied, back.Monitors[0].Changes[0].Status);
-        Assert.AreEqual("80%", back.Monitors[0].Changes[0].Display);
-        Assert.AreEqual(CliProfileChange.StatusUnsupported, back.Monitors[0].Changes[1].Status);
-        Assert.IsFalse(back.Monitors[1].Connected);
-        Assert.AreEqual(0, back.Monitors[1].Changes.Count);
-    }
-
-    [TestMethod]
-    public void CliApplyProfileResult_ExitCode_survives_round_trip()
-    {
-        // Verify that a non-default ExitCode (OutOfRange=2) survives JSON serialization/
-        // deserialization. This is the Contracts-layer gate for the apply-profile exit-code bug fix.
-        var result = new CliApplyProfileResult
-        {
-            ExitCode = CliExitCodes.OutOfRange,
-            Profile = "Night",
-            Monitors = new List<CliProfileMonitorOutcome>
-            {
-                new CliProfileMonitorOutcome
-                {
-                    Monitor = new CliMonitorRef { Number = 1, Id = "MON1", Name = "Monitor A" },
-                    Connected = true,
-                    Changes = new List<CliProfileChange>
-                    {
-                        new CliProfileChange { Setting = "brightness", Value = 110, Status = CliProfileChange.StatusOutOfRange },
-                    },
-                },
-            },
-        };
-
-        var json = JsonSerializer.Serialize(result, ContractsJsonContext.Default.CliApplyProfileResult);
-        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
-
-        Assert.IsNotNull(back);
-        Assert.IsFalse(back!.IsError, "an apply-profile partial failure is still a success envelope (isError=false)");
-        Assert.AreEqual(CliExitCodes.OutOfRange, back.ExitCode, "ExitCode=2 (OutOfRange) must survive the JSON round-trip");
-        Assert.AreEqual("Night", back.Profile);
     }
 
     [TestMethod]

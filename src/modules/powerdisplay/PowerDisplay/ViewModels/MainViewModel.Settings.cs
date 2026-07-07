@@ -91,114 +91,6 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Outcome-capturing variant of <see cref="TryRestore"/> used by
-    /// <see cref="ApplyProfileWithOutcomesInternalAsync"/>. Calls <paramref name="applyAsync"/>
-    /// directly on the monitor manager (returning a <see cref="MonitorOperationResult"/>) so that
-    /// hardware failures are captured rather than swallowed. Returns a
-    /// <see cref="CliProfileChange"/> (with <c>Value</c>, optional <c>Display</c>, status,
-    /// and optional <c>Error</c>) for one setting, or <c>null</c> when the setting was not
-    /// present in the profile entry.
-    /// </summary>
-    /// <param name="savedValue">Profile value for this setting; <c>null</c> means not included.</param>
-    /// <param name="supportsHardware">
-    /// Hardware-capability flag from the underlying <c>Monitor</c> model (e.g.
-    /// <c>monitorVm.SupportsBrightness</c>). Must NOT be a UI-visibility flag
-    /// (<c>ShowBrightness</c>) — a setting that the user has hidden in the GUI but the
-    /// hardware actually supports must still report <c>applied</c>.
-    /// </param>
-    /// <param name="settingName">Canonical setting name for the outcome row.</param>
-    /// <param name="monitorId">Monitor identifier forwarded to <paramref name="applyAsync"/>.</param>
-    /// <param name="formatDisplay">
-    /// Formatter for the human-readable display string when the write succeeds
-    /// (e.g. <c>v =&gt; v + "%"</c> for percentage settings,
-    /// <c>v =&gt; MonitorDtoProjector.FormatDiscrete(0x14, v)</c> for color-temperature).
-    /// </param>
-    /// <param name="applyAsync">Hardware-write delegate returning a <see cref="MonitorOperationResult"/>.</param>
-    /// <param name="supportedValues">
-    /// For a discrete setting (color-temperature), the monitor's advertised supported VCP value set;
-    /// the value must be a member when the set is known. Pass <c>null</c> for continuous settings,
-    /// which have no discrete set. This makes the apply-profile path validate identically to <c>set</c>.
-    /// </param>
-    /// <param name="ct">
-    /// Cancellation token plumbed from the IPC request (Ctrl+C / the CLI timeout). Cancellation
-    /// propagates as <see cref="OperationCanceledException"/> so the caller can report TIMEOUT,
-    /// rather than being swallowed into a hardware-failure outcome.
-    /// </param>
-    internal static async Task<CliProfileChange?> TryRestoreWithOutcomeAsync(
-        int? savedValue,
-        bool supportsHardware,
-        string settingName,
-        string monitorId,
-        Func<int, string?> formatDisplay,
-        Func<string, int, CancellationToken, Task<MonitorOperationResult>> applyAsync,
-        IReadOnlyList<int>? supportedValues,
-        CancellationToken ct)
-    {
-        if (!savedValue.HasValue)
-        {
-            // Setting not included in this profile entry — skip silently (no outcome row).
-            return null;
-        }
-
-        int value = savedValue.Value;
-
-        if (!supportsHardware)
-        {
-            // Hardware does not support this setting — report unsupported regardless of whether
-            // it is hidden in the GUI (gated on the hardware-capability flags
-            // monitor.SupportsBrightness / SupportsContrast / SupportsVolume / SupportsColorTemperature).
-            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null };
-        }
-
-        // Range/validity guard. Continuous settings accept [0, 100]. color-temperature (the only
-        // discrete setting in profiles) distinguishes two failure modes so apply-profile reports the
-        // SAME status/exit code the `set` command does for each: a value outside the VCP byte bounds
-        // is OUT_OF_RANGE (exit 2); a valid byte that is not in the monitor's advertised set is
-        // INVALID_DISCRETE_VALUE (exit 3). Previously both collapsed to OUT_OF_RANGE, disagreeing
-        // with `set`.
-        if (settingName == CliSettingNames.ColorTemperature)
-        {
-            if (value is < 0 or > 0xFF)
-            {
-                return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null };
-            }
-
-            if (!CliSettingValidation.IsDiscreteValueSupported(value, supportedValues))
-            {
-                return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusInvalidDiscreteValue, Error = null };
-            }
-        }
-        else if (value is < 0 or > 100)
-        {
-            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null };
-        }
-
-        try
-        {
-            var result = await applyAsync(monitorId, value, ct);
-            if (result.IsSuccess)
-            {
-                return new CliProfileChange { Setting = settingName, Value = value, Display = formatDisplay(value), Status = CliProfileChange.StatusApplied, Error = null };
-            }
-            else
-            {
-                return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = result.ErrorMessage };
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Cancellation (Ctrl+C / the CLI timeout) must surface as TIMEOUT to the caller, not be
-            // captured as a per-setting hardware-failure outcome.
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning($"[Profile] Hardware write failed for {settingName}: {ex.Message}");
-            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = ex.Message };
-        }
-    }
-
-    /// <summary>
     /// Apply settings changes from Settings UI (IPC event handler entry point)
     /// Only applies UI configuration changes. Hardware parameter changes (e.g., color temperature)
     /// should be triggered via custom actions to avoid unwanted side effects when non-hardware
@@ -296,51 +188,41 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Applies a saved profile by name and returns structured per-monitor/per-setting outcomes
-    /// for the IPC layer to build a <see cref="PowerDisplay.Contracts.CliApplyProfileResult"/>.
+    /// Applies a saved profile by name for the CLI/IPC path (best-effort). Loads the profile and,
+    /// when found, applies it through the shared fire-and-forget <see cref="ApplyProfileAsync"/>
+    /// path (identical to the GUI). Per-setting hardware failures are not surfaced: apply-profile is
+    /// a best-effort convenience command that reports success once the named profile exists.
     /// </summary>
-    /// <remarks>
-    /// Unlike <see cref="ApplyProfileByNameAsync"/> (which swallows outcomes), this method
-    /// captures success/failure per setting and returns them as a list of
-    /// <see cref="ProfileApplyOutcome"/> records. Hardware writes are performed sequentially
-    /// per monitor so that outcome ordering matches the profile's monitor list — the original
-    /// <see cref="ApplyProfileAsync"/> parallel writes are preserved for the GUI path.
-    /// </remarks>
     /// <param name="profileName">The name of the profile to apply.</param>
+    /// <param name="ct">Cancellation token; observed before the writes begin.</param>
     /// <returns>
-    /// One entry per <see cref="PowerDisplay.Models.ProfileMonitorSetting"/> in the profile.
-    /// <see cref="ProfileApplyOutcome.Connected"/> is <c>false</c> for monitors not currently
-    /// visible; otherwise <see cref="ProfileApplyOutcome.Changes"/> contains one entry per
-    /// setting that was present in the profile entry.
-    /// <para>
-    /// Returns <c>null</c> when the profile name is unknown (not found or invalid).
-    /// The IPC handler (Task 2.5) maps <c>null</c> to a
-    /// <see cref="PowerDisplay.Contracts.CliErrorResult"/> with
-    /// <c>CliErrorCodes.ArgumentError</c> / <c>CliExitCodes.ArgumentError</c> (exit code 7).
-    /// </para>
+    /// <c>true</c> when the profile was found and applied; <c>false</c> when the profile name is
+    /// unknown. The IPC handler maps <c>false</c> to ARGUMENT_ERROR / exit code 7.
     /// </returns>
-    public async Task<IReadOnlyList<ProfileApplyOutcome>?> ApplyProfileWithOutcomesAsync(string profileName, CancellationToken ct = default)
+    public async Task<bool> ApplyProfileForCliAsync(string profileName, CancellationToken ct = default)
     {
         try
         {
-            Logger.LogInfo($"[Profile] Applying profile with outcomes: {profileName}");
+            Logger.LogInfo($"[Profile] Applying profile for CLI: {profileName}");
 
             var profilesData = ProfileService.LoadProfiles();
             var profile = profilesData.GetProfile(profileName);
 
             if (profile == null || !profile.IsValid())
             {
-                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid (outcomes path)");
-                return null;
+                Logger.LogWarning($"[Profile] Profile '{profileName}' not found or invalid (CLI path)");
+                return false;
             }
 
-            var outcomes = await ApplyProfileWithOutcomesInternalAsync(profile.MonitorSettings, ct);
-            Logger.LogInfo($"[Profile] Completed apply with outcomes: {profileName}, {outcomes.Count} monitor(s)");
-            return outcomes;
+            ct.ThrowIfCancellationRequested();
+
+            await ApplyProfileAsync(profile.MonitorSettings);
+            Logger.LogInfo($"[Profile] Completed applying profile for CLI: {profileName}");
+            return true;
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[Profile] Failed to apply profile with outcomes '{profileName}': {ex.Message}");
+            Logger.LogError($"[Profile] Failed to apply profile for CLI '{profileName}': {ex.Message}");
             throw;
         }
     }
@@ -466,143 +348,6 @@ public partial class MainViewModel
         {
             await Task.WhenAll(updateTasks);
         }
-    }
-
-    /// <summary>
-    /// Outcome-capturing variant of <see cref="ApplyProfileAsync"/>. Used exclusively by
-    /// <see cref="ApplyProfileWithOutcomesAsync"/> (the IPC entry point). Hardware writes are
-    /// performed sequentially per monitor (not in parallel) so that each outcome can be
-    /// individually captured and attributed to its setting; this is acceptable because the
-    /// outcomes path is IPC-driven, not GUI-driven.
-    /// <para>
-    /// The <see cref="ApplyProfileAsync"/> (GUI) parallel path is NOT touched by this method.
-    /// </para>
-    /// </summary>
-    private async Task<IReadOnlyList<ProfileApplyOutcome>> ApplyProfileWithOutcomesInternalAsync(
-        List<ProfileMonitorSetting> monitorSettings,
-        CancellationToken ct)
-    {
-        if (LinkedLevelsActive)
-        {
-            Logger.LogInfo("[Profile] Disabling linked brightness before applying per-monitor profile values (outcomes path)");
-            LinkedLevelsActive = false;
-        }
-
-        var outcomes = new List<ProfileApplyOutcome>(monitorSettings.Count);
-
-        foreach (var setting in monitorSettings)
-        {
-            var monitorVm = Monitors.FirstOrDefault(m => MonitorIdComparer.Equal(m.Id, setting.MonitorId));
-
-            if (monitorVm == null)
-            {
-                // Monitor not in the live VM list — report disconnected, no changes attempted.
-                // Note: `Monitors` deliberately excludes user-hidden monitors, so a hidden but
-                // physically-connected monitor also lands here and is reported as not-connected.
-                // That is intentional: the CLI excludes hidden monitors from every operation
-                // (list/get/set), so apply-profile skips them too rather than writing to hardware the
-                // user chose to hide. A dedicated "hidden" outcome status would need a Contracts
-                // change and is deferred until there is a concrete need to distinguish the two.
-                outcomes.Add(new ProfileApplyOutcome(
-                    setting.MonitorId ?? string.Empty,
-                    Connected: false,
-                    Changes: Array.Empty<CliProfileChange>()));
-                continue;
-            }
-
-            // Collect per-setting outcomes sequentially (one at a time, in profile field order).
-            // We call _monitorManager directly (rather than MonitorViewModel.SetXxxAsync) so that
-            // MonitorOperationResult.IsSuccess is available to distinguish applied vs hardware-failure.
-            // MonitorViewModel UI state is NOT updated here — this path is IPC-only.
-            //
-            // IMPORTANT: Use the hardware-capability flags (monitorVm.SupportsBrightness etc.),
-            // NOT the UI-visibility flags (monitorVm.ShowBrightness etc.). A setting that is
-            // hidden in the Settings UI but physically supported by the hardware must still
-            // report "applied".
-            // Snapshot everything we need from the (UI-thread-owned) ViewModel up front, BEFORE the
-            // first await. A monitor hot-plug refresh (UpdateMonitorList) queued on the same
-            // dispatcher can run at an await point below and dispose/rebuild this VM; reading its
-            // fields after an await could observe a disposed/replaced instance. Capturing the
-            // immutable values now removes that race and is behavior-identical otherwise.
-            var colorTempSetting = CliSettingCatalog.TryGet(CliSettingNames.ColorTemperature)!;
-            var monitorId = monitorVm.Id;
-            var monitorNumber = monitorVm.MonitorNumber;
-            var monitorName = monitorVm.Name;
-            var supportsBrightness = monitorVm.SupportsBrightness;
-            var supportsContrast = monitorVm.SupportsContrast;
-            var supportsVolume = monitorVm.SupportsVolume;
-            var supportsColorTemperature = monitorVm.SupportsColorTemperature;
-            var colorTempSupported = monitorVm.VcpCapabilitiesInfo?.GetSupportedValues(colorTempSetting.VcpCode);
-            var changes = new List<CliProfileChange>(4);
-
-            // Continuous settings (no discrete value set) — pass null for supportedValues.
-            var brightnessOutcome = await TryRestoreWithOutcomeAsync(
-                setting.Brightness,
-                supportsBrightness,
-                CliSettingNames.Brightness,
-                monitorId,
-                v => v + "%",
-                _monitorManager.SetBrightnessAsync,
-                supportedValues: null,
-                ct);
-            if (brightnessOutcome is not null)
-            {
-                changes.Add(brightnessOutcome);
-            }
-
-            var contrastOutcome = await TryRestoreWithOutcomeAsync(
-                setting.Contrast,
-                supportsContrast,
-                CliSettingNames.Contrast,
-                monitorId,
-                v => v + "%",
-                _monitorManager.SetContrastAsync,
-                supportedValues: null,
-                ct);
-            if (contrastOutcome is not null)
-            {
-                changes.Add(contrastOutcome);
-            }
-
-            var volumeOutcome = await TryRestoreWithOutcomeAsync(
-                setting.Volume,
-                supportsVolume,
-                CliSettingNames.Volume,
-                monitorId,
-                v => v + "%",
-                _monitorManager.SetVolumeAsync,
-                supportedValues: null,
-                ct);
-            if (volumeOutcome is not null)
-            {
-                changes.Add(volumeOutcome);
-            }
-
-            // color-temperature is discrete: validate the profile value against the monitor's
-            // advertised set (via the shared catalog) so apply-profile agrees with `set`.
-            var colorTempOutcome = await TryRestoreWithOutcomeAsync(
-                setting.ColorTemperatureVcp,
-                supportsColorTemperature,
-                CliSettingNames.ColorTemperature,
-                monitorId,
-                v => MonitorDtoProjector.FormatDiscrete(colorTempSetting.VcpCode, v),
-                _monitorManager.SetColorTemperatureAsync,
-                colorTempSupported,
-                ct);
-            if (colorTempOutcome is not null)
-            {
-                changes.Add(colorTempOutcome);
-            }
-
-            outcomes.Add(new ProfileApplyOutcome(
-                monitorId,
-                Connected: true,
-                Changes: changes,
-                Number: monitorNumber,
-                Name: monitorName));
-        }
-
-        return outcomes;
     }
 
     /// <summary>

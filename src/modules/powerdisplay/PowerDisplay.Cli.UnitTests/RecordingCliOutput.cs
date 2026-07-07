@@ -37,7 +37,7 @@ internal sealed class RecordingCliOutput : ICliOutput
 
     public void WriteProfileListResult(CliProfileListResult r) => this.stdoutLines.Add("profiles");
 
-    public void WriteApplyProfileResult(CliApplyProfileResult r) => this.stdoutLines.Add("apply-profile:" + r.ExitCode);
+    public void WriteApplyProfileResult(CliApplyProfileResult r) => this.stdoutLines.Add("apply-profile:" + r.Profile);
 
     public void WriteError(CliErrorResult r)
     {

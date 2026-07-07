@@ -96,63 +96,23 @@ public class IpcDispatchTests
         Assert.AreEqual(0, output.StdoutLines.Count, "error envelope must not render via the success path");
     }
 
-    // ── apply-profile exit-code carried through IPC ───────────────────────────
-
-    /// <summary>
-    /// Verifies that when the app returns a canned CliApplyProfileResult with
-    /// ExitCode=2 (OutOfRange), the CLI dispatcher returns exit 2, NOT the old hardcoded 5
-    /// (HardwareFailure). This is the regression test for the apply-profile exit-code bug.
-    /// </summary>
+    // ── apply-profile always exits 0 (best-effort) ───────────────────────────
     [TestMethod]
-    public async Task ApplyProfile_OutOfRange_partial_failure_exits_2()
+    public async Task ApplyProfile_success_exits_0()
     {
         var output = new RecordingCliOutput();
         var responseJson = SerializeSuccess(
-            new CliApplyProfileResult
-            {
-                ExitCode = CliExitCodes.OutOfRange,
-                Profile = "Night",
-                Monitors = new List<CliProfileMonitorOutcome>
-                {
-                    new CliProfileMonitorOutcome
-                    {
-                        Monitor = new CliMonitorRef { Number = 1, Id = "MON1", Name = "Monitor A" },
-                        Connected = true,
-                        Changes = new List<CliProfileChange>
-                        {
-                            new CliProfileChange { Setting = "brightness", Value = 110, Status = CliProfileChange.StatusOutOfRange },
-                        },
-                    },
-                },
-            },
-            ContractsJsonContext.Default.CliApplyProfileResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Night"), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.OutOfRange, exit, "OutOfRange partial failure must return exit 2, not hardcoded HardwareFailure(5)");
-
-        // A partial-failure apply-profile result is a SUCCESS envelope (isError=false): it must route
-        // through the success renderer (stdout) and never WriteError — purely on the explicit discriminator.
-        Assert.AreEqual(1, output.StdoutLines.Count, "rendered via the success path");
-        Assert.AreEqual(0, output.StderrLines.Count, "must not go through WriteError");
-    }
-
-    [TestMethod]
-    public async Task ApplyProfile_full_success_exits_0()
-    {
-        var output = new RecordingCliOutput();
-        var responseJson = SerializeSuccess(
-            new CliApplyProfileResult
-            {
-                ExitCode = CliExitCodes.Ok,
-                Profile = "Work",
-                Monitors = new List<CliProfileMonitorOutcome>(),
-            },
+            new CliApplyProfileResult { Profile = "Work" },
             ContractsJsonContext.Default.CliApplyProfileResult);
         var dispatcher = MakeDispatcher(responseJson, output);
         var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Work"), CancellationToken.None);
 
-        Assert.AreEqual(CliExitCodes.Ok, exit);
+        Assert.AreEqual(CliExitCodes.Ok, exit, "apply-profile is best-effort and always exits 0 once the profile exists");
+
+        // apply-profile is a success envelope (isError=false): it must route through the success
+        // renderer (stdout) and never WriteError.
+        Assert.AreEqual(1, output.StdoutLines.Count, "rendered via the success path");
+        Assert.AreEqual(0, output.StderrLines.Count, "must not go through WriteError");
     }
 
     // ── schema-mismatch / undeserializable response → InternalError (9) ────────

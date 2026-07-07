@@ -367,16 +367,12 @@ public static class MonitorDtoProjector
             return null;
         }
 
-        Func<int, string> format = setting.Kind == CliSettingKind.Continuous
-            ? v => v + "%"
-            : v => FormatDiscrete(setting.VcpCode, v, customMappings, monitor.Id);
-
         return Reading(
             setting.Name,
             setting.Supports(monitor),
             monitor.ReadValues.HasFlag(setting.ReadFlag),
             setting.Current(monitor),
-            format);
+            v => setting.FormatDisplay(v, customMappings, monitor.Id));
     }
 
     /// <summary>

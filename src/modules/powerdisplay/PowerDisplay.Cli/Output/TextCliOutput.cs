@@ -149,36 +149,9 @@ public sealed class TextCliOutput : ICliOutput
 
     public void WriteApplyProfileResult(CliApplyProfileResult result)
     {
+        // apply-profile is best-effort: print a single confirmation line. Per-setting outcomes are
+        // intentionally not reported (see CliApplyProfileResult / ApplyProfileForCliAsync).
         _stdout.WriteLine(Resources.Text_AppliedProfile(result.Profile));
-        foreach (var m in result.Monitors)
-        {
-            if (!m.Connected)
-            {
-                _stdout.WriteLine($"  Monitor {m.Monitor.Id}: {Resources.Text_NotConnectedSkipped}");
-                continue;
-            }
-
-            var label = MonitorLabel(m.Monitor);
-            if (m.Changes.Count == 0)
-            {
-                _stdout.WriteLine($"  {label}: {Resources.Text_NoSettingsInProfile}");
-                continue;
-            }
-
-            foreach (var c in m.Changes)
-            {
-                var detail = c.Status switch
-                {
-                    CliProfileChange.StatusApplied => $"{c.Setting} → {c.Display}",
-                    CliProfileChange.StatusUnsupported => $"{c.Setting} {Resources.Text_NotSupported}",
-                    CliProfileChange.StatusOutOfRange => $"{c.Setting} {c.Value} {Resources.Text_OutOfRangeSkipped}",
-                    CliProfileChange.StatusInvalidDiscreteValue => $"{c.Setting} {c.Value} {Resources.Text_InvalidValueSkipped}",
-                    CliProfileChange.StatusHardwareFailure => $"{c.Setting} → {c.Value} {Resources.Text_Failed} ({c.Error})",
-                    _ => $"{c.Setting}: {c.Status}",
-                };
-                _stdout.WriteLine($"  {label}: {detail}");
-            }
-        }
     }
 
     public void WriteError(CliErrorResult result)
