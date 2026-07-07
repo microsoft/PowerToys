@@ -39,4 +39,30 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(0, new PowerDisplayProfile().Id);
         Assert.AreEqual(0, new PowerDisplayProfiles().NextId);
     }
+
+    [TestMethod]
+    public void GetById_ReturnsMatch_OrNullForZeroAndMissing()
+    {
+        var profiles = new PowerDisplayProfiles();
+        var a = MakeProfile("A", id: 1);
+        var b = MakeProfile("B", id: 2);
+        profiles.Profiles.Add(a);
+        profiles.Profiles.Add(b);
+
+        Assert.AreSame(b, profiles.GetById(2));
+        Assert.IsNull(profiles.GetById(0));
+        Assert.IsNull(profiles.GetById(99));
+    }
+
+    [TestMethod]
+    public void RemoveProfileById_RemovesWhenPresent()
+    {
+        var profiles = new PowerDisplayProfiles();
+        profiles.Profiles.Add(MakeProfile("A", id: 1));
+        profiles.Profiles.Add(MakeProfile("B", id: 2));
+
+        Assert.IsTrue(profiles.RemoveProfile(2));
+        Assert.AreEqual(1, profiles.Profiles.Count);
+        Assert.IsFalse(profiles.RemoveProfile(2));
+    }
 }

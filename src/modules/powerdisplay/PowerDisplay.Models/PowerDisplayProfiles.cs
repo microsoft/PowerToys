@@ -40,6 +40,14 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
+        /// Gets the profile by its stable id, or null when id is not positive or no profile has it.
+        /// </summary>
+        public PowerDisplayProfile? GetById(int id)
+        {
+            return id <= 0 ? null : Profiles.FirstOrDefault(p => p.Id == id);
+        }
+
+        /// <summary>
         /// Adds or updates a profile
         /// </summary>
         public void SetProfile(PowerDisplayProfile profile)
@@ -66,6 +74,22 @@ namespace PowerDisplay.Models
         public bool RemoveProfile(string name)
         {
             var profile = GetProfile(name);
+            if (profile != null)
+            {
+                Profiles.Remove(profile);
+                LastUpdated = DateTime.UtcNow;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Removes a profile by its stable id.
+        /// </summary>
+        public bool RemoveProfile(int id)
+        {
+            var profile = GetById(id);
             if (profile != null)
             {
                 Profiles.Remove(profile);
