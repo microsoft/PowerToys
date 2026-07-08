@@ -203,6 +203,27 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // await resuming on the UI thread. Explicitly dispatch.
         dispatcher.TryEnqueue(() =>
         {
+            // The setting may have been toggled back off while the
+            // background metrics measurement was running. Don't create
+            // an orphan window that shows while the feature is disabled.
+            var stillEnabled = App.Current.Services
+                .GetRequiredService<ISettingsService>()
+                .Settings.EnableTaskbar;
+            if (!stillEnabled)
+            {
+                metrics.Dispose();
+                return;
+            }
+
+            // Guard against a concurrent creation having already run
+            // (e.g. rapid off→on→off→on) so we don't leak a window.
+            if (_taskbarWindow is not null)
+            {
+                metrics.Dispose();
+                _taskbarWindow.Show();
+                return;
+            }
+
             _taskbarWindow = new TaskbarWindow(metrics);
             _taskbarWindow.Show();
         });

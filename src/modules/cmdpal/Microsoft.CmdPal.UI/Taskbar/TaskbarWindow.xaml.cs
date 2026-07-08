@@ -67,6 +67,14 @@ public sealed partial class TaskbarWindow : WindowEx,
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
 
         Activated += TaskbarWindow_Activated;
+
+        // Any close path (toggle-off in settings, QuitMessage, app
+        // shutdown, or user-initiated) must fully tear down native
+        // resources. Wiring Closed → Dispose guarantees the watcher's
+        // OS WinEvent hooks, timers, and event subscriptions are
+        // released so nothing fires against the destroyed window.
+        Closed += TaskbarWindow_Closed;
+
         UpdateFrame();
 
         MainContent.Content = _bandsControl;
@@ -126,6 +134,14 @@ public sealed partial class TaskbarWindow : WindowEx,
         UpdateFrame();
     }
 
+    private void TaskbarWindow_Closed(object sender, WindowEventArgs args)
+    {
+        // Fully release native resources on close. Without this, the
+        // TaskbarWatcher's WinEvent hooks (and theme/timer callbacks)
+        // keep firing against a destroyed window and crash.
+        Dispose();
+    }
+
     private void UpdateFrame()
     {
         // These are used for removing the very subtle shadow/border that we get from Windows 11
@@ -152,7 +168,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void OnTaskbarChanged()
     {
-        if (_bandsControl.IsEditMode || _clipSuspended)
+        if (_disposed || _bandsControl.IsEditMode || _clipSuspended)
         {
             return;
         }
@@ -228,6 +244,12 @@ public sealed partial class TaskbarWindow : WindowEx,
     /// </summary>
     private void AutoHidePollTick(DispatcherQueueTimer sender, object args)
     {
+        if (_disposed)
+        {
+            sender.Stop();
+            return;
+        }
+
         var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
         if (shellTray.IsNull)
         {
@@ -814,7 +836,18 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        DispatcherQueue.TryEnqueue(ApplySystemTheme);
+        if (_disposed)
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!_disposed)
+            {
+                ApplySystemTheme();
+            }
+        });
     }
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)

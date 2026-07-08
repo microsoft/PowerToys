@@ -937,11 +937,17 @@ public sealed partial class DockViewModel : IDisposable
         _settings = WithActiveBands(
             activeStart.RemoveAll(b => b.CommandId == bandId),
             activeCenter.RemoveAll(b => b.CommandId == bandId),
-            activeEnd.RemoveAll(b => b.CommandId == bandId));
+            activeEnd.RemoveAll(b => b.CommandId == bandId)) with
+        {
+            // The taskbar is a single global list (only the primary display has a
+            // taskbar), so remove from it here too when this dock owns it.
+            TaskbarBands = _settings.TaskbarBands.RemoveAll(b => b.CommandId == bandId),
+        };
 
         RemoveBandFromCollection(StartItems, bandId);
         RemoveBandFromCollection(CenterItems, bandId);
         RemoveBandFromCollection(EndItems, bandId);
+        RemoveBandFromCollection(TaskbarItems, bandId);
 
         Logger.LogDebug($"Removed band {bandId} from monitor {_monitorDeviceId} (cross-monitor drag)");
     }
@@ -972,6 +978,7 @@ public sealed partial class DockViewModel : IDisposable
         var bandVm = CreateBandItem(bandSettings, topLevel.ItemViewModel);
 
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
+        var newTaskbar = _settings.TaskbarBands;
 
         switch (targetSide)
         {
@@ -1001,9 +1008,18 @@ public sealed partial class DockViewModel : IDisposable
                 EndItems.Insert(uiIdx, bandVm);
                 break;
             }
+
+            case DockPinSide.Taskbar:
+            {
+                var idx = Math.Min(targetIndex, newTaskbar.Count);
+                newTaskbar = newTaskbar.Insert(idx, bandSettings);
+                var uiIdx = Math.Min(targetIndex, TaskbarItems.Count);
+                TaskbarItems.Insert(uiIdx, bandVm);
+                break;
+            }
         }
 
-        _settings = WithActiveBands(activeStart, activeCenter, activeEnd);
+        _settings = WithActiveBands(activeStart, activeCenter, activeEnd) with { TaskbarBands = newTaskbar };
 
         bandVm.SnapshotShowLabels();
         Task.Run(() =>

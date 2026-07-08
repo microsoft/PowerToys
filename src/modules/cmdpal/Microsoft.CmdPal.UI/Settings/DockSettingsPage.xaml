@@ -54,6 +54,12 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.EnableTaskbar, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <InfoBar
+                        x:Uid="Settings_GeneralPage_EnableTaskbar_PrimaryOnly_InfoBar"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.EnableTaskbar, Mode=OneWay}"
+                        Severity="Informational" />
+
                     <!--  Appearance Section  -->
                     <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 

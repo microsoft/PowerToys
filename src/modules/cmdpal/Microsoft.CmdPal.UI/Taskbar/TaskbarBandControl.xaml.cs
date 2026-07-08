@@ -23,7 +23,8 @@ namespace Microsoft.CmdPal.UI.Taskbar;
 public sealed partial class TaskbarBandControl : UserControl,
     IRecipient<CloseContextMenuMessage>,
     IRecipient<EnterEditModeMessage>,
-    IRecipient<ExitEditModeMessage>
+    IRecipient<ExitEditModeMessage>,
+    IRecipient<CrossMonitorBandDropMessage>
 {
     private DockViewModel _viewModel;
     private bool _isEditMode;
@@ -55,6 +56,7 @@ public sealed partial class TaskbarBandControl : UserControl,
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
 
         UpdateEditMode(false);
     }
@@ -477,6 +479,18 @@ public sealed partial class TaskbarBandControl : UserControl,
         });
     }
 
+    public void Receive(CrossMonitorBandDropMessage message)
+    {
+        // Only react when the band was dragged out of the taskbar onto a dock.
+        // Real monitor device IDs are handled by the dock controls themselves.
+        if (!string.Equals(message.SourceMonitorDeviceId, CrossMonitorBandDropMessage.TaskbarSourceId, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(() => _viewModel.RemoveBandById(message.BandId));
+    }
+
     private void RootPanel_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
         if (_isEditMode)
@@ -543,14 +557,23 @@ public sealed partial class TaskbarBandControl : UserControl,
             _draggedBand = band;
             _viewModel.DraggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
+
+            // Advertise cross-window drag data so a dock on any monitor can
+            // accept this band. The taskbar has no monitor ID, so use the
+            // taskbar sentinel as the source identifier.
+            e.Data.Properties["DockBandId"] = band.Id;
+            e.Data.Properties["SourceMonitorDeviceId"] = CrossMonitorBandDropMessage.TaskbarSourceId;
         }
     }
 
     private void BandsListView_DragOver(object sender, DragEventArgs e)
     {
-        // Accept drops from this window (_draggedBand) or from the dock
-        // window (shared via _viewModel.DraggedBand)
-        if (_draggedBand != null || _viewModel.DraggedBand != null)
+        // Accept drops from this window (_draggedBand), from a same-VM drag
+        // (shared _viewModel.DraggedBand), or a cross-window drag from a dock
+        // on another monitor (advertised via the DockBandId data property).
+        if (_draggedBand != null
+            || _viewModel.DraggedBand != null
+            || e.DataView.Properties.ContainsKey("DockBandId"))
         {
             e.AcceptedOperation = DataPackageOperation.Move;
         }
@@ -578,6 +601,11 @@ public sealed partial class TaskbarBandControl : UserControl,
         var draggedBand = _draggedBand ?? _viewModel.DraggedBand;
         if (draggedBand == null)
         {
+            // Cross-window drag from a dock that uses a different DockViewModel
+            // instance (per-monitor). The dragged band isn't shared in-process,
+            // so recreate it from the advertised drag data instead.
+            HandleCrossWindowDrop(e);
+            ResetListViewState(sender);
             return;
         }
 
@@ -590,6 +618,29 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         ResetListViewState(sender);
+    }
+
+    private void HandleCrossWindowDrop(DragEventArgs e)
+    {
+        if (e.DataView.Properties.TryGetValue("DockBandId", out var bandIdObj) &&
+            e.DataView.Properties.TryGetValue("SourceMonitorDeviceId", out var sourceObj) &&
+            bandIdObj is string bandId &&
+            sourceObj is string sourceMonitorDeviceId)
+        {
+            // Drags that started in the taskbar itself are handled by the local
+            // path above; ignore them here.
+            if (string.Equals(sourceMonitorDeviceId, CrossMonitorBandDropMessage.TaskbarSourceId, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            var dropIndex = GetDropIndex(BandsListView, e, _viewModel.TaskbarItems.Count);
+            _viewModel.AcceptBandFromMonitor(bandId, DockPinSide.Taskbar, dropIndex);
+
+            // Tell the source dock to remove the band from its own list.
+            WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));
+            e.Handled = true;
+        }
     }
 
     private int GetDropIndex(ListView listView, DragEventArgs e, int itemCount)

@@ -12,6 +12,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 /// </summary>
 public sealed class CrossMonitorBandDropMessage
 {
+    /// <summary>
+    /// Sentinel <see cref="SourceMonitorDeviceId"/> value used when a band is
+    /// dragged out of (or into) the taskbar band control rather than a
+    /// per-monitor dock. The taskbar is a single global band list with no
+    /// monitor device ID, so this sentinel routes removal to it instead of a
+    /// specific per-monitor dock.
+    /// </summary>
+    public const string TaskbarSourceId = "<taskbar>";
+
     public string BandId { get; }
 
     public string SourceMonitorDeviceId { get; }

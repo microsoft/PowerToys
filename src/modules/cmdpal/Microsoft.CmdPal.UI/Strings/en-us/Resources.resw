@@ -488,6 +488,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_EnableTaskbar_SettingsCard.Description" xml:space="preserve">
     <value>Embed command bands directly in the Windows taskbar</value>
   </data>
+  <data name="Settings_GeneralPage_EnableTaskbar_PrimaryOnly_InfoBar.Title" xml:space="preserve">
+    <value>Primary taskbar only</value>
+  </data>
+  <data name="Settings_GeneralPage_EnableTaskbar_PrimaryOnly_InfoBar.Message" xml:space="preserve">
+    <value>Command bands appear on your primary display's taskbar only. Taskbars on additional monitors aren't supported.</value>
+  </data>
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Header" xml:space="preserve">
     <value>Always stay on top</value>
   </data>
