@@ -834,9 +834,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Create a new profile
+        /// Create a new profile (its stable id is assigned on save).
         /// </summary>
-        public void CreateProfile(PowerDisplayProfile profile)
+        public void CreateProfile(PowerDisplayProfile profile) => UpsertProfile(profile, isNew: true);
+
+        /// <summary>
+        /// Update an existing profile. The profile's stable id is the key, so this replaces the
+        /// matching entry in place (a rename keeps the same id).
+        /// </summary>
+        public void UpdateProfile(PowerDisplayProfile profile) => UpsertProfile(profile, isNew: false);
+
+        /// <summary>
+        /// Adds a new profile or replaces an existing one, keyed by the profile's stable id
+        /// (<c>0</c> => a fresh id is assigned; an existing id replaces in place), then reloads the
+        /// list and signals PowerDisplay. Create and edit share this one id-keyed upsert.
+        /// </summary>
+        private void UpsertProfile(PowerDisplayProfile profile, bool isNew)
         {
             try
             {
@@ -846,7 +859,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Logger.LogInfo($"Creating profile: {profile.Name}");
+                Logger.LogInfo($"{(isNew ? "Creating" : "Updating")} profile: {profile.DisplayName}");
 
                 ProfileHelper.AddOrUpdateProfile(profile);
 
@@ -856,43 +869,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Signal PowerDisplay to reload profiles
                 SignalSettingsUpdated();
 
-                Logger.LogInfo($"Profile '{profile.Name}' created successfully");
+                Logger.LogInfo($"Profile '{profile.DisplayName}' {(isNew ? "created" : "updated")} successfully");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to create profile: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Update an existing profile. The profile's stable id is the key, so this replaces the
-        /// matching entry in place (a rename keeps the same id).
-        /// </summary>
-        public void UpdateProfile(PowerDisplayProfile updatedProfile)
-        {
-            try
-            {
-                if (updatedProfile == null || !updatedProfile.IsValid())
-                {
-                    Logger.LogWarning("Invalid profile");
-                    return;
-                }
-
-                Logger.LogInfo($"Updating profile: {updatedProfile.DisplayName}");
-
-                ProfileHelper.AddOrUpdateProfile(updatedProfile);
-
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
-                SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile '{updatedProfile.DisplayName}' updated successfully");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to update profile: {ex.Message}");
+                Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile: {ex.Message}");
             }
         }
 

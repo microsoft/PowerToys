@@ -154,6 +154,22 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Loads the saved profiles and returns the valid profile with the given id, or null (logging a
+    /// warning under <paramref name="logPrefix"/>) when it is missing or invalid.
+    /// </summary>
+    private static PowerDisplayProfile? LoadValidProfileById(int profileId, string logPrefix)
+    {
+        var profile = ProfileService.LoadProfiles().GetById(profileId);
+        if (profile == null || !profile.IsValid())
+        {
+            Logger.LogWarning($"{logPrefix} Profile id {profileId} not found or invalid");
+            return null;
+        }
+
+        return profile;
+    }
+
+    /// <summary>
     /// Apply profile by id (called via Named Pipe from Settings UI). Preserves GUI behavior;
     /// only the lookup key changed from name to the stable id.
     /// </summary>
@@ -164,12 +180,9 @@ public partial class MainViewModel
         {
             Logger.LogInfo($"[Profile] Applying profile by id: {profileId}");
 
-            var profilesData = ProfileService.LoadProfiles();
-            var profile = profilesData.GetById(profileId);
-
-            if (profile == null || !profile.IsValid())
+            var profile = LoadValidProfileById(profileId, "[Profile]");
+            if (profile == null)
             {
-                Logger.LogWarning($"[Profile] Profile id {profileId} not found or invalid");
                 return;
             }
 
@@ -202,13 +215,9 @@ public partial class MainViewModel
             {
                 Logger.LogInfo($"[LightSwitch Integration] Applying profile id: {profileId.Value}");
 
-                // Load and apply the profile
-                var profilesData = ProfileService.LoadProfiles();
-                var profile = profilesData.GetById(profileId.Value);
-
-                if (profile == null || !profile.IsValid())
+                var profile = LoadValidProfileById(profileId.Value, "[LightSwitch Integration]");
+                if (profile == null)
                 {
-                    Logger.LogWarning($"[LightSwitch Integration] Profile id {profileId.Value} not found or invalid");
                     return;
                 }
 
