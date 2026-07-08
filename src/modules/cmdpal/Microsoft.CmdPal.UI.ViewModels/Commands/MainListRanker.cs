@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -42,7 +41,10 @@ internal static class MainListRanker
     /// Maps a per-provider <see cref="ProviderSearchWeight"/> to an additive within-tier
     /// bonus. Lower subtracts, Normal is neutral, Higher adds. The enum's underlying value is
     /// the sign of the nudge, so the result is simply the weight times
-    /// <see cref="ProviderWeightBonus"/>.
+    /// <see cref="ProviderWeightBonus"/>. Note the nudge is slightly asymmetric at the tier
+    /// floor: <see cref="Pack"/> clamps the within-tier score to a non-negative band, so a
+    /// Lower nudge on an item already scoring near 0 (weak match, no history) can clamp to 0
+    /// and read the same as Normal, whereas Higher always applies.
     /// </summary>
     public static double ProviderBonus(ProviderSearchWeight weight) => (int)weight * ProviderWeightBonus;
 
