@@ -267,8 +267,8 @@
                                 HorizontalAlignment="Stretch"
                                 Minimum="0"
                                 SpinButtonPlacementMode="Compact"
-                                Value="{x:Bind EditingSize.Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}"
-                                Visibility="{x:Bind EditingSize.IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                Visibility="{x:Bind EditingSize.IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Value="{x:Bind EditingSize.Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
                         </Grid>
 
                         <ComboBox
