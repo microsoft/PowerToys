@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate PowerToys module UI tests from the legacy WinAppDriver/Selenium harness (Microsoft.PowerToys.UITest) to the new winappcli-based harness (Microsoft.PowerToys.UITest.Next). Use when asked to port/convert/rewrite/modernize a module's UI tests to the .Next framework, create a new [Module].UITests.Next project alongside existing legacy tests, or stand up brand-new winappcli UI tests for a module that has none by reading its human test sign-off markdown. Covers the API mapping (By/Element/Session/UITestBase, KeyboardHelper/MouseHelper/ClipboardHelper), project/csproj scaffolding, naming rules, common PowerToys test recipes (toggle a module, read an activation shortcut, fire a global hotkey, inspect the clipboard, discover overlay/editor windows), and build/run validation. Keywords: UI test, UITests, UITestAutomation, UITestAutomation.Next, winappcli, winapp.exe, WinAppDriver, Selenium, Appium, migrate, port, convert, modernize, .Next, end-to-end, E2E, MSTest."
+description: "Migrate PowerToys module UI tests from the legacy WinAppDriver/Selenium harness (Microsoft.PowerToys.UITest) to the new winappcli-based harness (Microsoft.PowerToys.UITest.Next). Use when asked to port/convert/rewrite/modernize a module's UI tests to the .Next framework, create a new [Module].UITests.Next project alongside existing legacy tests, or stand up brand-new winappcli UI tests for a module that has none by reading its human test sign-off markdown. Covers the API mapping (By/Element/Session/UITestBase, KeyboardHelper/MouseHelper/ClipboardHelper), project/csproj scaffolding, naming rules, common PowerToys test recipes (toggle a module, read an activation shortcut, fire a global hotkey, inspect the clipboard, discover overlay/editor windows), build/run validation, and CI-stability hardening for fewer CI iterations. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, migrate, port, modernize, .Next, MSTest, CI stability, flaky test, stabilize on CI."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -70,6 +70,12 @@ module, which tests) comes from the calling prompt.
    for the recurring PowerToys patterns (toggle a module + verify its process, read the activation
    shortcut from a `ShortcutControl`, fire a global hotkey reliably, inspect the clipboard, discover
    overlay/editor windows) and the gotchas that bite during migration.
+7. **[references/ci-stability.md](references/ci-stability.md)** — the CI-stability capstone: the
+   Win32-window vs UIA-element mental model, five design principles that keep a port green on a slow
+   CI agent (authoritative-signal retries over fixed sleeps, invoke-vs-physical-click, screen-capture
+   cold-start, toggle-state guards, on-screen/DPI/clean-profile hygiene), and a **pre-flight
+   checklist** to apply BEFORE the first CI push so the first run *validates* instead of *discovers*.
+   Read this to spend one CI iteration instead of six.
 
 ## Pick your scenario
 
@@ -114,8 +120,12 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
         — references/project-setup.md
 - [ ] 6. Re-implement tests, mapping each API as you go — references/api-mapping.md
         + recipes from references/patterns-and-pitfalls.md
-- [ ] 7. Build the new project to exit code 0 — this SKILL.md "Build & validate"
-- [ ] 8. (If a live desktop is available) run the tests; otherwise report that they build and are
+- [ ] 7. Apply the CI-stability checklist BEFORE building — references/ci-stability.md
+        (authoritative-signal retries not fixed sleeps, navigation via UIA invoke, Win32 window/overlay
+        detection, screen-capture cold-start handling, DPI manifest, single-module enable, first-run
+        suppression)
+- [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
+- [ ] 9. (If a live desktop is available) run the tests; otherwise report that they build and are
         ready to run, and summarize coverage vs. the source
 ```
 
@@ -144,6 +154,12 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
 #    Exit 0 = all passed. Parse the .trx for per-test outcomes + failure messages.
 ```
 
+- **Design for CI stability up-front — [references/ci-stability.md](references/ci-stability.md).**
+  Before the first push, walk its pre-flight checklist (authoritative-signal retries instead of fixed
+  sleeps, navigation via UIA invoke, Win32 window/overlay detection, screen-capture cold-start
+  handling, DPI manifest, single-module enable, first-run suppression). Most "passes local, fails CI"
+  loops come from skipping one of these; applying them proactively is how you spend one CI iteration
+  instead of six.
 - **Run it in a loop: write → build → run → diagnose → repeat.** UI tests surface environment-real
   failures (DPI scaling, cursor position, hotkey-arming races) that only a live run reveals. Start
   with one deterministic test (e.g. the activation/toggle test), get it green, then widen.

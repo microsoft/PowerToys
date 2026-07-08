@@ -11,6 +11,9 @@ Two common shapes. Prefer the NavigationView item by `AutomationId` when the mod
 
 ```csharp
 // Stable: the left-nav item (a ListItem) by AutomationId. Expand the parent group first if needed.
+// NavigationViewItem.Click() is a coordinate-free UIA invoke (the harness overrides it) — race-safe
+// even as the FIRST interaction right after Settings opens, and immune to nav-pane scroll/overflow
+// (a physical click there is silently dropped before the window is interactive; see Pitfall 19).
 if (Session.Has(By.AccessibilityId("ScreenRulerNavItem"), 500) == false)
 {
     Session.Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem")).Click(msPostAction: 500);
@@ -276,6 +279,42 @@ Thread.Sleep(400);
 MouseHelper.LeftClick();               // or Drag(...) for a free-form box
 ```
 
+## Recipe 12 — Drive a screen-capture module (cold-start + Win32 overlay presence)
+
+Modules built on Windows.Graphics.Capture (Screen Ruler spacing, Magnifier, Text Extractor, screenshot
+tools) need three habits a warm dev box hides — see [ci-stability.md](ci-stability.md) Principle 3. The
+ScreenRuler port is the reference (`SelectToolAndVerify` / `MeasureWithRetry` / `ReengageTool` /
+`IsMeasureOverlayPresent`).
+
+```csharp
+// 1) Detect the capture overlay with Win32 EnumWindows — NOT winappcli list-windows/Inspect, which
+//    attaches a UIA client and empties the live capture (Pitfall 18).
+private static bool IsOverlayPresent(string processName)
+{
+    var pids = Process.GetProcessesByName(processName).Select(p => p.Id).ToList();
+    return WindowControl.EnumerateProcessWindows(pids)
+        .Any(w => w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
+}
+
+// 2) Engage the tool, then RETRY until the authoritative signal (the overlay window) confirms — the
+//    tool's UIA tree exists before the window is interactive, so an early press is silently dropped.
+var deadline = DateTime.UtcNow.AddSeconds(25);
+while (!IsOverlayPresent(proc) && DateTime.UtcNow < deadline)
+{
+    var tool = ruler.Find<Element>(By.AccessibilityId("Button_Spacing"), 8_000);
+    if (tool.GetProperty("ToggleState") != "On") tool.Click(msPostAction: 300);  // guard: don't toggle it off
+    MouseHelper.MoveTo(cx, cy); Thread.Sleep(500);                                // leave the toolbar onto the surface
+}
+
+// 3) Measure, retrying IN PLACE while the clipboard is empty (the WGC first frame cold-starts). If the
+//    in-place retries yield nothing, re-engage ONCE (toggle off+on = a fresh capture session) to
+//    recover a genuine stall — never close/reopen every attempt (that resets the cold-start).
+string result = MeasureWithRetry(() => { MouseHelper.MoveTo(cx, cy); MouseHelper.LeftClick(); }, maxAttempts: 5);
+```
+
+> Each test spawns its own module process = its own capture session = its own cold-start; there is no
+> cross-test warming, so every capture test must tolerate the first-frame delay on its own.
+
 ---
 
 ## Pitfalls
@@ -355,3 +394,17 @@ MouseHelper.LeftClick();               // or Drag(...) for a free-form box
     `openedAtFirstLaunch=true` + `settings.json` `show_whats_new_after_updates=false`, mirroring the
     runner's own gating). If you drive coordinate gestures and see "passes local, empty result on CI",
     suspect a stray fresh-run window first.
+18. **Never walk a live screen-capture window's UIA tree.** winappcli `list-windows` / `Inspect` (and
+    any `Find` that enumerates the overlay) attaches a UI Automation client, and walking the tree
+    **disturbs a Windows.Graphics.Capture session** — the very next frame comes back empty, so the
+    measurement is blank with no error. Detect capture overlays with Win32
+    `WindowControl.EnumerateProcessWindows` (by class/title) and read the result from the **clipboard**,
+    not the overlay's UIA. (Reading UIA on a *non*-capture window is fine.) See Recipe 12 and the
+    Win32-window vs UIA-element mental model in [ci-stability.md](ci-stability.md).
+19. **A physical click on the FIRST interaction after a window appears is racy.** A window's UIA tree
+    exists a moment before the window is interactive-for-mouse-input, so a real click that lands early
+    is silently dropped — flaky, and only on slower agents (it cost a Win10-only "NavigationViewItem
+    not found" until navigation was moved to UIA invoke). Navigation is almost always the first
+    interaction: activate a `NavigationViewItem` with `By.AccessibilityId(...).Click()` (the harness
+    routes it to a coordinate-free UIA invoke), not a raw `MouseHelper`/`MouseClick`. See
+    [ci-stability.md](ci-stability.md) Principle 2.
