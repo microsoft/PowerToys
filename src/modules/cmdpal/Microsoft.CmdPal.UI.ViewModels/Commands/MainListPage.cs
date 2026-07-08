@@ -790,14 +790,12 @@ public sealed partial class MainListPage : DynamicListPage,
         var lexicalQuality = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0) + extensionScore;
 
         var matchedLexically = nameScore > 0 || rawSubtitleScore > 0 || rawExtensionScore > 0;
-        if (!matchedLexically && !isFallback && !isAliasMatch && !isAliasSubstringMatch)
-        {
-            return 0;
-        }
 
         // The hard tier decides ordering; frecency and the alias-substring nudge only
-        // reorder items that already share a tier.
-        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, matchedLexically);
+        // reorder items that already share a tier. ClassifyTier returns None precisely when
+        // nothing matched (no lexical, alias, or fallback signal), so this single gate also
+        // filters non-matches - no separate pre-check is needed.
+        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, isAliasSubstringMatch, matchedLexically);
         if (tier == RankTier.None)
         {
             return 0;
