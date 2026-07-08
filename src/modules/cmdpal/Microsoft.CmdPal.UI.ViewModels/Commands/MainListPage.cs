@@ -89,6 +89,20 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private CancellationTokenSource? _cancellationTokenSource;
 
+    // Search telemetry. Emitted only when a search settles (trailing-edge debounce) so we never
+    // send an event on every keystroke, and only for non-identifying aggregates (query length,
+    // result count, latency) - never the raw query text. Selection telemetry is emitted from
+    // UpdateHistory. All emission is measured at boundaries, never inside the per-item scoring loop.
+    private static readonly TimeSpan SearchTelemetrySettleDelay = TimeSpan.FromMilliseconds(600);
+    private readonly ThrottledDebouncedAction _searchTelemetryDebounce;
+    private readonly Lock _searchTelemetryLock = new();
+    private (int QueryLength, int ResultCount, long LatencyMs) _pendingSearchTelemetry;
+
+    // Snapshots of the most recent rendered search results, read off the hot path (only when the
+    // user invokes a result) to resolve the invoked item's visible rank and ranker tier.
+    private IReadOnlyList<IListItem>? _lastSearchViewItems;
+    private IReadOnlyList<RoScored<IListItem>>? _lastScoredGlobalFallbacks;
+
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
     private DateTimeOffset _last = DateTimeOffset.UtcNow;
 #endif
@@ -152,6 +166,8 @@ public sealed partial class MainListPage : DynamicListPage,
             RaiseItemsChangedThrottle);
 
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
+
+        _searchTelemetryDebounce = new ThrottledDebouncedAction(EmitSearchResultsTelemetry, SearchTelemetrySettleDelay);
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -280,7 +296,7 @@ public sealed partial class MainListPage : DynamicListPage,
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
             .ToList();
 
-        return MainListPageResultFactory.Create(
+        var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
             _filteredApps,
@@ -288,6 +304,14 @@ public sealed partial class MainListPage : DynamicListPage,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit);
+
+        // Snapshot the rendered order and the (packed-score) global fallbacks so selection
+        // telemetry can resolve an invoked item's rank and tier off the hot path. These are
+        // plain reference assignments - no extra allocation on the render path.
+        _lastSearchViewItems = result;
+        _lastScoredGlobalFallbacks = validScoredFallbacks;
+
+        return result;
     }
 
     // Scores the current global-fallback snapshot against its query using the supplied ranker,
@@ -512,6 +536,12 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 _filteredItemsIncludesApps = _includeApps;
                 ClearResults();
+
+                // Drop any pending settled-search telemetry so a cleared query never emits.
+                _searchTelemetryDebounce.Cancel();
+                _lastSearchViewItems = null;
+                _lastScoredGlobalFallbacks = null;
+
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
                 RequestRefresh(fullRefresh: true, interval: wasAlreadyEmpty ? null : TimeSpan.Zero);
 
@@ -654,6 +684,18 @@ public sealed partial class MainListPage : DynamicListPage,
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
+
+            // Queue a settled-search telemetry event. This measures the deterministic first-paint
+            // results (commands + capped apps) and the latency to produce them, at this boundary -
+            // never inside the per-item scoring loop. The event is debounced so it is emitted only
+            // when the query settles, not on every keystroke, and it carries the query LENGTH only.
+            if (isUserInput)
+            {
+                var deterministicResultCount = (_filteredItems?.Length ?? 0)
+                    + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
+                QueueSearchResultsTelemetry(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
+            }
+
             if (isUserInput)
             {
                 // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
@@ -813,6 +855,159 @@ public sealed partial class MainListPage : DynamicListPage,
         {
             RecentCommands = state.RecentCommands.WithHistoryItem(id),
         });
+
+        EmitSelectionTelemetry(topLevelOrAppItem);
+    }
+
+    // Emits selection telemetry when the user invokes a result during an active search. Runs only
+    // on invoke (a deliberate, infrequent user action - never on the typing/scoring path) and
+    // captures only non-identifying aggregates: the query LENGTH, the invoked item's visible rank,
+    // and its ranker tier. Nothing is emitted for the default (no-search) view, or when the invoked
+    // item is not among the last rendered search results.
+    private void EmitSelectionTelemetry(IListItem invoked)
+    {
+        var searchText = SearchText;
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            return;
+        }
+
+        var index = ResolveVisibleIndex(_lastSearchViewItems, invoked, _resultsSeparator, _fallbacksSeparator);
+        if (index < 0)
+        {
+            return;
+        }
+
+        var packed = (_filteredItems ?? Enumerable.Empty<RoScored<IListItem>>())
+            .Concat(_filteredApps ?? Enumerable.Empty<RoScored<IListItem>>())
+            .Concat(_lastScoredGlobalFallbacks ?? Enumerable.Empty<RoScored<IListItem>>());
+
+        var tier = ResolveSelectedTier(invoked, packed, _fallbackItems);
+        if (tier == RankTier.None)
+        {
+            return;
+        }
+
+        WeakReferenceMessenger.Default.Send(BuildSearchSelectedMessage(searchText, index, tier));
+    }
+
+    // Stores the latest settled-search metrics and (re)arms the debounce. Only the query LENGTH is
+    // retained - the query text is never stored for telemetry.
+    private void QueueSearchResultsTelemetry(int queryLength, int resultCount, long latencyMs)
+    {
+        lock (_searchTelemetryLock)
+        {
+            _pendingSearchTelemetry = (queryLength, resultCount, latencyMs);
+        }
+
+        _searchTelemetryDebounce.Invoke();
+    }
+
+    private void EmitSearchResultsTelemetry()
+    {
+        (int QueryLength, int ResultCount, long LatencyMs) snapshot;
+        lock (_searchTelemetryLock)
+        {
+            snapshot = _pendingSearchTelemetry;
+        }
+
+        if (snapshot.QueryLength <= 0)
+        {
+            return;
+        }
+
+        WeakReferenceMessenger.Default.Send(
+            BuildSearchResultsMessage(snapshot.QueryLength, snapshot.ResultCount, snapshot.LatencyMs));
+    }
+
+    // Builds the settled-search telemetry payload from a query string, capturing only its LENGTH.
+    // Exposed for tests to prove the raw query text is never carried.
+    internal static TelemetrySearchResultsMessage BuildSearchResultsMessage(string query, int resultCount, long latencyMs)
+        => BuildSearchResultsMessage(query?.Length ?? 0, resultCount, latencyMs);
+
+    internal static TelemetrySearchResultsMessage BuildSearchResultsMessage(int queryLength, int resultCount, long latencyMs)
+    {
+        var length = Math.Max(queryLength, 0);
+        var count = Math.Max(resultCount, 0);
+        var latency = latencyMs < 0 ? 0UL : (ulong)latencyMs;
+        return new TelemetrySearchResultsMessage(length, count, count == 0, latency);
+    }
+
+    // Builds the selection telemetry payload, capturing only the query LENGTH, the selected rank,
+    // and the ranker tier. Exposed for tests to prove the raw query text is never carried.
+    internal static TelemetrySearchResultSelectedMessage BuildSearchSelectedMessage(string query, int selectedIndex, RankTier selectedTier)
+        => new(query?.Length ?? 0, selectedIndex, selectedTier);
+
+    // Zero-based visible rank of an invoked item within the rendered results, skipping the section
+    // separators. Returns -1 when the item is not present (e.g. it was invoked from a different view).
+    internal static int ResolveVisibleIndex(IReadOnlyList<IListItem>? renderedResults, IListItem invoked, params IListItem[] separators)
+    {
+        if (renderedResults is null)
+        {
+            return -1;
+        }
+
+        var visible = 0;
+        foreach (var item in renderedResults)
+        {
+            var isSeparator = false;
+            foreach (var separator in separators)
+            {
+                if (ReferenceEquals(item, separator))
+                {
+                    isSeparator = true;
+                    break;
+                }
+            }
+
+            if (isSeparator)
+            {
+                continue;
+            }
+
+            if (ReferenceEquals(item, invoked))
+            {
+                return visible;
+            }
+
+            visible++;
+        }
+
+        return -1;
+    }
+
+    // Resolves the ranker tier of an invoked item. Packed sources (commands, apps, global
+    // fallbacks) decode their tier via MainListRanker.TierOf; common fallbacks carry rank-based
+    // (non-packed) scores, so they are reported at the fallback floor. Returns None when the item
+    // is not found in any source.
+    internal static RankTier ResolveSelectedTier(
+        IListItem invoked,
+        IEnumerable<RoScored<IListItem>>? packedResults,
+        IEnumerable<RoScored<IListItem>>? fallbackResults)
+    {
+        if (packedResults is not null)
+        {
+            foreach (var scored in packedResults)
+            {
+                if (ReferenceEquals(scored.Item, invoked))
+                {
+                    return MainListRanker.TierOf(scored.Score);
+                }
+            }
+        }
+
+        if (fallbackResults is not null)
+        {
+            foreach (var scored in fallbackResults)
+            {
+                if (ReferenceEquals(scored.Item, invoked))
+                {
+                    return RankTier.FallbackFloor;
+                }
+            }
+        }
+
+        return RankTier.None;
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -865,6 +1060,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _fallbackUpdateManager.Dispose();
+        _searchTelemetryDebounce.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
