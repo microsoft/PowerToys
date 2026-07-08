@@ -2085,6 +2085,8 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED
