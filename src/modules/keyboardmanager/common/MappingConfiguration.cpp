@@ -242,15 +242,15 @@ bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData
 
     try
     {
-        auto textReplacementsData = jsonData.GetNamedObject(KeyboardManagerConstants::TextReplacementsSettingName);
         ClearTextReplacements();
 
-        if (!textReplacementsData)
+        auto textReplacementsData = jsonData.GetNamedObject(KeyboardManagerConstants::TextReplacementsSettingName, json::JsonObject{});
+        if (!textReplacementsData.HasKey(KeyboardManagerConstants::InProcessRemapKeysSettingName))
         {
             return result;
         }
 
-        auto inProcessTextReplacements = textReplacementsData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+        auto inProcessTextReplacements = textReplacementsData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
         for (const auto& it : inProcessTextReplacements)
         {
             try

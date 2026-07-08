@@ -132,6 +132,9 @@
   <data name="TextMappingsHeader.Text" xml:space="preserve">
     <value>Text</value>
   </data>
+  <data name="TextTriggerDisplayFormat" xml:space="preserve">
+    <value>Text: {0}</value>
+  </data>
   <data name="ProgramsHeader.Text" xml:space="preserve">
     <value>Programs</value>
   </data>

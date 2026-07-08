@@ -34,8 +34,6 @@ namespace KeyboardManagerEditorUI.Pages
         /// <summary>String form of <see cref="VkDisabled"/> used in shortcut key mapping serialization.</summary>
         private const string VkDisabledString = "256";
 
-        private const string TextTriggerDisplayPrefix = "Text: ";
-
         private DispatcherTimer? _serviceCheckTimer;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -1006,7 +1004,7 @@ namespace KeyboardManagerEditorUI.Pages
                 ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
                 var originalKeyNames = string.IsNullOrEmpty(mapping.TriggerText)
                     ? ParseKeyCodes(mapping.OriginalKeys)
-                    : new List<string> { TextTriggerDisplayPrefix + mapping.TriggerText };
+                    : new List<string> { GetTextTriggerDisplayName(mapping.TriggerText) };
 
                 TextMappings.Add(new TextMapping
                 {
@@ -1019,6 +1017,11 @@ namespace KeyboardManagerEditorUI.Pages
                     IsActive = shortcutSettings.IsActive,
                 });
             }
+        }
+
+        private static string GetTextTriggerDisplayName(string triggerText)
+        {
+            return string.Format(CultureInfo.CurrentCulture, ResourceHelper.GetString("TextTriggerDisplayFormat"), triggerText);
         }
 
         private void LoadProgramShortcuts()

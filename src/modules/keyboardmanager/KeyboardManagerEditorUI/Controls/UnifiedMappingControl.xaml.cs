@@ -211,6 +211,10 @@ namespace KeyboardManagerEditorUI.Controls
                     AppSpecificCheckBox.IsEnabled = false;
                     AppNameTextBox.Visibility = Visibility.Collapsed;
                 }
+                else
+                {
+                    UpdateAppSpecificCheckBoxState();
+                }
 
                 if (tag == "Text")
                 {
