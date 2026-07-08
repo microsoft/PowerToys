@@ -433,18 +433,19 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void ValidateUsageEventuallyHelps()
+    public void ValidateUsageDoesNotCrossTierBoundary()
     {
+        // "C" is a prefix of "Command Prompt" (Prefix tier) but only a word-boundary
+        // match for "Visual Studio Code" (AcronymWordBoundary tier). Frecency only
+        // reorders items WITHIN a tier, so no amount of usage may lift a word-boundary
+        // match above a prefix match. This is the core "logical ordering" contract.
         var items = CreateMockHistoryItems();
-        var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        // We're gonna run this test and keep adding more uses of VS Code till
-        // it breaks past Command Prompt
         var vsCodeId = items[1].Id;
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 25; i++)
         {
             history = history.WithHistoryItem(vsCodeId);
 
@@ -452,10 +453,40 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 
-            var expectedCmdIndex = i < 5 ? 0 : 1;
-            var expectedCodeIndex = i < 5 ? 1 : 0;
-            Assert.AreEqual("Command Prompt", weightedMatches[expectedCmdIndex].Title);
-            Assert.AreEqual("Visual Studio Code", weightedMatches[expectedCodeIndex].Title);
+            Assert.AreEqual("Command Prompt", weightedMatches[0].Title, "A prefix match must stay above a word-boundary match regardless of usage");
+            Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VS Code should be the top of the word-boundary tier once used");
         }
+    }
+
+    [TestMethod]
+    public void ValidateUsageReordersWithinTier()
+    {
+        // All of "Visual Studio 2022", "Visual Studio Code" and "Explore Mastodon" share
+        // the same tier for the query "s" (a word-boundary/subsequence match, none is a
+        // prefix). Heavy usage of one should be able to reorder it above its peers within
+        // that tier.
+        var items = new List<ListItemMock>
+        {
+            new("Visual Studio 2022", GivenId: "vs2022"),
+            new("Visual Studio Code", GivenId: "vscode"),
+        };
+
+        var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("studio");
+
+        // Both are equal word-boundary matches; give Code many uses so it climbs.
+        for (var i = 0; i < 10; i++)
+        {
+            history = history.WithHistoryItem("vscode");
+        }
+
+        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+
+        // Same tier for both, so the frequently-used one should not be below the other.
+        Assert.IsTrue(
+            MainListRanker.TierOf(scores[0]) == MainListRanker.TierOf(scores[1]),
+            "Both items should be classified into the same tier");
+        Assert.IsTrue(scores[1] >= scores[0], "The frequently-used item should reorder up within its tier");
     }
 }
