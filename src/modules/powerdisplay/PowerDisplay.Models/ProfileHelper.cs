@@ -59,6 +59,26 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
+        /// Loads profiles and, atomically, back-fills a stable id for any legacy profile still missing
+        /// one (<see cref="PowerDisplayProfiles.EnsureIds"/>), persisting only when something changed.
+        /// Returns the loaded (and possibly healed) profiles. Idempotent once ids are assigned.
+        /// </summary>
+        /// <returns>The loaded profiles, with stable ids guaranteed.</returns>
+        public static PowerDisplayProfiles LoadProfilesEnsuringIds()
+        {
+            lock (_lock)
+            {
+                var profiles = LoadProfilesCore();
+                if (profiles.EnsureIds())
+                {
+                    SaveProfilesCore(profiles);
+                }
+
+                return profiles;
+            }
+        }
+
+        /// <summary>
         /// Adds or updates a profile and persists to disk atomically.
         /// </summary>
         /// <param name="profile">The profile to add or update.</param>
@@ -75,26 +95,6 @@ namespace PowerDisplay.Models
                 var profiles = LoadProfilesCore();
                 profiles.SetProfile(profile);
                 return SaveProfilesCore(profiles);
-            }
-        }
-
-        /// <summary>
-        /// Removes a profile by name and persists to disk atomically.
-        /// </summary>
-        /// <param name="profileName">The name of the profile to remove.</param>
-        /// <returns>True if the profile was found and removed, false otherwise.</returns>
-        public static bool RemoveProfile(string profileName)
-        {
-            lock (_lock)
-            {
-                var profiles = LoadProfilesCore();
-                bool removed = profiles.RemoveProfile(profileName);
-                if (removed)
-                {
-                    SaveProfilesCore(profiles);
-                }
-
-                return removed;
             }
         }
 

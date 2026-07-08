@@ -88,22 +88,6 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Removes a profile by name
-        /// </summary>
-        public bool RemoveProfile(string name)
-        {
-            var profile = GetProfile(name);
-            if (profile != null)
-            {
-                Profiles.Remove(profile);
-                LastUpdated = DateTime.UtcNow;
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Removes a profile by its stable id.
         /// </summary>
         public bool RemoveProfile(int id)
@@ -128,25 +112,8 @@ namespace PowerDisplay.Models
         {
             var changed = false;
 
-            var maxId = 0;
-            foreach (var p in Profiles)
-            {
-                if (p is not null && p.Id > maxId)
-                {
-                    maxId = p.Id;
-                }
-            }
-
-            var next = NextId;
-            if (next < 1)
-            {
-                next = 1;
-            }
-
-            if (next <= maxId)
-            {
-                next = maxId + 1;
-            }
+            var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+            var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
 
             foreach (var p in Profiles)
             {
