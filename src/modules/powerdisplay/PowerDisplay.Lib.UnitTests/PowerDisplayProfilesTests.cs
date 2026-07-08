@@ -131,4 +131,25 @@ public class PowerDisplayProfilesTests
         var p = MakeProfile("Gaming", id: 4);
         Assert.AreEqual("Gaming (#4)", p.DisplayName);
     }
+
+    [TestMethod]
+    public void EnsureIds_ThenEditByAssignedId_ReplacesInsteadOfDuplicating()
+    {
+        // Legacy collection: profiles without ids (a pre-id profiles.json the app hasn't migrated).
+        var profiles = new PowerDisplayProfiles();
+        profiles.Profiles.Add(MakeProfile("A")); // Id 0
+        profiles.Profiles.Add(MakeProfile("B")); // Id 0
+
+        // The Settings UI now back-fills ids on load (EnsureIds) before any edit, so the edited
+        // profile carries a stable id and SetProfile replaces it in place instead of adding a copy.
+        profiles.EnsureIds();
+        var editedId = profiles.Profiles[0].Id;
+
+        var edited = MakeProfile("A-renamed", id: editedId);
+        profiles.SetProfile(edited);
+
+        Assert.AreEqual(2, profiles.Profiles.Count); // no duplicate created
+        Assert.AreSame(edited, profiles.GetById(editedId));
+        Assert.AreEqual("A-renamed", profiles.GetById(editedId)!.Name);
+    }
 }

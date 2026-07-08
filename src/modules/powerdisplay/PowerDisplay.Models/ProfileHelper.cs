@@ -79,29 +79,6 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Renames and updates a profile atomically (for rename or edit operations).
-        /// Removes the old entry by <paramref name="oldName"/> and upserts the updated profile.
-        /// </summary>
-        /// <param name="oldName">The current name of the profile to replace.</param>
-        /// <param name="newProfile">The updated profile.</param>
-        /// <returns>True if the operation was successful, false otherwise.</returns>
-        public static bool RenameAndUpdateProfile(string oldName, PowerDisplayProfile newProfile)
-        {
-            if (newProfile == null || !newProfile.IsValid())
-            {
-                return false;
-            }
-
-            lock (_lock)
-            {
-                var profiles = LoadProfilesCore();
-                profiles.RemoveProfile(oldName);
-                profiles.SetProfile(newProfile);
-                return SaveProfilesCore(profiles);
-            }
-        }
-
-        /// <summary>
         /// Removes a profile by name and persists to disk atomically.
         /// </summary>
         /// <param name="profileName">The name of the profile to remove.</param>

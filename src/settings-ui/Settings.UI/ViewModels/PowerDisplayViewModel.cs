@@ -774,6 +774,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var profilesData = ProfileHelper.LoadProfiles();
 
+                // Self-heal: back-fill stable ids for any legacy (id == 0) profiles the PowerDisplay
+                // app hasn't migrated yet, and persist. This keeps editing a profile an in-place
+                // replace (keyed by id) instead of accidentally creating a duplicate. Mirrors the
+                // app-side BackfillProfileIds and is idempotent once ids are assigned.
+                if (profilesData.EnsureIds())
+                {
+                    ProfileHelper.SaveProfiles(profilesData);
+                }
+
                 // Load profile objects (no Custom - it's not a profile anymore)
                 Profiles.Clear();
                 foreach (var profile in profilesData.Profiles)

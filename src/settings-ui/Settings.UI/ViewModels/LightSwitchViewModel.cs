@@ -732,6 +732,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 var profilesData = ProfileHelper.LoadProfiles();
 
+                // Self-heal legacy profiles that still lack a stable id so the id-first resolution
+                // below (and DisplayName) work even before the PowerDisplay app has migrated. Idempotent.
+                if (profilesData.EnsureIds())
+                {
+                    ProfileHelper.SaveProfiles(profilesData);
+                }
+
                 AvailableProfiles.Clear();
 
                 foreach (var profile in profilesData.Profiles)
@@ -767,6 +774,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ? ModuleSettings.Properties.DarkModeProfile.Value
                 : ModuleSettings.Properties.LightModeProfile.Value;
 
+            var hasStoredReference = storedId >= 1 || (!string.IsNullOrEmpty(storedName) && storedName != "(None)");
+
             PowerDisplayProfile? match = null;
             if (storedId >= 1)
             {
@@ -775,6 +784,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             else if (!string.IsNullOrEmpty(storedName) && storedName != "(None)")
             {
                 match = AvailableProfiles.FirstOrDefault(p => p.Name.Equals(storedName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // A stored reference that no longer resolves to a loaded profile is stale (the profile was
+            // deleted). Clear the dangling id/name from settings so it isn't left behind. Guarded on a
+            // non-empty list so a transient load failure (AvailableProfiles empty) never wipes a valid
+            // selection.
+            if (match == null && hasStoredReference && AvailableProfiles.Count > 0)
+            {
+                Logger.LogWarning($"Configured {(isDarkMode ? "dark" : "light")} mode profile no longer exists, clearing selection");
+
+                if (isDarkMode)
+                {
+                    ModuleSettings.Properties.DarkModeProfileId.Value = 0;
+                    ModuleSettings.Properties.DarkModeProfile.Value = string.Empty;
+                }
+                else
+                {
+                    ModuleSettings.Properties.LightModeProfileId.Value = 0;
+                    ModuleSettings.Properties.LightModeProfile.Value = string.Empty;
+                }
+
+                SaveSettings();
             }
 
             if (isDarkMode)
