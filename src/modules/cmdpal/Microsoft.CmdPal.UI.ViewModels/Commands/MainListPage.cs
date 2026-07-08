@@ -436,6 +436,11 @@ public sealed partial class MainListPage : DynamicListPage,
         _filteredApps = null;
         _fallbackItems = null;
         _globalFallbackSources = null;
+
+        // Reset the paired query too. ScoreDeferredFallbacks already short-circuits on a null
+        // source list, so a stale query here is harmless, but clearing both keeps the snapshot
+        // pair symmetric and avoids a confusing leftover value.
+        _globalFallbackQuery = default;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
