@@ -93,7 +93,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         _isBandPage = isBandPage;
         _singleMetric = singleMetric;
-        _id = singleMetric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(singleMetric.Value)}";
+        _id = GetBandId(singleMetric);
 
         if (IncludesMetric(PerformanceMetricKind.Cpu))
         {
@@ -285,6 +285,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkPage?.Dispose();
         _gpuPage?.Dispose();
         _batteryPage?.Dispose();
+    }
+
+    internal static string GetBandId(PerformanceMetricKind? metric)
+    {
+        return metric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(metric.Value)}";
     }
 
     private bool IncludesMetric(PerformanceMetricKind metric)

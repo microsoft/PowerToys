@@ -353,6 +353,7 @@
                     <cpcontrols:SearchBar
                         x:Name="SearchBox"
                         HorizontalAlignment="Stretch"
+                        ActiveFocusTargetChanged="SearchBox_ActiveFocusTargetChanged"
                         CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
                     <Grid.Transitions>
                         <TransitionCollection>

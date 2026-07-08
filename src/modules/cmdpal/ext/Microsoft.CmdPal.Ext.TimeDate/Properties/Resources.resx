@@ -267,6 +267,12 @@
   <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds_Description" xml:space="preserve">
     <value>This setting applies to the 'Time' and 'Now' result.</value>
   </data>
+  <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds" xml:space="preserve">
+    <value>Show seconds on the dock clock</value>
+  </data>
+  <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description" xml:space="preserve">
+    <value>This setting applies to the clock shown on the Command Palette dock.</value>
+  </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
     <value>Select or press Ctrl+C to copy</value>
     <comment>'Ctrl+C' is a shortcut</comment>

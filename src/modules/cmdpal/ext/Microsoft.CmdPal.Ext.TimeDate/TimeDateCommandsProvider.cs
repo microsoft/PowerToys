@@ -9,7 +9,6 @@ using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
@@ -21,9 +20,11 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private static readonly TimeDateExtensionPage _timeDateExtensionPage = new(_settingsManager);
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
-    private readonly NowDockBand _bandItem;
-    private readonly ListItem _notificationCenterBandItem;
-    private readonly TypedEventHandler<object, Settings> _settingsChangedHandler;
+    private readonly WrappedDockItem _bandItem;
+    private readonly WrappedDockItem _notificationCenterBandItem;
+
+    // Keep a reference to the band so we can dispose it when the provider is disposed.
+    private NowDockBand? _nowDockBand;
 
     public TimeDateCommandsProvider()
     {
@@ -39,21 +40,40 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
 
-        _bandItem = new NowDockBand(_settingsManager);
-        _notificationCenterBandItem = new NotificationCenterDockBand();
+        WrappedDockItem? wrappedBand = null;
 
-        // Update the band immediately when the user changes a setting (e.g. the week
-        // number mode). Stored as a field so Dispose can unsubscribe from the static
-        // settings instance again.
-        _settingsChangedHandler = (s, a) => _bandItem.Refresh();
-        _settingsManager.Settings.SettingsChanged += _settingsChangedHandler;
-    }
+        // During NowDockBand construction, UpdateText() runs synchronously.
+        // At that point wrappedBand is still null so the callback is a no-op.
+        // On subsequent timer ticks, wrappedBand is non-null and SetItems fires
+        // RaiseItemsChanged - the framework marshals to the UI thread in
+        // DockBandViewModel.InitializeFromList via DoOnUiThread.
+        _nowDockBand = new NowDockBand(_settingsManager, onUpdated: () =>
+        {
+            if (wrappedBand is not null)
+            {
+                wrappedBand.Items = [_nowDockBand!];
+            }
+        });
 
-    public override void Dispose()
-    {
-        _settingsManager.Settings.SettingsChanged -= _settingsChangedHandler;
-        _bandItem.Dispose();
-        base.Dispose();
+        // Re-read the dock clock preferences whenever settings change so the band updates
+        // live (no app restart required). The band ignores no-op changes internally.
+        _settingsManager.Settings.SettingsChanged += OnSettingsChanged;
+
+        wrappedBand = new WrappedDockItem(
+            [_nowDockBand],
+            "com.microsoft.cmdpal.timedate.dockBand",
+            Resources.Microsoft_plugin_timedate_dock_band_title)
+        {
+            Icon = Icons.TimeDateExtIcon,
+        };
+
+        _bandItem = wrappedBand;
+
+        var notificationCenterBand = new NotificationCenterDockBand();
+        _notificationCenterBandItem = new WrappedDockItem(
+            [notificationCenterBand],
+            "com.microsoft.cmdpal.timedate.notificationCenterBand",
+            Resources.timedate_notification_center_band_title);
     }
 
     private string GetTranslatedPluginDescription()
@@ -71,163 +91,25 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     public override ICommandItem[] GetDockBands()
     {
-        var clockBand = new WrappedDockItem(
-            [_bandItem],
-            "com.microsoft.cmdpal.timedate.dockBand",
-            Resources.Microsoft_plugin_timedate_dock_band_title)
-        {
-            Icon = Icons.TimeDateExtIcon,
-        };
+        return [_bandItem, _notificationCenterBandItem];
+    }
 
-        var notificationBand = new WrappedDockItem(
-            [_notificationCenterBandItem],
-            "com.microsoft.cmdpal.timedate.notificationCenterBand",
-            Resources.timedate_notification_center_band_title)
-        {
-            Icon = Icons.NotificationCenterIcon,
-        };
+    private void OnSettingsChanged(object sender, Settings args)
+    {
+        _nowDockBand?.UpdateSettings();
+    }
 
-        return new ICommandItem[] { clockBand, notificationBand };
+    public override void Dispose()
+    {
+        _settingsManager.Settings.SettingsChanged -= OnSettingsChanged;
+        _nowDockBand?.Dispose();
+        _nowDockBand = null;
+        GC.SuppressFinalize(this);
+        base.Dispose();
     }
 }
+
 #pragma warning disable SA1402 // File may only contain a single type
-
-internal sealed partial class NowDockBand : ListItem, IDisposable
-{
-    private static readonly TimeSpan UpdateInterval = TimeSpan.FromSeconds(60);
-    private readonly ISettingsInterface _settings;
-    private readonly OpenUrlCommand _notificationCenterCommand;
-    private readonly NoOpCommand _noOpCommand;
-    private readonly System.Timers.Timer _timer;
-    private readonly object _updateLock = new();
-    private CopyTextCommand _copyTimeCommand;
-    private CopyTextCommand _copyDateCommand;
-    private CopyTextCommand _copyWeekNumberCommand;
-    private bool? _weekNumberShown;
-    private bool? _notificationCenterOnClick;
-    private bool _disposed;
-
-    public NowDockBand(ISettingsInterface settings)
-    {
-        _settings = settings;
-
-        // Open Notification Center on click (can be turned off in the settings)
-        _notificationCenterCommand = new OpenUrlCommand("ms-actioncenter:") { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.timedate_show_notification_center_command_name, Result = CommandResult.Dismiss(), Icon = null };
-        _noOpCommand = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand", Name = Resources.Microsoft_plugin_timedate_dock_band_title, Icon = null };
-        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
-        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
-        _copyWeekNumberCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_week_number_command_name };
-        UpdateText();
-
-        // Create a timer to update the time every minute
-        _timer = new System.Timers.Timer(UpdateInterval.TotalMilliseconds);
-
-        // but we want it to tick on the minute, so calculate the initial delay
-        var now = DateTime.Now;
-        _timer.Interval = UpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
-
-        // then after the first tick, set it to 60 seconds
-        _timer.Elapsed += Timer_ElapsedFirst;
-        _timer.Start();
-    }
-
-    public void Dispose()
-    {
-        _disposed = true;
-        _timer.Stop();
-        _timer.Dispose();
-    }
-
-    private void Timer_ElapsedFirst(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        // After the first tick, set the interval to 60 seconds
-        if (sender is System.Timers.Timer timer)
-        {
-            timer.Interval = UpdateInterval.TotalMilliseconds;
-            timer.Elapsed -= Timer_ElapsedFirst;
-            timer.Elapsed += Timer_Elapsed;
-
-            // Still call the callback, so that we update the clock
-            Timer_Elapsed(sender, e);
-        }
-    }
-
-    private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-    {
-        UpdateText();
-    }
-
-    internal void Refresh() => UpdateText();
-
-    private void UpdateText()
-    {
-        // Runs on the timer thread and on the settings changed event; serialize the
-        // updates so observers never see a half-applied state.
-        lock (_updateLock)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            UpdateTextCore();
-        }
-    }
-
-    private void UpdateTextCore()
-    {
-        var timeExtended = false; // timeLongFormat ?? settings.TimeWithSecond;
-        var dateExtended = false; // dateLongFormat ?? settings.DateWithWeekday;
-        var dateTimeNow = DateTime.Now;
-
-        var timeString = dateTimeNow.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, timeExtended, dateExtended),
-            CultureInfo.CurrentCulture);
-        var dateString = dateTimeNow.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, timeExtended, dateExtended),
-            CultureInfo.CurrentCulture);
-
-        var dateMode = _settings.ClockBandDateMode;
-        var subtitleString = TimeAndDateHelper.GetClockBandDateLine(dateTimeNow, _settings);
-
-        // The week number is part of the band (subtitle or copy command) in the week
-        // number and ISO week date modes only.
-        var showWeekNumber = dateMode is >= 1 and <= 4;
-        if (showWeekNumber)
-        {
-            _copyWeekNumberCommand.Text = TimeAndDateHelper.GetDockWeekOfYear(dateTimeNow, _settings).ToString(CultureInfo.CurrentCulture);
-        }
-
-        Title = timeString;
-        Subtitle = subtitleString;
-
-        _copyDateCommand.Text = dateString;
-        _copyTimeCommand.Text = timeString;
-
-        var notificationCenterOnClick = _settings.ClockBandOpensNotificationCenter;
-        if (_notificationCenterOnClick != notificationCenterOnClick)
-        {
-            _notificationCenterOnClick = notificationCenterOnClick;
-            Command = notificationCenterOnClick ? _notificationCenterCommand : _noOpCommand;
-        }
-
-        // Only rebuild the context menu when the setting changed.
-        if (_weekNumberShown != showWeekNumber)
-        {
-            _weekNumberShown = showWeekNumber;
-            MoreCommands = showWeekNumber
-                ? [
-                    new CommandContextItem(_copyTimeCommand),
-                    new CommandContextItem(_copyDateCommand),
-                    new CommandContextItem(_copyWeekNumberCommand)
-                ]
-                : [
-                    new CommandContextItem(_copyTimeCommand),
-                    new CommandContextItem(_copyDateCommand)
-                ];
-        }
-    }
-}
 
 internal sealed partial class NotificationCenterDockBand : ListItem
 {

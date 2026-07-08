@@ -87,6 +87,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds_Description,
         false); // TODO -- double check default value
 
+    private readonly ToggleSetting _dockClockWithSeconds = new(
+        Namespaced(nameof(DockClockWithSecond)),
+        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds,
+        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description,
+        false);
+
     private readonly ToggleSetting _dateWithWeekday = new(
         Namespaced(nameof(DateWithWeekday)),
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday,
@@ -137,6 +143,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
+    public bool DockClockWithSecond => _dockClockWithSeconds.Value;
+
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
     public int ClockBandDateMode => ParseIntSetting(_clockBandDateMode.Value, 0);
@@ -155,7 +163,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool ClockBandOpensNotificationCenter => _clockBandOpensNotificationCenter.Value;
 
-    public List<string> CustomFormats => _customFormats.Value.Split(TEXTBOXNEWLINE).ToList();
+    public List<string> CustomFormats => (_customFormats.Value ?? string.Empty).Split(TEXTBOXNEWLINE).ToList();
 
     internal static string SettingsJsonPath()
     {
@@ -171,6 +179,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
         Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
+        Settings.Add(_dockClockWithSeconds);
         Settings.Add(_dateWithWeekday);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);

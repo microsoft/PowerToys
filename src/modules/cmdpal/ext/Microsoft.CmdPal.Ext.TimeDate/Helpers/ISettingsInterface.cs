@@ -20,6 +20,8 @@ public interface ISettingsInterface
 
     public bool TimeWithSecond { get; }
 
+    public bool DockClockWithSecond { get; }
+
     public bool DateWithWeekday { get; }
 
     public int ClockBandDateMode { get; }
