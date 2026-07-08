@@ -317,21 +317,31 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         }
         else
         {
-            _networkUpItem = new ListItem(_networkPage!)
+            if (_networkUpItem is null)
             {
-                Title = $"{_networkUpSpeed}",
-                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                Icon = Icons.NetworkUpIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
+                _networkUpItem = new ListItem(_networkPage!)
+                {
+                    Title = $"{_networkUpSpeed}",
+                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                    Icon = Icons.NetworkUpIcon,
+                    MoreCommands = _networkPage!.Commands,
+                };
+            }
 
-            _networkDownItem = new ListItem(_networkPage!)
+            _networkUpItem.Title = _networkUpSpeed;
+
+            if (_networkDownItem is null)
             {
-                Title = $"{_networkDownSpeed}",
-                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                Icon = Icons.NetworkDownIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
+                _networkDownItem = new ListItem(_networkPage!)
+                {
+                    Title = $"{_networkDownSpeed}",
+                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                    Icon = Icons.NetworkDownIcon,
+                    MoreCommands = _networkPage!.Commands,
+                };
+            }
+
+            _networkDownItem.Title = _networkDownSpeed;
 
             CreateDiskBandItems();
             return _batteryItem is not null
@@ -1514,9 +1524,9 @@ internal static class FormatIncomingData
 
     public static string AsBytesPerSecString(float value)
     {
-        // Bytes to KB
-        value /= 1024;
-        if (value < 1024)
+        // Bytes to KB (SI decimal, 1000-based)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1527,8 +1537,8 @@ internal static class FormatIncomingData
         }
 
         // KB to MB
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1539,7 +1549,7 @@ internal static class FormatIncomingData
         }
 
         // MB to GB
-        value /= 1024;
+        value /= 1000;
         if (value < 100)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);

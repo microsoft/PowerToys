@@ -5,7 +5,7 @@
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 /// <summary>
-/// Controls the unit used to display network transmission speed.
+/// Controls the unit used to display network or disk transmission speed.
 /// </summary>
 internal enum SpeedUnit
 {
