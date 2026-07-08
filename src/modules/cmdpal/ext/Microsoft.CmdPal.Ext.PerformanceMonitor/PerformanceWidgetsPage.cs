@@ -352,21 +352,21 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateDiskBandItems()
     {
-        _diskReadItem = new ListItem(_diskPage!)
+        _diskReadItem ??= new ListItem(_diskPage!)
         {
-            Title = $"{_diskReadSpeed}",
             Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
             Icon = Icons.FileReadIcon,
             MoreCommands = _diskPage!.Commands,
         };
+        _diskReadItem.Title = _diskReadSpeed;
 
-        _diskWriteItem = new ListItem(_diskPage!)
+        _diskWriteItem ??= new ListItem(_diskPage!)
         {
-            Title = $"{_diskWriteSpeed}",
             Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
             Icon = Icons.FileWriteIcon,
             MoreCommands = _diskPage!.Commands,
         };
+        _diskWriteItem.Title = _diskWriteSpeed;
 
         return [_diskReadItem, _diskWriteItem, _diskItem!];
     }
