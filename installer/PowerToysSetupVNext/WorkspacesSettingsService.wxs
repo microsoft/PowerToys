@@ -7,8 +7,8 @@
 
   The service BINARY is distributed as a signed MSIX (binary-only staging, NO
   windows.service extension).  Both scopes ship the SAME MSIX; the per-user
-  virtual-account service (NT SERVICE\PTSettingsSvc_<SID>) is self-registered by
-  the signed exe's `--register <SID>` verb.
+  virtual-account service (NT SERVICE\PTSettingsSvc_[SID]) is self-registered by
+  the signed exe's "register [SID]" verb.
 
   Per-machine: this fragment stages PTSettingsSvc.msix and the per-machine MSI
   (elevated) provisions it for all users via the InstallPTSettingsSvc custom
@@ -16,18 +16,18 @@
   upgrade.  Per-user services are created lazily by the managed provisioner.
 
   Per-user: the per-user payload fragment (below) stages the same MSIX; the
-  managed ServiceProvisioner stages + `--register`s it under one UAC on first
+  managed ServiceProvisioner stages then registers it under one UAC on first
   editor open (a non-elevated per-user MSI cannot register a service).
 
   Responsibilities:
-    1. Stage PTSettingsSvc.msix under <InstallFolder>\WorkspacesSettingsService\
+    1. Stage PTSettingsSvc.msix under [InstallFolder]\WorkspacesSettingsService\
     2. Provision it for all users (per-machine CA) / deferred deploy (per-user)
     3. Create %ProgramData%\Microsoft\PowerToys\Settings with a root DACL
        (Administrators:FullControl, SYSTEM:FullControl, Authenticated Users:RX).
-       Per-user (<sid>) and per-namespace subfolders + their protected DACLs are
-       created by the elevated `--register` path (owner=SYSTEM, virtual-account
+       Per-user ([sid]) and per-namespace subfolders + their protected DACLs are
+       created by the elevated register path (owner=SYSTEM, virtual-account
        Full, user RX); legacy data is migrated per-user by the runner via the
-       service (§10) — there is no install-time SYSTEM seeding.
+       service (§10); there is no install-time SYSTEM seeding.
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
@@ -46,7 +46,7 @@
          signed, binary-only PTSettingsSvc.msix and provisions it for all users
          via the InstallPTSettingsSvc custom action (Product.wxs).  There is no
          windows.service extension and no MSI <ServiceInstall>; the per-user
-         virtual-account service is self-registered by the exe's --register verb. -->
+         virtual-account service is self-registered by the exe's register verb. -->
     <DirectoryRef Id="WorkspacesSettingsServiceFolder"
                   FileSource="$(var.PTSettingsSvcFilesPath)">
       <Component Id="RegisterPTSettingsService"
@@ -77,9 +77,9 @@
       root DACL (Design §9).  util:PermissionEx replaces the inherited DACL with
       the explicit ACEs below, so the default %ProgramData% "Users can create"
       ACE does not carry through.  Authenticated Users get RX so each user can
-      traverse to their own \<sid> node.  Per-user (\<sid>) and per-namespace
-      (\<sid>\Workspaces) subfolders + their PROTECTED DACLs (owner=SYSTEM,
-      virtual-account Full, user RX) are created by the elevated --register path,
+      traverse to their own \[sid] node.  Per-user (\[sid]) and per-namespace
+      (\[sid]\Workspaces) subfolders + their PROTECTED DACLs (owner=SYSTEM,
+      virtual-account Full, user RX) are created by the elevated register path,
       not here.
     -->
     <StandardDirectory Id="CommonAppDataFolder">
@@ -146,13 +146,13 @@
 
     <!--
       Uninstall data cleanup (Design-v6-Final.md §11).  There is NO install-time
-      seeding under Approach 4: the per-user store is provisioned at --register
+      seeding under Approach 4: the per-user store is provisioned at register
       time and legacy data is migrated per-user by the runner through the service
       (§10), so the removed Seed-PtSettingsStore.ps1 (which wrote all users' blobs
       as SYSTEM with the old machine-wide account) is gone.
 
       * Cleanup at uninstall: recursively delete the Settings data tree (the
-        runtime-created <SID>\...\workspaces.json nodes aren't MSI-tracked, so the
+        runtime-created [SID]\...\workspaces.json nodes aren't MSI-tracked, so the
         default RemoveFolder can't remove them).  The per-SID services themselves
         are deleted by UnRegisterPTSettingsSvcCA (Product.wxs), so the script runs
         with -RemoveService:$false.
@@ -190,8 +190,8 @@
     and cannot register a service, so it only STAGES the SIGNED, binary-only
     service MSIX under the install folder.  The managed ServiceProvisioner then,
     under one elevated UAC on first editor open, stages the MSIX and runs the exe
-    `--register <SID>` to create the per-user virtual-account service
-    (NT SERVICE\PTSettingsSvc_<SID>) and provision the protected store.  No
+    with the "register [SID]" verb to create the per-user virtual-account service
+    (NT SERVICE\PTSettingsSvc_[SID]) and provision the protected store.  No
     user-writable hardening script (the prior Harden ps1 was an EoP hole).
   -->
   <Fragment>
