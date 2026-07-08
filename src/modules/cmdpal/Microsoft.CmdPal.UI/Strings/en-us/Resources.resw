@@ -323,6 +323,24 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionPage_AliasActivation_SettingsCard.Description" xml:space="preserve">
     <value>Choose when the alias runs. Direct runs as soon as you type the alias. Indirect runs after a trailing space.</value>
   </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.Header" xml:space="preserve">
+    <value>Search weight</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.Description" xml:space="preserve">
+    <value>Nudge this provider's results up or down among equally-relevant matches. It never overrides a stronger text match.</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Search weight</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Lower.Content" xml:space="preserve">
+    <value>Lower</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="Settings_ExtensionPage_SearchWeight_Higher.Content" xml:space="preserve">
+    <value>Higher</value>
+  </data>
   <data name="Settings_ExtensionPage_Builtin_SettingsCard.Header" xml:space="preserve">
     <value>Built-in</value>
   </data>

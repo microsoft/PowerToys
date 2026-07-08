@@ -31,6 +31,23 @@ internal static class MainListRanker
     // exact alias, which gets its own top tier). Mirrors the previous +1-before-x10 boost.
     internal const double AliasSubstringBonus = 10.0;
 
+    // Magnitude of the per-provider within-tier nudge. Deliberately small - half a point of
+    // lexical quality (LexicalScale = 10) - so a Higher/Lower provider only breaks near-ties
+    // and reorders items that already share a tier. It can NEVER move an item across a tier
+    // boundary because the packed within-tier score is clamped to a single tier's band.
+    internal const double ProviderWeightBonus = 5.0;
+
+    /// <summary>
+    /// Maps a per-provider <see cref="ProviderSearchWeight"/> to an additive within-tier
+    /// bonus. Lower subtracts, Normal is neutral, Higher adds. The enum's underlying value is
+    /// the sign of the nudge, so the result is simply the weight times
+    /// <see cref="ProviderWeightBonus"/>. Note the nudge is slightly asymmetric at the tier
+    /// floor: <see cref="Pack"/> clamps the within-tier score to a non-negative band, so a
+    /// Lower nudge on an item already scoring near 0 (weak match, no history) can clamp to 0
+    /// and read the same as Normal, whereas Higher always applies.
+    /// </summary>
+    public static double ProviderBonus(ProviderSearchWeight weight) => (int)weight * ProviderWeightBonus;
+
     /// <summary>
     /// Packs a tier and within-tier score into a single descending-sortable integer.
     /// Returns 0 for <see cref="RankTier.None"/> so non-matches are filtered by the
