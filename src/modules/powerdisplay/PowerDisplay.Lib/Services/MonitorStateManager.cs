@@ -13,6 +13,7 @@ using ManagedCommon;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Serialization;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 
 namespace PowerDisplay.Common.Services
 {
@@ -25,7 +26,7 @@ namespace PowerDisplay.Common.Services
     public partial class MonitorStateManager : IDisposable
     {
         private readonly string _stateFilePath;
-        private readonly ConcurrentDictionary<string, MonitorState> _states = new();
+        private readonly ConcurrentDictionary<string, MonitorState> _states = new(MonitorIdComparer.Instance);
         private readonly SimpleDebouncer _saveDebouncer;
 
         private volatile bool _disposed;

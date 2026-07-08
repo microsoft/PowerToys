@@ -62,7 +62,7 @@ public static class CharacterMappings
             [LetterKey.VK_M] = ["ṁ", "ᵐ", "ₘ"],
             [LetterKey.VK_N] = ["ņ", "ṅ", "ⁿ", "ℕ", "№", "ₙ"],
             [LetterKey.VK_O] = ["ȯ", "∅", "⌀", "ᵒ", "ₒ"],
-            [LetterKey.VK_P] = ["ṗ", "℗", "∏", "¶", "ᵖ", "ₚ"],
+            [LetterKey.VK_P] = ["ṗ", "℗", "∏", "¶", "ᵖ", "ₚ", "‰", "‱"],
             [LetterKey.VK_Q] = ["ℚ", "𐞥"],
             [LetterKey.VK_R] = ["ṙ", "®", "ℝ", "ʳ", "ᵣ"],
             [LetterKey.VK_S] = ["ṡ", "§", "∑", "∫", "ˢ", "ₛ"],
@@ -73,14 +73,35 @@ public static class CharacterMappings
             [LetterKey.VK_X] = ["ẋ", "×", "ˣ", "ₓ"],
             [LetterKey.VK_Y] = ["ẏ", "ꝡ", "ʸ"],
             [LetterKey.VK_Z] = ["ʒ", "ǯ", "ℤ", "ᶻ"],
-            [LetterKey.VK_COMMA] = ["∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗"], // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
+            [LetterKey.VK_COMMA] = ["∙", "₋", "⁻", "–", "√", "‟", "⟪", "⟫", "‛", "⟨", "⟩", "″", "‴", "⁗"],
             [LetterKey.VK_PERIOD] = ["…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C"],
             [LetterKey.VK_MINUS] = ["~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻"],
-            [LetterKey.VK_SLASH_] = ["÷", "√"],
+            [LetterKey.VK_SLASH_] = ["÷", "√", "‽", "⸘"],
             [LetterKey.VK_DIVIDE_] = ["÷", "√"],
             [LetterKey.VK_MULTIPLY_] = ["×", "⋅", "ˣ", "ₓ"],
             [LetterKey.VK_PLUS] = ["≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "±", "≅", "≡", "₊", "⁺", "₌", "⁼"],
             [LetterKey.VK_BACKSLASH] = ["`", "~"],
+        }),
+
+        // Belarusian Latin
+        new(Language.BE, "Belarusian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_C] = ["ć", "č"],
+            [LetterKey.VK_L] = ["ł"],
+            [LetterKey.VK_N] = ["ń"],
+            [LetterKey.VK_S] = ["ś", "š"],
+            [LetterKey.VK_U] = ["ŭ"],
+            [LetterKey.VK_Z] = ["ź", "ž"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
+        }),
+
+        new(Language.BE_CYRL, "Belarusian_Cyrillic", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_E] = ["ё"],
+            [LetterKey.VK_G] = ["ґ"],
+            [LetterKey.VK_I] = ["і"],
+            [LetterKey.VK_U] = ["ў"],
+            [LetterKey.VK_COMMA] = ["’", "„", "“", "«", "»"],
         }),
 
         new(Language.BG, "Bulgarian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -90,6 +111,7 @@ public static class CharacterMappings
 
         new(Language.CA, "Catalan", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
+            [LetterKey.VK_1] = ["¡"],
             [LetterKey.VK_A] = ["à", "á"],
             [LetterKey.VK_C] = ["ç"],
             [LetterKey.VK_E] = ["è", "é", "€"],
@@ -99,6 +121,7 @@ public static class CharacterMappings
             [LetterKey.VK_U] = ["ù", "ú", "ü"],
             [LetterKey.VK_L] = ["·"],
             [LetterKey.VK_COMMA] = ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
+            [LetterKey.VK_SLASH_] = ["¿"],
         }),
 
         new(Language.CRH, "Crimean", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -130,7 +153,7 @@ public static class CharacterMappings
             [LetterKey.VK_L] = ["ł"],
             [LetterKey.VK_N] = ["л"],
             [LetterKey.VK_M] = ["₼"],
-            [LetterKey.VK_P] = ["£", "₽"],
+            [LetterKey.VK_P] = ["£", "₽", "₱"],
             [LetterKey.VK_R] = ["₹", "៛", "﷼"],
             [LetterKey.VK_S] = ["$", "₪"],
             [LetterKey.VK_T] = ["₮", "₺", "₸"],
@@ -366,25 +389,32 @@ public static class CharacterMappings
         // a spoken language, but rather a set of symbols used across languages.
         new(Language.IPA, "IPA", LanguageGroup.Special,  new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_A] = ["ɐ", "ɑ", "ɒ", "ǎ"],
-            [LetterKey.VK_B] = ["ʙ"],
-            [LetterKey.VK_E] = ["ɘ", "ɵ", "ə", "ɛ", "ɜ", "ɞ"],
-            [LetterKey.VK_F] = ["ɟ", "ɸ"],
-            [LetterKey.VK_G] = ["ɢ", "ɣ"],
-            [LetterKey.VK_H] = ["ɦ", "ʜ"],
-            [LetterKey.VK_I] = ["ɨ", "ɪ"],
-            [LetterKey.VK_J] = ["ʝ"],
-            [LetterKey.VK_L] = ["ɬ", "ɮ", "ꞎ", "ɭ", "ʎ", "ʟ", "ɺ"],
-            [LetterKey.VK_N] = ["ɳ", "ɲ", "ŋ", "ɴ"],
-            [LetterKey.VK_O] = ["ɤ", "ɔ", "ɶ", "ǒ"],
-            [LetterKey.VK_R] = ["ʁ", "ɹ", "ɻ", "ɾ", "ɽ", "ʀ"],
-            [LetterKey.VK_S] = ["ʃ", "ʂ", "ɕ"],
-            [LetterKey.VK_U] = ["ʉ", "ʊ", "ǔ"],
-            [LetterKey.VK_V] = ["ʋ", "ⱱ", "ʌ"],
-            [LetterKey.VK_W] = ["ɰ", "ɯ"],
-            [LetterKey.VK_Y] = ["ʏ"],
+            [LetterKey.VK_A] = ["ɑ", "æ", "ɒ", "ɐ"],
+            [LetterKey.VK_B] = ["β", "ʙ", "ɓ", "ʘ"],
+            [LetterKey.VK_C] = ["ç", "χ", "ǂ"],
+            [LetterKey.VK_D] = ["ð", "ɗ", "ɖ", "ǀ"],
+            [LetterKey.VK_E] = ["ə", "ɛ", "ɚ", "ɘ", "ɜ", "ɵ", "ɞ", "æ", "œ"],
+            [LetterKey.VK_F] = ["ɸ"],
+            [LetterKey.VK_G] = ["ɡ", "ɣ", "ɢ", "ɠ", "ʛ"],
+            [LetterKey.VK_H] = ["ɦ", "ħ", "ɥ", "ʜ", "ɧ", "ʱ"],
+            [LetterKey.VK_I] = ["ɪ", "ɨ"],
+            [LetterKey.VK_J] = ["ɟ", "ʝ", "ʄ"],
+            [LetterKey.VK_L] = ["ɫ", "ʎ", "ɬ", "ɮ", "ɭ", "ʟ", "ɺ", "ꞎ", "ǁ"],
+            [LetterKey.VK_M] = ["ɱ"],
+            [LetterKey.VK_N] = ["ŋ", "ɲ", "ɳ", "ɴ"],
+            [LetterKey.VK_O] = ["ɔ", "ø", "œ", "ɤ", "ɶ", "ʘ"],
+            [LetterKey.VK_R] = ["ɹ", "ɾ", "ʁ", "ʀ", "ɻ", "ɽ"],
+            [LetterKey.VK_S] = ["ʃ", "ɕ", "ʂ"],
+            [LetterKey.VK_T] = ["θ", "ʈ", "ǃ"],
+            [LetterKey.VK_U] = ["ʊ", "ʉ"],
+            [LetterKey.VK_V] = ["ʌ", "ʋ", "ⱱ"],
+            [LetterKey.VK_W] = ["ʍ", "ɯ", "ɰ"],
+            [LetterKey.VK_X] = ["χ"],
+            [LetterKey.VK_Y] = ["ʎ", "ʏ"],
             [LetterKey.VK_Z] = ["ʒ", "ʐ", "ʑ"],
-            [LetterKey.VK_COMMA] = ["ʡ", "ʔ", "ʕ", "ʢ"],
+            [LetterKey.VK_COMMA] = ["ʔ", "ʕ", "ʡ", "ʢ"],
+            [LetterKey.VK_PERIOD] = ["ˈ", "ˌ", "ː", "ʼ", "\u031D", "\u0325", "\u031A", "\u0361", "\u035C"],
+            [LetterKey.VK_SLASH_] = ["ʔ"],
         }),
 
         new(Language.IT, "Italian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -537,6 +567,15 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "«", "»"],
         }),
 
+        // This language set covers both Pitjantjatjara and Yankunytjatjara dialects
+        new(Language.PJT, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_L] = ["ḻ"],
+            [LetterKey.VK_N] = ["ṉ"],
+            [LetterKey.VK_R] = ["ṟ"],
+            [LetterKey.VK_T] = ["ṯ"],
+        }),
+
         new(Language.RO, "Romanian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ă", "â"],
@@ -605,6 +644,7 @@ public static class CharacterMappings
 
         new(Language.SP, "Spanish", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
+            [LetterKey.VK_1] = ["¡"],
             [LetterKey.VK_A] = ["á"],
             [LetterKey.VK_E] = ["é", "€"],
             [LetterKey.VK_H] = ["ḥ"],
@@ -614,6 +654,7 @@ public static class CharacterMappings
             [LetterKey.VK_O] = ["ó"],
             [LetterKey.VK_U] = ["ú", "ü"],
             [LetterKey.VK_COMMA] = ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
+            [LetterKey.VK_SLASH_] = ["¿"],
         }),
 
         new(Language.SR, "Serbian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -697,6 +738,8 @@ public static class CharacterMappings
     [
 
         // Spoken languages.
+        Language.BE,
+        Language.BE_CYRL,
         Language.BG,
         Language.CA,
         Language.CRH,
@@ -724,6 +767,7 @@ public static class CharacterMappings
         Language.NL,
         Language.NO,
         Language.PI,
+        Language.PJT,
         Language.PL,
         Language.PT,
         Language.RO,

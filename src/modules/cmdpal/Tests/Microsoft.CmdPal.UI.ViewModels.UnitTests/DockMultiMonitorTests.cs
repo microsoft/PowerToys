@@ -325,6 +325,53 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
+    public void DockSettings_AutoHide_DefaultsToFalse()
+    {
+        var settings = CreateMinimalDockSettings();
+
+        Assert.IsFalse(settings.AutoHide);
+    }
+
+    [TestMethod]
+    public void DockSettings_AutoHide_JsonRoundTrip_PreservesValue()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            AutoHide = true,
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true },
+                new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY2", Enabled = false }),
+        };
+
+        var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.DockSettings);
+        var deserialized = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.DockSettings);
+
+        Assert.IsNotNull(deserialized);
+        Assert.IsTrue(deserialized!.AutoHide);
+        Assert.AreEqual(2, deserialized.MonitorConfigs.Count);
+    }
+
+    [TestMethod]
+    public void DockSettings_WithUpdatedMonitorConfigs_PreservesAutoHide()
+    {
+        var settings = CreateMinimalDockSettings() with
+        {
+            AutoHide = true,
+            MonitorConfigs = ImmutableList.Create(
+                new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true },
+                new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY2", Enabled = false }),
+        };
+
+        var updated = settings with
+        {
+            MonitorConfigs = settings.MonitorConfigs.SetItem(1, settings.MonitorConfigs[1] with { Enabled = true }),
+        };
+
+        Assert.IsTrue(updated.AutoHide);
+        Assert.IsTrue(updated.MonitorConfigs[1].Enabled);
+    }
+
+    [TestMethod]
     public void DockSettings_MonitorConfigs_JsonRoundTrip()
     {
         var settings = CreateMinimalDockSettings() with
@@ -719,7 +766,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        // Phase 1.5 should detect GDI-style names and rewrite to stable IDs
+        // Legacy migration should detect GDI-style names and rewrite to stable IDs
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId, "Primary should be migrated to stable ID");
         Assert.AreEqual(SecondaryMonitor.StableId, result[1].MonitorDeviceId, "Secondary should be migrated to stable ID");

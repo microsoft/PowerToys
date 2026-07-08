@@ -11,6 +11,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         LeftRightArrow,
         Space,
         Both,
+        PressAndHold,
     };
 
     struct PowerAccentSettings
@@ -18,6 +19,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         PowerAccentActivationKey activationKey{ PowerAccentActivationKey::Both };
         bool doNotActivateOnGameMode{ true };
         std::chrono::milliseconds inputTime{ 300 }; // Should match with UI.Library.PowerAccentSettings.DefaultInputTimeMs
+        std::chrono::milliseconds holdDuration{ 500 }; // Should match with UI.Library.PowerAccentSettings.DefaultHoldDurationMs
         std::vector<std::wstring> excludedApps;
     };
 
@@ -39,6 +41,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void UpdateActivationKey(int32_t activationKey);
         void UpdateDoNotActivateOnGameMode(bool doNotActivateOnGameMode);
         void UpdateInputTime(int32_t inputTime);
+        void UpdateHoldDuration(int32_t holdDuration);
         void UpdateExcludedApps(std::wstring_view excludedApps);
 
         static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -48,6 +51,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         bool OnKeyUp(KBDLLHOOKSTRUCT info) noexcept;
         bool IsSuppressedByGameMode();
         bool IsForegroundAppExcluded();
+        bool IsBlockingModifierDown();
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;

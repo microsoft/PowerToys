@@ -24,7 +24,7 @@ advancedpaste
 advapi
 advfirewall
 AFeature
-affordances
+affordance
 afterfx
 AFX
 agentskills
@@ -119,6 +119,7 @@ Badmode
 Badparam
 bbwe
 BCIE
+Belarusian
 BESTEFFORT
 bezelled
 bhid
@@ -135,6 +136,7 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
+Blackmagic
 bla
 BLENDFUNCTION
 blittable
@@ -415,7 +417,6 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
-DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -465,8 +466,8 @@ DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
 DWMSENDICONICTHUMBNAIL
-DWMWA
-DWMWCP
+dwmwa
+dwmwcp
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
@@ -540,6 +541,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+Fairlight
 FARPROC
 fdw
 fdx
@@ -622,7 +624,9 @@ GETPROPERTYSTOREFLAGS
 GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
+GETTASKBARPOS
 GETTEXTLENGTH
+GETWORKAREA
 gfx
 GHND
 gitmodules
@@ -835,6 +839,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -862,7 +867,6 @@ jjw
 jobject
 JOBOBJECT
 jpe
-JPN
 jpnime
 jrsoftware
 Jsons
@@ -995,7 +999,6 @@ LTM
 LTRREADING
 luid
 lusrmgr
-LVDS
 LWA
 LZero
 MAGTRANSFORM
@@ -1059,8 +1062,6 @@ MINIMIZESTART
 MINMAXINFO
 minwindef
 Mip
-Miracast
-miracast
 mkdn
 mlcfg
 mmc
@@ -1235,6 +1236,8 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
+NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH
@@ -1365,6 +1368,7 @@ pii
 pinfo
 pinvoke
 pipename
+Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
@@ -1388,6 +1392,7 @@ popups
 POPUPWINDOW
 portfile
 POSITIONITEM
+Postbot
 POWERBROADCAST
 powerdisplay
 POWERDISPLAYMODULEINTERFACE
@@ -1507,6 +1512,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+RCW
 RCZOOMIT
 rdp
 RDW
@@ -1639,6 +1645,7 @@ SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
 SETRULES
+SETAUTOHIDEBAREX
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
@@ -1817,7 +1824,6 @@ svchost
 SVGIn
 SVGIO
 svgz
-SVIDEO
 SVSI
 SWFO
 swp
@@ -1916,6 +1922,7 @@ tracerpt
 trackbar
 trafficmanager
 transicc
+transitioning
 TRAYMOUSEMESSAGE
 triaging
 trl
@@ -2078,9 +2085,12 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED
+WINDOWDESTROYED
 windowedge
 WINDOWINFO
 WINDOWNAME
@@ -2176,6 +2186,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi
@@ -2184,6 +2195,7 @@ XUP
 XVIRTUALSCREEN
 XXL
 xxxxxx
+Yankunytjatjara
 ycombinator
 yinle
 yinyue

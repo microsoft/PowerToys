@@ -199,7 +199,7 @@
     <value>Temporarily disabled after repeated startup crashes</value>
   </data>
   <data name="Performance_Monitor_Disabled_Band_Title" xml:space="preserve">
-    <value>Perf disabled</value>
+    <value>Disabled</value>
   </data>
   <data name="Performance_Monitor_Disabled_Body" xml:space="preserve">
     <value>Performance monitor was temporarily disabled after repeated crashes while initializing or reading performance counters.

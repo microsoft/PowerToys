@@ -2,39 +2,110 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
-	
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<Nullable>disable</Nullable>
-		<UseWPF>true</UseWPF>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
-		<XamlDebuggingInformation>True</XamlDebuggingInformation>
-		<StartupObject>PowerAccent.UI.Program</StartupObject>
-		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	</PropertyGroup>
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
-	<ItemGroup>
-		<Resource Include="icon.ico">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-	</ItemGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>PowerAccent.UI</RootNamespace>
+    <AssemblyName>PowerToys.PowerAccent</AssemblyName>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <!-- Required so CommunityToolkit.Mvvm's source generator emits the WinRT-correct partial
+         property implementations for [ObservableProperty] (avoids MVVMTK0045 / CS9248).
+         Matches the sibling WinUI 3 module PowerDisplay. -->
+    <LangVersion>preview</LangVersion>
+    <UseWinUI>true</UseWinUI>
+    <!--
+      App.xaml and the windows live under PowerAccentXAML\ (not the project root). Nesting the XAML
+      in a named subfolder is the repo convention for WinUI 3 apps that share the WinUI3Apps output
+      folder (see Peek's PeekXAML\, PowerDisplay's PowerDisplayXAML\): it keeps the compiled .xbf out
+      of the WinUI3Apps root, so the "Audit WinAppSDK applications path asset conflicts" pipeline step
+      passes. Disable the default ApplicationDefinition glob so the explicit
+      <ApplicationDefinition Include="PowerAccentXAML\App.xaml" /> below is the single one.
+    -->
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>PowerAccent.UI.Program</StartupObject>
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <ProjectPriFileName>PowerToys.PowerAccent.pri</ProjectPriFileName>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Windows.CsWin32">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+  <!-- Native AOT Configuration. Mirrors the sibling WinUI 3 module PowerDisplay so the app is
+       compiled with ILC on publish, surfacing trim/AOT problems that the analyzers alone miss. -->
+  <PropertyGroup>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-		<ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-		<ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
-		<ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
-	</ItemGroup>
+  <PropertyGroup>
+    <!--
+      Do NOT set CsWinRTIncludes here. Both WinRT components the UI touches - PowerToys.GPOWrapper
+      (called directly from Program.cs) and PowerToys.PowerAccentKeyboardService (used by Core) -
+      are already projected by PowerAccent.Core, which the UI references, so their managed
+      projections arrive transitively. Listing either here generates a SECOND copy of the same
+      types and breaks the build with CS0436 (e.g. GpoRuleConfigured defined both in this project's
+      generated files and in PowerAccent.Core). This matches the original WPF UI, which had no
+      CsWinRTIncludes at all.
+    -->
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.PowerAccent.pri" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <ItemGroup>
+    <Page Remove="PowerAccentXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="PowerAccentXAML\App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="WinUIEx" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.WinUI.Animations" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
+    <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
 </Project>
