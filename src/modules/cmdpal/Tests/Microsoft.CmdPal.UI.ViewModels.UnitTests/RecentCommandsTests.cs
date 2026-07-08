@@ -203,6 +203,38 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void ValidateLookupIndexStaysConsistentAcrossChanges()
+    {
+        // The commandId lookup is backed by a cached index that must be invalidated whenever
+        // history changes (WithHistoryItem returns a new record, and a 'with' copy carries the
+        // old cached field over). Force the index to build on one instance, then mutate, and
+        // confirm each instance reports exactly its own history.
+        var now = new DateTimeOffset(2025, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var first = new RecentCommandsManager().WithHistoryItem("alpha", now);
+
+        // Read once to build the cached index on 'first'.
+        var alphaFirst = first.GetCommandHistoryWeight("alpha", now);
+        Assert.IsTrue(alphaFirst > 0, "alpha should have weight on the first instance");
+        Assert.AreEqual(0, first.GetCommandHistoryWeight("beta", now), "beta is not in the first instance");
+
+        // Add a use of alpha and a brand-new beta, producing a new instance.
+        var second = first
+            .WithHistoryItem("alpha", now.AddDays(1))
+            .WithHistoryItem("beta", now.AddDays(1));
+
+        // The new instance sees the newer alpha (more recent + higher use) and the new beta.
+        Assert.IsTrue(
+            second.GetCommandHistoryWeight("alpha", now.AddDays(1)) > 0,
+            "alpha should still resolve on the updated instance");
+        Assert.IsTrue(
+            second.GetCommandHistoryWeight("beta", now.AddDays(1)) > 0,
+            "beta should resolve on the updated instance after its index rebuilds");
+
+        // The original instance is unchanged - its index never gained beta.
+        Assert.AreEqual(0, first.GetCommandHistoryWeight("beta", now), "the original instance must not see beta");
+    }
+
+    [TestMethod]
     public void ValidateHistoryCap()
     {
         // Insert well beyond the cap, each newer than the last. The store keeps the most-recent
