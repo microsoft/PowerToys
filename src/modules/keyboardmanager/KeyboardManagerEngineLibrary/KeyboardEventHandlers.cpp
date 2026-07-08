@@ -143,6 +143,17 @@ namespace
         return GetForegroundWindow();
     }
 
+    DWORD GetTextReplacementWindowProcessId(HWND window)
+    {
+        DWORD processId = 0;
+        if (window != nullptr)
+        {
+            GetWindowThreadProcessId(window, &processId);
+        }
+
+        return processId;
+    }
+
     std::optional<std::wstring> GetTextFromKeyboardEvent(KeyboardManagerInput::InputInterface& ii, const LowlevelKeyboardEvent* data)
     {
         if (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN)
@@ -2084,14 +2095,12 @@ namespace KeyboardEventHandlers
         {
             return 0;
         }
-
-        std::wstring foregroundProcess;
-        ii.GetForegroundProcess(foregroundProcess);
         const HWND foregroundWindow = GetTextReplacementWindow();
-        if (foregroundProcess != state.textReplacementProcess || foregroundWindow != state.textReplacementWindow)
+        const DWORD foregroundProcessId = GetTextReplacementWindowProcessId(foregroundWindow);
+        if (foregroundWindow != state.textReplacementWindow || foregroundProcessId != state.textReplacementProcessId)
         {
             state.textReplacementBuffer.clear();
-            state.textReplacementProcess = foregroundProcess;
+            state.textReplacementProcessId = foregroundProcessId;
             state.textReplacementWindow = foregroundWindow;
         }
 
@@ -2130,9 +2139,10 @@ namespace KeyboardEventHandlers
             state.textReplacementBuffer.erase(0, state.textReplacementBuffer.length() - state.maxTextReplacementTriggerLength);
         }
 
-        for (size_t length = (std::min)(state.textReplacementBuffer.length(), state.maxTextReplacementTriggerLength); length != 0; --length)
+        const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
+        for (size_t length = (std::min)(textReplacementBufferView.length(), state.maxTextReplacementTriggerLength); length != 0; --length)
         {
-            const std::wstring trigger = state.textReplacementBuffer.substr(state.textReplacementBuffer.length() - length);
+            const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
             if (const auto replacement = state.textReplacements.find(trigger); replacement != state.textReplacements.end())
             {
                 SendTextReplacementInput(ii, trigger.length() > text->length() ? trigger.length() - text->length() : 0, replacement->second);

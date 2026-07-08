@@ -442,7 +442,6 @@ namespace KeyboardManagerEditorUI.Pages
                     ValidationHelper.ValidateTextReplacementMapping(
                         UnifiedMappingControl.GetTriggerText(),
                         UnifiedMappingControl.GetTextContent(),
-                        _mappingService!,
                         _isEditMode,
                         _editingItem?.Item is TextMapping textMapping ? textMapping.TriggerText : string.Empty),
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(

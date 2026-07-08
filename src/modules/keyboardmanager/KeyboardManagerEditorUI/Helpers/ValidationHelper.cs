@@ -169,7 +169,6 @@ namespace KeyboardManagerEditorUI.Helpers
         public static ValidationErrorType ValidateTextReplacementMapping(
             string triggerText,
             string textContent,
-            KeyboardMappingService mappingService,
             bool isEditMode = false,
             string editingTriggerText = "")
         {
@@ -183,9 +182,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyTargetText;
             }
 
-            if (mappingService.GetTextReplacementMappings().Any(mapping =>
-                mapping.Trigger == triggerText &&
-                (!isEditMode || mapping.Trigger != editingTriggerText)))
+            if (SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values.Any(settings =>
+                settings.IsActive &&
+                settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
+                settings.Shortcut.TriggerText == triggerText &&
+                (!isEditMode || settings.Shortcut.TriggerText != editingTriggerText)))
             {
                 return ValidationErrorType.DuplicateMapping;
             }

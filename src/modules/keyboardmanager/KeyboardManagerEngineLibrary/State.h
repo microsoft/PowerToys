@@ -18,8 +18,8 @@ public:
     // Stores typed characters for text replacement matching.
     std::wstring textReplacementBuffer;
 
-    // Stores the foreground process associated with textReplacementBuffer.
-    std::wstring textReplacementProcess;
+    // Stores the foreground process id associated with textReplacementBuffer.
+    DWORD textReplacementProcessId = 0;
 
     // Stores the focused window/control associated with textReplacementBuffer.
     HWND textReplacementWindow = nullptr;

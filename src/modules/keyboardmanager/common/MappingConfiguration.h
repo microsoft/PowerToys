@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <string_view>
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
@@ -10,7 +11,18 @@ using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutTextUnion>;
 using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
-using TextReplacementTable = std::map<std::wstring, std::wstring>;
+
+struct TextReplacementTriggerCompare
+{
+    using is_transparent = void;
+
+    bool operator()(std::wstring_view lhs, std::wstring_view rhs) const
+    {
+        return lhs < rhs;
+    }
+};
+
+using TextReplacementTable = std::map<std::wstring, std::wstring, TextReplacementTriggerCompare>;
 
 class MappingConfiguration
 {

@@ -19,7 +19,7 @@ namespace TestHelpers
         state.ClearSingleKeyToTextRemaps();
         state.ClearTextReplacements();
         state.textReplacementBuffer.clear();
-        state.textReplacementProcess.clear();
+        state.textReplacementProcessId = 0;
         state.textReplacementWindow = nullptr;
 
         // Allocate memory for the keyboardManagerState activatedApp member to avoid CRT assert errors
