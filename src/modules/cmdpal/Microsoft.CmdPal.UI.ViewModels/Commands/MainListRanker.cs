@@ -73,12 +73,18 @@ public static class MainListRanker
     /// <param name="title">The item's title.</param>
     /// <param name="isFallback">Whether the item is a fallback (always ranked at the floor).</param>
     /// <param name="isAliasExact">Whether the query exactly equals the item's alias.</param>
+    /// <param name="isAliasSubstringMatch">Whether the item's alias starts with the query
+    /// (a partial alias match). An alias is an explicit, user-assigned shortcut and may be
+    /// intentionally unrelated to the title, so a partial alias match floors the tier to at
+    /// least <see cref="RankTier.Fuzzy"/> even when no lexical signal matched - otherwise
+    /// such items would be classified <see cref="RankTier.None"/> and silently dropped.</param>
     /// <param name="matchedLexically">Whether any fuzzy signal (title/subtitle/extension) matched.</param>
     public static RankTier ClassifyTier(
         string query,
         string title,
         bool isFallback,
         bool isAliasExact,
+        bool isAliasSubstringMatch,
         bool matchedLexically)
     {
         if (isAliasExact)
@@ -93,10 +99,14 @@ public static class MainListRanker
             return RankTier.FallbackFloor;
         }
 
+        // A partial alias match is enough to keep the item visible even when nothing else
+        // matched. It only floors to Fuzzy; a stronger title relationship below still wins.
+        var matchedOrAlias = matchedLexically || isAliasSubstringMatch;
+
         var q = query.AsSpan().Trim();
         if (q.IsEmpty || string.IsNullOrEmpty(title))
         {
-            return matchedLexically ? RankTier.Fuzzy : RankTier.None;
+            return matchedOrAlias ? RankTier.Fuzzy : RankTier.None;
         }
 
         var titleSpan = title.AsSpan();
@@ -116,7 +126,7 @@ public static class MainListRanker
             return RankTier.AcronymWordBoundary;
         }
 
-        return matchedLexically ? RankTier.Fuzzy : RankTier.None;
+        return matchedOrAlias ? RankTier.Fuzzy : RankTier.None;
     }
 
     /// <summary>
