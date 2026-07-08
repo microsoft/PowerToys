@@ -158,11 +158,13 @@ public partial class ListItemViewModel : CommandItemViewModel
                 UpdateProperty(nameof(Type), nameof(IsInteractive));
                 break;
             case nameof(Details):
+                var existingReference = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
+                existingReference?.SafeCleanup();
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();

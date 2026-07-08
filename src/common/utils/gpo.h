@@ -261,7 +261,7 @@ namespace powertoys_gpo
             }
         }
 
-        // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
+        // No list exists for machine and user, or no value was found in the list, or an error occurred while reading the value.
         return std::nullopt;
     }
 

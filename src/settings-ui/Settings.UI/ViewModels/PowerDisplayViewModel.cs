@@ -380,6 +380,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
+        /// <summary>
+        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// </summary>
+        public int MouseWheelIncrement
+        {
+            get => _settings.Properties.MouseWheelIncrement;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelIncrement, value, v => _settings.Properties.MouseWheelIncrement = v))
+                {
+                    // Push to the (possibly open) flyout so the new step takes effect immediately.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
+
+        public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
+
         public ObservableCollection<MonitorInfo> Monitors
         {
             get => _monitors;
@@ -639,7 +659,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)

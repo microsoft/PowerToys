@@ -11,6 +11,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record SettingsModel
 {
+    // LOAD BEARNING: Some SettingsChanged subscribers react selectively (e.g.
+    // MainWindow.MainWindowSettingsComparer, DockWindowManager.OnSettingsChanged). If a new
+    // setting needs a live reaction, add it there too - otherwise it won't take effect.
+
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
@@ -41,6 +45,14 @@ public record SettingsModel
         = ImmutableList<PinnedCommandSettings>.Empty;
 
     public bool AllowExternalReload { get; init; }
+
+    public bool CompactMode { get; set; } = true;
+
+    // When compact mode is on and the palette is centered on launch, this is the relative
+    // height from the bottom of the screen (as a percentage) at which the collapsed search
+    // box is vertically centered. 75 places it in the upper portion of the display. Ignored
+    // when compact mode is off.
+    public int CompactCenterHeightPercentage { get; set; } = 75;
 
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -136,6 +148,18 @@ public record SettingsModel
     public string? GalleryFeedUrl { get; init; }
 
     // </Gallery settings>
+
+    // Internal diagnostics settings
+
+    /// <summary>
+    /// Gets a value indicating whether the main window's HWND chrome (title bar, border,
+    /// system-drawn rounded corners) is visible. <strong>For internal debugging only.</strong>
+    /// Off by default. The setting is persisted but only honored in non-CI builds; release /
+    /// CI builds always force the borderless / transparent host window.
+    /// </summary>
+    public bool ShowHwndFrame { get; init; }
+
+    // </Internal diagnostics settings>
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////

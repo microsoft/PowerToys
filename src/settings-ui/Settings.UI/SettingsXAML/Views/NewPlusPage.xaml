@@ -207,7 +207,7 @@
             <controls:PageLink x:Uid="NewPlus_Learn_More" Link="https://aka.ms/PowerToysOverview_NewPlus" />
         </controls:SettingsPageControl.PrimaryLinks>
         <controls:SettingsPageControl.SecondaryLinks>
-            <controls:PageLink Link="https://www.linkedin.com/in/christian-gaardmark/" Text="Christian Gaardmark" />
+            <controls:PageLink Link="https://www.onegreatworld.com/products/productivity-plus-pack/?ref=settings_pt" Text="Based on Christian Gaardmark's New++ from the Productivity Plus Pack" />
         </controls:SettingsPageControl.SecondaryLinks>
     </controls:SettingsPageControl>
 

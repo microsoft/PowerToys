@@ -11,6 +11,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -188,5 +189,6 @@ public partial class MainViewModel
         => new HashSet<string>(
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
-                .Select(m => m.Id));
+                .Select(m => m.Id),
+            MonitorIdComparer.Instance);
 }

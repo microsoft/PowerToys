@@ -156,8 +156,9 @@ public sealed partial class CommandBar : UserControl,
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
+        // Focus the filter box so the flyout captures keyboard input,
+        // then fire a single consolidated Narrator announcement.
         ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
     }
 }
