@@ -40,6 +40,7 @@ BOOLEAN	g_BreakBackgroundStretch = FALSE;
 TCHAR	g_BreakBackgroundFile[MAX_PATH] = {0};
 BOOLEAN	g_OptionsShown = FALSE;
 BOOLEAN	g_ShowTrayIcon = TRUE;
+BOOLEAN g_ShowThemeAdaptiveTrayIcon = FALSE;
 BOOLEAN g_SnapToGrid = TRUE;
 BOOLEAN	g_TelescopeZoomOut = TRUE;
 BOOLEAN	g_BreakOnSecondary = FALSE;
@@ -106,6 +107,7 @@ REG_SETTING RegSettings[] = {
     { L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, static_cast<DOUBLE>(g_FontScale) },
     { L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
     { L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
+    { L"ShowThemeAdaptiveTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowThemeAdaptiveTrayIcon, static_cast<DOUBLE>(g_ShowThemeAdaptiveTrayIcon) },
     // NOTE: AnimateZoom is misspelled, but since it is a user setting stored in the registry we must continue to misspell it.
     { L"AnimnateZoom", SETTING_TYPE_BOOLEAN, 0, &g_AnimateZoom, static_cast<DOUBLE>(g_AnimateZoom) },
     { L"SmoothImage", SETTING_TYPE_BOOLEAN, 0, &g_SmoothImage, static_cast<DOUBLE>(g_SmoothImage) },
