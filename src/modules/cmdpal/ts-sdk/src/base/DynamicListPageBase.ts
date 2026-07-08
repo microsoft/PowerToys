@@ -35,7 +35,7 @@ export abstract class DynamicListPageBase extends ListPageBase implements IDynam
 
   /**
    * Call this when items have changed and the host should re-fetch.
-   * The SDK bridge will send a notify/itemsChanged notification.
+   * The runtime patches this method to send a listPage/itemsChanged notification.
    */
   protected notifyItemsChanged(): void {
     // This will be wired up by the runtime bridge

@@ -5,6 +5,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
@@ -42,6 +43,13 @@ public sealed class JSExtensionWrapper : IExtensionWrapper, IDisposable
     /// An extension becomes unhealthy after exceeding 3 consecutive crashes.
     /// </summary>
     public bool IsHealthy { get; private set; } = true;
+
+    /// <summary>
+    /// Gets the capabilities advertised by the extension in its initialize response.
+    /// These are currently advisory: the host records them for diagnostics but does not
+    /// gate any behavior on them yet.
+    /// </summary>
+    public IReadOnlyList<string> Capabilities { get; private set; } = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JSExtensionWrapper"/> class.
@@ -273,7 +281,33 @@ public sealed class JSExtensionWrapper : IExtensionWrapper, IDisposable
                 return;
             }
 
-            // Extension started and initialized successfully — reset crash tracking
+            // Record any capabilities advertised by the extension. These are advisory for now.
+            if (initResponse.Result is JsonElement initResult &&
+                initResult.ValueKind == JsonValueKind.Object &&
+                initResult.TryGetProperty("capabilities", out var capsElement) &&
+                capsElement.ValueKind == JsonValueKind.Array)
+            {
+                var capabilities = new List<string>();
+                foreach (var cap in capsElement.EnumerateArray())
+                {
+                    if (cap.ValueKind == JsonValueKind.String)
+                    {
+                        var value = cap.GetString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            capabilities.Add(value);
+                        }
+                    }
+                }
+
+                Capabilities = capabilities;
+                if (capabilities.Count > 0)
+                {
+                    Logger.LogInfo($"Extension {_manifest.Name} advertised capabilities: {string.Join(", ", capabilities)}");
+                }
+            }
+
+            // Extension started and initialized successfully - reset crash tracking
             ResetCrashCount();
 
             Logger.LogInfo($"Successfully started JS extension {_manifest.DisplayName ?? _manifest.Name}");

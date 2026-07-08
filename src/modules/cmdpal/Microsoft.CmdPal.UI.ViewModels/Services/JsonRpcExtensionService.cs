@@ -16,7 +16,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 /// Each extension gets its own process communicating over JSON-RPC 2.0 via stdio with LSP-style framing.
 /// Supports hot-reload (via FileSystemWatcher), crash recovery, and debug attachment.
 /// </summary>
-public sealed class JavaScriptExtensionService : IExtensionService, IDisposable
+public sealed class JsonRpcExtensionService : IExtensionService, IDisposable
 {
     private static readonly string ExtensionsPath = GetDefaultExtensionsPath();
 
@@ -39,7 +39,7 @@ public sealed class JavaScriptExtensionService : IExtensionService, IDisposable
     public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderRemoved;
 #pragma warning restore CS0067
 
-    public JavaScriptExtensionService(TaskScheduler taskScheduler)
+    public JsonRpcExtensionService(TaskScheduler taskScheduler)
     {
         _taskScheduler = taskScheduler;
     }
@@ -71,7 +71,7 @@ public sealed class JavaScriptExtensionService : IExtensionService, IDisposable
         StartDirectoryWatcher();
 
         sw.Stop();
-        Logger.LogInfo($"JavaScriptExtensionService: Loaded {wrappers.Count} extension(s) in {sw.ElapsedMilliseconds} ms");
+        Logger.LogInfo($"JsonRpcExtensionService: Loaded {wrappers.Count} extension(s) in {sw.ElapsedMilliseconds} ms");
 
         return wrappers;
     }

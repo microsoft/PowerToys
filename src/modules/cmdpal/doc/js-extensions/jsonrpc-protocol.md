@@ -450,104 +450,110 @@ Maps to `ICommandProvider.GetCommand(id)`.
 
 ## Node → Host Notifications
 
-These are fire-and-forget messages from extensions to the host.
+These are fire-and-forget messages from extensions to the host. They are emitted by
+the SDK runtime (`ts-sdk/src/runtime/stdio-server.ts`) and handled by the host proxies
+(`JSListPageProxy`, `JSCommandProviderProxy`).
 
-### `notify/itemsChanged`
+### `listPage/itemsChanged`
 
-Extension signals that its list items have changed. Host should re-fetch.
-
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "notify/itemsChanged",
-  "params": {
-    "extensionId": "cooldev.weather",
-    "pageId": "weather-list",
-    "totalItems": 15
-  }
-}
-```
-
-### `notify/propChanged`
-
-Extension signals that a property has changed on a command/page.
+A dynamic list page signals that its items have changed. The host re-fetches the page's items.
 
 ```json
 {
   "jsonrpc": "2.0",
-  "method": "notify/propChanged",
+  "method": "listPage/itemsChanged",
   "params": {
-    "extensionId": "cooldev.weather",
-    "objectId": "weather-now",
-    "propertyName": "title"
+    "pageId": "weather-list"
   }
 }
 ```
 
-### `notify/commandsChanged`
+### `command/propChanged`
 
-Extension signals that its top-level commands have changed. Host should re-fetch.
+A command signals that one or more of its observable properties have changed. The host
+applies the supplied properties without re-fetching the whole command.
 
 ```json
 {
   "jsonrpc": "2.0",
-  "method": "notify/commandsChanged",
+  "method": "command/propChanged",
   "params": {
-    "extensionId": "cooldev.weather"
+    "commandId": "weather-now",
+    "properties": {
+      "displayTitle": "Weather - 5 cities"
+    }
   }
 }
 ```
 
-### `host/log`
+### `host/logMessage`
 
-Extension sends a log message.
+Extension sends a log message to the host log. Backs the SDK `ExtensionHost.log` API.
 
 ```json
 {
   "jsonrpc": "2.0",
-  "method": "host/log",
+  "method": "host/logMessage",
   "params": {
-    "extensionId": "cooldev.weather",
-    "state": "info",
-    "message": "Fetched weather data for 5 cities"
+    "message": "Fetched weather data for 5 cities",
+    "state": 2
   }
 }
 ```
 
-`state` is one of: `"info"`, `"success"`, `"warning"`, `"error"`.
+`state` is a numeric severity: `0` = trace, `1` = debug, `2` = info, `3` = warning, `4` = error.
 
 ### `host/showStatus`
 
-Extension requests a status message be shown.
+Extension requests a status message be shown. Backs the SDK `ExtensionHost.showStatus` API.
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "host/showStatus",
   "params": {
-    "extensionId": "cooldev.weather",
-    "context": "page",
-    "message": "Loading weather data...",
-    "state": "info",
-    "progress": { "isIndeterminate": true }
+    "message": { "Message": "Loading weather data...", "State": 2 },
+    "context": "extension"
   }
 }
 ```
 
+`State` uses the same numeric severity scale as `host/logMessage`.
+
 ### `host/hideStatus`
 
-Extension requests a status message be hidden.
+Extension requests a previously shown status message be hidden. Backs the SDK
+`ExtensionHost.hideStatus` API.
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "host/hideStatus",
   "params": {
-    "extensionId": "cooldev.weather",
-    "messageId": "loading-weather"
+    "message": { "Message": "Loading weather data...", "State": 2 }
   }
 }
 ```
+
+### `host/copyText`
+
+Extension requests text be copied to the clipboard. Backs the SDK
+`ExtensionHost.copyToClipboard` API.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "host/copyText",
+  "params": {
+    "text": "72F and sunny"
+  }
+}
+```
+
+> Note: the host additionally registers handlers for provider-level variants
+> (`provider/itemsChanged`, `provider/propChanged`, `page/propChanged`,
+> `content/propChanged`) in `JSCommandProviderProxy`. These are reserved for future use
+> and are not currently emitted by the SDK runtime.
 
 ---
 

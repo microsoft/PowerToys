@@ -58,7 +58,7 @@ Write-Host ""
 Write-Host "=== Done! ===" -ForegroundColor Green
 Write-Host ""
 Write-Host "Extension installed at: $sampleInstallDir"
-Write-Host "The JavaScriptExtensionService will discover it on next CmdPal launch."
+Write-Host "The JsonRpcExtensionService will discover it on next CmdPal launch."
 Write-Host ""
 Write-Host "Requirements:"
 Write-Host "  - Node.js v22+ must be on your PATH"
