@@ -33,8 +33,10 @@ For the Win11 IExplorerCommand vs classic HKCR distinction, see `scripts/pt-shel
 $tmp = New-Item -ItemType Directory -Path "$env:TEMP\pr-fixture-$(Get-Random)"
 1..3 | ForEach-Object { 'x' | Set-Content "$($tmp.FullName)\file$_.txt" }
 
-Start-Process "$env:LOCALAPPDATA\PowerToys\WinUI3Apps\PowerToys.PowerRename.exe" `
-    -ArgumentList "$($tmp.FullName)\file1.txt","$($tmp.FullName)\file2.txt","$($tmp.FullName)\file3.txt"
+# quote each path — Start-Process -ArgumentList joins args with spaces and does NOT auto-quote,
+# so a path containing a space (e.g. "Hi World.txt") gets split into invalid args → empty file list.
+$files = Get-ChildItem $tmp.FullName -File | ForEach-Object { '"{0}"' -f $_.FullName }
+Start-Process "$env:LOCALAPPDATA\PowerToys\WinUI3Apps\PowerToys.PowerRename.exe" -ArgumentList $files
 
 Start-Sleep -Milliseconds 1500
 Force-PtForeground -AppId PowerToys.PowerRename   # bring PR to top — else it opens BEHIND the temp Explorer window (pitfall #13); needed for recordings + reliable screenshots
