@@ -25,6 +25,15 @@ namespace FileLocksmithUI
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             var title = isElevated ? loader.GetString("AppAdminTitle") : loader.GetString("AppTitle");
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = "File Locksmith";
+            }
+
             Title = title;
             titleBar.Title = title;
         }

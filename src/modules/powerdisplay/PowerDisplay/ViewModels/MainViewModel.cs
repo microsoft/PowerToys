@@ -93,6 +93,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IsScanning = true;
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
+        MouseWheelIncrement = 5;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
@@ -128,6 +129,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowIdentifyMonitorsButton { get; set; }
+
+    /// <summary>
+    /// Gets or sets the per-mouse-wheel-notch step applied to every flyout slider. Loaded from
+    /// PowerDisplaySettings; defaults to 5 (the historical hardcoded step).
+    /// </summary>
+    [ObservableProperty]
+    public partial int MouseWheelIncrement { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
@@ -479,6 +487,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+            MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
 
             // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
             // method runs after monitors are already discovered, the toggle hook can seed the master

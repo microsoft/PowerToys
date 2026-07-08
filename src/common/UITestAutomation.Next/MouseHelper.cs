@@ -141,16 +141,31 @@ public static class MouseHelper
 
     /// <summary>
     /// Drag from one absolute screen point to another with real mouse input: move → left-down →
-    /// stepped move → left-up. winappcli has no drag verb, so this stays Win32. Coordinates are
-    /// physical screen pixels (matching <c>winapp ui search</c> bounds).
+    /// stepped move → left-up. Moving in <paramref name="steps"/> increments lets a tracking overlay
+    /// (e.g. a screen-capture measurement) see the cursor travel instead of teleport, then settles
+    /// exactly on the target. winappcli has no drag verb, so this stays Win32. Coordinates are physical
+    /// screen pixels (matching <c>winapp ui search</c> bounds).
     /// </summary>
-    public static void Drag(int fromX, int fromY, int toX, int toY)
+    public static void Drag(int fromX, int fromY, int toX, int toY, int steps = 10)
     {
+        if (steps < 1)
+        {
+            steps = 1;
+        }
+
         MoveTo(fromX, fromY);
         Thread.Sleep(100);
 
         LeftDown();
         Thread.Sleep(100);
+
+        var dx = (double)(toX - fromX) / steps;
+        var dy = (double)(toY - fromY) / steps;
+        for (var i = 1; i <= steps; i++)
+        {
+            MoveTo(fromX + (int)Math.Round(dx * i), fromY + (int)Math.Round(dy * i));
+            Thread.Sleep(15);
+        }
 
         MoveTo(toX, toY);
         Thread.Sleep(200);

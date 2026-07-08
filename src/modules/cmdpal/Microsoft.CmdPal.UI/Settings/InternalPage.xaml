@@ -82,6 +82,17 @@
                             Click="ToggleDevRibbonClicked"
                             Content="Toggle dev ribbon" />
                     </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Name="ShowHwndFrameSettingsCard"
+                        Description="Shows the OS-drawn title bar, border, and rounded corners on the Command Palette's HWND so its actual bounds are visible. Always off in CI / release builds."
+                        Header="Show HWND frame"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE737;}">
+                        <ToggleSwitch
+                            x:Name="ShowHwndFrameToggle"
+                            AutomationProperties.AutomationId="CmdPal_InternalPage_ShowHwndFrame"
+                            IsOn="{x:Bind ShowHwndFrame, Mode=OneTime}"
+                            Toggled="ShowHwndFrameToggle_Toggled" />
+                    </controls:SettingsCard>
 
                     <!--  Gallery Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Extension Gallery" />
