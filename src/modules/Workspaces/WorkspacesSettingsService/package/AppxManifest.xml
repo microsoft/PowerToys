@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MSIX package for the PowerToys Settings Service (Design-v6-Final.md §12.1/§12.8,
+  MSIX package for the PowerToys Settings Service (Design-v6-Final.md 12.1/12.8,
   Approach 4).  The package STAGES THE BINARY ONLY into the immutable, signed
   WindowsApps store so a non-admin same-user attacker cannot replace it.  It does
   NOT use the windows.service extension: that extension's StartAccount is a closed
   enum (localSystem/localService/networkService) and cannot express the dedicated
-  low-privilege VIRTUAL ACCOUNT (NT SERVICE\PTSettingsSvc_<SID>) the design
+  low-privilege VIRTUAL ACCOUNT (NT SERVICE\PTSettingsSvc_[SID]) the design
   requires.  The service is instead SELF-REGISTERED per user by an elevated actor
-  (the service exe's own `--register <SID>` mode, launched by the installer CA or
+  (the service exe's own "register [SID]" verb, launched by the installer CA or
   the per-user provisioner).  Data is written to real %ProgramData% by the
   service, not virtualized.
 
