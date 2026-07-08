@@ -498,6 +498,12 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
+    /// <summary>
+    /// Moves focus to the inner search text box using <see cref="FocusState.Keyboard"/>, which
+    /// (unlike a programmatic <c>Focus</c> on the control) lets the screen reader announce the
+    /// box and its placeholder. Used for summon and post-navigation focus alike so both paths
+    /// are announced consistently.
+    /// </summary>
     internal void FocusActiveControl()
     {
         this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>

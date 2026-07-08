@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
@@ -9,7 +10,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Messages;
-using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -81,6 +81,11 @@ public sealed partial class MainWindow : WindowEx,
     private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
+
+    // The snapshot of settings last consumed by HotReloadSettings. Used to skip redundant
+    // hot-reloads when a SettingsChanged notification touches settings this window doesn't
+    // care about (theme, provider config, aliases, and so on).
+    private SettingsModel? _lastAppliedSettings;
 
     // Session tracking for telemetry
     private Stopwatch? _sessionStopwatch;
@@ -240,6 +245,14 @@ public sealed partial class MainWindow : WindowEx,
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
+        // Only rebuild window state when a setting HotReloadSettings actually consumes has
+        // changed. Most SettingsChanged notifications (theme, provider config, aliases, ...)
+        // don't affect the host window, so hot-reloading on every one is wasteful.
+        if (MainWindowSettingsComparer.Instance.Equals(_lastAppliedSettings, args))
+        {
+            return;
+        }
+
         DispatcherQueue.TryEnqueue(HotReloadSettings);
     }
 
@@ -465,7 +478,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HotReloadSettings()
     {
+        // NOTE: SettingsChangedHandler skips this method when nothing relevant changed, using
+        // MainWindowSettingsComparer. When you start consuming a new setting below, add it to
+        // that comparer too — otherwise changes to it won't trigger a hot-reload.
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        _lastAppliedSettings = settings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
@@ -489,6 +506,87 @@ public sealed partial class MainWindow : WindowEx,
     /// </summary>
     private static bool ShouldShowHwndFrame(SettingsModel settings) =>
         !BuildInfo.IsCiBuild && settings.ShowHwndFrame;
+
+    /// <summary>
+    /// Compares two <see cref="SettingsModel"/> instances by only the settings that
+    /// <see cref="HotReloadSettings"/> (and the methods it calls) actually consume. Any change
+    /// to a setting outside this set is invisible to the host window, so treating such models
+    /// as equal lets <see cref="SettingsChangedHandler"/> skip a redundant hot-reload.
+    /// </summary>
+    /// <remarks>
+    /// Keep this in sync with the settings read by <see cref="HotReloadSettings"/>,
+    /// <see cref="SetupHotkey"/>, <see cref="ShouldShowHwndFrame"/>, and
+    /// <see cref="HandleExpandCompactOnUiThread"/>.
+    /// </remarks>
+    private sealed class MainWindowSettingsComparer : IEqualityComparer<SettingsModel>
+    {
+        public static MainWindowSettingsComparer Instance { get; } = new();
+
+        public bool Equals(SettingsModel? x, SettingsModel? y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (x is null || y is null)
+            {
+                return false;
+            }
+
+            return x.UseLowLevelGlobalHotkey == y.UseLowLevelGlobalHotkey
+                && x.ShowSystemTrayIcon == y.ShowSystemTrayIcon
+                && x.IgnoreShortcutWhenFullscreen == y.IgnoreShortcutWhenFullscreen
+                && x.IgnoreShortcutWhenBusy == y.IgnoreShortcutWhenBusy
+                && x.AllowBreakthroughShortcut == y.AllowBreakthroughShortcut
+                && x.AutoGoHomeInterval == y.AutoGoHomeInterval
+                && x.ShowHwndFrame == y.ShowHwndFrame
+                && x.CompactMode == y.CompactMode
+                && x.Hotkey == y.Hotkey // HotkeySettings is a record (value equality)
+                && CommandHotkeysEqual(x.CommandHotkeys, y.CommandHotkeys);
+        }
+
+        // TopLevelHotkey is a record (value equality); compare element-wise. ImmutableList
+        // itself only implements reference equality, so we can't rely on ==.
+        private static bool CommandHotkeysEqual(ImmutableList<TopLevelHotkey> x, ImmutableList<TopLevelHotkey> y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (x.Count != y.Count)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < x.Count; i++)
+            {
+                if (x[i] != y[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(SettingsModel obj)
+        {
+            var hash = default(HashCode);
+            hash.Add(obj.UseLowLevelGlobalHotkey);
+            hash.Add(obj.ShowSystemTrayIcon);
+            hash.Add(obj.IgnoreShortcutWhenFullscreen);
+            hash.Add(obj.IgnoreShortcutWhenBusy);
+            hash.Add(obj.AllowBreakthroughShortcut);
+            hash.Add(obj.AutoGoHomeInterval);
+            hash.Add(obj.ShowHwndFrame);
+            hash.Add(obj.CompactMode);
+            hash.Add(obj.Hotkey);
+            hash.Add(obj.CommandHotkeys.Count);
+            return hash.ToHashCode();
+        }
+    }
 
     /// <summary>
     /// Configures the HWND for the borderless / transparent main-window mode and (when
@@ -565,6 +663,8 @@ public sealed partial class MainWindow : WindowEx,
             var borderColor = showFrame ? DWMWA_COLOR_DEFAULT : DWMWA_COLOR_NONE;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColor, sizeof(uint));
         }
+
+        RedrawWindow(_hwnd);
     }
 
     private void InitializeBackdropSupport()
@@ -629,7 +729,7 @@ public sealed partial class MainWindow : WindowEx,
         var positionWindowForAnchor = (HWND hwnd) =>
         {
             PInvoke.GetWindowRect(hwnd, out var bounds);
-            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER;
+            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED;
 
             int x, y;
             switch (anchorCorner)
@@ -745,15 +845,31 @@ public sealed partial class MainWindow : WindowEx,
         // topmost status when we hide the window (because we cloak it instead
         // of hiding it).
         //
-        // SWP_FRAMECHANGED is load-bearing for the borderless look on a cold
-        // start.  Asking for SWP_FRAMECHANGED here re-sends WM_NCCALCSIZE and
-        // forces the NC repaint every time we show, so the frame is gone from
-        // the very first summon.
+        // SWP_FRAMECHANGED re-sends WM_NCCALCSIZE so the OS recomputes the
+        // (zero-width) frame. But on this cloak->show path it doesn't reliably
+        // *repaint* the non-client area, so the WS_THICKFRAME border that was
+        // painted earlier survives on the top/left/right edges (the bottom is
+        // clipped away by the card region). A real resize fixes it because it
+        // forces that NC repaint - so we do the same explicitly below.
         PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED);
+
+        // Force the non-client frame to actually redraw (RDW_FRAME) and the
+        // client to repaint over wherever it used to be. Without this the stale
+        // border lingers until the user resizes the window.
+        RedrawWindow(hwnd);
 
         // Treat the overall show/hide lifecycle as the authoritative
         // visibility transition, not the lower-level cloak/uncloak helpers.
         SetIsVisibleToUser(true);
+    }
+
+    private static void RedrawWindow(HWND hwnd)
+    {
+        const uint RDW_INVALIDATE = 0x0001;
+        const uint RDW_UPDATENOW = 0x0100;
+        const uint RDW_ALLCHILDREN = 0x0080;
+        const uint RDW_FRAME = 0x0400;
+        _ = RedrawWindow(hwnd, IntPtr.Zero, IntPtr.Zero, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN | RDW_FRAME);
     }
 
     private static DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -1220,6 +1336,10 @@ public sealed partial class MainWindow : WindowEx,
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool DeleteObject(IntPtr hObject);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool RedrawWindow(IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, uint flags);
+
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
         if (!_themeServiceInitialized && args.WindowActivationState != WindowActivationState.Deactivated)
@@ -1585,6 +1705,17 @@ public sealed partial class MainWindow : WindowEx,
             // real OS chrome appears.
             case PInvoke.WM_NCCALCSIZE when wParam.Value != 0 && _hwndFrameVisible != true:
                 return (LRESULT)0;
+
+            // On every activation change the OS repaints the non-client frame to
+            // flip between the active / inactive caption. With WS_THICKFRAME still
+            // present that paints the OS border back over our borderless window each
+            // time we lose (or gain) focus - which is the frame that reappears when
+            // another window steals focus, and the one that shows up shortly after
+            // startup (the first activation flip). Passing -1 as the update-region
+            // (lParam) to DefWindowProc keeps the correct activation result while
+            // telling it to skip the non-client repaint entirely.
+            case PInvoke.WM_NCACTIVATE when _hwndFrameVisible != true:
+                return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, new LPARAM(-1));
 
             case PInvoke.WM_HOTKEY:
                 {
