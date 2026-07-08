@@ -461,10 +461,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     [TestMethod]
     public void ValidateUsageReordersWithinTier()
     {
-        // All of "Visual Studio 2022", "Visual Studio Code" and "Explore Mastodon" share
-        // the same tier for the query "s" (a word-boundary/subsequence match, none is a
-        // prefix). Heavy usage of one should be able to reorder it above its peers within
-        // that tier.
+        // Both "Visual Studio 2022" and "Visual Studio Code" share the same tier for the
+        // query "studio" (a word-boundary match on the second word, neither is a prefix).
+        // Heavy usage of one should be able to reorder it above its peer within that tier.
         var items = new List<ListItemMock>
         {
             new("Visual Studio 2022", GivenId: "vs2022"),
