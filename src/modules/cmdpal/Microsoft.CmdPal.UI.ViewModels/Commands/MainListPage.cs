@@ -678,37 +678,45 @@ public sealed partial class MainListPage : DynamicListPage,
             ? (precomputedItem.GetTitleTarget(precomputedFuzzyMatcher), precomputedItem.GetSubtitleTarget(precomputedFuzzyMatcher))
             : (precomputedFuzzyMatcher.PrecomputeTarget(title), precomputedFuzzyMatcher.PrecomputeTarget(topLevelOrAppItem.Subtitle));
 
-        // Score components
+        // Score components. Keep the raw matcher scores so "did this signal match at
+        // all" is decided before the historical subtitle penalty (which can push a real
+        // subtitle match below zero).
         var nameScore = precomputedFuzzyMatcher.Score(query, titleTarget);
-        var descriptionScore = (precomputedFuzzyMatcher.Score(query, subtitleTarget) - 4) / 2.0;
-        var extensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) / 1.5 : 0;
+        var rawSubtitleScore = precomputedFuzzyMatcher.Score(query, subtitleTarget);
+        var rawExtensionScore = extensionDisplayNameTarget is { } extTarget ? precomputedFuzzyMatcher.Score(query, extTarget) : 0;
 
-        // Take best match from title/description/fallback, then add extension score
-        // Extension adds to max so items matching both title AND extension bubble up
-        var baseScore = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0);
-        var matchScore = baseScore + extensionScore;
+        var descriptionScore = (rawSubtitleScore - 4) / 2.0;
+        var extensionScore = rawExtensionScore / 1.5;
 
-        // Apply a penalty to fallback items so they rank below direct matches.
-        // Fallbacks that dynamically match queries (like RDP connections) should
-        // appear after apps and direct command matches.
-        if (isFallback && matchScore > 1)
+        // Lexical quality preserves the previous relative weighting of the signals: best
+        // of title/description (plus the fallback floor), then a smaller extension-name
+        // contribution added on top so items matching both title AND extension bubble up.
+        var lexicalQuality = Math.Max(Math.Max(nameScore, descriptionScore), isFallback ? 1 : 0) + extensionScore;
+
+        var matchedLexically = nameScore > 0 || rawSubtitleScore > 0 || rawExtensionScore > 0;
+        if (!matchedLexically && !isFallback && !isAliasMatch && !isAliasSubstringMatch)
         {
-            // Reduce fallback scores by 50% to prioritize direct matches
-            matchScore = matchScore * 0.5;
+            return 0;
         }
 
-        // Alias matching: exact match is overwhelming priority, substring match adds a small boost
-        var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
-        var totalMatch = matchScore + aliasBoost;
-
-        // Apply scaling and history boost only if we matched something real
-        var finalScore = totalMatch * 10;
-        if (totalMatch > 0)
+        // The hard tier decides ordering; frecency and the alias-substring nudge only
+        // reorder items that already share a tier.
+        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, matchedLexically);
+        if (tier == RankTier.None)
         {
-            finalScore += history.GetCommandHistoryWeight(id);
+            return 0;
         }
 
-        return (int)finalScore;
+        var frecencyWeight = history.GetCommandHistoryWeight(id);
+        var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
+
+        var withinTier = MainListRanker.WithinTierScore(
+            lexicalQuality,
+            frecencyWeight,
+            aliasSubstringBonus,
+            providerBonus: 0.0);
+
+        return MainListRanker.Pack(tier, withinTier);
     }
 
     private static int ScoreWhitespaceQuery(string query, string title, string subtitle, bool isFallback)
