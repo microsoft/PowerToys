@@ -313,6 +313,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
                     SignalSettingsUpdated();
                     Logger.LogInfo($"ShowSystemTrayIcon changed to {value}");
+                    OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get => _settings.Properties.ShowThemeAdaptiveTrayIcon;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowThemeAdaptiveTrayIcon, value, v => _settings.Properties.ShowThemeAdaptiveTrayIcon = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowThemeAdaptiveTrayIcon changed to {value}");
                 }
             }
         }
@@ -379,6 +393,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly List<int> _monitorRefreshDelayOptions = new List<int> { 1, 2, 3, 5, 10 };
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
+
+        /// <summary>
+        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// </summary>
+        public int MouseWheelIncrement
+        {
+            get => _settings.Properties.MouseWheelIncrement;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelIncrement, value, v => _settings.Properties.MouseWheelIncrement = v))
+                {
+                    // Push to the (possibly open) flyout so the new step takes effect immediately.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
+
+        public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
 
         public ObservableCollection<MonitorInfo> Monitors
         {

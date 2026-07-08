@@ -18,6 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
+            MouseWheelIncrement = 5;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
@@ -48,6 +49,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("monitor_refresh_delay")]
         public int MonitorRefreshDelay { get; set; }
 
+        /// <summary>
+        /// Gets or sets the amount each PowerDisplay flyout slider (brightness, contrast, volume)
+        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_increment")]
+        public int MouseWheelIncrement { get; set; }
+
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }
 
@@ -65,6 +73,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("show_system_tray_icon")]
         public bool ShowSystemTrayIcon { get; set; }
+
+        [JsonPropertyName("show_theme_adaptive_tray_icon")]
+        public bool ShowThemeAdaptiveTrayIcon { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to show the profile switcher button in the flyout UI.
