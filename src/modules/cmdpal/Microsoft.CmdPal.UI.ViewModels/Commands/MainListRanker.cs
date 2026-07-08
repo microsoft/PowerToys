@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Common.Text;
-using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 
@@ -13,7 +11,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.MainPage;
 /// tier ladder with a weighted within-tier score, and packs both into a single sortable
 /// integer so the existing score-descending sort continues to work unchanged.
 /// </summary>
-public static class MainListRanker
+internal static class MainListRanker
 {
     // Each tier occupies a band of this width in the packed score. The within-tier score
     // is clamped to this range so it can never spill into an adjacent tier's band. With a
@@ -111,12 +109,16 @@ public static class MainListRanker
 
         var titleSpan = title.AsSpan();
 
-        if (titleSpan.Equals(q, StringComparison.CurrentCultureIgnoreCase))
+        // Ordinal (not culture-aware) comparisons keep ranking deterministic across locales
+        // - e.g. the Turkish dotted/dotless-I would otherwise change prefix/acronym results
+        // - and are faster on this per-item, per-keystroke path. The fuzzy matcher already
+        // handles looser linguistic matching; these tier boundaries are intentionally crisp.
+        if (titleSpan.Equals(q, StringComparison.OrdinalIgnoreCase))
         {
             return RankTier.ExactTitle;
         }
 
-        if (titleSpan.StartsWith(q, StringComparison.CurrentCultureIgnoreCase))
+        if (titleSpan.StartsWith(q, StringComparison.OrdinalIgnoreCase))
         {
             return RankTier.Prefix;
         }
@@ -170,7 +172,7 @@ public static class MainListRanker
             if (IsWordStart(title, i))
             {
                 // Word-boundary: does a word start with the whole query?
-                if (title.AsSpan(i).StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
+                if (title.AsSpan(i).StartsWith(query, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -184,7 +186,7 @@ public static class MainListRanker
         if (query.Length >= 2 && initialsLen >= query.Length)
         {
             var initialsSpan = initials[..initialsLen];
-            if (initialsSpan.IndexOf(query, StringComparison.CurrentCultureIgnoreCase) >= 0)
+            if (initialsSpan.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return true;
             }
@@ -254,38 +256,4 @@ public enum RankTier
     /// <summary>The query exactly equals a user-assigned alias. This is the strongest,
     /// most explicit signal of intent.</summary>
     AliasExact = 6,
-}
-
-/// <summary>
-/// A within-tier signal contributor. Reserved as the extension seam for future,
-/// optional relevance sources (e.g. on-device semantic/embedding similarity or a small
-/// local-LLM reranker). Implementations return an additive within-tier contribution and
-/// must never change an item's tier. No implementation ships today.
-/// </summary>
-public interface IRankSignal
-{
-    /// <summary>
-    /// Returns an additive contribution to the within-tier score for the given item.
-    /// Contributions are summed with the built-in signals; they only reorder items that
-    /// already share a tier.
-    /// </summary>
-    double Contribute(in FuzzyQuery query, IListItem item, RankTier tier);
-}
-
-/// <summary>
-/// A post-first-paint rerank stage. Reserved as the extension seam for future, optional
-/// asynchronous rerankers (semantic/LLM) that refine the deterministic ordering after the
-/// initial results are already on screen. No implementation ships today.
-/// </summary>
-public interface IRerankStage
-{
-    /// <summary>
-    /// Asynchronously produces a refined ordering for the already-ranked items. The
-    /// deterministic tier ordering is authoritative for first paint; a stage may only
-    /// reorder within tiers.
-    /// </summary>
-    System.Threading.Tasks.Task RerankAsync(
-        string query,
-        System.Collections.Generic.IReadOnlyList<IListItem> items,
-        System.Threading.CancellationToken cancellationToken);
 }
