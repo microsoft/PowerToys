@@ -193,10 +193,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
-        services.AddSingleton<IRootPageAccessor>(static sp =>
-            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
-        services.AddSingleton<ICommandProvider>(static sp =>
-            new BuiltInsCommandProvider(sp.GetRequiredService<IRootPageAccessor>()));
+        services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
@@ -274,6 +271,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
