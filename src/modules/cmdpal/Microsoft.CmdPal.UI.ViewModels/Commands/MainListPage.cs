@@ -63,9 +63,19 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
-    // Keep as IEnumerable for deferred execution. Fallback item titles are updated
-    // asynchronously, so scoring must happen lazily when GetItems is called.
-    private IEnumerable<RoScored<IListItem>>? _scoredFallbackItems;
+    // Global/special fallbacks are re-scored lazily on the render path (GetSearchViewItems)
+    // instead of being frozen at keystroke time. Their dynamic titles are resolved
+    // asynchronously off the typing path by the fallback update manager, so deferring the
+    // score lets slow fallback results fold into the already-rendered list with fresh, correct
+    // scores from the same ranker. Fallbacks always classify at the FallbackFloor tier, so this
+    // only reorders them among themselves and can never leapfrog deterministic command/app
+    // results. We snapshot the source list and the precomputed query together so a superseding
+    // keystroke atomically replaces both.
+    private IReadOnlyList<IListItem>? _globalFallbackSources;
+    private FuzzyQuery _globalFallbackQuery;
+
+    // Common fallbacks use rank-based (query-independent) scores, so freezing them is safe;
+    // only their live titles decide whether they render, so they still fold in as they resolve.
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
 
     private bool _includeApps;
@@ -259,9 +269,12 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetSearchViewItems()
     {
-        var validScoredFallbacks = _scoredFallbackItems?
-            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-            .ToList();
+        // Re-score the global fallbacks against their current titles so that any fallback whose
+        // dynamic title resolved asynchronously (after first paint) folds into the list with a
+        // fresh score from the same ranker. This runs on the render path and is cheap because
+        // there are only a handful of configured global fallbacks. Deterministic command/app
+        // results below do not depend on this, so first paint never waits on the (async) fallbacks.
+        var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
 
         var validFallbacks = _fallbackItems?
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
@@ -275,6 +288,42 @@ public sealed partial class MainListPage : DynamicListPage,
             _resultsSeparator,
             _fallbacksSeparator,
             AppResultLimit);
+    }
+
+    // Scores the current global-fallback snapshot against its query using the supplied ranker,
+    // dropping any whose (possibly still unresolved) title is empty. Extracted and made static
+    // so the fast-first-paint fold-in can be unit tested with a fake slow source: deterministic
+    // command/app results are produced entirely without this method, and re-scoring here always
+    // reflects the latest snapshot, so a superseding keystroke's snapshot replaces any stale one.
+    internal static List<RoScored<IListItem>>? ScoreDeferredFallbacks(
+        IReadOnlyList<IListItem>? sources,
+        in FuzzyQuery query,
+        ScoringFunction<IListItem> scoringFunction)
+    {
+        if (sources is null || sources.Count == 0)
+        {
+            return null;
+        }
+
+        var scored = InternalListHelpers.FilterListWithScores(sources, query, scoringFunction);
+        if (scored.Length == 0)
+        {
+            return null;
+        }
+
+        List<RoScored<IListItem>>? valid = null;
+        foreach (var s in scored)
+        {
+            if (string.IsNullOrWhiteSpace(s.Item.Title))
+            {
+                continue;
+            }
+
+            valid ??= new List<RoScored<IListItem>>(scored.Length);
+            valid.Add(s);
+        }
+
+        return valid;
     }
 
     private IListItem[] GetDefaultViewItems()
@@ -362,7 +411,12 @@ public sealed partial class MainListPage : DynamicListPage,
         _filteredItems = null;
         _filteredApps = null;
         _fallbackItems = null;
-        _scoredFallbackItems = null;
+        _globalFallbackSources = null;
+
+        // Reset the paired query too. ScoreDeferredFallbacks already short-circuits on a null
+        // source list, so a stale query here is harmless, but clearing both keeps the snapshot
+        // pair symmetric and avoids a confusing leftover value.
+        _globalFallbackQuery = default;
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -572,8 +626,12 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id));
-            _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
+            // Snapshot the global fallbacks and query, but do NOT score them here. Their dynamic
+            // titles are updated asynchronously by the fallback update manager (BeginUpdate, above),
+            // which runs off the typing path. Scoring is deferred to the render path so late fallback
+            // resolutions fold in with fresh scores instead of a value frozen against a stale title.
+            _globalFallbackSources = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).ToArray();
+            _globalFallbackQuery = searchQuery;
 
             if (token.IsCancellationRequested)
             {
