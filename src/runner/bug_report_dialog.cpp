@@ -146,7 +146,8 @@ namespace
         }
     }
 
-    void RevealZip(const std::wstring& path)    {
+    void RevealZip(const std::wstring& path)
+    {
         if (path.empty())
         {
             return;
