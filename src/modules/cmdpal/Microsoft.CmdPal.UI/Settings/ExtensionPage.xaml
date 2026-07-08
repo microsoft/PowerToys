@@ -79,6 +79,17 @@
                         Value="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <controls:Case Value="True">
                             <StackPanel Orientation="Vertical">
+                                <controls:SettingsCard x:Name="SearchWeightSettingsCard" x:Uid="Settings_ExtensionPage_SearchWeight_SettingsCard">
+                                    <ComboBox
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        AutomationProperties.AutomationId="CmdPal_ExtensionPage_SearchWeight"
+                                        AutomationProperties.LabeledBy="{x:Bind SearchWeightSettingsCard}"
+                                        SelectedIndex="{x:Bind ViewModel.SearchWeightIndex, Mode=TwoWay}">
+                                        <ComboBoxItem x:Uid="Settings_ExtensionPage_SearchWeight_Lower" />
+                                        <ComboBoxItem x:Uid="Settings_ExtensionPage_SearchWeight_Normal" />
+                                        <ComboBoxItem x:Uid="Settings_ExtensionPage_SearchWeight_Higher" />
+                                    </ComboBox>
+                                </controls:SettingsCard>
                                 <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
                                 <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>

@@ -100,7 +100,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _appStateService = appStateService;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current);
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -640,7 +640,8 @@ public sealed partial class MainListPage : DynamicListPage,
         in FuzzyQuery query,
         IListItem topLevelOrAppItem,
         IRecentCommandsManager history,
-        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher)
+        IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
+        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -710,11 +711,16 @@ public sealed partial class MainListPage : DynamicListPage,
         var frecencyWeight = history.GetCommandHistoryWeight(id);
         var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
 
+        // Per-provider weight is a within-tier nudge only. Resolving it here (rather than in
+        // the tier classifier) guarantees it can never promote an item across a tier boundary.
+        var providerWeight = providerWeightLookup?.Invoke(topLevelOrAppItem) ?? ProviderSearchWeight.Normal;
+        var providerBonus = MainListRanker.ProviderBonus(providerWeight);
+
         var withinTier = MainListRanker.WithinTierScore(
             lexicalQuality,
             frecencyWeight,
             aliasSubstringBonus,
-            providerBonus: 0.0);
+            providerBonus: providerBonus);
 
         return MainListRanker.Pack(tier, withinTier);
     }
@@ -767,6 +773,25 @@ public sealed partial class MainListPage : DynamicListPage,
             // we've got an app here
             return topLevelOrAppItem.Command?.Id ?? string.Empty;
         }
+    }
+
+    // Resolves the user-configured per-provider search weight for an item. Top-level commands
+    // carry their own provider id; installed apps all belong to the well-known "AllApps"
+    // provider, so app items are weighted by that provider's setting.
+    private ProviderSearchWeight ResolveProviderSearchWeight(IListItem topLevelOrAppItem)
+    {
+        var providerId = topLevelOrAppItem is TopLevelViewModel topLevel
+            ? topLevel.CommandProviderId
+            : AllAppsCommandProvider.WellKnownId;
+
+        if (string.IsNullOrEmpty(providerId))
+        {
+            return ProviderSearchWeight.Normal;
+        }
+
+        return _settingsService.Settings.ProviderSettings.TryGetValue(providerId, out var providerSettings)
+            ? providerSettings.SearchWeight
+            : ProviderSearchWeight.Normal;
     }
 
     public void Receive(ClearSearchMessage message) => SearchText = string.Empty;
