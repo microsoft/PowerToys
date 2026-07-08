@@ -99,6 +99,10 @@
                         IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard ContentAlignment="Left" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
