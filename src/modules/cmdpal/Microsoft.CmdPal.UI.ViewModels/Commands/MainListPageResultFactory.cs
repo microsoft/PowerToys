@@ -39,16 +39,16 @@ internal static class MainListPageResultFactory
         // Apps are pre-sorted, so we just need to take the top N, limited by appResultLimit.
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
-        int nonEmptyFallbackCount = fallbackItems?.Count ?? 0;
+        int fallbackCount = fallbackItems?.Count ?? 0;
 
         // Allocate the exact size of the result array.
         // We'll add an extra slot for the fallbacks section header if needed,
         // and another for the "Results" section header when merged results exist.
         int mergedCount = len1 + len2 + len3;
         bool needsResultsHeader = mergedCount > 0;
-        int totalCount = mergedCount + nonEmptyFallbackCount
+        int totalCount = mergedCount + fallbackCount
             + (needsResultsHeader ? 1 : 0)
-            + (nonEmptyFallbackCount > 0 ? 1 : 0);
+            + (fallbackCount > 0 ? 1 : 0);
 
         var result = new IListItem[totalCount];
 
@@ -158,25 +158,9 @@ internal static class MainListPageResultFactory
             }
         }
 
-        return result;
-    }
-
-    private static int GetNonEmptyFallbackItemsCount(IList<RoScored<IListItem>>? fallbackItems)
-    {
-        int fallbackItemsCount = 0;
-
-        if (fallbackItems is not null)
-        {
-            for (int i = 0; i < fallbackItems.Count; i++)
-            {
-                if (!string.IsNullOrWhiteSpace(fallbackItems[i].Item.Title))
-                {
-                    fallbackItemsCount++;
-                }
-            }
-        }
-
-        return fallbackItemsCount;
+        // Fallback titles can be cleared by background updates between sizing and the append
+        // loop above; trim any unwritten tail so callers never see null slots.
+        return writePos == totalCount ? result : result[..writePos];
     }
 }
 #pragma warning restore IDE0007 // Use implicit type
