@@ -489,4 +489,53 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             "Both items should be classified into the same tier");
         Assert.IsTrue(scores[1] >= scores[0], "The frequently-used item should reorder up within its tier");
     }
+
+    [TestMethod]
+    public void AliasSubstringOnlyMatchIsNotDropped()
+    {
+        // Regression: an item whose alias merely starts with the query, but whose title,
+        // subtitle, and extension do not match at all, must still surface. A partial alias
+        // is an explicit, user-assigned shortcut that may be intentionally unrelated to the
+        // title (e.g. alias "term" on "Windows PowerShell", query "ter"). Before the fix,
+        // ClassifyTier returned RankTier.None for this case, Pack produced 0, and the item
+        // was filtered out by the "score > 0" gate in FilterListWithScores.
+        var tier = MainListRanker.ClassifyTier(
+            query: "ter",
+            title: "Windows PowerShell",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: true,
+            matchedLexically: false);
+
+        Assert.AreNotEqual(RankTier.None, tier, "A partial-alias-only match must not be classified as None");
+        Assert.AreEqual(RankTier.Fuzzy, tier, "A partial-alias-only match should floor to the Fuzzy tier");
+        Assert.IsTrue(
+            MainListRanker.Pack(tier, 0.0) > 0,
+            "The packed score must be positive so the item survives the score > 0 filter");
+    }
+
+    [TestMethod]
+    public void AliasSubstringFloorIsOnlyAFloor()
+    {
+        // The alias-substring floor never demotes a stronger title relationship: an exact
+        // title match with a partial alias stays ExactTitle rather than dropping to Fuzzy.
+        var exactWithAlias = MainListRanker.ClassifyTier(
+            query: "settings",
+            title: "Settings",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: true,
+            matchedLexically: true);
+        Assert.AreEqual(RankTier.ExactTitle, exactWithAlias, "A title exact match still wins over the alias floor");
+
+        // With neither a lexical match nor any alias match, the item is still filtered out.
+        var nothing = MainListRanker.ClassifyTier(
+            query: "zzz",
+            title: "Windows PowerShell",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: false,
+            matchedLexically: false);
+        Assert.AreEqual(RankTier.None, nothing, "With neither a lexical nor an alias match the item is None");
+    }
 }

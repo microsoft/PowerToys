@@ -701,7 +701,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         // The hard tier decides ordering; frecency and the alias-substring nudge only
         // reorder items that already share a tier.
-        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, matchedLexically);
+        var tier = MainListRanker.ClassifyTier(query.Original, title, isFallback, isAliasMatch, isAliasSubstringMatch, matchedLexically);
         if (tier == RankTier.None)
         {
             return 0;
