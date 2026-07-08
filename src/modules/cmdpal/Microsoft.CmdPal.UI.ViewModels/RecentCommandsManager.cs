@@ -34,13 +34,25 @@ public record RecentCommandsManager : IRecentCommandsManager
     // evicted still-useful history within a single busy session on active machines.
     internal const int MaxHistoryEntries = 500;
 
-    // Legacy history items (persisted before LastUsed existed) deserialize with a default
-    // timestamp. Treat them as used one day ago: recent enough that they still rank, mild
-    // enough that a single fresh use outranks them, and uniform so their relative order falls
-    // back to Uses (frequency) instead of collapsing to all-equal or zero.
+    // Defensive fallback for any history item that carries a default (missing) LastUsed - for
+    // example a value constructed without a timestamp, or state written by a build that predates
+    // the LastUsed field. Such an item is treated as used one day ago: recent enough that it
+    // still ranks, mild enough that a single fresh use outranks it, and uniform so a group of
+    // them falls back to Uses (frequency) ordering instead of collapsing to all-equal or zero.
+    // In practice this rarely fires: earlier builds never actually persisted history (the
+    // internal History property was dropped by the serializer, see [JsonInclude] below), so
+    // upgrading users start from an empty store rather than one full of timestamp-less items.
     internal static readonly TimeSpan LegacyBackdate = TimeSpan.FromDays(1);
 
     private ImmutableList<HistoryItem>? _history = ImmutableList<HistoryItem>.Empty;
+
+    // Cached commandId -> entry lookup over History, rebuilt lazily whenever History is
+    // (re)assigned and never persisted. ScoreTopLevelItem calls GetCommandHistoryWeight for
+    // every candidate item on every keystroke, and History can hold up to MaxHistoryEntries
+    // (500) entries, so a plain linear scan would be O(items x history) per keystroke. The
+    // dictionary keeps each lookup O(1) so the hot path stays cheap as the store grows.
+    [JsonIgnore]
+    private Dictionary<string, HistoryItem>? _index;
 
     // Persisted so recent-command frecency (including the LastUsed timestamps) survives a
     // restart. [JsonInclude] is required because the property is internal; without it the
@@ -50,7 +62,38 @@ public record RecentCommandsManager : IRecentCommandsManager
     internal ImmutableList<HistoryItem> History
     {
         get => _history ?? ImmutableList<HistoryItem>.Empty;
-        init => _history = value;
+        init
+        {
+            _history = value;
+
+            // Invalidate the cached lookup so it is rebuilt from the new list on next use.
+            // A record 'with' copy carries over the old field, so this reset is what keeps
+            // the index from going stale after History changes.
+            _index = null;
+        }
+    }
+
+    private Dictionary<string, HistoryItem> Index
+    {
+        get
+        {
+            if (_index is null)
+            {
+                // Ordinal to match the string '==' comparison the previous linear scan used.
+                var map = new Dictionary<string, HistoryItem>(StringComparer.Ordinal);
+                foreach (var item in History)
+                {
+                    // History is most-recent-first and command ids are unique in it, but keep
+                    // the first (most recent) occurrence if a duplicate ever slips in so the
+                    // lookup matches the old FirstOrDefault behavior.
+                    map.TryAdd(item.CommandId, item);
+                }
+
+                _index = map;
+            }
+
+            return _index;
+        }
     }
 
     public RecentCommandsManager()
@@ -68,14 +111,13 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// </summary>
     internal int GetCommandHistoryWeight(string commandId, DateTimeOffset now)
     {
-        var entry = History.FirstOrDefault(item => item.CommandId == commandId);
-        if (entry is null)
+        if (!Index.TryGetValue(commandId, out var entry))
         {
             return 0;
         }
 
-        // Migrate legacy entries (no timestamp) to a mild backdate so they degrade to
-        // Uses-ordering instead of appearing brand-new or invisible.
+        // Migrate items with a default (missing) timestamp to a mild backdate so they degrade
+        // to Uses-ordering instead of appearing brand-new or invisible. See LegacyBackdate.
         var lastUsed = entry.LastUsed == default ? now - LegacyBackdate : entry.LastUsed;
 
         // Clamp age at zero so a slightly-future timestamp (e.g. clock skew) can't amplify.
