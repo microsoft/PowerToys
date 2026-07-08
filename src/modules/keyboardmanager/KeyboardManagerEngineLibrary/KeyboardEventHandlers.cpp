@@ -177,7 +177,8 @@ namespace
         const HKL layout = GetKeyboardLayout(foregroundThread);
         const UINT scanCode = data->lParam->scanCode ? data->lParam->scanCode : MapVirtualKeyExW(vkCode, MAPVK_VK_TO_VSC, layout);
         wchar_t output[8]{};
-        const int result = ToUnicodeEx(vkCode, scanCode, keyState, output, static_cast<int>(std::size(output)), 1 << 2, layout);
+        constexpr UINT toUnicodeFlags = 1u << 2; // Do not change keyboard state.
+        const int result = ToUnicodeEx(vkCode, scanCode, keyState, output, static_cast<int>(std::size(output)), toUnicodeFlags, layout);
         if (result <= 0)
         {
             return std::nullopt;
