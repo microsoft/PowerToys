@@ -302,7 +302,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         // Alias-exact is the strongest, most explicit signal - it beats even a fallback flag.
         Assert.AreEqual(
             RankTier.AliasExact,
-            MainListRanker.ClassifyTier("gh", "GitHub", isFallback: true, isAliasExact: true, matchedLexically: false));
+            MainListRanker.ClassifyTier("gh", "GitHub", isFallback: true, isAliasExact: true, isAliasSubstringMatch: false, matchedLexically: false));
     }
 
     [TestMethod]
@@ -312,7 +312,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         // lexical match, so dynamic fallbacks appear after direct command/app matches.
         Assert.AreEqual(
             RankTier.FallbackFloor,
-            MainListRanker.ClassifyTier("anything", "Some Fallback", isFallback: true, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("anything", "Some Fallback", isFallback: true, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -320,7 +320,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         Assert.AreEqual(
             RankTier.ExactTitle,
-            MainListRanker.ClassifyTier("calculator", "Calculator", isFallback: false, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("calculator", "Calculator", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -328,7 +328,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         Assert.AreEqual(
             RankTier.Prefix,
-            MainListRanker.ClassifyTier("cal", "Calculator", isFallback: false, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("cal", "Calculator", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -336,7 +336,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         Assert.AreEqual(
             RankTier.AcronymWordBoundary,
-            MainListRanker.ClassifyTier("code", "Visual Studio Code", isFallback: false, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("code", "Visual Studio Code", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -344,7 +344,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         Assert.AreEqual(
             RankTier.AcronymWordBoundary,
-            MainListRanker.ClassifyTier("vs", "Visual Studio Code", isFallback: false, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("vs", "Visual Studio Code", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -353,7 +353,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         // Lexically matched, but not exact/prefix/word-boundary/acronym.
         Assert.AreEqual(
             RankTier.Fuzzy,
-            MainListRanker.ClassifyTier("cmd", "Command Prompt", isFallback: false, isAliasExact: false, matchedLexically: true));
+            MainListRanker.ClassifyTier("cmd", "Command Prompt", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
     }
 
     [TestMethod]
@@ -361,7 +361,18 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         Assert.AreEqual(
             RankTier.None,
-            MainListRanker.ClassifyTier("zzz", "Command Prompt", isFallback: false, isAliasExact: false, matchedLexically: false));
+            MainListRanker.ClassifyTier("zzz", "Command Prompt", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: false));
+    }
+
+    [TestMethod]
+    public void ClassifyTier_AliasSubstring_FloorsToFuzzyEvenWithNoLexicalMatch()
+    {
+        // A partial alias match (the alias starts with the query) keeps the item visible at the
+        // Fuzzy floor even when nothing matched lexically. Without this it would fall through to
+        // None and disappear. A stronger title relationship still wins over this floor.
+        Assert.AreEqual(
+            RankTier.Fuzzy,
+            MainListRanker.ClassifyTier("zz", "Some Command", isFallback: false, isAliasExact: false, isAliasSubstringMatch: true, matchedLexically: false));
     }
 
     [TestMethod]
