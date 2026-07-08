@@ -669,6 +669,7 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     SuggestedStartLocation = PickerLocationId.ComputerFolder,
                 };
+                picker.FileTypeFilter.Add("*");
 
                 var folder = await picker.PickSingleFolderAsync();
 
