@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Text.Json;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -33,20 +35,6 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         return history;
     }
 
-    private static RecentCommandsManager CreateBasicHistoryService()
-    {
-        var commonCommands = new List<string>
-        {
-            "com.microsoft.cmdpal.shell",
-            "com.microsoft.cmdpal.windowwalker",
-            "Visual Studio 2022 Preview_6533433915015224980",
-            "com.microsoft.cmdpal.reload",
-            "com.microsoft.cmdpal.shell",
-        };
-
-        return CreateHistory(commonCommands);
-    }
-
     [TestMethod]
     public void ValidateHistoryFunctionality()
     {
@@ -63,21 +51,31 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     [TestMethod]
     public void ValidateHistoryWeighting()
     {
-        // Setup
-        var history = CreateBasicHistoryService();
+        // Build history with explicit, strictly-increasing timestamps so time-decay is
+        // deterministic. "shell" is used twice (most uses) and most recently; the others are
+        // each used once, progressively more recently.
+        var t0 = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var history = new RecentCommandsManager();
+        history = history.WithHistoryItem("com.microsoft.cmdpal.shell", t0);
+        history = history.WithHistoryItem("com.microsoft.cmdpal.windowwalker", t0.AddDays(1));
+        history = history.WithHistoryItem("Visual Studio 2022 Preview_6533433915015224980", t0.AddDays(2));
+        history = history.WithHistoryItem("com.microsoft.cmdpal.reload", t0.AddDays(3));
+        history = history.WithHistoryItem("com.microsoft.cmdpal.shell", t0.AddDays(4));
+
+        var now = t0.AddDays(4);
 
         // Act
-        var shellWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell");
-        var windowWalkerWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.windowwalker");
-        var vsWeight = history.GetCommandHistoryWeight("Visual Studio 2022 Preview_6533433915015224980");
-        var reloadWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.reload");
-        var nonExistentWeight = history.GetCommandHistoryWeight("non.existent.command");
+        var shellWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell", now);
+        var windowWalkerWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.windowwalker", now);
+        var vsWeight = history.GetCommandHistoryWeight("Visual Studio 2022 Preview_6533433915015224980", now);
+        var reloadWeight = history.GetCommandHistoryWeight("com.microsoft.cmdpal.reload", now);
+        var nonExistentWeight = history.GetCommandHistoryWeight("non.existent.command", now);
 
         // Assert
-        Assert.IsTrue(shellWeight > windowWalkerWeight, "Shell should be weighted higher than Window Walker, more uses");
-        Assert.IsTrue(vsWeight > windowWalkerWeight, "Visual Studio should be weighted higher than Window Walker, because recency");
-        Assert.AreEqual(reloadWeight, vsWeight, "both reload and VS were used in the last three commands, same weight");
-        Assert.IsTrue(shellWeight > vsWeight, "VS and run were both used in the last 3, but shell has 2 more frequency");
+        Assert.IsTrue(shellWeight > windowWalkerWeight, "Shell is both the most-used and most-recent command");
+        Assert.IsTrue(vsWeight > windowWalkerWeight, "Visual Studio was used more recently than Window Walker");
+        Assert.IsTrue(reloadWeight > vsWeight, "Reload was used more recently than Visual Studio");
+        Assert.IsTrue(shellWeight > vsWeight, "Shell is both more recent and more frequently used than Visual Studio");
         Assert.AreEqual(0, nonExistentWeight, "Nonexistent command should have zero weight");
     }
 
@@ -159,97 +157,131 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void ValidateHistoryBuckets()
+    public void ValidateRecencyDecay()
     {
-        // Setup
-        // (these will be checked in reverse order, so that A is the most recent)
-        var items = new List<ListItemMock>
-        {
-            new("Command A", "Subtitle A", GivenId: "idA"), // #0  -> bucket 0
-            new("Command B", "Subtitle B", GivenId: "idB"), // #1  -> bucket 0
-            new("Command C", "Subtitle C", GivenId: "idC"), // #2  -> bucket 0
-            new("Command D", "Subtitle D", GivenId: "idD"), // #3  -> bucket 1
-            new("Command E", "Subtitle E", GivenId: "idE"), // #4  -> bucket 1
-            new("Command F", "Subtitle F", GivenId: "idF"), // #5  -> bucket 1
-            new("Command G", "Subtitle G", GivenId: "idG"), // #6  -> bucket 1
-            new("Command H", "Subtitle H", GivenId: "idH"), // #7  -> bucket 1
-            new("Command I", "Subtitle I", GivenId: "idI"), // #8  -> bucket 1
-            new("Command J", "Subtitle J", GivenId: "idJ"), // #9  -> bucket 1
-            new("Command K", "Subtitle K", GivenId: "idK"), // #10 -> bucket 1
-            new("Command L", "Subtitle L", GivenId: "idL"), // #11 -> bucket 2
-            new("Command M", "Subtitle M", GivenId: "idM"), // #12 -> bucket 2
-            new("Command N", "Subtitle N", GivenId: "idN"), // #13 -> bucket 2
-            new("Command O", "Subtitle O", GivenId: "idO"), // #14 -> bucket 2
-        };
+        // Each command is used exactly once, at progressively older times. Weight must decay
+        // monotonically with age, and a 3-day-old use (one half-life) should weigh about half
+        // of a use that just happened.
+        var now = new DateTimeOffset(2025, 2, 1, 0, 0, 0, TimeSpan.Zero);
+        var history = new RecentCommandsManager()
+            .WithHistoryItem("today", now)
+            .WithHistoryItem("three-days", now.AddDays(-3))
+            .WithHistoryItem("ten-days", now.AddDays(-10))
+            .WithHistoryItem("thirty-days", now.AddDays(-30));
 
-        for (var i = items.Count; i <= 50; i++)
+        var today = history.GetCommandHistoryWeight("today", now);
+        var threeDays = history.GetCommandHistoryWeight("three-days", now);
+        var tenDays = history.GetCommandHistoryWeight("ten-days", now);
+        var thirtyDays = history.GetCommandHistoryWeight("thirty-days", now);
+
+        Assert.IsTrue(today > threeDays, "A more recent use must weigh more than an older one");
+        Assert.IsTrue(threeDays > tenDays, "Decay must be monotonic with age");
+        Assert.IsTrue(tenDays > thirtyDays, "Older uses keep decaying toward zero");
+        Assert.IsTrue(thirtyDays >= 0, "Weight must never go negative");
+
+        // The half-life is 3 days, so a 3-day-old single use is about half of a fresh one.
+        Assert.AreEqual(today / 2.0, threeDays, 1.0, "Three days should be a single half-life");
+    }
+
+    [TestMethod]
+    public void ValidateFrequencyWeighting()
+    {
+        // Hold recency constant (same timestamp) and vary only the use count. More uses must
+        // weigh more, but the log-scaled frequency term stays within the documented cap.
+        var now = new DateTimeOffset(2025, 2, 1, 0, 0, 0, TimeSpan.Zero);
+        var history = new RecentCommandsManager().WithHistoryItem("once", now);
+        for (var i = 0; i < 7; i++)
         {
-            items.Add(new ListItemMock($"Command #{i}", GivenId: $"id{i}"));
+            history = history.WithHistoryItem("many", now);
         }
 
-        // Act
-        var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
+        var once = history.GetCommandHistoryWeight("once", now);
+        var many = history.GetCommandHistoryWeight("many", now);
 
-        // Assert
-        // First three items should be in the top bucket
-        var weightA = history.GetCommandHistoryWeight("idA");
-        var weightB = history.GetCommandHistoryWeight("idB");
-        var weightC = history.GetCommandHistoryWeight("idC");
+        Assert.IsTrue(many > once, "At equal recency, a more frequently used command weighs more");
+        Assert.IsTrue(many <= RecentCommandsManager.MaxWeight, "Weight stays within the documented cap");
+    }
 
-        Assert.AreEqual(weightA, weightB, "Items A and B were used in the last 3 commands");
-        Assert.AreEqual(weightB, weightC, "Items B and C were used in the last 3 commands");
+    [TestMethod]
+    public void ValidateHistoryCap()
+    {
+        // Insert well beyond the cap, each newer than the last. The store keeps the most-recent
+        // entries and evicts the oldest, replacing the previous 50-entry limit.
+        var now = new DateTimeOffset(2025, 2, 1, 0, 0, 0, TimeSpan.Zero);
+        var history = new RecentCommandsManager();
 
-        // Next eight items (3-10 inclusive) should be in the second bucket
-        var weightD = history.GetCommandHistoryWeight("idD");
-        var weightE = history.GetCommandHistoryWeight("idE");
-        var weightF = history.GetCommandHistoryWeight("idF");
-        var weightG = history.GetCommandHistoryWeight("idG");
-        var weightH = history.GetCommandHistoryWeight("idH");
-        var weightI = history.GetCommandHistoryWeight("idI");
-        var weightJ = history.GetCommandHistoryWeight("idJ");
-        var weightK = history.GetCommandHistoryWeight("idK");
+        var total = RecentCommandsManager.MaxHistoryEntries + 50;
+        for (var i = 0; i < total; i++)
+        {
+            history = history.WithHistoryItem($"cmd-{i}", now.AddMinutes(i));
+        }
 
-        Assert.AreEqual(weightD, weightE, "Items D and E were used in the last 10 commands");
-        Assert.AreEqual(weightE, weightF, "Items E and F were used in the last 10 commands");
-        Assert.AreEqual(weightF, weightG, "Items F and G were used in the last 10 commands");
-        Assert.AreEqual(weightG, weightH, "Items G and H were used in the last 10 commands");
-        Assert.AreEqual(weightH, weightI, "Items H and I were used in the last 10 commands");
-        Assert.AreEqual(weightI, weightJ, "Items I and J were used in the last 10 commands");
-        Assert.AreEqual(weightJ, weightK, "Items J and K were used in the last 10 commands");
+        var evaluatedAt = now.AddMinutes(total);
 
-        // Items up to the 15th should be in the third bucket
-        var weightL = history.GetCommandHistoryWeight("idL");
-        var weightM = history.GetCommandHistoryWeight("idM");
-        var weightN = history.GetCommandHistoryWeight("idN");
-        var weightO = history.GetCommandHistoryWeight("idO");
-        var weight15 = history.GetCommandHistoryWeight("id15");
-        Assert.AreEqual(weightL, weightM, "Items L and M were used in the last 15 commands");
-        Assert.AreEqual(weightM, weightN, "Items M and N were used in the last 15 commands");
-        Assert.AreEqual(weightN, weightO, "Items N and O were used in the last 15 commands");
-        Assert.AreEqual(weightO, weight15, "Items O and 15 were used in the last 15 commands");
+        Assert.IsTrue(
+            history.History.Count <= RecentCommandsManager.MaxHistoryEntries,
+            "History should be capped at MaxHistoryEntries");
 
-        // Items after that should be in the lowest buckets
-        var weight0 = history.GetCommandHistoryWeight(items[0].Id);
-        var weight3 = history.GetCommandHistoryWeight(items[3].Id);
-        var weight11 = history.GetCommandHistoryWeight(items[11].Id);
-        var weight16 = history.GetCommandHistoryWeight("id16");
-        var weight20 = history.GetCommandHistoryWeight("id20");
-        var weight30 = history.GetCommandHistoryWeight("id30");
-        var weight40 = history.GetCommandHistoryWeight("id40");
-        var weight49 = history.GetCommandHistoryWeight("id49");
+        // The earliest (now-evicted) entries have fallen out of the store.
+        Assert.AreEqual(0, history.GetCommandHistoryWeight("cmd-0", evaluatedAt), "The oldest entry should have been evicted");
 
-        Assert.IsTrue(weight0 > weight3);
-        Assert.IsTrue(weight3 > weight11);
-        Assert.IsTrue(weight11 > weight16);
+        // The most-recent entries survive and still carry weight.
+        Assert.IsTrue(
+            history.GetCommandHistoryWeight($"cmd-{total - 1}", evaluatedAt) > 0,
+            "The most recent entry should be retained");
+    }
 
-        Assert.AreEqual(weight16, weight20);
-        Assert.AreEqual(weight20, weight30);
-        Assert.IsTrue(weight30 > weight40);
-        Assert.AreEqual(weight40, weight49);
+    [TestMethod]
+    public void ValidateLegacyHistoryMigration()
+    {
+        // Legacy items persisted before LastUsed existed deserialize with a default timestamp.
+        // They should be mildly backdated so ordering falls back to Uses (frequency) rather
+        // than collapsing to all-equal or zero.
+        var now = new DateTimeOffset(2025, 5, 1, 0, 0, 0, TimeSpan.Zero);
+        var legacy = new RecentCommandsManager
+        {
+            History = ImmutableList.Create(
+                new HistoryItem { CommandId = "rare", Uses = 1 },
+                new HistoryItem { CommandId = "common", Uses = 8 }),
+        };
 
-        // The 50th item has fallen out of the list now
-        var weight50 = history.GetCommandHistoryWeight("id50");
-        Assert.AreEqual(0, weight50, "Item 50 should have fallen out of the history list");
+        var rare = legacy.GetCommandHistoryWeight("rare", now);
+        var common = legacy.GetCommandHistoryWeight("common", now);
+
+        Assert.IsTrue(rare > 0, "Legacy items should be mildly backdated, not zeroed out");
+        Assert.IsTrue(common > rare, "Legacy ordering should fall back to Uses (frequency)");
+
+        // A brand-new, single real use should outrank a backdated single-use legacy item.
+        var withFresh = legacy.WithHistoryItem("brand-new", now);
+        var fresh = withFresh.GetCommandHistoryWeight("brand-new", now);
+        Assert.IsTrue(fresh > rare, "A just-used command should outrank a backdated single-use legacy item");
+    }
+
+    [TestMethod]
+    public void ValidateHistorySerializationRoundTrips()
+    {
+        // The persisted history (see SettingsModel's JsonSerializable context) must round-trip,
+        // including the new LastUsed timestamp, so decay survives a save/load cycle.
+        var now = new DateTimeOffset(2025, 3, 15, 12, 30, 0, TimeSpan.Zero);
+        var original = new RecentCommandsManager()
+            .WithHistoryItem("alpha", now)
+            .WithHistoryItem("beta", now.AddMinutes(5));
+
+        var json = JsonSerializer.Serialize(original, JsonSerializationContext.Default.RecentCommandsManager);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.RecentCommandsManager);
+
+        Assert.IsNotNull(restored, "Round-tripped history should not be null");
+        Assert.AreEqual(2, restored!.History.Count, "All history entries should round-trip");
+
+        var beta = restored.History.First(h => h.CommandId == "beta");
+        Assert.AreEqual(now.AddMinutes(5), beta.LastUsed, "The LastUsed timestamp should round-trip");
+        Assert.AreEqual(1, beta.Uses, "The use count should round-trip");
+
+        // Weights computed from the restored state should match the original.
+        Assert.AreEqual(
+            original.GetCommandHistoryWeight("beta", now.AddMinutes(5)),
+            restored.GetCommandHistoryWeight("beta", now.AddMinutes(5)),
+            "Restored history should produce the same weight as the original");
     }
 
     [TestMethod]
