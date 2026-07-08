@@ -96,7 +96,6 @@
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
     <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
   </ItemGroup>
-  <!-- Copy Assets folder to output directory -->
   <ItemGroup>
     <Content Include="Assets\PowerDisplay\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
