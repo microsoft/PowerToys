@@ -165,8 +165,13 @@ public sealed partial class FastFirstPaintTests
     }
 
     [TestMethod]
-    public void SupersedingQuery_ReplacesSnapshot_StaleStrongMatchNotApplied()
+    public void ReScoreUsesLatestSnapshot_StaleStrongMatchNotApplied()
     {
+        // This exercises the render-path re-score directly: it always scores whatever snapshot is
+        // current, so a superseding keystroke's query wins and the prior query's strong score is
+        // gone. In production the field pair (_globalFallbackSources + _globalFallbackQuery) is
+        // written under lock (commands) in UpdateSearchTextCore and read under the same lock in
+        // GetItems, so the swap is atomic; this test stands in for that behavior at the helper level.
         var fallback = new MutableListItem { Title = "Remote Desktop" };
         IReadOnlyList<IListItem> sources = new IListItem[] { fallback };
 
