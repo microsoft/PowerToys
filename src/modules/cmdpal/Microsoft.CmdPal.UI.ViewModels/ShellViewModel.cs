@@ -55,6 +55,18 @@ public partial class ShellViewModel : ObservableObject,
                 oldValue.PropertyChanged -= CurrentPage_PropertyChanged;
                 value.PropertyChanged += CurrentPage_PropertyChanged;
 
+                // Re-evaluate search-box visibility for the page we're switching to.
+                // CurrentPage_PropertyChanged only reacts to a *change* of HasSearchBox, so
+                // switching to a page whose HasSearchBox already holds its final value (e.g.
+                // navigating back to a list from a ContentPage) would otherwise never restore
+                // the search box. Only force it visible here; hiding it on content pages is
+                // deliberately deferred (see ShellPage.FocusAfterLoaded) so focus doesn't jump
+                // around for screen readers.
+                if (value.HasSearchBox)
+                {
+                    IsSearchBoxVisible = true;
+                }
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -84,6 +96,8 @@ public partial class ShellViewModel : ObservableObject,
     private bool _currentlyTransient;
 
     public bool IsNested => _isNested && !_currentlyTransient;
+
+    public bool IsTransient => _currentlyTransient;
 
     public PageViewModel NullPage { get; private set; }
 

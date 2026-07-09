@@ -27,6 +27,9 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     // Engine type filter
     private const string EngineType3D = "3D";
 
+    // Instance-name key token for the engine index
+    private const string KeyEng = "eng";
+
     // Display strings
     private const string GpuNamePrefix = "GPU ";
     private const string TemperatureUnavailable = "--";
@@ -152,8 +155,16 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
             var utilizationData = categoryData[UtilizationPercentageCounter];
 
-            // Accumulate usage per physical GPU
-            var gpuUsage = new Dictionary<int, float>();
+            // Accumulate utilization for each (physical GPU, 3D engine) pair. Each instance
+            // (pid_<pid>_luid_<luid>_phys_<phys>_eng_<engId>_engtype_3D) reports the percentage
+            // of wall-clock time a single process spent on that engine. Summing across processes
+            // for the same engine is correct (gives total engine utilization). Summing across
+            // multiple 3D engines on the same adapter, however, is NOT — that produced values
+            // >100% in the dock under heavy GPU load (issue #48677). Mirroring Task Manager,
+            // we take the maximum 3D engine utilization per adapter and clamp to [0, 100].
+            // This parallels the CPU fix in #46381, which switched to a counter that is
+            // naturally bounded to 0-100%.
+            var perEngineUsage = new Dictionary<(int Phys, string EngineId), float>();
             var currentSamples = new Dictionary<string, CounterSample>();
 
             foreach (InstanceData instance in utilizationData.Values)
@@ -173,6 +184,12 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     continue;
                 }
 
+                var engineId = GetKeyValueFromCounterKey(KeyEng, ref counterKey);
+                if (string.IsNullOrEmpty(engineId) || engineId == "error")
+                {
+                    continue;
+                }
+
                 var sample = instance.Sample;
                 currentSamples[instanceName] = sample;
 
@@ -181,7 +198,13 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     try
                     {
                         var cookedValue = CounterSampleCalculator.ComputeCounterValue(prevSample, sample);
-                        gpuUsage[phys] = gpuUsage.GetValueOrDefault(phys) + cookedValue;
+                        if (float.IsNaN(cookedValue) || float.IsInfinity(cookedValue) || cookedValue < 0f)
+                        {
+                            continue;
+                        }
+
+                        var key = (phys, engineId);
+                        perEngineUsage[key] = perEngineUsage.GetValueOrDefault(key) + cookedValue;
                     }
                     catch (Exception)
                     {
@@ -193,14 +216,27 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             // Swap samples - stale entries are automatically cleaned up
             _previousSamples = currentSamples;
 
+            // Reduce per-engine values to a single 0-100 utilization per adapter (max across engines).
+            var gpuUsage = new Dictionary<int, float>();
+            foreach (var kvp in perEngineUsage)
+            {
+                var phys = kvp.Key.Phys;
+                var engineUsage = kvp.Value;
+                if (engineUsage > gpuUsage.GetValueOrDefault(phys))
+                {
+                    gpuUsage[phys] = engineUsage;
+                }
+            }
+
             // Update stats
             foreach (var gpu in _stats)
             {
-                var sum = gpuUsage.TryGetValue(gpu.PhysId, out var usage) ? usage : 0f;
-                gpu.Usage = sum / 100;
+                var raw = gpuUsage.TryGetValue(gpu.PhysId, out var usage) ? usage : 0f;
+                var clamped = Math.Clamp(raw, 0f, 100f);
+                gpu.Usage = clamped / 100f;
                 lock (gpu.GpuChartValues)
                 {
-                    ChartHelper.AddNextChartValue(sum, gpu.GpuChartValues);
+                    ChartHelper.AddNextChartValue(clamped, gpu.GpuChartValues);
                 }
             }
         }

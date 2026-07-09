@@ -25,6 +25,55 @@ namespace PowerDisplay.ViewModels;
 /// </summary>
 public partial class MainViewModel
 {
+    /// <summary>
+    /// Persist the link-levels toggle state to settings.json. Called from
+    /// <c>OnLinkedLevelsActiveChanged</c> in <c>MainViewModel.LinkedBrightness.cs</c>
+    /// (which owns the source-generator hook plus the broadcast/seed side effects).
+    /// </summary>
+    private void SaveLinkedLevelsActive(bool value)
+    {
+        try
+        {
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            if (settings.Properties.LinkedLevelsActive == value)
+            {
+                return;
+            }
+
+            settings.Properties.LinkedLevelsActive = value;
+
+            _settingsUtils.SaveSettings(
+                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                PowerDisplaySettings.ModuleName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to save LinkedLevelsActive: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Persist the linked-brightness exclusion set to settings.json. Called from
+    /// <c>SetMonitorExcludedFromSync</c> in <c>MainViewModel.LinkedBrightness.cs</c> after the
+    /// runtime <c>_excludedMonitorIds</c> set has been mutated.
+    /// </summary>
+    private void SaveExcludedMonitorIds()
+    {
+        try
+        {
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            settings.Properties.ExcludedFromSyncMonitorIds = _excludedMonitorIds.ToList();
+
+            _settingsUtils.SaveSettings(
+                System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
+                PowerDisplaySettings.ModuleName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Settings] Failed to save ExcludedFromSyncMonitorIds: {ex.Message}");
+        }
+    }
+
     private static void TryRestore(
         List<Task> tasks,
         int? savedValue,
@@ -73,6 +122,7 @@ public partial class MainViewModel
             foreach (var monitor in Monitors)
             {
                 monitor.RefreshCustomVcpNames();
+                monitor.RefreshMouseWheelIncrement();
             }
         }
         catch (Exception ex)
@@ -208,16 +258,23 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply profile settings to monitors
+    /// Apply profile settings to monitors. Profiles are per-monitor snapshots, so applying one
+    /// turns off linked brightness before writing individual monitor values.
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
+        if (LinkedLevelsActive)
+        {
+            Logger.LogInfo("[Profile] Disabling linked brightness before applying per-monitor profile values");
+            LinkedLevelsActive = false;
+        }
+
         var updateTasks = new List<Task>();
 
         foreach (var setting in monitorSettings)
         {
             // Find monitor by Id (unique identifier)
-            var monitorVm = Monitors.FirstOrDefault(m => m.Id == setting.MonitorId);
+            var monitorVm = Monitors.FirstOrDefault(m => MonitorIdComparer.Equal(m.Id, setting.MonitorId));
 
             if (monitorVm == null)
             {
@@ -293,7 +350,7 @@ public partial class MainViewModel
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
         var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m =>
-            m.Id == monitorVm.Id);
+            MonitorIdComparer.Equal(m.Id, monitorVm.Id));
 
         if (monitorSettings != null)
         {
@@ -340,8 +397,8 @@ public partial class MainViewModel
             // Filter out monitors with empty IDs to avoid dictionary key collision errors
             var existingMonitorSettings = settings.Properties.Monitors
                 .Where(m => !string.IsNullOrEmpty(m.Id))
-                .GroupBy(m => m.Id)
-                .ToDictionary(g => g.Key, g => g.First());
+                .GroupBy(m => m.Id, MonitorIdComparer.Instance)
+                .ToDictionary(g => g.Key, g => g.First(), MonitorIdComparer.Instance);
 
             // Build monitor list using Settings UI's MonitorInfo model
             // Only include monitors with valid (non-empty) IDs to auto-fix corrupted settings
@@ -394,7 +451,7 @@ public partial class MainViewModel
                     continue;
                 }
 
-                var target = monitors.FirstOrDefault(m => m.Id == newId);
+                var target = monitors.FirstOrDefault(m => MonitorIdComparer.Equal(m.Id, newId));
                 if (target != null)
                 {
                     CopyUserFlags(target, legacy);
@@ -566,7 +623,7 @@ public partial class MainViewModel
                 .ToList())
             {
                 var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
-                if (newId != null && profile.MonitorSettings.All(s => s.MonitorId != newId))
+                if (newId != null && profile.MonitorSettings.All(s => !MonitorIdComparer.Equal(s.MonitorId, newId)))
                 {
                     profile.MonitorSettings.Add(new ProfileMonitorSetting(
                         newId,

@@ -12,8 +12,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 [TestClass]
 public class ResultHelperTests
 {
-    private CultureInfo originalCulture;
-    private CultureInfo originalUiCulture;
+    private CultureInfo originalCulture = null!;
+    private CultureInfo originalUiCulture = null!;
 
     [TestInitialize]
     public void Setup()
@@ -41,6 +41,8 @@ public class ResultHelperTests
         {
             Label = "Test Label",
             Value = "Test Value",
+            AlternativeSearchTag = string.Empty,
+            IconType = ResultIconType.Time,
         };
 
         // Act
@@ -55,10 +57,10 @@ public class ResultHelperTests
     [TestMethod]
     public void ResultHelper_CreateListItem_HandlesNullInput()
     {
-        AvailableResult availableResult = null;
+        AvailableResult? availableResult = null;
 
         // Act & Assert
-        Assert.ThrowsException<System.NullReferenceException>(() => availableResult.ToListItem());
+        Assert.ThrowsException<System.NullReferenceException>(() => availableResult!.ToListItem());
     }
 
     [TestMethod]
@@ -69,6 +71,8 @@ public class ResultHelperTests
         {
             Label = string.Empty,
             Value = string.Empty,
+            AlternativeSearchTag = string.Empty,
+            IconType = ResultIconType.Time,
         };
 
         // Act
@@ -88,6 +92,7 @@ public class ResultHelperTests
         {
             Label = "Test Label",
             Value = "Test Value",
+            AlternativeSearchTag = string.Empty,
             IconType = ResultIconType.Date,
         };
 
@@ -110,6 +115,8 @@ public class ResultHelperTests
         {
             Label = longText,
             Value = longText,
+            AlternativeSearchTag = string.Empty,
+            IconType = ResultIconType.Time,
         };
 
         // Act
@@ -130,6 +137,8 @@ public class ResultHelperTests
         {
             Label = specialText,
             Value = specialText,
+            AlternativeSearchTag = string.Empty,
+            IconType = ResultIconType.Time,
         };
 
         // Act

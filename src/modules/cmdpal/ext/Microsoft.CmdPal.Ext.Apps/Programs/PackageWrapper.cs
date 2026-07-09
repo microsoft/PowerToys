@@ -4,7 +4,7 @@
 
 using System;
 using System.IO;
-using ManagedCommon;
+using Windows.ApplicationModel;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 
@@ -22,13 +22,15 @@ public class PackageWrapper : IPackage
 
     public bool IsDevelopmentMode { get; }
 
+    public bool IsNonRemovable { get; }
+
     public string InstalledLocation { get; } = string.Empty;
 
     public PackageWrapper()
     {
     }
 
-    public PackageWrapper(string name, string fullName, string familyName, bool isFramework, bool isDevelopmentMode, string installedLocation)
+    public PackageWrapper(string name, string fullName, string familyName, bool isFramework, bool isDevelopmentMode, string installedLocation, bool isNonRemovable = false)
     {
         Name = name;
         FullName = fullName;
@@ -36,6 +38,7 @@ public class PackageWrapper : IPackage
         IsFramework = isFramework;
         IsDevelopmentMode = isDevelopmentMode;
         InstalledLocation = installedLocation;
+        IsNonRemovable = isNonRemovable;
     }
 
     private static readonly Lazy<bool> IsPackageDotInstallationPathAvailable = new(() =>
@@ -58,7 +61,8 @@ public class PackageWrapper : IPackage
                 package.Id.FamilyName,
                 package.IsFramework,
                 package.IsDevelopmentMode,
-                string.Empty);
+                string.Empty,
+                package.SignatureKind == PackageSignatureKind.System);
         }
 
         return new PackageWrapper(
@@ -67,7 +71,8 @@ public class PackageWrapper : IPackage
                 package.Id.FamilyName,
                 package.IsFramework,
                 package.IsDevelopmentMode,
-                path);
+                path,
+                package.SignatureKind == PackageSignatureKind.System);
     }
 
     // This is a separate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
