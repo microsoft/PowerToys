@@ -197,6 +197,43 @@
   <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Profiles</value>
   </data>
+  <data name="LinkLevelsToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Link brightness levels</value>
+  </data>
+  <data name="LinkLevelsToggle.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Link brightness across monitors</value>
+  </data>
+  <data name="AllDisplaysTitle.Text" xml:space="preserve">
+    <value>All displays</value>
+    <comment>Title of the card that controls brightness for all linked monitors at once</comment>
+  </data>
+  <data name="AllDisplaysBrightnessAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>All displays brightness</value>
+  </data>
+  <data name="AllDisplaysLinkedCountFormat" xml:space="preserve">
+    <value>{0} linked</value>
+    <comment>Subtitle on the All displays card. {0} is the number of monitors whose brightness is linked</comment>
+  </data>
+  <data name="AllDisplaysExcludedCountFormat" xml:space="preserve">
+    <value>{0} excluded</value>
+    <comment>Subtitle on the All displays card. {0} is the number of monitors excluded from linked brightness</comment>
+  </data>
+  <data name="IndividualDisplaysHeader.Text" xml:space="preserve">
+    <value>Individual displays</value>
+    <comment>Header for the collapsible section listing each monitor while link mode is on</comment>
+  </data>
+  <data name="IndividualDisplaysToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Individual displays</value>
+  </data>
+  <data name="ExcludeFromSyncToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Exclude from linked brightness</value>
+  </data>
+  <data name="ExcludeFromSyncToggleToolTip" xml:space="preserve">
+    <value>Brightness is controlled by linked mode.</value>
+  </data>
+  <data name="IncludeInSyncToggleToolTip" xml:space="preserve">
+    <value>Include this display in linked brightness</value>
+  </data>
   <data name="IdentifyText.Text" xml:space="preserve">
     <value>Identify monitors</value>
   </data>
