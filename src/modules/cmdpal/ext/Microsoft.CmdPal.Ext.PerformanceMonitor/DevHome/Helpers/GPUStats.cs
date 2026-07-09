@@ -46,10 +46,10 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     private readonly List<Data> _stats = [];
 
-    // Guards structural access to _stats and _knownLuids. They are mutated on
-    // the perf-counter timer thread (GetData -> AddGpuIfNew) but read on the
-    // UI / command thread (GetGPUName, GetPrev/NextGPUIndex, etc.), and
-    // List<T> is not safe for concurrent add/read.
+    // Guards structural access to _stats, _knownLuids, and _adaptersByLuid. They
+    // are mutated on the perf-counter timer thread (GetData -> DiscoverGpus) but
+    // read on the UI / command thread (GetGPUName, GetPrev/NextGPUIndex, etc.),
+    // and List<T> is not safe for concurrent add/read.
     private readonly object _statsLock = new();
 
     // Previous raw samples for computing cooked (delta-based) values
@@ -95,6 +95,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             // real per-adapter identifier is the LUID, so we key on that instead.
             var instanceNames = _gpuEngineCategory.GetInstanceNames();
 
+            var seenLuids = new HashSet<long>();
             foreach (var instanceName in instanceNames)
             {
                 if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
@@ -104,9 +105,11 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
                 if (TryGetLuidAndEngine(instanceName, out var luidKey, out _))
                 {
-                    AddGpuIfNew(luidKey);
+                    seenLuids.Add(luidKey);
                 }
             }
+
+            DiscoverGpus(seenLuids);
         }
         catch (Exception ex)
         {
@@ -146,6 +149,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             // so cannot tell adapters apart.
             var perEngineUsage = new Dictionary<(long Luid, string EngineId), float>();
             var currentSamples = new Dictionary<string, CounterSample>();
+            var seenLuids = new HashSet<long>();
 
             foreach (InstanceData instance in utilizationData.Values)
             {
@@ -160,10 +164,10 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     continue;
                 }
 
-                // A GPU can register counter instances after we were constructed
-                // (e.g. a discrete GPU coming out of an idle low-power state), so
-                // keep discovering here rather than only in the constructor.
-                AddGpuIfNew(luidKey);
+                // Just record which adapters we saw; discovery of new ones is
+                // batched after the loop so we don't take _statsLock per instance
+                // (there can be hundreds of instances per tick).
+                seenLuids.Add(luidKey);
 
                 var sample = instance.Sample;
                 currentSamples[instanceName] = sample;
@@ -190,6 +194,12 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
             // Swap samples - stale entries are automatically cleaned up
             _previousSamples = currentSamples;
+
+            // Discover adapters we haven't seen before. Batched: one lock check
+            // per tick, and any DXGI name enumeration happens off the lock. New
+            // adapters land in _stats before the update loop so they get a value
+            // this tick.
+            DiscoverGpus(seenLuids);
 
             // Reduce per-engine values to a single 0-100 utilization per adapter (max across engines).
             var gpuUsage = new Dictionary<long, float>();
@@ -222,44 +232,84 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
-    private void AddGpuIfNew(long luidKey)
+    // Adds any newly-seen adapters to _stats. Called once per tick with the set
+    // of LUIDs observed this tick, so the hot per-instance path never touches the
+    // stats lock. The slow part - DXGI name enumeration for an adapter that only
+    // appeared after construction (e.g. an eGPU hot-plug) - is done outside the
+    // lock, since _statsLock is also held by the UI / command accessors.
+    private void DiscoverGpus(HashSet<long> seenLuids)
     {
+        List<long>? newLuids = null;
+        var needDxgiRefresh = false;
+
         lock (_statsLock)
         {
-            if (!_knownLuids.Add(luidKey))
+            foreach (var luidKey in seenLuids)
             {
-                return;
-            }
+                if (_knownLuids.Contains(luidKey))
+                {
+                    continue;
+                }
 
-            // If we don't have a DXGI name for this adapter yet, it registered
-            // counters after we were constructed (e.g. an eGPU hot-plug or a GPU
-            // leaving a low-power state). Re-enumerate once to pick up its
-            // friendly name rather than falling back to "GPU N". This runs at
-            // most once per newly-seen adapter, so the steady-state tick is
-            // unaffected.
-            if (!_adaptersByLuid.ContainsKey(luidKey))
+                (newLuids ??= []).Add(luidKey);
+                if (!_adaptersByLuid.ContainsKey(luidKey))
+                {
+                    needDxgiRefresh = true;
+                }
+            }
+        }
+
+        // Common case: nothing new, so we took the lock exactly once this tick.
+        if (newLuids is null)
+        {
+            return;
+        }
+
+        // A newly-seen adapter that isn't in the cached name map registered
+        // after we were constructed, so re-enumerate DXGI to pick up its friendly
+        // name. Done outside the lock because enumeration can be slow.
+        var refreshedNames = needDxgiRefresh ? GpuAdapterNames.GetByLuid() : null;
+
+        lock (_statsLock)
+        {
+            if (refreshedNames is not null)
             {
-                foreach (var adapter in GpuAdapterNames.GetByLuid())
+                foreach (var adapter in refreshedNames)
                 {
                     _adaptersByLuid[adapter.Key] = adapter.Value;
                 }
             }
 
-            _adaptersByLuid.TryGetValue(luidKey, out var info);
-
-            // Hide software adapters (e.g. the Microsoft Basic Render Driver / WARP):
-            // they report 3D engine activity but aren't a GPU the user cares about.
-            if (info.IsSoftware)
+            foreach (var luidKey in newLuids)
             {
-                return;
+                AddGpuLocked(luidKey);
             }
-
-            var name = string.IsNullOrEmpty(info.Description)
-                ? GpuNamePrefix + _stats.Count
-                : info.Description;
-
-            _stats.Add(new Data() { LuidKey = luidKey, Name = name });
         }
+    }
+
+    // Adds a single adapter to _stats. The caller must hold _statsLock, and must
+    // already have a name for this LUID cached in _adaptersByLuid if one exists.
+    private void AddGpuLocked(long luidKey)
+    {
+        if (!_knownLuids.Add(luidKey))
+        {
+            return;
+        }
+
+        _adaptersByLuid.TryGetValue(luidKey, out var info);
+
+        // Hide software adapters (e.g. the Microsoft Basic Render Driver / WARP):
+        // they report 3D engine activity but aren't a GPU the user cares about.
+        if (info.IsSoftware)
+        {
+            return;
+        }
+
+        var name = string.IsNullOrEmpty(info.Description)
+            ? GpuNamePrefix + _stats.Count
+            : info.Description;
+
+        _stats.Add(new Data() { LuidKey = luidKey, Name = name });
     }
 
     internal string CreateGPUImageUrl(int gpuChartIndex)
