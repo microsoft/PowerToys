@@ -8,4 +8,4 @@ included in the main PowerToys release footprint.
 
 When launching Mouse Jump via the kicker, it will look in the build output folder and
 launch the last successful build. Make sure to build the Mouse Jump project before
-launching the kicker - otherwise it won't run the latest version of Mouse Jump.
+launching the kicker - otherwise it won't run the latest version of the code.

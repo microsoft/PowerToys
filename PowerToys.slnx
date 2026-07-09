@@ -514,10 +514,6 @@
     <Project Path="src/modules/MouseUtils/MouseJump.HotKeys/MouseJump.HotKeys.csproj">
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/MouseUtils/MouseJump.Kicker/MouseJump.Kicker.csproj" Id="fbcafd0a-9262-4257-adb5-5b61a7c81a89">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.Models/MouseJump.Models.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

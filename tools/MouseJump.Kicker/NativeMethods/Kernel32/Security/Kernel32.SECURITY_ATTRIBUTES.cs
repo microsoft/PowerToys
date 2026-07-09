@@ -29,6 +29,6 @@ internal static partial class Kernel32
         }
 
         public static int Size =>
-            Marshal.SizeOf(typeof(SECURITY_ATTRIBUTES));
+            Marshal.SizeOf<SECURITY_ATTRIBUTES>();
     }
 }

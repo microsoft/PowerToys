@@ -26,7 +26,7 @@ internal static partial class Core
         }
 
         public static int Size =>
-            Marshal.SizeOf(typeof(DWORD));
+            Marshal.SizeOf<DWORD>();
 
         public static implicit operator uint(DWORD value) => value.Value;
 

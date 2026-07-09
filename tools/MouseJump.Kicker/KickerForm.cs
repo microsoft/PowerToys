@@ -31,32 +31,32 @@ public partial class KickerForm : Form
         set;
     }
 
-    private void StartWinForms_Click(object sender, EventArgs e)
-    {
-        var baseDir = AppContext.BaseDirectory;
-        var exePath = Path.Combine(baseDir, "PowerToys.MouseJumpUI.exe");
-        this.Process = this.StartProcess(exePath);
-    }
-
     private void StartWinUI3_Click(object sender, EventArgs e)
     {
-        var baseDir = AppContext.BaseDirectory;
-        var exePath = Path.Combine(baseDir, "WinUI3Apps", "PowerToys.MouseJump.WinUI3.exe");
-        this.Process = this.StartProcess(exePath);
+        // this project builds into "{RepoRoot}\tools\MouseJump.Kicker\bin\x64\Debug"
+        var kickerDir = AppContext.BaseDirectory;
+
+        // step up to the repo root
+        var repoRoot = Path.Combine(kickerDir, "..", "..", "..", "..", "..");
+
+        // and back down to the mouse jump exe
+        var mouseJumpExe = Path.Combine(repoRoot, "x64", "Debug", "WinUI3Apps", "PowerToys.MouseJump.WinUI3.exe");
+
+        this.Process = this.StartMouseJump(mouseJumpExe);
     }
 
-    private Process StartProcess(string exePath)
+    private Process StartMouseJump(string mouseJumpExe)
     {
-        if (!File.Exists(exePath))
+        if (!File.Exists(mouseJumpExe))
         {
-            throw new FileNotFoundException($"Could not find {exePath}");
+            throw new FileNotFoundException($"Could not find {mouseJumpExe}");
         }
 
         var args = new List<string>
         {
             Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
         };
-        return Process.Start(exePath, args);
+        return Process.Start(mouseJumpExe, args);
     }
 
     private void ActivationHotkey_Click(object sender, EventArgs e)
