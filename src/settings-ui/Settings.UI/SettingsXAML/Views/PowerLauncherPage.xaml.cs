@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             catch (Exception ex)
             {
-                Logger.LogInfo("Failed to play preview sound", ex.Message);
+                Logger.LogError("Failed to play preview sound", ex);
             }
         }
 

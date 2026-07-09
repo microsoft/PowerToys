@@ -504,10 +504,10 @@
 										SelectedValuePath="Value"
 										SelectedValue="{x:Bind ViewModel.OpeningSound, Mode=TwoWay}" />
 									<Button
-										Style="{StaticResource SubtleButtonStyle}"
-										ToolTipService.ToolTip="Preview"
-										Click="PreviewOpeningSound_Click">
-										<FontIcon Glyph="&#xE768;" />
+                                            x:Uid="PowerLauncher_PreviewOpeningSound"
+                                            Style="{StaticResource SubtleButtonStyle}"
+											Click="PreviewOpeningSound_Click">
+										<FontIcon Glyph="&#xE768;" FontSize="14"/>
 									</Button>
 								</StackPanel>
 							</tkcontrols:SettingsCard>
@@ -524,10 +524,10 @@
 										SelectedValuePath="Value"
 										SelectedValue="{x:Bind ViewModel.ClosingSound, Mode=TwoWay}" />
 									<Button
-										Style="{StaticResource SubtleButtonStyle}"
-										ToolTipService.ToolTip="Preview"
+                                        x:Uid="PowerLauncher_PreviewClosingSound"
+                                        Style="{StaticResource SubtleButtonStyle}"
 										Click="PreviewClosingSound_Click">
-										<FontIcon Glyph="&#xE768;" />
+										<FontIcon Glyph="&#xE768;" FontSize="14"/>
 									</Button>
 								</StackPanel>
 							</tkcontrols:SettingsCard>
