@@ -698,6 +698,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Loaded {profilesData.Profiles.Count} PowerDisplay profiles");
 
+                // Persist the name->id upgrade of our stored theme references (idempotent, symmetric
+                // with the app-side BackfillProfileIds) so a later rename of a referenced profile stays
+                // non-lossy even when the PowerDisplay app hasn't run its own migration yet.
+                if (LightSwitchProfileResolver.MigrateNamesToIds(ModuleSettings.Properties, profilesData))
+                {
+                    SaveSettings();
+                }
+
                 // Sync selected profiles from settings (id-first, name fallback).
                 SelectByStoredReference(isDarkMode: true);
                 SelectByStoredReference(isDarkMode: false);

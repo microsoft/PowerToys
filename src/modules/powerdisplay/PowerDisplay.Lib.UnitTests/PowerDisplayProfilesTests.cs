@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Models;
@@ -151,5 +152,24 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(2, profiles.Profiles.Count); // no duplicate created
         Assert.AreSame(edited, profiles.GetById(editedId));
         Assert.AreEqual("A-renamed", profiles.GetById(editedId)!.Name);
+    }
+
+    [TestMethod]
+    public void SetProfile_NewProfile_SelfHealsCorruptNextId_NoIdCollision()
+    {
+        // Corrupt/legacy counter: NextId sits at or below an id already in use. Adding new profiles
+        // (Id == 0) must still hand out ids above the highest in use, never colliding with it, even
+        // if SetProfile runs before EnsureIds has healed the counter.
+        var profiles = new PowerDisplayProfiles { NextId = 1 };
+        profiles.Profiles.Add(MakeProfile("Existing", id: 5));
+
+        for (var i = 0; i < 6; i++)
+        {
+            profiles.SetProfile(MakeProfile("New"));
+        }
+
+        var ids = profiles.Profiles.Select(p => p.Id).ToList();
+        Assert.AreEqual(ids.Count, ids.Distinct().Count(), "profile ids must be unique");
+        Assert.IsTrue(profiles.NextId > profiles.Profiles.Max(p => p.Id));
     }
 }

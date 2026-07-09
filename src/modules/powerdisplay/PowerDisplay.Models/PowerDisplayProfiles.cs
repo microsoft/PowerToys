@@ -61,12 +61,13 @@ namespace PowerDisplay.Models
 
             if (profile.Id == 0)
             {
-                if (NextId < 1)
-                {
-                    NextId = 1;
-                }
-
-                profile.Id = NextId++;
+                // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
+                // the highest id in use (mirrors EnsureIds). This guarantees a new profile never
+                // collides with an existing one even when SetProfile runs before EnsureIds.
+                var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+                var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+                profile.Id = next;
+                NextId = next + 1;
             }
             else
             {
