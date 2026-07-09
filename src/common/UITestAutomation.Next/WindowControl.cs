@@ -67,6 +67,10 @@ public static class WindowControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool BringWindowToTop(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsIconic(IntPtr hWnd);
+
     [DllImport("kernel32.dll")]
     private static extern uint GetCurrentThreadId();
 
@@ -276,10 +280,22 @@ public static class WindowControl
             }
 
             var foreground = GetForegroundWindow();
+            if (foreground == hwnd)
+            {
+                // Already the foreground window — don't touch its show-state or the input queues.
+                return true;
+            }
+
             var foregroundThread = foreground == IntPtr.Zero ? 0u : GetWindowThreadProcessId(foreground, out _);
             var currentThread = GetCurrentThreadId();
 
-            ShowWindow(hwnd, SW_RESTORE);
+            // Only un-MINIMIZE. Do NOT SW_RESTORE a maximized window — that un-maximizes it, resizing the
+            // window and invalidating any element coordinates already resolved for the click (the cause of
+            // the arm64 "Settings got resized then the toggle click missed" flakiness).
+            if (IsIconic(hwnd))
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+            }
 
             var attached = foregroundThread != 0 && foregroundThread != currentThread;
             if (attached)
