@@ -79,11 +79,63 @@ public class Element
     }
 
     /// <summary>
-    /// Activate the element. winappcli's <c>invoke</c> tries InvokePattern → TogglePattern →
-    /// SelectionItemPattern → ExpandCollapsePattern in order; <c>rightClick</c> falls back to
-    /// <c>click --right</c> via real mouse input.
+    /// Click the element with a REAL mouse click: UIA locates it (its <c>search</c> rectangle), then we
+    /// move the cursor to its centre and click natively via <see cref="MouseHelper"/> — the same input
+    /// path a user takes. Because <c>search</c> can briefly report a 0-size rectangle right after
+    /// <c>Find</c> (the element exists but isn't laid out yet), we re-search until the element has a
+    /// positive on-screen size, up to <paramref name="timeoutMS"/>. If it never gains a size (an
+    /// off-screen or zero-bounds control), we fall back to a coordinate-free UIA activation
+    /// (<see cref="Invoke"/>). For a click that must NOT move the cursor (e.g. it would disturb a live
+    /// screen-capture), call <see cref="Invoke"/> directly.
     /// </summary>
-    public virtual void Click(bool rightClick = false, int msPostAction = 200)
+    public virtual void Click(bool rightClick = false, int msPostAction = 200, int timeoutMS = 5000)
+    {
+        EnsureBound();
+
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (true)
+        {
+            if (Width > 0 && Height > 0)
+            {
+                MouseHelper.MoveTo(X + (Width / 2), Y + (Height / 2));
+                Thread.Sleep(50);
+                if (rightClick)
+                {
+                    MouseHelper.RightClick();
+                }
+                else
+                {
+                    MouseHelper.LeftClick();
+                }
+
+                if (msPostAction > 0)
+                {
+                    Thread.Sleep(msPostAction);
+                }
+
+                return;
+            }
+
+            if (DateTime.UtcNow >= deadline)
+            {
+                break;
+            }
+
+            Thread.Sleep(100);
+            RefreshBounds();
+        }
+
+        // Never resolved a positive on-screen size — fall back to a coordinate-free UIA activation.
+        Invoke(rightClick, msPostAction);
+    }
+
+    /// <summary>
+    /// Coordinate-free UIA activation (no cursor movement): winappcli's <c>invoke</c> tries
+    /// InvokePattern → TogglePattern → SelectionItemPattern → ExpandCollapsePattern in order; a right
+    /// click uses real-mouse <c>click --right</c>. Use when a real mouse click is undesirable (moving the
+    /// cursor would disturb a live screen-capture) or the element has no on-screen point.
+    /// </summary>
+    public void Invoke(bool rightClick = false, int msPostAction = 200)
     {
         EnsureBound();
 
@@ -99,6 +151,27 @@ public class Element
         if (msPostAction > 0)
         {
             Thread.Sleep(msPostAction);
+        }
+    }
+
+    /// <summary>Re-run <c>search</c> by this element's slug to refresh its on-screen bounds (best-effort).</summary>
+    private void RefreshBounds()
+    {
+        try
+        {
+            var matches = Owner!.FindAll<Element>(By.Slug(Selector), 0);
+            if (matches.Count > 0)
+            {
+                var m = matches[0];
+                X = m.X;
+                Y = m.Y;
+                Width = m.Width;
+                Height = m.Height;
+            }
+        }
+        catch
+        {
+            // Best-effort refresh; keep the last known bounds.
         }
     }
 

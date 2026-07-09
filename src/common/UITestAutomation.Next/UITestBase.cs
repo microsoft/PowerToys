@@ -42,9 +42,7 @@ public class UITestBase : IDisposable
     private readonly bool isInPipeline = EnvironmentConfig.IsInPipeline;
 
     private SessionHelper? sessionHelper;
-    private System.Threading.Timer? screenshotTimer;
     private ScreenRecording? screenRecording;
-    private string? screenshotDirectory;
     private string? recordingDirectory;
     private bool artifactsCaptured;
     private bool disposed;
@@ -235,19 +233,10 @@ public class UITestBase : IDisposable
             }
         }
 
-        try
-        {
-            CaptureFailureScreenshot();
-        }
-        catch
-        {
-        }
-
         if (isInPipeline)
         {
             try
             {
-                AddScreenshotsToTestResults();
                 AddRecordingsToTestResults();
                 AddLogFilesToTestResults();
             }
@@ -258,46 +247,10 @@ public class UITestBase : IDisposable
     }
 
     /// <summary>
-    /// Attach a failure screenshot. The primary capture is a window-independent GDI grab of the
-    /// desktop, so it works even when the test's window was already closed (e.g. by the test's own
-    /// <c>finally</c>) or never appeared (an init failure) — unlike winappcli's <c>--capture-screen</c>,
-    /// which requires a live target window. When the session window is still live, a winapp
-    /// window/overlay shot is added too. Best-effort.
-    /// </summary>
-    private void CaptureFailureScreenshot()
-    {
-        var dir = TestContext.TestRunResultsDirectory ?? TestContext.TestResultsDirectory ?? Path.GetTempPath();
-        Directory.CreateDirectory(dir);
-        var baseName = $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}";
-
-        // Reliable, window-independent desktop grab.
-        var desktopShot = Path.Combine(dir, $"{baseName}.png");
-        if (ScreenCapture.TryCaptureDesktop(desktopShot) && File.Exists(desktopShot))
-        {
-            TestContext.AddResultFile(desktopShot);
-        }
-
-        // Bonus detail: the winapp window/overlay shot, only when the session window is still alive.
-        if (Session is not null && Session.WindowHandle != 0)
-        {
-            var windowShot = Path.Combine(dir, $"{baseName}_window.png");
-            try
-            {
-                if (Session.TryScreenshot(windowShot, captureScreen: true) && File.Exists(windowShot))
-                {
-                    TestContext.AddResultFile(windowShot);
-                }
-            }
-            catch
-            {
-            }
-        }
-    }
-
-    /// <summary>
     /// Bring the desktop to a known state before launching: minimize every window, dismiss any
-    /// lingering popup with <c>Esc</c>, and kill the stale PowerToys processes in
-    /// <see cref="StaleProcessNames"/>. Best-effort — never blocks a test from starting.
+    /// lingering popup with <c>Esc</c>, kill the stale PowerToys processes in
+    /// <see cref="StaleProcessNames"/>, and suppress the first-run Welcome/What's-new windows.
+    /// Best-effort — never blocks a test from starting.
     /// </summary>
     private void PreTestHygiene()
     {
@@ -314,6 +267,10 @@ public class UITestBase : IDisposable
             {
                 WindowControl.TryKillProcessByName(processName);
             }
+
+            // Stop the runner popping the centered "Welcome to PowerToys" / "What's new" window on a
+            // fresh profile (e.g. CI) — it steals centre-screen mouse gestures from module overlays.
+            SettingsConfigHelper.SuppressFirstRunExperience();
         }
         catch
         {
@@ -370,17 +327,12 @@ public class UITestBase : IDisposable
 
     // ----- Pipeline diagnostics (CI only) ---------------------------------------------------
 
-    /// <summary>Start the 1s screenshot timer and FFmpeg screen recording. Best-effort.</summary>
+    /// <summary>Start the FFmpeg screen recording. Best-effort.</summary>
     private void StartPipelineCapture()
     {
         try
         {
             var baseDirectory = TestContext.TestResultsDirectory ?? Path.GetTempPath();
-
-            screenshotDirectory = Path.Combine(baseDirectory, "UITestScreenshots_" + Guid.NewGuid());
-            Directory.CreateDirectory(screenshotDirectory);
-            screenshotTimer = new System.Threading.Timer(
-                ScreenCapture.TimerCallback, screenshotDirectory, TimeSpan.Zero, TimeSpan.FromMilliseconds(1000));
 
             recordingDirectory = Path.Combine(baseDirectory, "UITestRecordings_" + Guid.NewGuid());
             Directory.CreateDirectory(recordingDirectory);
@@ -407,17 +359,9 @@ public class UITestBase : IDisposable
         }
     }
 
-    /// <summary>Stop the screenshot timer and finalize the recording. Best-effort.</summary>
+    /// <summary>Finalize the recording. Best-effort.</summary>
     private async Task StopPipelineCaptureAsync()
     {
-        try
-        {
-            screenshotTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-        }
-        catch
-        {
-        }
-
         if (screenRecording is not null)
         {
             try
@@ -426,17 +370,6 @@ public class UITestBase : IDisposable
             }
             catch
             {
-            }
-        }
-    }
-
-    private void AddScreenshotsToTestResults()
-    {
-        if (screenshotDirectory is not null && Directory.Exists(screenshotDirectory))
-        {
-            foreach (var file in Directory.GetFiles(screenshotDirectory))
-            {
-                TestContext.AddResultFile(file);
             }
         }
     }
@@ -537,7 +470,6 @@ public class UITestBase : IDisposable
         }
 
         disposed = true;
-        screenshotTimer?.Dispose();
         screenRecording?.Dispose();
         GC.SuppressFinalize(this);
     }

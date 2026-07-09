@@ -211,7 +211,7 @@ public sealed class Session
                 return new ReadOnlyCollection<T>(typed);
             }
 
-            Thread.Sleep(100);
+            Thread.Sleep(200);
         }
     }
 

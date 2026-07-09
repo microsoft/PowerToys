@@ -35,8 +35,132 @@ public static class WindowControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern int GetClassNameW(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
+
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern int GetWindowTextW(IntPtr hWnd, [Out] char[] lpString, int nMaxCount);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
     private const uint WM_CLOSE = 0x0010;
     private const int SW_RESTORE = 9;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    /// <summary>
+    /// A top-level window discovered by <see cref="EnumerateProcessWindows"/> / <see cref="EnumerateAllWindows"/>:
+    /// its native handle, owning process id, window class, title, size in physical pixels, and visibility.
+    /// </summary>
+    public readonly record struct ProcessWindow(IntPtr Hwnd, int ProcessId, string ClassName, string Title, int Width, int Height, bool IsVisible);
+
+    /// <summary>
+    /// Enumerate the top-level windows owned by any process in <paramref name="processIds"/> using the
+    /// pure Win32 <c>EnumWindows</c> API. Unlike winappcli's UI-Automation-backed <c>list-windows</c>,
+    /// this never attaches a UIA client or walks a window's UIA tree, so it is safe to call against a
+    /// process that is mid screen-capture (e.g. the Measure Tool overlay) without disturbing it.
+    /// </summary>
+    public static IReadOnlyList<ProcessWindow> EnumerateProcessWindows(IReadOnlyCollection<int> processIds)
+    {
+        if (processIds.Count == 0)
+        {
+            return Array.Empty<ProcessWindow>();
+        }
+
+        return EnumerateTopLevelWindows(processIds.Contains);
+    }
+
+    /// <summary>
+    /// Enumerate ALL top-level windows via the pure Win32 <c>EnumWindows</c> API (no process filter).
+    /// Same no-UIA path as <see cref="EnumerateProcessWindows"/>.
+    /// </summary>
+    public static IReadOnlyList<ProcessWindow> EnumerateAllWindows() => EnumerateTopLevelWindows(null);
+
+    private static IReadOnlyList<ProcessWindow> EnumerateTopLevelWindows(Func<int, bool>? pidFilter)
+    {
+        var result = new List<ProcessWindow>();
+
+        try
+        {
+            EnumWindows(
+                (hWnd, _) =>
+                {
+                    try
+                    {
+                        GetWindowThreadProcessId(hWnd, out var pid);
+                        var pidInt = (int)pid;
+                        if (pidFilter is null || pidFilter(pidInt))
+                        {
+                            var (width, height) = GetWindowSize(hWnd);
+                            result.Add(new ProcessWindow(
+                                hWnd,
+                                pidInt,
+                                GetWindowClassName(hWnd),
+                                GetWindowTitle(hWnd),
+                                width,
+                                height,
+                                IsWindowVisible(hWnd)));
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any single window we can't read; keep enumerating.
+                    }
+
+                    return true;
+                },
+                IntPtr.Zero);
+        }
+        catch
+        {
+            // Best-effort: return whatever was collected before the failure.
+        }
+
+        return result;
+    }
+
+    private static string GetWindowClassName(IntPtr hWnd)
+    {
+        var buffer = new char[256];
+        var len = GetClassNameW(hWnd, buffer, buffer.Length);
+        return len > 0 ? new string(buffer, 0, len) : string.Empty;
+    }
+
+    private static string GetWindowTitle(IntPtr hWnd)
+    {
+        var buffer = new char[512];
+        var len = GetWindowTextW(hWnd, buffer, buffer.Length);
+        return len > 0 ? new string(buffer, 0, len) : string.Empty;
+    }
+
+    private static (int Width, int Height) GetWindowSize(IntPtr hWnd)
+    {
+        return GetWindowRect(hWnd, out var r)
+            ? (Math.Max(0, r.Right - r.Left), Math.Max(0, r.Bottom - r.Top))
+            : (0, 0);
+    }
 
     /// <summary>
     /// Send <c>WM_CLOSE</c> to every window owned by <paramref name="appNameOrPid"/> and wait
