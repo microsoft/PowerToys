@@ -89,7 +89,7 @@ public static class MouseHelper
 
             var result2 = PInvoke.GetCursorPos(out var currentPosition);
             ResultHandler.ThrowIfZero(result: result2, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
-            if ((currentPosition.X == position.X) || (currentPosition.Y == position.Y))
+            if ((currentPosition.X == position.X) && (currentPosition.Y == position.Y))
             {
                 break;
             }

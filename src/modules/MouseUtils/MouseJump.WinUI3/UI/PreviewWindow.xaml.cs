@@ -125,6 +125,9 @@ internal sealed partial class PreviewWindow : Window
             case WindowActivationState.Deactivated:
                 this.HideWindow();
                 break;
+            case WindowActivationState.PointerActivated:
+                this.PreviewImage.Focus(FocusState.Pointer);
+                break;
             default:
                 throw new InvalidOperationException();
         }
@@ -441,7 +444,7 @@ internal sealed partial class PreviewWindow : Window
                 ResultHandler.HandleResult(
                     result: (int)setForegroundResult,
                     success: (bool)setForegroundResult,
-                    lastError: false,
+                    getLastError: false,
                     nameof(PInvoke.SetForegroundWindow));
 
                 PInvoke.SetLastError(0);

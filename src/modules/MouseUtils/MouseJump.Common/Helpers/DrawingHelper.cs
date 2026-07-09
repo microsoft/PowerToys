@@ -50,7 +50,7 @@ public static class DrawingHelper
         // initialize the preview image
         var previewBounds = canvasLayout.CanvasBounds.OuterBounds.ToRectangle();
         var previewImage = new Bitmap(previewBounds.Width, previewBounds.Height, PixelFormat.Format32bppPArgb);
-        var previewGraphics = Graphics.FromImage(previewImage);
+        using var previewGraphics = Graphics.FromImage(previewImage);
         if (previewImageCreatedCallback != null)
         {
             await previewImageCreatedCallback(previewImage);
@@ -78,7 +78,7 @@ public static class DrawingHelper
                         CopyService = imageRegionCopyServices[deviceIndex],
                     }))
             .OrderByDescending(
-                pair => object.ReferenceEquals(pair.ScreenLayout, activatedScreen))
+                pair => object.ReferenceEquals(pair.ScreenLayout.ScreenInfo, activatedScreen))
             .ToList();
 
         // draw all the screenshot bezels
@@ -117,7 +117,7 @@ public static class DrawingHelper
                     placeholdersDrawn = true;
                 }
 
-                if (previewImageUpdatedCallback != null)
+                if (previewImageUpdatedCallback is not null)
                 {
                     await previewImageUpdatedCallback(previewImage);
                 }
@@ -126,9 +126,9 @@ public static class DrawingHelper
             }
         }
 
-        if (refreshRequired)
+        if (refreshRequired && (previewImageUpdatedCallback is not null))
         {
-            previewImageUpdatedCallback?.Invoke(previewImage);
+            await previewImageUpdatedCallback(previewImage);
         }
 
         stopwatch.Stop();
@@ -155,7 +155,7 @@ public static class DrawingHelper
 
         // draw the main box border
         using var borderBrush = new SolidBrush(borderStyle.Color.Value);
-        var borderRegion = new Region(boxBounds.BorderBounds.ToRectangle());
+        using var borderRegion = new Region(boxBounds.BorderBounds.ToRectangle());
         borderRegion.Exclude(boxBounds.PaddingBounds.ToRectangle());
         graphics.FillRegion(borderBrush, borderRegion);
 
@@ -241,7 +241,7 @@ public static class DrawingHelper
 
         // it's faster to build a region with the screen areas excluded
         // and fill that than it is to fill the entire bounding rectangle
-        var backgroundRegion = new Region(backgroundBounds.ToRectangle());
+        using var backgroundRegion = new Region(backgroundBounds.ToRectangle());
         foreach (var exclude in excludeBounds)
         {
             backgroundRegion.Exclude(exclude.ToRectangle());
