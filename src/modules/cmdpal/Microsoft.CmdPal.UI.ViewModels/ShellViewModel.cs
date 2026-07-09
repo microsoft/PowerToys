@@ -55,6 +55,18 @@ public partial class ShellViewModel : ObservableObject,
                 oldValue.PropertyChanged -= CurrentPage_PropertyChanged;
                 value.PropertyChanged += CurrentPage_PropertyChanged;
 
+                // Re-evaluate search-box visibility for the page we're switching to.
+                // CurrentPage_PropertyChanged only reacts to a *change* of HasSearchBox, so
+                // switching to a page whose HasSearchBox already holds its final value (e.g.
+                // navigating back to a list from a ContentPage) would otherwise never restore
+                // the search box. Only force it visible here; hiding it on content pages is
+                // deliberately deferred (see ShellPage.FocusAfterLoaded) so focus doesn't jump
+                // around for screen readers.
+                if (value.HasSearchBox)
+                {
+                    IsSearchBoxVisible = true;
+                }
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -84,6 +96,8 @@ public partial class ShellViewModel : ObservableObject,
     private bool _currentlyTransient;
 
     public bool IsNested => _isNested && !_currentlyTransient;
+
+    public bool IsTransient => _currentlyTransient;
 
     public PageViewModel NullPage { get; private set; }
 
@@ -386,7 +400,7 @@ public partial class ShellViewModel : ObservableObject,
             var result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result);
+            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
 
             success = true;
             _handleInvokeTask = null;
@@ -412,7 +426,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result)
+    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
     {
         if (result is null)
         {
@@ -464,6 +478,17 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     if (result.Args is IConfirmationArgs a)
                     {
+                        // Give the original sender (e.g. the dock) a chance to
+                        // prepare UI before the confirmation dialog surfaces.
+                        try
+                        {
+                            onBeforeShowConfirmation?.Invoke();
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreLogger.LogError(ex.ToString());
+                        }
+
                         WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
                     }
 
@@ -475,7 +500,7 @@ public partial class ShellViewModel : ObservableObject,
                     if (result.Args is IToastArgs a)
                     {
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
                     }
 
                     break;
@@ -487,6 +512,18 @@ public partial class ShellViewModel : ObservableObject,
     {
         _rootPageService.GoHome();
         WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
+    }
+
+    /// <summary>
+    /// Resets navigation to the root page, clearing any transient state.
+    /// Use when entering from a hotkey while the palette may already be
+    /// showing a transient dock page.
+    /// </summary>
+    public void ResetToHome()
+    {
+        _currentlyTransient = false;
+        _rootPageService.GoHome();
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
     }
 
     public void GoBack(bool withAnimation = true, bool focusSearch = true)

@@ -1,0 +1,67 @@
+# Builds the Dev Docs website from doc/devdocs with docmd and publishes it to GitHub Pages.
+#
+# The generated site is uploaded as a Pages artifact and deployed directly. It is never
+# committed to the repo, so doc/devdocs-website/site stays untracked (see .gitignore).
+#
+# Requires GitHub Pages to be enabled with "Source: GitHub Actions" under the repository
+# Settings -> Pages.
+name: Publish Dev Docs Website
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'doc/devdocs/**'
+      - 'doc/devdocs-website/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one Pages deployment at a time and let an in-progress deploy finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # Full history so docmd's git plugin can resolve per-page "last updated" dates.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+
+      - name: Build static site with docmd
+        working-directory: doc/devdocs-website
+        # docmd is pinned in package.json; dependencies are installed fresh each run.
+        run: |
+          npm install
+          npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: doc/devdocs-website/site
+          # v4+ excludes dotfiles by default; keep docmd's generated .nojekyll.
+          include-hidden-files: true
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

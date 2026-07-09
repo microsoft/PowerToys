@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = false,
+                    IsNew = moduleType == ModuleType.ShortcutGuide,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -748,6 +748,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Space: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Space/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Both: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Either/Content"); break;
+                case Library.Enumerations.PowerAccentActivationKey.PressAndHold: activation = resourceLoader.GetString("QuickAccent_Activation_Key_PressAndHold/Content"); break;
+                default: activation = string.Empty; break;
             }
 
             var list = new List<DashboardModuleItem>
@@ -793,9 +795,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default);
 
-            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? new List<object> { 92 } // Right Windows key code
-                : moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
+            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
 
             var list = new List<DashboardModuleItem>
             {

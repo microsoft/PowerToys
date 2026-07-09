@@ -12,7 +12,9 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -34,6 +36,13 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
         private bool _disposed;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to probe each supported VCP feature directly
+        /// when the cap string cannot be obtained or parsed. Set by <see cref="MonitorManager"/>
+        /// from the PowerDisplay settings before each discovery pass.
+        /// </summary>
+        public bool MaxCompatibilityMode { get; set; }
 
         public DdcCiController()
         {
@@ -141,9 +150,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Discovers external DDC/CI-managed monitors. Each enumerated hMonitor runs its own
         /// async pipeline (filter → physical-handle retrieval → caps fetch + VCP init); all
         /// pipelines run concurrently via Task.WhenAll. Caller (MonitorManager) supplies the
-        /// pre-filtered external-target list from Phase 0.
+        /// displays it did not route to WMI — i.e. everything WmiMonitorBrightness did not expose.
         /// </summary>
-        /// <param name="targets">External-only display targets (pre-filtered by MonitorManager Phase 0).</param>
+        /// <param name="targets">Displays MonitorManager did not claim via WMI (not exposed by WmiMonitorBrightness).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>List of DDC/CI-managed external monitors.</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
@@ -163,13 +172,41 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return Enumerable.Empty<Monitor>();
             }
 
-            var pipelines = handles
-                .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
-                .ToList();
-            var results = await Task.WhenAll(pipelines);
+            // Wrap the whole parallel discovery in a CrashDetectionScope: it writes discovery.lock
+            // on Begin and deletes it on Dispose, so if the process is killed during capabilities
+            // I/O (BSOD, FailFast, TerminateProcess) the surviving lock is picked up by
+            // CrashRecovery on the next startup. A single Begin/Dispose wraps the entire
+            // Task.WhenAll because CrashDetectionScope uses FileMode.CreateNew + FileShare.None
+            // and cannot be nested across the per-handle pipelines.
+            IReadOnlyList<Monitor>[] results;
+            CrashDetectionScope? scope;
+            try
+            {
+                scope = CrashDetectionScope.Begin();
+            }
+            catch (Exception scopeEx)
+            {
+                // Lock could not be written (e.g. read-only %LOCALAPPDATA%). Proceed without
+                // crash protection rather than failing discovery — log so this is diagnosable.
+                Logger.LogWarning(
+                    $"DDC: CrashDetectionScope.Begin failed ({scopeEx.GetType().Name}: {scopeEx.Message}); proceeding without crash protection");
+                scope = null;
+            }
+
+            try
+            {
+                var pipelines = handles
+                    .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
+                    .ToList();
+                results = await Task.WhenAll(pipelines);
+            }
+            finally
+            {
+                scope?.Dispose();
+            }
 
             var monitors = results.SelectMany(r => r).ToList();
-            var newHandleMap = new Dictionary<string, IntPtr>();
+            var newHandleMap = new Dictionary<string, IntPtr>(MonitorIdComparer.Instance);
             foreach (var m in monitors)
             {
                 newHandleMap[m.Id] = m.Handle;
@@ -232,75 +269,76 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Full per-physical-monitor pipeline: fetch DDC/CI capabilities (slow I2C, ~4 s),
-        /// construct the Monitor object, and read the supported VCP feature values.
-        /// Returns null if capabilities are invalid, the Monitor can't be constructed, or
-        /// any exception occurs (logged at Error level with the device path).
+        /// Construct a Monitor and initialize its VCP feature values using pre-fetched
+        /// capabilities (obtained on the async side via <see cref="FetchCapabilitiesWithFallbackAsync"/>).
+        /// Returns null when caps are null. The "must advertise brightness" gate has been removed —
+        /// any monitor with at least one supported VCP code (real or probed) is kept; the per-feature
+        /// SupportsXxx flags on Monitor already gate UI controls correctly.
         /// </summary>
         /// <remarks>
         /// Pure synchronous work — callers wrap this in <see cref="Task.Run"/> to dispatch
         /// to the threadpool. Within a single physical monitor the VCP reads serialize on
-        /// one I2C bus; parallelism across physical monitors happens at the caller.
+        /// one I²C bus; parallelism across physical monitors happens at the caller.
         /// </remarks>
-        private Monitor? BuildMonitorFromPhysical(PHYSICAL_MONITOR physical, MonitorDisplayInfo info)
+        private Monitor? BuildMonitorFromPhysical(
+            PHYSICAL_MONITOR physical,
+            MonitorDisplayInfo info,
+            string capsString,
+            VcpCapabilities? caps)
         {
+            if (caps == null)
+            {
+                return null;
+            }
+
             try
             {
-                var capResult = DdcCiNative.FetchCapabilities(physical.HPhysicalMonitor);
-                if (!capResult.IsValid)
-                {
-                    return null;
-                }
-
                 var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info);
                 if (monitor == null)
                 {
                     return null;
                 }
 
-                if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
+                if (!string.IsNullOrEmpty(capsString))
                 {
-                    monitor.CapabilitiesRaw = capResult.CapabilitiesString;
+                    monitor.CapabilitiesRaw = capsString;
                 }
 
-                if (capResult.VcpCapabilitiesInfo != null)
+                monitor.VcpCapabilitiesInfo = caps;
+                UpdateMonitorCapabilitiesFromVcp(monitor, caps);
+
+                // Initialize current values for every VCP feature the device reports
+                // support for, ordered continuous-range first (percent-scaled),
+                // then discrete-enum VCPs. Each guard is independent — a controller
+                // can support any subset.
+                if (monitor.SupportsBrightness)
                 {
-                    monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
-                    UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
+                    InitializeBrightness(monitor, physical.HPhysicalMonitor);
+                }
 
-                    // Initialize current values for every VCP feature the device reports
-                    // support for, ordered continuous-range first (percent-scaled),
-                    // then discrete-enum VCPs. Each guard is independent — a controller
-                    // can support any subset.
-                    if (monitor.SupportsBrightness)
-                    {
-                        InitializeBrightness(monitor, physical.HPhysicalMonitor);
-                    }
+                if (monitor.SupportsContrast)
+                {
+                    InitializeContrast(monitor, physical.HPhysicalMonitor);
+                }
 
-                    if (monitor.SupportsContrast)
-                    {
-                        InitializeContrast(monitor, physical.HPhysicalMonitor);
-                    }
+                if (monitor.SupportsVolume)
+                {
+                    InitializeVolume(monitor, physical.HPhysicalMonitor);
+                }
 
-                    if (monitor.SupportsVolume)
-                    {
-                        InitializeVolume(monitor, physical.HPhysicalMonitor);
-                    }
+                if (monitor.SupportsColorTemperature)
+                {
+                    InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                }
 
-                    if (monitor.SupportsColorTemperature)
-                    {
-                        InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
-                    }
+                if (monitor.SupportsInputSource)
+                {
+                    InitializeInputSource(monitor, physical.HPhysicalMonitor);
+                }
 
-                    if (monitor.SupportsInputSource)
-                    {
-                        InitializeInputSource(monitor, physical.HPhysicalMonitor);
-                    }
-
-                    if (monitor.SupportsPowerState)
-                    {
-                        InitializePowerState(monitor, physical.HPhysicalMonitor);
-                    }
+                if (monitor.SupportsPowerState)
+                {
+                    InitializePowerState(monitor, physical.HPhysicalMonitor);
                 }
 
                 return monitor;
@@ -311,6 +349,91 @@ namespace PowerDisplay.Common.Drivers.DDC
                     $"DDC: [DevicePath={info.DevicePath}] BuildMonitorFromPhysical exception: {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
+        /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
+        /// or unparsable. Cancellation is honored both during the cap-string fetch
+        /// (cooperative — checked between attempts) and during the 1 s delay between
+        /// retries.
+        /// </summary>
+        private async Task<(string CapsString, VcpCapabilities? Caps)> FetchCapabilitiesWithFallbackAsync(
+            IntPtr hPhysicalMonitor,
+            CancellationToken cancellationToken)
+        {
+            const int maxAttempts = 3;
+            const int retryDelayMs = 1000;
+
+            string? capsString = null;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // The Win32 cap-string fetch is synchronous (~4 s I²C). Dispatch to the
+                // threadpool so the calling pipeline can interleave with siblings.
+                capsString = await Task.Run(
+                    () => DdcCiNative.TryGetCapabilitiesString(hPhysicalMonitor),
+                    cancellationToken);
+
+                if (!string.IsNullOrEmpty(capsString))
+                {
+                    break;
+                }
+
+                if (attempt < maxAttempts)
+                {
+                    Logger.LogWarning(
+                        $"DDC: cap string fetch attempt {attempt} returned empty " +
+                        $"(handle=0x{hPhysicalMonitor:X}); retrying in {retryDelayMs}ms");
+                    await Task.Delay(retryDelayMs, cancellationToken);
+                }
+            }
+
+            VcpCapabilities? caps = null;
+            if (!string.IsNullOrEmpty(capsString))
+            {
+                var parseResult = MccsCapabilitiesParser.Parse(capsString);
+                if (parseResult.Capabilities.SupportedVcpCodes.Count > 0)
+                {
+                    caps = parseResult.Capabilities;
+                }
+                else
+                {
+                    Logger.LogWarning(
+                        $"DDC: parsed capabilities have no VCP codes " +
+                        $"(handle=0x{hPhysicalMonitor:X}, parseErrors={parseResult.Errors.Count})");
+                }
+            }
+            else
+            {
+                Logger.LogWarning(
+                    $"DDC: cap string still empty after {maxAttempts} attempts (handle=0x{hPhysicalMonitor:X})");
+            }
+
+            if (caps == null && MaxCompatibilityMode)
+            {
+                Logger.LogInfo(
+                    $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
+
+                caps = await Task.Run(
+                    () => DdcCiNative.ProbeSupportedVcpFeatures(hPhysicalMonitor),
+                    cancellationToken);
+
+                if (caps != null)
+                {
+                    Logger.LogInfo(
+                        $"DDC: [max-compat] recovered monitor (handle=0x{hPhysicalMonitor:X}) " +
+                        $"with {caps.SupportedVcpCodes.Count} probed feature(s)");
+                }
+                else
+                {
+                    Logger.LogWarning(
+                        $"DDC: [max-compat] probe returned no supported features for handle=0x{hPhysicalMonitor:X}");
+                }
+            }
+
+            return (capsString ?? string.Empty, caps);
         }
 
         /// <summary>
@@ -354,8 +477,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
             {
-                monitor.BrightnessVcpMax = (int)max;
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                if (!brightnessInfo.IsValid)
+                {
+                    Logger.LogWarning(
+                        $"DDC: [{monitor.Id}] Ignoring invalid brightness range current={current}, max={max}");
+                    return;
+                }
+
+                monitor.BrightnessVcpMax = (int)max;
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
             }
         }
@@ -533,8 +663,8 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 if (!targetsByGdi.TryGetValue(gdiName, out var matchingInfos))
                 {
-                    // GDI name not in the external targets list — either a Phase 0 internal
-                    // panel or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
+                    // GDI name not in the DDC target list — either a panel already claimed by
+                    // WMI or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
                     // expensive GetPhysicalMonitorsFromHMONITOR call.
                     Logger.LogDebug($"DDC skipping {gdiName}: not in external targets list");
                     return Array.Empty<Monitor>();
@@ -562,11 +692,45 @@ namespace PowerDisplay.Common.Drivers.DDC
                     var physical = physicals[i];
                     var info = matchingInfos[i];
 
-                    // Heavy sync block (~4 s caps fetch + up to 6 × ~100 ms VCP reads on this
-                    // one I2C bus). Dispatch to the threadpool; await it before the next physical
-                    // because they share the same hMonitor's I2C arbitration.
+#if DEBUG
+                    if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
+                    {
+                        // Debug-only: simulate a hard process kill to test the crash recovery
+                        // pipeline without invoking the kernel BSOD path. FailFast does not run
+                        // finally blocks, so the discovery.lock written by CrashDetectionScope
+                        // survives — just like a real BSOD.
+                        Logger.LogWarning("DEBUG: POWERDISPLAY_SIMULATE_CRASH=1 — invoking FailFast");
+                        Environment.FailFast("Simulated crash for quarantine testing");
+                    }
+#endif
+
+                    // Log identity of the monitor we are about to touch via DDC/CI BEFORE the
+                    // first syscall. If the call triggers a kernel stack-cookie overrun inside
+                    // win32kfull (see GH #47556 / #47968), this is the last log line that
+                    // survives — it has to carry enough to identify the offending hardware:
+                    // EdidId for blacklist matching, plus the human-readable name and full
+                    // DevicePath.
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                    Logger.LogInfo(
+                        $"DDC: probing capabilities [EdidId={edidId}] [FriendlyName='{info.FriendlyName}'] [DevicePath={info.DevicePath}]");
+
+                    // Async caps fetch (retry + max-compat probe). Awaits Task.Delay between
+                    // retries instead of blocking the threadpool.
+                    var (capsString, caps) = await FetchCapabilitiesWithFallbackAsync(
+                        physical.HPhysicalMonitor, cancellationToken);
+
+                    if (caps == null)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        continue;
+                    }
+
+                    // Heavy sync block (~6 × ~100 ms VCP reads on this one I2C bus).
+                    // Dispatch to the threadpool; await before the next physical because
+                    // they share the same hMonitor's I2C arbitration.
                     var monitor = await Task.Run(
-                        () => BuildMonitorFromPhysical(physical, info),
+                        () => BuildMonitorFromPhysical(physical, info, capsString, caps),
                         cancellationToken);
 
                     if (monitor != null)

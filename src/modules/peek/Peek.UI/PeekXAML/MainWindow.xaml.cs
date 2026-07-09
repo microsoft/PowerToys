@@ -34,6 +34,7 @@ namespace Peek.UI
         public MainWindowViewModel ViewModel { get; }
 
         private readonly ThemeListener? themeListener;
+        private readonly IUserSettings userSettings;
 
         /// <summary>
         /// Whether the delete confirmation dialog is currently open. Used to ensure only one
@@ -66,6 +67,19 @@ namespace Peek.UI
             AppWindow.SetIcon("Assets/Peek/Icon.ico");
 
             AppWindow.Closing += AppWindow_Closing;
+
+            userSettings = Application.Current.GetService<IUserSettings>();
+            userSettings.Changed += UpdateWindowBySettings;
+            UpdateWindowBySettings(null, EventArgs.Empty);
+        }
+
+        private void UpdateWindowBySettings(object? sender, EventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                IsAlwaysOnTop = userSettings.AlwaysOnTop;
+                IsShownInSwitchers = userSettings.ShowTaskbarIcon;
+            });
         }
 
         private async void Content_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -88,7 +102,7 @@ namespace Peek.UI
             {
                 _isDeleteInProgress = true;
 
-                if (Application.Current.GetService<IUserSettings>().ConfirmFileDelete)
+                if (userSettings.ConfirmFileDelete)
                 {
                     if (await ShowDeleteConfirmationDialogAsync() == ContentDialogResult.Primary)
                     {
@@ -195,6 +209,8 @@ namespace Peek.UI
             var bootTime = new System.Diagnostics.Stopwatch();
             bootTime.Start();
 
+            FilePreviewer.ShowFilePreviewTooltip = Application.Current.GetService<IUserSettings>().ShowFilePreviewTooltip;
+
             ViewModel.Initialize(selectedItem);
 
             // If no files were found (e.g., user is typing in rename/search box, or in virtual folders),
@@ -214,19 +230,35 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
-            this.Restore();
-            this.Hide();
-
-            ViewModel.Uninitialize();
-            ViewModel.ScalingFactor = 1;
-
-            this.Content.KeyUp -= Content_KeyUp;
-
-            ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
-
-            if (_exitAfterClose)
+            try
             {
-                Environment.Exit(0);
+                // Keep teardown best-effort: one failure must not skip later cleanup
+                // or prevent the CLI/-FilePath exit-after-close contract.
+                TryRunUninitializeStep(this.Restore, "Restore");
+                TryRunUninitializeStep(() => this.Hide(), "Hide");
+                TryRunUninitializeStep(ViewModel.Uninitialize, nameof(ViewModel.Uninitialize));
+                TryRunUninitializeStep(() => ViewModel.ScalingFactor = 1, nameof(ViewModel.ScalingFactor));
+                TryRunUninitializeStep(() => this.Content.KeyUp -= Content_KeyUp, nameof(Content_KeyUp));
+                TryRunUninitializeStep(ShellPreviewHandlerPreviewer.ReleaseHandlerFactories, nameof(ShellPreviewHandlerPreviewer.ReleaseHandlerFactories));
+            }
+            finally
+            {
+                if (_exitAfterClose)
+                {
+                    Environment.Exit(0);
+                }
+            }
+        }
+
+        private static void TryRunUninitializeStep(Action action, string stepName)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unhandled exception in Peek MainWindow.Uninitialize step '{stepName}'; continuing cleanup.", ex);
             }
         }
 
@@ -288,9 +320,22 @@ namespace Peek.UI
         /// <param name="args">AppWindowClosingEventArgs</param>
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
-            args.Cancel = true;
-            PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
-            Uninitialize();
+            // Any exception that escapes a WinRT event handler is projected back to
+            // the CsWinRT dispatcher as a failed HRESULT, and CFlat fail-fasts the
+            // process. We want a Closing handler that can never crash Peek, even if
+            // a callee (e.g., a cached preview-handler RCW that has been separated
+            // during teardown) throws InvalidComObjectException.
+            try
+            {
+                args.Cancel = true;
+                PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
+                Uninitialize();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Unhandled exception in Peek MainWindow.AppWindow_Closing; suppressing to avoid fail-fast.", ex);
+                args.Cancel = true;
+            }
         }
 
         private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
@@ -310,6 +355,7 @@ namespace Peek.UI
         public void Dispose()
         {
             themeListener?.Dispose();
+            userSettings.Changed -= UpdateWindowBySettings;
         }
 
         /// <summary>
