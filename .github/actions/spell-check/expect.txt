@@ -1998,6 +1998,8 @@ uwp
 uxt
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 VARTYPE
