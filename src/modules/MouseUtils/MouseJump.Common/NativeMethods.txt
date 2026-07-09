@@ -65,3 +65,5 @@ GetAwarenessFromDpiAwarenessContext
 GetThreadDpiAwarenessContext
 
 HWND_MESSAGE
+
+GetModuleHandleW

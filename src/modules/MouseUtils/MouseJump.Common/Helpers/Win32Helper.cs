@@ -40,8 +40,8 @@ public static class Win32Helper
         ArgumentNullException.ThrowIfNullOrEmpty(className);
         ArgumentNullException.ThrowIfNull(windowProcDelegate);
 
-        // see https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
-        var hInstance = (HINSTANCE)Process.GetCurrentProcess().Handle;
+        using var hModule = PInvoke.GetModuleHandle(null);
+        var hInstance = (HINSTANCE)hModule.DangerousGetHandle();
 
         // register the window class
         // see https://stackoverflow.com/a/30992796/3156906
@@ -83,6 +83,9 @@ public static class Win32Helper
         //     https://devblogs.microsoft.com/oldnewthing/20171218-00/?p=97595
         //     https://stackoverflow.com/a/30992796/3156906
         var hWnd = default(HWND);
+
+        using var hModule = PInvoke.GetModuleHandle(null);
+
         unsafe
         {
             hWnd = PInvoke.CreateWindowEx(
@@ -96,7 +99,7 @@ public static class Win32Helper
                 nHeight: 400,
                 hWndParent: HWND.HWND_MESSAGE, // message-only window
                 hMenu: null,
-                hInstance: null,
+                hInstance: hModule,
                 lpParam: null);
         }
 

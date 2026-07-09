@@ -15,6 +15,7 @@ using MouseJump.Kicker.NativeMethods;
 
 using static MouseJump.Kicker.NativeMethods.Core;
 using static MouseJump.Kicker.NativeMethods.Kernel32;
+using static MouseJump.Kicker.NativeMethods.User32;
 
 namespace MouseJump.Kicker;
 
@@ -61,6 +62,45 @@ public partial class KickerForm : Form
 
     private void ActivationHotkey_Click(object sender, EventArgs e)
     {
+        // find the winui3 window and call SetForegroundWindow on it before signalling
+        // the event. this mirrors the approach used in on_hotkey() in
+        // src/modules/MouseUtils/MouseJump/dllmain.cpp - see the comment there for a
+        // full explanation.
+        //
+        // in brief: the kicker is the foreground process right now (the user just
+        // clicked the button), so it has permission to call SetForegroundWindow and
+        // transfer foreground status directly to the winui3 window. doing this before
+        // signalling the event means that by the time ShowWindowAsync() calls
+        // SetForegroundWindow on its own window, the winui3 process already owns the
+        // foreground and the call succeeds.
+        //
+        // using AllowSetForegroundWindow here instead would be unreliable — the
+        // permission it grants is revoked as soon as the user generates any input
+        // (e.g. moving the mouse), which is almost certain to happen while the
+        // preview is rendering.
+        if (this.Process is not null)
+        {
+            var targetPid = (uint)this.Process.Id;
+            var winUI3Hwnd = HWND.Null;
+            EnumWindows(
+                (hwnd, _) =>
+                {
+                    GetWindowThreadProcessId(hwnd, out var windowPid);
+                    if (windowPid == targetPid)
+                    {
+                        winUI3Hwnd = hwnd;
+                        return false; // stop enumeration
+                    }
+
+                    return true; // continue enumeration
+                },
+                LPARAM.Zero);
+            if (!winUI3Hwnd.IsNull)
+            {
+                SetForegroundWindow(winUI3Hwnd);
+            }
+        }
+
         const string MOUSE_JUMP_SHOW_PREVIEW_EVENT = "Local\\MouseJumpEvent-aa0be051-3396-4976-b7ba-1a9cc7d236a5";
         var attributes = new LPSECURITY_ATTRIBUTES(
             new SECURITY_ATTRIBUTES(
