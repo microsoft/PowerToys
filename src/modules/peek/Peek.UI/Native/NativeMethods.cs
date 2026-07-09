@@ -132,20 +132,9 @@ namespace Peek.UI.Native
         /// </summary>
         internal const uint SHCNF_PATH = 0x0001;
 
-        // Low-level keyboard hook support
         internal const int WH_KEYBOARD_LL = 13;
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [StructLayout(LayoutKind.Sequential)]
-        internal struct KBDLLHOOKSTRUCT
-        {
-            public uint vkCode;
-            public uint scanCode;
-            public uint flags;
-            public uint time;
-            public IntPtr dwExtraInfo;
-        }
 
         [DllImport("user32.dll", SetLastError = true)]
         internal static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
