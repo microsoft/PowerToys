@@ -191,18 +191,7 @@ HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ U
     switch (uType)
     {
     case GCS_VERBW:
-    {
-        // Per the IContextMenu::GetCommandString contract, when the GCS_UNICODE
-        // flag is set (it is bundled into GCS_VERBW), pszName points to a wide
-        // character buffer whose size in wchar_t units is cchMax, regardless of
-        // the LPSTR-typed declaration on the interface method.
-        const auto pszNameW = reinterpret_cast<LPWSTR>(pszName);
-        return StringCchCopyW(pszNameW, cchMax, RESIZE_PICTURES_VERBW);
-    }
-    case GCS_VERBA:
-        return StringCchCopyA(pszName, cchMax, RESIZE_PICTURES_VERBA);
-    case GCS_HELPTEXTA:
-    case GCS_HELPTEXTW:
+        return StringCchCopyW(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
     case GCS_VALIDATEA:
     case GCS_VALIDATEW:
         return S_OK;

@@ -2,7 +2,6 @@
 
 #define ID_RESIZE_PICTURES 0
 #define RESIZE_PICTURES_VERBW L"resize"
-#define RESIZE_PICTURES_VERBA "resize"
 #include "pch.h"
 #include "Generated Files/resource.h"
 #include "ImageResizerExt_i.h"
