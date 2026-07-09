@@ -48,7 +48,9 @@ public class SetSettingCommandTests
     [DataRow(typeof(AwakeSettings), nameof(AwakeProperties.Mode), "EXPIRABLE")]
     [DataRow(typeof(AwakeSettings), nameof(AwakeProperties.ExpirationDateTime), "March 31, 2020 15:00 +00:00")]
     [DataRow(typeof(PowerLauncherSettings), nameof(PowerLauncherProperties.MaximumNumberOfResults), "322")]
-
+    [DataRow(typeof(PowerLauncherSettings), nameof(PowerLauncherProperties.EnableAudibleFeedback), "true")]
+    [DataRow(typeof(PowerLauncherSettings), nameof(PowerLauncherProperties.OpeningSound), "Asterisk")]
+    [DataRow(typeof(PowerLauncherSettings), nameof(PowerLauncherProperties.ClosingSound), "Exclamation")]
     [DataRow(typeof(ColorPickerSettings), nameof(ColorPickerProperties.CopiedColorRepresentation), "RGB")]
     public void SetModuleSetting(Type moduleSettingsType, string settingName, string newValueStr)
     {

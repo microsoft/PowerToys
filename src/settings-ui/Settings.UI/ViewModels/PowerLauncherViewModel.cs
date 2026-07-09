@@ -668,15 +668,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private ObservableCollection<SoundOption> GetAvailableSounds()
         {
             var sounds = new ObservableCollection<SoundOption>
-    {
-        new SoundOption { Name = "Beep", Value = "Beep" },
-        new SoundOption { Name = "Asterisk", Value = "Asterisk" },
-        new SoundOption { Name = "Exclamation", Value = "Exclamation" },
-        new SoundOption { Name = "Hand", Value = "Hand" },
-        new SoundOption { Name = "Question", Value = "Question" },
-    };
-
+            {
+                new SoundOption { Name = GetLocalizedSoundName("Beep"), Value = "Beep" },
+                new SoundOption { Name = GetLocalizedSoundName("Asterisk"), Value = "Asterisk" },
+                new SoundOption { Name = GetLocalizedSoundName("Exclamation"), Value = "Exclamation" },
+                new SoundOption { Name = GetLocalizedSoundName("Hand"), Value = "Hand" },
+                new SoundOption { Name = GetLocalizedSoundName("Question"), Value = "Question" },
+            };
             return sounds;
+        }
+
+        private string GetLocalizedSoundName(string soundKey)
+        {
+            try
+            {
+                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                return loader.GetString($"PowerLauncher_Sound_{soundKey}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load localized sound name for key '{soundKey}'", ex);
+                return soundKey;
+            }
         }
 
         public class SoundOption
