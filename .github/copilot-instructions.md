@@ -18,6 +18,14 @@ Concise guidance for AI contributions. For complete details, see [AGENTS.md](../
 - C++: `src/.clang-format`
 - XAML: XamlStyler
 
+## Build & Test
+
+- First build / NuGet restore: `tools\build\build-essentials.cmd`
+- Build only the affected folder: `tools\build\build.cmd -Path <folder>`
+- Use VS Test Explorer or `vstest.console.exe`; avoid `dotnet test` for repo tests
+- If you change Runner or Settings UI IPC/contracts, follow `.github/instructions/runner-settings-ui.instructions.md`
+- If you change shared code in `src/common`, follow `.github/instructions/common-libraries.instructions.md`
+
 ## When to Ask for Clarification
 
 - Ambiguous spec after scanning docs

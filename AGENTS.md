@@ -46,6 +46,11 @@ These instruction files are automatically applied when working in their respecti
 - Windows 10 1803+ (April 2018 Update or newer)
 - Initialize submodules once: `git submodule update --init --recursive`
 
+### Preferred inner loop
+
+- For local changes, build only the affected folder: `tools\build\build.cmd -Path src\<path>`.
+- Use `tools\build\build-essentials.cmd` first for initial setup, package restore, or after package changes.
+
 ### Build commands
 
 | Task | Command |
@@ -53,13 +58,14 @@ These instruction files are automatically applied when working in their respecti
 | First build / NuGet restore | `tools\build\build-essentials.cmd` |
 | Build current folder | `tools\build\build.cmd` |
 | Build with options | `build.ps1 -Platform x64 -Configuration Release` |
+| VS Code build task | `.vscode/tasks.json` includes `PT: Build (quick)` and `PT: Build Essentials (quick)` |
 
 ### Build discipline
 
 1. One terminal per operation (build → test). Do not switch or open new ones mid-flow
 2. After making changes, `cd` to the project folder that changed (`.csproj`/`.vcxproj`)
-3. Use scripts to build: `tools/build/build.ps1` or `tools/build/build.cmd`
-4. For first build or missing NuGet packages, run `build-essentials.cmd` first
+3. Use scripts to build: `tools\build\build.ps1` or `tools\build\build.cmd`
+4. If this is the first build or packages changed, run `tools\build\build-essentials.cmd` first
 5. **Exit code 0 = success; non-zero = failure** – treat this as absolute
 6. On failure, read the errors log: `build.<config>.<platform>.errors.log`
 7. Do not start tests or launch Runner until the build succeeds
@@ -86,6 +92,7 @@ For complete details, see [Build Guidelines](tools/build/BUILD-GUIDELINES.md).
 1. **Build the test project first**, wait for exit code 0
 2. Run via VS Test Explorer (`Ctrl+E, T`) or `vstest.console.exe` with filters
 3. **Avoid `dotnet test`** in this repo – use VS Test Explorer or vstest.console.exe
+4. For UI tests, use the PowerToys UI test guidance in `doc/devdocs/development/ui-tests.md` and the repo's WinAppDriver requirements
 
 ### Test types
 
