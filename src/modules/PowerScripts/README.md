@@ -85,18 +85,26 @@ authored once and appears everywhere it's declared.
 ### Parameters (optional)
 
 A script may declare typed `parameters`. When `promptForParameters` is `true`, PowerScripts shows a
-small dialog before running so the user can pick/enter values; the chosen values are passed to the
-script (PowerShell as `-Name value`, Python as keyword arguments). Values arrive as **strings**, so a
-`bool` parameter is passed as the literal `"true"`/`"false"`. Supported types:
+small **WinUI 3** dialog before running so the user can pick/enter values; the chosen values are passed
+to the script (PowerShell as `-Name value`, Python as keyword arguments). Values arrive as **strings**,
+so a `bool` parameter is passed as the literal `"true"`/`"false"`. Supported types:
 
-- `choice` — one value from a fixed `options` list (rendered as a dropdown).
-- `bool` — a checkbox.
-- `int` — a numeric box honoring `min`/`max`.
-- `string` — a text box.
+- `choice` — one value from a fixed `options` list (rendered as a dropdown / `ComboBox`).
+- `bool` — a `ToggleSwitch`.
+- `int` — a `NumberBox` honoring `min`/`max`.
+- `string` — a `TextBox`.
 
 When `promptForParameters` is omitted/`false`, no UI shows and parameters only come from an explicit
 `--set name=value` (unchanged behavior). Pass `--no-prompt` to `run` to suppress the dialog for
 automated invocations. See the `greet` (PowerShell) and `py_greet` (Python) samples.
+
+The prompt is a separate helper process — `PowerScripts.PromptUI` (a self-contained, unpackaged
+WinUI 3 app) — rather than an in-process dialog. This is deliberate: Keyboard Manager launches the
+Host **hidden** and actively hides every window the Host owns, so an in-process dialog would be hidden
+too. A child process's window is outside KBM's reach, so the prompt shows reliably while the Host stays
+silent. The Host locates `PowerScripts.PromptUI.exe` next to itself, via the `POWERSCRIPTS_PROMPTUI`
+env var, or (for in-repo Debug/Release runs) by discovering the prompt project's `bin` output. If the
+helper can't be found, the run degrades to the parameters' defaults/overrides instead of failing.
 
 ## Build & run
 

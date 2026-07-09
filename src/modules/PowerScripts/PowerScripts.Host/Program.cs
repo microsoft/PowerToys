@@ -191,7 +191,7 @@ internal static class Program
                 initial[p.Name] = parameters.TryGetValue(p.Name, out var overridden) ? overridden : p.Default;
             }
 
-            if (!ParameterPromptDialog.TryPrompt(manifest, initial, out var chosen))
+            if (!PromptLauncher.TryPrompt(manifest, initial, out var chosen))
             {
                 Console.Error.WriteLine("run: cancelled at the parameter prompt.");
                 return 2;

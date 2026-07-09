@@ -5,7 +5,6 @@
     <RootNamespace>PowerScripts.Host</RootNamespace>
     <AssemblyName>PowerScripts.Host</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>

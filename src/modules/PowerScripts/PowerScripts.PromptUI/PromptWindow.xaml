@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="PowerScripts.PromptUI.PromptWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="24" RowSpacing="20" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Spacing="4">
+            <TextBlock x:Name="TitleText" Style="{ThemeResource TitleTextBlockStyle}" TextWrapping="Wrap" />
+            <TextBlock x:Name="DescriptionText"
+                       Style="{ThemeResource BodyTextBlockStyle}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       TextWrapping="Wrap"
+                       Visibility="Collapsed" />
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,4,0,4">
+            <StackPanel x:Name="FieldsPanel" Spacing="16" />
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button x:Name="RunButton"
+                    Content="Run"
+                    MinWidth="90"
+                    Style="{ThemeResource AccentButtonStyle}"
+                    Click="OnRun" />
+            <Button x:Name="CancelButton"
+                    Content="Cancel"
+                    MinWidth="90"
+                    Click="OnCancel" />
+        </StackPanel>
+    </Grid>
+</Window>
