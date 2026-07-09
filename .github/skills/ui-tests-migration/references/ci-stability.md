@@ -93,6 +93,25 @@ navigating with `By.AccessibilityId(...).Click()`** (Recipe 1) — it's race-saf
 reach for a raw `MouseClick`/manual `MouseHelper` when the interaction genuinely needs real mouse input
 (and by then the window has settled).
 
+**The second trap: a background-launched window comes up *behind* the foreground.** A physical click
+lands on whatever window is **topmost at those pixels** — not necessarily your target. When a module's
+overlay/toolbar is shown by a *background* process (the runner, reacting to a hotkey) while another
+window holds the foreground, Windows' **foreground lock** puts it *behind* that window — it's present,
+`IsWindowVisible`-true, and un-cloaked, yet occluded. A coordinate click then hits the covering window
+and looks **exactly** like the interactivity race, but it's occlusion. This is a prime "passes local,
+flakes on CI" cause: on CI the Settings window used to enable the module is still foreground when the
+overlay appears. The harness guards against it — `Element.Click()` calls `Session.EnsureForeground()`
+first, which raises the target with the foreground-lock-defeating `AttachThreadInput` dance
+(`WindowControl.TryBringToForeground`) before the real click, and still falls back to `Invoke()` if the
+raise doesn't take. Diagnose it via winappcli's `isForeground` flag on `list-windows`; UIA `invoke` is
+immune because it never touches coordinates.
+
+**Elevation must match.** Injected input — a synthetic hotkey *or* a real click — from a process at a
+*different* integrity level than the PowerToys runner is blocked by UIPI: a non-elevated host can't
+drive an elevated runner, and an elevated host's foreground window blocks the non-elevated runner's
+hook. Run the test host at the **same** elevation as the runner (the `.Next` harness launches the
+runner non-elevated, so run the tests non-elevated too).
+
 ---
 
 ## Principle 3 — Screen-capture (WGC) modules: cold-start + don't disturb the session

@@ -89,6 +89,34 @@ public sealed class Session
     }
 
     /// <summary>
+    /// Best-effort: raise this session's target window to the foreground so a subsequent coordinate
+    /// interaction (a real mouse click/drag) can't land on a window that happens to be covering it. A
+    /// background-launched overlay/toolbar is often placed BEHIND whatever held the foreground when it
+    /// was triggered (the Win32 foreground lock), so <see cref="Element.Click"/> calls this before its
+    /// physical click. Window-scoped sessions raise their exact HWND; process-scoped sessions raise the
+    /// app's first window. Never throws — a foreground failure must not fail the interaction (the click
+    /// still has its coordinate-free <c>Invoke</c> fallback).
+    /// </summary>
+    public void EnsureForeground()
+    {
+        try
+        {
+            if (Scope == TargetScope.Window && WindowHandle != 0)
+            {
+                WindowControl.TryBringToForeground(new IntPtr(WindowHandle));
+            }
+            else if (Scope == TargetScope.Process)
+            {
+                WindowControl.TryFocusByApp(TargetValue);
+            }
+        }
+        catch
+        {
+            // Best-effort foregrounding only.
+        }
+    }
+
+    /// <summary>
     /// Build a session scoped to a whole process via <c>winapp ... -a &lt;app&gt;</c>. Cheaper than
     /// resolving a HWND and ideal for the single-window-per-process case (e.g. Settings smoke
     /// tests). The first matching window's PID/name/title are captured for reporting only — all
