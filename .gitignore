@@ -19,6 +19,9 @@
 [Rr]eleases/
 x64/
 x86/
+!**/rnnoise/
+!**/rnnoise/x86/
+!**/rnnoise/x86/**
 ARM64/
 bld/
 [Bb]in/
@@ -375,3 +378,6 @@ installer/*/*.wxs.bk
 vcpkg_installed/
 
 deps/vcpkg/
+
+# Superpowers-generated docs (specs, design, plans) — local-only, not committed
+docs/superpowers/

@@ -167,7 +167,7 @@
                             <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.AdvancedPasteUIShortcut, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
-                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
+                                    <CheckBox x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
@@ -178,12 +178,14 @@
                                     IsEnabled="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=OneWay}">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_Clipboard_History_Enabled_SettingsCard" IsChecked="{x:Bind ViewModel.ClipboardHistoryEnabled, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
-
                                 <tkcontrols:SettingsCard Name="AdvancedPasteCloseAfterLosingFocus" ContentAlignment="Left">
                                     <CheckBox x:Uid="AdvancedPaste_CloseAfterLosingFocus" IsChecked="{x:Bind ViewModel.CloseAfterLosingFocus, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteShowCustomPreviewSettingsCard" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowCustomPreviewSettingsCard" IsChecked="{x:Bind ViewModel.ShowCustomPreview, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteShowAIPasteSettingsCard" ContentAlignment="Left">
+                                    <CheckBox x:Uid="AdvancedPaste_ShowAIPasteSettingsCard" IsChecked="{x:Bind ViewModel.ShowAIPaste, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>

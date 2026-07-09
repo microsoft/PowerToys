@@ -93,7 +93,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     {
         _isBandPage = isBandPage;
         _singleMetric = singleMetric;
-        _id = singleMetric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(singleMetric.Value)}";
+        _id = GetBandId(singleMetric);
 
         if (IncludesMetric(PerformanceMetricKind.Cpu))
         {
@@ -133,6 +133,25 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 Title = _networkPage.GetItemTitle(isBandPage),
                 MoreCommands = _networkPage.Commands,
             };
+
+            if (isBandPage)
+            {
+                _networkUpItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkUpSpeed}",
+                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                    Icon = Icons.NetworkUpIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+
+                _networkDownItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkDownSpeed}",
+                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                    Icon = Icons.NetworkDownIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+            }
 
             _networkPage.Updated += (s, e) =>
             {
@@ -253,22 +272,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         }
         else
         {
-            _networkUpItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkUpSpeed}",
-                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                Icon = Icons.NetworkUpIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
-
-            _networkDownItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkDownSpeed}",
-                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                Icon = Icons.NetworkDownIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
-
             return _batteryItem is not null
                 ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
                 : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
@@ -282,6 +285,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkPage?.Dispose();
         _gpuPage?.Dispose();
         _batteryPage?.Dispose();
+    }
+
+    internal static string GetBandId(PerformanceMetricKind? metric)
+    {
+        return metric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(metric.Value)}";
     }
 
     private bool IncludesMetric(PerformanceMetricKind metric)

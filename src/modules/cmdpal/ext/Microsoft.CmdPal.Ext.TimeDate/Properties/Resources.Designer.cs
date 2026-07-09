@@ -835,6 +835,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Show seconds on the dock clock.
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This setting applies to the clock shown on the Command Palette dock..
+        /// </summary>
+        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select for more details..
         /// </summary>
         public static string Microsoft_plugin_timedate_show_details {
@@ -957,6 +975,24 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_copy_time_command_name {
             get {
                 return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open notification center.
+        /// </summary>
+        public static string timedate_show_notification_center_command_name {
+            get {
+                return ResourceManager.GetString("timedate_show_notification_center_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notification center.
+        /// </summary>
+        public static string timedate_notification_center_band_title {
+            get {
+                return ResourceManager.GetString("timedate_notification_center_band_title", resourceCulture);
             }
         }
     }
