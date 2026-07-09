@@ -38,7 +38,7 @@ public static class MouseHelper
     public static PointInfo GetCursorPosition()
     {
         var result = PInvoke.GetCursorPos(out var point);
-        ResultHandler.ThrowIfZero(result, getLastError: true, nameof(PInvoke.GetCursorPos));
+        ResultHandler.ThrowIfZero(result: result, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
         return new(point.X, point.Y);
     }
 
@@ -84,15 +84,11 @@ public static class MouseHelper
             if (result1 == 0)
             {
                 var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(
-                    result1,
-                    success: lastError == 0,
-                    lastError,
-                    nameof(PInvoke.SetCursorPos));
+                ResultHandler.HandleResult(result: result1, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.SetCursorPos));
             }
 
             var result2 = PInvoke.GetCursorPos(out var currentPosition);
-            ResultHandler.ThrowIfZero(result2, getLastError: true, nameof(PInvoke.GetCursorPos));
+            ResultHandler.ThrowIfZero(result: result2, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
             if ((currentPosition.X == position.X) || (currentPosition.Y == position.Y))
             {
                 break;
@@ -133,7 +129,7 @@ public static class MouseHelper
         var result = PInvoke.SendInput(inputs, cbSize);
         if (result != inputs.Length)
         {
-            ResultHandler.HandleFailure(result, getLastError: true, nameof(PInvoke.SendInput));
+            ResultHandler.HandleFailure(result: result, getLastError: true, memberName: nameof(PInvoke.SendInput));
         }
     }
 
@@ -142,7 +138,7 @@ public static class MouseHelper
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
         var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-        ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.GetSystemMetrics));
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
         return (x * 65535) / result;
     }
 
@@ -151,7 +147,7 @@ public static class MouseHelper
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
         var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
-        ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.GetSystemMetrics));
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
         return (y * 65535) / result;
     }
 }

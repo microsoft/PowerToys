@@ -72,7 +72,7 @@ internal sealed partial class PreviewWindow : Window
             if (result == 0)
             {
                 var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(result, success: lastError == 0, lastError, nameof(PInvoke.GetWindowLong));
+                ResultHandler.HandleResult(result: result, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.GetWindowLong));
             }
 
             // set the window to be borderless, with no title bar, and hide all of the max / min / close buttons
@@ -84,7 +84,7 @@ internal sealed partial class PreviewWindow : Window
             if (result == 0)
             {
                 var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(result, success: lastError == 0, lastError, nameof(PInvoke.SetWindowLong));
+                ResultHandler.HandleResult(result: result, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.SetWindowLong));
             }
 
             // get the current extended window style
@@ -93,7 +93,7 @@ internal sealed partial class PreviewWindow : Window
             if (result == 0)
             {
                 var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(result, success: lastError == 0, lastError, nameof(PInvoke.GetWindowLong));
+                ResultHandler.HandleResult(result: result, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.GetWindowLong));
             }
 
             // set the window to be borderless, with no title bar, and hide all of the max / min / close buttons
@@ -105,7 +105,7 @@ internal sealed partial class PreviewWindow : Window
             if (result == 0)
             {
                 var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(result, success: lastError == 0, lastError, nameof(PInvoke.SetWindowLong));
+                ResultHandler.HandleResult(result: result, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.SetWindowLong));
             }
         }
 
@@ -223,7 +223,7 @@ internal sealed partial class PreviewWindow : Window
             '\n',
             "Reporting mouse event args",
             $"\tleft button = {pointerPoint.Properties.IsLeftButtonPressed}",
-            $"\right button = {pointerPoint.Properties.IsRightButtonPressed}",
+            $"\tright button = {pointerPoint.Properties.IsRightButtonPressed}",
             $"\tlocation = {pointerPoint.Position}"));
 
         if (pointerPoint.Properties.IsLeftButtonPressed)
@@ -365,7 +365,7 @@ internal sealed partial class PreviewWindow : Window
     {
         var hWnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(this);
         var windowDpi = PInvoke.GetDpiForWindow(hWnd);
-        ResultHandler.ThrowIfZero((int)windowDpi, getLastError: true, nameof(PInvoke.GetDpiForWindow));
+        ResultHandler.ThrowIfZero(result: (int)windowDpi, getLastError: true, memberName: nameof(PInvoke.GetDpiForWindow));
         var scalingRatio = (double)PInvoke.USER_DEFAULT_SCREEN_DPI / windowDpi;
         return scalingRatio;
     }
@@ -374,9 +374,10 @@ internal sealed partial class PreviewWindow : Window
     {
         // this might be called from a task that we're awaiting
         // so we need to make sure we use the UI thread
-        var tcs = new TaskCompletionSource<bool>();
+        var tcs = new TaskCompletionSource<bool>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
 
-        this.DispatcherQueue.TryEnqueue(
+        if (!this.DispatcherQueue.TryEnqueue(
             () =>
             {
                 try
@@ -388,7 +389,11 @@ internal sealed partial class PreviewWindow : Window
                 {
                     tcs.SetException(ex);
                 }
-            });
+            }))
+        {
+            tcs.SetException(
+                new InvalidOperationException("DispatcherQueue is not accepting work items."));
+        }
 
         // wait for the task to complete
         await tcs.Task.ConfigureAwait(false);
@@ -434,9 +439,9 @@ internal sealed partial class PreviewWindow : Window
 
                 var setForegroundResult = PInvoke.SetForegroundWindow(hWnd);
                 ResultHandler.HandleResult(
-                    (int)setForegroundResult,
+                    result: (int)setForegroundResult,
                     success: (bool)setForegroundResult,
-                    false,
+                    lastError: false,
                     nameof(PInvoke.SetForegroundWindow));
 
                 PInvoke.SetLastError(0);
@@ -445,9 +450,9 @@ internal sealed partial class PreviewWindow : Window
                 {
                     var lastError = Marshal.GetLastPInvokeError();
                     ResultHandler.HandleResult(
-                        setFocusResult,
+                        result: setFocusResult,
                         success: lastError == 0,
-                        lastError,
+                        lastError: lastError,
                         nameof(PInvoke.SetFocus));
                 }
 
@@ -457,9 +462,9 @@ internal sealed partial class PreviewWindow : Window
                 {
                     var lastError = Marshal.GetLastPInvokeError();
                     ResultHandler.HandleResult(
-                        setActiveResult,
+                        result: setActiveResult,
                         success: lastError == 0,
-                        lastError,
+                        lastError: lastError,
                         nameof(PInvoke.SetActiveWindow));
                 }
             }).ConfigureAwait(false);

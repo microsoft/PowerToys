@@ -49,6 +49,9 @@ internal static class MouseJumpEventLoop
                     }
                     catch (Exception ex)
                     {
+                        // if something went wrong the application could be in an unstable state.
+                        // the main MouseJump module will restart the background process the next
+                        // time the hotkey is invoked, so just rethrow the exception here.
                         Logger.LogDebug($"[{eventName}] - error occurred");
                         Logger.LogError(ex.ToString());
                         throw;
@@ -123,6 +126,9 @@ internal static class MouseJumpEventLoop
                     }
                     catch (Exception ex)
                     {
+                        // if something went wrong the application could be in an unstable state.
+                        // the main MouseJump module will restart the background process the next
+                        // time the hotkey is invoked, so just rethrow the exception here.
                         Logger.LogDebug($"[{eventName}] - error occurred");
                         Logger.LogError(ex.ToString());
                         throw;

@@ -70,7 +70,7 @@ public static class Win32Helper
             }
         }
 
-        ResultHandler.ThrowIfZero(classAtom, getLastError: true, memberName: nameof(PInvoke.RegisterClassEx));
+        ResultHandler.ThrowIfZero(result: classAtom, getLastError: true, memberName: nameof(PInvoke.RegisterClassEx));
 
         var windowClass = new Win32WindowClass(classAtom, className, windowProc);
         return windowClass;
@@ -103,7 +103,7 @@ public static class Win32Helper
                 lpParam: null);
         }
 
-        ResultHandler.ThrowIfZero(hWnd, getLastError: true, memberName: nameof(PInvoke.CreateWindowEx));
+        ResultHandler.ThrowIfZero(result: hWnd, getLastError: true, memberName: nameof(PInvoke.CreateWindowEx));
 
         var window = new Win32Window(windowClass, windowName, hWnd);
         return window;

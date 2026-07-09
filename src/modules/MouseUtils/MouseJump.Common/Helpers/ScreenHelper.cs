@@ -60,10 +60,7 @@ public static class ScreenHelper
         foreach (var hMonitor in hMonitors)
         {
             var result = PInvoke.GetMonitorInfo(hMonitor, ref monitorInfo);
-            ResultHandler.ThrowIfZero(
-                result,
-                getLastError: true,
-                memberName: nameof(PInvoke.GetMonitorInfo));
+            ResultHandler.ThrowIfZero(result: result, getLastError: true, memberName: nameof(PInvoke.GetMonitorInfo));
 
             yield return new ScreenInfo(
                 handle: hMonitor,

@@ -49,7 +49,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
             source.Width,
             source.Height,
             ROP_CODE.SRCCOPY);
-        ResultHandler.ThrowIfZero(result, getLastError: false, memberName: nameof(PInvoke.StretchBlt));
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.StretchBlt));
 
         // we need to release the graphics device context handle before anything
         // else tries to use the Graphics object - otherwise it'll give an error
@@ -63,7 +63,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
     {
         var desktopHwnd = PInvoke.GetDesktopWindow();
         var desktopHdc = PInvoke.GetWindowDC(desktopHwnd);
-        ResultHandler.HandleResult(desktopHdc, !desktopHdc.IsNull, getLastError: false, memberName: nameof(PInvoke.GetWindowDC));
+        ResultHandler.HandleResult(result: desktopHdc, success: !desktopHdc.IsNull, getLastError: false, memberName: nameof(PInvoke.GetWindowDC));
         return (desktopHwnd, desktopHdc);
     }
 
@@ -72,7 +72,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
         if (!desktopHwnd.IsNull && !desktopHdc.IsNull)
         {
             var result = PInvoke.ReleaseDC(desktopHwnd, desktopHdc);
-            ResultHandler.ThrowIfZero(result, getLastError: false, memberName: nameof(PInvoke.ReleaseDC));
+            ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.ReleaseDC));
         }
 
         desktopHwnd = HWND.Null;
@@ -87,7 +87,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
     {
         var graphicsHdc = (HDC)graphics.GetHdc();
         var result = PInvoke.SetStretchBltMode(graphicsHdc, mode);
-        ResultHandler.ThrowIfZero(result, getLastError: false, memberName: nameof(PInvoke.SetStretchBltMode));
+        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.SetStretchBltMode));
         return graphicsHdc;
     }
 
