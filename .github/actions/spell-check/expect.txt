@@ -1706,6 +1706,8 @@ uuidv
 uwp
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 vcamp
