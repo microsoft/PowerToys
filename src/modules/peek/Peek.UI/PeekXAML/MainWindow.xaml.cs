@@ -413,22 +413,18 @@ namespace Peek.UI
 
         private IntPtr LowLevelKeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            const int WM_KEYDOWN = 0x0100;
-            const int VK_W = 0x57;
-            const int VK_CONTROL = 0x11;
-            const int VK_ALT = 0x12;
-            const int VK_SHIFT = 0x10;
-            const int VK_LWIN = 0x5B;
-            const int VK_RWIN = 0x5C;
-            const int KEY_PRESSED_MASK = 0x8000;
-
             try
             {
                 if (nCode >= 0 &&
-                    wParam == (IntPtr)WM_KEYDOWN &&
-                    lParam != IntPtr.Zero &&
-                    Marshal.ReadInt32(lParam) == VK_W)
+                    wParam == (IntPtr)NativeMethods.WM_KEYDOWN &&
+                    lParam != IntPtr.Zero)
                 {
+                    var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                    if (hookStruct.vkCode != NativeMethods.VK_W)
+                    {
+                        return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                    }
+
                     var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
                     if (foreground != _cachedWindowHandle)
                     {
@@ -440,11 +436,11 @@ namespace Peek.UI
                         return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
                     }
 
-                    bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
-                    bool altPressed = (NativeMethods.GetAsyncKeyState(VK_ALT) & KEY_PRESSED_MASK) != 0;
-                    bool shiftPressed = (NativeMethods.GetAsyncKeyState(VK_SHIFT) & KEY_PRESSED_MASK) != 0;
-                    bool winPressed = (NativeMethods.GetAsyncKeyState(VK_LWIN) & KEY_PRESSED_MASK) != 0 ||
-                                      (NativeMethods.GetAsyncKeyState(VK_RWIN) & KEY_PRESSED_MASK) != 0;
+                    bool ctrlPressed = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_CONTROL) & NativeMethods.KEY_PRESSED_MASK) != 0;
+                    bool altPressed = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_ALT) & NativeMethods.KEY_PRESSED_MASK) != 0;
+                    bool shiftPressed = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_SHIFT) & NativeMethods.KEY_PRESSED_MASK) != 0;
+                    bool winPressed = (NativeMethods.GetAsyncKeyState(NativeMethods.VK_LWIN) & NativeMethods.KEY_PRESSED_MASK) != 0 ||
+                                      (NativeMethods.GetAsyncKeyState(NativeMethods.VK_RWIN) & NativeMethods.KEY_PRESSED_MASK) != 0;
 
                     if (ctrlPressed && !altPressed && !shiftPressed && !winPressed)
                     {
