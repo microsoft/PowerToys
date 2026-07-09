@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Windowing;
@@ -100,6 +102,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private CancellationTokenSource _searchDebounceCts;
         private const int SearchDebounceMs = 500;
         private bool _disposed;
+        private IFileSystemWatcher _updateStateWatcher;
 
         // Removed trace id counter per cleanup
 
@@ -137,6 +140,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _searchSuggestions.Add(child.Content?.ToString());
                 }
             }
+
+            UpdateGeneralInfoBadge();
+            _updateStateWatcher = Helper.GetFileWatcher(string.Empty, UpdatingSettings.SettingsFile, () =>
+            {
+                DispatcherQueue.TryEnqueue(UpdateGeneralInfoBadge);
+            });
         }
 
         public static int SendDefaultIPCMessage(string msg)
@@ -599,27 +608,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
-            // If a suggestion is selected, navigate directly
-            if (args.ChosenSuggestion is SuggestionItem chosen)
+            try
             {
-                NavigateFromSuggestion(chosen);
-                return;
-            }
+                // If a suggestion is selected, navigate directly
+                if (args.ChosenSuggestion is SuggestionItem chosen)
+                {
+                    NavigateFromSuggestion(chosen);
+                    return;
+                }
 
-            var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
-            if (string.IsNullOrWhiteSpace(queryText))
+                var queryText = (args.QueryText ?? _lastQueryText)?.Trim();
+                if (string.IsNullOrWhiteSpace(queryText))
+                {
+                    NavigationService.Navigate<DashboardPage>();
+                    return;
+                }
+
+                // Prefer cached results (from live search); if empty, perform a fresh search
+                var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
+                    ? _lastSearchResults
+                    : await Task.Run(() => SearchIndexService.Search(queryText));
+
+                var searchParams = new SearchResultsNavigationParams(queryText, matched);
+                NavigationService.Navigate<SearchResultsPage>(searchParams);
+            }
+            catch (Exception ex)
             {
-                NavigationService.Navigate<DashboardPage>();
-                return;
+                Logger.LogError("Search query submission failed", ex);
             }
-
-            // Prefer cached results (from live search); if empty, perform a fresh search
-            var matched = _lastSearchResults?.Count > 0 && string.Equals(_lastQueryText, queryText, StringComparison.Ordinal)
-                ? _lastSearchResults
-                : await Task.Run(() => SearchIndexService.Search(queryText));
-
-            var searchParams = new SearchResultsNavigationParams(queryText, matched);
-            NavigationService.Navigate<SearchResultsPage>(searchParams);
         }
 
         public void Dispose()
@@ -629,11 +645,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
+            _updateStateWatcher?.Dispose();
             _searchDebounceCts?.Cancel();
             _searchDebounceCts?.Dispose();
             _searchDebounceCts = null;
             _disposed = true;
             GC.SuppressFinalize(this);
+        }
+
+        private void UpdateGeneralInfoBadge()
+        {
+            try
+            {
+                var config = UpdatingSettings.LoadSettings();
+                bool updateAvailable = config != null &&
+                    (config.State == UpdatingSettings.UpdatingState.ReadyToDownload ||
+                     config.State == UpdatingSettings.UpdatingState.ReadyToInstall);
+                UpdateInfoBadge.Visibility = updateAvailable ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch (Exception)
+            {
+                UpdateInfoBadge.Visibility = Visibility.Collapsed;
+            }
         }
     }
 }

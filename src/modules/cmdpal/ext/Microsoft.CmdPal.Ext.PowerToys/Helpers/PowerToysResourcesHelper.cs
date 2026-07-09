@@ -10,7 +10,7 @@ namespace PowerToysExtension.Helpers;
 internal static class PowerToysResourcesHelper
 {
     private const string AssetsRoot = "Assets\\";
-    private const string SettingsIconRoot = "WinUI3Apps\\Assets\\Settings\\Icons\\";
+    private const string SettingsIconRoot = "Assets\\Settings\\Icons\\";
 
     internal static IconInfo IconFromSettingsIcon(string fileName) => IconHelpers.FromRelativePath($"{SettingsIconRoot}{fileName}");
 

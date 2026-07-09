@@ -140,6 +140,24 @@
   <data name="calculator_copy_command_name" xml:space="preserve">
     <value>Copy</value>
   </data>
+  <data name="calculator_paste_command_name" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="calculator_paste_toast_text" xml:space="preserve">
+    <value>Pasted from calculator</value>
+  </data>
+  <data name="calculator_copy_toast_text" xml:space="preserve">
+    <value>Copied to clipboard</value>
+  </data>
+  <data name="calculator_history_delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="calculator_history_header" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="calculator_history_delete_all" xml:space="preserve">
+    <value>Delete all</value>
+  </data>
   <data name="calculator_calculation_failed_title" xml:space="preserve">
     <value>Failed to calculate the input</value>
   </data>
@@ -199,6 +217,9 @@
   <data name="calculator_not_covert_to_decimal" xml:space="preserve">
     <value>Result value was either too large or too small for a decimal number</value>
   </data>
+  <data name="calculator_open_in_calculator" xml:space="preserve">
+    <value>Open in calculator</value>
+  </data>
   <data name="calculator_copy_hex" xml:space="preserve">
     <value>Copy hexadecimal</value>
   </data>
@@ -217,6 +238,45 @@
   <data name="calculator_settings_auto_fix_query" xml:space="preserve">
     <value>Fix incomplete calculations automatically</value>
   </data>
+  <data name="calculator_settings_fallback_history" xml:space="preserve">
+    <value>Save fallback calculations</value>
+  </data>
+  <data name="calculator_settings_fallback_history_description" xml:space="preserve">
+    <value>Save copied results from fallback calculations to history</value>
+  </data>
+  <data name="calculator_settings_confirm_delete_title" xml:space="preserve">
+    <value>Ask for confirmation before deleting items</value>
+  </data>
+  <data name="calculator_settings_confirm_delete_description" xml:space="preserve">
+    <value>Prompt before deleting history entries</value>
+  </data>
+  <data name="calculator_settings_primary_action_title" xml:space="preserve">
+    <value>Primary action (Enter key)</value>
+  </data>
+  <data name="calculator_settings_primary_action_description" xml:space="preserve">
+    <value>Choose the default action for results</value>
+  </data>
+  <data name="calculator_settings_primary_action_default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="calculator_settings_primary_action_copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="calculator_settings_primary_action_paste" xml:space="preserve">
+    <value>Paste</value>
+  </data>
+  <data name="calculator_delete_confirmation_title" xml:space="preserve">
+    <value>Delete history item</value>
+  </data>
+  <data name="calculator_delete_confirmation_message" xml:space="preserve">
+    <value>Are you sure you want to delete this history item?</value>
+  </data>
+  <data name="calculator_delete_all_confirmation_title" xml:space="preserve">
+    <value>Delete all history</value>
+  </data>
+  <data name="calculator_delete_all_confirmation_message" xml:space="preserve">
+    <value>Are you sure you want to delete all history items?</value>
+  </data>
   <data name="calculator_settings_auto_fix_query_description" xml:space="preserve">
     <value>Attempt to evaluate incomplete calculations by ignoring extra operators or symbols</value>
   </data>
@@ -228,5 +288,11 @@
   </data>
   <data name="calculator_copy_octal" xml:space="preserve">
     <value>Copy octal</value>
+  </data>
+  <data name="calculator_settings_replace_query_on_enter" xml:space="preserve">
+    <value>Replace query on Enter</value>
+  </data>
+  <data name="calculator_settings_replace_query_on_enter_description" xml:space="preserve">
+    <value>Replace input when executing Copy or Paste</value>
   </data>
 </root>

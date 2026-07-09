@@ -15,7 +15,7 @@ namespace PowerDisplay.Configuration
         public static class UI
         {
             // Main flyout dimensions in device-independent pixels (DIP)
-            public const int WindowWidthDip = 362;
+            public const int WindowWidthDip = 348;
             public const int WindowMinHeightDip = 100;
             public const int WindowMaxHeightDip = 650;
             public const int WindowRightMarginDip = 12;
@@ -43,6 +43,13 @@ namespace PowerDisplay.Configuration
             /// Icon glyph for external monitors (DDC/CI)
             /// </summary>
             public const string ExternalMonitorGlyph = "\uE7F4";
+
+            /// <summary>
+            /// Debounce delay for committing slider changes (brightness, contrast, volume)
+            /// to hardware. Restarts on every value change so a drag/keyboard repeat fires
+            /// a single DDC/CI write once the user stops moving.
+            /// </summary>
+            public const int SliderCommitDebounceMs = 200;
         }
     }
 }

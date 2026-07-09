@@ -197,7 +197,7 @@ namespace Hosts.UITests
 
             // Open-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsTrue(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be opened afer click Filter Button");
+            Assert.IsTrue(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be opened after click Filter Button");
 
             var addressFilterCases = new KeyValuePair<string, int>[]
             {

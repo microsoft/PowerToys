@@ -5,14 +5,17 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged,
+    IRecipient<DockAutoHideConflictMessage>
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -29,6 +32,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly IMonitorService? _monitorService;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -125,6 +129,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         set
         {
             _settingsService.UpdateSettings(s => s with { ShowSystemTrayIcon = value });
+        }
+    }
+
+    public bool CompactMode
+    {
+        get => _settingsService.Settings.CompactMode;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactMode = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+        }
+    }
+
+    public double CompactCenterHeightPercentage
+    {
+        get => _settingsService.Settings.CompactCenterHeightPercentage;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactCenterHeightPercentage = (int)value });
         }
     }
 
@@ -235,6 +258,30 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool Dock_AutoHide
+    {
+        get => _settingsService.Settings.DockSettings.AutoHide;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { AutoHide = value } });
+        }
+    }
+
+    private bool _dockAutoHideConflict;
+
+    public bool Dock_AutoHideConflict
+    {
+        get => _dockAutoHideConflict;
+        private set
+        {
+            if (_dockAutoHideConflict != value)
+            {
+                _dockAutoHideConflict = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_AutoHideConflict)));
+            }
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
@@ -250,19 +297,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
 
+    public ObservableCollection<DockMonitorConfigViewModel> MonitorConfigs { get; } = new();
+
     public SettingsExtensionsViewModel Extensions { get; }
 
     public SettingsViewModel(
         TopLevelCommandManager topLevelCommandManager,
         TaskScheduler scheduler,
         IThemeService themeService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _monitorService = monitorService;
 
         Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
+
+        PopulateMonitorConfigs();
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settingsService.Settings.ProviderSettings;
@@ -319,6 +372,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             ApplyFallbackSort();
         }
+
+        WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this);
+    }
+
+    public void Receive(DockAutoHideConflictMessage message)
+    {
+        Dock_AutoHideConflict = message.IsConflict;
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()
@@ -331,5 +391,45 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.Id).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
+    }
+
+    /// <summary>
+    /// Builds or refreshes the <see cref="MonitorConfigs"/> collection by reconciling
+    /// connected monitors with persisted per-monitor settings.
+    /// </summary>
+    public void PopulateMonitorConfigs()
+    {
+        if (_monitorService is null)
+        {
+            return;
+        }
+
+        var monitors = _monitorService.GetMonitors();
+        var currentSettings = _settingsService.Settings.DockSettings;
+
+        var reconciled = MonitorConfigReconciler.Reconcile(currentSettings.MonitorConfigs, monitors);
+        var currentMonitorConfigs = currentSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
+
+        if (!reconciled.SequenceEqual(currentMonitorConfigs))
+        {
+            _settingsService.UpdateSettings(s => s with
+            {
+                DockSettings = s.DockSettings with { MonitorConfigs = reconciled },
+            });
+        }
+
+        MonitorConfigs.Clear();
+        foreach (var monitor in monitors)
+        {
+            var config = reconciled.FirstOrDefault(c =>
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
+
+            if (config is not null)
+            {
+                MonitorConfigs.Add(new DockMonitorConfigViewModel(config, monitor, _settingsService));
+            }
+        }
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MonitorConfigs)));
     }
 }

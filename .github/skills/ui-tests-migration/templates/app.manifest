@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TEMPLATE app.manifest for a .Next UI-test project.
+
+  ADD THIS ONLY for projects with COORDINATE-EXACT tests (mouse drag/click asserting on exact
+  pixel/measurement values, e.g. Screen Ruler's Bounds "100 x 100"). Without PerMonitorV2 the test
+  host is DPI-unaware and MouseHelper's SetCursorPos/GetCursorPos coordinates are virtualized by the
+  display scale factor, so they no longer match the PHYSICAL pixels winappcli reports (a 99px drag
+  measured ~149px on a 150% display).
+
+  Wire it into the csproj:
+    <PropertyGroup>
+      <ApplicationManifest>app.manifest</ApplicationManifest>
+    </PropertyGroup>
+
+  Replace __MODULE__ in the assemblyIdentity name.
+-->
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="__MODULE__.UITests.Next.app"/>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10+ feature support for unpackaged apps. -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+    </application>
+  </compatibility>
+
+  <application xmlns="urn:schemas-microsoft-com:asm.v3">
+    <windowsSettings>
+      <dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">PerMonitorV2</dpiAwareness>
+    </windowsSettings>
+  </application>
+</assembly>

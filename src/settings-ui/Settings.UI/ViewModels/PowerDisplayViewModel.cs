@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -25,6 +27,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        // Mirror of PowerDisplay.Lib's PathConstants.CrashDetectedFlagPath. Settings UI cannot
+        // reference PowerDisplay.Lib, so the path is recomputed here. Keep in sync with that file.
+        private static readonly string CrashDetectedFlagPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "PowerDisplay",
+            "crash_detected.flag");
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -45,10 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            // Initialize monitors collection using property setter for proper subscription setup
-            var loadedMonitors = _settings.Properties.Monitors;
+            // Initialize monitors collection using property setter for proper subscription setup.
+            // Hide legacy-format Ids; the current discovery pipeline only emits "\\?\DISPLAY#..."
+            // DevicePath Ids, so any "DDC_*" / "WMI_*" entries in settings.json are upgrade
+            // duplicates of a "\\?\" entry kept by the rebuilder's retention rule.
+            var loadedMonitors = FilterLegacyIds(_settings.Properties.Monitors).ToList();
 
-            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings");
+            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings (filtered)");
 
             Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
 
@@ -72,6 +86,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
                 });
+
+            // Crash quarantine state. The flag file is the single source of truth; the page
+            // re-checks it on construction (catches crashes that happened before Settings UI
+            // launched) and on every navigation via OnPageLoaded (catches crashes while
+            // Settings UI is already open). The AutoDisable event is left as a single-consumer
+            // signal for the runner DLL — Settings UI does not race for it.
+            RefreshCrashLockState();
+        }
+
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
+            RefreshCrashLockState();
+        }
+
+        private void RefreshCrashLockState()
+        {
+            if (File.Exists(CrashDetectedFlagPath) && !IsCrashLockActive)
+            {
+                Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
+                IsCrashLockActive = true;
+            }
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -103,16 +139,59 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
+                    return;
+                }
 
-                    GeneralSettingsConfig.Enabled.PowerDisplay = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
+                if (value)
+                {
+                    // Enabling PowerDisplay can crash some monitors via DDC/CI capability
+                    // fetch (see #47556 / PR #47734). Don't commit yet — confirm with the user
+                    // first, then either commit or revert the toggle via OnPropertyChanged.
+                    _ = ConfirmAndEnableModuleAsync();
+                }
+                else
+                {
+                    CommitIsEnabled(false);
                 }
             }
+        }
+
+        private async Task ConfirmAndEnableModuleAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule))
+                {
+                    CommitIsEnabled(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: enable-module confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
+
+        private void CommitIsEnabled(bool value)
+        {
+            _isEnabled = value;
+            OnPropertyChanged(nameof(IsEnabled));
+
+            GeneralSettingsConfig.Enabled.PowerDisplay = value;
+            OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            SendConfigMSG(outgoing.ToString());
         }
 
         public bool IsEnabledGpoConfigured
@@ -120,10 +199,107 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
+        public bool IsCrashLockActive
+        {
+            get => _isCrashLockActive;
+            private set
+            {
+                if (_isCrashLockActive != value)
+                {
+                    _isCrashLockActive = value;
+                    OnPropertyChanged(nameof(IsCrashLockActive));
+                }
+            }
+        }
+
+        public ButtonClickCommand DismissCrashWarningCommand => new ButtonClickCommand(DismissCrashWarning);
+
+        private void DismissCrashWarning()
+        {
+            try
+            {
+                var path = CrashDetectedFlagPath;
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    Logger.LogInfo("PowerDisplayViewModel: user dismissed crash warning, flag deleted");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"PowerDisplayViewModel: failed to delete crash flag: {ex.Message}");
+            }
+
+            IsCrashLockActive = false;
+        }
+
         public bool RestoreSettingsOnStartup
         {
             get => _settings.Properties.RestoreSettingsOnStartup;
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
+        }
+
+        /// <summary>
+        /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
+        /// PowerDisplayPage replaces this in its constructor with a real dialog show.
+        /// </summary>
+        public Func<PowerDisplayWarningKind, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+
+        // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
+        // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
+        // revert both hit the equality guard at the top and no-op.
+        public bool MaxCompatibilityMode
+        {
+            get => _settings.Properties.MaxCompatibilityMode;
+            set
+            {
+                if (_settings.Properties.MaxCompatibilityMode == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    // Don't commit yet. Run the async confirm, then either commit (UI is
+                    // already showing the requested state) or revert via OnPropertyChanged.
+                    _ = ConfirmAndEnableMaxCompatAsync();
+                }
+                else
+                {
+                    _settings.Properties.MaxCompatibilityMode = false;
+                    OnPropertyChanged();
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+        }
+
+        private async Task ConfirmAndEnableMaxCompatAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility))
+                {
+                    _settings.Properties.MaxCompatibilityMode = true;
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: max-compat confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(MaxCompatibilityMode));
+            }
         }
 
         public bool ShowSystemTrayIcon
@@ -204,6 +380,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
+        /// <summary>
+        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// </summary>
+        public int MouseWheelIncrement
+        {
+            get => _settings.Properties.MouseWheelIncrement;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelIncrement, value, v => _settings.Properties.MouseWheelIncrement = v))
+                {
+                    // Push to the (possibly open) flyout so the new step takes effect immediately.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
+
+        public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
+
         public ObservableCollection<MonitorInfo> Monitors
         {
             get => _monitors;
@@ -250,12 +446,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UnsubscribeFromItemPropertyChanged(e.OldItems?.Cast<MonitorInfo>());
 
             HasMonitors = _monitors.Count > 0;
-            _settings.Properties.Monitors = _monitors.ToList();
-            NotifySettingsChanged();
+
+            // Collection mutations during ReloadMonitorsFromSettings come from disk —
+            // don't save back. ReloadMonitorsFromSettings itself rebuilds
+            // _settings.Properties.Monitors when it's done.
+            // Don't sync _settings.Properties.Monitors from _monitors here either —
+            // _monitors is the filtered view and would silently strip legacy entries.
+            if (!_isReloading)
+            {
+                NotifySettingsChanged();
+            }
 
             // Update TotalMonitorCount for dynamic DisplayName
             UpdateTotalMonitorCount();
         }
+
+        /// <summary>
+        /// True for the DevicePath form of Monitor Id ("\\?\DISPLAY#..."). The current
+        /// discovery pipeline only emits this form; older "DDC_*" / "WMI_*" entries in
+        /// settings.json are upgrade-duplicates kept by the rebuilder's retention rule
+        /// and shouldn't be bound to the UI.
+        /// </summary>
+        private static bool IsVisibleMonitorId(string id)
+            => !string.IsNullOrEmpty(id) && id.StartsWith(@"\\?\", StringComparison.Ordinal);
+
+        /// <summary>
+        /// Drop legacy-format Ids. See <see cref="IsVisibleMonitorId"/>.
+        /// </summary>
+        private static IEnumerable<MonitorInfo> FilterLegacyIds(IEnumerable<MonitorInfo> monitors)
+            => monitors.Where(m => IsVisibleMonitorId(m.Id));
 
         /// <summary>
         /// Update TotalMonitorCount on all monitors for dynamic DisplayName formatting.
@@ -328,10 +547,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Logger.LogDebug($"[PowerDisplayViewModel] Monitor {monitor.Name} property {e.PropertyName} changed");
             }
 
-            // Update the settings object to keep it in sync
-            _settings.Properties.Monitors = _monitors.ToList();
+            // Property changes during ReloadMonitorsFromSettings come from disk
+            // (UpdateFrom), not user input — don't save or signal back out.
+            if (_isReloading)
+            {
+                return;
+            }
 
-            // Save settings when any monitor property changes
+            // MonitorInfo is a reference type shared between _monitors and
+            // _settings.Properties.Monitors — the property change is already visible
+            // in the persisted list, so just trigger save. Rebuilding the list from
+            // _monitors here would silently drop legacy entries the filter hides.
             NotifySettingsChanged();
 
             // For feature visibility properties, explicitly signal PowerDisplay to refresh
@@ -355,6 +581,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SignalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
+        }
+
+        /// <summary>
+        /// Signal PowerDisplay.exe to perform a full hardware rescan. Used when a
+        /// setting changes that affects monitor discovery (currently: max-compatibility
+        /// mode). Distinct from <see cref="SignalSettingsUpdated"/>, which only fires
+        /// the lightweight settings-applied path on the module side.
+        /// </summary>
+        public void SignalRescanRequest()
+        {
+            SignalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
+            Logger.LogInfo("Signaled RescanPowerDisplayMonitorsEvent (max-compat toggle finalized)");
         }
 
         private static void SignalNamedEvent(string eventName)
@@ -392,15 +630,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void ReloadMonitorsFromSettings()
         {
+            _isReloading = true;
             try
             {
                 Logger.LogInfo("Reloading monitors from settings file");
 
-                // Read fresh settings from file
+                // Read fresh settings from file. UpdateFrom / Add / Remove below fire
+                // PropertyChanged + CollectionChanged on the existing MonitorInfo
+                // instances; the _isReloading guard above stops those from triggering
+                // saves back to disk. We rebuild _settings.Properties.Monitors at the
+                // end so visible entries keep reference identity with the items inside
+                // _monitors (which user toggles mutate) while legacy entries take fresh
+                // disk references (UI doesn't bind them).
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-                var updatedMonitors = updatedSettings.Properties.Monitors;
+                var allFromDisk = updatedSettings.Properties.Monitors;
+                var updatedMonitors = allFromDisk.Where(m => IsVisibleMonitorId(m.Id)).ToList();
+                var legacyFromDisk = allFromDisk.Where(m => !IsVisibleMonitorId(m.Id)).ToList();
 
-                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
+                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} visible + {legacyFromDisk.Count} legacy from settings");
 
                 // Update existing MonitorInfo objects instead of replacing the collection
                 // This preserves XAML x:Bind bindings which reference specific object instances
@@ -412,7 +659,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
@@ -443,8 +690,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
 
-                // Update internal settings reference
-                _settings.Properties.Monitors = updatedMonitors;
+                // Rebuild _settings.Properties.Monitors so visible items share refs
+                // with _monitors (user toggles will be visible to save). Legacy entries
+                // use the freshly-read instances; we never bind them to UI.
+                _settings.Properties.Monitors = _monitors.Concat(legacyFromDisk).ToList();
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
@@ -452,14 +701,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
             }
+            finally
+            {
+                _isReloading = false;
+            }
         }
 
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
+        private bool _isCrashLockActive;
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
+
+        // True while ReloadMonitorsFromSettings is running. Suppresses PropertyChanged /
+        // CollectionChanged-triggered saves and IPC signals so changes coming from disk
+        // don't get written back as if they were user input.
+        private bool _isReloading;
 
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
@@ -562,7 +821,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
-                Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
+                Logger.LogInfo($"Profile '{profile.Name}' apply request sent via IPC");
             }
             catch (Exception ex)
             {
@@ -749,6 +1008,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SignalSettingsUpdated();
         }
 
+        /// <summary>
+        /// Re-read the flyout-owned runtime fields (linked brightness enabled + per-monitor
+        /// exclusion list) from disk into <see cref="_settings"/> so a save originating from an
+        /// unrelated Settings toggle does not overwrite them with the page's stale snapshot.
+        /// These fields have no Settings UI surface — the PowerDisplay flyout is their sole editor.
+        /// </summary>
+        private void PreserveFlyoutOwnedState()
+        {
+            try
+            {
+                var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
+                _settings.Properties.ExcludedFromSyncMonitorIds = current.Properties.ExcludedFromSyncMonitorIds;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to preserve flyout-owned PowerDisplay state before save: {ex.Message}");
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Skip during initialization when SendConfigMSG is not yet set
@@ -756,6 +1035,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return;
             }
+
+            // linked_levels_active and excluded_from_sync_monitor_ids are owned by the PowerDisplay
+            // flyout (the only UI that toggles them); the Settings page has no surface for them.
+            // _settings was loaded once at page construction, so serializing it would otherwise
+            // clobber flyout changes made meanwhile — both on disk and in the IPC config pushed
+            // to the module. Re-read the current on-disk values and carry them forward untouched.
+            PreserveFlyoutOwnedState();
 
             // Persist locally first so settings survive even if the module DLL isn't loaded yet.
             SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);
