@@ -131,6 +131,12 @@ namespace KeyboardEventHandlers
         const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
         const bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
 
+        // Detect, before any state below is mutated, whether another alone-mapped key is already held
+        // (pending or already in a combination) as this key goes down. If so, this key is being pressed
+        // in combination with that one -- it was NOT tapped alone -- so it must not become a solo-tap
+        // candidate that would fire its alone action on release.
+        const bool pressedInCombination = isKeyDown && state.HasOtherHeldAloneKey(vk);
+
         // Step 1: a key-down of a DIFFERENT key while alone keys are pending means those pending keys
         // are now being used in combination. Flush them by injecting their original key-down as a real
         // key/modifier so the in-combination behavior (e.g. Right Ctrl acting as Ctrl) works. (A click
@@ -152,7 +158,20 @@ namespace KeyboardEventHandlers
                 // in a combination (real key-down injected), just keep suppressing auto-repeats.
                 if (!state.IsAloneCombination(vk))
                 {
-                    state.SetAlonePending(vk);
+                    if (pressedInCombination)
+                    {
+                        // Pressed while another alone key was held: treat as a combination, not a tap.
+                        // Inject the real key-down now and mark it a combination so its release only
+                        // releases the real key and never fires the alone action.
+                        std::vector<INPUT> keyEventList;
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(vk), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        ii.SendVirtualInput(keyEventList);
+                        state.SetAloneCombination(vk);
+                    }
+                    else
+                    {
+                        state.SetAlonePending(vk);
+                    }
                 }
                 return 1;
             }
@@ -174,7 +193,18 @@ namespace KeyboardEventHandlers
                             Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         }
                     }
-                    // NOTE: Shortcut- and text-valued alone targets are a later phase (no producer yet).
+                    else if (target.index() == 1)
+                    {
+                        // Shortcut-valued alone target: a tap fires the whole shortcut as a
+                        // press-and-release (modifiers down, action-key down, then released in
+                        // reverse). Mirrors the key-to-shortcut injection in HandleSingleKeyRemapEvent.
+                        const Shortcut targetShortcut = std::get<Shortcut>(target);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    }
+                    // NOTE: text-valued alone targets are a later phase (no producer yet).
 
                     if (!keyEventList.empty())
                     {

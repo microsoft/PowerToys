@@ -46,6 +46,10 @@ public:
     // Cheap check for whether any alone key is currently held as a tap candidate. Used by the mouse
     // hook to early-out before doing any work on the common (no alone key held) path.
     bool HasPendingAloneKeys() const;
+    // True if any alone-mapped key OTHER THAN `except` is currently held -- either pending (tap
+    // candidate) or already promoted to a combination. Used on a key-down to tell that the key was
+    // pressed while another alone key was down, so it is part of a combination and not a solo tap.
+    bool HasOtherHeldAloneKey(const DWORD except) const;
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 

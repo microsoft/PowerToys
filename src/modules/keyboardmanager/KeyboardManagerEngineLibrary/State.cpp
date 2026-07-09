@@ -76,6 +76,27 @@ bool State::HasPendingAloneKeys() const
     return !alonePendingKeys.empty();
 }
 
+bool State::HasOtherHeldAloneKey(const DWORD except) const
+{
+    for (const DWORD key : alonePendingKeys)
+    {
+        if (key != except)
+        {
+            return true;
+        }
+    }
+
+    for (const DWORD key : aloneCombinationKeys)
+    {
+        if (key != except)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

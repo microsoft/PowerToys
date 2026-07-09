@@ -763,5 +763,73 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(rctrlUp);
             Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
         }
+
+        // An "alone" remap whose target is a SHORTCUT (not a single key) must inject the whole
+        // shortcut as a tap (modifiers + action key, pressed then released), not silently do nothing.
+        TEST_METHOD (AloneRemap_ShortcutTarget_ShouldInjectFullShortcut_OnTap)
+        {
+            // Right Ctrl alone -> Ctrl+A
+            Shortcut aloneTarget;
+            aloneTarget.SetKey(VK_CONTROL);
+            aloneTarget.SetKey(0x41);
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, aloneTarget);
+
+            // Count injections of the shortcut's action key (A).
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                return data->lParam->vkCode == 0x41;
+            });
+
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            // Lazy: nothing injected on the way down.
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+
+            // On tap the shortcut's action key is injected as down + up = 2 events (previously the
+            // shortcut target was ignored and nothing was injected).
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+            // The original Right Ctrl was never sent as its real self.
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+        }
+
+        // Two alone-mapped keys: pressing the second while the first is still held is a combination,
+        // not a solo tap. The second key must be promoted to a real key and must NOT fire its alone
+        // action on release.
+        TEST_METHOD (AloneRemap_SecondAloneKeyWhileFirstHeld_IsCombination_NotTap)
+        {
+            testState.AddSingleKeyAloneRemap(VK_LCONTROL, (DWORD)VK_IME_OFF);
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)VK_IME_ON);
+
+            // Count either alone (IME) action firing.
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                return data->lParam->vkCode == VK_IME_ON || data->lParam->vkCode == VK_IME_OFF;
+            });
+
+            // Left Ctrl down (held, tap candidate) — nothing injected yet.
+            std::vector<INPUT> lctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } } };
+            mockedInputHandler.SendVirtualInput(lctrlDown);
+
+            // Right Ctrl down while Left Ctrl is held: both are a combination now. Left Ctrl is promoted
+            // to a real modifier and Right Ctrl is injected as a real key too; no alone action fires.
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            // Releasing Right Ctrl releases the real key; it must NOT fire IME On (it was not tapped alone).
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            // Release Left Ctrl as well.
+            std::vector<INPUT> lctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(lctrlUp);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+
+            // No alone (IME) action fired at any point.
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
     };
 }
