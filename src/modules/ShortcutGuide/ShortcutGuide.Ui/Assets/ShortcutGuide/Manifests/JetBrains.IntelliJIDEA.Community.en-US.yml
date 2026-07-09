@@ -21,7 +21,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 1
+            - "<1>"
       - Name: Show Intention Actions
         Recommended: true
         Shortcut:
@@ -778,7 +778,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 1
+            - "<1>"
       - Name: Show Bookmarks window
         Shortcut:
         - Win: false
@@ -786,7 +786,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Show Find window
         Shortcut:
         - Win: false
@@ -794,7 +794,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: Show Run window
         Shortcut:
         - Win: false
@@ -802,7 +802,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 4
+            - "<4>"
       - Name: Show Debug window
         Shortcut:
         - Win: false
@@ -810,7 +810,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 5
+            - "<5>"
       - Name: Show Problems window
         Shortcut:
         - Win: false
@@ -818,7 +818,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 6
+            - "<6>"
       - Name: Show Structure window
         Shortcut:
         - Win: false
@@ -826,7 +826,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 7
+            - "<7>"
       - Name: Show Services window
         Shortcut:
         - Win: false
@@ -834,7 +834,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 8
+            - "<8>"
       - Name: Show Version Control window
         Shortcut:
         - Win: false
@@ -842,7 +842,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 9
+            - "<9>"
       - Name: Show Commit window
         Shortcut:
         - Win: false
@@ -850,7 +850,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 0
+            - "<0>"
       - Name: Show Terminal window
         Shortcut:
         - Win: false

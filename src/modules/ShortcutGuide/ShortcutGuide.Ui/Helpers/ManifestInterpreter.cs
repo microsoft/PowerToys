@@ -102,19 +102,18 @@ namespace ShortcutGuide.Helpers
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
         /// </summary>
+        /// <param name="foregroundWindowHandle">The window handle captured before Shortcut Guide UI takes focus.</param>
         /// <returns>
         /// A dictionary mapping each application ID to the full path of the executable
         /// that caused the match (used for icon extraction), or <c>null</c> when no
         /// specific executable is associated (for example, wildcard filters like the
         /// default shell).
         /// </returns>
-        public static Dictionary<string, string?> GetAllCurrentApplicationIds()
+        public static Dictionary<string, string?> GetAllCurrentApplicationIds(nint foregroundWindowHandle)
         {
-            nint handle = NativeMethods.GetForegroundWindow();
-
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
-            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out uint processId) > 0)
             {
                 string? name = null;
                 string? executablePath = null;

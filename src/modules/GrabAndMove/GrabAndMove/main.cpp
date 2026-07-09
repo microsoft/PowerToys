@@ -10,6 +10,8 @@
 
 #include "resource.h"
 
+#include <dwmapi.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -21,6 +23,7 @@ TRACELOGGING_DEFINE_PROVIDER(
 // Globals
 // ---------------------------------------------------------------------------
 static HINSTANCE g_hInstance = nullptr;
+static ULONG_PTR g_gdiplusToken = 0; // GDI+ token for overlay border rendering
 static HHOOK g_hhkKeyboard = nullptr;
 static HHOOK g_hhkMouse = nullptr;
 static HWND g_hMsgWnd = nullptr;
@@ -35,6 +38,7 @@ static GrabAndMoveModifier g_modifierKey = GrabAndMoveModifier::Alt;
 
 static bool g_altPressed = false;
 static bool g_winPressed = false;  // true while LWIN or RWIN is held (Win modifier mode)
+static bool g_ignoreModifier = false; // true if the user pressed the modifier then clicked the mouse without dragging
 static bool g_winAbsorbed = false; // true if we absorbed a Win keydown
 static bool g_dragging = false;
 static bool g_dragFirstMove = false; // true until first WM_MOUSEMOVE of a drag
@@ -46,6 +50,29 @@ static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
 // Current target window rect for overlay info display
 static int g_overlayInfoX = 0, g_overlayInfoY = 0;
 static int g_overlayInfoW = 0, g_overlayInfoH = 0;
+
+// Visible frame overlay metrics. Computed once per drag/resize (cold path) and
+// reused while rendering - never recomputed in the mouse-move hot path.
+// Margins are the difference between GetWindowRect and the DWM extended frame
+// bounds (the invisible resize border), so the fill and border hug the visible
+// window. The border is drawn just inside the visible edge; Always On Top draws
+// its own border just outside that edge, so the two stack into a clean double
+// layer without Grab and Move having to widen its stroke.
+static int g_overlayMarginL = 0, g_overlayMarginT = 0, g_overlayMarginR = 0, g_overlayMarginB = 0;
+static int g_overlayCornerRadius = 0; // physical px; 0 = square corners
+static int g_overlayBorderThickness = 4; // physical px
+
+// Fluent "warning" gold - copy of WinUI SystemFillColorCaution
+// (used as a ThemeResource for warnings across the Settings UI). A Win32 layered
+// window can't resolve a ThemeResource, so the literal is required here.
+static constexpr COLORREF OVERLAY_BORDER_COLOR = RGB(255, 185, 0); // #FFB900
+
+// Border thickness in DIPs (scaled by the target window DPI).
+static constexpr int OVERLAY_BORDER_DIP = 4;
+
+// Translucent white wash painted over the visible window during a drag/resize,
+// matching the prior overlay. ~40% opacity (premultiplied white = 0x66666666).
+static constexpr BYTE OVERLAY_FILL_ALPHA = 0x66;
 
 static bool g_shouldAbsorbAlt =
     true; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
@@ -89,6 +116,30 @@ static HWND g_resizeTarget = nullptr;
 static POINT g_resizeLast = {};   // cursor pos from previous frame
 static RECT g_resizeWndRect = {}; // current window rect (updated each frame)
 static ResizeHandle g_currentHandle = RESIZE_NONE;
+
+// Deferred activation state: a modifier+button press is held "pending" until the
+// cursor moves past the drag threshold (promoting it to a real drag/resize) or the
+// button is released first (replaying a normal modifier+click to the target).
+static bool g_pendingDrag = false;
+static bool g_pendingResize = false;
+static HWND g_pendingTarget = nullptr;
+static POINT g_pendingDownPt = {};
+
+// Set when a pending press was replayed to the target on modifier release while the
+// physical button was still down; the matching physical button-up is then swallowed.
+static bool g_swallowNextLButtonUp = false;
+static bool g_swallowNextRButtonUp = false;
+
+// Set once ReplayPendingClick has replayed the absorbed modifier key-down for a pending
+// click. The absorbed-modifier flags stay set so the keyboard hook still forwards the
+// real modifier key-up; this guard stops the key-down from being replayed a second time.
+static bool g_pendingModifierReplayed = false;
+
+// Set once a drag or resize has actually started during the current modifier hold.
+// While set, subsequent modifier+button presses skip the deferred/pending phase and
+// begin the drag/resize immediately - the user has already committed to Grab and Move.
+// Cleared when the modifier key is released.
+static bool g_activatedDuringHold = false;
 
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
@@ -199,6 +250,14 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
         g_winAbsorbed = false;
         g_altAbsorbed = false;
         g_dragConsumedAlt = false;
+        g_ignoreModifier = false;
+        g_activatedDuringHold = false;
+        g_pendingDrag = false;
+        g_pendingResize = false;
+        g_pendingTarget = nullptr;
+        g_swallowNextLButtonUp = false;
+        g_swallowNextRButtonUp = false;
+        g_pendingModifierReplayed = false;
         EndInteraction(true, true);
     }
 }
@@ -216,6 +275,10 @@ static bool IsSuppressedByGameMode()
 
 static bool IsActivationModifierPressed()
 {
+    if (g_ignoreModifier)
+    {
+        return false;
+    }
     if (g_modifierKey == GrabAndMoveModifier::Win)
         return g_winPressed;
     return g_altPressed;
@@ -343,9 +406,128 @@ static void SettingsWatcherThread(DWORD mainThreadId)
 static int g_overlayRenderedW = 0;
 static int g_overlayRenderedH = 0;
 
+// Maps the DWM window corner preference to a base radius in DIPs, matching
+// Always On Top (WindowCornerUtils::CornersRadius).
+static int CornerRadiusForWindow(HWND hwnd)
+{
+    // Remote sessions draw square windows even on Win11, yet still report DWMWCP_DEFAULT. Match the
+    // window: a remote session gets square (radius 0) so the overlay border doesn't round off the corner.
+    if (GetSystemMetrics(SM_REMOTESESSION))
+    {
+        return 0;
+    }
+
+    int pref = 0; // DWMWCP_DEFAULT
+    if (DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref)) != S_OK)
+    {
+        return 0; // pre-Win11 / unsupported -> square corners
+    }
+
+    switch (pref)
+    {
+    case DWMWCP_ROUND:
+        return 8;
+    case DWMWCP_ROUNDSMALL:
+        return 4;
+    case DWMWCP_DEFAULT:
+        return 8;
+    default:
+        return 0; // DWMWCP_DONOTROUND
+    }
+}
+
+// Computes the overlay metrics (margins to the visible frame, corner radius, border
+// thickness) for the target window. Cold path only: called at the start of a
+// drag/resize and after un-maximize, never from the mouse-move hot path.
+static void PrepareOverlayMetrics(HWND target)
+{
+    g_overlayMarginL = g_overlayMarginT = g_overlayMarginR = g_overlayMarginB = 0;
+    g_overlayCornerRadius = 0;
+    g_overlayBorderThickness = OVERLAY_BORDER_DIP;
+
+    if (!target)
+    {
+        return;
+    }
+
+    const UINT dpi = GetDpiForWindow(target);
+    const float scale = (dpi != 0) ? dpi / 96.0f : 1.0f;
+
+    RECT windowRect{};
+    RECT frameRect{};
+    if (GetWindowRect(target, &windowRect) &&
+        SUCCEEDED(DwmGetWindowAttribute(target, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+    {
+        g_overlayMarginL = max(0, static_cast<int>(frameRect.left - windowRect.left));
+        g_overlayMarginT = max(0, static_cast<int>(frameRect.top - windowRect.top));
+        g_overlayMarginR = max(0, static_cast<int>(windowRect.right - frameRect.right));
+        g_overlayMarginB = max(0, static_cast<int>(windowRect.bottom - frameRect.bottom));
+    }
+
+    g_overlayCornerRadius = static_cast<int>(CornerRadiusForWindow(target) * scale);
+    g_overlayBorderThickness = static_cast<int>(OVERLAY_BORDER_DIP * scale);
+}
+
+// Draws an antialiased (optionally rounded) border stroke fully inside `rect` using
+// GDI+. The stroke hugs the inner edge of `rect` (the visible window frame).
+static void DrawOverlayBorder(Gdiplus::Graphics& graphics, const RECT& rect, int thickness, int radius)
+{
+    const int w = rect.right - rect.left;
+    const int h = rect.bottom - rect.top;
+    if (w <= 0 || h <= 0 || thickness <= 0)
+    {
+        return;
+    }
+
+    // Keep the whole stroke inside the visible frame on every side.
+    thickness = min(thickness, min(w, h) / 2);
+    if (thickness <= 0)
+    {
+        return;
+    }
+
+    const float half = thickness / 2.0f;
+    const Gdiplus::RectF path(
+        rect.left + half,
+        rect.top + half,
+        static_cast<Gdiplus::REAL>(w) - thickness,
+        static_cast<Gdiplus::REAL>(h) - thickness);
+
+    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+    Gdiplus::Pen pen(
+        Gdiplus::Color(255, GetRValue(OVERLAY_BORDER_COLOR), GetGValue(OVERLAY_BORDER_COLOR), GetBValue(OVERLAY_BORDER_COLOR)),
+        static_cast<Gdiplus::REAL>(thickness));
+
+    if (radius <= 0)
+    {
+        graphics.DrawRectangle(&pen, path);
+        return;
+    }
+
+    // The stroke is centred, so the path corner radius is the window radius minus
+    // half the thickness; that keeps the outer edge aligned with the window corner.
+    const float pathRadius = max(0.0f, radius - half);
+    const float diameter = min(pathRadius * 2.0f, min(path.Width, path.Height));
+    if (diameter <= 0.0f)
+    {
+        graphics.DrawRectangle(&pen, path);
+        return;
+    }
+
+    Gdiplus::GraphicsPath border;
+    border.AddArc(path.X, path.Y, diameter, diameter, 180.0f, 90.0f);
+    border.AddArc(path.GetRight() - diameter, path.Y, diameter, diameter, 270.0f, 90.0f);
+    border.AddArc(path.GetRight() - diameter, path.GetBottom() - diameter, diameter, diameter, 0.0f, 90.0f);
+    border.AddArc(path.X, path.GetBottom() - diameter, diameter, diameter, 90.0f, 90.0f);
+    border.CloseFigure();
+    graphics.DrawPath(&pen, &border);
+}
+
 // Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
-// The white background is painted at ~40% opacity; the geometry label box is
-// painted fully opaque so it remains legible regardless of what is beneath.
+// A translucent white wash covers the visible window (matching the prior overlay)
+// with a tight warning-gold border on top, both hugging the visible window frame;
+// the optional geometry label box is painted fully opaque so it remains legible
+// regardless of what is beneath.
 static void RenderOverlayContent(HWND hwnd, int cw, int ch)
 {
     if (!hwnd || cw <= 0 || ch <= 0)
@@ -372,8 +554,52 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     HDC     memDC   = CreateCompatibleDC(screenDC);
     HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
 
-    // Premultiplied white at ~40% opacity: A=0x66, R=G=B=0x66 → 0x66666666
-    memset(pBits, 0x66, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+    // Start fully transparent.
+    memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+
+    // We apply a translucent white rect with a gold border. 
+    // The overlay window spans GetWindowRect, so inset by
+    // the invisible-border margins so both hug the visible edge; Always On Top draws
+    // its own border just outside that edge, giving a clean double layer.
+    {
+        const RECT visible = {
+            g_overlayMarginL,
+            g_overlayMarginT,
+            cw - g_overlayMarginR,
+            ch - g_overlayMarginB
+        };
+        const int vw = visible.right - visible.left;
+        const int vh = visible.bottom - visible.top;
+
+        Gdiplus::Bitmap bitmap(cw, ch, cw * 4, PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(pBits));
+        Gdiplus::Graphics graphics(&bitmap);
+        graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+
+        if (vw > 0 && vh > 0)
+        {
+            Gdiplus::SolidBrush fillBrush(Gdiplus::Color(OVERLAY_FILL_ALPHA, 255, 255, 255));
+            if (g_overlayCornerRadius > 0)
+            {
+                // Round the wash to match the window corners (and the border).
+                const float d = min(static_cast<float>(g_overlayCornerRadius) * 2.0f,
+                                    static_cast<float>(min(vw, vh)));
+                Gdiplus::GraphicsPath fillPath;
+                fillPath.AddArc(static_cast<float>(visible.left), static_cast<float>(visible.top), d, d, 180.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.right) - d, static_cast<float>(visible.top), d, d, 270.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.right) - d, static_cast<float>(visible.bottom) - d, d, d, 0.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.left), static_cast<float>(visible.bottom) - d, d, d, 90.0f, 90.0f);
+                fillPath.CloseFigure();
+                graphics.FillPath(&fillBrush, &fillPath);
+            }
+            else
+            {
+                graphics.FillRectangle(&fillBrush, visible.left, visible.top, vw, vh);
+            }
+        }
+
+        DrawOverlayBorder(graphics, visible, g_overlayBorderThickness, g_overlayCornerRadius);
+        graphics.Flush();
+    }
 
     if (g_showGeometry)
     {
@@ -589,6 +815,85 @@ static void ReplayAbsorbedModifier(bool alsoKeyUp)
     inputs[1] = inputs[0];
     inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
     SendInput(alsoKeyUp ? 2 : 1, inputs, sizeof(INPUT));
+}
+
+// ---------------------------------------------------------------------------
+// Deferred activation helpers.
+// A modifier+button press does not start an interaction immediately; it is held
+// "pending" until the cursor moves past the drag threshold (then it becomes a
+// real drag/resize) or the button is released first (then the absorbed input is
+// replayed so the target application receives a normal modifier+click).
+// ---------------------------------------------------------------------------
+static void BeginDrag(HWND hwnd, POINT pt)
+{
+    g_dragging = true;
+    g_dragFirstMove = true;
+    g_dragConsumedAlt = true;
+    g_activatedDuringHold = true;
+    g_dragTarget = hwnd;
+    g_dragStart = pt;
+    GetWindowRect(hwnd, &g_dragWndRect);
+    PrepareOverlayMetrics(hwnd);
+    ShowOverlay(g_dragWndRect, g_curSizeAll);
+    TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
+}
+
+static void BeginResize(HWND hwnd, POINT pt)
+{
+    g_resizing = true;
+    g_resizeFirstMove = true;
+    g_dragConsumedAlt = true;
+    g_activatedDuringHold = true;
+    g_resizeTarget = hwnd;
+    g_resizeLast = pt;
+    GetWindowRect(hwnd, &g_resizeWndRect);
+    PrepareOverlayMetrics(hwnd);
+    g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
+    ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
+    TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
+}
+
+// Replays a modifier+click to the target: first the absorbed modifier key-down
+// (if it was swallowed), then the button click. The modifier key-up is not
+// synthesized here - the real key-up still reaches the target when the user
+// releases the modifier. The absorbed-modifier flags are intentionally left set so
+// the keyboard hook forwards that real key-up; g_pendingModifierReplayed guards
+// against replaying the key-down more than once (e.g. across repeated clicks).
+static void ReplayPendingClick(bool isRight)
+{
+    if ((g_altAbsorbed || g_winAbsorbed) && !g_pendingModifierReplayed)
+    {
+        g_pendingModifierReplayed = true;
+        ReplayAbsorbedModifier(false); // modifier down only
+    }
+
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_MOUSE;
+    inputs[0].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_LEFTDOWN;
+    inputs[1].type = INPUT_MOUSE;
+    inputs[1].mi.dwFlags = isRight ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_LEFTUP;
+    SendInput(2, inputs, sizeof(INPUT));
+}
+
+// Called when the modifier is released while a press is still pending (button
+// held, no move yet). Delivers the click to the target now and swallows the
+// matching physical button-up that will arrive later.
+static void FlushPendingClickOnModifierRelease()
+{
+    if (g_pendingDrag)
+    {
+        g_pendingDrag = false;
+        g_pendingTarget = nullptr;
+        ReplayPendingClick(false);
+        g_swallowNextLButtonUp = true;
+    }
+    else if (g_pendingResize)
+    {
+        g_pendingResize = false;
+        g_pendingTarget = nullptr;
+        ReplayPendingClick(true);
+        g_swallowNextRButtonUp = true;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -811,6 +1116,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     g_winAbsorbed = true;
                     g_dragConsumedAlt = false;
+                    g_pendingModifierReplayed = false;
                     g_absorbedVk = kb->vkCode;
                     g_absorbedScanCode = kb->scanCode;
                     g_absorbedFlags = kb->flags;
@@ -820,6 +1126,10 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
                 g_winPressed = false;
+                g_ignoreModifier = false;
+                g_activatedDuringHold = false;
+                // If a press was still pending (button held, no move), deliver it now.
+                FlushPendingClickOnModifierRelease();
                 bool wasDragging = g_dragging;
                 bool wasResizing = g_resizing;
                 EndInteraction(true, true);
@@ -832,9 +1142,18 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         g_dragConsumedAlt = false;
                         return 1;
                     }
-                    // No drag happened; replay the keydown, THEN the keyup
-                    ReplayAbsorbedModifier(true);
-                    return 1; // swallow this keyup since the replay already sent one
+                    if (g_pendingModifierReplayed)
+                    {
+                        // The key-down was already replayed for a pending click; let the
+                        // real key-up reach the target (falls through to goto forward).
+                        g_pendingModifierReplayed = false;
+                    }
+                    else
+                    {
+                        // No drag happened; replay the keydown, THEN the keyup
+                        ReplayAbsorbedModifier(true);
+                        return 1; // swallow this keyup since the replay already sent one
+                    }
                 }
             }
             goto forward; // let Win keyup pass through
@@ -868,6 +1187,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         {
                             g_altAbsorbed = true;
                             g_dragConsumedAlt = false;
+                            g_pendingModifierReplayed = false;
                             g_absorbedVk = kb->vkCode;
                             g_absorbedScanCode = kb->scanCode;
                             g_absorbedFlags = kb->flags;
@@ -878,6 +1198,10 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
                 {
                     g_altPressed = false;
+                    g_ignoreModifier = false;
+                    g_activatedDuringHold = false;
+                    // If a press was still pending (button held, no move), deliver it now.
+                    FlushPendingClickOnModifierRelease();
                     bool wasDragging = g_dragging;
                     bool wasResizing = g_resizing;
                     EndInteraction(true, true);
@@ -890,15 +1214,24 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                             g_dragConsumedAlt = false;
                             return 1;
                         }
-                        // No drag happened; replay the keydown, then let keyup through
-                        ReplayAbsorbedModifier(false);
+                        if (g_pendingModifierReplayed)
+                        {
+                            // The key-down was already replayed for a pending click; let
+                            // the real key-up reach the target.
+                            g_pendingModifierReplayed = false;
+                        }
+                        else
+                        {
+                            // No drag happened; replay the keydown, then let keyup through
+                            ReplayAbsorbedModifier(false);
+                        }
                     }
                 }
             }
             else
             {
                 // Non-Alt key while Alt was absorbed without a drag: replay Alt first
-                if (g_altAbsorbed && !g_dragConsumedAlt)
+                if (g_altAbsorbed && !g_dragConsumedAlt && !g_pendingModifierReplayed)
                 {
                     g_altAbsorbed = false;
                     g_altPressed = false;
@@ -908,7 +1241,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         // Non-Win key while Win was absorbed without a drag: replay Win first
-        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey)
+        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey && !g_pendingModifierReplayed)
         {
             g_winAbsorbed = false;
             g_winPressed = false;
@@ -1010,9 +1343,26 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         if (ms->flags & LLMHF_INJECTED)
             goto forward;
 
-        // Recovery path: if a non-modifier click occurs while stale drag/resize state exists, clear it.
+        // Deliver-as-click bookkeeping: swallow the physical button-up that matches a
+        // press we already replayed to the target on modifier release.
+        if (wParam == WM_LBUTTONUP && g_swallowNextLButtonUp)
+        {
+            g_swallowNextLButtonUp = false;
+            return 1;
+        }
+        if (wParam == WM_RBUTTONUP && g_swallowNextRButtonUp)
+        {
+            g_swallowNextRButtonUp = false;
+            return 1;
+        }
+
+        // Recovery path: if a non-modifier click occurs while stale drag/resize/pending state exists, clear it.
         if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
         {
+            g_pendingDrag = false;
+            g_pendingResize = false;
+            g_pendingTarget = nullptr;
+            g_pendingModifierReplayed = false;
             EndInteraction(true, true);
         }
 
@@ -1021,7 +1371,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             HideOverlay();
         }
 
-        // ----- Alt + Left Button Down: start drag -----
+        // ----- Modifier + Left Button Down: arm a pending drag (deferred until move) -----
         if (wParam == WM_LBUTTONDOWN && IsActivationModifierPressed())
         {
             if (IsSuppressedByGameMode())
@@ -1039,20 +1389,58 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     goto forward;
                 }
 
-                g_dragging = true;
-                g_dragFirstMove = true;
-                g_dragConsumedAlt = true;
-                g_dragTarget = hwnd;
-                g_dragStart = pt;
-                GetWindowRect(hwnd, &g_dragWndRect);
+                // Already committed to Grab and Move this hold: start dragging immediately.
+                if (g_activatedDuringHold)
+                {
+                    BeginDrag(hwnd, pt);
+                    return 1; // swallow the press; the drag is now active
+                }
 
-                // Show the semi-transparent overlay on top of the target (persistent window – fix #9)
-                ShowOverlay(g_dragWndRect, g_curSizeAll);
+                // A press is already pending (the other button is still held): don't
+                // overwrite it. Forward this one so we never strand the already-swallowed
+                // button-down (which would leak an unmatched button-up to the target).
+                if (g_pendingDrag || g_pendingResize)
+                {
+                    goto forward;
+                }
 
-                // Swallow the click so the target window doesn't get it
-                TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
-                return 1;
+                // Defer: absorb the button-down but do nothing until the cursor moves.
+                g_pendingDrag = true;
+                g_pendingResize = false;
+                g_pendingTarget = hwnd;
+                g_pendingDownPt = pt;
+                return 1; // swallow the press for now; replayed on release if no move
             }
+        }
+
+        // ----- Promote a pending press to a real drag/resize once past the threshold -----
+        if (wParam == WM_MOUSEMOVE && (g_pendingDrag || g_pendingResize))
+        {
+            int ddx = ms->pt.x - g_pendingDownPt.x;
+            int ddy = ms->pt.y - g_pendingDownPt.y;
+            if (ddx < 0) ddx = -ddx;
+            if (ddy < 0) ddy = -ddy;
+            if (ddx >= GetSystemMetrics(SM_CXDRAG) || ddy >= GetSystemMetrics(SM_CYDRAG))
+            {
+                bool wasResize = g_pendingResize;
+                HWND target = g_pendingTarget;
+                POINT downPt = g_pendingDownPt;
+                g_pendingDrag = false;
+                g_pendingResize = false;
+                g_pendingTarget = nullptr;
+
+                if (wasResize)
+                {
+                    BeginResize(target, downPt);
+                    HandleDragResize(ms->pt);
+                }
+                else
+                {
+                    BeginDrag(target, downPt);
+                    HandleDragMove(ms->pt);
+                }
+            }
+            return 0; // keep the cursor moving while waiting for the threshold
         }
 
         // ----- Mouse Move while dragging -----
@@ -1065,6 +1453,16 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 HandleDragMove(ms->pt);
             }
             return 0;
+        }
+
+        // ----- Left Button Up while a drag is pending (no move): deliver the click -----
+        if (wParam == WM_LBUTTONUP && g_pendingDrag)
+        {
+            g_ignoreModifier = true;
+            g_pendingDrag = false;
+            g_pendingTarget = nullptr;
+            ReplayPendingClick(false);
+            return 1; // swallow the physical up; the injected click replaces it
         }
 
         // ----- Left Button Up: end drag -----
@@ -1083,7 +1481,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             return 1; // swallow the release
         }
 
-        // ----- Alt + Right Button Down: start resize -----
+        // ----- Modifier + Right Button Down: arm a pending resize (deferred until move) -----
         if (wParam == WM_RBUTTONDOWN && g_useAltResize && IsActivationModifierPressed())
         {
             if (IsSuppressedByGameMode())
@@ -1106,18 +1504,27 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     goto forward;
                 }
 
-                g_resizing = true;
-                g_resizeFirstMove = true;
-                g_dragConsumedAlt = true;
-                g_resizeTarget = hwnd;
-                g_resizeLast = pt;
-                GetWindowRect(hwnd, &g_resizeWndRect);
+                // Already committed to Grab and Move this hold: start resizing immediately.
+                if (g_activatedDuringHold)
+                {
+                    BeginResize(hwnd, pt);
+                    return 1; // swallow the press; the resize is now active
+                }
 
-                g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
-                ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
+                // A press is already pending (the other button is still held): don't
+                // overwrite it. Forward this one so we never strand the already-swallowed
+                // button-down (which would leak an unmatched button-up to the target).
+                if (g_pendingDrag || g_pendingResize)
+                {
+                    goto forward;
+                }
 
-                TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
-                return 1; // swallow the right button press
+                // Defer: absorb the button-down but do nothing until the cursor moves.
+                g_pendingResize = true;
+                g_pendingDrag = false;
+                g_pendingTarget = hwnd;
+                g_pendingDownPt = pt;
+                return 1; // swallow the press for now; replayed on release if no move
             }
         }
 
@@ -1131,6 +1538,16 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 HandleDragResize(ms->pt);
             }
             return 0;
+        }
+
+        // ----- Right Button Up while a resize is pending (no move): deliver the click -----
+        if (wParam == WM_RBUTTONUP && g_pendingResize)
+        {
+            g_ignoreModifier = true;
+            g_pendingResize = false;
+            g_pendingTarget = nullptr;
+            ReplayPendingClick(true);
+            return 1; // swallow the physical up; the injected click replaces it
         }
 
         // ----- Right Button Up: end resize -----
@@ -1168,6 +1585,7 @@ static void HandleDragMove(POINT pt)
             RECT maxRect;
             GetWindowRect(g_dragTarget, &maxRect);
             int maxW = maxRect.right - maxRect.left;
+            int maxH = maxRect.bottom - maxRect.top;
 
             ShowWindow(g_dragTarget, SW_RESTORE);
 
@@ -1175,14 +1593,20 @@ static void HandleDragMove(POINT pt)
             int restoredW = g_dragWndRect.right - g_dragWndRect.left;
             int restoredH = g_dragWndRect.bottom - g_dragWndRect.top;
 
-            float ratio = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
-            int newX = g_dragStart.x - static_cast<int>(restoredW * ratio);
-            int newY = g_dragStart.y - (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) / 2);
+            // Preserve the relative grab position in both axes so the cursor stays
+            // at the same proportional spot within the restored window.
+            float ratioL = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
+            float ratioT = (maxH > 0) ? static_cast<float>(g_dragStart.y - maxRect.top) / maxH : 0.5f;
+            int newX = g_dragStart.x - static_cast<int>(restoredW * ratioL);
+            int newY = g_dragStart.y - static_cast<int>(restoredH * ratioT);
             SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
                          SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
             g_dragStart = pt;
             g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
+
+            // Corner radius / invisible-border margins differ once restored.
+            PrepareOverlayMetrics(g_dragTarget);
         }
     }
 
@@ -1229,6 +1653,9 @@ static void HandleDragResize(POINT pt)
             SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
             g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
+
+            // Corner radius / invisible-border margins differ once restored.
+            PrepareOverlayMetrics(g_resizeTarget);
 
             g_resizeLast = pt;
             g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
@@ -1375,6 +1802,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     INITCOMMONCONTROLSEX commonControls = { sizeof(commonControls), ICC_STANDARD_CLASSES };
     InitCommonControlsEx(&commonControls);
 
+    // Initialise GDI+ for antialiased overlay border rendering
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr);
+
     // Register a message-only window class
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(wc);
@@ -1387,13 +1818,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         return 1;
     }
 
-    // Register the overlay window class (white background, ARROW cursor)
+    // Register the overlay window class (layered per-pixel-alpha surface, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
     overlayWindowClass.lpfnWndProc = DefWindowProcW;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    overlayWindowClass.hbrBackground = nullptr; // per-pixel alpha via UpdateLayeredWindow
     overlayWindowClass.lpszClassName = OVERLAY_CLASS_NAME;
     if (!RegisterClassExW(&overlayWindowClass))
     {
@@ -1482,6 +1913,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         g_hOverlay = nullptr;
     }
     RemoveTrayIcon();
+    if (g_gdiplusToken)
+    {
+        Gdiplus::GdiplusShutdown(g_gdiplusToken);
+        g_gdiplusToken = 0;
+    }
     TraceLoggingUnregister(g_hProvider);
 
     return static_cast<int>(msg.wParam);
