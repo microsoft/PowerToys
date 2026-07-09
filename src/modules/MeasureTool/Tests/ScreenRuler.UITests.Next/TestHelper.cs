@@ -440,101 +440,98 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Select a toolbar tool and CONFIRM it engaged, retrying until the full-screen overlay window
-    /// (<c>PowerToys.MeasureToolOverlay</c>) appears — the authoritative "tool engaged" signal. On a
-    /// slow/headless CI agent the toolbar's UIA tree exists a second after the process starts but the
-    /// window isn't INTERACTIVE for a few more seconds, so a press that lands early is silently dropped;
-    /// we retry until the overlay confirms.
+    /// Select a toolbar tool and CONFIRM it engaged by waiting for the full-screen overlay window
+    /// (<c>PowerToys.MeasureToolOverlay</c>) to appear — the authoritative "tool engaged" signal. The
+    /// press is reliable now: it raises the toolbar to the foreground first (via
+    /// <see cref="Session.EnsureForeground"/> / <see cref="Element.Click"/>), so it can't land on a
+    /// window occluding the toolbar — the real cause of the old "dropped press" flakiness (a
+    /// background-launched toolbar sitting BEHIND the foreground window, misread at the time as a
+    /// not-yet-interactive window). So we press ONCE and then just WAIT (up to the deadline) for the
+    /// overlay, which appears asynchronously — no re-press (re-clicking bought nothing once the press was
+    /// reliable, and the WGC cold-start recovery lives in <see cref="MeasureWithRetry"/> / the re-engage).
     /// <para>
     /// <paramref name="useMouseClick"/> chooses HOW the button is pressed. Bounds uses a dedicated REAL
     /// mouse click at the button's centre — its measurement is a cursor DRAG, so the whole interaction
     /// must be real mouse input (a UIA Invoke left the drag unregistered on Win10). The spacing tools
     /// press via the shared <see cref="Element.Click"/> (also a real mouse click, falling back to a
-    /// coordinate-free UIA Invoke only when the button has no on-screen size) — the spacing empties were
-    /// the WGC capture cold-start (recovered by the re-engage below), not the cursor path, so a physical
-    /// press is fine. Either way the buttons are ToggleButtons (clicking a SELECTED one deselects it via
-    /// ResetState), so we only press when <c>ToggleState</c> is Off — a retry must never toggle an
-    /// engaged tool back off.
+    /// coordinate-free UIA Invoke only when the button has no on-screen size). Both raise the toolbar to
+    /// the foreground first, and both are ToggleButtons — so we only press when <c>ToggleState</c> is Off.
     /// </para>
     /// </summary>
     private static void SelectToolAndVerify(Session ruler, string buttonId, string testName, bool useMouseClick)
     {
         var (cx, cy) = ScreenCenter();
         var deadline = DateTime.UtcNow.AddSeconds(25);
-        var attempt = 0;
 
-        while (true)
+        // 1) Wait for the toolbar button to appear — the toolbar comes up asynchronously after the hotkey.
+        Element? button = null;
+        while (DateTime.UtcNow < deadline)
         {
-            attempt++;
-
-            Element button;
             try
             {
                 button = ruler.Find<Element>(By.AccessibilityId(buttonId), 8000);
+                break;
             }
             catch (Exception ex)
             {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} not found yet ({ex.GetType().Name}); the toolbar may still be coming up — retrying");
-                if (DateTime.UtcNow >= deadline)
-                {
-                    break;
-                }
-
+                Log($"SelectToolAndVerify[{testName}]: {buttonId} not found yet ({ex.GetType().Name}); the toolbar may still be coming up — retrying");
                 Thread.Sleep(500);
-                continue;
             }
+        }
 
-            // ToggleButton: clicking a SELECTED tool deselects it (ResetState), so only press when it
-            // isn't already engaged — otherwise a retry would toggle the tool back off.
-            var toggleState = button.GetProperty("ToggleState");
-            if (string.Equals(toggleState, "On", StringComparison.OrdinalIgnoreCase))
-            {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: {buttonId} already engaged (ToggleState=On); not re-pressing");
-            }
-            else if (useMouseClick && button.Width > 0 && button.Height > 0)
-            {
-                var btnX = button.X + (button.Width / 2);
-                var btnY = button.Y + (button.Height / 2);
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height} (offscreen={button.IsOffscreen}, toggle={toggleState}); raising toolbar to foreground then real mouse click at ({btnX},{btnY})");
+        if (button is null)
+        {
+            Assert.Fail($"{testName}: the {buttonId} toolbar button never appeared — the Measure Tool toolbar didn't come up.");
+            return;
+        }
 
-                // Raise the toolbar to the foreground first so the real click can't land on a window
-                // occluding it (the Win32 foreground lock). Bounds selection uses a manual MouseHelper
-                // click rather than Element.Click, so — unlike spacing — it needs this guard explicitly.
-                // TryBringToForeground only un-minimizes (IsIconic), so a maximized toolbar isn't resized.
-                ruler.EnsureForeground();
-                MouseHelper.MoveTo(btnX, btnY);
-                Thread.Sleep(200);
-                MouseHelper.LeftClick();
-                Thread.Sleep(300);
-            }
-            else
-            {
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: click {buttonId} via Element.Click (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
-                button.Click(msPostAction: 300);
-            }
+        // 2) Press it ONCE. The press is reliable because it raises the toolbar to the foreground first, so
+        //    it can't land on a window occluding the toolbar. Only press when the ToggleButton is Off —
+        //    pressing an engaged one would deselect it (ResetState).
+        var toggleState = button.GetProperty("ToggleState");
+        if (string.Equals(toggleState, "On", StringComparison.OrdinalIgnoreCase))
+        {
+            Log($"SelectToolAndVerify[{testName}]: {buttonId} already engaged (ToggleState=On); not pressing");
+        }
+        else if (useMouseClick && button.Width > 0 && button.Height > 0)
+        {
+            var btnX = button.X + (button.Width / 2);
+            var btnY = button.Y + (button.Height / 2);
+            Log($"SelectToolAndVerify[{testName}]: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height} (offscreen={button.IsOffscreen}, toggle={toggleState}); raising toolbar to foreground then real mouse click at ({btnX},{btnY})");
 
-            // The overlay only shows once the cursor leaves the toolbar onto the capture surface.
-            MouseHelper.MoveTo(cx, cy);
-            Thread.Sleep(500);
+            // Bounds selection uses a manual MouseHelper click rather than Element.Click, so — unlike
+            // spacing — it must raise the toolbar to the foreground explicitly. TryBringToForeground only
+            // un-minimizes (IsIconic), so a maximized toolbar isn't resized.
+            ruler.EnsureForeground();
+            MouseHelper.MoveTo(btnX, btnY);
+            Thread.Sleep(200);
+            MouseHelper.LeftClick();
+            Thread.Sleep(300);
+        }
+        else
+        {
+            Log($"SelectToolAndVerify[{testName}]: click {buttonId} via Element.Click (mouseClick={useMouseClick}, bounds={button.Width}x{button.Height}, toggle={toggleState})");
+            button.Click(msPostAction: 300);
+        }
 
+        // 3) Move the cursor off the toolbar onto the capture surface, then WAIT for the overlay to show.
+        //    No re-press: with the foreground raise the press lands, so a missing overlay just means it's
+        //    still coming up — which waiting resolves and re-clicking would not.
+        MouseHelper.MoveTo(cx, cy);
+        while (DateTime.UtcNow < deadline)
+        {
             if (IsMeasureOverlayPresent())
             {
-                Log($"SelectToolAndVerify[{testName}]: overlay present after attempt {attempt} — tool engaged");
+                Log($"SelectToolAndVerify[{testName}]: overlay present — tool engaged");
                 return;
             }
 
-            if (DateTime.UtcNow >= deadline)
-            {
-                break;
-            }
-
-            Log($"SelectToolAndVerify[{testName}]: overlay not up after attempt {attempt} — the toolbar was likely not interactive when pressed; retrying");
             Thread.Sleep(500);
         }
 
         Assert.Fail(
-            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared after {attempt} " +
-            "tool-selection attempts — the Measure Tool never entered capture state, so a measurement can't be taken.");
+            $"{testName}: the measurement overlay (PowerToys.MeasureToolOverlay) never appeared — the Measure " +
+            "Tool never entered capture state, so a measurement can't be taken.");
     }
 
     /// <summary>
