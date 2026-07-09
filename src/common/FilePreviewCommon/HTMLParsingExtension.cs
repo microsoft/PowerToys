@@ -64,12 +64,69 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 return false;
             }
 
-            if (url.Contains("://") && !url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            // Reject any URI-like scheme (http:, https:, data:, javascript:, file:, ...).
+            // A colon is only permitted as part of a drive path like "C:\" or "C:/".
+            int colonIndex = url.IndexOf(':');
+            if (colonIndex >= 0)
+            {
+                bool isDrivePath = colonIndex == 1 && char.IsLetter(url[0]) && url.Length > 2 && (url[2] == '\\' || url[2] == '/');
+                if (!isDrivePath)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that a local image URL resolves to a path inside the allowed base path and
+        /// computes the corresponding virtual host URL. Returns false for remote URLs, URI schemes
+        /// (data:, javascript:, file:, ...), path traversal outside the base path and malformed paths.
+        /// </summary>
+        /// <param name="url">Image URL from the markdown document.</param>
+        /// <param name="markdownDirectory">Directory containing the markdown file; relative URLs resolve against it.</param>
+        /// <param name="allowedBasePath">Base path the resolved path must be contained in. Falls back to <paramref name="markdownDirectory"/> if empty.</param>
+        /// <param name="virtualUrl">The rewritten virtual host URL on success.</param>
+        /// <returns>True if the URL is a contained local image and <paramref name="virtualUrl"/> was set.</returns>
+        public static bool TryGetLocalImageVirtualUrl(string url, string markdownDirectory, string allowedBasePath, out string virtualUrl)
+        {
+            virtualUrl = null;
+
+            if (!IsLocalImage(url))
             {
                 return false;
             }
 
-            return true;
+            try
+            {
+                string basePath = Path.GetFullPath(string.IsNullOrEmpty(allowedBasePath) ? markdownDirectory : allowedBasePath);
+                string resolvedPath = Path.GetFullPath(Path.Combine(markdownDirectory, url));
+                string relativePath = Path.GetRelativePath(basePath, resolvedPath);
+
+                if (relativePath == "." || relativePath == ".." ||
+                    relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+                    relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal) ||
+                    Path.IsPathRooted(relativePath))
+                {
+                    return false;
+                }
+
+                virtualUrl = "https://localmdimages/" + relativePath.Replace('\\', '/');
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
         }
 
         /// <inheritdoc/>
@@ -121,23 +178,10 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     {
                         if (link.IsImage)
                         {
-                            if (AllowLocalImages && IsLocalImage(link.Url))
+                            if (AllowLocalImages && TryGetLocalImageVirtualUrl(link.Url, FilePath, AllowedBasePath, out string virtualUrl))
                             {
-                                string basePath = !string.IsNullOrEmpty(AllowedBasePath) ? AllowedBasePath : FilePath;
-                                string resolvedPath = Path.GetFullPath(Path.Combine(FilePath, link.Url));
-
-                                if (resolvedPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    string relativePath = resolvedPath.Substring(basePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace('\\', '/');
-                                    link.Url = "https://localmdimages/" + relativePath;
-                                    link.GetAttributes().AddClass("img-fluid");
-                                }
-                                else
-                                {
-                                    link.Url = "#";
-                                    link.GetAttributes().AddClass("img-fluid");
-                                    imagesBlockedCallBack();
-                                }
+                                link.Url = virtualUrl;
+                                link.GetAttributes().AddClass("img-fluid");
                             }
                             else
                             {

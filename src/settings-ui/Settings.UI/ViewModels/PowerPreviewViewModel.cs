@@ -81,8 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 _mdLocalImagesEnabledStateIsGPOConfigured = true;
                 _mdLocalImagesEnabled = _mdLocalImagesEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-                _mdLocalImagesIsGpoEnabled = _mdLocalImagesEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
-                _mdLocalImagesIsGpoDisabled = _mdLocalImagesEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
             else
             {
@@ -269,8 +267,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mdRenderIsEnabled;
         private GpoRuleConfigured _mdLocalImagesEnabledGpoRuleConfiguration;
         private bool _mdLocalImagesEnabledStateIsGPOConfigured;
-        private bool _mdLocalImagesIsGpoEnabled;
-        private bool _mdLocalImagesIsGpoDisabled;
         private bool _mdLocalImagesEnabled;
 
         private GpoRuleConfigured _monacoRenderEnabledGpoRuleConfiguration;
@@ -589,19 +585,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool MDLocalImagesIsGpoEnabled
+        // Used to disable the toggle when the setting is forced by GPO (enabled or disabled).
+        public bool MDLocalImagesIsGPOConfigured
         {
             get
             {
-                return _mdLocalImagesIsGpoEnabled;
-            }
-        }
-
-        public bool MDLocalImagesIsGpoDisabled
-        {
-            get
-            {
-                return _mdLocalImagesIsGpoDisabled;
+                return _mdLocalImagesEnabledStateIsGPOConfigured;
             }
         }
 
