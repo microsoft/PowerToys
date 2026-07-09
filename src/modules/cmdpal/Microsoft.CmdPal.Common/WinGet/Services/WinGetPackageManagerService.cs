@@ -25,9 +25,11 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
     private readonly Lazy<InitializationState> _initialization;
     private readonly object _allCatalogTaskLock = new();
     private readonly object _wingetCatalogTaskLock = new();
+    private readonly object _allCatalogAllSearchTaskLock = new();
 
     private Task<WinGetQueryResult<PackageCatalog>>? _allCatalogTask;
     private Task<WinGetQueryResult<PackageCatalog>>? _wingetCatalogTask;
+    private Task<WinGetQueryResult<PackageCatalog>>? _allCatalogAllSearchTask;
 
     public WinGetPackageManagerService()
         : this(CreateFactory, new WinGetOperationTrackerService())
@@ -212,7 +214,7 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var catalogResult = await GetCompositeCatalogResultAsync(includeStoreCatalog: true, cancellationToken).ConfigureAwait(false);
+            var catalogResult = await GetCompositeCatalogResultAsync(includeStoreCatalog: true, CompositeSearchBehavior.AllCatalogs, cancellationToken).ConfigureAwait(false);
             if (!catalogResult.IsSuccess || catalogResult.Value is null)
             {
                 return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, catalogResult.IsUnavailable, catalogResult.ErrorMessage);
@@ -221,6 +223,9 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
             var catalog = catalogResult.Value;
             Dictionary<string, CatalogPackage> results = new(OrdinalIgnoreCase);
 
+            // A batched FindPackages query did not reliably resolve all requested
+            // Store IDs, so each Store ID is queried independently.
+            // Lookups are executed concurrently (throttled to 4) to keep latency low.
             using var throttle = new SemaphoreSlim(4);
 
             var tasks = normalizedIds.Select(async id =>
@@ -269,7 +274,12 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
 
             return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(results, false, null);
         }
-        catch (Exception ex) when (ex is COMException or InvalidOperationException or TaskCanceledException)
+        catch (OperationCanceledException ex)
+        {
+            CoreLogger.LogWarning($"Microsoft Store package lookup canceled: {ex.Message}");
+            return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, false, ex.Message);
+        }
+        catch (Exception ex) when (ex is COMException or InvalidOperationException)
         {
             CoreLogger.LogWarning($"Microsoft Store package lookup failed: {ex.Message}");
             return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, false, ex.Message);
@@ -475,14 +485,35 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         }
     }
 
-    private async Task<WinGetQueryResult<PackageCatalog>> GetCompositeCatalogResultAsync(bool includeStoreCatalog, CancellationToken cancellationToken)
+    private async Task<WinGetQueryResult<PackageCatalog>> GetCompositeCatalogResultAsync(
+        bool includeStoreCatalog,
+        CancellationToken cancellationToken)
+    {
+        return await GetCompositeCatalogResultAsync(
+            includeStoreCatalog,
+            CompositeSearchBehavior.RemotePackagesFromAllCatalogs,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<WinGetQueryResult<PackageCatalog>> GetCompositeCatalogResultAsync(
+        bool includeStoreCatalog,
+        CompositeSearchBehavior searchBehavior,
+        CancellationToken cancellationToken)
     {
         Task<WinGetQueryResult<PackageCatalog>> task;
-        if (includeStoreCatalog)
+        if (includeStoreCatalog && searchBehavior == CompositeSearchBehavior.AllCatalogs)
+        {
+            lock (_allCatalogAllSearchTaskLock)
+            {
+                _allCatalogAllSearchTask ??= CreateCompositeCatalogAsync(includeStoreCatalog, searchBehavior, cancellationToken);
+                task = _allCatalogAllSearchTask;
+            }
+        }
+        else if (includeStoreCatalog)
         {
             lock (_allCatalogTaskLock)
             {
-                _allCatalogTask ??= CreateCompositeCatalogAsync(includeStoreCatalog, cancellationToken);
+                _allCatalogTask ??= CreateCompositeCatalogAsync(includeStoreCatalog, searchBehavior, cancellationToken);
                 task = _allCatalogTask;
             }
         }
@@ -490,7 +521,7 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         {
             lock (_wingetCatalogTaskLock)
             {
-                _wingetCatalogTask ??= CreateCompositeCatalogAsync(includeStoreCatalog, cancellationToken);
+                _wingetCatalogTask ??= CreateCompositeCatalogAsync(includeStoreCatalog, searchBehavior, cancellationToken);
                 task = _wingetCatalogTask;
             }
         }
@@ -498,13 +529,16 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         var result = await task.ConfigureAwait(false);
         if (!result.IsSuccess || result.Value is null)
         {
-            ClearCachedCompositeCatalogTask(includeStoreCatalog, task);
+            ClearCachedCompositeCatalogTask(includeStoreCatalog, searchBehavior, task);
         }
 
         return result;
     }
 
-    private async Task<WinGetQueryResult<PackageCatalog>> CreateCompositeCatalogAsync(bool includeStoreCatalog, CancellationToken cancellationToken)
+    private async Task<WinGetQueryResult<PackageCatalog>> CreateCompositeCatalogAsync(
+        bool includeStoreCatalog,
+        CompositeSearchBehavior searchBehavior,
+        CancellationToken cancellationToken)
     {
         var initialization = _initialization.Value;
         if (!initialization.State.IsAvailable || initialization.Factory is null || initialization.PackageManager is null || initialization.WingetCatalog is null)
@@ -517,7 +551,7 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
             cancellationToken.ThrowIfCancellationRequested();
 
             var options = initialization.Factory.CreateCreateCompositePackageCatalogOptions();
-            options.CompositeSearchBehavior = CompositeSearchBehavior.AllCatalogs;
+            options.CompositeSearchBehavior = searchBehavior;
             options.Catalogs.Add(initialization.WingetCatalog);
 
             if (includeStoreCatalog && initialization.StoreCatalog is not null)
@@ -556,11 +590,29 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         {
             _wingetCatalogTask = null;
         }
+
+        lock (_allCatalogAllSearchTaskLock)
+        {
+            _allCatalogAllSearchTask = null;
+        }
     }
 
-    private void ClearCachedCompositeCatalogTask(bool includeStoreCatalog, Task<WinGetQueryResult<PackageCatalog>> task)
+    private void ClearCachedCompositeCatalogTask(
+        bool includeStoreCatalog,
+        CompositeSearchBehavior searchBehavior,
+        Task<WinGetQueryResult<PackageCatalog>> task)
     {
-        if (includeStoreCatalog)
+        if (includeStoreCatalog && searchBehavior == CompositeSearchBehavior.AllCatalogs)
+        {
+            lock (_allCatalogAllSearchTaskLock)
+            {
+                if (ReferenceEquals(_allCatalogAllSearchTask, task))
+                {
+                    _allCatalogAllSearchTask = null;
+                }
+            }
+        }
+        else if (includeStoreCatalog)
         {
             lock (_allCatalogTaskLock)
             {
