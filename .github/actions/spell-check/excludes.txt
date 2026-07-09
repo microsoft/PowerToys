@@ -114,7 +114,6 @@
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/Text/.*\.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
-^src/modules/MouseUtils/MouseJump.Kicker/KickerForm\.resx$
 ^src/modules/MouseUtils/MouseJumpUI/UI/MainForm\.resx$
 ^src/modules/MouseWithoutBorders/App/.*/NativeMethods\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.Designer\.cs$
@@ -140,6 +139,7 @@
 ^src/modules/ZoomIt/ZoomIt/selfie_segmentation\.onnx$
 ^src/modules/ZoomIt/ZoomIt/ZoomIt\.idc$
 ^src/Monaco/
+^tools/MouseUtils/MouseJump.Kicker/KickerForm\.resx$
 ^tools/project_template/ModuleTemplate/resource\.h$
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
