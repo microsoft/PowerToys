@@ -271,6 +271,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 

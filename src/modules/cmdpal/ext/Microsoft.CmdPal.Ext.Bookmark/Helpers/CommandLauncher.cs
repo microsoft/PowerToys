@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
@@ -24,7 +25,7 @@ internal static class CommandLauncher
                 // You can notice the difference with Recycle Bin for example:
                 // - "explorer ::{645FF040-5081-101B-9F08-00AA002F954E}"
                 // - "::{645FF040-5081-101B-9F08-00AA002F954E}"
-                return ShellHelpers.OpenInShell("explorer.exe", classification.Target);
+                return ShellHelpers.OpenInShell("explorer.exe", ShellArgumentBuilder.BuildArguments(classification.Target));
 
             case LaunchMethod.ActivateAppId:
                 return ActivateAppId(classification.Target, classification.Arguments);

@@ -118,6 +118,7 @@ Badmode
 Badparam
 bbwe
 BCIE
+Belarusian
 BESTEFFORT
 bezelled
 bhid
@@ -134,6 +135,7 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
+Blackmagic
 bla
 BLENDFUNCTION
 blittable
@@ -539,6 +541,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+Fairlight
 FARPROC
 fdw
 fdx
@@ -840,6 +843,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -1232,6 +1236,8 @@ NOTOPMOST
 NOTRACK
 Notupdated
 notwindows
+NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH
@@ -2078,6 +2084,8 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED
@@ -2177,6 +2185,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi

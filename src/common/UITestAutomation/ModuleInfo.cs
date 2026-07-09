@@ -30,12 +30,30 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         public string GetDevelopmentPath()
         {
+            // The test assembly normally lives in <buildRoot>\tests\<project>\<tfm>\, so the build
+            // output root that holds the module exe is three levels above it. When a test project is
+            // built with a RuntimeIdentifier (OutputType=Exe for the MTP runner) the output gains an
+            // extra RID subfolder (<tfm>\win-x64\ or \win-arm64\), pushing the root one level further
+            // up. Detect that case so the relative path stays correct in both layouts.
+            string prefix = IsRuntimeIdentifierOutputFolder() ? @"\..\..\..\.." : @"\..\..\..";
+
             if (string.IsNullOrEmpty(SubDirectory))
             {
-                return $@"\..\..\..\{ExecutableName}";
+                return $@"{prefix}\{ExecutableName}";
             }
 
-            return $@"\..\..\..\{SubDirectory}\{ExecutableName}";
+            return $@"{prefix}\{SubDirectory}\{ExecutableName}";
+        }
+
+        // True when the executing assembly sits in a RID-specific output subfolder (e.g. ...\<tfm>\win-x64),
+        // which a project with a RuntimeIdentifier produces. Used to keep GetDevelopmentPath's relative
+        // walk-up correct whether or not the RID subfolder is present.
+        private static bool IsRuntimeIdentifierOutputFolder()
+        {
+            var baseDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var leaf = Path.GetFileName(baseDir);
+            return leaf.Equals("win-x64", StringComparison.OrdinalIgnoreCase)
+                || leaf.Equals("win-arm64", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
