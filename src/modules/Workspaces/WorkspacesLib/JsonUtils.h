@@ -9,6 +9,9 @@ namespace JsonUtils
     {
         FileReadingError,
         IncorrectFileError,
+        ServiceAccessError,   // the settings service rejected/failed the request
+                              // (e.g. caller not authorized after an update) —
+                              // this is NOT "empty"; data is intact but unreachable.
     };
 
     Result<WorkspacesData::WorkspacesProject, WorkspacesFileError> ReadSingleWorkspace(const std::wstring& fileName);

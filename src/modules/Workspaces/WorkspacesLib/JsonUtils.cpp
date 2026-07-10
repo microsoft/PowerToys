@@ -128,8 +128,14 @@ namespace JsonUtils
             return ReadWorkspaces(WorkspacesData::WorkspacesFile());
 
         default:
-            Logger::error("GetBlob failed ({}); treating workspaces as empty.", static_cast<int>(rc));
-            return Ok(std::vector<WorkspacesData::WorkspacesProject>{});
+            // AuthRejected / Protocol / IoError: the protected settings EXIST but
+            // this caller could not read them (e.g. the service rejected this
+            // app's version/signature — common transiently right after a PowerToys
+            // update, before re-provisioning).  Surface a distinct error so the
+            // caller does NOT misreport this as an empty workspace list (which
+            // would be both inaccurate and alarming) — Design §10 / UX.
+            Logger::error("GetBlob failed ({}); reporting ServiceAccessError.", static_cast<int>(rc));
+            return Error(WorkspacesFileError::ServiceAccessError);
         }
     }
 

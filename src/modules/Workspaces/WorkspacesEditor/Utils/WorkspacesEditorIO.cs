@@ -59,8 +59,24 @@ namespace WorkspacesEditor.Utils
                         workspaces = parser.Read(parser.File);
                         break;
 
+                    case PTSettingsClient.Result.AuthRejected:
+                        // The protected settings EXIST but this app wasn't authorized
+                        // by the service (typically a version mismatch in the transient
+                        // window right after an update, before re-provisioning).  Do NOT
+                        // silently show an empty list (looks like data loss) — reassure
+                        // and point at the fix.  Data is untouched.
+                        Logger.LogWarning("GetBlob rejected by the settings service (AuthRejected).");
+                        System.Windows.MessageBox.Show(
+                            "PowerToys couldn't load your saved workspaces because the settings service didn't authorize this app. " +
+                            "Your workspaces are safe — this usually happens right after a PowerToys update. " +
+                            "Restart PowerToys (or reopen the Workspaces editor) to finish setup, then they'll reappear.",
+                            "Workspaces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        return new ParsingResult(true);
+
                     default:
-                        // AuthRejected / Protocol / IoError → fail safe to empty.
+                        // Protocol / IoError → fail safe to empty (transient/unknown).
                         Logger.LogWarning($"GetBlob returned {rc}; treating workspaces as empty.");
                         return new ParsingResult(true);
                 }
@@ -226,8 +242,30 @@ namespace WorkspacesEditor.Utils
                         fallback.WriteFile(serializer.File, json);
                         break;
 
+                    case PTSettingsClient.Result.AuthRejected:
+                        // The service refused this app (e.g. version mismatch right
+                        // after an update).  Do NOT silently drop the edit — tell the
+                        // user and KEEP their changes in-window so they can retry once
+                        // setup completes.  We deliberately do NOT write plaintext to
+                        // the legacy file here (that would defeat the protection).
+                        Logger.LogError("Save rejected by the settings service (AuthRejected).");
+                        System.Windows.MessageBox.Show(
+                            "PowerToys couldn't save your workspaces because the settings service didn't authorize this app. " +
+                            "This can happen right after a PowerToys update — restart PowerToys (or reopen the Workspaces editor) to finish setup, then save again. " +
+                            "Your current changes are kept in this window until then.",
+                            "Workspaces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
+                        break;
+
                     default:
                         Logger.LogError($"Failed to save workspaces through the settings service: {rc}");
+                        System.Windows.MessageBox.Show(
+                            $"PowerToys couldn't save your workspaces (settings service error: {rc}). " +
+                            "Your current changes are kept in this window — please try again.",
+                            "Workspaces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
                         break;
                 }
             }

@@ -116,6 +116,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
                 break;
+            case JsonUtils::WorkspacesFileError::ServiceAccessError:
+                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
+                break;
             }
 
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
@@ -141,6 +144,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 break;
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
+                break;
+            case JsonUtils::WorkspacesFileError::ServiceAccessError:
+                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
                 break;
             }
 
