@@ -43,6 +43,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly AdvancedPasteSettings _advancedPasteSettings;
         private readonly AdvancedPasteAdditionalActions _additionalActions;
         private readonly ObservableCollection<AdvancedPasteCustomAction> _customActions;
+        private readonly ObservableCollection<AdvancedPastePowerScriptItem> _powerScripts = new();
         private readonly DispatcherQueue _dispatcherQueue;
         private IFileSystemWatcher _settingsWatcher;
         private bool _suppressSave;
@@ -94,6 +95,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // This handles legacy settings files that may be missing these properties
             _advancedPasteSettings.Properties.AdditionalActions ??= new AdvancedPasteAdditionalActions();
             _advancedPasteSettings.Properties.CustomActions ??= new AdvancedPasteCustomActions();
+            _advancedPasteSettings.Properties.EnabledPowerScripts ??= new List<string>();
 
             AttachConfigurationHandlers();
 
@@ -122,6 +124,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _customActions.CollectionChanged += OnCustomActionsCollectionChanged;
             UpdateCustomActionsCanMoveUpDown();
+
+            LoadPowerScripts();
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -593,6 +597,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     NotifySettingsChanged();
                 }
             }
+        }
+
+        /// <summary>
+        /// Master toggle controlling whether PowerScripts are offered inside Advanced Paste.
+        /// </summary>
+        public bool PowerScriptsEnabled
+        {
+            get => _advancedPasteSettings.Properties.PowerScriptsEnabled;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.PowerScriptsEnabled)
+                {
+                    _advancedPasteSettings.Properties.PowerScriptsEnabled = value;
+                    NotifySettingsChanged();
+                    OnPropertyChanged(nameof(PowerScriptsEnabled));
+                }
+            }
+        }
+
+        /// <summary>The PowerScripts available to enable/disable for Advanced Paste.</summary>
+        public ObservableCollection<AdvancedPastePowerScriptItem> PowerScripts => _powerScripts;
+
+        /// <summary>True when at least one PowerScript was discovered.</summary>
+        public bool HasPowerScripts => _powerScripts.Count > 0;
+
+        private void LoadPowerScripts()
+        {
+            var enabledIds = new HashSet<string>(
+                _advancedPasteSettings.Properties.EnabledPowerScripts ?? new List<string>(),
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var script in PowerScriptsViewModel.LoadScriptsFromHost())
+            {
+                var item = new AdvancedPastePowerScriptItem
+                {
+                    Id = script.Id,
+                    Name = string.IsNullOrEmpty(script.Name) ? script.Id : script.Name,
+                    Description = script.Description,
+                    IsEnabled = enabledIds.Contains(script.Id),
+                };
+
+                item.PropertyChanged += OnPowerScriptItemPropertyChanged;
+                _powerScripts.Add(item);
+            }
+
+            OnPropertyChanged(nameof(HasPowerScripts));
+        }
+
+        private void OnPowerScriptItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(AdvancedPastePowerScriptItem.IsEnabled))
+            {
+                return;
+            }
+
+            var enabled = _powerScripts.Where(s => s.IsEnabled).Select(s => s.Id).ToList();
+            _advancedPasteSettings.Properties.EnabledPowerScripts = enabled;
+            NotifySettingsChanged();
         }
 
         public bool IsConflictingCopyShortcut =>

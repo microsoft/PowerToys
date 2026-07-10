@@ -392,6 +392,41 @@
                             IsTabStop="{x:Bind ViewModel.IsConflictingCopyShortcut, Mode=OneWay}"
                             Severity="Warning" />
                     </controls:SettingsGroup>
+
+                    <!--  PowerScripts (experimental prototype)  -->
+                    <controls:SettingsGroup Header="PowerScripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Description="Offer your PowerScripts as actions inside Advanced Paste. This is an experimental prototype."
+                            Header="Enable PowerScripts in Advanced Paste"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.PowerScriptsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander
+                            Header="Available PowerScripts"
+                            IsEnabled="{x:Bind ViewModel.PowerScriptsEnabled, Mode=OneWay}"
+                            IsExpanded="True"
+                            ItemsSource="{x:Bind ViewModel.PowerScripts, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="viewmodels:AdvancedPastePowerScriptItem">
+                                    <tkcontrols:SettingsCard
+                                        Margin="0,0,0,2"
+                                        Description="{x:Bind Description}"
+                                        Header="{x:Bind Name}">
+                                        <ToggleSwitch
+                                            AutomationProperties.HelpText="{x:Bind Name}"
+                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                            OffContent=""
+                                            OnContent="" />
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>
+                        </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.HasPowerScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            Message="No PowerScripts found. Add scripts in the PowerScripts settings page."
+                            Severity="Informational" />
+                    </controls:SettingsGroup>
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
             <controls:SettingsPageControl.PrimaryLinks>

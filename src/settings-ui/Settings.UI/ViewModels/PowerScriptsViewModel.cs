@@ -509,7 +509,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private static IReadOnlyList<PowerScriptListItem> LoadScriptsFromHost()
+        internal static IReadOnlyList<PowerScriptListItem> LoadScriptsFromHost()
         {
             string hostPath = ResolveHostPath();
             if (string.IsNullOrEmpty(hostPath))
