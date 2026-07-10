@@ -236,31 +236,45 @@
                             HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                             IsExpanded="True">
                             <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    HorizontalContentAlignment="Center"
+                                    Visibility="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Orientation="Horizontal" Spacing="12">
+                                        <ProgressRing
+                                            x:Uid="PowerDisplay_ProfilesLoadingIndicator"
+                                            Width="24"
+                                            Height="24"
+                                            IsActive="True" />
+                                        <TextBlock
+                                            x:Uid="PowerDisplay_ProfilesLoadingText"
+                                            VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Visibility="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                     <tkcontrols:SettingsCard.Header>
                                         <CheckBox
                                             x:Uid="LightSwitch_DarkModeProfileCheckbox"
                                             IsChecked="{x:Bind ViewModel.EnableDarkModeProfile, Mode=TwoWay}"
-                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                            IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}" />
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
                                         DisplayMemberPath="DisplayName"
-                                        IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedDarkModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Visibility="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                     <tkcontrols:SettingsCard.Header>
                                         <CheckBox
                                             x:Uid="LightSwitch_LightModeProfileCheckbox"
                                             IsChecked="{x:Bind ViewModel.EnableLightModeProfile, Mode=TwoWay}"
-                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                            IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}" />
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
                                         DisplayMemberPath="DisplayName"
-                                        IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
