@@ -18,8 +18,11 @@ using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Provider;
 using Windows.UI;
 
 namespace ColorPicker.ViewModels
@@ -37,9 +40,9 @@ namespace ColorPicker.ViewModels
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
 
-            RemoveColorsCommand = new RelayCommand<object>(DeleteSelectedColors);
-            ExportColorsGroupedByColorCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByColor);
-            ExportColorsGroupedByFormatCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByFormat);
+            RemoveColorsCommand = new RelayCommand<object>(DeleteSelectedColors, IsNonEmptyList);
+            ExportColorsGroupedByColorCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByColor, IsNonEmptyList);
+            ExportColorsGroupedByFormatCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByFormat, IsNonEmptyList);
             SelectedColorChangedCommand = new RelayCommand<object>((newColor) =>
             {
                 if (ColorsHistory.Contains((Color)newColor))
@@ -152,9 +155,20 @@ namespace ColorPicker.ViewModels
             }
         }
 
+        private static bool IsNonEmptyList(object parameter) =>
+            parameter is IList { Count: > 0 } list &&
+            list.Cast<object>().All(item => item is Color);
+
         private void DeleteSelectedColors(object selectedColors)
         {
-            var colorsToRemove = ((IList)selectedColors).OfType<Color>().ToList();
+            if (!IsNonEmptyList(selectedColors))
+            {
+                return;
+            }
+
+            var list = (IList)selectedColors;
+            var colorsToRemove = list.Cast<Color>().ToList();
+
             var indicesToRemove = colorsToRemove.Select(color => ColorsHistory.IndexOf(color)).ToList();
 
             foreach (var color in colorsToRemove)
@@ -178,6 +192,11 @@ namespace ColorPicker.ViewModels
 
         private async Task ExportColors(object colorsToExport, GroupExportedColorsBy method)
         {
+            if (!IsNonEmptyList(colorsToExport))
+            {
+                return;
+            }
+
             var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
 
             // WinUI 3 replaces WPF's SaveFileDialog with the WinRT FileSavePicker, which must be
@@ -203,8 +222,17 @@ namespace ColorPicker.ViewModels
                     _ => string.Empty,
                 };
 
-                File.WriteAllText(file.Path, contentToWrite);
-                SessionEventHelper.Event.EditorColorsExported = true;
+                CachedFileManager.DeferUpdates(file);
+                await FileIO.WriteTextAsync(file, contentToWrite);
+                var status = await CachedFileManager.CompleteUpdatesAsync(file);
+                if (status is FileUpdateStatus.Complete or FileUpdateStatus.CompleteAndRenamed)
+                {
+                    SessionEventHelper.Event.EditorColorsExported = true;
+                }
+                else
+                {
+                    Logger.LogError($"Export failed with file update status: {status}");
+                }
             }
         }
 

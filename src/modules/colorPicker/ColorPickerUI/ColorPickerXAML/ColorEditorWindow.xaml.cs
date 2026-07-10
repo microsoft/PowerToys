@@ -5,16 +5,18 @@
 using ColorPicker.Helpers;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using WinUIEx;
 
 namespace ColorPicker
 {
     /// <summary>
-    /// The color editor window. Approach A: lean on the native WinUI title bar + a fixed-size
-    /// OverlappedPresenter instead of the WPF WindowChrome / DWM / custom-title-bar machinery.
+    /// The color editor window. Uses a fixed-size <see cref="WinUIEx.WindowEx"/> with the native
+    /// WinUI title bar and a Mica backdrop instead of the WPF WindowChrome / DWM / custom-title-bar
+    /// machinery. Size, the non-resizable / non-maximizable / non-minimizable flags, always-on-top,
+    /// and the Mica backdrop are declared in XAML; only runtime-only concerns (localized title,
+    /// icon, centering, closing, activation) are set here.
     /// </summary>
-    public sealed partial class ColorEditorWindow : Window
+    public sealed partial class ColorEditorWindow : WindowEx
     {
         private readonly AppStateHandler _appStateHandler;
 
@@ -32,24 +34,9 @@ namespace ColorPicker
             // point it at the ColorPicker app icon (copied next to the exe by the csproj).
             AppWindow.SetIcon("Assets/ColorPicker/icon.ico");
 
-            // Without a backdrop the window's uncovered areas (the header above the content card)
-            // render black, which reads as a bold black bar at the header/content divider. Mica
-            // gives the whole window the standard WinUI material so the header is no longer black.
-            SystemBackdrop = new MicaBackdrop();
-
-            this.SetWindowSize(440, 380);
-
             // Port of the WPF WindowStartupLocation="CenterScreen": WinUI windows open at the OS
             // default (cascade near the top-left), so center the fixed-size editor on the display.
             this.CenterOnScreen();
-
-            if (AppWindow.Presenter is OverlappedPresenter presenter)
-            {
-                presenter.IsResizable = false;
-                presenter.IsMaximizable = false;
-                presenter.IsMinimizable = false;
-                presenter.IsAlwaysOnTop = true;
-            }
 
             AppWindow.Closing += AppWindow_Closing;
             Activated += ColorEditorWindow_Activated;

@@ -3,17 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 using ColorPicker.Helpers;
 using ColorPicker.Mouse;
-using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
+using Windows.Graphics;
 
 namespace ColorPicker
 {
@@ -29,10 +29,12 @@ namespace ColorPicker
     /// the zoom magnifier (Topmost, re-asserted by the zoom helper), and was re-positioned next to
     /// the cursor by the <c>ChangeWindowPositionBehavior</c>. <see cref="InitializeCursorFollow"/>
     /// ports all three: WinUI has no <c>SizeToContent</c>, the behavior was WPF-only, and the
-    /// window is kept top-most so the tooltip stays visible over the magnifier. Per-tick work is a
-    /// single top-most <c>SetWindowPos</c> move plus a cheap per-monitor DPI lookup (so a tooltip
-    /// dragged across mixed-DPI monitors re-sizes to the monitor under the cursor); the tooltip size
-    /// and monitor list are cached and only recomputed on first show / content change.
+    /// window is kept top-most so the tooltip stays visible over the magnifier. Per-tick work
+    /// resolves the <see cref="DisplayArea"/> under the cursor, sizes the tooltip to that display's
+    /// effective DPI, and moves it with <see cref="FlyoutWindowHelper.MoveAndResizeOnDisplay"/>
+    /// (which handles mixed-DPI monitor crossings). The tooltip size is cached and only recomputed
+    /// on first show / content change / DPI change; z-order is re-asserted so the tooltip stays
+    /// above the top-most zoom window.
     /// </remarks>
     public sealed partial class ColorPickerOverlayWindow : TransparentWindow
     {
@@ -41,15 +43,13 @@ namespace ColorPicker
         private const double XOffset = 5;
         private const double YOffset = 10;
 
+        // Z-order-only SetWindowPos: HWND_TOPMOST with NOMOVE|NOSIZE|NOACTIVATE. Geometry is owned
+        // by FlyoutWindowHelper.MoveAndResizeOnDisplay; SetWindowPos is used solely to reassert the
+        // tooltip above the top-most zoom magnifier without moving, resizing, or activating it.
         private const int HwndTopmost = -1;
         private const uint SwpNoSize = 0x0001;
+        private const uint SwpNoMove = 0x0002;
         private const uint SwpNoActivate = 0x0010;
-
-        private const uint MonitorDefaultToNearest = 0x00000002;
-        private const int MdtEffectiveDpi = 0;
-
-        private const int SmCxScreen = 0;
-        private const int SmCyScreen = 1;
 
         private readonly nint _hwnd;
 
@@ -57,7 +57,6 @@ namespace ColorPicker
         private Storyboard _appearStoryboard;
         private Point _lastCursor;
         private double _scale = 1.0;
-        private Rect[] _monitors = Array.Empty<Rect>();
         private int _width = -1;
         private int _height = -1;
 
@@ -112,9 +111,8 @@ namespace ColorPicker
 
                 if (_mouseInfoProvider != null)
                 {
-                    // Cache the monitor bounds for this pick session (the DPI scale is re-queried per
-                    // move so a tooltip crossing into a different-DPI monitor re-sizes correctly).
-                    RefreshEnvironment();
+                    // The DisplayArea and DPI under the cursor are resolved per move inside
+                    // MoveToCursor, so a tooltip crossing into a different-DPI monitor re-sizes.
                     MoveToCursor(_mouseInfoProvider.CurrentPosition, resize: true);
                 }
             });
@@ -149,25 +147,25 @@ namespace ColorPicker
             _appearStoryboard.Begin();
         }
 
-        private void RefreshEnvironment()
-        {
-            _scale = GetDpiForWindow(_hwnd) / 96.0;
-            _monitors = MonitorResolutionHelper.AllMonitors.Select(m => m.Bounds).ToArray();
-        }
-
         private void MoveToCursor(Point cursorPhysical, bool resize)
         {
             _lastCursor = cursorPhysical;
 
-            if (_monitors.Length == 0)
+            // Resolve the display under the cursor from its physical coordinates. Nearest fallback
+            // keeps a cursor just outside a work area mapped to the closest monitor; a null result
+            // (degenerate/no-display state) means there is nothing to position against, so skip.
+            var targetDisplay = DisplayArea.GetFromPoint(
+                new PointInt32((int)cursorPhysical.X, (int)cursorPhysical.Y),
+                DisplayAreaFallback.Nearest);
+            if (targetDisplay is null)
             {
-                RefreshEnvironment();
+                return;
             }
 
             // Re-query the DPI of the monitor under the cursor. On mixed-DPI multi-monitor setups
             // the scale changes as the cursor crosses monitors; a value frozen at Show() would
             // mis-size and mis-offset the tooltip (the WPF behavior re-queried DPI per move).
-            double scale = GetScaleForCursor(cursorPhysical);
+            double scale = FlyoutWindowHelper.GetDpiScale(targetDisplay);
             if (scale > 0 && scale != _scale)
             {
                 _scale = scale;
@@ -197,9 +195,10 @@ namespace ColorPicker
                 _height = height;
             }
 
-            // Place next to the cursor, flipping away from the monitor's right/bottom edge so the
-            // tooltip never spills off-screen. Everything here is in physical pixels.
-            var bounds = GetMonitorBounds(cursorPhysical);
+            // Place next to the cursor, flipping away from the display's right/bottom edge so the
+            // tooltip never spills off-screen. OuterBounds is in screen physical pixels (X/Y may be
+            // negative on secondary monitors), matching the cursor's physical coordinates.
+            var bounds = targetDisplay.OuterBounds;
             int xOffset = (int)(XOffset * _scale);
             int yOffset = (int)(YOffset * _scale);
             int left = (int)cursorPhysical.X + xOffset;
@@ -215,67 +214,26 @@ namespace ColorPicker
                 top = (int)cursorPhysical.Y - _height - yOffset;
             }
 
-            // Insert at HWND_TOPMOST so the tooltip stays above the (non-top-most) zoom magnifier,
-            // matching the WPF helper that re-asserted MainWindow.Topmost after showing the zoom.
-            uint flags = SwpNoActivate | (resize ? 0u : SwpNoSize);
-            _ = SetWindowPos(_hwnd, HwndTopmost, left, top, _width, _height, flags);
+            // Absolute screen physical-pixel geometry via the shared helper, which handles the
+            // mixed-DPI monitor crossing (teleport-then-resize to avoid WM_DPICHANGED double-scaling).
+            FlyoutWindowHelper.MoveAndResizeOnDisplay(this, targetDisplay, new RectInt32(left, top, _width, _height));
+
+            // Geometry is owned by MoveAndResizeOnDisplay; reassert z-order (only) so the tooltip
+            // stays above the top-most zoom magnifier, matching the WPF helper that re-asserted
+            // MainWindow.Topmost after showing the zoom.
+            ReassertTopmost();
         }
 
-        private Rect GetMonitorBounds(Point cursorPhysical)
+        /// <summary>
+        /// Reasserts the overlay as the frontmost top-most window without moving, resizing, or
+        /// activating it. Called after every cursor move and (by <see cref="Helpers.ZoomWindowHelper"/>)
+        /// after the zoom window is shown, so the tooltip stays above the equally top-most magnifier
+        /// even when the cursor is stationary.
+        /// </summary>
+        internal void ReassertTopmost()
         {
-            foreach (var bounds in _monitors)
-            {
-                if (bounds.Contains(cursorPhysical))
-                {
-                    return bounds;
-                }
-            }
-
-            if (_monitors.Length > 0)
-            {
-                // Cursor not inside any enumerated monitor (rare; e.g. just outside the work area):
-                // fall back to the first monitor so the edge-flip math still applies.
-                return _monitors[0];
-            }
-
-            // No monitors enumerated at all (degenerate, e.g. a transient no-display state). Log it
-            // and fall back to the primary screen bounds so the tooltip still edge-flips instead of
-            // being placed against an unbounded rect.
-            Logger.LogWarning("ColorPicker overlay: no monitors enumerated; falling back to primary screen bounds.");
-            return new Rect(0, 0, GetSystemMetrics(SmCxScreen), GetSystemMetrics(SmCyScreen));
+            _ = SetWindowPos(_hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoActivate);
         }
-
-        // Effective DPI scale of the monitor the cursor is on (1.0 == 96 DPI). Falls back to the
-        // last known scale if the lookup fails.
-        private double GetScaleForCursor(Point cursorPhysical)
-        {
-            var monitor = MonitorFromPoint(new POINT { X = (int)cursorPhysical.X, Y = (int)cursorPhysical.Y }, MonitorDefaultToNearest);
-            if (monitor != IntPtr.Zero && GetDpiForMonitor(monitor, MdtEffectiveDpi, out uint dpiX, out _) == 0)
-            {
-                return dpiX / 96.0;
-            }
-
-            return _scale;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr MonitorFromPoint(POINT pt, uint dwFlags);
-
-        [DllImport("shcore.dll")]
-        private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
-
-        [DllImport("user32.dll")]
-        private static extern int GetSystemMetrics(int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern uint GetDpiForWindow(nint hwnd);
 
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

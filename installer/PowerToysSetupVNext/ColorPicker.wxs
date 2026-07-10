@@ -7,7 +7,7 @@
 
   <Fragment>
   <!-- Color Picker -->
-    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+    <DirectoryRef Id="WinUI3AppsAssetsFolder">
       <Directory Id="ColorPickerAssetsFolder" Name="ColorPicker" />
     </DirectoryRef>
     <!-- Color Picker Resources -->

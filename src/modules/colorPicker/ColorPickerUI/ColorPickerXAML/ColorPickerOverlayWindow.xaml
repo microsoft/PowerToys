@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:views="using:ColorPicker.Views"
+    IsAlwaysOnTop="True"
     mc:Ignorable="d">
     <views:MainView x:Name="MainViewControl" x:FieldModifier="public" />
 </common:TransparentWindow>

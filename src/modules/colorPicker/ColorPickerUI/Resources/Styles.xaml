@@ -30,7 +30,10 @@
         with the VisualStateManager and the built-in Control.CornerRadius (the WPF-era
         ControlHelper.CornerRadius attached property is unnecessary in WinUI).
     -->
-    <Style x:Key="ColorShadeButtonStyle" TargetType="Button">
+    <Style
+        x:Key="ColorShadeButtonStyle"
+        BasedOn="{StaticResource DefaultButtonStyle}"
+        TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />

@@ -57,7 +57,7 @@
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
                 <ListView.ContextFlyout>
-                    <MenuFlyout>
+                    <MenuFlyout x:Name="HistoryContextFlyout" Opening="HistoryContextFlyout_Opening">
                         <MenuFlyoutItem
                             x:Name="RemoveMenuItem"
                             Command="{Binding RemoveColorsCommand}"
@@ -140,26 +140,18 @@
                                                         <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                            </VisualStateGroup>
-                                            <VisualStateGroup x:Name="SelectionStates">
-                                                <VisualState x:Name="Unselected" />
                                                 <VisualState x:Name="Selected">
                                                     <VisualState.Setters>
                                                         <Setter Target="SelectionStroke.Opacity" Value="1" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="SelectedUnfocused">
-                                                    <VisualState.Setters>
-                                                        <Setter Target="SelectionStroke.Opacity" Value="1" />
-                                                    </VisualState.Setters>
-                                                </VisualState>
-                                                <VisualState x:Name="SelectedPointerOver">
+                                                <VisualState x:Name="PointerOverSelected">
                                                     <VisualState.Setters>
                                                         <Setter Target="SelectionStroke.Opacity" Value="1" />
                                                         <Setter Target="RootGrid.Opacity" Value="0.8" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="SelectedPressed">
+                                                <VisualState x:Name="PressedSelected">
                                                     <VisualState.Setters>
                                                         <Setter Target="SelectionStroke.Opacity" Value="1" />
                                                     </VisualState.Setters>
@@ -227,6 +219,7 @@
                                 <controls:ColorFormatControl
                                     ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
                                     ColorFormatModel="{Binding}"
+                                    CopiedToClipboardLabel="{Binding ElementName=CopiedToClipboardLabel}"
                                     SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -280,16 +273,16 @@
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                AutomationProperties.LiveSetting="Assertive"
                 Orientation="Horizontal">
                 <TextBlock
-                    Margin="0,0,8,0"
-                    FontFamily="{StaticResource IconFontFamily}"
-                    FontSize="20"
-                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                    Text="&#xE8C8;" />
+                Margin="0,0,8,0"
+                FontFamily="{StaticResource IconFontFamily}"
+                FontSize="20"
+                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                Text="&#xE8C8;" />
                 <TextBlock
-                    x:Name="CopiedToClipboardLabel"
+                x:Name="CopiedToClipboardLabel"
+                AutomationProperties.LiveSetting="Assertive"
                     FontSize="16"
                     Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
             </StackPanel>

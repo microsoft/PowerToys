@@ -4,7 +4,6 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
 
 using ColorPicker.Helpers;
 using ColorPicker.Models;
@@ -29,6 +28,8 @@ namespace ColorPicker.Controls
         public static readonly DependencyProperty SelectedColorCopyHelperTextProperty = DependencyProperty.Register(nameof(SelectedColorCopyHelperText), typeof(string), typeof(ColorFormatControl), new PropertyMetadata(null));
 
         public static readonly DependencyProperty ColorCopiedNotificationBorderProperty = DependencyProperty.Register(nameof(ColorCopiedNotificationBorder), typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(null));
+
+        public static readonly DependencyProperty CopiedToClipboardLabelProperty = DependencyProperty.Register(nameof(CopiedToClipboardLabel), typeof(FrameworkElement), typeof(ColorFormatControl), new PropertyMetadata(null));
 
         private const int CopyIndicatorStayTimeInMs = 3000;
         private readonly IThrottledActionInvoker _actionInvoker;
@@ -63,6 +64,12 @@ namespace ColorPicker.Controls
         {
             get => (FrameworkElement)GetValue(ColorCopiedNotificationBorderProperty);
             set => SetValue(ColorCopiedNotificationBorderProperty, value);
+        }
+
+        public FrameworkElement CopiedToClipboardLabel
+        {
+            get => (FrameworkElement)GetValue(CopiedToClipboardLabelProperty);
+            set => SetValue(CopiedToClipboardLabelProperty, value);
         }
 
         public string SelectedColorCopyHelperText
@@ -114,19 +121,14 @@ namespace ColorPicker.Controls
             _copyIndicatorVisible = true;
             AnimateCopiedIndicator(1.0, 56);
 
-            if (ColorCopiedNotificationBorder is not Border border || border.Child is not StackPanel panel)
+            var label = CopiedToClipboardLabel;
+            if (label == null)
             {
                 return;
             }
 
-            var innerTextBlock = panel.Children.OfType<TextBlock>().FirstOrDefault();
-            if (innerTextBlock == null)
-            {
-                return;
-            }
-
-            var peer = FrameworkElementAutomationPeer.FromElement(innerTextBlock)
-                       ?? FrameworkElementAutomationPeer.CreatePeerForElement(innerTextBlock);
+            var peer = FrameworkElementAutomationPeer.FromElement(label)
+                       ?? FrameworkElementAutomationPeer.CreatePeerForElement(label);
             peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
         }
 

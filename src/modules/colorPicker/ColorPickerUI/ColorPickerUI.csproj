@@ -62,12 +62,9 @@
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <!-- Win2D for the zoom magnifier's pixel-grid CanvasControl. -->
     <PackageReference Include="Microsoft.Graphics.Win2D" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
     <PackageReference Include="System.IO.Abstractions" />
     <PackageReference Include="WinUIEx" />
     <Manifest Include="$(ApplicationManifest)" />

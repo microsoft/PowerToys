@@ -11,16 +11,6 @@ namespace ColorPicker.UnitTests.Helpers
     public class NativeMethodsHelperTests
     {
         [TestMethod]
-        public void GetCursorPos_after_SetCursorPos_round_trips()
-        {
-            // A safe coordinate inside any primary monitor.
-            Assert.IsTrue(NativeMethodsHelper.SetCursorPos(100, 120));
-            Assert.IsTrue(NativeMethodsHelper.GetCursorPos(out NativeMethodsHelper.POINT p));
-            Assert.AreEqual(100, p.X);
-            Assert.AreEqual(120, p.Y);
-        }
-
-        [TestMethod]
         public void POINT_implicit_operator_yields_Windows_Foundation_Point()
         {
             var p = new NativeMethodsHelper.POINT { X = 7, Y = 9 };

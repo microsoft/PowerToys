@@ -37,7 +37,6 @@
                         Grid.Column="1"
                         Margin="8,5,8,8"
                         AutomationProperties.LiveSetting="Assertive"
-                        AutomationProperties.Name="{Binding ColorName}"
                         FontSize="16"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
@@ -67,9 +66,11 @@
                         CornerRadius="{ThemeResource ControlCornerRadius}" />
 
                     <TextBlock
+                        x:Name="ColorTextWithNameBlock"
                         Grid.Row="0"
                         Grid.Column="1"
                         Margin="8,5,6,0"
+                        AutomationProperties.LiveSetting="Assertive"
                         FontSize="16"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource TextFillColorPrimaryBrush}"

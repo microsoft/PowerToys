@@ -1,23 +1,18 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Threading;
+
 using ManagedCommon;
 using Windows.ApplicationModel.DataTransfer;
-
-using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Helpers
 {
     public static class ClipboardHelper
     {
-        /// <summary>
-        /// Defined error code for "clipboard can't open"
-        /// </summary>
-        private const uint ErrorCodeClipboardCantOpen = 0x800401D0;
-
         public static void CopyToClipboard(string colorRepresentationToCopy)
         {
             if (string.IsNullOrEmpty(colorRepresentationToCopy))
@@ -25,36 +20,56 @@ namespace ColorPicker.Helpers
                 return;
             }
 
-            // nasty hack - sometimes clipboard can be in use and it will raise and exception
-            for (int i = 0; i < 10; i++)
-            {
-                try
+            if (!TrySetClipboard(
+                () =>
                 {
                     var data = new DataPackage();
                     data.SetText(colorRepresentationToCopy);
                     Clipboard.SetContent(data);
                     Clipboard.Flush(); // persist after this process exits (Color Picker may close immediately)
-                    break;
+                },
+                maxAttempts: 10,
+                delayMs: 10,
+                out Exception lastException))
+            {
+                Logger.LogError("Failed to set text into clipboard", lastException);
+            }
+        }
+
+        /// <summary>
+        /// Invokes <paramref name="attempt"/> up to <paramref name="maxAttempts"/> times,
+        /// retrying on <see cref="COMException"/> or <see cref="UnauthorizedAccessException"/>,
+        /// sleeping <paramref name="delayMs"/> ms between attempts (not after the final one).
+        /// Any other exception propagates immediately.
+        /// </summary>
+        /// <returns><see langword="true"/> on success; <see langword="false"/> when all attempts fail.</returns>
+        internal static bool TrySetClipboard(Action attempt, int maxAttempts, int delayMs, out Exception lastException)
+        {
+            lastException = null;
+            for (int i = 0; i < maxAttempts; i++)
+            {
+                if (i > 0)
+                {
+                    Thread.Sleep(delayMs);
+                }
+
+                try
+                {
+                    attempt();
+                    lastException = null;
+                    return true;
                 }
                 catch (COMException ex)
                 {
-                    var hwnd = GetOpenClipboardWindow();
-                    var sb = new StringBuilder(501);
-                    _ = GetWindowText(hwnd.ToInt32(), sb, 500);
-                    var applicationUsingClipboard = sb.ToString();
-
-                    if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
-                    {
-                        Logger.LogError("Failed to set text into clipboard", ex);
-                    }
-                    else
-                    {
-                        Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
-                    }
+                    lastException = ex;
                 }
-
-                System.Threading.Thread.Sleep(10);
+                catch (UnauthorizedAccessException ex)
+                {
+                    lastException = ex;
+                }
             }
+
+            return false;
         }
     }
 }

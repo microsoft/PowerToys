@@ -40,6 +40,13 @@ namespace ColorPicker.Views
             AutomationProperties.SetName(CopiedToClipboardLabel, ResourceLoaderInstance.GetString("Copied_to_clipboard"));
         }
 
+        private void HistoryContextFlyout_Opening(object sender, object e)
+        {
+            bool hasSelection = HistoryColors.SelectedItems.Count > 0;
+            RemoveMenuItem.IsEnabled = hasSelection;
+            ExportMenuItem.IsEnabled = hasSelection;
+        }
+
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             EnableHistoryColorsScrollIntoView();

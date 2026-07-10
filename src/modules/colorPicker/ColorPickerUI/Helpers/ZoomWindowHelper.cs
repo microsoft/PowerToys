@@ -8,9 +8,11 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 using Microsoft.Graphics.Canvas;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Windows.Graphics;
 using Windows.Graphics.DirectX;
-using WinUIEx;
 
 using Point = Windows.Foundation.Point;
 
@@ -30,10 +32,11 @@ namespace ColorPicker.Helpers
         private const int MinZoomLevel = 0;
         private const int WindowChrome = 30; // Border (12) + canvas (3) margins on each side.
 
-        // ALT-1: the magnifier window is a constant size for the whole session — the level-4
-        // (factor 8) bounding box — so the centred card always fits and never clips. Only the inner
-        // card animates its size (Composition scale in ZoomView), so there is no per-step window
-        // resize and no shrink-trim bookkeeping.
+        // The magnifier window is a constant size for the whole session — the level-4 (factor 8)
+        // bounding box — so the centred card always fits and never clips. Only the inner card
+        // animates its size (Composition scale in ZoomView), so there is no per-step window resize
+        // and no shrink-trim bookkeeping. Expressed in device-independent pixels (DIP); it is scaled
+        // to the target monitor's physical pixels when the window is first shown.
         private const int MaxWindowSize = (BaseZoomImageSize * 8) + WindowChrome; // 50*8 + 30 = 430
 
         private static readonly Bitmap _bmp = new Bitmap(BaseZoomImageSize, BaseZoomImageSize, PixelFormat.Format32bppArgb);
@@ -82,7 +85,8 @@ namespace ColorPicker.Helpers
             _zoomWindowVisible = false;
             _zoomWindow?.ZoomViewControl.ResetScale();
             _zoomWindow?.ZoomViewControl.ClearBitmap();
-            _zoomWindow?.Hide();
+
+            HideZoomWindow();
 
             // Release this session's captured GPU surface (the ZoomView reference is cleared above
             // so the canvas will not draw a disposed bitmap).
@@ -96,12 +100,14 @@ namespace ColorPicker.Helpers
             {
                 _zoomWindowVisible = false;
                 _zoomWindow?.ZoomViewControl.ResetScale();
-                _zoomWindow?.Hide();
+
+                HideZoomWindow();
                 return;
             }
 
-            // Capture once when a zoom session starts (previous level was 0).
-            if (_previousZoomLevel == 0)
+            // Capture once when a zoom session starts (previous level was 0), or when a previous
+            // attempt left no bitmap so a later wheel tick retries the capture.
+            if (_previousZoomLevel == 0 || _capturedBitmap == null)
             {
                 // Release the previous session's GPU surface before capturing a new one. The window
                 // is hidden between sessions, so clear the ZoomView reference first (it is not
@@ -139,6 +145,35 @@ namespace ColorPicker.Helpers
             // on first appearance, which makes the scale a no-op snap).
             double previousFactor = _previousZoomLevel >= 1 ? Math.Pow(ZoomFactor, _previousZoomLevel - 1) : _zoomFactorValue;
             ShowZoomWindow(point, previousFactor);
+        }
+
+        /// <summary>
+        /// Hides the zoom window with FIFO-safe ordering.
+        /// <para>
+        /// <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> runs synchronously first so
+        /// screen capture cannot include the magnifier. Then
+        /// <see cref="Microsoft.PowerToys.Common.UI.Controls.Window.TransparentWindow.Hide"/>
+        /// enqueues a trailing <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> at Low priority
+        /// behind any <c>SW_SHOWNA</c> already queued by
+        /// <see cref="Microsoft.PowerToys.Common.UI.Controls.Window.TransparentWindow.Show()"/>.
+        /// With no <c>Hiding</c> subscribers the queued item resolves to
+        /// <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> immediately; FIFO ordering guarantees
+        /// the final state is hidden regardless of Show/Hide interleaving.
+        /// </para>
+        /// </summary>
+        private void HideZoomWindow()
+        {
+            if (_zoomWindow == null)
+            {
+                return;
+            }
+
+            // Synchronous immediate hide: capture cannot include the magnifier after this returns.
+            _zoomWindow.AppWindow.Hide();
+
+            // Trailing queued hide: enqueued at Low priority after any SW_SHOWNA already queued by
+            // Show(), so the window ends hidden regardless of rapid Show→hide interleaving.
+            _zoomWindow.Hide();
         }
 
         private static CanvasBitmap BitmapToCanvasBitmap(Bitmap bitmap)
@@ -179,17 +214,42 @@ namespace ColorPicker.Helpers
                 // only repositions the window while it is still transparent (Opacity < 0.5). Moving
                 // it on every scroll step would drag the magnifier to wherever the cursor currently
                 // is instead of keeping it on — and zooming — the region it was first opened over.
-                // (AppWindow.Size and the cursor are both physical pixels; the card is centred inside.)
-                _zoomWindow.SetWindowSize(MaxWindowSize, MaxWindowSize);
 
-                var appWindow = _zoomWindow.AppWindow;
-                appWindow.Move(new PointInt32((int)point.X - (appWindow.Size.Width / 2), (int)point.Y - (appWindow.Size.Height / 2)));
+                // Resolve the display under the cursor so the window is sized to that monitor's DPI
+                // and moved on it (MoveAndResizeOnDisplay handles the mixed-DPI monitor crossing).
+                var targetDisplay = DisplayArea.GetFromPoint(
+                    new PointInt32((int)point.X, (int)point.Y),
+                    DisplayAreaFallback.Nearest);
+                if (targetDisplay is null)
+                {
+                    // No display resolved for the cursor (degenerate/no-display state): skip showing
+                    // rather than crash. A later wheel tick retries.
+                    return;
+                }
+
+                double dpiScale = FlyoutWindowHelper.GetDpiScale(targetDisplay);
+                int sizePhysical = FlyoutWindowHelper.ScaleToPhysicalPixels(MaxWindowSize, dpiScale);
+
+                // Center the window on the cursor. Cursor coordinates and AppWindow geometry are
+                // physical pixels; the card is centred inside the constant-size window.
+                int left = (int)point.X - (sizePhysical / 2);
+                int top = (int)point.Y - (sizePhysical / 2);
+                FlyoutWindowHelper.MoveAndResizeOnDisplay(_zoomWindow, targetDisplay, new RectInt32(left, top, sizePhysical, sizePhysical));
 
                 // The card shows directly at the current size (no tween), so there is no scale
                 // animation to race against the async Show().
                 _zoomWindow.ZoomViewControl.ResetScale();
                 _zoomWindow.Show();
                 _zoomWindowVisible = true;
+
+                // TransparentWindow.Show() queues its SW_SHOWNA on the dispatcher (Low priority).
+                // Enqueue the overlay's z-order reassertion on the same DispatcherQueue at Low
+                // priority so it runs AFTER the zoom show request, keeping the tooltip above the
+                // equally top-most magnifier even when the cursor is stationary (no move tick to
+                // reassert it).
+                _zoomWindow.DispatcherQueue.TryEnqueue(
+                    DispatcherQueuePriority.Low,
+                    () => (App.Window as ColorPickerOverlayWindow)?.ReassertTopmost());
             }
             else
             {

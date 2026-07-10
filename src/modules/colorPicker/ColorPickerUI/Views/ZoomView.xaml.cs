@@ -158,7 +158,7 @@ namespace ColorPicker.Views
                 CanvasImageInterpolation.NearestNeighbor);
 
             // Brightness-adaptive pixel grid + center highlight, only at high zoom (matches the
-            // original shader's zoomFactor >= 4 gate — 方案2). Each grid segment is drawn dark over a
+            // original shader's zoomFactor >= 4 gate). Each grid segment is drawn dark over a
             // light cell and light over a dark cell (a flat gray grid loses contrast on both very
             // light and very dark regions), and faded toward the magnifier edge so the cursor area
             // reads clearest (the shader's radius reveal). The center cursor pixel gets an adaptive

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using Microsoft.UI.Dispatching;
@@ -20,8 +21,23 @@ namespace ColorPicker.Helpers
         public ThrottledActionInvoker()
         {
             // Must be constructed on the UI thread so it binds to the app's DispatcherQueue.
-            var queue = DispatcherQueue.GetForCurrentThread()
-                ?? throw new InvalidOperationException("ThrottledActionInvoker must be created on a thread with a DispatcherQueue (the UI thread).");
+            DispatcherQueue queue;
+            try
+            {
+                queue = DispatcherQueue.GetForCurrentThread();
+            }
+            catch (COMException ex)
+            {
+                throw new InvalidOperationException(
+                    "ThrottledActionInvoker must be created on a thread with a DispatcherQueue (the UI thread).",
+                    ex);
+            }
+
+            if (queue == null)
+            {
+                throw new InvalidOperationException("ThrottledActionInvoker must be created on a thread with a DispatcherQueue (the UI thread).");
+            }
+
             _timer = queue.CreateTimer();
             _timer.IsRepeating = false; // one-shot debounce: DispatcherQueueTimer repeats by default.
             _timer.Tick += Timer_Tick;
@@ -48,7 +64,13 @@ namespace ColorPicker.Helpers
             lock (_invokerLock)
             {
                 _timer.Stop();
-                _actionToRun.Invoke();
+
+                // Capture and clear the field before invoking so this process-lifetime singleton does
+                // not pin the last-scheduled closure (and the ColorFormatControl it captures) alive
+                // until the next ScheduleAction call.
+                var action = _actionToRun;
+                _actionToRun = null;
+                action?.Invoke();
             }
         }
     }

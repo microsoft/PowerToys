@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
@@ -18,6 +20,14 @@ namespace ColorPicker.Mouse
 {
     public class MouseInfoProvider : IMouseInfoProvider
     {
+        // Reused 1x1 GDI surface for the per-tick screen-pixel sample. Allocating a fresh Bitmap +
+        // Graphics on every timer tick (which fires at the monitor refresh rate while a pick session
+        // is active) churns the GC heap and grows the process working set on each activation; reuse a
+        // single cached surface instead (mirrors ZoomWindowHelper's static _bmp/_graphics). All access
+        // is on the UI thread (the constructor and the DispatcherQueueTimer tick).
+        private static readonly Bitmap _screenPixelBitmap = new Bitmap(1, 1, PixelFormat.Format32bppArgb);
+        private static readonly Graphics _screenPixelGraphics = Graphics.FromImage(_screenPixelBitmap);
+
         private readonly double _mousePullInfoIntervalInMs;
         private readonly DispatcherQueueTimer _timer;
         private readonly MouseHook _mouseHook;
@@ -46,7 +56,19 @@ namespace ColorPicker.Mouse
             _userSettings = userSettings;
             _userSettings.CopiedColorRepresentation.PropertyChanged += CopiedColorRepresentation_PropertyChanged;
             _previousMousePosition = GetCursorPosition();
-            _previousColor = GetPixelColor(_previousMousePosition);
+            var initPos = _previousMousePosition;
+            if (TryGetPixelColor(
+                () =>
+                {
+                    _screenPixelGraphics.CopyFromScreen((int)initPos.X, (int)initPos.Y, 0, 0, _screenPixelBitmap.Size, CopyPixelOperation.SourceCopy);
+                    return _screenPixelBitmap.GetPixel(0, 0);
+                },
+                out var initialColor))
+            {
+                _previousColor = initialColor;
+            }
+
+            // else _previousColor stays Color.Transparent (field initializer default)
         }
 
         public event EventHandler<Color> MouseColorChanged;
@@ -79,37 +101,49 @@ namespace ColorPicker.Mouse
                 MousePositionChanged?.Invoke(this, mousePosition);
             }
 
-            var color = GetPixelColor(mousePosition);
-            if (_previousColor != color || _colorFormatChanged)
+            if (TryGetPixelColor(
+                () =>
+                {
+                    _screenPixelGraphics.CopyFromScreen((int)mousePosition.X, (int)mousePosition.Y, 0, 0, _screenPixelBitmap.Size, CopyPixelOperation.SourceCopy);
+                    return _screenPixelBitmap.GetPixel(0, 0);
+                },
+                out var color))
             {
-                _previousColor = color;
-                _colorFormatChanged = false;
-                MouseColorChanged?.Invoke(this, color);
+                if (_previousColor != color || _colorFormatChanged)
+                {
+                    _previousColor = color;
+                    _colorFormatChanged = false;
+                    MouseColorChanged?.Invoke(this, color);
+                }
             }
         }
 
-        private static Color GetPixelColor(Point mousePosition)
+        /// <summary>
+        /// Attempts to obtain a pixel colour using the supplied <paramref name="captureFunc"/>.
+        /// Returns <see langword="true"/> and sets <paramref name="color"/> on success.
+        /// Returns <see langword="false"/> (and <paramref name="color"/> = <see cref="Color.Transparent"/>)
+        /// when <paramref name="captureFunc"/> throws <see cref="Win32Exception"/> or
+        /// <see cref="ExternalException"/> — the expected GDI failure modes.
+        /// Any other exception propagates to the caller unchanged.
+        /// </summary>
+        internal static bool TryGetPixelColor(Func<Color> captureFunc, out Color color)
         {
+            color = Color.Transparent;
             try
             {
-                var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
-                using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
-                {
-                    using (var g = Graphics.FromImage(bmp))
-                    {
-                        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-                    }
-
-                    return bmp.GetPixel(0, 0);
-                }
+                color = captureFunc();
+                return true;
             }
-            catch (Exception)
+            catch (Win32Exception)
             {
-                // GDI CopyFromScreen can throw "the handle is invalid" when no screen device
-                // context is available (e.g. a non-interactive / disconnected session, or before
-                // the desktop is ready at startup). Degrade gracefully instead of crashing the
-                // app; the next sample succeeds once a real desktop is present.
-                return Color.Black;
+                // GDI CopyFromScreen: "the handle is invalid" when no desktop DC is available
+                // (non-interactive / disconnected session, or before the desktop is ready).
+                return false;
+            }
+            catch (ExternalException)
+            {
+                // GDI+ returns a non-Ok status code (e.g. OutOfMemory, Aborted).
+                return false;
             }
         }
 

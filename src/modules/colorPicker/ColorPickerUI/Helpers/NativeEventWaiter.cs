@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using ManagedCommon;
@@ -33,7 +34,17 @@ namespace ColorPicker.Helpers
         /// </summary>
         public static void WaitForEventLoop(string eventName, Action callback, CancellationToken cancel)
         {
-            var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            DispatcherQueue dispatcherQueue;
+            try
+            {
+                dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            }
+            catch (COMException ex)
+            {
+                Logger.LogError($"[NativeEventWaiter] No DispatcherQueue on the calling thread for event: {eventName}. {ex.Message}");
+                return;
+            }
+
             if (dispatcherQueue == null)
             {
                 Logger.LogError($"[NativeEventWaiter] No DispatcherQueue on the calling thread for event: {eventName}. Call from the UI thread.");
@@ -53,14 +64,7 @@ namespace ColorPicker.Helpers
                         {
                             dispatcherQueue.TryEnqueue(() =>
                             {
-                                try
-                                {
-                                    callback();
-                                }
-                                catch (Exception callbackEx)
-                                {
-                                    Logger.LogError($"[NativeEventWaiter] Callback failed for event {eventName}: {callbackEx.Message}");
-                                }
+                                callback();
                             });
                         }
                         else

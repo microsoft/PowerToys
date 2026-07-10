@@ -18,7 +18,7 @@
         <!--
             A single Win2D CanvasControl draws the zoomed (nearest-neighbor) capture plus a
             brightness-adaptive pixel grid + center highlight, replacing the WPF ShaderEffect
-            (方案2: the grid color adapts to local pixel brightness and fades toward the edges).
+            (the grid color adapts to local pixel brightness and fades toward the edges).
         -->
         <canvas:CanvasControl
             x:Name="ZoomCanvas"

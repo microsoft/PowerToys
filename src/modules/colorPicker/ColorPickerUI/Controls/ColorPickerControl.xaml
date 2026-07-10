@@ -7,7 +7,7 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <!--
-            Approach A: keep the native WinUI Slider, but make its track transparent so the
+            Keep the native WinUI Slider, but make its track transparent so the
             gradient Border behind each slider shows through. These keyed brushes override the
             default slider track theme brushes for every Slider inside this control.
         -->
