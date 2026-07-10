@@ -300,9 +300,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Position of on-screen indicators</value>
     <comment>Kept in sync with the Windows Settings card of the same name</comment>
   </data>
-  <data name="Settings_GeneralPage_ToastPosition_SettingsCard.Description" xml:space="preserve">
+  <data name="Settings_GeneralPage_ToastPosition_Description.Text" xml:space="preserve">
     <value>Confirmation messages and other indicators will appear in this location</value>
     <comment>Mirrors the Windows Settings card "Volume, brightness and other controls will appear in this location"</comment>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink.Content" xml:space="preserve">
+    <value>Change position in Windows Settings</value>
+    <comment>Opens ms-settings:notifications, which hosts the "Position of on-screen indicators" setting</comment>
   </data>
   <data name="Settings_GeneralPage_ToastPosition_Item_BottomCenter.Content" xml:space="preserve">
     <value>Bottom center</value>
@@ -312,6 +316,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_ToastPosition_Item_TopCenter.Content" xml:space="preserve">
     <value>Top center</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_UseSystemSettings.Content" xml:space="preserve">
+    <value>Use system settings</value>
+    <comment>Follows the Windows "Position of on-screen indicators" setting; keep wording matching Settings_GeneralPage_AppTheme_Mode_System</comment>
   </data>
   <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
     <value>Confirm</value>

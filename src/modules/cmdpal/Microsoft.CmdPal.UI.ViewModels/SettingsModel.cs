@@ -91,7 +91,7 @@ public record SettingsModel
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
-    public ToastPosition ToastPosition { get; init; } = ToastPosition.BottomCenter;
+    public ToastPosition ToastPosition { get; init; } = ToastPosition.UseSystemSettings;
 
     public bool DisableAnimations { get; init; } = true;
 
@@ -462,9 +462,10 @@ public enum MonitorBehavior
 
 public enum ToastPosition
 {
-    BottomCenter = 0,
-    TopLeft = 1,
-    TopCenter = 2,
+    UseSystemSettings = 0,
+    BottomCenter = 1,
+    TopLeft = 2,
+    TopCenter = 3,
 }
 
 public enum EscapeKeyBehavior

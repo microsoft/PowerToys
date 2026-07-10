@@ -15,6 +15,7 @@ using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.Win32;
 using Windows.Graphics;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
@@ -91,7 +92,7 @@ public sealed partial class ToastWindow : TransparentWindow,
         // The pill hugs the screen-adjacent window edges (16px gap) and keeps
         // 24px on the free edges for its slide + shadow; it slides in from the
         // screen edge it sits against.
-        var (windowPosition, horizontal, vertical, margin, transition) = toastPosition switch
+        var (windowPosition, horizontal, vertical, margin, transition) = ResolveSystemPosition(toastPosition) switch
         {
             ToastPosition.TopLeft => (new PointInt32(workArea.X, workArea.Y), HorizontalAlignment.Left, VerticalAlignment.Top, new Thickness(16, 16, 24, 24), Transition.Top),
             ToastPosition.TopCenter => (new PointInt32(centeredX, workArea.Y), HorizontalAlignment.Center, VerticalAlignment.Top, new Thickness(24, 16, 24, 24), Transition.Top),
@@ -104,5 +105,32 @@ public sealed partial class ToastWindow : TransparentWindow,
         Surface.Margin = margin;
         Surface.ShowTransition = transition;
         Surface.HideTransition = transition;
+    }
+
+    // Maps UseSystemSettings to the Windows "Position of on-screen indicators"
+    // setting. Its PositionIndex values differ from ToastPosition.
+    private static ToastPosition ResolveSystemPosition(ToastPosition toastPosition)
+    {
+        if (toastPosition != ToastPosition.UseSystemSettings)
+        {
+            return toastPosition;
+        }
+
+        try
+        {
+            return Registry.GetValue(
+                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\SystemSettings\ConfirmatorPosition",
+                "PositionIndex",
+                null) switch
+            {
+                3 => ToastPosition.TopCenter,
+                2 => ToastPosition.TopLeft,
+                _ => ToastPosition.BottomCenter,
+            };
+        }
+        catch (Exception)
+        {
+            return ToastPosition.BottomCenter;
+        }
     }
 }
