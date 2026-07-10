@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -48,6 +49,18 @@ namespace ViewModelTests
 
             Assert.IsFalse(viewModel.IsProfilesLoading);
             Assert.AreEqual(2, loadingStateChanges);
+        }
+
+        [TestMethod]
+        public async Task DisposeDisposesProfileOperationsCoordinator()
+        {
+            var viewModel = CreateViewModel();
+            var coordinator = GetProfileOperationsCoordinator(viewModel);
+
+            viewModel.Dispose();
+
+            await Assert.ThrowsExceptionAsync<ObjectDisposedException>(
+                async () => await coordinator.RunAsync(_ => Task.CompletedTask));
         }
 
         private static LightSwitchViewModel CreateViewModel()

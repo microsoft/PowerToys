@@ -71,6 +71,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             CheckPowerDisplayEnabled();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
+        public override void Dispose()
+        {
+            _profileOperations.Dispose();
+
+            base.Dispose();
+        }
+
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
