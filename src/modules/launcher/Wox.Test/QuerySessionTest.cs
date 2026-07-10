@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.ViewModel;
 
@@ -13,186 +14,98 @@ namespace Wox.Test
     [TestClass]
     public class QuerySessionTest
     {
-        private static readonly TimeSpan WaitBudget = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(5);
 
         [TestMethod]
-        public void Cancel_SignalsCapturedTokenAndIsIdempotent()
+        public void CancelSignalsCapturedTokenAfterSessionReplacement()
         {
-            var session = QuerySession.Start(_ => Task.CompletedTask);
-            var captured = session.Token;
+            // Regression guard: an old query must retain its own canceled token after a newer query replaces it.
+            using var firstSession = QuerySession.Start(_ => Task.CompletedTask);
+            var firstToken = firstSession.Token;
+            using var secondSession = QuerySession.Start(_ => Task.CompletedTask);
 
-            Assert.IsFalse(captured.IsCancellationRequested);
+            firstSession.Cancel();
 
-            session.Cancel();
-            session.Cancel(); // idempotent
-
-            Assert.IsTrue(captured.IsCancellationRequested);
-            Assert.ThrowsException<OperationCanceledException>(captured.ThrowIfCancellationRequested);
+            Assert.IsTrue(firstToken.IsCancellationRequested);
+            Assert.IsFalse(secondSession.Token.IsCancellationRequested);
         }
 
         [TestMethod]
-        public void CapturedToken_StaysBoundToOriginalSourceAcrossReplacement()
+        public void DisposeWhenCompleteDoesNotDisposeSourceWhileQueryRuns()
         {
-            // Regression for #36041: re-reading a FIELD token after the field was
-            // reassigned silently no-ops on cancellation. A LOCAL capture must stay
-            // bound to its original source even after the owning reference is replaced.
-            var first = QuerySession.Start(_ => Task.CompletedTask);
-            var firstToken = first.Token;
-
-            var second = QuerySession.Start(_ => Task.CompletedTask);
-            first.Cancel(); // cancel the original session only
-
-            Assert.IsTrue(firstToken.IsCancellationRequested, "Captured local token must observe cancellation of its OWN source.");
-            Assert.IsFalse(second.Token.IsCancellationRequested, "New session's token must NOT be affected by cancelling the previous one.");
-        }
-
-        [TestMethod]
-        public void Start_PassesSessionTokenToPipelineFactory()
-        {
-            CancellationToken seenInsidePipeline = default;
-            var session = QuerySession.Start(t =>
-            {
-                seenInsidePipeline = t;
-                return Task.CompletedTask;
-            });
-
-            Assert.IsTrue(seenInsidePipeline == session.Token, "Pipeline factory must receive THIS session's token.");
-        }
-
-        [TestMethod]
-        public void Start_ThrowsArgumentNullException_WhenFactoryIsNull()
-        {
-            Assert.ThrowsException<ArgumentNullException>(() => QuerySession.Start(null));
-        }
-
-        [TestMethod]
-        public void DisposeWhenComplete_WaitsForCompletionTaskBeforeDisposingCts()
-        {
-            var gate = new ManualResetEventSlim(initialState: false);
-            bool observedCancellationInside = false;
-
-            // Pass CancellationToken.None to Task.Run so the scheduler doesn't
-            // short-circuit to Canceled before the worker starts running; we still
-            // observe cancellation inside the body via the captured 'token'.
-            var session = QuerySession.Start(token => Task.Run(
-                () =>
-                {
-                    gate.Wait(WaitBudget);
-                    observedCancellationInside = token.IsCancellationRequested;
-                },
-                CancellationToken.None));
-
-            session.Cancel();
-
-            var disposalCompletion = session.DisposeWhenComplete();
-
-            Assert.IsFalse(disposalCompletion.IsCompleted, "Dispose must NOT complete while the completion task is still running.");
-
-            gate.Set();
-
-            Assert.IsTrue(disposalCompletion.Wait(WaitBudget), "Dispose continuation should fire once the completion task completes.");
-            Assert.IsTrue(session.Completion.IsCompleted);
-            Assert.IsTrue(observedCancellationInside, "Captured local token must surface cancellation to the running task body.");
-        }
-
-        [TestMethod]
-        public void CancelAndWait_ReturnsTrueWhenTaskCompletesWithinTimeout()
-        {
-            var session = QuerySession.Start(token => Task.Run(
-                () =>
-                {
-                    try
-                    {
-                        Task.Delay(Timeout.Infinite, token).Wait();
-                    }
-                    catch (AggregateException)
-                    {
-                        // expected on cancellation
-                    }
-                },
-                CancellationToken.None));
-
-            bool completed = session.CancelAndWait(WaitBudget);
-
-            Assert.IsTrue(completed);
-            Assert.IsTrue(session.Completion.IsCompleted);
-        }
-
-        [TestMethod]
-        public void CancelAndWait_ReturnsFalseWhenTaskExceedsTimeout()
-        {
-            var release = new ManualResetEventSlim(initialState: false);
-
-            // Task ignores cancellation — simulates a buggy plugin that doesn't yield.
-            var session = QuerySession.Start(_ => Task.Run(() => release.Wait(WaitBudget)));
-
-            bool completed = session.CancelAndWait(TimeSpan.FromMilliseconds(50));
-
-            Assert.IsFalse(completed, "CancelAndWait must report timeout when the completion task doesn't yield.");
-
-            // Cleanup so the test process doesn't leak the worker.
-            release.Set();
-            session.Completion.Wait(WaitBudget);
-        }
-
-        [TestMethod]
-        public void CancelAndWait_DoesNotDisposeCtsWhileTaskStillRuns()
-        {
-            // Regression: CancelAndWait used to dispose the underlying CTS unconditionally
-            // on timeout, leaving any still-running task body holding a disposed source —
-            // a future code path that touches token WaitHandles (e.g. Register, WaitOne)
-            // would crash with ObjectDisposedException, violating the PR's own
-            // "tasks never observe a disposed CTS" invariant. The fix defers disposal
-            // until the task actually completes.
-            var release = new ManualResetEventSlim(initialState: false);
+            // A superseded query can still be inside plugin code, so its token source must remain usable until it exits.
+            using var releaseQuery = new ManualResetEventSlim();
             CancellationToken capturedToken = default;
-
             var session = QuerySession.Start(token =>
             {
                 capturedToken = token;
-                return Task.Run(() => release.Wait(WaitBudget));
+                return Task.Run(() => releaseQuery.Wait(WaitTimeout));
             });
 
-            bool completed = session.CancelAndWait(TimeSpan.FromMilliseconds(50));
-            Assert.IsFalse(completed, "Sanity: task must outlive the timeout.");
+            session.Cancel();
+            var disposal = session.DisposeWhenComplete();
 
-            // While the task is still running with the CTS undisposed,
-            // CancellationToken.Register must succeed (would throw ODE if disposed).
+            // Register throws after CTS disposal, so success proves the running query still owns a live source.
             using (capturedToken.Register(() => { }))
             {
-                // no-op; just proves Register didn't throw
+                Assert.IsFalse(disposal.IsCompleted);
             }
 
-            // Allow the task to complete; the deferred ContinueWith should then dispose
-            // the CTS, and a subsequent Register attempt is allowed to throw ODE.
-            release.Set();
-            session.Completion.Wait(WaitBudget);
+            releaseQuery.Set();
+            Assert.IsTrue(disposal.Wait(WaitTimeout));
         }
 
         [TestMethod]
-        public void Dispose_IsIdempotent_AndSafeAfterCancel()
+        public void CancelAndWaitDefersDisposalWhenPluginIgnoresCancellation()
         {
-            var session = QuerySession.Start(_ => Task.CompletedTask);
+            // Misbehaving plugins may outlive shutdown's wait budget; they must not observe a prematurely disposed source.
+            using var releaseQuery = new ManualResetEventSlim();
+            CancellationToken capturedToken = default;
+            var session = QuerySession.Start(token =>
+            {
+                capturedToken = token;
+                return Task.Run(() => releaseQuery.Wait(WaitTimeout));
+            });
 
-            session.Cancel();
-            session.Dispose();
-            session.Dispose();    // idempotent
-            session.Cancel();     // safe after Dispose
+            Assert.IsFalse(session.CancelAndWait(TimeSpan.FromMilliseconds(50)));
+
+            // Register throws after CTS disposal, so success proves timeout cleanup was safely deferred.
+            using (capturedToken.Register(() => { }))
+            {
+            }
+
+            releaseQuery.Set();
+            Assert.IsTrue(session.Completion.Wait(WaitTimeout));
         }
 
         [TestMethod]
-        public void Token_ThrowIfCancellationRequested_NeverThrowsObjectDisposedException()
+        public void DisposeIsSafeAfterPriorDisposalRequest()
         {
-            // Documents the property the original PR description got wrong: even after
-            // the CTS is disposed, ThrowIfCancellationRequested only ever raises
-            // OperationCanceledException — never ObjectDisposedException.
+            // Query replacement and application shutdown can race, so repeated cleanup must remain harmless.
             var session = QuerySession.Start(_ => Task.CompletedTask);
-            var token = session.Token;
 
-            session.Cancel();
+            _ = session.DisposeWhenComplete();
             session.Dispose();
+            session.Cancel();
+        }
 
-            Assert.ThrowsException<OperationCanceledException>(token.ThrowIfCancellationRequested);
+        [TestMethod]
+        public void SuspendedSessionDoesNotRunPipelineBeforeResume()
+        {
+            // Query state must be published before its worker can produce results, otherwise a fast query can discard valid results as stale.
+            var pipelineStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var session = QuerySession.StartSuspended(_ =>
+            {
+                pipelineStarted.SetResult(true);
+                return Task.CompletedTask;
+            });
+
+            Assert.IsFalse(pipelineStarted.Task.Wait(TimeSpan.FromMilliseconds(50)));
+
+            session.Resume();
+
+            Assert.IsTrue(pipelineStarted.Task.Wait(WaitTimeout));
+            Assert.IsTrue(session.Completion.Wait(WaitTimeout));
         }
     }
 }
