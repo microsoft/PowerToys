@@ -500,6 +500,19 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         var commands = _tlcManager.TopLevelCommands;
+
+        // Materialized inputs captured under the lock so the heavy scoring below can run OFF the
+        // lock. Scoring no longer converts directly into blocked settle/render time, because
+        // GetItems() takes the SAME lock and now only contends with the short snapshot/publish
+        // sections rather than the whole multi-thousand-item scoring pass.
+        IReadOnlyList<IListItem> itemsSource;
+        IReadOnlyList<IListItem> appsSource;
+        IReadOnlyList<IListItem> fallbackSource;
+        IListItem[] globalFallbackSources;
+        bool includeAppsSnapshot;
+        bool tookFullCatalog = false;
+
+        // ===== SNAPSHOT PHASE (under lock) =====
         lock (commands)
         {
             if (token.IsCancellationRequested)
@@ -553,52 +566,28 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // If the new string doesn't start with the old string, then we can't
-            // re-use previous results. Reset _filteredItems, and keep er moving.
-            if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
-            {
-                ClearResults();
-            }
+            includeAppsSnapshot = _includeApps;
 
-            // If the internal state has changed, reset _filteredItems to reset the list.
-            if (_filteredItemsIncludesApps != _includeApps)
-            {
-                ClearResults();
-            }
+            // If the new string doesn't start with the old string we can't re-use previous
+            // results; likewise if the app-inclusion state changed. Either way we rebuild from the
+            // full catalog. On an extend (the new query starts with the old and app state is
+            // unchanged) we re-score only the previously matched subset, not the whole catalog.
+            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+                || _filteredItemsIncludesApps != includeAppsSnapshot;
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
+            var prevFilteredItems = reset ? null : _filteredItems;
+            var prevApps = reset ? null : _filteredApps;
+            var prevFallbacks = reset ? null : _fallbackItems;
 
-            var newFilteredItems = Enumerable.Empty<IListItem>();
-            var newFallbacks = Enumerable.Empty<IListItem>();
-            var newApps = Enumerable.Empty<IListItem>();
-
-            if (_filteredItems is not null)
-            {
-                newFilteredItems = _filteredItems.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (_filteredApps is not null)
-            {
-                newApps = _filteredApps.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (_fallbackItems is not null)
-            {
-                newFallbacks = _fallbackItems.Select(s => s.Item);
-            }
+            IEnumerable<IListItem> newFilteredItems = prevFilteredItems is not null
+                ? prevFilteredItems.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newApps = prevApps is not null
+                ? prevApps.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newFallbacks = prevFallbacks is not null
+                ? prevFallbacks.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
 
             if (token.IsCancellationRequested)
             {
@@ -609,6 +598,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // with a list of all our commands & apps.
             if (!newFilteredItems.Any() && !newApps.Any())
             {
+                tookFullCatalog = true;
                 newFilteredItems = commands.Where(s => !s.IsFallback);
 
                 // Fallbacks are always included in the list, even if they
@@ -621,9 +611,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     return;
                 }
 
-                _filteredItemsIncludesApps = _includeApps;
-
-                if (_includeApps)
+                if (includeAppsSnapshot)
                 {
                     var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
@@ -646,86 +634,164 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+            // Materialize every source sequence while still under the lock. After this point the
+            // scoring passes never touch the live TopLevelCommands collection or the app provider,
+            // so they are free to run off the lock. globalFallbackSources reuses the specialFallbacks
+            // list already built above, dropping the redundant second commands.Where(...) pass.
+            itemsSource = MaterializeSource(newFilteredItems);
+            appsSource = MaterializeSource(newApps);
+            fallbackSource = MaterializeSource(newFallbacks);
+            globalFallbackSources = [.. specialFallbacks];
+        }
 
-            // Produce a list of everything that matches the current filter.
-            _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        // ===== SCORING PHASE (OFF the lock) =====
+        // The dominant apps pass is parallelized; commands and fallbacks stay serial. All of this
+        // now runs without holding the TopLevelCommands lock, so it no longer blocks GetItems()/render.
+        //
+        // Snapshot every input the scoring pass depends on into immutable locals, ONCE, before any
+        // item is scored. The live fields (_appStateService.State.RecentCommands,
+        // _fuzzyMatcherProvider.Current, _settingsService.Settings) can be swapped concurrently - a
+        // selection calls WithHistoryItem on another thread - so re-reading them per item could mix
+        // two frecency snapshots in one pass or, worse, let a parallel thread observe a fresh,
+        // unwarmed history index and race on its lazy dictionary build. Capturing here pins one
+        // consistent context; each captured value equals what the first scored item would have read,
+        // so the settled order is unchanged (ScoringParallelEquivalenceTests is the guardrail).
+        var recent = _appStateService.State.RecentCommands;
+        recent.PrewarmIndex();
+        var matcher = _fuzzyMatcherProvider.Current;
+        var settings = _settingsService.Settings;
+        var scoringNow = DateTimeOffset.UtcNow;
+
+        var searchQuery = matcher.PrecomputeQuery(SearchText);
+
+        // Commands resolve their per-provider weight from the captured settings. Every installed app
+        // belongs to the well-known AllApps provider, so its weight is constant across the whole apps
+        // pass - resolve it once here instead of repeating a dictionary lookup for every app.
+        var appsProviderWeight = ResolveProviderSearchWeight(settings, AllAppsCommandProvider.WellKnownId);
+        Func<IListItem, ProviderSearchWeight> commandsProviderLookup = item => ResolveProviderSearchWeight(settings, item);
+        Func<IListItem, ProviderSearchWeight> appsProviderLookup = _ => appsProviderWeight;
+
+        ScoringFunction<IListItem> commandsScorer = (in FuzzyQuery q, IListItem item) =>
+            ScoreTopLevelItem(in q, item, recent, matcher, commandsProviderLookup, scoringNow);
+        ScoringFunction<IListItem> appsScorer = (in FuzzyQuery q, IListItem item) =>
+            ScoreTopLevelItem(in q, item, recent, matcher, appsProviderLookup, scoringNow);
+
+        var scoredFilteredItems = InternalListHelpers.FilterListWithScores(itemsSource, searchQuery, commandsScorer);
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        var scoredFallbackItems = InternalListHelpers.FilterListWithScores(fallbackSource, searchQuery, _fallbackScoringFunction);
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        RoScored<IListItem>[]? scoredApps = null;
+        if (appsSource.Count > 0)
+        {
+            scoredApps = InternalListHelpers.FilterListWithScoresParallel(appsSource, searchQuery, appsScorer);
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
+        }
+
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+        var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
+#endif
+
+        // ===== PUBLISH PHASE (under lock): atomic swap, supersede-safe =====
+        // Keep the critical section to the field swaps only. Scheduling work (telemetry debounce and
+        // the refresh throttle) is done AFTER releasing the lock so we no longer nest
+        // _searchTelemetryLock under the commands lock, nor hold the TopLevelCommands lock across
+        // that bookkeeping. Only the deterministic result count is captured here for the post-lock
+        // telemetry payload.
+        var deterministicResultCount = 0;
+        lock (commands)
+        {
+            // A newer keystroke cancels this token before doing its own work, so a stale snapshot's
+            // finished results can never overwrite a newer query's. Skip the swap when superseded.
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (tookFullCatalog)
+            {
+                _filteredItemsIncludesApps = includeAppsSnapshot;
+            }
+
+            _filteredItems = scoredFilteredItems;
+            _fallbackItems = scoredFallbackItems;
 
             // Snapshot the global fallbacks and query, but do NOT score them here. Their dynamic
             // titles are updated asynchronously by the fallback update manager (BeginUpdate, above),
             // which runs off the typing path. Scoring is deferred to the render path so late fallback
             // resolutions fold in with fresh scores instead of a value frozen against a stale title.
-            _globalFallbackSources = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).ToArray();
+            _globalFallbackSources = globalFallbackSources;
             _globalFallbackQuery = searchQuery;
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
+            // Apps are only re-scored when there is an apps source (either the full catalog with
+            // apps included, or a retained subset on the extend path). When there is none, publish
+            // null so a rebuild clears any stale set - matching the previous ClearResults behavior.
+            _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
-            _fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], searchQuery, _fallbackScoringFunction);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            // Produce a list of filtered apps with the appropriate limit
-            if (newApps.Any())
-            {
-                _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
-
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-            }
-
-#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-            var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
-#endif
-
-            // Queue a settled-search telemetry event. This measures the deterministic first-paint
-            // results (commands + capped apps) and the latency to produce them, at this boundary -
-            // never inside the per-item scoring loop. The event is debounced so it is emitted only
-            // when the query settles, not on every keystroke, and it carries the query LENGTH only.
             if (isUserInput)
             {
-                var deterministicResultCount = (_filteredItems?.Length ?? 0)
+                deterministicResultCount = (_filteredItems?.Length ?? 0)
                     + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
-                QueueSearchResultsTelemetry(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
-            }
-
-            if (isUserInput)
-            {
-                // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
-                // takes a long time. If we always use the full throttle duration, then a slow filter could make the UI feel sluggish.
-                var adjustedInterval = RaiseItemsChangedThrottleForUserInput - stopwatch.Elapsed;
-                if (adjustedInterval < TimeSpan.Zero)
-                {
-                    adjustedInterval = TimeSpan.Zero;
-                }
-
-                RequestRefresh(fullRefresh: true, adjustedInterval);
-            }
-            else
-            {
-                RequestRefresh(fullRefresh: true);
             }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var listPageUpdatedTimestamp = stopwatch.ElapsedMilliseconds;
             Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
 #endif
+        }
 
-            stopwatch.Stop();
+        // Reaching here means the swap actually happened (the superseded path returns inside the
+        // lock). Do the telemetry/refresh scheduling now, outside the critical section.
+        stopwatch.Stop();
+
+        if (isUserInput)
+        {
+            // Queue a settled-search telemetry event. This measures the deterministic first-paint
+            // results (commands + capped apps) and the latency to produce them, at this boundary -
+            // never inside the per-item scoring loop. The event is debounced so it is emitted only
+            // when the query settles, not on every keystroke, and it carries the query LENGTH only.
+            QueueSearchResultsTelemetry(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
+
+            // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
+            // takes a long time. If we always use the full throttle duration, then a slow filter could make the UI feel sluggish.
+            var adjustedInterval = RaiseItemsChangedThrottleForUserInput - stopwatch.Elapsed;
+            if (adjustedInterval < TimeSpan.Zero)
+            {
+                adjustedInterval = TimeSpan.Zero;
+            }
+
+            RequestRefresh(fullRefresh: true, adjustedInterval);
+        }
+        else
+        {
+            RequestRefresh(fullRefresh: true);
         }
     }
+
+    // Materializes a source sequence into a stable, indexable snapshot so the scoring passes can
+    // run off the TopLevelCommands lock. Sequences that are already an IReadOnlyList (our own
+    // freshly built lists and empty arrays) are used as-is; lazy LINQ over the live collection or
+    // over previous results is copied so later mutation of the source can't affect scoring.
+    private static IReadOnlyList<IListItem> MaterializeSource(IEnumerable<IListItem> items)
+        => items as IReadOnlyList<IListItem> ?? items.ToArray();
 
     private bool ActuallyLoading()
     {
@@ -741,7 +807,8 @@ public sealed partial class MainListPage : DynamicListPage,
         IListItem topLevelOrAppItem,
         IRecentCommandsManager history,
         IPrecomputedFuzzyMatcher precomputedFuzzyMatcher,
-        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
+        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null,
+        DateTimeOffset? now = null)
     {
         var title = topLevelOrAppItem.Title;
         if (string.IsNullOrWhiteSpace(title))
@@ -806,7 +873,7 @@ public sealed partial class MainListPage : DynamicListPage,
             return 0;
         }
 
-        var frecencyWeight = history.GetCommandHistoryWeight(id);
+        var frecencyWeight = history.GetCommandHistoryWeight(id, now ?? DateTimeOffset.UtcNow);
         var aliasSubstringBonus = isAliasSubstringMatch && !isAliasMatch ? MainListRanker.AliasSubstringBonus : 0.0;
 
         // Per-provider weight is a within-tier nudge only. Resolving it here (rather than in
@@ -1028,19 +1095,29 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Resolves the user-configured per-provider search weight for an item. Top-level commands
     // carry their own provider id; installed apps all belong to the well-known "AllApps"
-    // provider, so app items are weighted by that provider's setting.
+    // provider, so app items are weighted by that provider's setting. The static overloads take
+    // an explicit settings snapshot so the hot path can resolve weights against a single captured
+    // SettingsModel instead of re-reading the live settings service per item.
     private ProviderSearchWeight ResolveProviderSearchWeight(IListItem topLevelOrAppItem)
+        => ResolveProviderSearchWeight(_settingsService.Settings, topLevelOrAppItem);
+
+    private static ProviderSearchWeight ResolveProviderSearchWeight(SettingsModel settings, IListItem topLevelOrAppItem)
     {
         var providerId = topLevelOrAppItem is TopLevelViewModel topLevel
             ? topLevel.CommandProviderId
             : AllAppsCommandProvider.WellKnownId;
 
+        return ResolveProviderSearchWeight(settings, providerId);
+    }
+
+    private static ProviderSearchWeight ResolveProviderSearchWeight(SettingsModel settings, string providerId)
+    {
         if (string.IsNullOrEmpty(providerId))
         {
             return ProviderSearchWeight.Normal;
         }
 
-        return _settingsService.Settings.ProviderSettings.TryGetValue(providerId, out var providerSettings)
+        return settings.ProviderSettings.TryGetValue(providerId, out var providerSettings)
             ? providerSettings.SearchWeight
             : ProviderSearchWeight.Normal;
     }

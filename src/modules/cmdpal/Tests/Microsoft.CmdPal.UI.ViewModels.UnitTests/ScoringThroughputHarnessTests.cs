@@ -384,6 +384,55 @@ public sealed partial class ScoringThroughputHarnessTests
         }
     }
 
+    /// <summary>
+    /// BEFORE/AFTER throughput: times the dominant apps scoring pass on the sequential path
+    /// (before, <see cref="InternalListHelpers.FilterListWithScores{T}"/>) versus the Phase 7b
+    /// parallel path (after, <see cref="InternalListHelpers.FilterListWithScoresParallel{T}"/>) and
+    /// reports the speedup per query. The parallel path pre-warms the frecency index once before
+    /// measuring, mirroring the product. This is report-only; it asserts only that the parallel
+    /// path returns the same match count as the sequential one, never a wall-clock threshold, so it
+    /// stays CI-safe.
+    /// </summary>
+    [TestMethod]
+    public void AppScoring_BeforeAfter_SerialVsParallelThroughput()
+    {
+        var apps = BuildCatalog(AppCount, "app");
+        var matcher = CreateMatcher();
+        var history = SeedHistory(apps, HistorySeedCount);
+        var scoringFn = BuildScoringFunction(history, matcher);
+        var source = apps.Cast<IListItem>().ToArray();
+
+        // Build the frecency index once, single-threaded, before the parallel pass reads it.
+        history.PrewarmIndex();
+
+        TestContext.WriteLine($"CPU count: {Environment.ProcessorCount}. Catalog: {AppCount} apps.");
+        TestContext.WriteLine("query | serial ms (before) | parallel ms (after) | speedup | matches");
+
+        foreach (var raw in Queries)
+        {
+            var query = matcher.PrecomputeQuery(raw);
+
+            RoScored<IListItem>[] serialResult = [];
+            var serialMs = TimeAverageMs(() =>
+            {
+                serialResult = InternalListHelpers.FilterListWithScores(source, query, scoringFn);
+            });
+
+            RoScored<IListItem>[] parallelResult = [];
+            var parallelMs = TimeAverageMs(() =>
+            {
+                parallelResult = InternalListHelpers.FilterListWithScoresParallel(source, query, scoringFn);
+            });
+
+            var speedup = parallelMs > 0 ? serialMs / parallelMs : 0.0;
+            TestContext.WriteLine(
+                $"{raw,-8}| {serialMs,17:F3} | {parallelMs,18:F3} | {speedup,6:F2}x | {serialResult.Length,7}");
+
+            // Structural, machine-independent: the parallel path returns the same match count.
+            Assert.AreEqual(serialResult.Length, parallelResult.Length, $"Match count must match for query '{raw}'.");
+        }
+    }
+
     // Averaged per-item nanoseconds for a loop that internally iterates the whole app catalog once.
     private static double PerItemNs(Action loopOverCatalog)
     {
