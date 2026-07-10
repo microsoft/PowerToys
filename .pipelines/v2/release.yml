@@ -119,6 +119,10 @@ extends:
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
                     .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment '' -Channel '${{ parameters.releaseChannel }}'
+                    [xml]$versionProps = Get-Content 'src\Version.props'
+                    $resolvedVersion = [string]$versionProps.Project.PropertyGroup.Version
+                    Write-Host "Resolved PowerToys version: $resolvedVersion"
+                    Write-Host "##vso[task.setvariable variable=ResolvedVersionNumber]$resolvedVersion"
                   displayName: Prepare versioning
 
                 # Prepare the localizations and telemetry config before the release build
@@ -164,6 +168,7 @@ extends:
           - template: .pipelines/v2/templates/job-publish-symbols-using-symbolrequestprod-api.yml@self
             parameters:
               versionNumber: ${{ parameters.versionNumber }}
+              resolvedVersionNumber: $(ResolvedVersionNumber)
               includePublicSymbolServer: ${{ and(eq(parameters.publishSymbolsToPublic, true), ne(parameters.releaseChannel, 'preview')) }}
               ${{ if ne(parameters.publishSymbolsToPublic, true) }}:
                 symbolExpiryTime: 10 # For private builds, expire symbols within 10 days. The default is 100 years.
