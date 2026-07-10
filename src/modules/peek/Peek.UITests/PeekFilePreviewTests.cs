@@ -201,6 +201,35 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     /// <summary>
+    /// Guards against regression #48274, where WebView2 focus bypassed Peek's XAML
+    /// accelerators and left Ctrl+W unable to close the preview.
+    /// </summary>
+    [TestMethod("Peek.KeyboardShortcut.CtrlWClosesFocusedWebPreview")]
+    [TestCategory("Keyboard shortcuts")]
+    public void CtrlWClosesFocusedWebPreview()
+    {
+        string cppPath = Path.GetFullPath(@".\TestAssets\5.cpp");
+
+        try
+        {
+            var peekWindow = OpenPeekWindow(cppPath);
+            peekWindow.Click();
+
+            SendKeys(Key.LCtrl, Key.W);
+
+            WaitForCondition(
+                condition: () => !TryFindPeekWindow(),
+                timeoutSeconds: PeekWindowTimeoutSeconds,
+                checkIntervalMs: PeekCheckIntervalMs,
+                timeoutMessage: "Peek did not close after Ctrl+W was pressed with the web preview focused");
+        }
+        finally
+        {
+            ClosePeekAndExplorer();
+        }
+    }
+
+    /// <summary>
     /// Test Markdown document preview
     /// </summary>
     [TestMethod("Peek.FilePreview.MarkdownDocument")]
