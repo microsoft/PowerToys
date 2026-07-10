@@ -12,6 +12,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
 
 namespace PowerScripts.PromptUI;
@@ -40,6 +41,12 @@ public sealed partial class PromptWindow : Window
 
         Title = string.IsNullOrWhiteSpace(spec.Title) ? "PowerScript" : spec.Title;
         TitleText.Text = Title;
+        TitleBarText.Text = Title;
+
+        // Modern WinUI 3 chrome: Mica backdrop + a custom title bar with the content extended into it.
+        SystemBackdrop = new MicaBackdrop();
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(AppTitleBar);
 
         if (!string.IsNullOrWhiteSpace(spec.Description))
         {
@@ -74,7 +81,7 @@ public sealed partial class PromptWindow : Window
         }
 
         Closed += OnClosed;
-        Activated += OnFirstActivated;
+        Activated += OnActivated;
 
         ResizeAndCenter(spec.Parameters.Count);
     }
@@ -189,9 +196,13 @@ public sealed partial class PromptWindow : Window
         }
     }
 
-    private void OnFirstActivated(object sender, WindowActivatedEventArgs args)
+    private void OnActivated(object sender, WindowActivatedEventArgs args)
     {
-        Activated -= OnFirstActivated;
+        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        {
+            return;
+        }
+
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
         SetForegroundWindow(hwnd);
     }
