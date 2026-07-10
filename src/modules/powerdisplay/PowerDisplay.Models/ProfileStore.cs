@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerDisplay.Models
 {
@@ -28,6 +29,9 @@ namespace PowerDisplay.Models
             return ExecuteLocked(LoadProfilesCore);
         }
 
+        internal Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
+            => RunAsync(LoadProfiles, cancellationToken);
+
         internal PowerDisplayProfiles LoadProfilesEnsuringIds()
         {
             return ExecuteLocked(() =>
@@ -41,6 +45,9 @@ namespace PowerDisplay.Models
                 return profiles;
             });
         }
+
+        internal Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
+            => RunAsync(LoadProfilesEnsuringIds, cancellationToken);
 
         internal void SaveProfiles(PowerDisplayProfiles profiles)
         {
@@ -74,6 +81,17 @@ namespace PowerDisplay.Models
             });
         }
 
+        internal Task AddOrUpdateProfileAsync(
+            PowerDisplayProfile profile,
+            CancellationToken cancellationToken = default)
+            => RunAsync(
+                () =>
+                {
+                    AddOrUpdateProfile(profile);
+                    return true;
+                },
+                cancellationToken);
+
         internal bool RemoveProfileById(int id)
         {
             return ExecuteLocked(() =>
@@ -88,6 +106,9 @@ namespace PowerDisplay.Models
                 return true;
             });
         }
+
+        internal Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
+            => RunAsync(() => RemoveProfileById(id), cancellationToken);
 
         internal bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update)
         {
@@ -104,6 +125,11 @@ namespace PowerDisplay.Models
                 return true;
             });
         }
+
+        internal Task<bool> UpdateProfilesAsync(
+            Func<PowerDisplayProfiles, bool> update,
+            CancellationToken cancellationToken = default)
+            => RunAsync(() => UpdateProfiles(update), cancellationToken);
 
         private T ExecuteLocked<T>(Func<T> operation)
         {
@@ -146,6 +172,12 @@ namespace PowerDisplay.Models
                 operation();
                 return true;
             });
+        }
+
+        private static Task<T> RunAsync<T>(Func<T> operation, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(operation);
+            return Task.Run(operation, cancellationToken);
         }
 
         private PowerDisplayProfiles LoadProfilesCore()

@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using PowerDisplay.Models;
 using ModelsProfileHelper = PowerDisplay.Models.ProfileHelper;
 
@@ -18,13 +20,27 @@ namespace PowerDisplay.Common.Services
         /// <inheritdoc cref="ModelsProfileHelper.LoadProfiles"/>
         public static PowerDisplayProfiles LoadProfiles() => ModelsProfileHelper.LoadProfiles();
 
+        /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesAsync(CancellationToken)"/>
+        public static Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
+            => ModelsProfileHelper.LoadProfilesAsync(cancellationToken);
+
         /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesEnsuringIds"/>
         public static PowerDisplayProfiles LoadProfilesEnsuringIds() => ModelsProfileHelper.LoadProfilesEnsuringIds();
+
+        /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesEnsuringIdsAsync(CancellationToken)"/>
+        public static Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
+            => ModelsProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken);
 
         /// <inheritdoc cref="ModelsProfileHelper.SaveProfiles"/>
         public static bool SaveProfiles(PowerDisplayProfiles profiles) => ModelsProfileHelper.SaveProfiles(profiles);
 
         /// <inheritdoc cref="ModelsProfileHelper.UpdateProfiles"/>
         public static bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update) => ModelsProfileHelper.UpdateProfiles(update);
+
+        /// <inheritdoc cref="ModelsProfileHelper.UpdateProfilesAsync(Func{PowerDisplayProfiles, bool}, CancellationToken)"/>
+        public static Task<bool> UpdateProfilesAsync(
+            Func<PowerDisplayProfiles, bool> update,
+            CancellationToken cancellationToken = default)
+            => ModelsProfileHelper.UpdateProfilesAsync(update, cancellationToken);
     }
 }

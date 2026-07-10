@@ -4,6 +4,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerDisplay.Models
 {
@@ -43,6 +45,9 @@ namespace PowerDisplay.Models
             return _profileStore.Value.LoadProfiles();
         }
 
+        public static Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
+            => _profileStore.Value.LoadProfilesAsync(cancellationToken);
+
         /// <summary>
         /// Saves PowerDisplay profiles to disk.
         /// Thread-safe operation with automatic timestamp update.
@@ -71,6 +76,9 @@ namespace PowerDisplay.Models
             return _profileStore.Value.LoadProfilesEnsuringIds();
         }
 
+        public static Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
+            => _profileStore.Value.LoadProfilesEnsuringIdsAsync(cancellationToken);
+
         /// <summary>
         /// Adds or updates a profile and persists to disk atomically.
         /// </summary>
@@ -87,6 +95,11 @@ namespace PowerDisplay.Models
             return true;
         }
 
+        public static Task AddOrUpdateProfileAsync(
+            PowerDisplayProfile profile,
+            CancellationToken cancellationToken = default)
+            => _profileStore.Value.AddOrUpdateProfileAsync(profile, cancellationToken);
+
         /// <summary>
         /// Removes a profile by its stable id and persists to disk atomically.
         /// </summary>
@@ -94,6 +107,9 @@ namespace PowerDisplay.Models
         {
             return _profileStore.Value.RemoveProfileById(id);
         }
+
+        public static Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
+            => _profileStore.Value.RemoveProfileByIdAsync(id, cancellationToken);
 
         /// <summary>
         /// Loads, conditionally updates, and saves profiles under one cross-process lock.
@@ -104,5 +120,10 @@ namespace PowerDisplay.Models
         {
             return _profileStore.Value.UpdateProfiles(update);
         }
+
+        public static Task<bool> UpdateProfilesAsync(
+            Func<PowerDisplayProfiles, bool> update,
+            CancellationToken cancellationToken = default)
+            => _profileStore.Value.UpdateProfilesAsync(update, cancellationToken);
     }
 }

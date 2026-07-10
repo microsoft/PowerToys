@@ -194,6 +194,60 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
+    public async Task LoadProfilesEnsuringIdsAsync_WaitsWithoutBlockingCaller()
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        using var updateLoaded = new ManualResetEventSlim();
+        using var continueUpdate = new ManualResetEventSlim();
+
+        var holder = Task.Run(() =>
+            firstStore.UpdateProfiles(profiles =>
+            {
+                updateLoaded.Set();
+                continueUpdate.Wait();
+                return false;
+            }));
+
+        Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5)));
+
+        var waitingLoad = secondStore.LoadProfilesEnsuringIdsAsync();
+        Assert.IsFalse(waitingLoad.IsCompleted);
+
+        continueUpdate.Set();
+        await holder;
+        var loaded = await waitingLoad;
+
+        Assert.IsNotNull(loaded);
+    }
+
+    [TestMethod]
+    public async Task AddOrUpdateProfileAsync_TwoStoresSharingMutex_PreserveBothUpdates()
+    {
+        var firstStore = CreateStore();
+        var secondStore = CreateStore();
+        using var start = new ManualResetEventSlim();
+
+        var first = Task.Run(async () =>
+        {
+            start.Wait();
+            await firstStore.AddOrUpdateProfileAsync(MakeProfile("First"));
+        });
+        var second = Task.Run(async () =>
+        {
+            start.Wait();
+            await secondStore.AddOrUpdateProfileAsync(MakeProfile("Second"));
+        });
+
+        start.Set();
+        await Task.WhenAll(first, second);
+
+        var loaded = await firstStore.LoadProfilesAsync();
+        Assert.AreEqual(2, loaded.Profiles.Count);
+        Assert.AreEqual(2, loaded.Profiles.Select(profile => profile.Id).Distinct().Count());
+    }
+
+    [TestMethod]
     public void UpdateProfiles_HoldsMutexAcrossLoadModifySave()
     {
         var firstStore = CreateStore();
