@@ -11,6 +11,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: resolvedVersionNumber
+    type: string
+    default: ''
   - name: artifactStem
     type: string
     default: ''
@@ -39,7 +42,10 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   variables:
     ${{ insert }}: ${{ parameters.variables }}
-    SymbolsArtifactName: "PowerToys_${{parameters.versionNumber}}_$(Build.BuildNumber)"
+    EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
+    SymbolsArtifactName: "PowerToys_$(EffectiveVersionNumber)_$(Build.BuildNumber)"
   steps:
   - checkout: self
     clean: true
@@ -83,7 +89,7 @@ jobs:
       SymbolsMaximumWaitTime: 30
       SymbolServerType: 'TeamServices'
       SymbolsProduct: 'PowerToys Converged Symbols'
-      SymbolsVersion: '${{ parameters.versionNumber }}'
+      SymbolsVersion: '$(EffectiveVersionNumber)'
       SymbolsArtifactName: $(SymbolsArtifactName)
       SymbolExpirationInDays: ${{ parameters.symbolExpiryTime }}
     env:

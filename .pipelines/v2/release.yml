@@ -123,6 +123,7 @@ extends:
                     $resolvedVersion = [string]$versionProps.Project.PropertyGroup.Version
                     Write-Host "Resolved PowerToys version: $resolvedVersion"
                     Write-Host "##vso[task.setvariable variable=ResolvedVersionNumber]$resolvedVersion"
+                    Write-Host "##vso[task.setvariable variable=EffectiveVersionNumber]$resolvedVersion"
                   displayName: Prepare versioning
 
                 # Prepare the localizations and telemetry config before the release build
