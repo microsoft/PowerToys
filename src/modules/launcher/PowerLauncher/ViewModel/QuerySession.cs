@@ -42,33 +42,33 @@ namespace PowerLauncher.ViewModel
                 var completion = pipeline(token) ?? Task.CompletedTask;
                 return new QuerySession(cancellationSource, token, completion);
             }
-
-            public static QuerySession StartSuspended(Func<CancellationToken, Task> pipeline)
-            {
-                ArgumentNullException.ThrowIfNull(pipeline);
-
-                var cancellationSource = new CancellationTokenSource();
-                var token = cancellationSource.Token;
-                var startSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-                var completion = RunPipelineAsync();
-                return new QuerySession(cancellationSource, token, completion, startSource);
-
-                async Task RunPipelineAsync()
-                {
-                    await startSource.Task.WaitAsync(token).ConfigureAwait(false);
-                    await (pipeline(token) ?? Task.CompletedTask).ConfigureAwait(false);
-                }
-            }
-
-            public void Resume()
-            {
-                _startSource?.TrySetResult(true);
-            }
             catch
             {
                 cancellationSource.Dispose();
                 throw;
             }
+        }
+
+        public static QuerySession StartSuspended(Func<CancellationToken, Task> pipeline)
+        {
+            ArgumentNullException.ThrowIfNull(pipeline);
+
+            var cancellationSource = new CancellationTokenSource();
+            var token = cancellationSource.Token;
+            var startSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var completion = RunPipelineAsync();
+            return new QuerySession(cancellationSource, token, completion, startSource);
+
+            async Task RunPipelineAsync()
+            {
+                await startSource.Task.WaitAsync(token).ConfigureAwait(false);
+                await (pipeline(token) ?? Task.CompletedTask).ConfigureAwait(false);
+            }
+        }
+
+        public void Resume()
+        {
+            _startSource?.TrySetResult(true);
         }
 
         public void Cancel()

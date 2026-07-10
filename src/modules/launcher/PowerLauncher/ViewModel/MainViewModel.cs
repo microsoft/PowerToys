@@ -196,15 +196,6 @@ namespace PowerLauncher.ViewModel
                                     return;
                                 }
 
-                                internal static bool AreEquivalentQueries(Query firstQuery, Query secondQuery)
-                                {
-                                    return firstQuery != null &&
-                                           secondQuery != null &&
-                                           string.Equals(firstQuery.ActionKeyword, secondQuery.ActionKeyword, StringComparison.Ordinal) &&
-                                           string.Equals(firstQuery.Search, secondQuery.Search, StringComparison.Ordinal) &&
-                                           string.Equals(firstQuery.RawQuery, secondQuery.RawQuery, StringComparison.Ordinal);
-                                }
-
                                 PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
                                 UpdateResultView(e.Results, e.Query.RawQuery, updateToken);
                             }
@@ -212,6 +203,15 @@ namespace PowerLauncher.ViewModel
                         updateToken);
                 };
             }
+        }
+
+        internal static bool AreEquivalentQueries(Query firstQuery, Query secondQuery)
+        {
+            return firstQuery != null &&
+                   secondQuery != null &&
+                   string.Equals(firstQuery.ActionKeyword, secondQuery.ActionKeyword, StringComparison.Ordinal) &&
+                   string.Equals(firstQuery.Search, secondQuery.Search, StringComparison.Ordinal) &&
+                   string.Equals(firstQuery.RawQuery, secondQuery.RawQuery, StringComparison.Ordinal);
         }
 
         private void OpenResultsEvent(object index, bool isMouseClick)
