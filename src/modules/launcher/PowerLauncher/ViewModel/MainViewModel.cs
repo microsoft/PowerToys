@@ -53,6 +53,8 @@ namespace PowerLauncher.ViewModel
         private string _queryTextBeforeLeaveResults;
 
         private QuerySession _currentQuerySession;
+
+        // Snapshot used by synchronous history updates that can run without an active query session.
         private CancellationToken _updateToken;
 
         // Bounds non-cancelable plugin calls to one query fan-out so rapid typing cannot exhaust the thread pool.
@@ -60,6 +62,7 @@ namespace PowerLauncher.ViewModel
         private long _queryGeneration;
         private IReadOnlyCollection<Query> _currentPluginQueries = Array.Empty<Query>();
         private static readonly TimeSpan QueryShutdownTimeout = TimeSpan.FromSeconds(2);
+        private const int QueryDebounceDelayMilliseconds = 20;
         private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
         private ushort _hotkeyHandle;
@@ -644,8 +647,8 @@ namespace PowerLauncher.ViewModel
                         var queryResultsTask = Task.Run(
                             async () =>
                         {
-                            // Give rapid follow-up keystrokes a cancellable debounce window before invoking plugins.
-                            await Task.Delay(20, updateToken).ConfigureAwait(false);
+                            // Preserve the existing 20 ms coalescing window while allowing superseding keystrokes to cancel it.
+                            await Task.Delay(QueryDebounceDelayMilliseconds, updateToken).ConfigureAwait(false);
 
                             // Keep track of total number of results for telemetry
                             var numResults = 0;
@@ -785,6 +788,7 @@ namespace PowerLauncher.ViewModel
 
                             if (updateToken.IsCancellationRequested)
                             {
+                                // Canceled queries are incomplete work and should not contribute query telemetry.
                                 return;
                             }
 

@@ -15,7 +15,7 @@ namespace PowerLauncher.ViewModel
     {
         private readonly CancellationTokenSource _cancellationSource;
 
-        // Accessed only through Interlocked.Exchange, which provides the required memory barrier.
+        // Interlocked.Exchange requires an int and provides the memory barrier for idempotent disposal.
         private int _disposed;
 
         private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion)
