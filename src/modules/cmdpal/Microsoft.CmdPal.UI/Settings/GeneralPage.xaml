@@ -118,7 +118,7 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
                     </controls:SettingsCard>
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8BD;}">
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
                         <ComboBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition"
