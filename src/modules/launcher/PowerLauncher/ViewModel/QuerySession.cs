@@ -1,0 +1,95 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace PowerLauncher.ViewModel
+{
+    /// <summary>
+    /// Owns the cancellation source and completion lifetime for one query.
+    /// </summary>
+    internal sealed class QuerySession : IDisposable
+    {
+        private readonly CancellationTokenSource _cancellationSource = new();
+        private int _disposed;
+
+        private QuerySession()
+        {
+            Token = _cancellationSource.Token;
+        }
+
+        public CancellationToken Token { get; }
+
+        public Task Completion { get; private set; } = Task.CompletedTask;
+
+        public static QuerySession Start(Func<CancellationToken, Task> pipeline)
+        {
+            ArgumentNullException.ThrowIfNull(pipeline);
+
+            var session = new QuerySession();
+            try
+            {
+                session.Completion = pipeline(session.Token) ?? Task.CompletedTask;
+                return session;
+            }
+            catch
+            {
+                session._cancellationSource.Dispose();
+                throw;
+            }
+        }
+
+        public void Cancel()
+        {
+            try
+            {
+                _cancellationSource.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
+
+        public Task DisposeWhenComplete()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return Completion.ContinueWith(
+                static (_, state) => ((CancellationTokenSource)state).Dispose(),
+                _cancellationSource,
+                CancellationToken.None,
+                TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
+
+        public bool CancelAndWait(TimeSpan timeout)
+        {
+            Cancel();
+
+            bool completed;
+            try
+            {
+                completed = Completion.IsCompleted || Completion.Wait(timeout);
+            }
+            catch (AggregateException)
+            {
+                completed = true;
+            }
+
+            _ = DisposeWhenComplete();
+            return completed;
+        }
+
+        public void Dispose()
+        {
+            Cancel();
+            _ = DisposeWhenComplete();
+        }
+    }
+}
