@@ -143,7 +143,10 @@ jobs:
     JobOutputDirectory: $(Build.ArtifactStagingDirectory)
     LogOutputDirectory: $(Build.ArtifactStagingDirectory)\logs
     JobOutputArtifactName: build-$(BuildPlatform)-$(BuildConfiguration)${{ parameters.artifactStem }}
-    EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if eq(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
     ${{ if or(eq(parameters.runTests, true), eq(parameters.buildTests, true)) }}:
@@ -151,8 +154,6 @@ jobs:
     ${{ else }}:
       MSBuildMainBuildTargets: Build
     ${{ insert }}: ${{ parameters.variables }}
-    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
-      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     ${{ if eq(parameters.useLatestWinAppSDK, true) }}:
       RestoreAdditionalProjectSourcesArg: '/p:RestoreAdditionalProjectSources="$(Build.SourcesDirectory)\localpackages\NugetPackages" /p:IgnoreExperimentalWarnings=true'
     ${{ else }}:

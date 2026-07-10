@@ -42,7 +42,8 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   variables:
     ${{ insert }}: ${{ parameters.variables }}
-    EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if eq(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.versionNumber }}
     ${{ if ne(parameters.resolvedVersionNumber, '') }}:
       EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     SymbolsArtifactName: "PowerToys_$(EffectiveVersionNumber)_$(Build.BuildNumber)"
