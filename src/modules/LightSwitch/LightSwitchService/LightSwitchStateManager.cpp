@@ -45,21 +45,18 @@ void LightSwitchStateManager::OnManualOverride()
     Logger::info(L"[LightSwitchStateManager] Manual override triggered");
     _state.isManualOverride = !_state.isManualOverride;
 
-    // When entering manual override, sync internal theme state to match the current system
-    // The hotkey handler in ModuleInterface has already toggled the theme, so we read the new state
-    if (_state.isManualOverride)
-    {
-        _state.isSystemLightActive = GetCurrentSystemTheme();
-        _state.isAppsLightActive = GetCurrentAppsTheme();
+    // ModuleInterface has already flipped the Windows theme before signaling this event,
+    // regardless of which direction isManualOverride just toggled. Sync cached state and
+    // notify PowerDisplay on every call so the profile follows every hotkey press — the
+    // previous "if entering" gate silently dropped every even-numbered press.
+    _state.isSystemLightActive = GetCurrentSystemTheme();
+    _state.isAppsLightActive = GetCurrentAppsTheme();
 
-        Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
-                      (_state.isSystemLightActive ? L"light" : L"dark"),
-                      (_state.isAppsLightActive ? L"light" : L"dark"));
+    Logger::debug(L"[LightSwitchStateManager] Synced internal theme state to current system theme ({}) and apps theme ({}).",
+                  (_state.isSystemLightActive ? L"light" : L"dark"),
+                  (_state.isAppsLightActive ? L"light" : L"dark"));
 
-        // Notify PowerDisplay about the theme change triggered by hotkey
-        // The theme has already been applied by ModuleInterface, we just need to notify PowerDisplay
-        NotifyPowerDisplay(_state.isSystemLightActive);
-    }
+    NotifyPowerDisplay(_state.isSystemLightActive);
 
     EvaluateAndApplyIfNeeded();
 }

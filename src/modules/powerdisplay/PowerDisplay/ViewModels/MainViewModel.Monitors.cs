@@ -11,6 +11,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -25,6 +26,11 @@ public partial class MainViewModel
         try
         {
             IsScanning = true;
+
+            // Forward the latest max-compatibility flag before each discovery so the
+            // DDC/CI controller picks up toggle changes without a process restart.
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
@@ -93,7 +99,7 @@ public partial class MainViewModel
     /// <summary>
     /// Refresh monitors list asynchronously.
     /// </summary>
-    /// <param name="skipScanningCheck">If true, skip the IsScanning check (used by OnDisplayChanged which sets IsScanning before calling).</param>
+    /// <param name="skipScanningCheck">If true, skip the IsScanning reentry guard. Used by the watcher path where IsScanning was already set upstream by <see cref="MainViewModel.OnDisplayChanging"/>.</param>
     public async Task RefreshMonitorsAsync(bool skipScanningCheck = false)
     {
         if (!skipScanningCheck && IsScanning)
@@ -103,7 +109,11 @@ public partial class MainViewModel
 
         try
         {
+            CancelPendingLinkedBrightnessCommit();
             IsScanning = true;
+
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
 
@@ -125,6 +135,14 @@ public partial class MainViewModel
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
     {
+        CancelPendingLinkedBrightnessCommit();
+
+        // Dispose old ViewModels to unsubscribe PropertyChanged handlers
+        foreach (var vm in Monitors)
+        {
+            vm.Dispose();
+        }
+
         Monitors.Clear();
 
         // Load settings to check for hidden monitors
@@ -146,9 +164,19 @@ public partial class MainViewModel
 
         OnPropertyChanged(nameof(HasMonitors));
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
+        OnPropertyChanged(nameof(ShowLinkLevelsToggle));
+        RecomputeLinkedBrightnessAvailability();
 
         // Save monitor information to settings
         SaveMonitorsToSettings();
+
+        // First successful discovery after process start is the natural place to clean up
+        // any legacy "{Source}_{EdidId}_{N}" Ids still lingering in the side files that
+        // SaveMonitorsToSettings doesn't touch (profiles.json + monitor_state.json).
+        if (isInitialLoad)
+        {
+            MigrateLegacyMonitorIdsInSideFiles();
+        }
 
         // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
         // to ensure scanning state is maintained until restore completes
@@ -161,5 +189,6 @@ public partial class MainViewModel
         => new HashSet<string>(
             settings.Properties.Monitors
                 .Where(m => m.IsHidden)
-                .Select(m => m.Id));
+                .Select(m => m.Id),
+            MonitorIdComparer.Instance);
 }

@@ -16,13 +16,6 @@ namespace PowerDisplay.Common.Utils
     public static class VcpNames
     {
         /// <summary>
-        /// Gets or sets the optional delegate to provide localized VCP code names.
-        /// Set this at application startup to enable localization.
-        /// The delegate receives a VCP code and should return the localized name, or null to use the default.
-        /// </summary>
-        public static Func<byte, string?>? LocalizedCodeNameProvider { get; set; }
-
-        /// <summary>
         /// VCP code to name mapping
         /// </summary>
         private static readonly Dictionary<byte, string> CodeNames = new()
@@ -452,7 +445,7 @@ namespace PowerDisplay.Common.Utils
                 var custom = customMappings.FirstOrDefault(m =>
                     m.VcpCode == vcpCode &&
                     m.Value == value &&
-                    (m.ApplyToAll || (!m.ApplyToAll && m.TargetMonitorId == monitorId)));
+                    (m.ApplyToAll || (!m.ApplyToAll && MonitorIdComparer.Equal(m.TargetMonitorId, monitorId))));
 
                 if (custom != null && !string.IsNullOrEmpty(custom.CustomName))
                 {

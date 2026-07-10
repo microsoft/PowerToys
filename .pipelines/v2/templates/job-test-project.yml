@@ -90,15 +90,28 @@ jobs:
         reg add "HKLM\Software\Policies\Microsoft\Edge\WebView2\ReleaseChannels" /v PowerToys.exe /t REG_SZ /d "3"
       displayName: "Enable WebView2 Canary Channel"
 
-  - ${{ if ne(parameters.platform, 'arm64') }}:
-      - download: current
-        displayName: Download artifacts
-        artifact: $(TestArtifactsName)
-        patterns: |-
-          **
-          !**\*.pdb
-          !**\*.lib
+  - ${{ if eq(parameters.buildSource, 'buildNowSlim') }}:
+      # buildNowSlim: the full build publishes the entire ~14 GB tree, but slim runs against the
+      # installed product, so fetch only the installer + the staged test binaries from this run's
+      # full-build artifact.
+      # IMPORTANT: DownloadPipelineArtifact's itemPattern downloads a file that matches ANY pattern,
+      # and '!' lines do NOT exclude. Per the task docs they "include files that don't match any
+      # include pattern", so a '!**/*.pdb' line pulls in every non-pdb file — i.e. the whole product
+      # tree (~14 GB). Use INCLUDE-ONLY patterns so only the installer + tests folder transfer.
+      - task: DownloadPipelineArtifact@2
+        displayName: Download artifacts (slim)
+        inputs:
+          buildType: 'current'
+          artifactName: $(TestArtifactsName)
+          targetPath: '$(Pipeline.Workspace)/$(TestArtifactsName)'
+          patterns: |
+            **/PowerToysSetup*.exe
+            **/tests/**
   - ${{ else }}:
+      # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
+      # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
+      # x64 CLI zip runs natively on x64 and under emulation on arm64, so one path serves every arch
+      # and avoids the arm64 OOM the pipeline task hits on the large full-build artifact.
       - template: steps-download-artifacts-with-azure-cli.yml
         parameters:
           artifactName: $(TestArtifactsName)
@@ -106,13 +119,20 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '9.0'
+      version: '10.0'
 
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+  # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness and isn't baked
+  # into the agent image yet. winget / App Installer isn't available on these agents, so download
+  # the pinned standalone CLI from its GitHub release. Drop this step once the CLI is pre-staged.
+  - pwsh: |-
+      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppCli.ps1' -Platform '$(BuildPlatform)'
+    displayName: Download and install winappcli (winapp.exe)
+
+  - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
     - task: DownloadPipelineArtifact@2
       inputs:
         buildType: 'specific'
@@ -133,7 +153,7 @@ jobs:
           patterns: |
             **/PowerToysSetup*.exe
 
-  - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+  - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
     - ${{ if eq(parameters.installMode, 'peruser') }}:
       - pwsh: |-
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "PerUser"
@@ -144,12 +164,137 @@ jobs:
           & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine"
         displayName: Install PowerToys (Machine-Level)
 
+  # buildNowSlim: the full build's installer was pulled into the test-artifact folder above (instead
+  # of the whole ~14 GB tree), so install it and run the tests against the installed product — the
+  # same model as the official path. Available on every arch.
+  - ${{ if eq(parameters.buildSource, 'buildNowSlim') }}:
+    - pwsh: |-
+        & "$(build.sourcesdirectory)\.pipelines\installPowerToys.ps1" -InstallMode "Machine" -ArtifactPath "$(Pipeline.Workspace)\$(TestArtifactsName)"
+      displayName: Install PowerToys (Machine-Level)
+
   - ${{ if ne(parameters.platform, 'arm64') }}:
     - task: ScreenResolutionUtility@1
       inputs:
         displaySettings: 'optimal'
 
-  - script: |
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+  # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
+  # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
+  # detached gives it its own console whose stdin blocks, so it stays alive for the run instead of
+  # reading EOF and exiting the moment it starts listening (the failure mode when a test host launches
+  # it as a child). The legacy UITest harness reuses an already-listening instance rather than
+  # relaunching it per test, so this removes the per-assembly launch cost. The winappcli-based .Next
+  # tests don't use WinAppDriver. Best-effort: if the pre-start fails, each assembly still launches its own.
+  - pwsh: |
+      $winapp = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
+      if (Test-Path $winapp) {
+        Start-Process -FilePath $winapp
+
+        $deadline = (Get-Date).AddSeconds(30)
+        $ready = $false
+        while (-not $ready -and (Get-Date) -lt $deadline) {
+          try {
+            $client = [System.Net.Sockets.TcpClient]::new()
+            $client.Connect('127.0.0.1', 4723)
+            $ready = $client.Connected
+            $client.Close()
+          } catch {
+            Start-Sleep -Milliseconds 500
+          }
+        }
+
+        if ($ready) {
+          Write-Host 'WinAppDriver is listening on 127.0.0.1:4723.'
+        } else {
+          Write-Host "##vso[task.logissue type=warning]WinAppDriver did not start listening on :4723 within 30s; tests will launch it themselves."
+        }
+      } else {
+        Write-Host "##vso[task.logissue type=warning]WinAppDriver not found at $winapp; tests will launch it themselves."
+      }
+    displayName: Start WinAppDriver (shared, persistent)
+
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $artifactRoot = "$(Pipeline.Workspace)\$(TestArtifactsName)"
+      if (-not (Test-Path $artifactRoot)) {
+        Write-Host "##vso[task.logissue type=error]UI test artifact not found: $artifactRoot"
+        exit 1
+      }
+
+      # uiTestModules is a template parameter; flatten it to a delimited string for the script.
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $modules = @()
+      if (-not [string]::IsNullOrWhiteSpace($modulesRaw)) {
+        $modules = $modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+      }
+
+      # Each UI test project is a Microsoft.Testing.Platform app; its entry assembly is paired
+      # with a *.runtimeconfig.json. Recurse under the staged 'tests' folders (tolerates TFM/RID subfolders).
+      $entries = Get-ChildItem -Path $artifactRoot -Filter '*.runtimeconfig.json' -File -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like '*UITests*' -and $_.FullName -match '\\tests\\' }
+      if ($modules.Count -gt 0) {
+        $entries = $entries | Where-Object { $n = $_.Name; ($modules | Where-Object { $n -like "*$_*" }).Count -gt 0 }
+      }
+
+      # Run each test assembly once (a project reference can copy a runner into a sibling's output).
+      $entries = $entries | Sort-Object FullName | Group-Object Name | ForEach-Object { $_.Group[0] }
+
+      if (-not $entries) {
+        Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
+        exit 1
+      }
+
+      $resultsDir = "$(Common.TestResultsDirectory)"
+      New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
+
+      $failed = 0
+      foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
+        $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
+        $dir = $rc.DirectoryName
+        $exe = Join-Path $dir "$base.exe"
+        $dll = Join-Path $dir "$base.dll"
+        Write-Host "##[group]Run UI tests: $base"
+        Push-Location $dir
+        try {
+          if (Test-Path $exe) {
+            & $exe --report-trx --results-directory $resultsDir
+          } elseif (Test-Path $dll) {
+            & dotnet $dll --report-trx --results-directory $resultsDir
+          } else {
+            Write-Warning "No runner (exe/dll) found for $base in $dir"
+          }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "UI tests reported failures for $base (exit $LASTEXITCODE)"
+            $failed++
+          }
+        } finally {
+          Pop-Location
+          Write-Host "##[endgroup]"
+        }
+      }
+
+      if ($failed -gt 0) {
+        Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
+        exit 1
+      }
     displayName: "Run UI Tests"
+    # Expose 'platform' as an environment variable so the harness's EnvironmentConfig.IsInPipeline
+    # is true and it captures failure media (screenshots / recording / logs). The legacy VSTest task
+    # set `env: { platform: $(TestPlatform) }`; the MTP migration to this pwsh step dropped it.
+    env:
+      platform: $(TestPlatform)
+
+  - task: PublishTestResults@2
+    displayName: "Publish UI Test Results"
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
+      mergeTestResults: true
+      failTaskOnFailedTests: false
+
+  # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
+  # self-hosted agent between jobs. Best-effort and always runs.
+  - pwsh: |
+      Get-Process -Name 'WinAppDriver' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    displayName: Stop WinAppDriver
+    condition: always()

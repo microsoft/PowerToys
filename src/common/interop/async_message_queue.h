@@ -37,7 +37,7 @@ public:
         }
         if (this->interrupted)
         {
-            //Just returns a empty string if the queue was interrupted.
+            //Just returns an empty string if the queue was interrupted.
             return std::wstring(L"");
         }
         std::wstring message = this->message_queue.front();

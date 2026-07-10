@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
@@ -23,6 +24,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerToys.Interop;
 using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -221,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = false,
+                    IsNew = moduleType == ModuleType.ShortcutGuide,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -497,11 +499,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
+                ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
                 ModuleType.Peek => GetModuleItemsPeek(),
                 ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
+                ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
@@ -675,6 +679,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseWithoutBorders()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem()
+                {
+                    ButtonTitle = resourceLoader.GetString("MouseWithoutBorders_ReconnectButton/Text"),
+                    IsButtonDescriptionVisible = true,
+                    ButtonDescription = resourceLoader.GetString("MouseWithoutBorders_ReconnectTooltip/Text"),
+                    ButtonGlyph = "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
+                    ButtonClickHandler = MouseWithoutBordersReconnectClicked,
+                },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsAdvancedPaste()
         {
             ISettingsRepository<AdvancedPasteSettings> moduleSettingsRepository = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default);
@@ -728,6 +748,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Space: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Space/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Both: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Either/Content"); break;
+                case Library.Enumerations.PowerAccentActivationKey.PressAndHold: activation = resourceLoader.GetString("QuickAccent_Activation_Key_PressAndHold/Content"); break;
+                default: activation = string.Empty; break;
             }
 
             var list = new List<DashboardModuleItem>
@@ -773,9 +795,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default);
 
-            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? new List<object> { 92 } // Right Windows key code
-                : moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
+            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
 
             var list = new List<DashboardModuleItem>
             {
@@ -847,6 +867,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var actionName = "Launch";
             SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void MouseWithoutBordersReconnectClicked(object sender, RoutedEventArgs e)
+        {
+            using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MWBReconnectEvent());
+            eventHandle.Set();
         }
 
         internal void DashboardListItemClick(object sender)

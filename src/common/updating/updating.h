@@ -5,14 +5,7 @@
 #include <filesystem>
 #include <variant>
 #include <winrt/Windows.Foundation.h>
-//#if __MSVC_VERSION__ >= 1933 // MSVC begin to support std::unexpected in 19.33
-#if __has_include(<expected> ) // use the same way with excepted-lite to detect std::unexcepted, as using it as backup
 #include <expected>
-#define USE_STD_EXPECTED 1
-#else
-#include <expected.hpp>
-#define USE_STD_EXPECTED 0
-#endif
 
 #include <common/version/helper.h>
 #include <wil/coroutine.h>
@@ -31,12 +24,7 @@ namespace updating
         std::wstring installer_filename;
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
-
-#if USE_STD_EXPECTED
     using github_version_result = std::expected<github_version_info, std::wstring>;
-#else
-    using github_version_result = nonstd::expected<github_version_info, std::wstring>;
-#endif
 
     wil::task<github_version_result> get_github_version_info_async(bool prerelease = false);
     wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
