@@ -64,4 +64,29 @@ public class ProfileOperationCoordinatorTests
 
         Assert.IsFalse(coordinator.IsRunning);
     }
+
+    [TestMethod]
+    public async Task RunAsync_IsRunningChangedThrowingOnStart_StillReleasesGate()
+    {
+        using var coordinator = new ProfileOperationCoordinator();
+        var thrownOnce = false;
+
+        coordinator.IsRunningChanged += (_, _) =>
+        {
+            if (coordinator.IsRunning && !thrownOnce)
+            {
+                thrownOnce = true;
+                throw new InvalidOperationException("boom");
+            }
+        };
+
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            () => coordinator.RunAsync(_ => Task.CompletedTask));
+
+        Assert.IsFalse(coordinator.IsRunning);
+
+        await coordinator.RunAsync(_ => Task.CompletedTask);
+        Assert.IsFalse(coordinator.IsRunning);
+        Assert.IsTrue(thrownOnce);
+    }
 }

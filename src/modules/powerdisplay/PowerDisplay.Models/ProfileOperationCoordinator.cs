@@ -22,15 +22,21 @@ namespace PowerDisplay.Models
         {
             ArgumentNullException.ThrowIfNull(operation);
             await _gate.WaitAsync(cancellationToken);
-            SetIsRunning(true);
             try
             {
+                SetIsRunning(true);
                 return await operation(cancellationToken);
             }
             finally
             {
-                SetIsRunning(false);
-                _gate.Release();
+                try
+                {
+                    SetIsRunning(false);
+                }
+                finally
+                {
+                    _gate.Release();
+                }
             }
         }
 
