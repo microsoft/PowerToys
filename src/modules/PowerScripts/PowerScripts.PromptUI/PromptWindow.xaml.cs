@@ -210,6 +210,14 @@ public sealed partial class PromptWindow : Window
         int height = Math.Min(720, 200 + (Math.Max(parameterCount, 1) * 92));
         appWindow.Resize(new SizeInt32(width, height));
 
+        // Keep the prompt above other windows. It is launched in response to an explicit user action
+        // (hotkey / context menu / paste) and blocks the run, so it must not get lost behind the
+        // foreground app the user triggered it from.
+        if (appWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.IsAlwaysOnTop = true;
+        }
+
         var area = DisplayArea.GetFromWindowId(windowId, DisplayAreaFallback.Primary);
         if (area is not null)
         {
