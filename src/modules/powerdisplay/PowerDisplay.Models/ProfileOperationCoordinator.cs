@@ -11,6 +11,7 @@ namespace PowerDisplay.Models
     public sealed class ProfileOperationCoordinator : IDisposable
     {
         private readonly SemaphoreSlim _gate = new(1, 1);
+        private bool _disposed;
 
         public bool IsRunning { get; private set; }
 
@@ -21,9 +22,11 @@ namespace PowerDisplay.Models
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(operation);
+            ThrowIfDisposed();
             await _gate.WaitAsync(cancellationToken);
             try
             {
+                ThrowIfDisposed();
                 SetIsRunning(true);
                 return await operation(cancellationToken);
             }
@@ -66,7 +69,18 @@ namespace PowerDisplay.Models
 
         public void Dispose()
         {
-            _gate.Dispose();
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            IsRunningChanged = null;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
         }
     }
 }

@@ -445,6 +445,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
+            _profileOperations?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
             _cancellationTokenSource?.Dispose();
         }
         catch

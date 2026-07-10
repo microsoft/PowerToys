@@ -89,4 +89,24 @@ public class ProfileOperationCoordinatorTests
         Assert.IsFalse(coordinator.IsRunning);
         Assert.IsTrue(thrownOnce);
     }
+
+    [TestMethod]
+    public async Task Dispose_WhileStartedOperationCompletes_DoesNotCauseReleaseToThrow()
+    {
+        var coordinator = new ProfileOperationCoordinator();
+        var started = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var operation = coordinator.RunAsync(async _ =>
+        {
+            started.SetResult(true);
+            return await completion.Task;
+        });
+
+        await started.Task;
+        coordinator.Dispose();
+        completion.SetResult(42);
+
+        Assert.AreEqual(42, await operation);
+    }
 }

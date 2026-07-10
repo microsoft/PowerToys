@@ -621,7 +621,6 @@ public partial class MainViewModel
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return;
         }
         catch (Exception ex)
         {
@@ -630,10 +629,7 @@ public partial class MainViewModel
 
         try
         {
-            await Task.Run(() => _stateManager.MigrateLegacyKeys(discovered), cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
+            await Task.Run(() => _stateManager.MigrateLegacyKeys(discovered), CancellationToken.None);
         }
         catch (Exception ex)
         {
