@@ -63,6 +63,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
+    // Length of the query that produced the currently published _filteredApps. Published atomically
+    // with _filteredApps under lock(commands) so the early-frame gate always decides on the length
+    // of the query that actually produced the app array it is gating. Gating on the live SearchText
+    // instead would be unsafe: SearchText is advanced on the UI thread ahead of the publish, so on a
+    // 2-to-3 char transition a throttled refresh could render the stale 2-char app array while the
+    // live length already reads 3, no-op the gate, and briefly expose the fuzzy tail 7c withholds.
+    private int _filteredAppsQueryLength;
+
     // Global/special fallbacks are re-scored lazily on the render path (GetSearchViewItems)
     // instead of being frozen at keystroke time. Their dynamic titles are resolved
     // asynchronously off the typing path by the fallback update manager, so deferring the
@@ -82,6 +90,24 @@ public sealed partial class MainListPage : DynamicListPage,
     private bool _filteredItemsIncludesApps;
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
+
+    // ===== Early-frame relevance (Phase 7c) =====
+    // Longest query, in characters, for which the low-confidence app tail is withheld on the
+    // render path. A 1-2 char query fuzzy-matches a huge fraction of the app catalog, so within
+    // that single giant Fuzzy tier the order is decided almost entirely by frecency and the
+    // most-frecent app can float to the top on a weak, mid-word subsequence match - the "wrong
+    // when I start typing" flash. While the query is this short we show only the letter-relevant
+    // apps and let the noisy tail fold in once the query is long enough to discriminate. This is
+    // a pure render-path view over the already-scored/sorted results: it never re-scores and
+    // never reorders, so the settled order of a discriminating (3+ char) query is untouched. Set
+    // to 0 to disable the gate entirely.
+    private const int ShortQueryAppTailGateMaxLength = 2;
+
+    // Minimum ranker tier an app must reach to be shown while the query is still ultra-short.
+    // Word-boundary, prefix, exact-title and alias matches are all relevant to the characters the
+    // user actually typed; the Fuzzy tier (a scattered subsequence match) is the noisy tail that
+    // is withheld until the query can discriminate.
+    private const RankTier ShortQueryAppGateMinTier = RankTier.AcronymWordBoundary;
 
     private InterlockedBoolean _fullRefreshRequested;
     private InterlockedBoolean _refreshRunning;
@@ -296,10 +322,16 @@ public sealed partial class MainListPage : DynamicListPage,
             .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
             .ToList();
 
+        // Early-frame gate: while the query is still ultra-short, withhold the large low-confidence
+        // fuzzy app tail so a frecency-floated weak match cannot surface at the top mid-typing. For
+        // discriminating (longer) queries the scored apps are passed through unchanged, so the
+        // settled order of a meaningful query is never altered.
+        var gatedApps = ApplyShortQueryAppGate(_filteredApps, _filteredAppsQueryLength);
+
         var result = MainListPageResultFactory.Create(
             _filteredItems,
             validScoredFallbacks,
-            _filteredApps,
+            gatedApps,
             validFallbacks,
             _resultsSeparator,
             _fallbacksSeparator,
@@ -348,6 +380,73 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         return valid;
+    }
+
+    // Applies the Phase 7c early-frame short-query gate to the already-scored, already-sorted app
+    // results. For a discriminating query (empty, or longer than ShortQueryAppTailGateMaxLength) the
+    // input is returned unchanged, so the settled order of a meaningful query is byte-identical to
+    // before. For an ultra-short query only the letter-relevant apps (tier at or above
+    // ShortQueryAppGateMinTier) are kept; the noisy fuzzy tail is withheld until the query can
+    // discriminate. This is a pure view over the scored array - it slices a contiguous prefix and
+    // never re-scores or reorders - so it can never change the ranker's output. Extracted as a
+    // static so the early-frame behavior can be unit tested without constructing a MainListPage.
+    internal static IList<RoScored<IListItem>>? ApplyShortQueryAppGate(
+        RoScored<IListItem>[]? scoredApps,
+        int queryLength)
+    {
+        if (scoredApps is null || scoredApps.Length == 0)
+        {
+            return scoredApps;
+        }
+
+        if (queryLength <= 0 || queryLength > ShortQueryAppTailGateMaxLength)
+        {
+            return scoredApps;
+        }
+
+        var keep = HighConfidenceAppPrefixLength(scoredApps, ShortQueryAppGateMinTier);
+        return keep == scoredApps.Length
+            ? scoredApps
+            : new ArraySegment<RoScored<IListItem>>(scoredApps, 0, keep);
+    }
+
+    // Number of leading scored entries whose ranker tier is at or above minTier. The scored arrays
+    // are sorted descending by packed score and the tier occupies the high bits of that score, so
+    // all entries at or above a given tier form a contiguous prefix - a single forward scan to the
+    // first entry that falls below the tier yields the cutoff.
+    internal static int HighConfidenceAppPrefixLength(IReadOnlyList<RoScored<IListItem>> scored, RankTier minTier)
+    {
+        var min = (int)minTier;
+        for (var i = 0; i < scored.Count; i++)
+        {
+            if ((int)MainListRanker.TierOf(scored[i].Score) < min)
+            {
+                return i;
+            }
+        }
+
+        return scored.Count;
+    }
+
+    // Number of app results that are actually visible for a given published query length, matching
+    // what ApplyShortQueryAppGate renders: the gated high-confidence prefix while the query is in the
+    // ultra-short window, otherwise the full set, in both cases capped by the app result limit. Used
+    // to keep the settled-search telemetry count consistent with what the user is shown, so a short
+    // query whose fuzzy tail is withheld does not report an inflated result count.
+    internal static int GatedVisibleAppCount(RoScored<IListItem>[]? scoredApps, int queryLength, int appResultLimit)
+    {
+        if (scoredApps is null || scoredApps.Length == 0)
+        {
+            return 0;
+        }
+
+        var count = scoredApps.Length;
+        if (queryLength > 0 && queryLength <= ShortQueryAppTailGateMaxLength)
+        {
+            count = HighConfidenceAppPrefixLength(scoredApps, ShortQueryAppGateMinTier);
+        }
+
+        return Math.Min(count, appResultLimit);
     }
 
     private IListItem[] GetDefaultViewItems()
@@ -434,6 +533,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _filteredItems = null;
         _filteredApps = null;
+        _filteredAppsQueryLength = 0;
         _fallbackItems = null;
         _globalFallbackSources = null;
 
@@ -746,10 +846,15 @@ public sealed partial class MainListPage : DynamicListPage,
             // null so a rebuild clears any stale set - matching the previous ClearResults behavior.
             _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
+            // Publish the query length atomically with the array so the render-path gate (and the
+            // telemetry count below) always evaluate against the query that produced this app array,
+            // never the live SearchText which the UI thread may already have advanced past.
+            _filteredAppsQueryLength = _filteredApps is null ? 0 : newSearch.Length;
+
             if (isUserInput)
             {
                 deterministicResultCount = (_filteredItems?.Length ?? 0)
-                    + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
+                    + GatedVisibleAppCount(_filteredApps, _filteredAppsQueryLength, AppResultLimit);
             }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
