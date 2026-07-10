@@ -54,7 +54,7 @@ Shortcuts:
             Shift: false
             Alt: true
             Keys:
-              - '<Space>'
+              - "<Space>"
 
   - SectionName: In chats
     Properties:
