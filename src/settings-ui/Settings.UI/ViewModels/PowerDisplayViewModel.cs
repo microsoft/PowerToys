@@ -511,6 +511,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
 
+            _profileOperations.Dispose();
+
             base.Dispose();
         }
 
