@@ -70,29 +70,78 @@ public class LightSwitchProfileResolverTests
     }
 
     [TestMethod]
-    public void MigrateNamesToIds_NameResolves_StoresIdAndResyncsName_AndIsIdempotent()
+    public void ReconcileReferences_NameResolves_StoresIdAndResyncsName_AndIsIdempotent()
     {
         var profiles = Profiles(("Day", 4), ("Night", 7));
         var props = new LightSwitchProperties();
         props.LightModeProfile.Value = "Day";
         props.DarkModeProfile.Value = "Night";
 
-        Assert.IsTrue(LightSwitchProfileResolver.MigrateNamesToIds(props, profiles));
+        Assert.IsTrue(LightSwitchProfileResolver.ReconcileReferences(props, profiles));
         Assert.AreEqual(4, props.LightModeProfileId.Value);
         Assert.AreEqual(7, props.DarkModeProfileId.Value);
 
-        Assert.IsFalse(LightSwitchProfileResolver.MigrateNamesToIds(props, profiles)); // already migrated
+        Assert.IsFalse(LightSwitchProfileResolver.ReconcileReferences(props, profiles)); // already migrated
     }
 
     [TestMethod]
-    public void MigrateNamesToIds_UnknownName_ClearsToNone()
+    public void ReconcileReferences_UnknownName_ClearsToNone()
     {
         var profiles = Profiles(("Day", 4));
         var props = new LightSwitchProperties();
         props.DarkModeProfile.Value = "Deleted";
 
-        Assert.IsTrue(LightSwitchProfileResolver.MigrateNamesToIds(props, profiles));
+        Assert.IsTrue(LightSwitchProfileResolver.ReconcileReferences(props, profiles));
         Assert.AreEqual(0, props.DarkModeProfileId.Value);
         Assert.AreEqual(string.Empty, props.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_StalePositiveIdWithEmptyProfiles_ClearsReference()
+    {
+        var profiles = Profiles();
+        var props = new LightSwitchProperties();
+        props.DarkModeProfileId.Value = 7;
+        props.DarkModeProfile.Value = "Night";
+
+        Assert.IsTrue(LightSwitchProfileResolver.ReconcileReferences(props, profiles));
+        Assert.AreEqual(0, props.DarkModeProfileId.Value);
+        Assert.AreEqual(string.Empty, props.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_ValidPositiveId_DoesNotChangeReference()
+    {
+        var profiles = Profiles(("Night", 7));
+        var props = new LightSwitchProperties();
+        props.DarkModeProfileId.Value = 7;
+        props.DarkModeProfile.Value = "Night";
+
+        Assert.IsFalse(LightSwitchProfileResolver.ReconcileReferences(props, profiles));
+        Assert.AreEqual(7, props.DarkModeProfileId.Value);
+        Assert.AreEqual("Night", props.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_StalePositiveIdWithOtherProfiles_ClearsReference()
+    {
+        var profiles = Profiles(("Day", 4));
+        var props = new LightSwitchProperties();
+        props.DarkModeProfileId.Value = 7;
+        props.DarkModeProfile.Value = "Night";
+
+        Assert.IsTrue(LightSwitchProfileResolver.ReconcileReferences(props, profiles));
+        Assert.AreEqual(0, props.DarkModeProfileId.Value);
+        Assert.AreEqual(string.Empty, props.DarkModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ReconcileReferences_EmptyReference_RemainsUnchanged()
+    {
+        var props = new LightSwitchProperties();
+
+        Assert.IsFalse(LightSwitchProfileResolver.ReconcileReferences(props, Profiles()));
+        Assert.AreEqual(0, props.LightModeProfileId.Value);
+        Assert.AreEqual(string.Empty, props.LightModeProfile.Value);
     }
 }

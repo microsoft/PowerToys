@@ -4,6 +4,7 @@
 
 #nullable enable
 
+using System;
 using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -58,35 +59,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         /// <summary>
-        /// One-shot upgrade of a LightSwitch mapping from name-only to id+name. For each of light and
-        /// dark: when the id is unset (0) and the stored name resolves to a profile, store its id and
-        /// re-sync the name; when the name does not resolve, clear to "none" (id 0, empty name).
-        /// Returns true when anything changed. Idempotent.
+        /// Reconciles the stored light/dark profile references. When an id is set, a missing profile
+        /// clears both the id and name. When the id is unset, a resolvable name upgrades to id+name and
+        /// an unknown name clears to "none" (empty name, id 0). Returns true when anything changed.
         /// </summary>
-        public static bool MigrateNamesToIds(LightSwitchProperties props, PowerDisplayProfiles profiles)
+        public static bool ReconcileReferences(LightSwitchProperties props, PowerDisplayProfiles profiles)
         {
-            if (props is null || profiles is null)
-            {
-                return false;
-            }
+            ArgumentNullException.ThrowIfNull(props);
+            ArgumentNullException.ThrowIfNull(profiles);
 
             var changed = false;
-            changed |= MigrateOne(profiles, props.LightModeProfileId, props.LightModeProfile);
-            changed |= MigrateOne(profiles, props.DarkModeProfileId, props.DarkModeProfile);
+            changed |= ReconcileOne(profiles, props.LightModeProfileId, props.LightModeProfile);
+            changed |= ReconcileOne(profiles, props.DarkModeProfileId, props.DarkModeProfile);
             return changed;
         }
 
-        private static bool MigrateOne(PowerDisplayProfiles profiles, IntProperty idProp, StringProperty nameProp)
+        /// <summary>
+        /// Compatibility alias kept for stacked consumers while they move to <see cref="ReconcileReferences"/>.
+        /// </summary>
+        public static bool MigrateNamesToIds(LightSwitchProperties props, PowerDisplayProfiles profiles)
+            => ReconcileReferences(props, profiles);
+
+        private static bool ReconcileOne(PowerDisplayProfiles profiles, IntProperty idProp, StringProperty nameProp)
         {
             if (idProp.Value >= 1)
             {
-                return false; // already migrated
+                if (profiles.GetById(idProp.Value) is not null)
+                {
+                    return false;
+                }
+
+                idProp.Value = 0;
+                nameProp.Value = string.Empty;
+                return true;
             }
 
             var name = nameProp.Value;
             if (string.IsNullOrEmpty(name) || name == NoneSentinel)
             {
-                return false; // already "none"
+                return false;
             }
 
             var match = profiles.GetProfile(name);
@@ -97,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else
             {
-                nameProp.Value = string.Empty; // unknown/deleted -> none
+                nameProp.Value = string.Empty;
             }
 
             return true;
