@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Wox.Plugin;
 
@@ -27,6 +28,15 @@ namespace PowerLauncher.ViewModel
 
             lease = new GateLease(gate);
             return true;
+        }
+
+        public async Task<IDisposable> EnterAsync(PluginPair plugin, CancellationToken cancellationToken)
+        {
+            ArgumentNullException.ThrowIfNull(plugin);
+
+            var gate = _gates.GetOrAdd(plugin, static _ => new SemaphoreSlim(1, 1));
+            await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            return new GateLease(gate);
         }
 
         private sealed class GateLease : IDisposable
