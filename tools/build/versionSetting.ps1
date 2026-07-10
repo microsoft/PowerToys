@@ -26,6 +26,14 @@ function Get-NormalizedVersion {
     [string]$PipelineBuildNumber
   )
 
+  if ($InputVersion -match "^(?<numeric>\d+\.\d+(?:\.\d+){0,2})-(?<suffix>preview)$") {
+    if ($ReleaseChannel -ne "preview") {
+      throw "Version suffix '-preview' can only be used with the preview release channel"
+    }
+
+    $InputVersion = $matches["numeric"]
+  }
+
   if ($ReleaseChannel -eq "preview" -and $InputVersion -match "^(\d+)\.(\d+)$") {
     $major = [int]::Parse($matches[1])
     $minor = [int]::Parse($matches[2])
@@ -52,7 +60,7 @@ function Get-NormalizedVersion {
     return $versionParts -join "."
   }
 
-  throw "Build format does not match the expected pattern (w.x, w.x.y, or w.x.y.z)"
+  throw "Build format does not match the expected pattern (w.x, w.x.y, w.x.y.z, or w.x.y.z-preview for preview channel)"
 }
 
 $versionNumber = Get-NormalizedVersion -InputVersion $versionNumber -ReleaseChannel $Channel -PipelineBuildNumber $BuildNumber

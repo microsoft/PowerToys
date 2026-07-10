@@ -55,6 +55,20 @@ jobs:
     submodules: true
     persistCredentials: True
 
+  - pwsh: |-
+      $effectiveVersionNumber = '${{ parameters.resolvedVersionNumber }}'
+      if ([string]::IsNullOrWhiteSpace($effectiveVersionNumber) -or $effectiveVersionNumber.StartsWith('$(')) {
+        $effectiveVersionNumber = '${{ parameters.versionNumber }}'
+      }
+
+      if ($effectiveVersionNumber -match '^(?<numeric>\d+\.\d+(?:\.\d+){0,2})-preview$') {
+        $effectiveVersionNumber = $matches['numeric']
+      }
+
+      Write-Host "##vso[task.setvariable variable=EffectiveVersionNumber]$effectiveVersionNumber"
+      Write-Host "##vso[task.setvariable variable=SymbolsArtifactName]PowerToys_$effectiveVersionNumber_$(Build.BuildNumber)"
+    displayName: Resolve symbol version
+
   - task: DownloadPipelineArtifact@2
     displayName: Download all PDBs from all prior build phases
     inputs:
