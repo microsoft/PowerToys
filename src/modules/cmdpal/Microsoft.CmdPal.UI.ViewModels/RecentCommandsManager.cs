@@ -100,6 +100,15 @@ public record RecentCommandsManager : IRecentCommandsManager
     {
     }
 
+    /// <summary>
+    /// Forces the lazy command-id lookup (<see cref="Index"/>) to be built now, on the calling
+    /// thread. The build itself is not thread-safe (it populates a shared dictionary field without
+    /// locking), so callers that are about to score items in parallel MUST call this once,
+    /// single-threaded, before the parallel loop. Once built, <see cref="GetCommandHistoryWeight(string)"/>
+    /// only performs concurrent dictionary reads, which are safe.
+    /// </summary>
+    public void PrewarmIndex() => _ = Index;
+
     public int GetCommandHistoryWeight(string commandId)
         => GetCommandHistoryWeight(commandId, DateTimeOffset.UtcNow);
 
@@ -177,4 +186,12 @@ public interface IRecentCommandsManager
     int GetCommandHistoryWeight(string commandId);
 
     RecentCommandsManager WithHistoryItem(string commandId);
+
+    /// <summary>
+    /// Builds any lazily-initialized internal state (e.g. the command-id lookup) on the calling
+    /// thread so that subsequent <see cref="GetCommandHistoryWeight(string)"/> calls are safe to
+    /// issue concurrently. Callers that score items in parallel must invoke this once, single-
+    /// threaded, before the parallel loop.
+    /// </summary>
+    void PrewarmIndex();
 }
