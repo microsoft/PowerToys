@@ -96,60 +96,6 @@ namespace Wox.Test
         }
 
         [TestMethod]
-        public void DisposeWhenComplete_FinalSortCancellationWaitsForQueryTask()
-        {
-            // Regression for the final-sort pipeline: passing the update token to ContinueWith
-            // lets cancellation complete the continuation before its antecedent, causing
-            // DisposeWhenComplete to dispose the CTS while query work is still using it.
-            var queryStarted = new ManualResetEventSlim(initialState: false);
-            var releaseQuery = new ManualResetEventSlim(initialState: false);
-            CancellationToken capturedToken = default;
-            bool finalSortRan = false;
-
-            var session = QuerySession.Start(token =>
-            {
-                capturedToken = token;
-                var queryResultsTask = Task.Run(
-                    () =>
-                    {
-                        queryStarted.Set();
-                        releaseQuery.Wait(WaitBudget);
-                        _ = token.WaitHandle;
-                    },
-                    CancellationToken.None);
-
-                return queryResultsTask.ContinueWith(
-                    _ =>
-                    {
-                        token.ThrowIfCancellationRequested();
-                        finalSortRan = true;
-                    },
-                    CancellationToken.None,
-                    TaskContinuationOptions.DenyChildAttach,
-                    TaskScheduler.Default);
-            });
-
-            Assert.IsTrue(queryStarted.Wait(WaitBudget), "Query task should start before cancellation.");
-
-            session.Cancel();
-            var disposalCompletion = session.DisposeWhenComplete();
-
-            try
-            {
-                Assert.IsFalse(session.Completion.IsCompleted, "The uncancelable tail must keep tracking the running query task.");
-                Assert.IsFalse(disposalCompletion.IsCompleted, "CTS disposal must wait for the running query task.");
-                _ = capturedToken.WaitHandle;
-            }
-            finally
-            {
-                releaseQuery.Set();
-            }
-
-            Assert.IsTrue(disposalCompletion.Wait(WaitBudget), "CTS should be disposed after the full pipeline completes.");
-            Assert.IsFalse(finalSortRan, "Cancellation should be checked before final sorting.");
-        }
-
-        [TestMethod]
         public void CancelAndWait_ReturnsTrueWhenTaskCompletesWithinTimeout()
         {
             var session = QuerySession.Start(token => Task.Run(

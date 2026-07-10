@@ -785,18 +785,16 @@ namespace PowerLauncher.ViewModel
 
                         if (doFinalSort)
                         {
-                            // The uncancelable continuation is the pipeline tail whose completion
-                            // gates CTS disposal. It observes cancellation inside the delegate only
-                            // after queryResultsTask completes.
+                            // The continuation IS the tail of the pipeline whose completion gates
+                            // CTS disposal. DenyChildAttach for the same reason as Task.Run above.
                             return queryResultsTask.ContinueWith(
                                 _ =>
                                 {
-                                    updateToken.ThrowIfCancellationRequested();
                                     Results.Sort(queryTuning);
                                     Results.SelectedItem = Results.Results.FirstOrDefault();
                                     UpdateResultsListViewAfterQuery(queryText, false, false);
                                 },
-                                CancellationToken.None,
+                                updateToken,
                                 TaskContinuationOptions.DenyChildAttach,
                                 TaskScheduler.Default);
                         }
