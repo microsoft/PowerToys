@@ -38,6 +38,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public bool Trusted { get; set; }
 
+        /// <summary>
+        /// The parameters this script declares in its manifest. Surfaced under each script so users
+        /// know what a community-authored script will ask for before running it.
+        /// </summary>
+        public List<PowerScriptParameterItem> Parameters { get; set; } = new();
+
+        /// <summary>
+        /// True when the script opts in to a parameter-selection prompt (WinUI 3 dialog) before it runs.
+        /// </summary>
+        public bool PromptForParameters { get; set; }
+
+        /// <summary>True when the script declares at least one parameter.</summary>
+        public bool HasParameters => Parameters is { Count: > 0 };
+
+        /// <summary>Header for the parameters card, noting whether the user is prompted before running.</summary>
+        public string ParametersHeader => PromptForParameters
+            ? "Parameters (you'll be prompted before running)"
+            : "Parameters";
+
         public string KindGlyph => string.Equals(Kind, "file", StringComparison.OrdinalIgnoreCase)
             ? "\uE8A5" // file action
             : "\uE756"; // system action

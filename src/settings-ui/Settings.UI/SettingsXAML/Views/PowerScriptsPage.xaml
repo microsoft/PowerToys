@@ -140,6 +140,30 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind CapabilitiesDisplay}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard
+                                            ContentAlignment="Vertical"
+                                            Header="{x:Bind ParametersHeader}"
+                                            Visibility="{x:Bind HasParameters, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ItemsControl ItemsSource="{x:Bind Parameters}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="viewModels:PowerScriptParameterItem">
+                                                        <StackPanel Margin="0,4,0,4" Spacing="1">
+                                                            <TextBlock FontWeight="SemiBold" Text="{x:Bind DisplayLabel}" />
+                                                            <TextBlock
+                                                                FontSize="12"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Text="{x:Bind TypeDetailDisplay}" />
+                                                            <TextBlock
+                                                                FontSize="12"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Text="{x:Bind Description}"
+                                                                TextWrapping="Wrap"
+                                                                Visibility="{x:Bind HasDescription, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Right" Header="Trust">
                                             <TextBlock
                                                 VerticalAlignment="Center"
