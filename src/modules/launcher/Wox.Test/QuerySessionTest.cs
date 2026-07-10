@@ -88,5 +88,24 @@ namespace Wox.Test
             session.Dispose();
             session.Cancel();
         }
+
+        [TestMethod]
+        public void SuspendedSessionDoesNotRunPipelineBeforeResume()
+        {
+            // Query state must be published before its worker can produce results, otherwise a fast query can discard valid results as stale.
+            var pipelineStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var session = QuerySession.StartSuspended(_ =>
+            {
+                pipelineStarted.SetResult(true);
+                return Task.CompletedTask;
+            });
+
+            Assert.IsFalse(pipelineStarted.Task.Wait(TimeSpan.FromMilliseconds(50)));
+
+            session.Resume();
+
+            Assert.IsTrue(pipelineStarted.Task.Wait(WaitTimeout));
+            Assert.IsTrue(session.Completion.Wait(WaitTimeout));
+        }
     }
 }

@@ -57,10 +57,10 @@ namespace PowerLauncher.ViewModel
         // Snapshot used by synchronous history updates that can run without an active query session.
         private CancellationToken _updateToken;
 
-        // Bounds non-cancelable plugin calls to one query fan-out so rapid typing cannot exhaust the thread pool.
-        private readonly SemaphoreSlim _queryExecutionGate = new(1, 1);
+        // Bounds each non-cancelable plugin to one call without allowing a hung plugin to block the others.
+        private readonly PluginQueryExecutionGate _pluginQueryExecutionGate = new();
         private long _queryGeneration;
-        private IReadOnlyCollection<Query> _currentPluginQueries = Array.Empty<Query>();
+        private IReadOnlyDictionary<PluginPair, Query> _currentPluginQueries = new Dictionary<PluginPair, Query>();
         private static readonly TimeSpan QueryShutdownTimeout = TimeSpan.FromSeconds(2);
         private const int QueryDebounceDelayMilliseconds = 20;
         private CancellationToken _nativeWaiterCancelToken;
@@ -174,7 +174,9 @@ namespace PowerLauncher.ViewModel
                     lock (_addResultsLock)
                     {
                         querySession = _currentQuerySession;
-                        if (querySession == null || !_currentPluginQueries.Any(query => ReferenceEquals(query, e.Query)))
+                        if (querySession == null ||
+                            !_currentPluginQueries.TryGetValue(pair, out var currentQuery) ||
+                            !AreEquivalentQueries(currentQuery, e.Query))
                         {
                             return;
                         }
@@ -188,9 +190,19 @@ namespace PowerLauncher.ViewModel
                             lock (_addResultsLock)
                             {
                                 if (!ReferenceEquals(querySession, _currentQuerySession) ||
-                                    !_currentPluginQueries.Any(query => ReferenceEquals(query, e.Query)))
+                                    !_currentPluginQueries.TryGetValue(pair, out var currentQuery) ||
+                                    !AreEquivalentQueries(currentQuery, e.Query))
                                 {
                                     return;
+                                }
+
+                                internal static bool AreEquivalentQueries(Query firstQuery, Query secondQuery)
+                                {
+                                    return firstQuery != null &&
+                                           secondQuery != null &&
+                                           string.Equals(firstQuery.ActionKeyword, secondQuery.ActionKeyword, StringComparison.Ordinal) &&
+                                           string.Equals(firstQuery.Search, secondQuery.Search, StringComparison.Ordinal) &&
+                                           string.Equals(firstQuery.RawQuery, secondQuery.RawQuery, StringComparison.Ordinal);
                                 }
 
                                 PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
@@ -627,7 +639,7 @@ namespace PowerLauncher.ViewModel
                     previousQuerySession = _currentQuerySession;
                     _currentQuerySession = null;
                     _updateToken = CancellationToken.None;
-                    _currentPluginQueries = Array.Empty<Query>();
+                    _currentPluginQueries = new Dictionary<PluginPair, Query>();
                     queryGeneration = ++_queryGeneration;
                 }
 
@@ -642,7 +654,7 @@ namespace PowerLauncher.ViewModel
                 {
                     queryText = pluginQueryPairs.Values.First().RawQuery;
 
-                    var currentQuerySession = QuerySession.Start(updateToken =>
+                    var currentQuerySession = QuerySession.StartSuspended(updateToken =>
                     {
                         var queryResultsTask = Task.Run(
                             async () =>
@@ -657,8 +669,6 @@ namespace PowerLauncher.ViewModel
                             var plugins = pluginQueryPairs.Keys.ToList();
 
                             var sw = System.Diagnostics.Stopwatch.StartNew();
-                            await _queryExecutionGate.WaitAsync(updateToken).ConfigureAwait(false);
-
                             try
                             {
                                 var resultPluginPair = new System.Collections.Concurrent.ConcurrentDictionary<PluginMetadata, List<Result>>();
@@ -675,7 +685,11 @@ namespace PowerLauncher.ViewModel
                                         var plugin = pluginQueryItem.Key;
                                         var query = pluginQueryItem.Value;
                                         query.SelectedItems = _userSelectedRecord.GetGenericHistory();
-                                        var results = PluginManager.QueryForPlugin(plugin, query);
+                                        if (!TryQueryForPlugin(plugin, query, delayedExecution: false, updateToken, out var results))
+                                        {
+                                            return;
+                                        }
+
                                         updateToken.ThrowIfCancellationRequested();
                                         resultPluginPair[plugin.Metadata] = results;
                                     });
@@ -692,7 +706,11 @@ namespace PowerLauncher.ViewModel
                                         var plugin = pluginQueryItem.Key;
                                         var query = pluginQueryItem.Value;
                                         query.SelectedItems = _userSelectedRecord.GetGenericHistory();
-                                        var results = PluginManager.QueryForPlugin(plugin, query);
+                                        if (!TryQueryForPlugin(plugin, query, delayedExecution: false, updateToken, out var results))
+                                        {
+                                            continue;
+                                        }
+
                                         updateToken.ThrowIfCancellationRequested();
                                         resultPluginPair[plugin.Metadata] = results;
                                     }
@@ -742,7 +760,11 @@ namespace PowerLauncher.ViewModel
                                     {
                                         updateToken.ThrowIfCancellationRequested();
                                         pluginQueryPairs.TryGetValue(plugin, out Query query);
-                                        var results = PluginManager.QueryForPlugin(plugin, query, true);
+                                        if (!TryQueryForPlugin(plugin, query, delayedExecution: true, updateToken, out var results))
+                                        {
+                                            return;
+                                        }
+
                                         updateToken.ThrowIfCancellationRequested();
                                         if ((results?.Count ?? 0) != 0)
                                         {
@@ -781,11 +803,6 @@ namespace PowerLauncher.ViewModel
                             {
                                 // nothing to do here
                             }
-                            finally
-                            {
-                                _queryExecutionGate.Release();
-                            }
-
                             if (updateToken.IsCancellationRequested)
                             {
                                 // Canceled queries are incomplete work and should not contribute query telemetry.
@@ -835,8 +852,10 @@ namespace PowerLauncher.ViewModel
                         _currentQuery = queryText;
                         _currentQuerySession = currentQuerySession;
                         _updateToken = currentQuerySession.Token;
-                        _currentPluginQueries = pluginQueryPairs.Values.ToList();
+                        _currentPluginQueries = new Dictionary<PluginPair, Query>(pluginQueryPairs);
                     }
+
+                    currentQuerySession.Resume();
                 }
                 else
                 {
@@ -844,7 +863,7 @@ namespace PowerLauncher.ViewModel
                     {
                         _currentQuerySession = null;
                         _updateToken = CancellationToken.None;
-                        _currentPluginQueries = Array.Empty<Query>();
+                        _currentPluginQueries = new Dictionary<PluginPair, Query>();
                     }
                 }
 
@@ -857,7 +876,7 @@ namespace PowerLauncher.ViewModel
                     previousQuerySession = _currentQuerySession;
                     _currentQuerySession = null;
                     _updateToken = CancellationToken.None;
-                    _currentPluginQueries = Array.Empty<Query>();
+                    _currentPluginQueries = new Dictionary<PluginPair, Query>();
                     _queryGeneration++;
                     _currentQuery = _emptyQuery;
                 }
@@ -877,6 +896,23 @@ namespace PowerLauncher.ViewModel
                         Results.Clear();
                     }
                 });
+            }
+        }
+
+        private bool TryQueryForPlugin(PluginPair plugin, Query query, bool delayedExecution, CancellationToken cancellationToken, out List<Result> results)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!_pluginQueryExecutionGate.TryEnter(plugin, out var lease))
+            {
+                results = null;
+                return false;
+            }
+
+            using (lease)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                results = PluginManager.QueryForPlugin(plugin, query, delayedExecution);
+                return true;
             }
         }
 

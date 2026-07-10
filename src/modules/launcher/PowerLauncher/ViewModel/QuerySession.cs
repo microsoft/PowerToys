@@ -14,15 +14,17 @@ namespace PowerLauncher.ViewModel
     internal sealed class QuerySession : IDisposable
     {
         private readonly CancellationTokenSource _cancellationSource;
+        private readonly TaskCompletionSource<bool> _startSource;
 
         // Interlocked.Exchange requires an int and provides the memory barrier for idempotent disposal.
         private int _disposed;
 
-        private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion)
+        private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion, TaskCompletionSource<bool> startSource = null)
         {
             _cancellationSource = cancellationSource;
             Token = token;
             Completion = completion;
+            _startSource = startSource;
         }
 
         public CancellationToken Token { get; }
@@ -39,6 +41,28 @@ namespace PowerLauncher.ViewModel
             {
                 var completion = pipeline(token) ?? Task.CompletedTask;
                 return new QuerySession(cancellationSource, token, completion);
+            }
+
+            public static QuerySession StartSuspended(Func<CancellationToken, Task> pipeline)
+            {
+                ArgumentNullException.ThrowIfNull(pipeline);
+
+                var cancellationSource = new CancellationTokenSource();
+                var token = cancellationSource.Token;
+                var startSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var completion = RunPipelineAsync();
+                return new QuerySession(cancellationSource, token, completion, startSource);
+
+                async Task RunPipelineAsync()
+                {
+                    await startSource.Task.WaitAsync(token).ConfigureAwait(false);
+                    await (pipeline(token) ?? Task.CompletedTask).ConfigureAwait(false);
+                }
+            }
+
+            public void Resume()
+            {
+                _startSource?.TrySetResult(true);
             }
             catch
             {
