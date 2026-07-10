@@ -31,7 +31,12 @@ public sealed partial class ToastWindow : TransparentWindow,
 {
     private static readonly TimeSpan VisibleDuration = TimeSpan.FromMilliseconds(2500);
 
+    // Toasts carrying an action button stay up longer so there's time to click it.
+    private static readonly TimeSpan VisibleDurationWithCommand = TimeSpan.FromMilliseconds(5000);
+
     private readonly DispatcherQueueTimer _autoHideTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+
+    private TimeSpan _visibleDuration = VisibleDuration;
 
     public ToastViewModel ViewModel { get; } = new();
 
@@ -47,12 +52,20 @@ public sealed partial class ToastWindow : TransparentWindow,
         // pill (positioned in XAML) room for its slide + shadow.
         Surface.SubscribeTo(this);
 
+        // Don't auto-hide out from under a pointer that's heading for the action button.
+        Surface.PointerEntered += (_, _) => _autoHideTimer.Stop();
+        Surface.PointerExited += (_, _) => _autoHideTimer.Debounce(Hide, interval: _visibleDuration, immediate: false);
+
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
 
-    public void ShowToast(string message)
+    public void ShowToast(ShowToastMessage toast)
     {
-        ViewModel.ToastMessage = message;
+        ViewModel.ToastMessage = toast.Message;
+        ViewModel.Icon = toast.Icon;
+        ViewModel.Command = toast.Command;
+
+        _visibleDuration = toast.Command is not null ? VisibleDurationWithCommand : VisibleDuration;
 
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,
@@ -61,8 +74,23 @@ public sealed partial class ToastWindow : TransparentWindow,
                 _autoHideTimer.Stop();
                 PositionBottomCenter();
                 Show();
-                _autoHideTimer.Debounce(Hide, interval: VisibleDuration, immediate: false);
+                _autoHideTimer.Debounce(Hide, interval: _visibleDuration, immediate: false);
             });
+    }
+
+    private void CommandButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        var command = ViewModel.Command;
+        if (command is null)
+        {
+            return;
+        }
+
+        _autoHideTimer.Stop();
+        Hide();
+
+        // ShowWindowIfPage summons the palette when the command is a page.
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Model) { ShowWindowIfPage = true });
     }
 
     public void Receive(QuitMessage message)
