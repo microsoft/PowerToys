@@ -19,7 +19,7 @@ namespace PowerLauncher.ViewModel
         // Interlocked.Exchange requires an int and provides the memory barrier for idempotent disposal.
         private int _disposed;
 
-        private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion, TaskCompletionSource<bool> startSource = null)
+        private QuerySession(CancellationTokenSource cancellationSource, Task completion, TaskCompletionSource<bool> startSource, CancellationToken token)
         {
             _cancellationSource = cancellationSource;
             Token = token;
@@ -40,7 +40,7 @@ namespace PowerLauncher.ViewModel
             try
             {
                 var completion = pipeline(token) ?? Task.CompletedTask;
-                return new QuerySession(cancellationSource, token, completion);
+                return new QuerySession(cancellationSource, completion, null, token);
             }
             catch
             {
@@ -57,7 +57,7 @@ namespace PowerLauncher.ViewModel
             var token = cancellationSource.Token;
             var startSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var completion = RunPipelineAsync();
-            return new QuerySession(cancellationSource, token, completion, startSource);
+            return new QuerySession(cancellationSource, completion, startSource, token);
 
             async Task RunPipelineAsync()
             {
