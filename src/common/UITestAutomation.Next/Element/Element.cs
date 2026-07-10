@@ -97,6 +97,10 @@ public class Element
         {
             if (Width > 0 && Height > 0)
             {
+                // Raise the target window first: a physical click lands on whatever window is topmost
+                // at these pixels, and a background-launched overlay/toolbar is often placed behind the
+                // window that held the foreground when it was triggered (the Win32 foreground lock).
+                Owner!.EnsureForeground();
                 MouseHelper.MoveTo(X + (Width / 2), Y + (Height / 2));
                 Thread.Sleep(50);
                 if (rightClick)
