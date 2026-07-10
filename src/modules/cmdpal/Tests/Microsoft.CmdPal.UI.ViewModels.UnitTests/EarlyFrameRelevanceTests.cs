@@ -307,4 +307,81 @@ public sealed partial class EarlyFrameRelevanceTests
         Assert.AreEqual(1, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.ExactTitle));
         Assert.AreEqual(0, MainListPage.HighConfidenceAppPrefixLength(scored, RankTier.AliasExact));
     }
+
+    /// <summary>
+    /// FIX #2 guardrail: the gate decision is driven entirely by the length it is handed - the query
+    /// length PUBLISHED atomically with the app array - not by any later value. Feeding the published
+    /// short length (2) withholds the fuzzy tail even though a longer length would pass it through,
+    /// which is exactly why MainListPage gates on the published _filteredAppsQueryLength rather than
+    /// the live SearchText the UI thread may already have advanced past on a 2-to-3 char transition.
+    /// </summary>
+    [TestMethod]
+    public void Gate_DecidesOnSuppliedPublishedLength_NotLiveText()
+    {
+        RoScored<IListItem> Fuzzy(int within)
+            => new(new CatalogItem($"fuzzy.{within}", string.Empty, $"fuzzy.{within}"), MainListRanker.Pack(RankTier.Fuzzy, within));
+
+        var scored = new[] { Fuzzy(30), Fuzzy(20), Fuzzy(10) };
+
+        // Published length 2 (the query that produced this array is still ultra-short): withhold.
+        var gatedByPublished = MainListPage.ApplyShortQueryAppGate(scored, queryLength: 2);
+        Assert.IsNotNull(gatedByPublished);
+        Assert.AreEqual(0, gatedByPublished!.Count, "Gating on the published short length (2) must withhold the fuzzy tail.");
+
+        // The SAME array gated on a longer length passes through, so gating on a stale/live longer
+        // length would wrongly expose the tail. That is the regression Fix #2 prevents.
+        Assert.AreSame(scored, MainListPage.ApplyShortQueryAppGate(scored, queryLength: 5), "A longer length would pass the tail through, proving the supplied length is what decides.");
+    }
+
+    /// <summary>
+    /// FIX #3 guardrail: the settled-search telemetry count reflects the GATED visible apps for an
+    /// ultra-short query, not the full ungated app array. For a discriminating query it is the full
+    /// (capped) count. This keeps the reported result count consistent with what the user is shown.
+    /// </summary>
+    [TestMethod]
+    public void GatedVisibleAppCount_ShortQuery_CountsOnlyGatedApps()
+    {
+        var matcher = CreateMatcher();
+        var apps = BuildMixedCatalogForC();
+        var scored = Score(apps, "c", new RecentCommandsManager(), matcher);
+
+        var full = scored.Length;
+        var confident = scored.Count(s => (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary);
+        Assert.IsTrue(confident < full, "Precondition: a fuzzy tail exists so the gated count is strictly less than the full count.");
+
+        const int NoCap = 1000;
+
+        // Ultra-short published length: only the confident head is counted.
+        Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 1, appResultLimit: NoCap));
+        Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 2, appResultLimit: NoCap));
+
+        // Discriminating published length: the full set (capped) is counted.
+        Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 3, appResultLimit: NoCap));
+        Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 0, appResultLimit: NoCap), "A zero-length (default view) count is ungated.");
+    }
+
+    /// <summary>
+    /// FIX #3: the gated visible count is still capped by the app result limit, a fuzzy-only
+    /// ultra-short query reports zero visible apps (its whole tail is withheld), and null/empty
+    /// inputs report zero.
+    /// </summary>
+    [TestMethod]
+    public void GatedVisibleAppCount_RespectsCap_AndZeroForWithheldOrEmpty()
+    {
+        var matcher = CreateMatcher();
+
+        // Fuzzy-only ultra-short query: nothing confident, so the gated count is zero.
+        var fuzzyOnly = Score(BuildFuzzyOnlyCatalogForX(), "x", new RecentCommandsManager(), matcher);
+        Assert.IsTrue(fuzzyOnly.Length > 0, "Precondition: 'x' matches fuzzily.");
+        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(fuzzyOnly, queryLength: 1, appResultLimit: 1000));
+
+        // The cap applies on the ungated path.
+        var mixed = Score(BuildMixedCatalogForC(), "c", new RecentCommandsManager(), matcher);
+        Assert.IsTrue(mixed.Length > 2, "Precondition: the mixed catalog has more than two matches so the cap bites.");
+        Assert.AreEqual(2, MainListPage.GatedVisibleAppCount(mixed, queryLength: 3, appResultLimit: 2), "The full count is capped by the app result limit.");
+
+        // Null and empty report zero.
+        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(null, 1, 1000));
+        Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(Array.Empty<RoScored<IListItem>>(), 1, 1000));
+    }
 }

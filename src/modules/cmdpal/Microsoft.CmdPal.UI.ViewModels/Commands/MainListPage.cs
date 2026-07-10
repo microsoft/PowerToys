@@ -63,6 +63,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
+    // Length of the query that produced the currently published _filteredApps. Published atomically
+    // with _filteredApps under lock(commands) so the early-frame gate always decides on the length
+    // of the query that actually produced the app array it is gating. Gating on the live SearchText
+    // instead would be unsafe: SearchText is advanced on the UI thread ahead of the publish, so on a
+    // 2-to-3 char transition a throttled refresh could render the stale 2-char app array while the
+    // live length already reads 3, no-op the gate, and briefly expose the fuzzy tail 7c withholds.
+    private int _filteredAppsQueryLength;
+
     // Global/special fallbacks are re-scored lazily on the render path (GetSearchViewItems)
     // instead of being frozen at keystroke time. Their dynamic titles are resolved
     // asynchronously off the typing path by the fallback update manager, so deferring the
@@ -318,7 +326,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // fuzzy app tail so a frecency-floated weak match cannot surface at the top mid-typing. For
         // discriminating (longer) queries the scored apps are passed through unchanged, so the
         // settled order of a meaningful query is never altered.
-        var gatedApps = ApplyShortQueryAppGate(_filteredApps, SearchText?.Length ?? 0);
+        var gatedApps = ApplyShortQueryAppGate(_filteredApps, _filteredAppsQueryLength);
 
         var result = MainListPageResultFactory.Create(
             _filteredItems,
@@ -420,6 +428,27 @@ public sealed partial class MainListPage : DynamicListPage,
         return scored.Count;
     }
 
+    // Number of app results that are actually visible for a given published query length, matching
+    // what ApplyShortQueryAppGate renders: the gated high-confidence prefix while the query is in the
+    // ultra-short window, otherwise the full set, in both cases capped by the app result limit. Used
+    // to keep the settled-search telemetry count consistent with what the user is shown, so a short
+    // query whose fuzzy tail is withheld does not report an inflated result count.
+    internal static int GatedVisibleAppCount(RoScored<IListItem>[]? scoredApps, int queryLength, int appResultLimit)
+    {
+        if (scoredApps is null || scoredApps.Length == 0)
+        {
+            return 0;
+        }
+
+        var count = scoredApps.Length;
+        if (queryLength > 0 && queryLength <= ShortQueryAppTailGateMaxLength)
+        {
+            count = HighConfidenceAppPrefixLength(scoredApps, ShortQueryAppGateMinTier);
+        }
+
+        return Math.Min(count, appResultLimit);
+    }
+
     private IListItem[] GetDefaultViewItems()
     {
         if (_defaultViewDirty)
@@ -504,6 +533,7 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         _filteredItems = null;
         _filteredApps = null;
+        _filteredAppsQueryLength = 0;
         _fallbackItems = null;
         _globalFallbackSources = null;
 
@@ -816,10 +846,15 @@ public sealed partial class MainListPage : DynamicListPage,
             // null so a rebuild clears any stale set - matching the previous ClearResults behavior.
             _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
+            // Publish the query length atomically with the array so the render-path gate (and the
+            // telemetry count below) always evaluate against the query that produced this app array,
+            // never the live SearchText which the UI thread may already have advanced past.
+            _filteredAppsQueryLength = _filteredApps is null ? 0 : newSearch.Length;
+
             if (isUserInput)
             {
                 deterministicResultCount = (_filteredItems?.Length ?? 0)
-                    + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
+                    + GatedVisibleAppCount(_filteredApps, _filteredAppsQueryLength, AppResultLimit);
             }
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
