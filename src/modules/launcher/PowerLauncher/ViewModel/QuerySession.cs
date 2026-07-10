@@ -13,31 +13,34 @@ namespace PowerLauncher.ViewModel
     /// </summary>
     internal sealed class QuerySession : IDisposable
     {
-        private readonly CancellationTokenSource _cancellationSource = new();
+        private readonly CancellationTokenSource _cancellationSource;
         private int _disposed;
 
-        private QuerySession()
+        private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion)
         {
-            Token = _cancellationSource.Token;
+            _cancellationSource = cancellationSource;
+            Token = token;
+            Completion = completion;
         }
 
         public CancellationToken Token { get; }
 
-        public Task Completion { get; private set; } = Task.CompletedTask;
+        public Task Completion { get; }
 
         public static QuerySession Start(Func<CancellationToken, Task> pipeline)
         {
             ArgumentNullException.ThrowIfNull(pipeline);
 
-            var session = new QuerySession();
+            var cancellationSource = new CancellationTokenSource();
+            var token = cancellationSource.Token;
             try
             {
-                session.Completion = pipeline(session.Token) ?? Task.CompletedTask;
-                return session;
+                var completion = pipeline(token) ?? Task.CompletedTask;
+                return new QuerySession(cancellationSource, token, completion);
             }
             catch
             {
-                session._cancellationSource.Dispose();
+                cancellationSource.Dispose();
                 throw;
             }
         }

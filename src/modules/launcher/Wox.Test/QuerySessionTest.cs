@@ -20,9 +20,9 @@ namespace Wox.Test
         public void CancelSignalsCapturedTokenAfterSessionReplacement()
         {
             // Regression guard: an old query must retain its own canceled token after a newer query replaces it.
-            var firstSession = QuerySession.Start(_ => Task.CompletedTask);
+            using var firstSession = QuerySession.Start(_ => Task.CompletedTask);
             var firstToken = firstSession.Token;
-            var secondSession = QuerySession.Start(_ => Task.CompletedTask);
+            using var secondSession = QuerySession.Start(_ => Task.CompletedTask);
 
             firstSession.Cancel();
 

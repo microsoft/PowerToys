@@ -164,11 +164,14 @@ namespace PowerLauncher.ViewModel
                 var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
-                    var querySession = _currentQuerySession;
-                    var pluginQueries = _currentPluginQueries;
-                    if (querySession == null || !pluginQueries.Any(query => ReferenceEquals(query, e.Query)))
+                    QuerySession querySession;
+                    lock (_addResultsLock)
                     {
-                        return;
+                        querySession = _currentQuerySession;
+                        if (querySession == null || !_currentPluginQueries.Any(query => ReferenceEquals(query, e.Query)))
+                        {
+                            return;
+                        }
                     }
 
                     var updateToken = querySession.Token;
@@ -176,18 +179,17 @@ namespace PowerLauncher.ViewModel
                         () =>
                         {
                             updateToken.ThrowIfCancellationRequested();
-                            if (!ReferenceEquals(querySession, _currentQuerySession))
+                            lock (_addResultsLock)
                             {
-                                return;
-                            }
+                                if (!ReferenceEquals(querySession, _currentQuerySession) ||
+                                    !_currentPluginQueries.Any(query => ReferenceEquals(query, e.Query)))
+                                {
+                                    return;
+                                }
 
-                            if (!pluginQueries.Any(query => ReferenceEquals(query, e.Query)))
-                            {
-                                return;
+                                PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
+                                UpdateResultView(e.Results, e.Query.RawQuery, updateToken);
                             }
-
-                            PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                            UpdateResultView(e.Results, e.Query.RawQuery, updateToken);
                         },
                         updateToken);
                 };
@@ -611,15 +613,28 @@ namespace PowerLauncher.ViewModel
             {
                 var queryTimer = new System.Diagnostics.Stopwatch();
                 queryTimer.Start();
-                var previousQuerySession = _currentQuerySession;
                 var queryText = QueryText.Trim();
-                var queryGeneration = Interlocked.Increment(ref _queryGeneration);
+                QuerySession previousQuerySession;
+                long queryGeneration;
+                lock (_addResultsLock)
+                {
+                    previousQuerySession = _currentQuerySession;
+                    _currentQuerySession = null;
+                    _updateToken = CancellationToken.None;
+                    _currentPluginQueries = Array.Empty<Query>();
+                    queryGeneration = ++_queryGeneration;
+                }
+
+                if (previousQuerySession != null)
+                {
+                    previousQuerySession.Cancel();
+                    _ = previousQuerySession.DisposeWhenComplete();
+                }
 
                 var pluginQueryPairs = QueryBuilder.Build(queryText);
                 if (pluginQueryPairs != null && pluginQueryPairs.Count > 0)
                 {
                     queryText = pluginQueryPairs.Values.First().RawQuery;
-                    _currentQuery = queryText;
 
                     var currentQuerySession = QuerySession.Start(updateToken =>
                     {
@@ -627,7 +642,6 @@ namespace PowerLauncher.ViewModel
                             async () =>
                         {
                             await Task.Delay(20, updateToken).ConfigureAwait(false);
-                            await _queryExecutionGate.WaitAsync(updateToken).ConfigureAwait(false);
 
                             // Keep track of total number of results for telemetry
                             var numResults = 0;
@@ -636,6 +650,7 @@ namespace PowerLauncher.ViewModel
                             var plugins = pluginQueryPairs.Keys.ToList();
 
                             var sw = System.Diagnostics.Stopwatch.StartNew();
+                            await _queryExecutionGate.WaitAsync(updateToken).ConfigureAwait(false);
 
                             try
                             {
@@ -648,6 +663,7 @@ namespace PowerLauncher.ViewModel
                                         new ParallelOptions { CancellationToken = updateToken },
                                         (pluginQueryItem) =>
                                     {
+                                        // Already-running plugin calls are cooperative; the query gate bounds them to one batch.
                                         updateToken.ThrowIfCancellationRequested();
                                         var plugin = pluginQueryItem.Key;
                                         var query = pluginQueryItem.Value;
@@ -780,14 +796,17 @@ namespace PowerLauncher.ViewModel
                                 _ =>
                             {
                                 updateToken.ThrowIfCancellationRequested();
-                                if (queryGeneration != Volatile.Read(ref _queryGeneration))
+                                lock (_addResultsLock)
                                 {
-                                    return;
-                                }
+                                    if (queryGeneration != _queryGeneration)
+                                    {
+                                        return;
+                                    }
 
-                                Results.Sort(queryTuning);
-                                Results.SelectedItem = Results.Results.FirstOrDefault();
-                                UpdateResultsListViewAfterQuery(queryText, queryGeneration);
+                                    Results.Sort(queryTuning);
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
+                                    UpdateResultsListViewAfterQuery(queryText, queryGeneration);
+                                }
                             },
                                 updateToken,
                                 TaskContinuationOptions.ExecuteSynchronously,
@@ -797,37 +816,44 @@ namespace PowerLauncher.ViewModel
                         return queryResultsTask;
                     });
 
-                    _currentQuerySession = currentQuerySession;
-                    _updateToken = currentQuerySession.Token;
-                    _currentPluginQueries = pluginQueryPairs.Values.ToList();
+                    lock (_addResultsLock)
+                    {
+                        _currentQuery = queryText;
+                        _currentQuerySession = currentQuerySession;
+                        _updateToken = currentQuerySession.Token;
+                        _currentPluginQueries = pluginQueryPairs.Values.ToList();
+                    }
                 }
                 else
                 {
-                    _currentQuerySession = null;
-                    _updateToken = CancellationToken.None;
-                    _currentPluginQueries = Array.Empty<Query>();
+                    lock (_addResultsLock)
+                    {
+                        _currentQuerySession = null;
+                        _updateToken = CancellationToken.None;
+                        _currentPluginQueries = Array.Empty<Query>();
+                    }
                 }
 
-                if (previousQuerySession != null)
-                {
-                    previousQuerySession.Cancel();
-                    _ = previousQuerySession.DisposeWhenComplete();
-                }
             }
             else
             {
-                var previousQuerySession = _currentQuerySession;
-                _currentQuerySession = null;
-                _updateToken = CancellationToken.None;
-                _currentPluginQueries = Array.Empty<Query>();
-                Interlocked.Increment(ref _queryGeneration);
+                QuerySession previousQuerySession;
+                lock (_addResultsLock)
+                {
+                    previousQuerySession = _currentQuerySession;
+                    _currentQuerySession = null;
+                    _updateToken = CancellationToken.None;
+                    _currentPluginQueries = Array.Empty<Query>();
+                    _queryGeneration++;
+                    _currentQuery = _emptyQuery;
+                }
+
                 if (previousQuerySession != null)
                 {
                     previousQuerySession.Cancel();
                     _ = previousQuerySession.DisposeWhenComplete();
                 }
 
-                _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Collapsed;
                 Task.Run(() =>
