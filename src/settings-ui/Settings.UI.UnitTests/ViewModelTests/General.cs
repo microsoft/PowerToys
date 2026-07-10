@@ -98,6 +98,7 @@ namespace ViewModelTests
         public void IncludePrereleaseUpdatesShouldSendUpdatedSettingWhenSuccessful()
         {
             bool sawExpectedIpcPayload = false;
+            bool sawExpectedUpdateCheckPayload = false;
             Func<string, int> sendMockIPCConfigMSG = msg =>
             {
                 if (string.IsNullOrWhiteSpace(msg))
@@ -117,7 +118,24 @@ namespace ViewModelTests
             };
 
             Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
-            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg =>
+            {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
+                GeneralSettingsCustomAction action = JsonSerializer.Deserialize<GeneralSettingsCustomAction>(msg);
+                if (action?.GeneralSettingsAction?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
+                Assert.IsTrue(action.GeneralSettingsAction.GeneralSettings.IncludePrereleaseUpdates);
+                Assert.AreEqual("check_for_updates", action.GeneralSettingsAction.GeneralSettings.CustomActionName);
+                sawExpectedUpdateCheckPayload = true;
+                return 0;
+            };
             GeneralViewModel viewModel = new TestGeneralViewModel(
                 settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
                 "GeneralSettings_RunningAsAdminText",
@@ -134,6 +152,7 @@ namespace ViewModelTests
             viewModel.IncludePrereleaseUpdates = true;
 
             Assert.IsTrue(sawExpectedIpcPayload);
+            Assert.IsTrue(sawExpectedUpdateCheckPayload);
         }
 
         [TestMethod]

@@ -655,6 +655,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _includePrereleaseUpdates = value;
                     GeneralSettingsConfig.IncludePrereleaseUpdates = value;
                     NotifyPropertyChanged();
+                    CheckForUpdatesClick();
                 }
             }
         }
