@@ -36,6 +36,11 @@ namespace PTSettingsSvc
         return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\Settings";
     }
 
+    std::wstring GetServiceBinRoot()
+    {
+        return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\SettingsSvcBin";
+    }
+
     std::wstring GetUserFolder(const std::wstring& userSidString)
     {
         return GetSettingsRoot() + L"\\" + userSidString;

@@ -4,6 +4,7 @@
 #include "SelfRegister.h"
 #include "FileGuard.h"
 #include "Paths.h"
+#include "CallerVerify.h"
 
 #include <windows.h>
 #include <vector>
@@ -12,6 +13,8 @@ namespace PTSettingsSvc
 {
     namespace
     {
+        constexpr const wchar_t* kExeName = L"PowerToys.PTSettingsSvc.exe";
+
         std::wstring ServiceKeyName(const std::wstring& sid)
         {
             return L"PTSettingsSvc_" + sid;
@@ -40,6 +43,28 @@ namespace PTSettingsSvc
                 return {};
             }
             return std::wstring(buf, n);
+        }
+
+        std::wstring FormatVersion(unsigned long long v)
+        {
+            unsigned a = static_cast<unsigned>((v >> 48) & 0xFFFF);
+            unsigned b = static_cast<unsigned>((v >> 32) & 0xFFFF);
+            unsigned c = static_cast<unsigned>((v >> 16) & 0xFFFF);
+            unsigned d = static_cast<unsigned>(v & 0xFFFF);
+            wchar_t buf[64] = {};
+            swprintf_s(buf, L"%u.%u.%u.%u", a, b, c, d);
+            return buf;
+        }
+
+        // Per-version directory holding the service's runnable exe copy.
+        std::wstring VersionBinDir()
+        {
+            std::wstring ver = FormatVersion(GetServiceOwnVersion());
+            if (ver.empty())
+            {
+                ver = L"0";
+            }
+            return GetServiceBinRoot() + L"\\" + ver;
         }
 
         // binPath = "<exe>" "<sid>"  — the SID flows back to the running service
@@ -89,15 +114,25 @@ namespace PTSettingsSvc
 
         int RegisterInternal(const std::wstring& sid, bool startAfter)
         {
-            const std::wstring exePath = OwnExePath();
-            if (exePath.empty())
+            const std::wstring srcExe = OwnExePath();
+            if (srcExe.empty())
             {
                 return static_cast<int>(GetLastError());
             }
 
             const std::wstring keyName = ServiceKeyName(sid);
             const std::wstring account = ServiceAccountName(sid);
-            const std::wstring binPath = BuildBinPath(exePath, sid);
+
+            // A classic virtual-account service cannot read an exe inside
+            // WindowsApps (its ACL grants BUILTIN\Users, not our dedicated
+            // account, and can't be modified even elevated -> StartService fails
+            // with ERROR_ACCESS_DENIED).  So copy the staged exe into a protected,
+            // account-readable %ProgramData% dir and run the service from there
+            // (Design §12.8).  Copy happens while the (possibly running) old
+            // service is stopped below.
+            const std::wstring binDir = VersionBinDir();
+            const std::wstring runExe = binDir + L"\\" + kExeName;
+            const std::wstring binPath = BuildBinPath(runExe, sid);
 
             SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CREATE_SERVICE);
             if (!scm)
@@ -106,45 +141,54 @@ namespace PTSettingsSvc
             }
 
             int rc = 0;
-            SC_HANDLE svc = CreateServiceW(
-                scm,
-                keyName.c_str(),
-                ServiceDisplayName(sid).c_str(),
-                SERVICE_ALL_ACCESS,
-                SERVICE_WIN32_OWN_PROCESS,
-                SERVICE_AUTO_START,
-                SERVICE_ERROR_NORMAL,
-                binPath.c_str(),
-                nullptr,               // no load-order group
-                nullptr,               // no tag
-                nullptr,               // no dependencies
-                account.c_str(),       // NT SERVICE\PTSettingsSvc_<SID> (virtual acct)
-                nullptr);              // null password for a virtual account
+            bool created = false;
+            SC_HANDLE svc = OpenServiceW(scm, keyName.c_str(),
+                                         SERVICE_CHANGE_CONFIG | SERVICE_STOP |
+                                             SERVICE_START | SERVICE_QUERY_STATUS);
+            if (svc)
+            {
+                // Existing (re-install / upgrade): stop first so no exe copy in
+                // this version's dir is held open, then re-point below.
+                StopAndWait(svc);
+            }
+
+            // Stage the runnable copy (idempotent; overwrites on re-register).
+            EnsureDirectory(GetServiceBinRoot());
+            EnsureDirectory(binDir);
+            if (!CopyFileW(srcExe.c_str(), runExe.c_str(), FALSE))
+            {
+                rc = static_cast<int>(GetLastError());
+                if (svc) { CloseServiceHandle(svc); }
+                CloseServiceHandle(scm);
+                return rc;
+            }
 
             if (!svc)
             {
-                DWORD err = GetLastError();
-                if (err != ERROR_SERVICE_EXISTS)
-                {
-                    CloseServiceHandle(scm);
-                    return static_cast<int>(err);
-                }
-
-                // Already exists (re-install / upgrade): re-point the binPath to
-                // this (possibly new versioned) exe.  Stop first so the file
-                // isn't held open, then reconfigure.
-                svc = OpenServiceW(scm, keyName.c_str(),
-                                   SERVICE_CHANGE_CONFIG | SERVICE_STOP |
-                                       SERVICE_START | SERVICE_QUERY_STATUS);
+                svc = CreateServiceW(
+                    scm,
+                    keyName.c_str(),
+                    ServiceDisplayName(sid).c_str(),
+                    SERVICE_ALL_ACCESS,
+                    SERVICE_WIN32_OWN_PROCESS,
+                    SERVICE_AUTO_START,
+                    SERVICE_ERROR_NORMAL,
+                    binPath.c_str(),
+                    nullptr,               // no load-order group
+                    nullptr,               // no tag
+                    nullptr,               // no dependencies
+                    account.c_str(),       // NT SERVICE\PTSettingsSvc_<SID> (virtual acct)
+                    nullptr);              // null password for a virtual account
                 if (!svc)
                 {
-                    DWORD oerr = GetLastError();
+                    rc = static_cast<int>(GetLastError());
                     CloseServiceHandle(scm);
-                    return static_cast<int>(oerr);
+                    return rc;
                 }
-
-                StopAndWait(svc);
-
+                created = true;
+            }
+            else
+            {
                 if (!ChangeServiceConfigW(svc,
                                           SERVICE_WIN32_OWN_PROCESS,
                                           SERVICE_AUTO_START,
@@ -161,14 +205,24 @@ namespace PTSettingsSvc
                 }
             }
 
+            // Now the virtual account exists: grant it RX on the bin dir so the
+            // service can actually launch (owner=SYSTEM, protected DACL).
+            HRESULT hr = ProtectServiceBinDir(binDir, account);
+            if (FAILED(hr))
+            {
+                CloseServiceHandle(svc);
+                CloseServiceHandle(scm);
+                return static_cast<int>(hr);
+            }
+
             SetFailureActions(svc);
 
             // Provision the protected store now that the virtual account exists.
             // Idempotent: re-asserts owner=SYSTEM + the protected DACL each run.
-            HRESULT hr = ProvisionStore(GetSettingsRoot(),
-                                        GetUserFolder(sid),
-                                        sid,
-                                        account);
+            hr = ProvisionStore(GetSettingsRoot(),
+                                GetUserFolder(sid),
+                                sid,
+                                account);
             if (FAILED(hr))
             {
                 CloseServiceHandle(svc);
@@ -188,6 +242,7 @@ namespace PTSettingsSvc
                 }
             }
 
+            (void)created;
             CloseServiceHandle(svc);
             CloseServiceHandle(scm);
             return rc;

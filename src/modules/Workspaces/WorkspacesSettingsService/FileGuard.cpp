@@ -238,6 +238,83 @@ namespace PTSettingsSvc
         return EnsureUserFolder(userFolder, userSidString, serviceAccountName);
     }
 
+    HRESULT ProtectServiceBinDir(const std::wstring& binDir,
+                                 const std::wstring& serviceAccountName)
+    {
+        PSID adminSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-32-544", &adminSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> adminGuard(adminSid);
+
+        PSID systemSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-18", &systemSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> systemGuard(systemSid);
+
+        PSID usersSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-32-545", &usersSid)) // BUILTIN\Users
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> usersGuard(usersSid);
+
+        std::wstring svcAccount = serviceAccountName;
+        EXPLICIT_ACCESS_W ea[4] = {};
+
+        ea[0].grfAccessPermissions = GENERIC_ALL;
+        ea[0].grfAccessMode = SET_ACCESS;
+        ea[0].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
+        ea[0].Trustee.ptstrName = static_cast<LPWSTR>(systemSid);
+
+        ea[1].grfAccessPermissions = GENERIC_ALL;
+        ea[1].grfAccessMode = SET_ACCESS;
+        ea[1].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[1].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea[1].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
+
+        ea[2].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+        ea[2].grfAccessMode = SET_ACCESS;
+        ea[2].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[2].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[2].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea[2].Trustee.ptstrName = static_cast<LPWSTR>(usersSid);
+
+        ea[3].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+        ea[3].grfAccessMode = SET_ACCESS;
+        ea[3].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[3].Trustee.TrusteeForm = TRUSTEE_IS_NAME;
+        ea[3].Trustee.TrusteeType = TRUSTEE_IS_USER;
+        ea[3].Trustee.ptstrName = svcAccount.data();
+
+        PACL acl = nullptr;
+        DWORD rc = SetEntriesInAclW(ARRAYSIZE(ea), ea, nullptr, &acl);
+        if (rc != ERROR_SUCCESS)
+        {
+            return HRESULT_FROM_WIN32(rc);
+        }
+        std::unique_ptr<void, LocalFreeDeleter> aclGuard(acl);
+
+        EnablePrivilege(SE_RESTORE_NAME);
+        EnablePrivilege(SE_TAKE_OWNERSHIP_NAME);
+
+        std::vector<wchar_t> mutableName(binDir.begin(), binDir.end());
+        mutableName.push_back(L'\0');
+        rc = SetNamedSecurityInfoW(mutableName.data(),
+                                   SE_FILE_OBJECT,
+                                   OWNER_SECURITY_INFORMATION |
+                                       DACL_SECURITY_INFORMATION |
+                                       PROTECTED_DACL_SECURITY_INFORMATION,
+                                   systemSid, nullptr, acl, nullptr);
+        return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
+    }
+
     HRESULT EnsureDirectory(const std::wstring& dir)
     {
         if (!CreateDirectoryW(dir.c_str(), nullptr))

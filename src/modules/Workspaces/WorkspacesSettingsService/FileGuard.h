@@ -42,6 +42,16 @@ namespace PTSettingsSvc
                            const std::wstring& userSidString,
                            const std::wstring& serviceAccountName);
 
+    // Applies the protected DACL to the service's runnable-binary directory
+    // (GetServiceBinRoot()\<version>): owner=SYSTEM; SYSTEM + Administrators
+    // Full; BUILTIN\Users RX; and the service virtual account RX — the crucial
+    // ACE that lets the low-priv service actually read/execute its own exe
+    // (WindowsApps does not grant our custom account, Design §12.8).  Protected
+    // so the non-admin owning user cannot replace the exe.  Must run elevated
+    // and AFTER the service (hence the virtual account) has been created.
+    HRESULT ProtectServiceBinDir(const std::wstring& binDir,
+                                 const std::wstring& serviceAccountName);
+
     // --- Runtime (the low-privilege service) -----------------------------------
 
     // Creates `dir` if it doesn't exist WITHOUT touching owner/DACL — the

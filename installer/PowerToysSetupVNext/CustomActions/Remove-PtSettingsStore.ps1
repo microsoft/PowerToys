@@ -47,6 +47,16 @@ if ($RemoveData)
         else                 { Write-Output "data tree '$root' removed." }
     }
     else { Write-Output "data tree not present." }
+
+    # Also remove the service's runnable-exe copy tree (SettingsSvcBin), which is
+    # SYSTEM-owned/protected and not MSI-tracked (Design §12.8).
+    $binRoot = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\SettingsSvcBin'
+    if (Test-Path $binRoot)
+    {
+        Remove-Item -LiteralPath $binRoot -Recurse -Force -ErrorAction SilentlyContinue
+        if (Test-Path $binRoot) { Write-Output "WARNING: '$binRoot' not fully removed." }
+        else                    { Write-Output "bin tree '$binRoot' removed." }
+    }
 }
 
 exit 0

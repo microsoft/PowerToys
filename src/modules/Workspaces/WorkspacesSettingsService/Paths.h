@@ -10,6 +10,16 @@ namespace PTSettingsSvc
     // %ProgramData%\Microsoft\PowerToys\Settings
     std::wstring GetSettingsRoot();
 
+    // %ProgramData%\Microsoft\PowerToys\SettingsSvcBin
+    // Root for the service's own runnable copy of the exe.  The service binary
+    // is STAGED (signed) in WindowsApps, but a classic virtual-account service
+    // cannot read an exe there (WindowsApps grants BUILTIN\Users, not our
+    // dedicated NT SERVICE\PTSettingsSvc_<SID> account, and its ACL cannot be
+    // modified even elevated).  So the register path copies the exe into a
+    // per-version subfolder here, owner=SYSTEM with a protected DACL that grants
+    // the virtual account RX, and points the service at that copy (Design §12.8).
+    std::wstring GetServiceBinRoot();
+
     // %ProgramData%\Microsoft\PowerToys\Settings\<sid>
     // Per-user node: this is where the protected, user-isolating DACL is
     // applied; everything below inherits it.
