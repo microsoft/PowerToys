@@ -132,15 +132,8 @@ namespace Peek.UI.Native
         /// </summary>
         internal const uint SHCNF_PATH = 0x0001;
 
+        // Low-level keyboard hook support
         internal const int WH_KEYBOARD_LL = 13;
-        internal const int WM_KEYDOWN = 0x0100;
-        internal const uint VK_W = 0x57;
-        internal const int VK_CONTROL = 0x11;
-        internal const int VK_ALT = 0x12;
-        internal const int VK_SHIFT = 0x10;
-        internal const int VK_LWIN = 0x5B;
-        internal const int VK_RWIN = 0x5C;
-        internal const int KEY_PRESSED_MASK = 0x8000;
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
