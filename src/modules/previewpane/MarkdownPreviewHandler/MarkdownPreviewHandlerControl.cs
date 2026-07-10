@@ -131,7 +131,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     int secondSep = firstSep >= 0 ? trimmed.IndexOf('\\', firstSep + 1) : -1;
                     if (secondSep >= 0)
                     {
-                        _allowedBasePath = @"\\" + trimmed.Substring(0, secondSep);
+                        _allowedBasePath = string.Concat(@"\\", trimmed.AsSpan(0, secondSep));
                     }
                 }
 
