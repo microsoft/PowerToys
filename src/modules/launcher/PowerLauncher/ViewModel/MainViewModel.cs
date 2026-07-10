@@ -50,6 +50,11 @@ namespace PowerLauncher.ViewModel
         private static readonly Lock _addResultsLock = new Lock();
         private readonly System.Diagnostics.Stopwatch _hotkeyTimer = new System.Diagnostics.Stopwatch();
 
+        // Bounds each non-cancelable plugin to one call without allowing a hung plugin to block the others.
+        private readonly PluginQueryExecutionGate _pluginQueryExecutionGate = new();
+        private static readonly TimeSpan QueryShutdownTimeout = TimeSpan.FromSeconds(2);
+        private static readonly CompositeFormat RegisterHotkeyFailed = System.Text.CompositeFormat.Parse(Properties.Resources.registerHotkeyFailed);
+
         private string _queryTextBeforeLeaveResults;
 
         private QuerySession _currentQuerySession;
@@ -57,11 +62,8 @@ namespace PowerLauncher.ViewModel
         // Snapshot used by synchronous history updates that can run without an active query session.
         private CancellationToken _updateToken;
 
-        // Bounds each non-cancelable plugin to one call without allowing a hung plugin to block the others.
-        private readonly PluginQueryExecutionGate _pluginQueryExecutionGate = new();
         private long _queryGeneration;
         private IReadOnlyDictionary<PluginPair, Query> _currentPluginQueries = new Dictionary<PluginPair, Query>();
-        private static readonly TimeSpan QueryShutdownTimeout = TimeSpan.FromSeconds(2);
         private const int QueryDebounceDelayMilliseconds = 20;
         private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
@@ -74,8 +76,6 @@ namespace PowerLauncher.ViewModel
         private bool _usingGlobalHotKey;
 
         internal HotkeyManager HotkeyManager { get; private set; }
-
-        private static readonly CompositeFormat RegisterHotkeyFailed = System.Text.CompositeFormat.Parse(Properties.Resources.registerHotkeyFailed);
 
         public MainViewModel(PowerToysRunSettings settings, CancellationToken nativeThreadCancelToken)
         {
@@ -749,7 +749,6 @@ namespace PowerLauncher.ViewModel
                         _currentPluginQueries = new Dictionary<PluginPair, Query>();
                     }
                 }
-
             }
             else
             {
