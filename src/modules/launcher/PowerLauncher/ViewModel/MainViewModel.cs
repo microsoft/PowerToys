@@ -54,9 +54,12 @@ namespace PowerLauncher.ViewModel
 
         private QuerySession _currentQuerySession;
         private CancellationToken _updateToken;
+
+        // Bounds non-cancelable plugin calls to one query fan-out so rapid typing cannot exhaust the thread pool.
         private readonly SemaphoreSlim _queryExecutionGate = new(1, 1);
         private long _queryGeneration;
         private IReadOnlyCollection<Query> _currentPluginQueries = Array.Empty<Query>();
+        private static readonly TimeSpan QueryShutdownTimeout = TimeSpan.FromSeconds(2);
         private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
         private ushort _hotkeyHandle;
@@ -641,6 +644,7 @@ namespace PowerLauncher.ViewModel
                         var queryResultsTask = Task.Run(
                             async () =>
                         {
+                            // Give rapid follow-up keystrokes a cancellable debounce window before invoking plugins.
                             await Task.Delay(20, updateToken).ConfigureAwait(false);
 
                             // Keep track of total number of results for telemetry
@@ -696,7 +700,7 @@ namespace PowerLauncher.ViewModel
                                 {
                                     updateToken.ThrowIfCancellationRequested();
                                     // Using CurrentCultureIgnoreCase since this is user facing
-                                    if (queryGeneration == Volatile.Read(ref _queryGeneration) &&
+                                    if (queryGeneration == _queryGeneration &&
                                         queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                     {
                                         Results.Clear();
@@ -743,7 +747,7 @@ namespace PowerLauncher.ViewModel
                                             {
                                                 updateToken.ThrowIfCancellationRequested();
                                                 // Using CurrentCultureIgnoreCase since this is user facing
-                                                if (queryGeneration == Volatile.Read(ref _queryGeneration) &&
+                                                if (queryGeneration == _queryGeneration &&
                                                     queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                 {
                                                     // Remove the original results from the plugin
@@ -779,6 +783,11 @@ namespace PowerLauncher.ViewModel
                                 _queryExecutionGate.Release();
                             }
 
+                            if (updateToken.IsCancellationRequested)
+                            {
+                                return;
+                            }
+
                             queryTimer.Stop();
                             var queryEvent = new LauncherQueryEvent()
                             {
@@ -788,6 +797,7 @@ namespace PowerLauncher.ViewModel
                             };
                             PowerToysTelemetry.Log.WriteEvent(queryEvent);
                         },
+                            // The delegate must start so its own cancellation path can release acquired resources.
                             CancellationToken.None);
 
                         if (doFinalSort)
@@ -872,7 +882,7 @@ namespace PowerLauncher.ViewModel
             {
                 lock (_addResultsLock)
                 {
-                    if (queryGeneration != Volatile.Read(ref _queryGeneration))
+                    if (queryGeneration != _queryGeneration)
                     {
                         return;
                     }
@@ -1276,7 +1286,9 @@ namespace PowerLauncher.ViewModel
                     }
 
                     HotkeyManager?.Dispose();
-                    _currentQuerySession?.CancelAndWait(TimeSpan.FromSeconds(2));
+
+                    // Keep shutdown responsive; QuerySession defers CTS disposal if plugin code exceeds this budget.
+                    _currentQuerySession?.CancelAndWait(QueryShutdownTimeout);
                     _disposed = true;
                 }
             }

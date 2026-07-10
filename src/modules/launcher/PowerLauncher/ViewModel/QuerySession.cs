@@ -14,6 +14,8 @@ namespace PowerLauncher.ViewModel
     internal sealed class QuerySession : IDisposable
     {
         private readonly CancellationTokenSource _cancellationSource;
+
+        // Accessed only through Interlocked.Exchange, which provides the required memory barrier.
         private int _disposed;
 
         private QuerySession(CancellationTokenSource cancellationSource, CancellationToken token, Task completion)

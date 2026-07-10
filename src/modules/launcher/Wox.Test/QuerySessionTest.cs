@@ -45,6 +45,7 @@ namespace Wox.Test
             session.Cancel();
             var disposal = session.DisposeWhenComplete();
 
+            // Register throws after CTS disposal, so success proves the running query still owns a live source.
             using (capturedToken.Register(() => { }))
             {
                 Assert.IsFalse(disposal.IsCompleted);
@@ -67,6 +68,8 @@ namespace Wox.Test
             });
 
             Assert.IsFalse(session.CancelAndWait(TimeSpan.FromMilliseconds(50)));
+
+            // Register throws after CTS disposal, so success proves timeout cleanup was safely deferred.
             using (capturedToken.Register(() => { }))
             {
             }
