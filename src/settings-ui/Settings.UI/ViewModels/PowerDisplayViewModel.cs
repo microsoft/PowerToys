@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "PowerDisplay",
             "crash_detected.flag");
 
+        private readonly ProfileOperationCoordinator _profileOperations = new();
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -69,11 +71,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            // Subscribe to collection changes for HasProfiles binding
-            _profiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasProfiles));
+            _profileOperations.IsRunningChanged += (_, _) =>
+            {
+                OnPropertyChanged(nameof(IsProfilesLoading));
+                OnPropertyChanged(nameof(CanUseProfiles));
+            };
 
-            // Load profiles
-            LoadProfiles();
+            _profiles.CollectionChanged += Profiles_CollectionChanged;
 
             // Load custom VCP mappings
             LoadCustomVcpMappings();
@@ -188,6 +192,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _isEnabled = value;
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(CanUseProfiles));
 
             GeneralSettingsConfig.Enabled.PowerDisplay = value;
             OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
@@ -721,6 +726,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _isReloading;
 
         // Profile-related fields
+        private bool _suppressProfileSelectionPersistence;
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
 
         // Custom VCP mapping fields
@@ -746,10 +752,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public bool HasProfiles => _profiles?.Count > 0;
 
+        private void Profiles_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (_suppressProfileSelectionPersistence)
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(HasProfiles));
+        }
+
+        public bool IsProfilesLoading => _profileOperations.IsRunning;
+
+        public bool CanUseProfiles => IsEnabled && !IsProfilesLoading;
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(CanUseProfiles));
         }
 
         private bool SetSettingsProperty<T>(T currentValue, T newValue, Action<T> setter, [CallerMemberName] string propertyName = null)
@@ -765,33 +786,56 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return true;
         }
 
-        /// <summary>
-        /// Load profiles from disk
-        /// </summary>
-        private void LoadProfiles()
+        public async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
         {
+            _suppressProfileSelectionPersistence = true;
             try
             {
-                // Self-heal: back-fill stable ids for any legacy (id == 0) profiles the PowerDisplay
-                // app hasn't migrated yet, and persist. This keeps editing a profile an in-place
-                // replace (keyed by id) instead of accidentally creating a duplicate. Mirrors the
-                // app-side BackfillProfileIds and is idempotent once ids are assigned.
-                var profilesData = ProfileHelper.LoadProfilesEnsuringIds();
-
-                // Load profile objects (no Custom - it's not a profile anymore)
-                Profiles.Clear();
-                foreach (var profile in profilesData.Profiles)
-                {
-                    Profiles.Add(profile);
-                }
-
-                Logger.LogInfo($"Loaded {Profiles.Count} profiles");
+                await _profileOperations.RunAsync(
+                    async token =>
+                    {
+                        var (loaded, lightSwitch) = await LoadProfilesCoreAsync(token);
+                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                            lightSwitch,
+                            loaded,
+                            SendConfigMSG);
+                        ReplaceProfiles(loaded);
+                    },
+                    cancellationToken);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to load profiles: {ex.Message}");
                 Profiles.Clear();
+                Logger.LogError($"Failed to load profiles: {ex.Message}");
             }
+            finally
+            {
+                _suppressProfileSelectionPersistence = false;
+                OnPropertyChanged(nameof(HasProfiles));
+            }
+        }
+
+        private async Task<(PowerDisplayProfiles Profiles, LightSwitchSettings LightSwitch)> LoadProfilesCoreAsync(
+            CancellationToken cancellationToken)
+        {
+            var profiles = await ProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken)
+                .ConfigureAwait(false);
+            var lightSwitch = await Task.Run(
+                () => SettingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
+                    LightSwitchSettings.ModuleName),
+                cancellationToken).ConfigureAwait(false);
+            return (profiles, lightSwitch);
+        }
+
+        private void ReplaceProfiles(PowerDisplayProfiles profilesData)
+        {
+            Profiles.Clear();
+            foreach (var profile in profilesData.Profiles)
+            {
+                Profiles.Add(profile);
+            }
+
+            Logger.LogInfo($"Loaded {Profiles.Count} profiles");
         }
 
         /// <summary>
@@ -833,23 +877,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Create a new profile (its stable id is assigned on save).
-        /// </summary>
-        public void CreateProfile(PowerDisplayProfile profile) => UpsertProfile(profile, isNew: true);
+        public Task CreateProfileAsync(PowerDisplayProfile profile)
+            => UpsertProfileAsync(profile, isNew: true);
 
-        /// <summary>
-        /// Update an existing profile. The profile's stable id is the key, so this replaces the
-        /// matching entry in place (a rename keeps the same id).
-        /// </summary>
-        public void UpdateProfile(PowerDisplayProfile profile) => UpsertProfile(profile, isNew: false);
+        public Task UpdateProfileAsync(PowerDisplayProfile profile)
+            => UpsertProfileAsync(profile, isNew: false);
 
-        /// <summary>
-        /// Adds a new profile or replaces an existing one, keyed by the profile's stable id
-        /// (<c>0</c> => a fresh id is assigned; an existing id replaces in place), then reloads the
-        /// list and signals PowerDisplay. Create and edit share this one id-keyed upsert.
-        /// </summary>
-        private void UpsertProfile(PowerDisplayProfile profile, bool isNew)
+        private async Task UpsertProfileAsync(PowerDisplayProfile profile, bool isNew)
         {
             try
             {
@@ -859,32 +893,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Logger.LogInfo($"{(isNew ? "Creating" : "Updating")} profile: {profile.DisplayName}");
-
-                if (!ProfileHelper.AddOrUpdateProfile(profile))
-                {
-                    Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile");
-                    return;
-                }
-
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
+                await _profileOperations.RunAsync(
+                    async token =>
+                    {
+                        await ProfileHelper.AddOrUpdateProfileAsync(profile, token);
+                        var (profiles, lightSwitch) = await LoadProfilesCoreAsync(token);
+                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                            lightSwitch,
+                            profiles,
+                            SendConfigMSG);
+                        ReplaceProfiles(profiles);
+                    });
                 SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile '{profile.DisplayName}' {(isNew ? "created" : "updated")} successfully");
             }
             catch (Exception ex)
             {
+                Profiles.Clear();
                 Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// Delete a profile by its stable id.
-        /// </summary>
-        public void DeleteProfile(int id)
+        public async Task DeleteProfileAsync(int id)
         {
             try
             {
@@ -893,24 +922,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Logger.LogInfo($"Deleting profile id: {id}");
+                var removed = await _profileOperations.RunAsync(
+                    async token =>
+                    {
+                        if (!await ProfileHelper.RemoveProfileByIdAsync(id, token))
+                        {
+                            return false;
+                        }
 
-                if (!ProfileHelper.RemoveProfileById(id))
+                        var (profiles, lightSwitch) = await LoadProfilesCoreAsync(token);
+                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                            lightSwitch,
+                            profiles,
+                            SendConfigMSG);
+                        ReplaceProfiles(profiles);
+                        return true;
+                    });
+                if (!removed)
                 {
                     Logger.LogWarning($"Profile id {id} was not found");
                     return;
                 }
 
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
                 SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile id {id} deleted successfully");
             }
             catch (Exception ex)
             {
+                Profiles.Clear();
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
             }
         }

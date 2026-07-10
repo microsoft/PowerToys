@@ -32,7 +32,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
             InitializeComponent();
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += PowerDisplayPage_Loaded;
+        }
+
+        private async void PowerDisplayPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.OnPageLoaded();
+            await ViewModel.InitializeProfilesAsync();
         }
 
         private async Task<bool> ShowDangerousFeatureDialogAsync(PowerDisplayWarningKind kind)
@@ -93,7 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
             {
-                ViewModel.CreateProfile(dialog.ResultProfile);
+                await ViewModel.CreateProfileAsync(dialog.ResultProfile);
             }
         }
 
@@ -112,7 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary && dialog.ResultProfile != null)
                 {
-                    ViewModel.UpdateProfile(dialog.ResultProfile);
+                    await ViewModel.UpdateProfileAsync(dialog.ResultProfile);
                 }
             }
         }
@@ -137,7 +143,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (result == ContentDialogResult.Primary)
                 {
-                    ViewModel.DeleteProfile(profile.Id);
+                    await ViewModel.DeleteProfileAsync(profile.Id);
                 }
             }
         }

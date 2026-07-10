@@ -152,12 +152,27 @@
                             </tkcontrols:SettingsExpander>
                         </controls:SettingsGroup>
 
-                        <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.CanUseProfiles, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                HorizontalContentAlignment="Center"
+                                Visibility="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <ProgressRing
+                                        x:Uid="PowerDisplay_ProfilesLoadingIndicator"
+                                        Width="24"
+                                        Height="24"
+                                        IsActive="True" />
+                                    <TextBlock
+                                        x:Uid="PowerDisplay_ProfilesLoadingText"
+                                        VerticalAlignment="Center" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsExpander
                                 x:Uid="PowerDisplay_QuickProfiles"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
                                 IsExpanded="{x:Bind ViewModel.HasProfiles, Mode=OneWay}"
-                                ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
+                                ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.IsProfilesLoading, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                                 <tkcontrols:SettingsExpander.ItemTemplate>
                                     <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
                                         <tkcontrols:SettingsCard Header="{x:Bind DisplayName}">
