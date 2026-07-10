@@ -77,6 +77,9 @@
                                 Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsIncludePrereleaseUpdatesCardEnabled}">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_IncludePrereleaseUpdates" IsChecked="{Binding Mode=TwoWay, Path=IncludePrereleaseUpdates}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>

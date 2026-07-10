@@ -84,6 +84,7 @@ namespace ViewModelTests
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.AutoDownloadUpdates, viewModel.AutoDownloadUpdates);
+            Assert.AreEqual(originalGeneralSettings.IncludePrereleaseUpdates, viewModel.IncludePrereleaseUpdates);
             Assert.AreEqual(originalGeneralSettings.PowertoysVersion, viewModel.PowerToysVersion);
             Assert.AreEqual(originalGeneralSettings.RunElevated, viewModel.RunElevated);
             Assert.AreEqual(originalGeneralSettings.Startup, viewModel.Startup);
@@ -91,6 +92,48 @@ namespace ViewModelTests
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(fileMock, expectedCallCount);
+        }
+
+        [TestMethod]
+        public void IncludePrereleaseUpdatesShouldSendUpdatedSettingWhenSuccessful()
+        {
+            bool sawExpectedIpcPayload = false;
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                if (string.IsNullOrWhiteSpace(msg))
+                {
+                    return 0;
+                }
+
+                OutGoingGeneralSettings snd = JsonSerializer.Deserialize<OutGoingGeneralSettings>(msg);
+                if (snd?.GeneralSettings is null)
+                {
+                    return 0;
+                }
+
+                Assert.IsTrue(snd.GeneralSettings.IncludePrereleaseUpdates);
+                sawExpectedIpcPayload = true;
+                return 0;
+            };
+
+            Func<string, int> sendRestartAdminIPCMessage = msg => { return 0; };
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => { return 0; };
+            GeneralViewModel viewModel = new TestGeneralViewModel(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+
+            Assert.IsFalse(viewModel.IncludePrereleaseUpdates);
+
+            viewModel.IncludePrereleaseUpdates = true;
+
+            Assert.IsTrue(sawExpectedIpcPayload);
         }
 
         [TestMethod]

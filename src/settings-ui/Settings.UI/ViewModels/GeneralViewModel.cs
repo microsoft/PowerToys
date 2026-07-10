@@ -167,6 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _showThemeAdaptiveSysTrayIcon = GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _includePrereleaseUpdates = GeneralSettingsConfig.IncludePrereleaseUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
@@ -269,6 +270,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _newUpdatesToastIsGpoDisabled;
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _includePrereleaseUpdates;
         private bool _showWhatsNewAfterUpdates;
         private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
@@ -318,7 +320,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             string installScope = GetCurrentInstallScope() == InstallScope.PerMachine ? "per machine (system)" : "per user";
 
-            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
+            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nVersion channel: {GetPowerToysVersionChannel()}\nSource commit: {GetPowerToysSourceCommit()}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
 
             var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?template=bug_report.yml&labels=Issue-Bug%2CTriage-Needed" +
                 "&version=" + version + "&additionalInfo=" + System.Web.HttpUtility.UrlEncode(info);
@@ -329,6 +331,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string GetPowerToysVersion()
         {
             return Helper.GetProductVersion().TrimStart('v');
+        }
+
+        private string GetPowerToysVersionChannel()
+        {
+            return global::PowerToys.Interop.CommonManaged.GetProductVersionChannel();
+        }
+
+        private string GetPowerToysSourceCommit()
+        {
+            return global::PowerToys.Interop.CommonManaged.GetProductVersionSourceCommit();
         }
 
         private string GetOSVersion()
@@ -630,6 +642,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsAutoDownloadUpdatesCardEnabled
         {
             get => !_isDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool IncludePrereleaseUpdates
+        {
+            get => _includePrereleaseUpdates;
+
+            set
+            {
+                if (_includePrereleaseUpdates != value)
+                {
+                    _includePrereleaseUpdates = value;
+                    GeneralSettingsConfig.IncludePrereleaseUpdates = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsIncludePrereleaseUpdatesCardEnabled
+        {
+            get => !_isDevBuild;
         }
 
         public bool ShowWhatsNewAfterUpdates
