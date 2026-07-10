@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// </summary>
         public bool AllowLocalImages { get; set; }
 
-        private static bool IsLocalImage(string? url)
+        private static bool IsLocalImage([NotNullWhen(true)] string? url)
         {
             if (string.IsNullOrEmpty(url))
             {
