@@ -123,6 +123,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public int ToastPositionIndex
+    {
+        get => (int)_settingsService.Settings.ToastPosition;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ToastPosition = (ToastPosition)value });
+        }
+    }
+
     public bool ShowSystemTrayIcon
     {
         get => _settingsService.Settings.ShowSystemTrayIcon;

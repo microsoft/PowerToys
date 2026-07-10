@@ -296,6 +296,23 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Run_Radio_Position_In_Place.Content" xml:space="preserve">
     <value>Don't move</value>
   </data>
+  <data name="Settings_GeneralPage_ToastPosition_SettingsCard.Header" xml:space="preserve">
+    <value>Position of on-screen indicators</value>
+    <comment>Kept in sync with the Windows Settings card of the same name</comment>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_SettingsCard.Description" xml:space="preserve">
+    <value>Confirmation messages and other indicators will appear in this location</value>
+    <comment>Mirrors the Windows Settings card "Volume, brightness and other controls will appear in this location"</comment>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_BottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="Settings_GeneralPage_ToastPosition_Item_TopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
   <data name="ConfirmationDialog_ConfirmButtonText" xml:space="preserve">
     <value>Confirm</value>
   </data>
