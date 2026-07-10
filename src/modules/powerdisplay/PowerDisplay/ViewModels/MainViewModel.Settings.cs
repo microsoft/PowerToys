@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -115,8 +116,8 @@ public partial class MainViewModel
             // RefreshMonitorsAsync, so this is a no-op-safe redundant push.
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
-            // Reload profiles in case they were added/updated/deleted in Settings UI
-            LoadProfiles();
+            // Reload profiles in case they were added/updated/deleted in Settings UI.
+            _ = InitializeProfilesAsync(_cancellationTokenSource.Token);
 
             // Notify MonitorViewModels to refresh their custom VCP name displays
             foreach (var monitor in Monitors)
@@ -157,9 +158,12 @@ public partial class MainViewModel
     /// Loads the saved profiles and returns the valid profile with the given id, or null (logging a
     /// warning under <paramref name="logPrefix"/>) when it is missing or invalid.
     /// </summary>
-    private static PowerDisplayProfile? LoadValidProfileById(int profileId, string logPrefix)
+    private static async Task<PowerDisplayProfile?> LoadValidProfileByIdAsync(
+        int profileId,
+        string logPrefix,
+        CancellationToken cancellationToken = default)
     {
-        var profile = ProfileService.LoadProfiles().GetById(profileId);
+        var profile = (await ProfileService.LoadProfilesAsync(cancellationToken)).GetById(profileId);
         if (profile == null || !profile.IsValid())
         {
             Logger.LogWarning($"{logPrefix} Profile id {profileId} not found or invalid");
@@ -180,7 +184,10 @@ public partial class MainViewModel
         {
             Logger.LogInfo($"[Profile] Applying profile by id: {profileId}");
 
-            var profile = LoadValidProfileById(profileId, "[Profile]");
+            var profile = await LoadValidProfileByIdAsync(
+                profileId,
+                "[Profile]",
+                _cancellationTokenSource.Token);
             if (profile == null)
             {
                 return;
@@ -202,34 +209,31 @@ public partial class MainViewModel
     /// <param name="isLightMode">Whether the theme changed to light mode.</param>
     public void ApplyLightSwitchProfile(bool isLightMode)
     {
-        var profileId = LightSwitchService.GetProfileForTheme(isLightMode);
-
-        if (profileId is null)
-        {
-            return;
-        }
-
         _ = Task.Run(async () =>
         {
             try
             {
+                var profileId = LightSwitchService.GetProfileForTheme(isLightMode);
+                if (profileId is null)
+                {
+                    return;
+                }
+
                 Logger.LogInfo($"[LightSwitch Integration] Applying profile id: {profileId.Value}");
 
-                var profile = LoadValidProfileById(profileId.Value, "[LightSwitch Integration]");
+                var profile = await LoadValidProfileByIdAsync(
+                    profileId.Value,
+                    "[LightSwitch Integration]",
+                    _cancellationTokenSource.Token);
                 if (profile == null)
                 {
                     return;
                 }
 
                 // Apply the profile - need to dispatch to UI thread since MonitorViewModels are UI-bound
-                var tcs = new TaskCompletionSource<bool>();
-                var enqueued = _dispatcherQueue.TryEnqueue(() =>
-                {
-                    // Start the async operation and handle completion
-                    _ = ApplyProfileAndCompleteAsync(profile.MonitorSettings, tcs);
-                });
-
-                if (!enqueued)
+                var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                if (!_dispatcherQueue.TryEnqueue(
+                    () => _ = ApplyProfileAndCompleteAsync(profile.MonitorSettings, tcs)))
                 {
                     Logger.LogError($"[LightSwitch Integration] Failed to enqueue profile application to UI thread");
                     return;
@@ -581,120 +585,113 @@ public partial class MainViewModel
     /// Invoked from the first successful discovery; on subsequent runs every entry is
     /// already in new-format and the filters short-circuit.
     /// </summary>
-    private void MigrateLegacyMonitorIdsInSideFiles()
+    private async Task MigrateLegacyMonitorIdsInSideFilesAsync(
+        List<(string Id, int MonitorNumber)> discovered,
+        CancellationToken cancellationToken)
     {
-        // Assign stable ids to any pre-id profiles. Independent of monitor discovery, so it runs
-        // before the "no monitors" early-return below.
         try
         {
-            BackfillProfileIds();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"[LegacyMigration] Failed to back-fill profile ids: {ex.Message}");
-        }
+            var anyChanged = await _profileOperations.RunAsync(
+                async token =>
+                {
+                    var changed = await ProfileService.UpdateProfilesAsync(
+                        profiles => MigrateLegacyMonitorIds(profiles, discovered),
+                        token);
+                    if (changed)
+                    {
+                        var profilesData = await ProfileService.LoadProfilesAsync(token);
+                        Profiles.Clear();
+                        foreach (var profile in profilesData.Profiles)
+                        {
+                            Profiles.Add(profile);
+                        }
 
-        var discovered = Monitors
-            .Where(m => !string.IsNullOrEmpty(m.Id))
-            .Select(m => (m.Id, m.MonitorNumber))
-            .ToList();
+                        OnPropertyChanged(nameof(HasProfiles));
+                        OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+                    }
 
-        if (discovered.Count == 0)
+                    return changed;
+                },
+                cancellationToken);
+
+            if (anyChanged)
+            {
+                Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return;
-        }
-
-        // profiles.json and monitor_state.json are independent — a failure in one must
-        // not skip the other. MigrateLegacyKeys already has its own try/catch, so we
-        // only need to guard the profiles path here.
-        try
-        {
-            MigrateLegacyMonitorIdsInProfiles(discovered);
         }
         catch (Exception ex)
         {
             Logger.LogError($"[LegacyMigration] Failed to migrate profiles.json: {ex.Message}");
         }
 
-        _stateManager.MigrateLegacyKeys(discovered);
-    }
-
-    private static void MigrateLegacyMonitorIdsInProfiles(List<(string Id, int MonitorNumber)> discovered)
-    {
-        var anyChanged = ProfileService.UpdateProfiles(profiles =>
-        {
-            if (profiles.Profiles is null || profiles.Profiles.Count == 0)
-            {
-                return false;
-            }
-
-            var changedProfiles = false;
-            foreach (var profile in profiles.Profiles)
-            {
-                if (profile?.MonitorSettings is null)
-                {
-                    continue;
-                }
-
-                var changed = false;
-                foreach (var legacy in profile.MonitorSettings
-                    .Where(s => MonitorIdentity.IsLegacyId(s?.MonitorId))
-                    .ToList())
-                {
-                    var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
-                    if (newId != null && profile.MonitorSettings.All(s => !MonitorIdComparer.Equal(s.MonitorId, newId)))
-                    {
-                        profile.MonitorSettings.Add(new ProfileMonitorSetting(
-                            newId,
-                            legacy.Brightness,
-                            legacy.ColorTemperatureVcp,
-                            legacy.Contrast,
-                            legacy.Volume));
-                    }
-                    else if (newId == null)
-                    {
-                        Logger.LogWarning(
-                            $"[LegacyMigration] Dropping profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': no current monitor with matching EdidId+MonitorNumber.");
-                    }
-
-                    profile.MonitorSettings.Remove(legacy);
-                    changed = true;
-                }
-
-                if (changed)
-                {
-                    profile.Touch();
-                    changedProfiles = true;
-                }
-            }
-
-            return changedProfiles;
-        });
-
-        if (anyChanged)
-        {
-            Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
-        }
-    }
-
-    private static void BackfillProfileIds()
-    {
-        var profiles = ProfileService.LoadProfilesEnsuringIds();
-
         try
         {
-            var lightSwitch = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(LightSwitchSettings.ModuleName);
-            if (lightSwitch?.Properties != null
-                && LightSwitchProfileResolver.MigrateNamesToIds(lightSwitch.Properties, profiles))
-            {
-                SettingsUtils.Default.SaveSettings(lightSwitch.ToJsonString(), LightSwitchSettings.ModuleName);
-                Logger.LogInfo("[LegacyMigration] LightSwitch profile references migrated to ids.");
-            }
+            await Task.Run(() => _stateManager.MigrateLegacyKeys(discovered), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[LegacyMigration] Failed to migrate LightSwitch profile references: {ex.Message}");
+            Logger.LogError($"[LegacyMigration] Failed to migrate monitor_state.json: {ex.Message}");
         }
+    }
+
+    private static bool MigrateLegacyMonitorIds(
+        PowerDisplayProfiles profiles,
+        List<(string Id, int MonitorNumber)> discovered)
+    {
+        if (profiles.Profiles is null || profiles.Profiles.Count == 0)
+        {
+            return false;
+        }
+
+        var changedProfiles = false;
+        foreach (var profile in profiles.Profiles)
+        {
+            if (profile?.MonitorSettings is null)
+            {
+                continue;
+            }
+
+            var changed = false;
+            foreach (var legacy in profile.MonitorSettings
+                .Where(setting => MonitorIdentity.IsLegacyId(setting?.MonitorId))
+                .ToList())
+            {
+                var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
+                if (newId != null &&
+                    profile.MonitorSettings.All(setting => !MonitorIdComparer.Equal(setting.MonitorId, newId)))
+                {
+                    profile.MonitorSettings.Add(new ProfileMonitorSetting(
+                        newId,
+                        legacy.Brightness,
+                        legacy.ColorTemperatureVcp,
+                        legacy.Contrast,
+                        legacy.Volume));
+                }
+                else if (newId == null)
+                {
+                    Logger.LogWarning(
+                        $"[LegacyMigration] Dropping profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': no current monitor with matching EdidId+MonitorNumber.");
+                }
+
+                profile.MonitorSettings.Remove(legacy);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                profile.Touch();
+                changedProfiles = true;
+            }
+        }
+
+        return changedProfiles;
     }
 
     /// <summary>
@@ -757,15 +754,12 @@ public partial class MainViewModel
             // Load current settings to get hotkey and tray icon status
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
 
-            // Load profiles to get count
-            var profilesData = ProfileService.LoadProfiles();
-
             var telemetryEvent = new PowerDisplaySettingsTelemetryEvent
             {
                 HotkeyEnabled = settings.Properties.ActivationShortcut?.IsValid() ?? false,
                 TrayIconEnabled = settings.Properties.ShowSystemTrayIcon,
                 MonitorCount = Monitors.Count,
-                ProfileCount = profilesData?.Profiles?.Count ?? 0,
+                ProfileCount = Profiles.Count,
             };
 
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);

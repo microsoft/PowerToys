@@ -48,6 +48,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
     private readonly ISystemClock _clock;
+    private readonly ProfileOperationCoordinator _profileOperations = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
@@ -102,8 +103,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
 
-        // Load profiles for quick apply feature
-        LoadProfiles();
+        _profileOperations.IsRunningChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(IsProfilesLoading));
+            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+        };
+
+        _ = InitializeProfilesAsync(_cancellationTokenSource.Token);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -121,6 +127,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     public bool HasProfiles => Profiles.Count > 0;
+
+    public bool IsProfilesLoading => _profileOperations.IsRunning;
 
     // UI display control properties - loaded from settings
     [ObservableProperty]
@@ -246,9 +254,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
-    /// Combines settings value with HasProfiles check.
+    /// Combines the settings value with profile availability or loading state.
     /// </summary>
-    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && HasProfiles;
+    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && (HasProfiles || IsProfilesLoading);
 
     // Custom VCP mappings - loaded from settings
     private List<CustomVcpValueMapping> _customVcpMappings = new();
@@ -455,24 +463,35 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Load profiles from disk for quick apply feature
+    /// Loads profiles from disk for the quick-apply feature without blocking the UI thread.
     /// </summary>
-    private void LoadProfiles()
+    private async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var profilesData = ProfileService.LoadProfilesEnsuringIds();
-            Profiles.Clear();
-            foreach (var profile in profilesData.Profiles)
-            {
-                Profiles.Add(profile);
-            }
+            await _profileOperations.RunAsync(
+                async token =>
+                {
+                    var profilesData = await ProfileService.LoadProfilesEnsuringIdsAsync(token);
+                    Profiles.Clear();
+                    foreach (var profile in profilesData.Profiles)
+                    {
+                        Profiles.Add(profile);
+                    }
 
-            OnPropertyChanged(nameof(HasProfiles));
-            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+                    OnPropertyChanged(nameof(HasProfiles));
+                    OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
+            Profiles.Clear();
+            OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
         }
     }

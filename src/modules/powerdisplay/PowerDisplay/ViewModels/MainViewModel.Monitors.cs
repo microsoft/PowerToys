@@ -175,7 +175,14 @@ public partial class MainViewModel
         // SaveMonitorsToSettings doesn't touch (profiles.json + monitor_state.json).
         if (isInitialLoad)
         {
-            MigrateLegacyMonitorIdsInSideFiles();
+            var discovered = Monitors
+                .Where(m => !string.IsNullOrEmpty(m.Id))
+                .Select(m => (m.Id, m.MonitorNumber))
+                .ToList();
+            if (discovered.Count > 0)
+            {
+                _ = MigrateLegacyMonitorIdsInSideFilesAsync(discovered, _cancellationTokenSource.Token);
+            }
         }
 
         // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
