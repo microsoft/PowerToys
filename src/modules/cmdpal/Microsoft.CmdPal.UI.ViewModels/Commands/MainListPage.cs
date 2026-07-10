@@ -500,6 +500,19 @@ public sealed partial class MainListPage : DynamicListPage,
         }
 
         var commands = _tlcManager.TopLevelCommands;
+
+        // Materialized inputs captured under the lock so the heavy scoring below can run OFF the
+        // lock. Scoring no longer converts directly into blocked settle/render time, because
+        // GetItems() takes the SAME lock and now only contends with the short snapshot/publish
+        // sections rather than the whole multi-thousand-item scoring pass.
+        IReadOnlyList<IListItem> itemsSource;
+        IReadOnlyList<IListItem> appsSource;
+        IReadOnlyList<IListItem> fallbackSource;
+        IListItem[] globalFallbackSources;
+        bool includeAppsSnapshot;
+        bool tookFullCatalog = false;
+
+        // ===== SNAPSHOT PHASE (under lock) =====
         lock (commands)
         {
             if (token.IsCancellationRequested)
@@ -553,52 +566,28 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // If the new string doesn't start with the old string, then we can't
-            // re-use previous results. Reset _filteredItems, and keep er moving.
-            if (!newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase))
-            {
-                ClearResults();
-            }
+            includeAppsSnapshot = _includeApps;
 
-            // If the internal state has changed, reset _filteredItems to reset the list.
-            if (_filteredItemsIncludesApps != _includeApps)
-            {
-                ClearResults();
-            }
+            // If the new string doesn't start with the old string we can't re-use previous
+            // results; likewise if the app-inclusion state changed. Either way we rebuild from the
+            // full catalog. On an extend (the new query starts with the old and app state is
+            // unchanged) we re-score only the previously matched subset, not the whole catalog.
+            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+                || _filteredItemsIncludesApps != includeAppsSnapshot;
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
+            var prevFilteredItems = reset ? null : _filteredItems;
+            var prevApps = reset ? null : _filteredApps;
+            var prevFallbacks = reset ? null : _fallbackItems;
 
-            var newFilteredItems = Enumerable.Empty<IListItem>();
-            var newFallbacks = Enumerable.Empty<IListItem>();
-            var newApps = Enumerable.Empty<IListItem>();
-
-            if (_filteredItems is not null)
-            {
-                newFilteredItems = _filteredItems.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (_filteredApps is not null)
-            {
-                newApps = _filteredApps.Select(s => s.Item);
-            }
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            if (_fallbackItems is not null)
-            {
-                newFallbacks = _fallbackItems.Select(s => s.Item);
-            }
+            IEnumerable<IListItem> newFilteredItems = prevFilteredItems is not null
+                ? prevFilteredItems.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newApps = prevApps is not null
+                ? prevApps.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
+            IEnumerable<IListItem> newFallbacks = prevFallbacks is not null
+                ? prevFallbacks.Select(s => s.Item)
+                : Enumerable.Empty<IListItem>();
 
             if (token.IsCancellationRequested)
             {
@@ -609,6 +598,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // with a list of all our commands & apps.
             if (!newFilteredItems.Any() && !newApps.Any())
             {
+                tookFullCatalog = true;
                 newFilteredItems = commands.Where(s => !s.IsFallback);
 
                 // Fallbacks are always included in the list, even if they
@@ -621,9 +611,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     return;
                 }
 
-                _filteredItemsIncludesApps = _includeApps;
-
-                if (_includeApps)
+                if (includeAppsSnapshot)
                 {
                     var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
@@ -646,49 +634,88 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+            // Materialize every source sequence while still under the lock. After this point the
+            // scoring passes never touch the live TopLevelCommands collection or the app provider,
+            // so they are free to run off the lock. globalFallbackSources reuses the specialFallbacks
+            // list already built above, dropping the redundant second commands.Where(...) pass.
+            itemsSource = MaterializeSource(newFilteredItems);
+            appsSource = MaterializeSource(newApps);
+            fallbackSource = MaterializeSource(newFallbacks);
+            globalFallbackSources = [.. specialFallbacks];
+        }
 
-            // Produce a list of everything that matches the current filter.
-            _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        // ===== SCORING PHASE (OFF the lock) =====
+        // The dominant apps pass is parallelized; commands and fallbacks stay serial. All of this
+        // now runs without holding the TopLevelCommands lock, so it no longer blocks GetItems()/render.
+        var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
+
+        var scoredFilteredItems = InternalListHelpers.FilterListWithScores(itemsSource, searchQuery, _scoringFunction);
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        var scoredFallbackItems = InternalListHelpers.FilterListWithScores(fallbackSource, searchQuery, _fallbackScoringFunction);
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        RoScored<IListItem>[]? scoredApps = null;
+        if (appsSource.Count > 0)
+        {
+            // Build the frecency lookup once, single-threaded, before the parallel pass reads it.
+            // The lazy dictionary build in RecentCommandsManager is not thread-safe.
+            _appStateService.State.RecentCommands.PrewarmIndex();
+
+            scoredApps = InternalListHelpers.FilterListWithScoresParallel(appsSource, searchQuery, _scoringFunction);
 
             if (token.IsCancellationRequested)
             {
                 return;
             }
+        }
+
+#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
+        var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
+#endif
+
+        // ===== PUBLISH PHASE (under lock): atomic swap, supersede-safe =====
+        lock (commands)
+        {
+            // A newer keystroke cancels this token before doing its own work, so a stale snapshot's
+            // finished results can never overwrite a newer query's. Skip the swap when superseded.
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (tookFullCatalog)
+            {
+                _filteredItemsIncludesApps = includeAppsSnapshot;
+            }
+
+            _filteredItems = scoredFilteredItems;
+            _fallbackItems = scoredFallbackItems;
 
             // Snapshot the global fallbacks and query, but do NOT score them here. Their dynamic
             // titles are updated asynchronously by the fallback update manager (BeginUpdate, above),
             // which runs off the typing path. Scoring is deferred to the render path so late fallback
             // resolutions fold in with fresh scores instead of a value frozen against a stale title.
-            _globalFallbackSources = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).ToArray();
+            _globalFallbackSources = globalFallbackSources;
             _globalFallbackQuery = searchQuery;
 
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            _fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(newFallbacks ?? [], searchQuery, _fallbackScoringFunction);
-
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
-
-            // Produce a list of filtered apps with the appropriate limit
-            if (newApps.Any())
-            {
-                _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
-
-                if (token.IsCancellationRequested)
-                {
-                    return;
-                }
-            }
-
-#if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
-            var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
-#endif
+            // Apps are only re-scored when there is an apps source (either the full catalog with
+            // apps included, or a retained subset on the extend path). When there is none, publish
+            // null so a rebuild clears any stale set - matching the previous ClearResults behavior.
+            _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
             // Queue a settled-search telemetry event. This measures the deterministic first-paint
             // results (commands + capped apps) and the latency to produce them, at this boundary -
@@ -726,6 +753,13 @@ public sealed partial class MainListPage : DynamicListPage,
             stopwatch.Stop();
         }
     }
+
+    // Materializes a source sequence into a stable, indexable snapshot so the scoring passes can
+    // run off the TopLevelCommands lock. Sequences that are already an IReadOnlyList (our own
+    // freshly built lists and empty arrays) are used as-is; lazy LINQ over the live collection or
+    // over previous results is copied so later mutation of the source can't affect scoring.
+    private static IReadOnlyList<IListItem> MaterializeSource(IEnumerable<IListItem> items)
+        => items as IReadOnlyList<IListItem> ?? items.ToArray();
 
     private bool ActuallyLoading()
     {
