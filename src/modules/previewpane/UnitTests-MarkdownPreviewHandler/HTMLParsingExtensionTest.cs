@@ -134,6 +134,34 @@ namespace PreviewPaneUnitTests
             Assert.IsNull(virtualUrl);
         }
 
+        [DataTestMethod]
+        [DataRow("https://localmdimages/images/test.png", @"C:\docs", @"C:\docs\images\test.png")]
+        [DataRow("https://localmdimages/sub/dir/images/test.png", @"\\server\share", @"\\server\share\sub\dir\images\test.png")]
+        [DataRow("https://localmdimages/my%20image.png", @"C:\docs", @"C:\docs\my image.png")]
+        public void TryResolveVirtualUrlAllowsContainedRequests(string requestUri, string basePath, string expectedPath)
+        {
+            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, basePath, out string resolvedPath);
+
+            Assert.IsTrue(result);
+            Assert.AreEqual(expectedPath, resolvedPath);
+        }
+
+        [DataTestMethod]
+        [DataRow("https://localmdimages/..%2Fsecret.png", @"C:\docs")]
+        [DataRow("https://localmdimages/..%5Csecret.png", @"C:\docs")]
+        [DataRow("https://localmdimages/C%3A%5Cother%5Csecret.png", @"C:\docs")]
+        [DataRow("https://evilhost/images/test.png", @"C:\docs")]
+        [DataRow("https://localmdimages/", @"C:\docs")]
+        [DataRow("not a url", @"C:\docs")]
+        [DataRow("", @"C:\docs")]
+        public void TryResolveVirtualUrlBlocksUnsafeRequests(string requestUri, string basePath)
+        {
+            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, basePath, out string resolvedPath);
+
+            Assert.IsFalse(result);
+            Assert.IsNull(resolvedPath);
+        }
+
         [TestMethod]
         public void ExtensionRewritesLocalImageToVirtualHostWhenLocalImagesAllowed()
         {

@@ -130,6 +130,72 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             }
         }
 
+        /// <summary>
+        /// Resolves a virtual host image request URL back to a file path and validates that it is
+        /// contained in the allowed base path. Used when serving the image bytes for a WebView2
+        /// resource request. Returns false for foreign hosts, empty paths, path traversal outside
+        /// the base path (including percent-encoded traversal) and malformed paths.
+        /// </summary>
+        /// <param name="requestUri">The request URL, expected on the localmdimages virtual host.</param>
+        /// <param name="allowedBasePath">Base path the resolved file must be contained in.</param>
+        /// <param name="resolvedPath">The validated absolute file path on success.</param>
+        /// <returns>True if the URL maps to a contained file path and <paramref name="resolvedPath"/> was set.</returns>
+        public static bool TryResolveVirtualUrl(string? requestUri, string? allowedBasePath, [NotNullWhen(true)] out string? resolvedPath)
+        {
+            resolvedPath = null;
+
+            if (string.IsNullOrEmpty(requestUri) || string.IsNullOrEmpty(allowedBasePath))
+            {
+                return false;
+            }
+
+            try
+            {
+                var uri = new Uri(requestUri);
+                if (!string.Equals(uri.Host, "localmdimages", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                string relativePath = Uri.UnescapeDataString(uri.AbsolutePath).TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                if (relativePath.Length == 0)
+                {
+                    return false;
+                }
+
+                string basePath = Path.GetFullPath(allowedBasePath);
+                string fullPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
+                string containmentCheck = Path.GetRelativePath(basePath, fullPath);
+
+                if (containmentCheck == "." || containmentCheck == ".." ||
+                    containmentCheck.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+                    containmentCheck.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal) ||
+                    Path.IsPathRooted(containmentCheck))
+                {
+                    return false;
+                }
+
+                resolvedPath = fullPath;
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (UriFormatException)
+            {
+                return false;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+        }
+
         /// <inheritdoc/>
         public void Setup(MarkdownPipelineBuilder pipeline)
         {

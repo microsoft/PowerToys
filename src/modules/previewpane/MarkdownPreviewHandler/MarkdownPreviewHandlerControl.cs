@@ -166,11 +166,6 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
-                        if (_allowLocalImages)
-                        {
-                            _browser.CoreWebView2.SetVirtualHostNameToFolderMapping("localmdimages", _allowedBasePath, CoreWebView2HostResourceAccessKind.Allow);
-                        }
-
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
                         _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                         _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
@@ -190,9 +185,29 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                                 return;
                             }
 
-                            // Allow virtual host requests (localmdimages)
+                            // Serve virtual host image requests (localmdimages) directly. WebView2
+                            // Runtime 150+ no longer serves UNC/network paths through
+                            // SetVirtualHostNameToFolderMapping, so the image bytes are read here
+                            // after re-validating the resolved path against the allowed base path.
                             if (_allowLocalImages && e.Request.Uri.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase))
                             {
+                                if (FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(e.Request.Uri, _allowedBasePath, out string imagePath) && File.Exists(imagePath))
+                                {
+                                    try
+                                    {
+                                        var imageStream = new MemoryStream(File.ReadAllBytes(imagePath));
+                                        e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(imageStream, 200, "OK", "Content-Type: " + GetImageContentType(imagePath));
+                                        return;
+                                    }
+                                    catch (IOException)
+                                    {
+                                    }
+                                    catch (UnauthorizedAccessException)
+                                    {
+                                    }
+                                }
+
+                                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 404, "Not Found", null);
                                 return;
                             }
 
@@ -346,6 +361,28 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// <summary>
         /// Callback when image is blocked by extension.
         /// </summary>
+        /// <summary>
+        /// Returns the HTTP Content-Type for an image file based on its extension.
+        /// </summary>
+        /// <param name="imagePath">Path of the image file.</param>
+        /// <returns>The content type string.</returns>
+        private static string GetImageContentType(string imagePath)
+        {
+            return Path.GetExtension(imagePath).ToUpperInvariant() switch
+            {
+                ".PNG" => "image/png",
+                ".JPG" or ".JPEG" => "image/jpeg",
+                ".GIF" => "image/gif",
+                ".BMP" => "image/bmp",
+                ".WEBP" => "image/webp",
+                ".SVG" => "image/svg+xml",
+                ".ICO" => "image/x-icon",
+                ".TIF" or ".TIFF" => "image/tiff",
+                ".AVIF" => "image/avif",
+                _ => "application/octet-stream",
+            };
+        }
+
         private void ImagesBlockedCallBack()
         {
             _infoBarDisplayed = true;
