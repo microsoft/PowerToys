@@ -115,10 +115,11 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// <summary>
     /// Computes the time-decayed frecency weight for a command relative to <paramref name="now"/>.
     /// Recency uses an exponential half-life decay and frequency uses log(uses); the two are
-    /// combined so recency leads while frequency amplifies. The public overload evaluates at
-    /// the current time; this overload exists so tests can inject a fixed evaluation time.
+    /// combined so recency leads while frequency amplifies. The parameterless overload evaluates at
+    /// the current time; this overload lets callers pin a single evaluation time across a batch (and
+    /// tests inject a fixed time).
     /// </summary>
-    internal int GetCommandHistoryWeight(string commandId, DateTimeOffset now)
+    public int GetCommandHistoryWeight(string commandId, DateTimeOffset now)
     {
         if (!Index.TryGetValue(commandId, out var entry))
         {
@@ -184,6 +185,13 @@ public record RecentCommandsManager : IRecentCommandsManager
 public interface IRecentCommandsManager
 {
     int GetCommandHistoryWeight(string commandId);
+
+    /// <summary>
+    /// Computes the frecency weight for a command relative to an explicit evaluation time. Callers
+    /// that score a whole batch should capture a single <paramref name="now"/> once and pass it for
+    /// every item so the batch is scored against one consistent time snapshot.
+    /// </summary>
+    int GetCommandHistoryWeight(string commandId, DateTimeOffset now);
 
     RecentCommandsManager WithHistoryItem(string commandId);
 
