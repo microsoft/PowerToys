@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 
 using Markdig;
@@ -50,14 +51,14 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// Gets or sets the base path used for path validation and relative URL computation.
         /// For local files this equals FilePath. For UNC paths this is the share root.
         /// </summary>
-        public string AllowedBasePath { get; set; }
+        public string? AllowedBasePath { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether local images should be rendered.
         /// </summary>
         public bool AllowLocalImages { get; set; }
 
-        private static bool IsLocalImage(string url)
+        private static bool IsLocalImage(string? url)
         {
             if (string.IsNullOrEmpty(url))
             {
@@ -89,7 +90,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// <param name="allowedBasePath">Base path the resolved path must be contained in. Falls back to <paramref name="markdownDirectory"/> if empty.</param>
         /// <param name="virtualUrl">The rewritten virtual host URL on success.</param>
         /// <returns>True if the URL is a contained local image and <paramref name="virtualUrl"/> was set.</returns>
-        public static bool TryGetLocalImageVirtualUrl(string url, string markdownDirectory, string allowedBasePath, out string virtualUrl)
+        public static bool TryGetLocalImageVirtualUrl(string? url, string markdownDirectory, string? allowedBasePath, [NotNullWhen(true)] out string? virtualUrl)
         {
             virtualUrl = null;
 
@@ -178,7 +179,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     {
                         if (link.IsImage)
                         {
-                            if (AllowLocalImages && TryGetLocalImageVirtualUrl(link.Url, FilePath, AllowedBasePath, out string virtualUrl))
+                            if (AllowLocalImages && TryGetLocalImageVirtualUrl(link.Url, FilePath, AllowedBasePath, out string? virtualUrl))
                             {
                                 link.Url = virtualUrl;
                                 link.GetAttributes().AddClass("img-fluid");
