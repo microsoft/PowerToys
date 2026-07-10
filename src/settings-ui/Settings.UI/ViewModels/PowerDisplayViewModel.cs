@@ -47,9 +47,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
 
         public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : this(
+                settingsUtils,
+                settingsRepository,
+                powerDisplaySettingsRepository,
+                ipcMSGCallBackFunc,
+                NativeEventWaiter.WaitForEventLoop)
+        {
+        }
+
+        public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc, Action<string, Action> waitForEventLoop)
         {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
+            ArgumentNullException.ThrowIfNull(waitForEventLoop);
 
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
@@ -83,7 +94,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             LoadCustomVcpMappings();
 
             // Listen for monitor refresh events from PowerDisplay.exe
-            NativeEventWaiter.WaitForEventLoop(
+            waitForEventLoop(
                 Constants.RefreshPowerDisplayMonitorsEvent(),
                 () =>
                 {
