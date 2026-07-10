@@ -22,7 +22,7 @@ namespace WorkspacesEditor.Utils
         {
         }
 
-        public ParsingResult ParseWorkspaces(MainViewModel mainViewModel)
+        public ParsingResult ParseWorkspaces(MainViewModel mainViewModel, bool runBootstrap = true, bool showDialogs = true)
         {
             try
             {
@@ -30,7 +30,16 @@ namespace WorkspacesEditor.Utils
                 // On a per-machine install the service is already up (no-op); on a
                 // per-user install with no service yet, this performs the one-time
                 // elevation to register + harden it, then migrates the legacy file.
-                TryBootstrapSettings();
+                //
+                // This can take a while (UAC + MSIX deploy, which is serialized
+                // machine-wide and may queue behind a PowerToys upgrade).  The editor
+                // therefore does the FIRST load with runBootstrap:false so the window
+                // shows immediately, then runs the bootstrap OFF the UI thread and
+                // reloads (see App.OnStartup).
+                if (runBootstrap)
+                {
+                    TryBootstrapSettings();
+                }
 
                 WorkspacesData parser = new();
                 WorkspacesData.WorkspacesListWrapper workspaces;
@@ -64,15 +73,21 @@ namespace WorkspacesEditor.Utils
                         // by the service (typically a version mismatch in the transient
                         // window right after an update, before re-provisioning).  Do NOT
                         // silently show an empty list (looks like data loss) — reassure
-                        // and point at the fix.  Data is untouched.
+                        // and point at the fix.  Data is untouched.  Suppressed on the
+                        // fast initial load (showDialogs=false); shown on the post-
+                        // provision reload if the service is still unreachable.
                         Logger.LogWarning("GetBlob rejected by the settings service (AuthRejected).");
-                        System.Windows.MessageBox.Show(
-                            "PowerToys couldn't load your saved workspaces because the settings service didn't authorize this app. " +
-                            "Your workspaces are safe — this usually happens right after a PowerToys update. " +
-                            "Restart PowerToys (or reopen the Workspaces editor) to finish setup, then they'll reappear.",
-                            "Workspaces",
-                            System.Windows.MessageBoxButton.OK,
-                            System.Windows.MessageBoxImage.Warning);
+                        if (showDialogs)
+                        {
+                            System.Windows.MessageBox.Show(
+                                "PowerToys couldn't load your saved workspaces because the settings service didn't authorize this app. " +
+                                "Your workspaces are safe — this usually happens right after a PowerToys update. " +
+                                "Restart PowerToys (or reopen the Workspaces editor) to finish setup, then they'll reappear.",
+                                "Workspaces",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Warning);
+                        }
+
                         return new ParsingResult(true);
 
                     default:
@@ -98,6 +113,27 @@ namespace WorkspacesEditor.Utils
             {
                 Logger.LogError($"Exception while parsing storage file: {e.Message}");
                 return new ParsingResult(false, e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Runs the deferred per-user service init + legacy migration.  Safe to
+        /// call from a BACKGROUND thread (it only does IPC / process launch / file
+        /// IO; it does NOT touch the view model or any WPF object).  Returns true
+        /// if the service is reachable afterwards (so the caller can decide whether
+        /// a reload is worthwhile).  Intended to be invoked off the UI thread so the
+        /// editor window is not blocked during UAC + MSIX deployment.
+        /// </summary>
+        public bool EnsureSettingsProvisioned()
+        {
+            TryBootstrapSettings();
+            try
+            {
+                return ServiceProvisioner.IsServiceAvailable();
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
 

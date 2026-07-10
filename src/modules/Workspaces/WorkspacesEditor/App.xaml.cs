@@ -95,7 +95,14 @@ namespace WorkspacesEditor
                 _mainViewModel = new MainViewModel(WorkspacesEditorIO);
             }
 
-            var parseResult = WorkspacesEditorIO.ParseWorkspaces(_mainViewModel);
+            // Fast, non-blocking initial load so the window appears immediately
+            // (reads via the service if it is already up, otherwise the legacy
+            // file).  Dialogs suppressed here so a transient upgrade-time rejection
+            // doesn't pop before the background provisioning has had a chance to
+            // heal it.  First-run provisioning — UAC + MSIX deploy, which is
+            // serialized machine-wide and can queue behind a PowerToys upgrade —
+            // runs OFF the UI thread below so the editor never appears hung.
+            WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: false);
 
             // normal start of editor
             if (_mainWindow == null)
@@ -110,6 +117,26 @@ namespace WorkspacesEditor
 
             // we can reset topmost flag after it's opened
             _mainWindow.Topmost = false;
+
+            // Deferred per-user service provisioning + legacy migration, OFF the UI
+            // thread.  When it completes, reload on the UI thread so any newly
+            // migrated / protected workspaces appear; dialogs are enabled on this
+            // reload so a genuine, still-unresolved problem is surfaced accurately.
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    WorkspacesEditorIO.EnsureSettingsProvisioned();
+                    Dispatcher.Invoke(() =>
+                    {
+                        WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: true);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Background settings provisioning failed: {ex.Message}");
+                }
+            });
         }
 
         public static Theme GetCurrentTheme()
