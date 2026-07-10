@@ -8,12 +8,46 @@
 
 #include <windows.h>
 #include <vector>
+#include <string>
+#include <fstream>
+#include <chrono>
 
 namespace PTSettingsSvc
 {
     namespace
     {
         constexpr const wchar_t* kExeName = L"PowerToys.PTSettingsSvc.exe";
+
+        // Append a timed line to the register step-timing log next to the bin root
+        // (elevated context can write %ProgramData%).  Best-effort; never throws.
+        void RegLog(const std::wstring& msg)
+        {
+            try
+            {
+                CreateDirectoryW(GetServiceBinRoot().c_str(), nullptr);
+                std::wstring path = GetServiceBinRoot() + L"\\register.log";
+                std::wofstream f(path, std::ios::app);
+                if (f)
+                {
+                    SYSTEMTIME st{};
+                    GetLocalTime(&st);
+                    wchar_t ts[40];
+                    swprintf_s(ts, L"%04d-%02d-%02d %02d:%02d:%02d.%03d ",
+                               st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+                    f << ts << msg << L"\n";
+                }
+            }
+            catch (...)
+            {
+            }
+        }
+
+        long long NowMs()
+        {
+            return std::chrono::duration_cast<std::chrono::milliseconds>(
+                       std::chrono::steady_clock::now().time_since_epoch())
+                .count();
+        }
 
         std::wstring ServiceKeyName(const std::wstring& sid)
         {
@@ -114,6 +148,8 @@ namespace PTSettingsSvc
 
         int RegisterInternal(const std::wstring& sid, bool startAfter)
         {
+            const long long t0 = NowMs();
+            RegLog(L"--register begin sid=" + sid);
             const std::wstring srcExe = OwnExePath();
             if (srcExe.empty())
             {
@@ -142,6 +178,7 @@ namespace PTSettingsSvc
 
             int rc = 0;
             bool created = false;
+            long long t = NowMs();
             SC_HANDLE svc = OpenServiceW(scm, keyName.c_str(),
                                          SERVICE_CHANGE_CONFIG | SERVICE_STOP |
                                              SERVICE_START | SERVICE_QUERY_STATUS);
@@ -150,19 +187,24 @@ namespace PTSettingsSvc
                 // Existing (re-install / upgrade): stop first so no exe copy in
                 // this version's dir is held open, then re-point below.
                 StopAndWait(svc);
+                RegLog(L"stop-existing ms=" + std::to_wstring(NowMs() - t));
             }
 
             // Stage the runnable copy (idempotent; overwrites on re-register).
+            t = NowMs();
             EnsureDirectory(GetServiceBinRoot());
             EnsureDirectory(binDir);
             if (!CopyFileW(srcExe.c_str(), runExe.c_str(), FALSE))
             {
                 rc = static_cast<int>(GetLastError());
+                RegLog(L"copy-exe FAILED rc=" + std::to_wstring(rc));
                 if (svc) { CloseServiceHandle(svc); }
                 CloseServiceHandle(scm);
                 return rc;
             }
+            RegLog(L"copy-exe ms=" + std::to_wstring(NowMs() - t));
 
+            t = NowMs();
             if (!svc)
             {
                 svc = CreateServiceW(
@@ -182,10 +224,12 @@ namespace PTSettingsSvc
                 if (!svc)
                 {
                     rc = static_cast<int>(GetLastError());
+                    RegLog(L"CreateService FAILED rc=" + std::to_wstring(rc));
                     CloseServiceHandle(scm);
                     return rc;
                 }
                 created = true;
+                RegLog(L"CreateService ms=" + std::to_wstring(NowMs() - t));
             }
             else
             {
@@ -199,30 +243,37 @@ namespace PTSettingsSvc
                                           nullptr))
                 {
                     rc = static_cast<int>(GetLastError());
+                    RegLog(L"ChangeServiceConfig FAILED rc=" + std::to_wstring(rc));
                     CloseServiceHandle(svc);
                     CloseServiceHandle(scm);
                     return rc;
                 }
+                RegLog(L"ChangeServiceConfig ms=" + std::to_wstring(NowMs() - t));
             }
 
             // Now the virtual account exists: grant it RX on the bin dir so the
             // service can actually launch (owner=SYSTEM, protected DACL).
+            t = NowMs();
             HRESULT hr = ProtectServiceBinDir(binDir, account);
             if (FAILED(hr))
             {
+                RegLog(L"ProtectServiceBinDir FAILED hr=" + std::to_wstring(hr));
                 CloseServiceHandle(svc);
                 CloseServiceHandle(scm);
                 return static_cast<int>(hr);
             }
+            RegLog(L"ProtectServiceBinDir ms=" + std::to_wstring(NowMs() - t));
 
             SetFailureActions(svc);
 
             // Provision the protected store now that the virtual account exists.
             // Idempotent: re-asserts owner=SYSTEM + the protected DACL each run.
+            t = NowMs();
             hr = ProvisionStore(GetSettingsRoot(),
                                 GetUserFolder(sid),
                                 sid,
                                 account);
+            RegLog(L"ProvisionStore ms=" + std::to_wstring(NowMs() - t) + L" hr=" + std::to_wstring(hr));
             if (FAILED(hr))
             {
                 CloseServiceHandle(svc);
@@ -232,6 +283,7 @@ namespace PTSettingsSvc
 
             if (startAfter)
             {
+                t = NowMs();
                 if (!StartServiceW(svc, 0, nullptr))
                 {
                     DWORD serr = GetLastError();
@@ -239,9 +291,17 @@ namespace PTSettingsSvc
                     {
                         rc = static_cast<int>(serr);
                     }
+                    RegLog(L"StartService ms=" + std::to_wstring(NowMs() - t) + L" err=" + std::to_wstring(serr));
+                }
+                else
+                {
+                    RegLog(L"StartService ms=" + std::to_wstring(NowMs() - t));
                 }
             }
 
+            RegLog(L"--register end rc=" + std::to_wstring(rc) +
+                   L" total-ms=" + std::to_wstring(NowMs() - t0) +
+                   (created ? L" (created)" : L" (repointed)"));
             (void)created;
             CloseServiceHandle(svc);
             CloseServiceHandle(scm);

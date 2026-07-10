@@ -188,19 +188,34 @@ public static class ServiceProvisioner
     /// the service at a malicious binary.  The same command handles the upgrade
     /// re-point: Add-AppxPackage updates the binary and --register is idempotent
     /// (re-points binPath + restarts).
+    ///
+    /// It also writes a TIMED provisioning log to
+    /// %LocalAppData%\Microsoft\PowerToys\Workspaces\Logs\svc-provision.log so the
+    /// per-phase cost (Add-AppxPackage vs --register) is diagnosable — the two
+    /// phases are the whole activation cost (note: Add-AppxPackage can WAIT if
+    /// another MSIX deployment, e.g. the PowerToys upgrade itself, is in flight,
+    /// because AppX deployment is serialized machine-wide).
     /// </summary>
     public static string BuildInstallArguments(string serviceMsix, string userSid)
     {
-        // -ForceApplicationShutdown / -ForceUpdateFromAnyVersion make the staging
-        // step tolerate an in-place update of a running package.  The service
-        // itself is stopped/re-pointed by the exe's --register path.
+        // NB: kept as a single -Command; Measure-Command times each phase and the
+        // result is appended to a user-readable log.  -ForceApplicationShutdown /
+        // -ForceUpdateFromAnyVersion make staging tolerate an in-place update; the
+        // service itself is stopped/re-pointed by the exe's --register path.
         return "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
              + "\""
-             + "Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown; "
+             + "$log = Join-Path $env:LOCALAPPDATA 'Microsoft\\PowerToys\\Workspaces\\Logs\\svc-provision.log'; "
+             + "New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null; "
+             + "function W($m){ Add-Content -Path $log -Value ((Get-Date).ToString('o') + ' ' + $m) }; "
+             + "W 'provision start (elevated)'; "
+             + "$ta = Measure-Command { Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown }; "
+             + "W ('Add-AppxPackage ms=' + [int]$ta.TotalMilliseconds); "
              + "$loc = (Get-AppxPackage -Name 'Microsoft.PowerToys.SettingsService' | Select-Object -First 1).InstallLocation; "
-             + "if (-not $loc) { exit 3 }; "
+             + "if (-not $loc) { W 'ERROR: package InstallLocation not found'; exit 3 }; "
              + "$exe = Join-Path $loc 'PowerToys.PTSettingsSvc.exe'; "
-             + "& $exe --register '" + userSid + "'; "
+             + "$tr = Measure-Command { & $exe --register '" + userSid + "' }; "
+             + "W ('register ms=' + [int]$tr.TotalMilliseconds + ' exit=' + $LASTEXITCODE); "
+             + "W ('provision done total-ms=' + [int]($ta.TotalMilliseconds + $tr.TotalMilliseconds)); "
              + "exit $LASTEXITCODE"
              + "\"";
     }
