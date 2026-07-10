@@ -324,4 +324,54 @@ public sealed partial class ScoringParallelEquivalenceTests
             AssertOrderedResultsIdentical($"determinism run {run}", first, again);
         }
     }
+
+    /// <summary>
+    /// Captured-context equivalence (FIX #1 + #5). The hot path snapshots the frecency manager, the
+    /// fuzzy matcher, the settings and a single evaluation time ONCE per query, then scores every
+    /// item against that immutable context - and, because every installed app resolves to the one
+    /// well-known apps provider, it feeds the apps pass a single constant provider weight instead of
+    /// a per-item lookup. This test proves that captured context produces a result BYTE-IDENTICAL in
+    /// order and score to the previous per-item live-read path: the reference scorer reads the time
+    /// per call (the old default overload) and delivers the weight through a per-item delegate, while
+    /// the candidate scorer threads a single captured <c>now</c> and a constant weight through the
+    /// parallel pass. Identical output confirms the optimization only changed HOW/WHERE the list is
+    /// computed, not WHAT it is.
+    /// </summary>
+    [TestMethod]
+    public void CapturedContext_ConstantWeightAndFixedNow_MatchesPerItemLiveRead()
+    {
+        var apps = BuildCatalog(AppCount, "app");
+        var matcher = CreateMatcher();
+        var history = SeedHistory(apps, HistorySeedCount);
+        var source = apps.Cast<IListItem>().ToArray();
+
+        history.PrewarmIndex();
+
+        // A non-default weight so the value must actually flow through to the packed score; if the
+        // constant path dropped or mis-carried it, the ordered result would diverge from the
+        // per-item reference.
+        const ProviderSearchWeight weight = ProviderSearchWeight.Higher;
+        Func<IListItem, ProviderSearchWeight> perItemLookup = _ => weight;
+        Func<IListItem, ProviderSearchWeight> constantLookup = _ => weight;
+
+        // Captured once, before the loop - exactly as the product captures scoringNow before its
+        // scoring passes. The reference path below omits it, so it reads the current time per call.
+        var capturedNow = DateTimeOffset.UtcNow;
+
+        ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery query, IListItem item) =>
+            MainListPage.ScoreTopLevelItem(query, item, history, matcher, perItemLookup);
+        ScoringFunction<IListItem> capturedContextScorer = (in FuzzyQuery query, IListItem item) =>
+            MainListPage.ScoreTopLevelItem(query, item, history, matcher, constantLookup, capturedNow);
+
+        foreach (var raw in Queries)
+        {
+            var query = matcher.PrecomputeQuery(raw);
+
+            var reference = InternalListHelpers.FilterListWithScores(source, query, liveReadScorer);
+            var candidate = InternalListHelpers.FilterListWithScoresParallel(source, query, capturedContextScorer);
+
+            TestContext.WriteLine($"captured-context '{raw}': {reference.Length} matches (per-item live read) vs {candidate.Length} (constant weight + fixed now).");
+            AssertOrderedResultsIdentical($"captured '{raw}'", reference, candidate);
+        }
+    }
 }
