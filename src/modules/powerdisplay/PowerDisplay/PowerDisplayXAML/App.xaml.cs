@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -377,9 +378,15 @@ namespace PowerDisplay
             }
             else if (messageType == Constants.PowerDisplayApplyProfileMessage())
             {
-                // Apply profile by id
-                if (messageParts.Length > 1 && _mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null
-                    && int.TryParse(messageParts[1].Trim(), out var profileId))
+                if (messageParts.Length <= 1
+                    || !int.TryParse(messageParts[1].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var profileId)
+                    || profileId < 1)
+                {
+                    Logger.LogWarning("[NamedPipe] ApplyProfile message is missing a valid positive profile id");
+                    return;
+                }
+
+                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
                 {
                     Logger.LogInfo($"[NamedPipe] Applying profile id: {profileId}");
                     await mainWindow.ViewModel.ApplyProfileByIdAsync(profileId);

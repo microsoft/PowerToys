@@ -461,7 +461,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var profilesData = ProfileService.LoadProfiles();
+            var profilesData = ProfileService.LoadProfilesEnsuringIds();
             Profiles.Clear();
             foreach (var profile in profilesData.Profiles)
             {

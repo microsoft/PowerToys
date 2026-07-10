@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using PowerDisplay.Models;
 using ModelsProfileHelper = PowerDisplay.Models.ProfileHelper;
 
@@ -17,7 +18,13 @@ namespace PowerDisplay.Common.Services
         /// <inheritdoc cref="ModelsProfileHelper.LoadProfiles"/>
         public static PowerDisplayProfiles LoadProfiles() => ModelsProfileHelper.LoadProfiles();
 
+        /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesEnsuringIds"/>
+        public static PowerDisplayProfiles LoadProfilesEnsuringIds() => ModelsProfileHelper.LoadProfilesEnsuringIds();
+
         /// <inheritdoc cref="ModelsProfileHelper.SaveProfiles"/>
         public static bool SaveProfiles(PowerDisplayProfiles profiles) => ModelsProfileHelper.SaveProfiles(profiles);
+
+        /// <inheritdoc cref="ModelsProfileHelper.UpdateProfiles"/>
+        public static bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update) => ModelsProfileHelper.UpdateProfiles(update);
     }
 }

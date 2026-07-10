@@ -861,7 +861,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"{(isNew ? "Creating" : "Updating")} profile: {profile.DisplayName}");
 
-                ProfileHelper.AddOrUpdateProfile(profile);
+                if (!ProfileHelper.AddOrUpdateProfile(profile))
+                {
+                    Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile");
+                    return;
+                }
 
                 // Reload profile list
                 LoadProfiles();
@@ -891,7 +895,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Deleting profile id: {id}");
 
-                ProfileHelper.RemoveProfileById(id);
+                if (!ProfileHelper.RemoveProfileById(id))
+                {
+                    Logger.LogWarning($"Profile id {id} was not found");
+                    return;
+                }
 
                 // Reload profile list
                 LoadProfiles();

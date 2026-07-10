@@ -127,7 +127,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     XamlRoot = this.XamlRoot,
                     Title = resourceLoader.GetString("PowerDisplay_DeleteProfile_Title"),
-                    Content = string.Format(System.Globalization.CultureInfo.CurrentCulture, resourceLoader.GetString("PowerDisplay_DeleteProfile_Content"), profile.Name),
+                    Content = string.Format(System.Globalization.CultureInfo.CurrentCulture, resourceLoader.GetString("PowerDisplay_DeleteProfile_Content"), profile.DisplayName),
                     PrimaryButtonText = resourceLoader.GetString("PowerDisplay_DeleteProfile_PrimaryButton"),
                     CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                     DefaultButton = ContentDialogButton.Close,

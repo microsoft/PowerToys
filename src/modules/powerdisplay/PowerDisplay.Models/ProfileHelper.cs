@@ -4,19 +4,18 @@
 
 using System;
 using System.IO;
-using System.Text.Json;
 
 namespace PowerDisplay.Models
 {
     /// <summary>
     /// Helper for loading and saving PowerDisplay profiles from/to disk.
     /// Provides shared file I/O logic used by both Settings UI and PowerDisplay module.
-    /// Thread-safe and AOT-compatible.
-    /// All compound operations (load → modify → save) are atomic within a single process.
+    /// Thread-safe across processes and AOT-compatible.
+    /// All compound operations (load → modify → save) are atomic.
     /// </summary>
     public static class ProfileHelper
     {
-        private static readonly object _lock = new object();
+        private const string ProfilesMutexName = @"Local\PowerToys_PowerDisplay_Profiles";
 
         private static readonly Lazy<string> _profilesFilePath = new Lazy<string>(() =>
             Path.Combine(
@@ -25,6 +24,9 @@ namespace PowerDisplay.Models
                 "PowerToys",
                 "PowerDisplay",
                 "profiles.json"));
+
+        private static readonly Lazy<ProfileStore> _profileStore = new Lazy<ProfileStore>(() =>
+            new ProfileStore(ProfilesFilePath, ProfilesMutexName, TimeSpan.FromSeconds(5)));
 
         /// <summary>
         /// Gets the full path to the profiles JSON file.
@@ -35,13 +37,10 @@ namespace PowerDisplay.Models
         /// Loads PowerDisplay profiles from disk.
         /// Thread-safe operation.
         /// </summary>
-        /// <returns>PowerDisplayProfiles object, or a new empty instance if file doesn't exist or load fails.</returns>
+        /// <returns>A new empty collection when the file does not exist; otherwise the deserialized profiles.</returns>
         public static PowerDisplayProfiles LoadProfiles()
         {
-            lock (_lock)
-            {
-                return LoadProfilesCore();
-            }
+            return _profileStore.Value.LoadProfiles();
         }
 
         /// <summary>
@@ -52,10 +51,13 @@ namespace PowerDisplay.Models
         /// <returns>True if save was successful, false otherwise.</returns>
         public static bool SaveProfiles(PowerDisplayProfiles profiles)
         {
-            lock (_lock)
+            if (profiles == null)
             {
-                return SaveProfilesCore(profiles);
+                return false;
             }
+
+            _profileStore.Value.SaveProfiles(profiles);
+            return true;
         }
 
         /// <summary>
@@ -66,16 +68,7 @@ namespace PowerDisplay.Models
         /// <returns>The loaded profiles, with stable ids guaranteed.</returns>
         public static PowerDisplayProfiles LoadProfilesEnsuringIds()
         {
-            lock (_lock)
-            {
-                var profiles = LoadProfilesCore();
-                if (profiles.EnsureIds())
-                {
-                    SaveProfilesCore(profiles);
-                }
-
-                return profiles;
-            }
+            return _profileStore.Value.LoadProfilesEnsuringIds();
         }
 
         /// <summary>
@@ -90,12 +83,8 @@ namespace PowerDisplay.Models
                 return false;
             }
 
-            lock (_lock)
-            {
-                var profiles = LoadProfilesCore();
-                profiles.SetProfile(profile);
-                return SaveProfilesCore(profiles);
-            }
+            _profileStore.Value.AddOrUpdateProfile(profile);
+            return true;
         }
 
         /// <summary>
@@ -103,89 +92,17 @@ namespace PowerDisplay.Models
         /// </summary>
         public static bool RemoveProfileById(int id)
         {
-            lock (_lock)
-            {
-                var profiles = LoadProfilesCore();
-                bool removed = profiles.RemoveProfile(id);
-                if (removed)
-                {
-                    SaveProfilesCore(profiles);
-                }
-
-                return removed;
-            }
+            return _profileStore.Value.RemoveProfileById(id);
         }
 
         /// <summary>
-        /// Gets a profile by name.
+        /// Loads, conditionally updates, and saves profiles under one cross-process lock.
         /// </summary>
-        /// <param name="profileName">The name of the profile to retrieve.</param>
-        /// <returns>The profile if found, null otherwise.</returns>
-        public static PowerDisplayProfile? GetProfile(string profileName)
+        /// <param name="update">Returns true when the profiles changed and must be saved.</param>
+        /// <returns>True when the profiles changed and were saved; otherwise false.</returns>
+        public static bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update)
         {
-            lock (_lock)
-            {
-                return LoadProfilesCore().GetProfile(profileName);
-            }
-        }
-
-        // Lock-free core methods — only call from within a lock (_lock) block.
-        private static PowerDisplayProfiles LoadProfilesCore()
-        {
-            try
-            {
-                EnsureFolderExists();
-
-                if (File.Exists(ProfilesFilePath))
-                {
-                    var json = File.ReadAllText(ProfilesFilePath);
-                    var profiles = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.PowerDisplayProfiles);
-
-                    if (profiles != null)
-                    {
-                        return profiles;
-                    }
-                }
-
-                return new PowerDisplayProfiles();
-            }
-            catch (Exception)
-            {
-                return new PowerDisplayProfiles();
-            }
-        }
-
-        private static bool SaveProfilesCore(PowerDisplayProfiles profiles)
-        {
-            try
-            {
-                if (profiles == null)
-                {
-                    return false;
-                }
-
-                EnsureFolderExists();
-
-                profiles.LastUpdated = DateTime.UtcNow;
-
-                var json = JsonSerializer.Serialize(profiles, ProfileSerializationContext.Default.PowerDisplayProfiles);
-                File.WriteAllText(ProfilesFilePath, json);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        private static void EnsureFolderExists()
-        {
-            var folder = Path.GetDirectoryName(ProfilesFilePath);
-            if (folder != null && !Directory.Exists(folder))
-            {
-                Directory.CreateDirectory(folder);
-            }
+            return _profileStore.Value.UpdateProfiles(update);
         }
     }
 }

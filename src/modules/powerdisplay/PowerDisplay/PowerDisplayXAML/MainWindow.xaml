@@ -722,7 +722,7 @@
                                             <DataTemplate x:DataType="models:PowerDisplayProfile">
                                                 <TextBlock
                                                     Padding="{StaticResource FlyoutListItemPadding}"
-                                                    Text="{x:Bind Name}"
+                                                    Text="{x:Bind DisplayName}"
                                                     TextTrimming="CharacterEllipsis"
                                                     TextWrapping="NoWrap" />
                                             </DataTemplate>

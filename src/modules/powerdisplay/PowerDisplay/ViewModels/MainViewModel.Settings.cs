@@ -267,12 +267,6 @@ public partial class MainViewModel
     /// <summary>
     /// Apply profile settings to monitors. Profiles are per-monitor snapshots, so applying one
     /// turns off linked brightness before writing individual monitor values.
-    /// <para>
-    /// This method is the GUI code path. It is preserved exactly as-is: settings are dispatched
-    /// in parallel via <c>Task.WhenAll</c> and no per-setting outcome is captured. All existing
-    /// callers (<see cref="ApplyProfileByIdAsync"/>, <see cref="ApplyProfileAndCompleteAsync"/>)
-    /// continue to call this overload.
-    /// </para>
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
@@ -627,72 +621,65 @@ public partial class MainViewModel
 
     private static void MigrateLegacyMonitorIdsInProfiles(List<(string Id, int MonitorNumber)> discovered)
     {
-        var profiles = ProfileService.LoadProfiles();
-        if (profiles?.Profiles is null || profiles.Profiles.Count == 0)
+        var anyChanged = ProfileService.UpdateProfiles(profiles =>
         {
-            return;
-        }
-
-        bool anyChanged = false;
-        foreach (var profile in profiles.Profiles)
-        {
-            if (profile?.MonitorSettings is null)
+            if (profiles.Profiles is null || profiles.Profiles.Count == 0)
             {
-                continue;
+                return false;
             }
 
-            bool changed = false;
-            foreach (var legacy in profile.MonitorSettings
-                .Where(s => MonitorIdentity.IsLegacyId(s?.MonitorId))
-                .ToList())
+            var changedProfiles = false;
+            foreach (var profile in profiles.Profiles)
             {
-                var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
-                if (newId != null && profile.MonitorSettings.All(s => !MonitorIdComparer.Equal(s.MonitorId, newId)))
+                if (profile?.MonitorSettings is null)
                 {
-                    profile.MonitorSettings.Add(new ProfileMonitorSetting(
-                        newId,
-                        legacy.Brightness,
-                        legacy.ColorTemperatureVcp,
-                        legacy.Contrast,
-                        legacy.Volume));
-                }
-                else if (newId == null)
-                {
-                    Logger.LogWarning(
-                        $"[LegacyMigration] Dropping profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': no current monitor with matching EdidId+MonitorNumber.");
+                    continue;
                 }
 
-                profile.MonitorSettings.Remove(legacy);
-                changed = true;
+                var changed = false;
+                foreach (var legacy in profile.MonitorSettings
+                    .Where(s => MonitorIdentity.IsLegacyId(s?.MonitorId))
+                    .ToList())
+                {
+                    var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
+                    if (newId != null && profile.MonitorSettings.All(s => !MonitorIdComparer.Equal(s.MonitorId, newId)))
+                    {
+                        profile.MonitorSettings.Add(new ProfileMonitorSetting(
+                            newId,
+                            legacy.Brightness,
+                            legacy.ColorTemperatureVcp,
+                            legacy.Contrast,
+                            legacy.Volume));
+                    }
+                    else if (newId == null)
+                    {
+                        Logger.LogWarning(
+                            $"[LegacyMigration] Dropping profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': no current monitor with matching EdidId+MonitorNumber.");
+                    }
+
+                    profile.MonitorSettings.Remove(legacy);
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    profile.Touch();
+                    changedProfiles = true;
+                }
             }
 
-            if (changed)
-            {
-                profile.Touch();
-                anyChanged = true;
-            }
-        }
+            return changedProfiles;
+        });
 
         if (anyChanged)
         {
-            ProfileService.SaveProfiles(profiles);
             Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
         }
     }
 
     private static void BackfillProfileIds()
     {
-        var profiles = ProfileService.LoadProfiles();
-        if (profiles is null)
-        {
-            return;
-        }
-
-        if (profiles.EnsureIds())
-        {
-            ProfileService.SaveProfiles(profiles);
-            Logger.LogInfo("[LegacyMigration] profiles.json updated with stable profile ids.");
-        }
+        var profiles = ProfileService.LoadProfilesEnsuringIds();
 
         try
         {
