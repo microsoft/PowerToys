@@ -513,6 +513,18 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Last position</value>
     <comment>Reopen the window where it was last closed</comment>
   </data>
+  <data name="SearchBoxContextMenu_Settings" xml:space="preserve">
+    <value>Settings</value>
+    <comment>Context menu item in the search box that opens the Command Palette settings</comment>
+  </data>
+  <data name="SearchBoxContextMenu_Settings_Shortcut" xml:space="preserve">
+    <value>Ctrl+,</value>
+    <comment>Keyboard shortcut hint shown next to the Settings context menu item. Localize the modifier key name (e.g. Ctrl) as appropriate for the language; the comma is the literal key.</comment>
+  </data>
+  <data name="SearchBoxContextMenu_Help" xml:space="preserve">
+    <value>Help</value>
+    <comment>Context menu item in the search box that opens the Command Palette documentation</comment>
+  </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
   </data>
