@@ -29,6 +29,21 @@ internal static partial class ShellInterop
     internal static readonly Guid IShellItemIid = new("43826d1e-e718-42ee-bc55-a1e261c37bfe");
     internal static readonly Guid IEnumShellItemsIid = new("70629033-e363-4a28-a567-0db78006e6d7");
 
+    /// <summary>
+    /// PKEY_ApplicationName — for Control Panel task items this is the name
+    /// of the Control Panel applet the task belongs to (e.g. "Power Options"),
+    /// localized by the shell. Shown in Explorer's All Tasks folder as the
+    /// group heading.
+    /// </summary>
+    internal static readonly PropertyKey PKeyApplicationName = new() { FmtId = new Guid("F29F85E0-4FF9-1068-AB91-08002B27B3D9"), Pid = 18 };
+
+    /// <summary>
+    /// PKEY_Keywords — the localized search keywords Control Panel's own
+    /// search uses to match a task (e.g. "joystick" for "Set up USB game
+    /// controllers"). IShellItem2.GetString returns them joined with "; ".
+    /// </summary>
+    internal static readonly PropertyKey PKeyKeywords = new() { FmtId = new Guid("F29F85E0-4FF9-1068-AB91-08002B27B3D9"), Pid = 5 };
+
     // SIGDN values (https://learn.microsoft.com/windows/win32/api/shobjidl_core/ne-shobjidl_core-sigdn)
     internal const uint SIGDNNormalDisplay = 0x00000000;
     internal const uint SIGDNDesktopAbsoluteParsing = 0x80028000;
@@ -169,6 +184,16 @@ internal static partial class ShellInterop
         return (IShellItem)ComWrappers.GetOrCreateObjectForComInstance(ptr, CreateObjectFlags.None);
     }
 
+    /// <summary>
+    /// A shell property key (PROPERTYKEY from wtypes.h).
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PropertyKey
+    {
+        public Guid FmtId;
+        public uint Pid;
+    }
+
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     internal struct SHELLEXECUTEINFOW
     {
@@ -208,6 +233,55 @@ internal partial interface IShellItem
 
     [PreserveSig]
     int Compare(IntPtr psi, uint hint, out int piOrder);
+}
+
+/// <summary>
+/// IShellItem2 — extends IShellItem with property access. Only GetString is
+/// used; the other methods are declared to keep the vtable layout of
+/// ShObjIdl_core.h intact.
+/// </summary>
+[GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
+[Guid("7e9fb0d3-919f-4307-ab2e-9b1860310c93")]
+internal partial interface IShellItem2 : IShellItem
+{
+    [PreserveSig]
+    int GetPropertyStore(uint flags, in Guid riid, out IntPtr ppv);
+
+    [PreserveSig]
+    int GetPropertyStoreWithCreateObject(uint flags, IntPtr punkCreateObject, in Guid riid, out IntPtr ppv);
+
+    [PreserveSig]
+    int GetPropertyStoreForKeys(IntPtr rgKeys, uint cKeys, uint flags, in Guid riid, out IntPtr ppv);
+
+    [PreserveSig]
+    int GetPropertyDescriptionList(in ShellInterop.PropertyKey keyType, in Guid riid, out IntPtr ppv);
+
+    [PreserveSig]
+    int Update(IntPtr pbc);
+
+    [PreserveSig]
+    int GetProperty(in ShellInterop.PropertyKey key, IntPtr ppropvar);
+
+    [PreserveSig]
+    int GetCLSID(in ShellInterop.PropertyKey key, out Guid pclsid);
+
+    [PreserveSig]
+    int GetFileTime(in ShellInterop.PropertyKey key, out ulong pft);
+
+    [PreserveSig]
+    int GetInt32(in ShellInterop.PropertyKey key, out int pi);
+
+    [PreserveSig]
+    int GetString(in ShellInterop.PropertyKey key, out string ppsz);
+
+    [PreserveSig]
+    int GetUInt32(in ShellInterop.PropertyKey key, out uint pui);
+
+    [PreserveSig]
+    int GetUInt64(in ShellInterop.PropertyKey key, out ulong pull);
+
+    [PreserveSig]
+    int GetBool(in ShellInterop.PropertyKey key, out int pf);
 }
 
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]

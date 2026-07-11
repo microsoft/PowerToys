@@ -136,4 +136,49 @@ public class ControlPanelTasksHelperTest
         var merged = settings.Settings.Single();
         Assert.IsTrue(merged.Command.StartsWith(ControlPanelTasksHelper.ShellItemCommandPrefix, System.StringComparison.Ordinal));
     }
+
+    [TestMethod]
+    public void MergePublishesANewListInsteadOfMutatingTheOldOne()
+    {
+        // The merge runs on a background task while the search page may be
+        // enumerating the current list, so it has to publish a new list
+        // instead of mutating the visible one.
+        var settings = CreateSettings(CreateTask("Existing setting"));
+        var published = settings.Settings;
+
+        var added = ControlPanelTasksHelper.MergeIntoSettings(settings, new List<WindowsSetting>() { CreateTask("New task") });
+
+        Assert.AreEqual(1, added);
+        Assert.AreEqual(1, published.Count());
+        Assert.AreNotSame(published, settings.Settings);
+    }
+
+    [TestMethod]
+    public void ParseKeywordsSplitsAndTrims()
+    {
+        var result = ControlPanelTasksHelper.ParseKeywords("adjust; joystick;controllers ; devices;");
+
+        Assert.IsNotNull(result);
+        CollectionAssert.AreEqual(
+            new List<string>() { "adjust", "joystick", "controllers", "devices" },
+            result.ToList());
+    }
+
+    [TestMethod]
+    public void ParseKeywordsDeduplicatesCaseInsensitive()
+    {
+        var result = ControlPanelTasksHelper.ParseKeywords("back;Back;BACK;restore");
+
+        Assert.IsNotNull(result);
+        CollectionAssert.AreEqual(new List<string>() { "back", "restore" }, result.ToList());
+    }
+
+    [TestMethod]
+    public void ParseKeywordsReturnsNullWhenNothingUsable()
+    {
+        Assert.IsNull(ControlPanelTasksHelper.ParseKeywords(null));
+        Assert.IsNull(ControlPanelTasksHelper.ParseKeywords(string.Empty));
+        Assert.IsNull(ControlPanelTasksHelper.ParseKeywords("   "));
+        Assert.IsNull(ControlPanelTasksHelper.ParseKeywords(";; ; ;"));
+    }
 }

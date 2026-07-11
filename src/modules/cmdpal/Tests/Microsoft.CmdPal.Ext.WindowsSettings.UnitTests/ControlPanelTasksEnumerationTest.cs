@@ -15,6 +15,11 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.UnitTests;
 [TestClass]
 public class ControlPanelTasksEnumerationTest
 {
+    /// <summary>
+    /// The path delimiter used by <see cref="WindowsSettingsPathHelper"/>.
+    /// </summary>
+    private const string PathDelimiterSequence = "\u0020\u0020\u02C3\u0020\u0020"; // = "<space><space><arrow><space><space>"
+
     [TestMethod]
     public void EnumerationReturnsWellFormedTasks()
     {
@@ -37,14 +42,45 @@ public class ControlPanelTasksEnumerationTest
             Assert.IsNotNull(task.TaskIdList);
             Assert.IsTrue(task.TaskIdList.Length > 0);
 
-            // the settings path shown as the result subtitle is filled in
-            // during enumeration, not by a later pass over the whole list
-            Assert.AreEqual(task.Type, task.JoinedFullSettingsPath);
+            // The settings path shown as the result subtitle (and searched by
+            // ">" path queries) must be consistent with the task's areas: with
+            // an area it is "<Type>  ˃  <Area>", without it is just the type.
+            if (task.Areas is null)
+            {
+                Assert.AreEqual(task.Type, task.JoinedFullSettingsPath);
+            }
+            else
+            {
+                Assert.IsTrue(task.Areas.Count > 0);
+                Assert.IsFalse(task.Areas.Any(string.IsNullOrWhiteSpace));
+                Assert.AreEqual(
+                    $"{task.Type}{PathDelimiterSequence}{string.Join(PathDelimiterSequence, task.Areas)}",
+                    task.JoinedFullSettingsPath);
+            }
+
+            // alternative names (Control Panel search keywords) are optional,
+            // but when present they must be usable for search matching
+            if (task.AltNames is not null)
+            {
+                Assert.IsTrue(task.AltNames.Any());
+                Assert.IsFalse(task.AltNames.Any(string.IsNullOrWhiteSpace));
+            }
         }
 
-        // The enumerated names are distinct enough to be useful for search
-        // results deduplication.
+        // The overwhelming majority of task names must be distinct — the
+        // merge dedupes by name, so a name collapse (e.g. a localization
+        // fallback bug) would silently drop most of the tasks from search.
         var distinctNames = tasks.Select(x => x.Name).Distinct(System.StringComparer.OrdinalIgnoreCase).Count();
-        Assert.IsTrue(distinctNames > 0);
+        Assert.IsTrue(distinctNames > tasks.Count / 2);
+
+        // Control Panel tasks belong to an applet (e.g. "Devices and
+        // Printers") and carry the keywords Control Panel's own search uses.
+        // Both are expected on client SKUs, but the extension degrades
+        // gracefully without them, so their absence on a reduced shell
+        // environment must not fail the suite.
+        if (!tasks.Any(x => x.Areas is not null) || !tasks.Any(x => x.AltNames is not null))
+        {
+            Assert.Inconclusive("The shell provided no category or keyword properties for the enumerated tasks on this machine.");
+        }
     }
 }

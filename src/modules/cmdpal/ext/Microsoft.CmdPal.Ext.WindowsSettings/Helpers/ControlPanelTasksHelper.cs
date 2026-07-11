@@ -177,19 +177,74 @@ internal static class ControlPanelTasksHelper
             Marshal.FreeCoTaskMem(pidl);
         }
 
-        return new WindowsSetting()
+        // The applet the task belongs to (e.g. "Devices and Printers") becomes
+        // the area, and the keywords Control Panel's own search matches (e.g.
+        // "joystick") become alternative names — so the entries take part in
+        // area, path and alternative name search like any static entry. Both
+        // come from the shell already localized.
+        IList<string> areas = null;
+        IEnumerable<string> altNames = null;
+        if (item is IShellItem2 item2)
+        {
+            if (item2.GetString(in ShellInterop.PKeyApplicationName, out var appName) == 0
+                && !string.IsNullOrWhiteSpace(appName))
+            {
+                areas = new List<string>(1) { appName };
+            }
+
+            if (item2.GetString(in ShellInterop.PKeyKeywords, out var keywords) == 0
+                && !string.IsNullOrWhiteSpace(keywords))
+            {
+                altNames = ParseKeywords(keywords);
+            }
+        }
+
+        var setting = new WindowsSetting()
         {
             Name = displayName,
             Command = parsingName,
             Type = settingType,
+            Areas = areas,
+            AltNames = altNames,
             TaskIdList = idList,
-
-            // Control Panel tasks have no areas, so their settings path is
-            // just the type. Filled here rather than by re-running
-            // WindowsSettingsPathHelper over the whole list, which would
-            // mutate entries the search page may be reading concurrently.
-            JoinedAreaPath = string.Empty,
-            JoinedFullSettingsPath = settingType,
         };
+
+        // Generate the settings path (subtitle and ">" path search) the same
+        // way it is generated for the static entries. Done here per setting
+        // rather than by re-running the helper over the whole merged list,
+        // which would mutate entries the search page may be reading
+        // concurrently.
+        WindowsSettingsPathHelper.GeneratePathValues(setting);
+
+        return setting;
+    }
+
+    /// <summary>
+    /// Splits the semicolon separated keyword string of a Control Panel task
+    /// into distinct, trimmed alternative names. Returns null when no usable
+    /// keyword remains.
+    /// </summary>
+    internal static IEnumerable<string> ParseKeywords(string keywords)
+    {
+        if (string.IsNullOrWhiteSpace(keywords))
+        {
+            return null;
+        }
+
+        var result = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var keyword in keywords.Split(';'))
+        {
+            var trimmed = keyword.Trim();
+            if (trimmed.Length == 0 || !seen.Add(trimmed))
+            {
+                continue;
+            }
+
+            result.Add(trimmed);
+        }
+
+        return result.Count > 0 ? result : null;
     }
 }
