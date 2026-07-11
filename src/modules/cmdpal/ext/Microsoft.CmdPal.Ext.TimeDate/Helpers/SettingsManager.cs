@@ -102,11 +102,9 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     private static readonly List<ChoiceSetSetting.Choice> _clockBandDateModeChoices = new()
     {
         new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate, "0"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek, "1"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek, "2"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek, "3"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate, "4"),
-        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "5"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber, "1"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate, "2"),
+        new ChoiceSetSetting.Choice(Resources.Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat, "3"),
     };
 
     // Choice sets render the description as the visible line above the dropdown,
@@ -132,7 +130,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
         Resources.Microsoft_plugin_timedate_Setting_CustomFormats,
-        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:"),
+        Resources.Microsoft_plugin_timedate_Setting_CustomFormats + TEXTBOXNEWLINE + string.Format(CultureInfo.CurrentCulture, Resources.Microsoft_plugin_timedate_Setting_CustomFormatsDescription.ToString(), "DOW", "DIM", "WOM", "WOY", "EAB", "WFT", "UXT", "UMS", "OAD", "EXC", "EXF", "UTC:", "IWOY", "IWYR", "IDOW", "IWYY"),
         string.Empty);
 
     public int FirstWeekOfYear => ParseIntSetting(_firstWeekOfYear.Value, -1);
@@ -149,7 +147,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public int ClockBandDateMode => ParseIntSetting(_clockBandDateMode.Value, 0);
 
-    private static int ParseIntSetting(string value, int fallback)
+    private static int ParseIntSetting(string? value, int fallback)
     {
         if (string.IsNullOrEmpty(value))
         {

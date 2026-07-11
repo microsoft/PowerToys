@@ -15,11 +15,15 @@ internal static class TimeAndDateHelper
     /* htcfreek:Currently not used.
      * private static readonly Regex _regexSpecialInputFormats = new Regex(@"^.*(u|ums|ft|oa|exc|exf)\d"); */
 
-    private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
+    private static readonly Regex _regexCustomDateTimeFormats = new Regex(@"(?<!\\)(DOW|DIM|WOM|WOY|IWOY|IWYR|IWYY|IDOW|EAB|WFT|UXT|UMS|OAD|EXC|EXF)");
     private static readonly Regex _regexCustomDateTimeDim = new Regex(@"(?<!\\)DIM");
     private static readonly Regex _regexCustomDateTimeDow = new Regex(@"(?<!\\)DOW");
     private static readonly Regex _regexCustomDateTimeWom = new Regex(@"(?<!\\)WOM");
     private static readonly Regex _regexCustomDateTimeWoy = new Regex(@"(?<!\\)WOY");
+    private static readonly Regex _regexCustomDateTimeIwoy = new Regex(@"(?<!\\)IWOY");
+    private static readonly Regex _regexCustomDateTimeIwyr = new Regex(@"(?<!\\)IWYR");
+    private static readonly Regex _regexCustomDateTimeIwyy = new Regex(@"(?<!\\)IWYY");
+    private static readonly Regex _regexCustomDateTimeIdow = new Regex(@"(?<!\\)IDOW");
     private static readonly Regex _regexCustomDateTimeEab = new Regex(@"(?<!\\)EAB");
     private static readonly Regex _regexCustomDateTimeWft = new Regex(@"(?<!\\)WFT");
     private static readonly Regex _regexCustomDateTimeUxt = new Regex(@"(?<!\\)UXT");
@@ -333,6 +337,23 @@ internal static class TimeAndDateHelper
     {
         var result = format;
 
+        // The ISO 8601 tokens always calculate with ISOWeek, independent of the
+        // configured first week/first day settings, so a string built from them is
+        // ISO compliant by construction. They must be replaced before their
+        // non-ISO counterparts (WOY, DOW) match inside them.
+
+        // IWOY: ISO 8601 week of year, always two digits
+        result = _regexCustomDateTimeIwoy.Replace(result, ISOWeek.GetWeekOfYear(date).ToString("D2", CultureInfo.CurrentCulture));
+
+        // IWYR: ISO 8601 week-based year (differs from the calendar year at the boundary)
+        result = _regexCustomDateTimeIwyr.Replace(result, ISOWeek.GetYear(date).ToString("D4", CultureInfo.CurrentCulture));
+
+        // IWYY: ISO 8601 week-based year, two digits
+        result = _regexCustomDateTimeIwyy.Replace(result, (ISOWeek.GetYear(date) % 100).ToString("D2", CultureInfo.CurrentCulture));
+
+        // IDOW: ISO 8601 day of the week (1 = Monday .. 7 = Sunday)
+        result = _regexCustomDateTimeIdow.Replace(result, (date.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)date.DayOfWeek).ToString(CultureInfo.CurrentCulture));
+
         // DOW: Number of day in week
         result = _regexCustomDateTimeDow.Replace(result, GetNumberOfDayInWeek(date, firstDayOfTheWeek).ToString(CultureInfo.CurrentCulture));
 
@@ -392,34 +413,43 @@ internal static class TimeAndDateHelper
     }
 
     /// <summary>
-    /// Returns the week of the year for the Clock dock band. The numbering system is
-    /// part of the selected date mode (ISO 8601, US, or the custom first week/first
-    /// day settings).
+    /// Returns the week of the year for the given first week rule and first day of the
+    /// week. When the combination amounts to ISO 8601 (first four-day week, Monday) the
+    /// calculation goes through ISOWeek, because Calendar.GetWeekOfYear misnumbers the
+    /// year boundary (e.g. 2012-12-31 -> 53 where ISO 8601 says week 1). Shared between
+    /// the search results and the Clock dock band so both always show the same number.
+    /// </summary>
+    /// <param name="date">Date to get the week number for.</param>
+    /// <param name="firstWeekRule">Rule for the first week of the year.</param>
+    /// <param name="firstDayOfTheWeek">First day of the week.</param>
+    /// <returns>The week number.</returns>
+    internal static int GetWeekOfYear(DateTime date, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
+    {
+        if (firstWeekRule == CalendarWeekRule.FirstFourDayWeek && firstDayOfTheWeek == DayOfWeek.Monday)
+        {
+            return ISOWeek.GetWeekOfYear(date);
+        }
+
+        return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, firstWeekRule, firstDayOfTheWeek);
+    }
+
+    /// <summary>
+    /// Returns the week of the year based on the plugin's 'First week of the year' and
+    /// 'First day of the week' settings.
     /// </summary>
     /// <param name="date">Date to get the week number for.</param>
     /// <param name="settings">Plugin settings.</param>
     /// <returns>The week number.</returns>
-    internal static int GetDockWeekOfYear(DateTime date, ISettingsInterface settings)
+    internal static int GetWeekOfYear(DateTime date, ISettingsInterface settings)
     {
-        switch (settings.ClockBandDateMode)
-        {
-            case 2:
-                // US: weeks start on Sunday, the week containing January 1st is week 1.
-                return CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
-            case 3:
-                // Custom: follow the plugin's 'First week of the year' and 'First day of the week' settings.
-                return CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(date, GetCalendarWeekRule(settings.FirstWeekOfYear), GetFirstDayOfWeek(settings.FirstDayOfWeek));
-            default:
-                // ISO 8601: weeks start on Monday, week 1 contains the first Thursday.
-                // Calendar.GetWeekOfYear(FirstFourDayWeek, Monday) misnumbers the year
-                // boundary (e.g. 2012-12-31 -> 53 instead of 1), so ISOWeek is required.
-                return ISOWeek.GetWeekOfYear(date);
-        }
+        return GetWeekOfYear(date, GetCalendarWeekRule(settings.FirstWeekOfYear), GetFirstDayOfWeek(settings.FirstDayOfWeek));
     }
 
     /// <summary>
-    /// Returns the ISO 8601 week date representation (e.g. "2026-W28-1"). Uses the ISO
-    /// week-based year, which differs from the calendar year at year boundaries.
+    /// Returns the ISO 8601 week date representation (e.g. "2026-W28-1"). Always
+    /// calculated with ISOWeek, so the string is ISO compliant independent of the
+    /// first week/first day settings; the week-based year differs from the calendar
+    /// year at year boundaries.
     /// </summary>
     /// <param name="date">Date to format.</param>
     /// <returns>The ISO 8601 week date string.</returns>
@@ -441,19 +471,18 @@ internal static class TimeAndDateHelper
 
         switch (settings.ClockBandDateMode)
         {
-            case 1: // Date and ISO week number (e.g. "06.07.2026 · W28")
-            case 2: // Date and US week number
-            case 3: // Date and week number based on the first week/first day settings
-                var weekString = string.Format(CultureInfo.CurrentCulture, _dockWeekNumberFormat, GetDockWeekOfYear(dateTimeNow, settings));
+            case 1: // Date and week number (e.g. "06.07.2026 · W28")
+                var weekString = string.Format(CultureInfo.CurrentCulture, _dockWeekNumberFormat, GetWeekOfYear(dateTimeNow, settings));
                 return string.Format(CultureInfo.CurrentCulture, _dockDateWeekFormat, dateString, weekString);
-            case 4: // ISO 8601 week date (e.g. "2026-W28-1")
+            case 2: // ISO 8601 week date (e.g. "2026-W28-1"), always ISO compliant
                 return GetIsoWeekDateString(dateTimeNow);
-            case 5: // Custom format; falls back to the system date if the format is empty or invalid
+            case 3: // Custom format; falls back to the system date if the format is empty or invalid
                 // WOY uses the first week/first day settings here, matching the
-                // behavior of the 'Custom formats' search results.
+                // behavior of the 'Custom formats' search results. The IWOY, IWYR,
+                // IWYY and IDOW tokens are always ISO 8601.
                 var firstWeekRule = GetCalendarWeekRule(settings.FirstWeekOfYear);
                 var firstDayOfTheWeek = GetFirstDayOfWeek(settings.FirstDayOfWeek);
-                var weekOfYear = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
+                var weekOfYear = GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
                 return TryFormatCustomString(dateTimeNow, settings.CustomDateFormatInClockBand, weekOfYear, firstWeekRule, firstDayOfTheWeek, out var customString)
                     ? customString
                     : dateString;

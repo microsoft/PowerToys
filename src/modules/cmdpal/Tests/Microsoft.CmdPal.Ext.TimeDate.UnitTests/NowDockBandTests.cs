@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -39,8 +39,9 @@ public class NowDockBandTests
         CultureInfo.CurrentUICulture = _originalUiCulture;
     }
 
-    // Default numbering system is ISO 8601.
-    private static string FixedTimeWeek() => ISOWeek.GetWeekOfYear(FixedTime).ToString(CultureInfo.CurrentCulture);
+    // The week number follows the 'First week of the year' and 'First day of the
+    // week' settings, shared with the search results.
+    private static string FixedTimeWeek(Settings settings) => TimeAndDateHelper.GetWeekOfYear(FixedTime, settings).ToString(CultureInfo.CurrentCulture);
 
     [TestMethod]
     public void Constructor_TitleIsSetImmediately()
@@ -179,7 +180,7 @@ public class NowDockBandTests
         settings.ClockBandDateMode = 1;
         _band.UpdateSettings();
 
-        StringAssert.Contains(_band.Subtitle, FixedTimeWeek());
+        StringAssert.Contains(_band.Subtitle, FixedTimeWeek(settings));
     }
 
     [TestMethod]
@@ -200,15 +201,26 @@ public class NowDockBandTests
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
-        StringAssert.Contains(_band.Subtitle, FixedTimeWeek());
+        StringAssert.Contains(_band.Subtitle, FixedTimeWeek(settings));
         Assert.AreEqual(3, _band.MoreCommands.Length);
+    }
+
+    [TestMethod]
+    public void WeekNumberModeUsesIsoWeekNumbersWithIsoSettings()
+    {
+        // First four-day week + Monday = ISO 8601
+        var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 1);
+
+        _band = new NowDockBand(settings, clock: () => FixedTime);
+
+        StringAssert.Contains(_band.Subtitle, ISOWeek.GetWeekOfYear(FixedTime).ToString(CultureInfo.CurrentCulture));
     }
 
     [TestMethod]
     public void WeekNumberModeRespectsCustomFirstWeekAndFirstDaySettings()
     {
-        // Custom week mode with first day rule and Monday
-        var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 1, clockBandDateMode: 3);
+        // First day rule and Monday
+        var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 1, clockBandDateMode: 1);
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
@@ -220,24 +232,14 @@ public class NowDockBandTests
     }
 
     [TestMethod]
-    public void IsoWeekDateModeShowsTheIsoWeekDate()
+    public void UsWeekSettingsAppendTheUsWeekNumber()
     {
-        var settings = new Settings(clockBandDateMode: 4);
+        // Week 1 contains January 1st, weeks start on Sunday (Excel WEEKNUM option 1)
+        var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0, clockBandDateMode: 1);
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
-        Assert.AreEqual(TimeAndDateHelper.GetIsoWeekDateString(FixedTime), _band.Subtitle);
-        Assert.AreEqual(3, _band.MoreCommands.Length);
-    }
-
-    [TestMethod]
-    public void UsWeekModeAppendsTheUsWeekNumber()
-    {
-        var settings = new Settings(clockBandDateMode: 2);
-
-        _band = new NowDockBand(settings, clock: () => FixedTime);
-
-        var expectedWeek = CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(
+        var expectedWeek = CultureInfo.CurrentCulture.Calendar.GetWeekOfYear(
             FixedTime,
             CalendarWeekRule.FirstDay,
             DayOfWeek.Sunday);
@@ -246,9 +248,27 @@ public class NowDockBandTests
     }
 
     [TestMethod]
+    public void IsoWeekDateModeShowsTheIsoWeekDate()
+    {
+        // US style calculation settings; the ISO week date entry is always ISO
+        // 8601 compliant, and the copy command carries the ISO week number.
+        var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0, clockBandDateMode: 2);
+
+        _band = new NowDockBand(settings, clock: () => FixedTime);
+
+        Assert.AreEqual("2025-W27-2", _band.Subtitle);
+        Assert.AreEqual(3, _band.MoreCommands.Length);
+        var copyWeekItem = _band.MoreCommands[2] as CommandContextItem;
+        Assert.IsNotNull(copyWeekItem);
+        var copyWeekCommand = copyWeekItem.Command as CopyTextCommand;
+        Assert.IsNotNull(copyWeekCommand);
+        Assert.AreEqual(ISOWeek.GetWeekOfYear(FixedTime).ToString(CultureInfo.CurrentCulture), copyWeekCommand.Text);
+    }
+
+    [TestMethod]
     public void CustomFormatModeOverridesTheDateLine()
     {
-        var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: "yyyy-MM-dd");
+        var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "yyyy-MM-dd");
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
@@ -256,20 +276,33 @@ public class NowDockBandTests
     }
 
     [TestMethod]
-    public void CustomFormatModeSupportsWeekOfYearPlaceholder()
+    public void CustomFormatModeRendersTheIsoWeekDateThroughTheIsoTokens()
     {
-        // ISO-like first week/first day settings feed the WOY placeholder
-        var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 5, customDateFormatInClockBand: "\\W WOY");
+        // The ISO tokens are always ISO 8601, independent of the first week and
+        // first day settings (which are US style here).
+        var settings = new Settings(firstWeekOfYear: 0, firstDayOfWeek: 0, clockBandDateMode: 3, customDateFormatInClockBand: "IWYR-\\WIWOY-IDOW");
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
-        Assert.AreEqual($"W {FixedTimeWeek()}", _band.Subtitle);
+        Assert.AreEqual("2025-W27-2", _band.Subtitle);
+        Assert.AreEqual(2, _band.MoreCommands.Length);
+    }
+
+    [TestMethod]
+    public void CustomFormatModeSupportsWeekOfYearPlaceholder()
+    {
+        // ISO first week/first day settings feed the WOY placeholder
+        var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 3, customDateFormatInClockBand: "\\W WOY");
+
+        _band = new NowDockBand(settings, clock: () => FixedTime);
+
+        Assert.AreEqual($"W {FixedTimeWeek(settings)}", _band.Subtitle);
     }
 
     [TestMethod]
     public void CustomFormatModeWithEmptyFormatFallsBackToDefaultDate()
     {
-        var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: string.Empty);
+        var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: string.Empty);
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
@@ -280,7 +313,7 @@ public class NowDockBandTests
     public void CustomFormatModeWithInvalidFormatFallsBackToDefaultDate()
     {
         // An unclosed literal quote is an invalid .NET date format
-        var settings = new Settings(clockBandDateMode: 5, customDateFormatInClockBand: "'unclosed");
+        var settings = new Settings(clockBandDateMode: 3, customDateFormatInClockBand: "'unclosed");
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
@@ -292,12 +325,12 @@ public class NowDockBandTests
     {
         // 'W' is no date format specifier and is copied to the output unchanged, so
         // a German user can write '\KW WOY' to get 'KW 27' without escaping the W.
-        var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 5, customDateFormatInClockBand: "dd.MM \\KW WOY");
+        var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1, clockBandDateMode: 3, customDateFormatInClockBand: "dd.MM \\KW WOY");
 
         _band = new NowDockBand(settings, clock: () => FixedTime);
 
         StringAssert.Contains(_band.Subtitle, "KW ");
-        StringAssert.Contains(_band.Subtitle, FixedTimeWeek());
+        StringAssert.Contains(_band.Subtitle, FixedTimeWeek(settings));
     }
 
     [TestMethod]
@@ -329,6 +362,6 @@ public class NowDockBandTests
         Assert.IsNotNull(copyWeekItem);
         var copyWeekCommand = copyWeekItem.Command as CopyTextCommand;
         Assert.IsNotNull(copyWeekCommand);
-        Assert.AreEqual(FixedTimeWeek(), copyWeekCommand.Text);
+        Assert.AreEqual(FixedTimeWeek(settings), copyWeekCommand.Text);
     }
 }

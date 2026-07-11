@@ -336,7 +336,7 @@
     <value>First week of the year</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_Description" xml:space="preserve">
-    <value>Configure the calendar rule for the first week of the year.</value>
+    <value>Configure the calendar rule for the first week of the year. For ISO 8601 compliant week numbers, choose 'First four day week' here and 'Monday' as first day of the week, or leave both on 'System default' if your Windows region already uses this convention (common across much of Europe).</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingFirstWeekRule_FirstDay" xml:space="preserve">
     <value>First day of year</value>
@@ -389,7 +389,7 @@
     <value>Custom formats</value>
   </data>
   <data name="Microsoft_plugin_timedate_Setting_CustomFormatsDescription" xml:space="preserve">
-    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Days in Month), {2} (Week of Month), {3} (Week of the year), {4} (Era abbreviation), {5} (Windows File Time), {6} (Unix Time), {7} (Unix Time in milliseconds), {8} (OLE Automation date), {9} (Excel's 1900 based date value), {10} (Excel's 1904 based date value). If the format starts with {11}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.)</value>
+    <value>Use date and time string format syntax and {0} (Day of Week), {1} (Days in Month), {2} (Week of Month), {3} (Week of the year), {4} (Era abbreviation), {5} (Windows File Time), {6} (Unix Time), {7} (Unix Time in milliseconds), {8} (OLE Automation date), {9} (Excel's 1900 based date value), {10} (Excel's 1904 based date value). The tokens {12} (week of the year, two digits), {13} (week-based year), {15} (week-based year, two digits) and {14} (day of the week, 1-7) always use ISO 8601 numbering. If the format starts with {11}, then Universal Time (UTC) is used. (Use a backslash to escape format sequences and the backslash character as text.)</value>
     <comment>The {n} parts are place holders and get replaced in the code.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_show_details" xml:space="preserve">
@@ -444,19 +444,13 @@
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_SystemDate" xml:space="preserve">
     <value>System date</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeek" xml:space="preserve">
-    <value>Date and ISO 8601 week number (e.g. '06.07.2026 · W28')</value>
-    <comment>'W28' should match the translation of the resource 'timedate_dock_week_number_format'.</comment>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_UsWeek" xml:space="preserve">
-    <value>Date and US week number (week 1 contains January 1st)</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_CustomWeek" xml:space="preserve">
-    <value>Date and week number based on the two settings above</value>
-    <comment>Refers to the settings 'First week of the year' and 'First day of the week' shown above this setting.</comment>
+  <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_WeekNumber" xml:space="preserve">
+    <value>Date and week number (e.g. '06.07.2026 · W28')</value>
+    <comment>'W28' should match the translation of the resource 'timedate_dock_week_number_format'. The week number is calculated based on the settings 'First week of the year' and 'First day of the week' shown above this setting.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_IsoWeekDate" xml:space="preserve">
     <value>ISO 8601 week date (e.g. '2026-W28-1')</value>
+    <comment>Always calculated with ISO 8601 numbering, independent of the 'First week of the year' and 'First day of the week' settings.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandDateMode_CustomFormat" xml:space="preserve">
     <value>Custom format (defined in the field below)</value>
@@ -469,7 +463,7 @@
     <value>Custom date format for the Clock dock band</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandCustomFormat_Description" xml:space="preserve">
-    <value>Only used when 'Custom format' is selected above. Date format syntax plus WOY for the week of the year, e.g. 'ddd dd.MM \KW WOY' shows 'Mon 06.07 KW 28' and 'dd.MM.yyyy · WOY' shows the plain week number after the date.</value>
+    <value>Only used when 'Custom format' is selected above. Date format syntax plus WOY for the week of the year, e.g. 'ddd dd.MM \KW WOY' shows 'Mon 06.07 KW 28'. WOY follows the week settings above. IWOY (week, two digits), IWYR / IWYY (week-based year, four or two digits) and IDOW (day, 1-7) always use ISO 8601: 'IWYR-\WIWOY-IDOW' shows the ISO week date '2026-W28-2' and 'IWYY \WIWOY' the compact '26 W28'.</value>
   </data>
   <data name="Microsoft_plugin_timedate_SettingClockBandOpensNotificationCenter" xml:space="preserve">
     <value>Open notification center when clicking the Clock dock band</value>
