@@ -41,6 +41,11 @@ namespace KeyboardManagerEditorUI.Pages
         private EditingItem? _editingItem;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
+        private bool _suppressProfileSelection;
+        private RawInputWatcher? _autoSwitchWatcher;
+        private ObservableCollection<KeyboardAssignmentRow>? _keyboardRows;
+        private List<string> _autoSwitchProfiles = new();
+        private string _notAssignedLabel = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -122,6 +127,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (_mappingService != null)
             {
                 LoadAllMappings();
+                LoadProfiles();
             }
             else
             {
@@ -152,6 +158,231 @@ namespace KeyboardManagerEditorUI.Pages
         {
             ServiceDownBanner.Visibility = IsServiceRunning ? Visibility.Collapsed : Visibility.Visible;
         }
+
+        #region Profile Management
+
+        private void LoadProfiles()
+        {
+            _suppressProfileSelection = true;
+            try
+            {
+                IReadOnlyList<string> profiles = ProfileManager.GetProfiles();
+                string active = ProfileManager.GetActiveProfile();
+
+                ProfileSelector.ItemsSource = profiles;
+                ProfileSelector.SelectedItem = profiles.Contains(active) ? active : (profiles.Count > 0 ? profiles[0] : null);
+                UpdateDeleteProfileButtonState();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to load profiles: " + ex.Message);
+            }
+            finally
+            {
+                _suppressProfileSelection = false;
+            }
+        }
+
+        private void UpdateDeleteProfileButtonState()
+        {
+            DeleteProfileBtn.IsEnabled = !string.Equals(
+                ProfileManager.GetActiveProfile(),
+                "default",
+                StringComparison.OrdinalIgnoreCase);
+        }
+
+        private void ProfileSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_suppressProfileSelection || _mappingService == null)
+            {
+                return;
+            }
+
+            if (ProfileSelector.SelectedItem is not string profile)
+            {
+                return;
+            }
+
+            if (string.Equals(profile, ProfileManager.GetActiveProfile(), StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            SwitchToActiveProfile(profile);
+        }
+
+        private void SwitchToActiveProfile(string profile)
+        {
+            try
+            {
+                if (!ProfileManager.SetActiveProfile(profile))
+                {
+                    Logger.LogWarning($"Failed to switch to profile '{profile}'");
+                    return;
+                }
+
+                RebuildForActiveProfile();
+                UpdateDeleteProfileButtonState();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error switching profile: " + ex.Message);
+            }
+        }
+
+        // Re-reads the now-active profile's config into a fresh native service and the editor cache.
+        private void RebuildForActiveProfile()
+        {
+            _mappingService?.Dispose();
+            _mappingService = new KeyboardMappingService();
+            SettingsManager.ReloadForActiveProfile();
+            LoadAllMappings();
+        }
+
+        private async void NewProfileBtn_Click(object sender, RoutedEventArgs e)
+        {
+            NewProfileNameBox.Text = string.Empty;
+            CopyCurrentProfileCheckBox.IsChecked = false;
+
+            if (await NewProfileDialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            string name = NewProfileNameBox.Text.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
+            }
+
+            if (ProfileManager.CreateProfile(name, CopyCurrentProfileCheckBox.IsChecked == true))
+            {
+                LoadProfiles();
+
+                // Selecting the new profile triggers the switch through SelectionChanged.
+                ProfileSelector.SelectedItem = name;
+            }
+            else
+            {
+                Logger.LogWarning($"Could not create profile '{name}' (invalid name or already exists)");
+            }
+        }
+
+        private async void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string active = ProfileManager.GetActiveProfile();
+            if (string.Equals(active, "default", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (await DeleteProfileDialog.ShowAsync() != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            if (ProfileManager.DeleteProfile(active))
+            {
+                // DeleteProfile falls back to the default profile; rebuild against it.
+                RebuildForActiveProfile();
+                LoadProfiles();
+            }
+        }
+
+        private async void AutoSwitchBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _notAssignedLabel = ResourceHelper.GetString("AutoSwitch_NotAssigned");
+
+            // Available choices per keyboard: "(not assigned)" + existing profiles.
+            _autoSwitchProfiles = new List<string> { _notAssignedLabel };
+            _autoSwitchProfiles.AddRange(ProfileManager.GetProfiles());
+
+            // Start from previously-saved assignments only; live typing identifies/adds the rest.
+            // (Enumeration is not used: it surfaces virtual/synthetic keyboards the user never types
+            // on, and can miss the device seen at typing time on some machines.)
+            _keyboardRows = new ObservableCollection<KeyboardAssignmentRow>();
+            foreach (DeviceAssignment saved in DeviceProfileManager.GetSavedAssignments())
+            {
+                _keyboardRows.Add(new KeyboardAssignmentRow
+                {
+                    DevicePath = saved.Device,
+                    DisplayName = string.IsNullOrEmpty(saved.Name) ? saved.Device : saved.Name,
+                    Profiles = _autoSwitchProfiles,
+                    SelectedProfile = _autoSwitchProfiles.Contains(saved.Profile) ? saved.Profile : _notAssignedLabel,
+                });
+            }
+
+            KeyboardAssignmentsList.ItemsSource = _keyboardRows;
+            AutoSwitchToggle.IsOn = DeviceProfileManager.GetAutoSwitchEnabled();
+
+            // Watch live keystrokes so the user can identify a keyboard by typing on it (and so a
+            // keyboard that only shows up at typing time — not in enumeration — still gets a row).
+            _autoSwitchWatcher = new RawInputWatcher(OnKeyboardTyped);
+            _autoSwitchWatcher.Start();
+
+            ContentDialogResult result;
+            try
+            {
+                result = await AutoSwitchDialog.ShowAsync();
+            }
+            finally
+            {
+                _autoSwitchWatcher.Stop();
+                _autoSwitchWatcher = null;
+            }
+
+            if (result != ContentDialogResult.Primary)
+            {
+                return;
+            }
+
+            var toSave = _keyboardRows
+                .Where(r => !string.Equals(r.SelectedProfile, _notAssignedLabel, StringComparison.Ordinal))
+                .Select(r => new DeviceAssignment { Device = r.DevicePath, Profile = r.SelectedProfile, Name = r.DisplayName });
+
+            DeviceProfileManager.Save(AutoSwitchToggle.IsOn, toSave);
+        }
+
+        // Runs on the Raw Input watcher thread; marshal to the UI thread before touching rows.
+        private void OnKeyboardTyped(DetectedKeyboard keyboard)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_keyboardRows == null)
+                {
+                    return;
+                }
+
+                KeyboardAssignmentRow? match = null;
+                foreach (KeyboardAssignmentRow row in _keyboardRows)
+                {
+                    bool isMatch = string.Equals(row.DevicePath, keyboard.DevicePath, StringComparison.OrdinalIgnoreCase);
+                    row.IsTyping = isMatch;
+                    if (isMatch)
+                    {
+                        match = row;
+                        if (!string.IsNullOrEmpty(keyboard.DisplayName))
+                        {
+                            row.DisplayName = keyboard.DisplayName; // refresh a placeholder name once identified
+                        }
+                    }
+                }
+
+                if (match == null)
+                {
+                    _keyboardRows.Add(new KeyboardAssignmentRow
+                    {
+                        DevicePath = keyboard.DevicePath,
+                        DisplayName = keyboard.DisplayName,
+                        Profiles = _autoSwitchProfiles,
+                        SelectedProfile = _notAssignedLabel,
+                        IsTyping = true,
+                    });
+                }
+            });
+        }
+
+        #endregion
 
         #region Dialog Show Methods
 
@@ -893,15 +1124,17 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadRemappings()
         {
+            // Clear first so switching to a profile with no remaps empties the list
+            // (rather than leaving the previous profile's entries on screen).
+            RemappingList.Clear();
+            DisabledList.Clear();
+
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapShortcut, out var remapShortcutIds);
 
             if (remapShortcutIds == null)
             {
                 return;
             }
-
-            RemappingList.Clear();
-            DisabledList.Clear();
 
             foreach (var id in remapShortcutIds)
             {
@@ -934,14 +1167,14 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadTextMappings()
         {
+            TextMappings.Clear();
+
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RemapText, out var remapShortcutIds);
 
             if (remapShortcutIds == null)
             {
                 return;
             }
-
-            TextMappings.Clear();
 
             foreach (var id in remapShortcutIds)
             {
@@ -963,14 +1196,14 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadProgramShortcuts()
         {
+            ProgramShortcuts.Clear();
+
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.RunProgram, out var remapShortcutIds);
 
             if (remapShortcutIds == null)
             {
                 return;
             }
-
-            ProgramShortcuts.Clear();
 
             foreach (var id in remapShortcutIds)
             {
@@ -997,14 +1230,14 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void LoadUrlShortcuts()
         {
+            UrlShortcuts.Clear();
+
             SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.OpenUri, out var remapShortcutIds);
 
             if (remapShortcutIds == null)
             {
                 return;
             }
-
-            UrlShortcuts.Clear();
 
             foreach (var id in remapShortcutIds)
             {

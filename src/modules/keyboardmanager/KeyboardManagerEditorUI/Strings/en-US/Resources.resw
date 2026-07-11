@@ -501,4 +501,73 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
+  <data name="ProfileLabel.Text" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="ProfileSelector.AutomationProperties.Name" xml:space="preserve">
+    <value>Active profile</value>
+  </data>
+  <data name="NewProfileBtnTooltip.Text" xml:space="preserve">
+    <value>Create a new profile</value>
+  </data>
+  <data name="DeleteProfileBtnTooltip.Text" xml:space="preserve">
+    <value>Delete the current profile</value>
+  </data>
+  <data name="NewProfileDialog.Title" xml:space="preserve">
+    <value>New profile</value>
+  </data>
+  <data name="NewProfileDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="NewProfileDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="NewProfileNameBox.Header" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="NewProfileNameBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., Mac keyboard</value>
+  </data>
+  <data name="CopyCurrentProfileCheckBox.Content" xml:space="preserve">
+    <value>Start from a copy of the current profile</value>
+  </data>
+  <data name="DeleteProfileDialog.Title" xml:space="preserve">
+    <value>Delete profile?</value>
+  </data>
+  <data name="DeleteProfileDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteProfileDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeleteProfileDialogContent.Text" xml:space="preserve">
+    <value>This permanently deletes the selected profile and all of its mappings. This cannot be undone.</value>
+  </data>
+  <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">
+    <value>Auto-switch</value>
+  </data>
+  <data name="AutoSwitchDialog.Title" xml:space="preserve">
+    <value>Per-keyboard auto-switch</value>
+  </data>
+  <data name="AutoSwitchDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="AutoSwitchDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AutoSwitchToggle.Header" xml:space="preserve">
+    <value>Automatically switch the active profile based on the keyboard being used</value>
+  </data>
+  <data name="AutoSwitchKeyboardsHeader.Text" xml:space="preserve">
+    <value>Assign a profile to each keyboard</value>
+  </data>
+  <data name="AutoSwitchHint.Text" xml:space="preserve">
+    <value>When enabled, typing on a keyboard switches to its assigned profile. Unassigned keyboards keep the current profile. Note: some virtual/remote input layers may prevent reliable per-keyboard detection.</value>
+  </data>
+  <data name="AutoSwitch_NotAssigned" xml:space="preserve">
+    <value>(not assigned)</value>
+  </data>
+  <data name="AutoSwitchIdentifyHint.Title" xml:space="preserve">
+    <value>Press a key on a keyboard to highlight its row (and add it if it isn't listed).</value>
+  </data>
 </root>
