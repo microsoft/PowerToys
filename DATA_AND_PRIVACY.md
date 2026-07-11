@@ -145,6 +145,8 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPalHotkeySummoned | Logs when the Command Palette is summoned via hotkey, distinguishing between global and context-specific hotkeys. |
 | Microsoft.PowerToys.CmdPalInvokeResult | Records the result type of a Command Palette invocation. |
 | Microsoft.PowerToys.CmdPalProcessStarted | Triggered when the Command Palette process is started. |
+| Microsoft.PowerToys.CmdPal_SearchResults | Triggered when a search is triggered on the main list, including query length, result count, and duration. |
+| Microsoft.PowerToys.CmdPal_SearchResultSelected | Triggered when a search result is selected, including query length, selection index, and result tier. |
 
 ### Crop and lock
 
