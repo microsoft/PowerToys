@@ -784,12 +784,13 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private static string FormatAsBitsPerSecString(float value)
     {
+        // Kbps/Mbps/Gbps use SI decimal prefixes, so scale by 1000.
         // Bytes to bits
         value *= 8;
 
         // bits to Kbits
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -800,8 +801,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         // Kbits to Mbits
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -812,7 +813,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         // Mbits to Gbits
-        value /= 1024;
+        value /= 1000;
         if (value < 100)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
@@ -823,9 +824,10 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private static string FormatAsBytesPerSecString(float value)
     {
+        // KB/s, MB/s and GB/s use SI decimal prefixes, so scale by 1000.
         // Bytes to KB
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -836,8 +838,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         // KB to MB
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -848,7 +850,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
 
         // MB to GB
-        value /= 1024;
+        value /= 1000;
         if (value < 100)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);
@@ -859,6 +861,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private static string FormatAsBinaryBytesPerSecString(float value)
     {
+        // KiB/s, MiB/s and GiB/s use IEC binary prefixes, so scale by 1024.
         // Bytes to KiB
         value /= 1024;
         if (value < 1024)
