@@ -39,6 +39,7 @@ namespace ColorPicker.ViewModels
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
+            CopyColorTextCommand = new RelayCommand<ColorFormatModel>(CopyColorText);
 
             RemoveColorsCommand = new RelayCommand<object>(DeleteSelectedColors, IsNonEmptyList);
             ExportColorsGroupedByColorCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByColor, IsNonEmptyList);
@@ -66,6 +67,8 @@ namespace ColorPicker.ViewModels
         public ICommand OpenColorPickerCommand { get; }
 
         public ICommand OpenSettingsCommand { get; }
+
+        public ICommand CopyColorTextCommand { get; }
 
         public ICommand RemoveColorsCommand { get; }
 
@@ -95,8 +98,13 @@ namespace ColorPicker.ViewModels
 
             set
             {
-                _selectedColor = value;
-                OnPropertyChanged();
+                if (SetProperty(ref _selectedColor, value))
+                {
+                    foreach (var colorFormat in ColorRepresentations)
+                    {
+                        colorFormat.UpdateColor(value);
+                    }
+                }
             }
         }
 
@@ -158,6 +166,14 @@ namespace ColorPicker.ViewModels
         private static bool IsNonEmptyList(object parameter) =>
             parameter is IList { Count: > 0 } list &&
             list.Cast<object>().All(item => item is Color);
+
+        private static void CopyColorText(ColorFormatModel colorFormat)
+        {
+            ArgumentNullException.ThrowIfNull(colorFormat);
+
+            ClipboardHelper.CopyToClipboard(colorFormat.ColorText);
+            SessionEventHelper.Event.EditorColorCopiedToClipboard = true;
+        }
 
         private void DeleteSelectedColors(object selectedColors)
         {
@@ -398,7 +414,9 @@ namespace ColorPicker.ViewModels
 
             foreach (var colorFormat in _userSettings.VisibleColorFormats)
             {
-                ColorRepresentations.Add(new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value });
+                var representation = new ColorFormatModel() { FormatName = colorFormat.Key.ToUpperInvariant(), Convert = null, FormatString = colorFormat.Value };
+                representation.UpdateColor(SelectedColor);
+                ColorRepresentations.Add(representation);
             }
         }
     }

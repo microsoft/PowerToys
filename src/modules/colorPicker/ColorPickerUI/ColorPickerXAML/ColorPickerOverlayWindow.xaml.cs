@@ -18,7 +18,7 @@ using Windows.Graphics;
 namespace ColorPicker
 {
     /// <summary>
-    /// The picking-overlay tooltip window: hosts <see cref="Views.MainView"/> inside the
+    /// The picking-overlay tooltip window: hosts <see cref="Views.ColorPickerView"/> inside the
     /// shared <see cref="TransparentWindow"/> (transparent <c>TransparentTintBackdrop</c>,
     /// frameless, tool-window so it stays out of the taskbar/Alt-Tab, and a no-activate
     /// <c>Show()</c> so it never steals foreground from the user's work).
@@ -67,7 +67,7 @@ namespace ColorPicker
         }
 
         /// <summary>
-        /// Makes the overlay size itself to the <see cref="Views.MainView"/> tooltip and follow
+        /// Makes the overlay size itself to the <see cref="Views.ColorPickerView"/> tooltip and follow
         /// the cursor (kept above the zoom magnifier) while it is shown — the WinUI replacement for
         /// the WPF <c>SizeToContent="WidthAndHeight"</c> + <c>ChangeWindowPositionBehavior</c> +
         /// re-asserted <c>Topmost</c> that the migration had not yet ported.
@@ -102,7 +102,7 @@ namespace ColorPicker
             // and the initial positioning together at Low priority — after base TransparentWindow.Show()
             // has pumped its deferred SW_SHOWNA, so the fade clock begins when the window is actually
             // on screen and the card is laid out before it is sized to the cursor.
-            MainViewControl.Opacity = 0;
+            ColorPickerViewControl.Opacity = 0;
             base.Show();
 
             DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
@@ -136,14 +136,14 @@ namespace ColorPicker
                     Duration = new Duration(TimeSpan.FromMilliseconds(250)),
                     EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
                 };
-                Storyboard.SetTarget(fadeIn, MainViewControl);
+                Storyboard.SetTarget(fadeIn, ColorPickerViewControl);
                 Storyboard.SetTargetProperty(fadeIn, "Opacity");
                 _appearStoryboard = new Storyboard();
                 _appearStoryboard.Children.Add(fadeIn);
             }
 
             _appearStoryboard.Stop();
-            MainViewControl.Opacity = 0;
+            ColorPickerViewControl.Opacity = 0;
             _appearStoryboard.Begin();
         }
 

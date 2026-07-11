@@ -60,6 +60,7 @@
          properties (ShowAnimations/HideAnimations) when ColorPickerOverlayWindow.xaml derives
          from the Common.UI.Controls TransparentWindow base. -->
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <!-- Win2D for the zoom magnifier's pixel-grid CanvasControl. -->
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

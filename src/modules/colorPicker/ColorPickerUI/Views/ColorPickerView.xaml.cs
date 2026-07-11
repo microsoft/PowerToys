@@ -13,13 +13,13 @@ using Microsoft.UI.Xaml.Controls;
 namespace ColorPicker.Views
 {
     /// <summary>
-    /// Interaction logic for MainView.xaml
+    /// Interaction logic for ColorPickerView.xaml
     /// </summary>
-    public sealed partial class MainView : UserControl
+    public sealed partial class ColorPickerView : UserControl
     {
         private INotifyPropertyChanged _subscribedViewModel;
 
-        public MainView()
+        public ColorPickerView()
         {
             InitializeComponent();
             Loaded += OnLoaded;
@@ -30,7 +30,7 @@ namespace ColorPicker.Views
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             Subscribe(DataContext);
-            UpdateAccessibleNames();
+            UpdateAccessibleName();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -44,7 +44,7 @@ namespace ColorPicker.Views
             if (IsLoaded)
             {
                 Subscribe(args.NewValue);
-                UpdateAccessibleNames();
+                UpdateAccessibleName();
             }
         }
 
@@ -84,33 +84,23 @@ namespace ColorPicker.Views
             else if (e.PropertyName == nameof(IMainViewModel.ShowColorName))
             {
                 // Keep accessible names current when the setting changes; do not announce.
-                UpdateAccessibleNames();
+                UpdateAccessibleName();
             }
         }
 
-        // Sets AutomationProperties.Name on both live-region targets without raising
-        // LiveRegionChanged, so screen readers are not triggered by silent initialisation
-        // or settings-toggle events.
-        private void UpdateAccessibleNames()
+        // Updates the live-region name without raising LiveRegionChanged, so screen readers are
+        // not triggered by silent initialization or settings changes.
+        private void UpdateAccessibleName()
         {
             if (DataContext is not IMainViewModel vm)
             {
-                // Explicitly clear stale names when no valid VM is present.
                 AutomationProperties.SetName(ColorTextBlock, string.Empty);
-                AutomationProperties.SetName(ColorTextWithNameBlock, string.Empty);
                 return;
             }
 
-            var colorText = vm.ColorText ?? string.Empty;
-            var colorName = vm.ColorName ?? string.Empty;
-            var twoLineName = string.IsNullOrEmpty(colorName) ? colorText : $"{colorText} {colorName}";
-
-            AutomationProperties.SetName(ColorTextBlock, colorText);
-            AutomationProperties.SetName(ColorTextWithNameBlock, twoLineName);
+            AutomationProperties.SetName(ColorTextBlock, GetAccessibleName(vm));
         }
 
-        // Updates accessible names on both targets and raises LiveRegionChanged only on
-        // the currently visible target so screen readers announce the new color.
         private void AnnounceCurrentColor()
         {
             if (DataContext is not IMainViewModel vm)
@@ -118,20 +108,21 @@ namespace ColorPicker.Views
                 return;
             }
 
+            AutomationProperties.SetName(ColorTextBlock, GetAccessibleName(vm));
+
+            var peer = FrameworkElementAutomationPeer.FromElement(ColorTextBlock)
+                       ?? FrameworkElementAutomationPeer.CreatePeerForElement(ColorTextBlock);
+            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+        }
+
+        private static string GetAccessibleName(IMainViewModel vm)
+        {
             var colorText = vm.ColorText ?? string.Empty;
             var colorName = vm.ColorName ?? string.Empty;
-            var twoLineName = string.IsNullOrEmpty(colorName) ? colorText : $"{colorText} {colorName}";
 
-            AutomationProperties.SetName(ColorTextBlock, colorText);
-            AutomationProperties.SetName(ColorTextWithNameBlock, twoLineName);
-
-            // Announce on the visible target only.
-            FrameworkElement target = vm.ShowColorName ? ColorTextWithNameBlock : ColorTextBlock;
-
-            var peer = FrameworkElementAutomationPeer.FromElement(target)
-                       ?? FrameworkElementAutomationPeer.CreatePeerForElement(target);
-
-            peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
+            return vm.ShowColorName && !string.IsNullOrEmpty(colorName)
+                ? $"{colorText} {colorName}"
+                : colorText;
         }
     }
 }

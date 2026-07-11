@@ -4,18 +4,19 @@
 
 using System;
 using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 
 using ColorPicker.Helpers;
 using ManagedCommon;
+using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -26,9 +27,14 @@ namespace ColorPicker.Controls
     /// </summary>
     public sealed partial class ColorPickerControl : UserControl
     {
+        private static readonly TimeSpan ExpandAnimationDuration = TimeSpan.FromMilliseconds(250);
+        private static readonly TimeSpan CollapseAnimationDuration = TimeSpan.FromMilliseconds(150);
+
         private double _currH = 360;
         private double _currS = 1;
         private double _currV = 1;
+        private Visual _currentColorButtonVisual;
+        private bool _currentColorButtonCenterPinned;
         private bool _ignoreHexChanges;
         private bool _ignoreRGBChanges;
         private bool _ignoreGradientsChanges;
@@ -45,25 +51,6 @@ namespace ColorPicker.Controls
             InitializeComponent();
 
             UpdateHueGradient(1, 1);
-
-            // WPF set these via {x:Static p:Resources.*}; resolve through the resource loader instead.
-            AutomationProperties.SetName(this, ResourceLoaderInstance.GetString("Color_Palette"));
-            AutomationProperties.SetName(HueGradientSlider, ResourceLoaderInstance.GetString("Hue_slider"));
-            AutomationProperties.SetName(SaturationGradientSlider, ResourceLoaderInstance.GetString("Saturation_slider"));
-            AutomationProperties.SetName(ValueGradientSlider, ResourceLoaderInstance.GetString("Value_slider"));
-            AutomationProperties.SetName(RNumberBox, ResourceLoaderInstance.GetString("Red_value"));
-            AutomationProperties.SetName(GNumberBox, ResourceLoaderInstance.GetString("Green_value"));
-            AutomationProperties.SetName(BNumberBox, ResourceLoaderInstance.GetString("Blue_value"));
-            AutomationProperties.SetName(HexCode, ResourceLoaderInstance.GetString("Hex_value"));
-            AutomationProperties.SetName(colorVariation1Button, ResourceLoaderInstance.GetString("Lightest_color"));
-            AutomationProperties.SetName(colorVariation2Button, ResourceLoaderInstance.GetString("Lighter_color"));
-            AutomationProperties.SetName(colorVariation3Button, ResourceLoaderInstance.GetString("Darker_color"));
-            AutomationProperties.SetName(colorVariation4Button, ResourceLoaderInstance.GetString("Darkest_color"));
-            AutomationProperties.SetName(CurrentColorButton, ResourceLoaderInstance.GetString("Selected_color"));
-            AutomationProperties.SetHelpText(CurrentColorButton, ResourceLoaderInstance.GetString("Selected_color_helptext"));
-            AutomationProperties.SetName(OKButton, ResourceLoaderInstance.GetString("Select"));
-            ToolTipService.SetToolTip(CurrentColorButton, ResourceLoaderInstance.GetString("Selected_color_tooltip"));
-            OKButton.Content = ResourceLoaderInstance.GetString("Select");
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -217,7 +204,7 @@ namespace ColorPicker.Controls
 
                 // The flyout opens automatically via Button.Flyout; animate the swatch to its
                 // expanded pose alongside it.
-                AnimateCurrentColorButton(256, new Thickness(0), 250);
+                AnimateCurrentColorButton(expand: true, ExpandAnimationDuration);
                 CurrentColorButton.IsEnabled = false;
                 SessionEventHelper.Event.EditorAdjustColorOpened = true;
             }
@@ -229,29 +216,37 @@ namespace ColorPicker.Controls
             {
                 _isCollapsed = true;
 
-                AnimateCurrentColorButton(165, new Thickness(0, 72, 0, 72), 150);
+                AnimateCurrentColorButton(expand: false, CollapseAnimationDuration);
                 CurrentColorButton.IsEnabled = true;
             }
         }
 
-        private void AnimateCurrentColorButton(double height, Thickness margin, int durationMs)
+        private void AnimateCurrentColorButton(bool expand, TimeSpan duration)
         {
-            // WinUI 3 has no ThicknessAnimation, so set the margin directly and animate only the
-            // (dependent) Height; the swatch still grows/shrinks as the flyout opens/closes.
-            CurrentColorButton.Margin = margin;
+            UpdateLayout();
 
-            var storyboard = new Storyboard();
-            var heightAnimation = new DoubleAnimation
+            _currentColorButtonVisual ??= ElementCompositionPreview.GetElementVisual(CurrentColorButton);
+            var compositor = _currentColorButtonVisual.Compositor;
+
+            if (!_currentColorButtonCenterPinned)
             {
-                To = height,
-                Duration = new Duration(TimeSpan.FromMilliseconds(durationMs)),
-                EnableDependentAnimation = true,
-                EasingFunction = new ExponentialEase { EasingMode = EasingMode.EaseInOut },
-            };
-            Storyboard.SetTarget(heightAnimation, CurrentColorButton);
-            Storyboard.SetTargetProperty(heightAnimation, "Height");
-            storyboard.Children.Add(heightAnimation);
-            storyboard.Begin();
+                var center = compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X * 0.5, this.Target.Size.Y * 0.5, 0)");
+                _currentColorButtonVisual.StartAnimation(nameof(Visual.CenterPoint), center);
+                _currentColorButtonCenterPinned = true;
+            }
+
+            float expandedScale = CurrentColorButton.ActualHeight > 0
+                ? (float)(PickerPanel.ActualHeight / CurrentColorButton.ActualHeight)
+                : 1f;
+            var targetScale = expand ? new Vector3(1f, expandedScale, 1f) : Vector3.One;
+            var easing = compositor.CreateCubicBezierEasingFunction(
+                new Vector2(0.45f, 0f),
+                new Vector2(0.55f, 1f));
+            var animation = compositor.CreateVector3KeyFrameAnimation();
+            animation.InsertKeyFrame(1f, targetScale, easing);
+            animation.Duration = duration;
+
+            _currentColorButtonVisual.StartAnimation(nameof(Visual.Scale), animation);
         }
 
         private void OKButton_Click(object sender, RoutedEventArgs e)
@@ -442,11 +437,6 @@ namespace ColorPicker.Controls
         public ColorPickerAutomationPeer(ColorPickerControl owner)
             : base(owner)
         {
-        }
-
-        protected override string GetLocalizedControlTypeCore()
-        {
-            return ResourceLoaderInstance.GetString("Color_Picker_Control");
         }
     }
 }

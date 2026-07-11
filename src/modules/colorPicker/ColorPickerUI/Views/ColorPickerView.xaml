@@ -1,0 +1,72 @@
+﻿<UserControl
+    x:Class="ColorPicker.Views.ColorPickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:backdrops="using:Microsoft.PowerToys.Common.UI.Controls.Backdrops"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Padding="16">
+        <Grid
+            MinHeight="50"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="{StaticResource OverlayCornerRadius}"
+            Translation="0,0,32">
+            <Grid.Shadow>
+                <ThemeShadow />
+            </Grid.Shadow>
+            <SystemBackdropElement CornerRadius="{StaticResource OverlayCornerRadius}">
+                <SystemBackdropElement.SystemBackdrop>
+                    <backdrops:AlwaysActiveDesktopAcrylicBackdrop Kind="Default" />
+                </SystemBackdropElement.SystemBackdrop>
+            </SystemBackdropElement>
+            <Grid Margin="8" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border
+                    x:Name="ColorSwatch"
+                    Grid.RowSpan="2"
+                    Width="32"
+                    Height="32"
+                    VerticalAlignment="Stretch"
+                    Background="{Binding ColorBrush}"
+                    BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{ThemeResource ControlCornerRadius}" />
+                <StackPanel
+                    x:Name="TextPanel"
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical">
+                    <TextBlock
+                        x:Name="ColorTextBlock"
+                        AutomationProperties.LiveSetting="Assertive"
+                        FontWeight="SemiBold"
+                        Text="{Binding ColorText}" />
+                    <TextBlock
+                        x:Name="ColorNameTextBlock"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{Binding ColorName}"
+                        Visibility="Collapsed" />
+                </StackPanel>
+            </Grid>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="ColorNameStates">
+                    <VisualState x:Name="ColorNameHidden" />
+                    <VisualState x:Name="ColorNameVisible">
+                        <VisualState.StateTriggers>
+                            <StateTrigger IsActive="{Binding ShowColorName}" />
+                        </VisualState.StateTriggers>
+                        <VisualState.Setters>
+                            <Setter Target="TextPanel.Spacing" Value="4" />
+                            <Setter Target="ColorNameTextBlock.Visibility" Value="Visible" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -11,10 +11,11 @@ namespace ColorPicker
 {
     /// <summary>
     /// The color editor window. Uses a fixed-size <see cref="WinUIEx.WindowEx"/> with the native
-    /// WinUI title bar and a Mica backdrop instead of the WPF WindowChrome / DWM / custom-title-bar
+    /// WinUI <see cref="Microsoft.UI.Xaml.Controls.TitleBar"/> and a Mica backdrop instead of the
+    /// WPF WindowChrome / DWM / custom-title-bar
     /// machinery. Size, the non-resizable / non-maximizable / non-minimizable flags, always-on-top,
-    /// and the Mica backdrop are declared in XAML; only runtime-only concerns (localized title,
-    /// icon, centering, closing, activation) are set here.
+    /// and the Mica backdrop are declared in XAML; only runtime-only concerns (native title, icon,
+    /// centering, closing, activation) are set here.
     /// </summary>
     public sealed partial class ColorEditorWindow : WindowEx
     {
@@ -26,7 +27,10 @@ namespace ColorPicker
 
             _appStateHandler = appStateHandler;
 
-            var title = ResourceLoaderInstance.GetString("CP_Title");
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(AppTitleBar);
+
+            var title = AppTitleBar.Title;
             Title = title;
             AppWindow.Title = title;
 

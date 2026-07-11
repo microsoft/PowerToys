@@ -7,7 +7,6 @@ using System.ComponentModel;
 using ColorPicker.Helpers;
 using ColorPicker.ViewModels;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -23,21 +22,6 @@ namespace ColorPicker.Views
         {
             InitializeComponent();
             Loaded += OnLoaded;
-
-            // WPF set these via {x:Static p:Resources.*}; resolve them through the resource loader.
-            PickColorLabel.Text = ResourceLoaderInstance.GetString("New_Label");
-            AutomationProperties.SetName(PickColorButton, ResourceLoaderInstance.GetString("Pick_color"));
-            ToolTipService.SetToolTip(PickColorButton, ResourceLoaderInstance.GetString("Pick_color"));
-            AutomationProperties.SetName(HistoryColors, ResourceLoaderInstance.GetString("Color_History"));
-            AutomationProperties.SetName(OpenSettingsButton, ResourceLoaderInstance.GetString("Open_settings"));
-            ToolTipService.SetToolTip(OpenSettingsButton, ResourceLoaderInstance.GetString("Open_settings"));
-            RemoveMenuItem.Text = ResourceLoaderInstance.GetString("Remove");
-            ExportMenuItem.Text = ResourceLoaderInstance.GetString("Export_by");
-            ExportByColorMenuItem.Text = ResourceLoaderInstance.GetString("Export_by_color");
-            ExportByFormatMenuItem.Text = ResourceLoaderInstance.GetString("Export_by_format");
-            NoColorsLabel.Text = ResourceLoaderInstance.GetString("No_colors_yet");
-            CopiedToClipboardLabel.Text = ResourceLoaderInstance.GetString("Copied_to_clipboard");
-            AutomationProperties.SetName(CopiedToClipboardLabel, ResourceLoaderInstance.GetString("Copied_to_clipboard"));
         }
 
         private void HistoryContextFlyout_Opening(object sender, object e)

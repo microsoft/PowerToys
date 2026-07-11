@@ -5,16 +5,17 @@
     xmlns:controls="using:ColorPicker.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ColorPicker.Models"
     x:Name="colorEditorControl"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
+            <RowDefinition Height="56" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--  Side bar  -->
-        <Grid Margin="16,16,16,0">
+        <Grid Margin="16,0,16,8" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -22,30 +23,25 @@
             </Grid.ColumnDefinitions>
             <Button
                 x:Name="PickColorButton"
-                Height="36"
-                VerticalAlignment="Top"
+                x:Uid="Pick_color"
+                VerticalAlignment="Center"
                 Command="{Binding OpenColorPickerCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        FontFamily="{StaticResource IconFontFamily}"
-                        Text="&#xef3c;" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xef3c;" />
                     <TextBlock
                         x:Name="PickColorLabel"
-                        Margin="8,0,0,0"
+                        x:Uid="New_Label"
                         VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
             <ListView
                 x:Name="HistoryColors"
+                x:Uid="Color_History"
                 Grid.Column="1"
-                Height="48"
-                Margin="12,4,12,0"
-                VerticalAlignment="Top"
-                VerticalContentAlignment="Top"
-                Background="Transparent"
-                BorderBrush="Transparent"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
+                ItemContainerTransitions="{x:Null}"
                 ItemsSource="{Binding ColorsHistory}"
                 PointerWheelChanged="HistoryColors_OnPointerWheelChanged"
                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
@@ -60,30 +56,33 @@
                     <MenuFlyout x:Name="HistoryContextFlyout" Opening="HistoryContextFlyout_Opening">
                         <MenuFlyoutItem
                             x:Name="RemoveMenuItem"
+                            x:Uid="Remove"
                             Command="{Binding RemoveColorsCommand}"
                             CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
                             <MenuFlyoutItem.Icon>
-                                <FontIcon FontFamily="{StaticResource IconFontFamily}" Glyph="&#xE74D;" />
+                                <FontIcon Glyph="&#xE74D;" />
                             </MenuFlyoutItem.Icon>
                         </MenuFlyoutItem>
-                        <MenuFlyoutSubItem x:Name="ExportMenuItem">
+                        <MenuFlyoutSubItem x:Name="ExportMenuItem" x:Uid="Export_by">
                             <MenuFlyoutSubItem.Icon>
-                                <FontIcon FontFamily="{StaticResource IconFontFamily}" Glyph="&#xEDE1;" />
+                                <FontIcon Glyph="&#xEDE1;" />
                             </MenuFlyoutSubItem.Icon>
                             <MenuFlyoutItem
                                 x:Name="ExportByColorMenuItem"
+                                x:Uid="Export_by_color"
                                 Command="{Binding ExportColorsGroupedByColorCommand}"
                                 CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{StaticResource IconFontFamily}" Glyph="&#xE790;" />
+                                    <FontIcon Glyph="&#xE790;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                             <MenuFlyoutItem
                                 x:Name="ExportByFormatMenuItem"
+                                x:Uid="Export_by_format"
                                 Command="{Binding ExportColorsGroupedByFormatCommand}"
                                 CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon FontFamily="{StaticResource IconFontFamily}" Glyph="&#xE943;" />
+                                    <FontIcon Glyph="&#xE943;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
                         </MenuFlyoutSubItem>
@@ -106,26 +105,36 @@
                 </ListView.ItemTemplate>
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="Margin" Value="4,0" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
-                                    <Grid x:Name="RootGrid" Height="30">
-                                        <Ellipse
-                                            x:Name="SelectionStroke"
-                                            Width="28"
-                                            Height="28"
-                                            Fill="Transparent"
-                                            Opacity="0"
-                                            StrokeThickness="2">
-                                            <Ellipse.Stroke>
-                                                <SolidColorBrush Color="{Binding}" />
-                                            </Ellipse.Stroke>
-                                        </Ellipse>
+                                    <Grid
+                                        x:Name="RootGrid"
+                                        Width="32"
+                                        Height="32">
                                         <ContentPresenter
                                             x:Name="ContentPresenter"
                                             Margin="{TemplateBinding Padding}"
                                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                        <Ellipse
+                                            x:Name="SelectionStroke"
+                                            Width="28"
+                                            Height="28"
+                                            DataContext="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Fill="Transparent"
+                                            StrokeThickness="2"
+                                            Visibility="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource bool2VisibilityConverter}}">
+                                            <Ellipse.Stroke>
+                                                <SolidColorBrush Color="{Binding}" />
+                                            </Ellipse.Stroke>
+                                        </Ellipse>
                                         <VisualStateManager.VisualStateGroups>
                                             <VisualStateGroup x:Name="CommonStates">
                                                 <VisualState x:Name="Normal" />
@@ -140,22 +149,13 @@
                                                         <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="Selected">
-                                                    <VisualState.Setters>
-                                                        <Setter Target="SelectionStroke.Opacity" Value="1" />
-                                                    </VisualState.Setters>
-                                                </VisualState>
+                                                <VisualState x:Name="Selected" />
                                                 <VisualState x:Name="PointerOverSelected">
                                                     <VisualState.Setters>
-                                                        <Setter Target="SelectionStroke.Opacity" Value="1" />
                                                         <Setter Target="RootGrid.Opacity" Value="0.8" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="PressedSelected">
-                                                    <VisualState.Setters>
-                                                        <Setter Target="SelectionStroke.Opacity" Value="1" />
-                                                    </VisualState.Setters>
-                                                </VisualState>
+                                                <VisualState x:Name="PressedSelected" />
                                             </VisualStateGroup>
                                         </VisualStateManager.VisualStateGroups>
                                     </Grid>
@@ -168,39 +168,30 @@
 
             <Button
                 x:Name="OpenSettingsButton"
+                x:Uid="Open_settings"
                 Grid.Column="2"
-                Width="36"
-                Height="36"
-                Padding="0"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Background="Transparent"
-                BorderBrush="Transparent"
+                VerticalAlignment="Center"
                 Command="{Binding OpenSettingsCommand}"
                 Style="{StaticResource SubtleButtonStyle}">
                 <Button.Content>
-                    <TextBlock
-                        FontFamily="{StaticResource IconFontFamily}"
-                        FontSize="18"
-                        Text="&#xE713;" />
+                    <FontIcon FontSize="16" Glyph="&#xE713;" />
                 </Button.Content>
             </Button>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="40" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border
-                Grid.ColumnSpan="2"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0" />
-
             <controls:ColorPickerControl
-                Margin="16,0,12,0"
-                HorizontalAlignment="Center"
+                Margin="16,0,0,0"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 IsTabStop="True"
                 SelectedColor="{Binding SelectedColor}"
@@ -208,30 +199,51 @@
                 Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}" />
 
             <!--  Main grid  -->
-            <Grid
-                Grid.Column="1"
-                Margin="0,2,0,0"
-                Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
-                <ScrollViewer IsTabStop="False">
-                    <ItemsControl ItemsSource="{Binding ColorRepresentations}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <controls:ColorFormatControl
-                                    ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
-                                    ColorFormatModel="{Binding}"
-                                    CopiedToClipboardLabel="{Binding ElementName=CopiedToClipboardLabel}"
-                                    SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" />
+            <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+                <ScrollViewer Padding="12" IsTabStop="False">
+                    <ItemsRepeater ItemsSource="{Binding ColorRepresentations}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="8" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:ColorFormatModel">
+                                <Grid
+                                    Height="48"
+                                    Padding="12,0,4,0"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind FormatName, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        x:Uid="Color_Code"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ColorText, Mode=OneWay}" />
+
+                                    <controls:CopyButton
+                                        x:Uid="Copy_to_clipboard"
+                                        Grid.Column="2"
+                                        AutomationProperties.HelpText="{x:Bind CopyHelperText, Mode=OneWay}"
+                                        Command="{Binding DataContext.CopyColorTextCommand, ElementName=colorEditorControl}"
+                                        CommandParameter="{x:Bind}"
+                                        Content="&#xE8C8;" />
+                                </Grid>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel
-                                    Margin="0,14,12,10"
-                                    Background="Transparent"
-                                    Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
                 </ScrollViewer>
             </Grid>
         </Grid>
@@ -244,13 +256,13 @@
             VerticalAlignment="Center"
             Orientation="Vertical"
             Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
-            <TextBlock
+            <FontIcon
                 HorizontalAlignment="Center"
-                FontFamily="{StaticResource IconFontFamily}"
                 FontSize="36"
-                Text="&#xEF3C;" />
+                Glyph="&#xEF3C;" />
             <TextBlock
                 x:Name="NoColorsLabel"
+                x:Uid="No_colors_yet"
                 Margin="24,16,24,16"
                 HorizontalAlignment="Center"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -258,34 +270,5 @@
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
-
-        <Border
-            x:Name="CopiedBorderIndicator"
-            Grid.Row="1"
-            Grid.ColumnSpan="2"
-            Height="0"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Bottom"
-            Background="{ThemeResource AccentFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            Opacity="0">
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <TextBlock
-                Margin="0,0,8,0"
-                FontFamily="{StaticResource IconFontFamily}"
-                FontSize="20"
-                Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
-                Text="&#xE8C8;" />
-                <TextBlock
-                x:Name="CopiedToClipboardLabel"
-                AutomationProperties.LiveSetting="Assertive"
-                    FontSize="16"
-                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-            </StackPanel>
-        </Border>
     </Grid>
 </UserControl>

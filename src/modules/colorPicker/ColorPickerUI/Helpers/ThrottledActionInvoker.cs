@@ -66,7 +66,7 @@ namespace ColorPicker.Helpers
                 _timer.Stop();
 
                 // Capture and clear the field before invoking so this process-lifetime singleton does
-                // not pin the last-scheduled closure (and the ColorFormatControl it captures) alive
+                // not pin the last-scheduled closure and its captured target alive
                 // until the next ScheduleAction call.
                 var action = _actionToRun;
                 _actionToRun = null;

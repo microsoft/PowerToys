@@ -16,9 +16,27 @@
     <winuiex:WindowEx.SystemBackdrop>
         <MicaBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
-    <ContentControl
-        x:Name="ContentPresenter"
-        HorizontalContentAlignment="Stretch"
-        VerticalContentAlignment="Stretch"
-        x:FieldModifier="public" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TitleBar
+            x:Name="AppTitleBar"
+            x:Uid="CP_Title"
+            IsBackButtonVisible="False"
+            IsPaneToggleButtonVisible="False">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/ColorPicker/icon.ico" />
+            </TitleBar.IconSource>
+        </TitleBar>
+
+        <ContentControl
+            x:Name="ContentPresenter"
+            x:FieldModifier="public"
+            Grid.Row="1"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch" />
+    </Grid>
 </winuiex:WindowEx>

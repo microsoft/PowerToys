@@ -9,5 +9,5 @@
     xmlns:views="using:ColorPicker.Views"
     IsAlwaysOnTop="True"
     mc:Ignorable="d">
-    <views:MainView x:Name="MainViewControl" x:FieldModifier="public" />
+    <views:ColorPickerView x:Name="ColorPickerViewControl" x:FieldModifier="public" />
 </common:TransparentWindow>

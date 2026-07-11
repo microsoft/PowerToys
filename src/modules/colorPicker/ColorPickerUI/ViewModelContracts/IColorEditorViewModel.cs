@@ -21,6 +21,8 @@ namespace ColorPicker.ViewModelContracts
 
         ICommand OpenSettingsCommand { get; }
 
+        ICommand CopyColorTextCommand { get; }
+
         ICommand RemoveColorsCommand { get; }
 
         ICommand ExportColorsGroupedByColorCommand { get; }
