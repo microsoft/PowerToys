@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    TEMPLATE — copy into src/modules/<Module>/Tests/<Module>.UITests.Next/ and replace:
+      __MODULE__   ->  the module name used for the project/assembly (e.g. ColorPicker, ScreenRuler)
+      the ProjectReference ..\ depth  ->  enough ..\ to reach src\common from THIS folder
+                                          (see references/project-setup.md §2)
+    For a GREENFIELD project (module had no UI tests), rename the file and AssemblyName to drop
+    the ".Next" suffix (use <Module>.UITests).
+  -->
+
+  <!-- REQUIRED: must be the first line after <Project>. CI (verifyCommonProps.ps1) audits this. -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
+    <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
+
+    <!--
+      Microsoft.Testing.Platform: the modern runner Directory.Build.props enables repo-wide, so this
+      test class appears in Test Explorer AND can be run via `dotnet test` / `vstest.console.exe`.
+    -->
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- UI tests need a live desktop; never run them as part of MSBuild. -->
+    <RunVSTest>false</RunVSTest>
+  </PropertyGroup>
+
+  <!--
+    Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests build pipeline
+    (CopyFiles glob **/<plat>/<config>/tests/**) picks it up, matching the other *.UITests projects.
+    Without this it builds to bin\ and is never staged into the artifact.
+  -->
+  <PropertyGroup>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\__MODULE__.UITests.Next\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reference the NEW harness only. NEVER reference ..\common\UITestAutomation\UITestAutomation.csproj.
+         Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+  </ItemGroup>
+</Project>

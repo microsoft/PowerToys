@@ -42,6 +42,13 @@ public static class WinappCli
     /// </summary>
     private static readonly TimeSpan DefaultInvokeTimeout = TimeSpan.FromSeconds(60);
 
+    /// <summary>
+    /// Serializes winapp.exe invocations. Two CLI UIA clients querying the same target at once can hang
+    /// each other (worst against the live Measure Tool overlay), and the stray-process guard in
+    /// <see cref="Invoke"/> must never race a legitimate in-flight call — so invocations run one at a time.
+    /// </summary>
+    private static readonly object InvokeGate = new();
+
     public sealed record Result(int ExitCode, string StdOut, string StdErr, IReadOnlyList<string> Args)
     {
         public bool Success => ExitCode == 0;
@@ -110,6 +117,21 @@ public static class WinappCli
     /// <summary>Run <c>winapp.exe</c> with the given arguments. Returns exit code and captured streams.</summary>
     public static Result Invoke(params string[] args)
     {
+        // Serialize invocations so two winapp.exe never run at once — and so the stray-process guard in
+        // InvokeLocked can't race a legitimate in-flight call.
+        lock (InvokeGate)
+        {
+            return InvokeLocked(args);
+        }
+    }
+
+    private static Result InvokeLocked(string[] args)
+    {
+        // Before spinning up a new winapp.exe, kill any stray one left behind by a previous
+        // timed-out/killed call: a second UIA client against the same target (e.g. the live Measure
+        // Tool overlay) can wedge the new call. Serialized, so anything alive here is a leftover.
+        KillStrayWinappProcesses(args);
+
         var psi = new ProcessStartInfo
         {
             FileName = ExecutablePath.Value,
@@ -130,6 +152,7 @@ public static class WinappCli
             psi.ArgumentList.Add(a);
         }
 
+        var overall = Stopwatch.StartNew();
         using var p = StartWinappProcess(psi);
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
@@ -140,7 +163,9 @@ public static class WinappCli
         {
             try
             {
+                Console.WriteLine($"[winappcli] killing hung call after {timeout.TotalSeconds:0}s: winapp {string.Join(' ', args)}");
                 p.Kill(entireProcessTree: true);
+                p.WaitForExit(5000); // make sure the tree is actually gone before returning
             }
             catch
             {
@@ -151,15 +176,77 @@ public static class WinappCli
                 $"winapp {string.Join(' ', args)} did not exit within {timeout.TotalSeconds:0}s and was killed.");
         }
 
-        // Process exited within budget; this parameterless overload also blocks until the async
-        // stdout/stderr reads reach EOF, so the captured streams are complete.
-        p.WaitForExit();
+        // winapp.exe itself has now exited; capture how long that took.
+        var processMs = overall.ElapsedMilliseconds;
+
+        // Bound the wait for the async stdout/stderr readers. The output is already buffered, but a
+        // child that inherited the redirected pipe keeps the handle open so the readers (and a
+        // parameterless WaitForExit) never see EOF. After a short grace, clear strays — invocations are
+        // serialized, so any winapp.exe alive now is that child — which closes the pipe so the reads
+        // finish with the full, already-captured output.
+        if (!Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(2)))
+        {
+            Console.WriteLine(
+                "[winappcli] output stalled after winapp.exe exit (lingering child held the pipe); clearing strays for: " +
+                $"winapp {string.Join(' ', args)}");
+            KillStrayWinappProcesses(args);
+            Task.WhenAll(stdoutTask, stderrTask).Wait(TimeSpan.FromSeconds(3));
+        }
+
+        // Surface where slow calls actually spend their time — winapp.exe runtime vs waiting for the
+        // output streams to drain after it exited — so a slow timestamp can be attributed correctly.
+        var totalMs = overall.ElapsedMilliseconds;
+        if (totalMs > 2000)
+        {
+            Console.WriteLine(
+                $"[winappcli] slow call {totalMs}ms (winapp.exe ran {processMs}ms, output drain {totalMs - processMs}ms): " +
+                $"winapp {string.Join(' ', args)}");
+        }
 
         return new Result(
             p.ExitCode,
-            stdoutTask.GetAwaiter().GetResult(),
-            stderrTask.GetAwaiter().GetResult(),
+            stdoutTask.IsCompletedSuccessfully ? stdoutTask.Result : string.Empty,
+            stderrTask.IsCompletedSuccessfully ? stderrTask.Result : string.Empty,
             args);
+    }
+
+    /// <summary>
+    /// Kill any <c>winapp.exe</c> still running before a new invocation (or when output stalls). A stray
+    /// instance is a leftover from a previous call that timed out / didn't fully exit; a second UIA
+    /// client against the same target can wedge a call, so we clear them and log each kill. Best-effort
+    /// and bounded — never throws.
+    /// </summary>
+    private static void KillStrayWinappProcesses(string[] args)
+    {
+        Process[] strays;
+        try
+        {
+            strays = Process.GetProcessesByName("winapp");
+        }
+        catch
+        {
+            return;
+        }
+
+        foreach (var stray in strays)
+        {
+            try
+            {
+                Console.WriteLine(
+                    $"[winappcli] found a stray winapp.exe (pid {stray.Id}) still running; killing it before: " +
+                    $"winapp {string.Join(' ', args)}");
+                stray.Kill(entireProcessTree: true);
+                stray.WaitForExit(5000);
+            }
+            catch
+            {
+                // The stray may have exited on its own between enumeration and kill — fine.
+            }
+            finally
+            {
+                stray.Dispose();
+            }
+        }
     }
 
     /// <summary>
