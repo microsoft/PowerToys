@@ -4,7 +4,10 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -160,6 +163,7 @@ public abstract partial class AppExtensionHost : IExtensionHost
         }
 
         Debug.WriteLine(message.Message);
+        WeakReferenceMessenger.Default.Send(new PlayAudioCueMessage(AudioCue.StatusMessage));
 
         _ = Task.Run(() =>
         {

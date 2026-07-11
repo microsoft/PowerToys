@@ -253,6 +253,10 @@ public partial class App : Application, IDisposable
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
+        services.AddSingleton<IAudioCueService>(sp =>
+            new AudioCueService(
+                sp.GetRequiredService<ISettingsService>(),
+                dispatcherQueue));
 
         services.AddIconServices(dispatcherQueue);
     }

@@ -20,6 +20,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -72,6 +73,7 @@ public sealed partial class MainWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly IThemeService _themeService;
+    private readonly IAudioCueService _audioCueService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
     private readonly List<long> _breakthroughTimestamps = [];
 
@@ -111,6 +113,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+    private bool _hasBeenShown;
 
     private DevRibbon? _devRibbon;
 
@@ -130,6 +133,7 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Tick += OnAutoGoHomeTimerOnTick;
 
         _themeService = App.Current.Services.GetRequiredService<IThemeService>();
+        _audioCueService = App.Current.Services.GetRequiredService<IAudioCueService>();
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
         _windowThemeSynchronizer = new WindowThemeSynchronizer(_themeService, this);
 
@@ -778,6 +782,7 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
     {
+        var shouldPlayOpenCue = !IsVisibleToUser;
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
@@ -844,6 +849,11 @@ public sealed partial class MainWindow : WindowEx,
         // Treat the overall show/hide lifecycle as the authoritative
         // visibility transition, not the lower-level cloak/uncloak helpers.
         SetIsVisibleToUser(true);
+        _hasBeenShown = true;
+        if (shouldPlayOpenCue)
+        {
+            _audioCueService.Play(AudioCue.OpenPalette);
+        }
     }
 
     private static void RedrawWindow(HWND hwnd)
@@ -1015,6 +1025,8 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HideWindow()
     {
+        var shouldPlayHideCue = _hasBeenShown && IsVisibleToUser;
+
         // Cloak our HWND to avoid all animations.
         var cloaked = Cloak();
 
@@ -1040,6 +1052,10 @@ public sealed partial class MainWindow : WindowEx,
         // Treat the overall show/hide lifecycle as the authoritative
         // visibility transition, not the lower-level cloak/uncloak helpers.
         SetIsVisibleToUser(false);
+        if (shouldPlayHideCue)
+        {
+            _audioCueService.Play(AudioCue.HidePalette);
+        }
 
         WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 

@@ -8,6 +8,9 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -32,6 +35,7 @@ public sealed partial class ToastWindow : TransparentWindow,
     private static readonly TimeSpan VisibleDuration = TimeSpan.FromMilliseconds(2500);
 
     private readonly DispatcherQueueTimer _autoHideTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+    private readonly IAudioCueService _audioCueService = App.Current.Services.GetRequiredService<IAudioCueService>();
 
     public ToastViewModel ViewModel { get; } = new();
 
@@ -61,6 +65,7 @@ public sealed partial class ToastWindow : TransparentWindow,
                 _autoHideTimer.Stop();
                 PositionBottomCenter();
                 Show();
+                _audioCueService.Play(AudioCue.ToastShown);
                 _autoHideTimer.Debounce(Hide, interval: VisibleDuration, immediate: false);
             });
     }
