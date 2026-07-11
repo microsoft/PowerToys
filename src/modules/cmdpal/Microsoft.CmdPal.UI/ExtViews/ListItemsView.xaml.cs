@@ -10,6 +10,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -39,6 +40,8 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private readonly IAudioCueService _audioCueService = App.Current.Services.GetRequiredService<IAudioCueService>();
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -238,6 +241,7 @@ public sealed partial class ListItemsView : UserControl,
 
         // Do not Task.Run (it reorders selection updates).
         vm?.UpdateSelectedItemCommand.Execute(li);
+        _audioCueService.Play(AudioCue.SelectionChange);
 
         // Only scroll when explicitly requested by navigation/click handlers.
         if (_scrollOnNextSelectionChange)

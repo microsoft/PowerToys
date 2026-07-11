@@ -292,6 +292,87 @@
   <data name="builtin_settings_appearance_pick_background_image_title" xml:space="preserve">
     <value>Pick background image</value>
   </data>
+  <data name="audio_cue_event_action_execution" xml:space="preserve">
+    <value>Action execution</value>
+  </data>
+  <data name="audio_cue_event_confirmation_popup" xml:space="preserve">
+    <value>Confirmation popup</value>
+  </data>
+  <data name="audio_cue_event_focus_change" xml:space="preserve">
+    <value>Focus change</value>
+  </data>
+  <data name="audio_cue_event_hide_palette" xml:space="preserve">
+    <value>Hide palette</value>
+  </data>
+  <data name="audio_cue_event_open_palette" xml:space="preserve">
+    <value>Open palette</value>
+  </data>
+  <data name="audio_cue_event_page_transition_back" xml:space="preserve">
+    <value>Page transition back</value>
+  </data>
+  <data name="audio_cue_event_page_transition_forward" xml:space="preserve">
+    <value>Page transition forward</value>
+  </data>
+  <data name="audio_cue_event_selection_change" xml:space="preserve">
+    <value>Selection change</value>
+  </data>
+  <data name="audio_cue_event_status_message" xml:space="preserve">
+    <value>Status message</value>
+  </data>
+  <data name="audio_cue_event_toast_shown" xml:space="preserve">
+    <value>Toast notification</value>
+  </data>
+  <data name="audio_cue_sound_breeze" xml:space="preserve">
+    <value>Breeze</value>
+  </data>
+  <data name="audio_cue_sound_calm" xml:space="preserve">
+    <value>Calm</value>
+  </data>
+  <data name="audio_cue_sound_custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="audio_cue_sound_electric" xml:space="preserve">
+    <value>Electric</value>
+  </data>
+  <data name="audio_cue_sound_glass" xml:space="preserve">
+    <value>Glass</value>
+  </data>
+  <data name="audio_cue_sound_none" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="audio_cue_sound_selector_name" xml:space="preserve">
+    <value>{0} sound</value>
+    <comment>{0}=audio cue event name</comment>
+  </data>
+  <data name="audio_cue_sound_retro" xml:space="preserve">
+    <value>Retro</value>
+  </data>
+  <data name="audio_cue_sound_soft" xml:space="preserve">
+    <value>Soft</value>
+  </data>
+  <data name="audio_cue_sound_system_asterisk" xml:space="preserve">
+    <value>Asterisk (system)</value>
+    <comment>Windows system sound name</comment>
+  </data>
+  <data name="audio_cue_sound_system_ding" xml:space="preserve">
+    <value>Ding (system)</value>
+    <comment>Windows system sound name</comment>
+  </data>
+  <data name="audio_cue_sound_system_exclamation" xml:space="preserve">
+    <value>Exclamation (system)</value>
+    <comment>Windows system sound name</comment>
+  </data>
+  <data name="audio_cue_sound_system_navigation" xml:space="preserve">
+    <value>Navigation click (system)</value>
+    <comment>Windows system sound name</comment>
+  </data>
+  <data name="audio_cue_sound_system_notification" xml:space="preserve">
+    <value>Notification (system)</value>
+    <comment>Windows system sound name</comment>
+  </data>
+  <data name="audio_cue_sound_warm" xml:space="preserve">
+    <value>Warm</value>
+  </data>
   <data name="fallbacks" xml:space="preserve">
     <value>Fallbacks</value>
   </data>

@@ -135,6 +135,13 @@ public record SettingsModel
     public int BackdropOpacity { get; init; } = 100;
 
     // </Theme settings>
+    private AudioCueSettings? _audioCues = new();
+
+    public AudioCueSettings AudioCues
+    {
+        get => _audioCues ?? new();
+        init => _audioCues = value;
+    }
 
     // Extension Gallery settings
 
@@ -426,6 +433,9 @@ public record SettingsModel
 [JsonSerializable(typeof(Color))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
+[JsonSerializable(typeof(AudioCueSettings))]
+[JsonSerializable(typeof(AudioCueEffectSettings))]
+[JsonSerializable(typeof(Dictionary<string, AudioCueEffectSettings>), TypeInfoPropertyName = "AudioCueEffectsDictionary")]
 [JsonSerializable(typeof(WindowPosition))]
 [JsonSerializable(typeof(AppStateModel))]
 [JsonSerializable(typeof(RecentCommandsManager))]

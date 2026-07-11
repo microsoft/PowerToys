@@ -40,6 +40,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
     public DockAppearanceSettingsViewModel DockAppearance { get; }
 
+    public AudioCueSettingsViewModel AudioCues { get; }
+
     public HotkeySettings? Hotkey
     {
         get => _settingsService.Settings.Hotkey;
@@ -314,6 +316,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
 
         Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
+        AudioCues = new AudioCueSettingsViewModel(settingsService);
 
         PopulateMonitorConfigs();
 

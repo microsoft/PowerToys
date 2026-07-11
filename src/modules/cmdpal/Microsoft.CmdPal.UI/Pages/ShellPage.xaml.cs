@@ -17,6 +17,7 @@ using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
@@ -69,6 +70,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private readonly ISettingsService _settingsService;
+    private readonly IAudioCueService _audioCueService;
 
     // The last compact-mode setting we reacted to. Lets us ignore hot-reloads of unrelated
     // settings and only re-evaluate the layout when compact mode itself changes.
@@ -87,6 +89,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // one-shot flag suppresses that select for the expand-driven load.
     private bool _suppressSelectOnNextLoad;
     private bool _pendingTopBarFocusRestore;
+    private bool _hasCompletedInitialNavigation;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -127,10 +130,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public ShellPage()
     {
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _audioCueService = App.Current.Services.GetRequiredService<IAudioCueService>();
         _compactMode = _settingsService.Settings.CompactMode;
         this.ExpandedMode = !_compactMode;
 
         this.InitializeComponent();
+
+        // Bubbling focus event covers every control in the palette; the cue itself is
+        // opt-in (see AudioCueCatalog) and throttled, so this stays cheap when disabled.
+        this.GotFocus += ShellPage_GotFocus;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -220,6 +228,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             // Also hide our details pane about here, if we had one
             HideDetails();
+
+            if (_hasCompletedInitialNavigation && HostWindow?.IsVisibleToUser == true)
+            {
+                _audioCueService.Play(AudioCue.PageTransitionForward);
+            }
 
             // Navigate to the appropriate host page for that VM
             RootFrame.Navigate(
@@ -361,6 +374,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // };
         }
 
+        _audioCueService.Play(AudioCue.ConfirmationPopup);
         var result = await dialog.ShowAsync();
         if (result == ContentDialogResult.Primary)
         {
@@ -552,7 +566,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(GoBackMessage message) => _ = DispatcherQueue.TryEnqueue(() => GoBack(message.WithAnimation, message.FocusSearch));
 
-    private void GoBack(bool withAnimation = true, bool focusSearch = true)
+    private void ShellPage_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (HostWindow?.IsVisibleToUser == true)
+        {
+            _audioCueService.Play(AudioCue.FocusChange);
+        }
+    }
+
+    private void GoBack(bool withAnimation = true, bool focusSearch = true, bool playAudioCue = true)
     {
         HideDetails();
 
@@ -566,6 +588,11 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // However, we do a good job here, see ForwardStack.Clear below, and BackStack.Clear above about managing that.
         if (RootFrame.CanGoBack)
         {
+            if (playAudioCue && HostWindow?.IsVisibleToUser == true)
+            {
+                _audioCueService.Play(AudioCue.PageTransitionBack);
+            }
+
             if (withAnimation)
             {
                 RootFrame.GoBack();
@@ -601,10 +628,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
+        var navigatedBack = RootFrame.CanGoBack;
         while (RootFrame.CanGoBack)
         {
             // don't focus on each step, just at the end
-            GoBack(withAnimation, focusSearch: false);
+            GoBack(withAnimation, focusSearch: false, playAudioCue: false);
+        }
+
+        if (navigatedBack && HostWindow?.IsVisibleToUser == true)
+        {
+            _audioCueService.Play(AudioCue.PageTransitionBack);
         }
 
         // focus search box, even if we were already home (but only when the palette is on
@@ -716,6 +749,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             {
                 case PageViewModel pageViewModel:
                     ViewModel.CurrentPage = pageViewModel;
+                    _hasCompletedInitialNavigation = true;
                     break;
                 case ShellViewModel:
                     // This one is an exception, for now (LoadingPage is tied to ShellViewModel,

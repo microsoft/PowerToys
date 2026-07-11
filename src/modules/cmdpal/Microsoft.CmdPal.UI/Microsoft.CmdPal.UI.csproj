@@ -241,6 +241,12 @@
     <Content Update="Assets\WinGetLogo.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Sounds\*.wav">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DeploymentContent>true</DeploymentContent>
+    </Content>
+    <None Include="Assets\Sounds\Generate-Sounds.ps1" />
+    <None Include="Assets\Sounds\Validate-Sounds.ps1" />
   </ItemGroup>
 
   <ItemGroup>

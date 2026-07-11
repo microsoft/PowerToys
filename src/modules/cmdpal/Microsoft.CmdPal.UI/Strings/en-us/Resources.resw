@@ -925,6 +925,36 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_MicaBackdrop_DescriptionTextBlock.Text" xml:space="preserve">
     <value>Mica automatically adapts to your desktop wallpaper. Custom backgrounds and opacity settings are not available for this material.</value>
   </data>
+  <data name="AudioCueSettingsHeader.Text" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="Settings_AudioCues_SettingsExpander.Header" xml:space="preserve">
+    <value>Audio cues</value>
+  </data>
+  <data name="Settings_AudioCues_SettingsExpander.Description" xml:space="preserve">
+    <value>Play short sounds for Command Palette interactions. Choose an available sound for each effect.</value>
+  </data>
+  <data name="Settings_AudioCues_GlobalToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Enable audio cues</value>
+  </data>
+  <data name="Settings_AudioCues_Volume_SettingsCard.Header" xml:space="preserve">
+    <value>Effects volume</value>
+  </data>
+  <data name="Settings_AudioCues_Volume_SettingsCard.Description" xml:space="preserve">
+    <value>Set the volume used by all audio cues and previews</value>
+  </data>
+  <data name="Settings_AudioCues_PreviewButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Preview this audio cue</value>
+  </data>
+  <data name="Settings_AudioCues_PreviewButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Preview sound</value>
+  </data>
+  <data name="Settings_AudioCues_BrowseButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Choose a custom sound file for this audio cue</value>
+  </data>
+  <data name="Settings_AudioCues_BrowseButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Choose sound file</value>
+  </data>
   <data name="Settings_AppearancePage_OpenCommandPaletteButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette</value>
     <comment>Button to open the Command Palette window to preview appearance changes</comment>

@@ -6,9 +6,11 @@
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:local="using:Microsoft.CmdPal.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
@@ -281,6 +283,72 @@
                             </controls:SettingsCard>
 
                         </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
+
+                    <!--  'Audio cues' section  -->
+
+                    <TextBlock x:Uid="AudioCueSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsExpander
+                        x:Uid="Settings_AudioCues_SettingsExpander"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE767;}"
+                        ItemsSource="{x:Bind ViewModel.AudioCues.ExpanderItems, Mode=OneWay}">
+                        <ToggleSwitch
+                            x:Uid="Settings_AudioCues_GlobalToggle"
+                            AutomationProperties.AutomationId="CmdPal_AppearancePage_AudioCuesEnabled"
+                            IsOn="{x:Bind ViewModel.AudioCues.IsEnabled, Mode=TwoWay}" />
+                        <controls:SettingsExpander.ItemTemplate>
+                            <local:AudioCueSettingsTemplateSelector>
+                                <local:AudioCueSettingsTemplateSelector.Volume>
+                                    <DataTemplate x:DataType="viewModels:AudioCueSettingsViewModel">
+                                        <controls:SettingsCard x:Uid="Settings_AudioCues_Volume_SettingsCard">
+                                            <Slider
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                AutomationProperties.AutomationId="CmdPal_AppearancePage_AudioCuesVolume"
+                                                Maximum="100"
+                                                Minimum="0"
+                                                StepFrequency="1"
+                                                Value="{x:Bind Volume, Mode=TwoWay}" />
+                                        </controls:SettingsCard>
+                                    </DataTemplate>
+                                </local:AudioCueSettingsTemplateSelector.Volume>
+                                <local:AudioCueSettingsTemplateSelector.Effect>
+                                    <DataTemplate x:DataType="viewModels:AudioCueEffectSettingsViewModel">
+                                        <controls:SettingsCard Description="{x:Bind CustomSoundDescription, Mode=OneWay}" Header="{x:Bind DisplayName}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <ptControls:AudioCueSoundComboBox
+                                                    MinWidth="140"
+                                                    AutomationProperties.AutomationId="{x:Bind SoundSelectorAutomationId}"
+                                                    AutomationProperties.Name="{x:Bind SoundSelectorName}"
+                                                    DisplayMemberPath="DisplayName"
+                                                    ItemsSource="{x:Bind SoundOptions, Mode=OneWay}"
+                                                    OptionHighlighted="AudioCueSound_OptionHighlighted"
+                                                    SelectedItem="{x:Bind SelectedSound, Mode=TwoWay}"
+                                                    SelectionChanged="AudioCueSound_SelectionChanged"
+                                                    Tag="{x:Bind}" />
+                                                <Button
+                                                    x:Uid="Settings_AudioCues_BrowseButton"
+                                                    AutomationProperties.AutomationId="{x:Bind BrowseAutomationId}"
+                                                    Click="BrowseCustomAudioCue_Click"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}"
+                                                    Visibility="{x:Bind IsCustomSelected, Mode=OneWay}">
+                                                    <FontIcon Glyph="&#xE8E5;" />
+                                                </Button>
+                                                <Button
+                                                    x:Uid="Settings_AudioCues_PreviewButton"
+                                                    AutomationProperties.AutomationId="{x:Bind PreviewAutomationId}"
+                                                    Click="PreviewAudioCue_Click"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind Cue}">
+                                                    <FontIcon Glyph="&#xE768;" />
+                                                </Button>
+                                            </StackPanel>
+                                        </controls:SettingsCard>
+                                    </DataTemplate>
+                                </local:AudioCueSettingsTemplateSelector.Effect>
+                            </local:AudioCueSettingsTemplateSelector>
+                        </controls:SettingsExpander.ItemTemplate>
                     </controls:SettingsExpander>
 
                     <!--  'Behavior' section  -->
