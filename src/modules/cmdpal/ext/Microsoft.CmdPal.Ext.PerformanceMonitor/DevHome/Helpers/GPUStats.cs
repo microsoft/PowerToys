@@ -78,7 +78,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         DiscoverGPUsFromCounters();
     }
 
-    public void DiscoverGPUsFromCounters()
+    private void DiscoverGPUsFromCounters()
     {
         if (_gpuEngineCategory is null)
         {
@@ -298,9 +298,11 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
         _adaptersByLuid.TryGetValue(luidKey, out var info);
 
-        // Hide software adapters (e.g. the Microsoft Basic Render Driver / WARP):
-        // they report 3D engine activity but aren't a GPU the user cares about.
-        if (info.IsSoftware)
+        // Hide software adapters (Microsoft Basic Render Driver / WARP) only when
+        // there's a real GPU to show instead. On VMs / RDP / headless boxes the
+        // software adapter is the only one present, so keep it rather than
+        // leaving the band with nothing to display.
+        if (info.IsSoftware && HasHardwareAdapter())
         {
             return;
         }
@@ -310,6 +312,23 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             : info.Description;
 
         _stats.Add(new Data() { LuidKey = luidKey, Name = name });
+    }
+
+    // True if DXGI reports at least one non-software adapter in the system. DXGI
+    // enumerates hardware adapters regardless of power state, so this stays
+    // correct even when the real GPU is idle and hasn't produced counters yet.
+    // Caller must hold _statsLock (reads _adaptersByLuid).
+    private bool HasHardwareAdapter()
+    {
+        foreach (var adapter in _adaptersByLuid.Values)
+        {
+            if (!adapter.IsSoftware)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal string CreateGPUImageUrl(int gpuChartIndex)

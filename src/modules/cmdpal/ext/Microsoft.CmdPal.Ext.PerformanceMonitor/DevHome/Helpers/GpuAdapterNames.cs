@@ -20,9 +20,6 @@ namespace CoreWidgetProvider.Helpers;
 /// </summary>
 internal static class GpuAdapterNames
 {
-    // DXGI_ADAPTER_FLAG_SOFTWARE - marks the Microsoft Basic Render Driver (WARP).
-    private const uint DxgiAdapterFlagSoftware = 0x2;
-
     internal readonly record struct AdapterInfo(string Description, bool IsSoftware);
 
     /// <summary>
@@ -66,7 +63,7 @@ internal static class GpuAdapterNames
                     }
 
                     var luidKey = ((long)(uint)desc.AdapterLuid.HighPart << 32) | desc.AdapterLuid.LowPart;
-                    var isSoftware = ((uint)desc.Flags & DxgiAdapterFlagSoftware) != 0;
+                    var isSoftware = (desc.Flags & DXGI_ADAPTER_FLAG.DXGI_ADAPTER_FLAG_SOFTWARE) != 0;
 
                     // __char_128.ToString() is generated as
                     // AsReadOnlySpan().SliceAtNull().ToString(), so it already
