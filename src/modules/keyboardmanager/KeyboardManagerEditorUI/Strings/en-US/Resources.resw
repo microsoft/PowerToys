@@ -501,4 +501,72 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
+  <data name="FilterSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search remappings</value>
+    <comment>Placeholder text for the search box that filters the remapping list</comment>
+  </data>
+  <data name="FilterWinToggle.Content" xml:space="preserve">
+    <value>Win</value>
+    <comment>Toggle button that filters the list to remappings using the Windows modifier key</comment>
+  </data>
+  <data name="FilterCtrlToggle.Content" xml:space="preserve">
+    <value>Ctrl</value>
+    <comment>Toggle button that filters the list to remappings using the Ctrl modifier key</comment>
+  </data>
+  <data name="FilterAltToggle.Content" xml:space="preserve">
+    <value>Alt</value>
+    <comment>Toggle button that filters the list to remappings using the Alt modifier key</comment>
+  </data>
+  <data name="FilterShiftToggle.Content" xml:space="preserve">
+    <value>Shift</value>
+    <comment>Toggle button that filters the list to remappings using the Shift modifier key</comment>
+  </data>
+  <data name="FilterClearBtn.Content" xml:space="preserve">
+    <value>Clear filters</value>
+    <comment>Button that clears all active search and filter selections</comment>
+  </data>
+  <data name="FilterClearBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Clear all search and filter selections</value>
+  </data>
+  <data name="SelectModeToggle.Content" xml:space="preserve">
+    <value>Select</value>
+    <comment>Toggle button that turns on multi-select mode so several remappings can be deleted at once</comment>
+  </data>
+  <data name="SelectModeToggle.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Select multiple remappings to delete them together</value>
+  </data>
+  <data name="FilterApp_AllApps" xml:space="preserve">
+    <value>All apps</value>
+    <comment>App filter option that shows remappings for every app</comment>
+  </data>
+  <data name="FilterApp_GlobalOnly" xml:space="preserve">
+    <value>Global only</value>
+    <comment>App filter option that shows only remappings that are not tied to a specific app</comment>
+  </data>
+  <data name="BulkDelete_SelectedFormat" xml:space="preserve">
+    <value>Delete selected ({0})</value>
+    <comment>{0} is the number of selected remappings. Label of the button that deletes them.</comment>
+  </data>
+  <data name="BulkDeleteConfirmationDialog.Title" xml:space="preserve">
+    <value>Delete selected remappings?</value>
+  </data>
+  <data name="BulkDeleteConfirmationDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="BulkDeleteConfirmationDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="BulkDeleteConfirmation_Format" xml:space="preserve">
+    <value>You are about to delete {0} remappings. This cannot be undone.</value>
+    <comment>{0} is the number of remappings to delete</comment>
+  </data>
+  <data name="NoResultsTitle.Text" xml:space="preserve">
+    <value>No remappings match your filters</value>
+  </data>
+  <data name="NoResultsDescription.Text" xml:space="preserve">
+    <value>Try changing the search text or clearing the filters.</value>
+  </data>
+  <data name="NoResultsClearBtn.Content" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
 </root>
