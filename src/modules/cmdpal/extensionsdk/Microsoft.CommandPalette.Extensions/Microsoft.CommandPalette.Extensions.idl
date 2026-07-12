@@ -97,6 +97,11 @@ namespace Microsoft.CommandPalette.Extensions
         ICommandResult Result { get; };
     }
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IToastArgs2 requires IToastArgs{
+        IIconInfo Icon { get; };
+        ICommand Command { get; };
+    }
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IConfirmationArgs requires ICommandResultArgs{
         String Title { get; };
         String Description { get; };

@@ -73,6 +73,13 @@ jobs:
 
               const itemType = issue.pull_request ? 'Pull request' : 'Issue';
 
+              // Skip pull requests that already have labels applied.
+              if (issue.pull_request && issue.labels && issue.labels.length > 0) {
+                const existingLabels = issue.labels.map(l => l.name).join(', ');
+                console.log(`${itemType} #${issueNumber} already has labels (${existingLabels}); skipping.`);
+                return;
+              }
+
               const title = issue.title ?? '';
               const body  = issue.body  ?? '';
 
