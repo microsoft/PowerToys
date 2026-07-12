@@ -12,6 +12,7 @@
 #include "MouseButtonLockCore.h"
 
 #include <atomic>
+#include <cmath>
 #include <thread>
 
 // Mouse Button Lock
@@ -63,13 +64,15 @@ namespace
     constexpr ULONG_PTR INJECTION_TAG = 0x57494E4D;
 
     // Default values mirror the C# MouseButtonLockProperties defaults.
-    constexpr int DEFAULT_HOLD_DURATION_MS = 300;
+    constexpr int DEFAULT_HOLD_DURATION_MS = 1200;
     constexpr int DEFAULT_MOVE_CANCEL_PIXELS = 5;
 
     // Accepted ranges when reading from settings.json. The Settings UI already constrains these,
     // but a hand-edited file could carry out-of-range or non-finite values, so clamp on read.
-    // A hold of 0 would latch every ordinary click; a huge hold would make locking unreachable.
-    constexpr int MIN_HOLD_DURATION_MS = 50;
+    // The 200 ms floor matches Windows' built-in ClickLock minimum and keeps a hold clear of the
+    // ordinary-click duration band (~100-350 ms) so a stray click can't latch; a huge hold would
+    // make locking unreachable, hence the ceiling.
+    constexpr int MIN_HOLD_DURATION_MS = 200;
     constexpr int MAX_HOLD_DURATION_MS = 60000;
     constexpr int MAX_MOVE_CANCEL_PIXELS = 10000;
 
@@ -330,9 +333,16 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
         }
         try
         {
-            // GetNamedNumber yields a double; clamp into range BEFORE the cast so an out-of-range
-            // or non-finite value can't produce an undefined double-to-int conversion.
+            // GetNamedNumber yields a double. NaN compares false against both bounds, so it would
+            // slip past the range checks below and make static_cast<int> undefined; reject any
+            // non-finite value outright and keep the previous value. Finite out-of-range values are
+            // clamped BEFORE the cast so the conversion is always defined.
             double raw = properties.GetNamedObject(key).GetNamedNumber(JSON_KEY_VALUE);
+            if (!std::isfinite(raw))
+            {
+                Logger::warn(L"Ignoring non-finite int setting; keeping previous value.");
+                return;
+            }
             if (raw < minValue)
             {
                 raw = minValue;

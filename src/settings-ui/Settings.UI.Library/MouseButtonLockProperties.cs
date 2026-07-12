@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LmbLockEnabled = new BoolProperty(false);
             RmbLockEnabled = new BoolProperty(true);
             MmbLockEnabled = new BoolProperty(false);
-            HoldDurationMs = new IntProperty(300);
+            HoldDurationMs = new IntProperty(1200);
             MoveCancelEnabled = new BoolProperty(true);
             MoveCancelPixels = new IntProperty(5);
         }

@@ -35,7 +35,9 @@ namespace mousebuttonlock
         bool lmbEnabled = false;
         bool rmbEnabled = true;
         bool mmbEnabled = false;
-        int holdDurationMs = 300;
+        // Matches Windows' built-in ClickLock default (1200 ms). Every field is overwritten from
+        // settings in production (SettingsSnapshot), so this default only surfaces in tests.
+        int holdDurationMs = 1200;
         bool moveCancelEnabled = true;
         int moveCancelPixels = 5;
     };

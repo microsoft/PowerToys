@@ -140,7 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             MouseButtonLockSettingsConfig.Properties.LmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
-            MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(300);
+            MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(1200);
             MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
 

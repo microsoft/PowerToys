@@ -30,7 +30,7 @@ Stored at `%LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json`. Pr
 | `lmb_lock_enabled` | bool | `false` | Lock the left (primary) mouse button. Off by default; overlaps Windows' own left-button ClickLock |
 | `rmb_lock_enabled` | bool | `true` | Lock the right mouse button |
 | `mmb_lock_enabled` | bool | `false` | Lock the middle mouse button |
-| `hold_duration_ms` | int | `300` | How long to hold before locking |
+| `hold_duration_ms` | int | `1200` | How long to hold before locking. Default and range mirror Windows' built-in ClickLock (1200 ms, 200-2200 ms) |
 | `move_cancel_enabled` | bool | `true` | Cancel locking if the cursor moves during the hold |
 | `move_cancel_pixels` | int | `5` | Dead-zone radius for move-cancel |
 
@@ -55,7 +55,7 @@ Settings  >  Mouse utilities
 |   [x]   Lock the right mouse button                                    |
 |   [ ]   Lock the middle mouse button                                   |
 |                                                                        |
-|   Hold duration (ms)                                     [   300  ^v ] |
+|   Hold duration (ms)                           1200 ms  [=====O======] |
 |      How long to hold a button before it locks                         |
 |                                                                        |
 |   [x]   Cancel locking if the cursor moves while holding               |
@@ -66,7 +66,7 @@ Settings  >  Mouse utilities
 +------------------------------------------------------------------------+
 ```
 
-Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[ 300 ^v ]` number box with spinner. The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
+Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[=====O======]` slider with its live value label (e.g. `1200 ms`), `[ 5 ^v ]` number box with spinner. The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
 
 | Control | Type (UI range) | Setting key | ViewModel property | Default |
 | --- | --- | --- | --- | --- |
@@ -74,11 +74,11 @@ Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section,
 | Lock the left (primary) mouse button | checkbox | `lmb_lock_enabled` | `MouseButtonLockLmbEnabled` | off |
 | Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
 | Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
-| Hold duration (ms) | number box (50-2000, step 50) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 300 |
+| Hold duration (ms) | slider (200-2200 ms, snaps in 200 ms steps) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 1200 |
 | Cancel locking if the cursor moves while holding | checkbox | `move_cancel_enabled` | `MouseButtonLockMoveCancelEnabled` | on |
 | Move cancel distance (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
 
-The UI caps hold duration at 2000 ms; the C++ `parse_settings` clamps a hand-edited file more loosely (50-60000 ms). The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the two number boxes carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
+The UI slider snaps (`SnapsTo="StepValues"`, `StepFrequency="200"`) to 200 ms increments, i.e. the same 11 values as Windows' built-in ClickLock slider: each step is 200 ms, the middle value is the 1200 ms default, so Short = 200 ms and Long = 2200 ms. Visual tick marks were dropped (they looked cluttered inside the settings card, and `SnapsTo` gives the notch-to-notch feel without them); the live "N ms" label beside the track (`MillisecondsLabelConverter`) shows the current value. The C++ `parse_settings` clamps a hand-edited file to 200-60000 ms (same 200 ms floor, a looser ceiling) and accepts any value in that range, so a hand-edited file is not restricted to the 11 slider steps. The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the hold-duration slider and the move-cancel number box carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
 
 ## Safety
 
@@ -114,7 +114,7 @@ PowerToys requires fuzzing for user-input modules (`AGENTS.md`: "New modules han
 - Registration: listed in `PowerToys.slnx` under `/modules/MouseUtils/Tests/` (ARM64 build disabled, which OneFuzz does not support) and emitted to `x64\Release\tests\MouseButtonLock.FuzzTests\`, so the OneFuzz pipeline's existing `**/tests/*.FuzzTests/**` glob (`.pipelines/v2/templates/job-fuzz.yml`) picks it up with no pipeline edit. `OneFuzzConfig.json` uses the repo's v3 schema (the shape `PowerRename` uses, not the older `fuzzers[]` example in `fuzzingtesting.md`); the `adoTemplate` `AssignedTo` / notification fields carry the repo defaults and must be set by whoever owns the OneFuzz submission.
 - Local run: the ASan toolchain is available via the "C++ AddressSanitizer" VS component. `build_mbl_fuzzer.cmd` (in the gitignored `x64\Release\`) compiles the target with `/fsanitize=address /fsanitize=fuzzer` directly through cl.exe (bypassing the repo's vcpkg-gated msbuild) and copies the ASan runtime DLL beside it. A 26-second run executed 815,727 inputs with zero crashes and no ASan findings.
 - Hardening it surfaced: `Engine::CheckMoveCancel` computed the squared cursor displacement as `long long` (`dx*dx + dy*dy`), which can overflow signed 64-bit for extreme coordinates. Production coordinates are screen-bounded so it never triggered, but the comparison is now done in `double` to stay defined across the full coordinate range the fuzzer drives. All unit tests still pass after the change.
-- Possible second target (not yet added): the settings-JSON path (`parse_settings` in `dllmain.cpp`). It needs the WinRT JSON parser and SettingsAPI wired in, so it is heavier than the header-only engine target, which already covers the core user-input state machine.
+- Possible second target (not yet added): the settings-JSON path (`parse_settings` in `dllmain.cpp`). It needs the WinRT JSON parser and SettingsAPI wired in, so it is heavier than the header-only engine target, which already covers the core user-input state machine. The one known sharp edge there, `readInt` accepting a non-finite `GetNamedNumber` result (a NaN slips past the `< min` / `> max` clamp and makes `static_cast<int>` undefined), is now guarded explicitly: non-finite values are rejected and the previous value kept. Raised in PR review (#49279).
 
 ## Open items / not yet wired
 
@@ -134,7 +134,7 @@ Still open, roughly by priority. Items 1-3 and 7 were found by auditing the modu
 
 6. **Release the lock on session lock / fast-user-switch** (`WTSRegisterSessionNotification` -> `ReleaseAll`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing.
 
-7. **`trace.cpp` include style (minor nit).** `trace.cpp` uses a deep relative `#include "../../../../common/Telemetry/TraceBase.h"`; `trace.h` and the sibling MouseUtils modules use the angle-bracket `<common/Telemetry/TraceBase.h>` form, which the project's include dirs already resolve. Inherited from CursorWrap, the module this was copied from. Compiles either way.
+7. **`trace.cpp` include style (done).** `trace.cpp` no longer carries the redundant deep relative `#include "../../../../common/Telemetry/TraceBase.h"`; it includes `trace.h`, which already pulls in `<common/Telemetry/TraceBase.h>` via the angle-bracket form the sibling MouseUtils modules use and the project's include dirs resolve. Raised in PR review (#49279).
 
 8. **ETW telemetry** beyond the enable/disable event.
 

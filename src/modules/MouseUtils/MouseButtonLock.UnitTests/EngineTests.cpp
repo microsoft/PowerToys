@@ -26,10 +26,15 @@ namespace
         }
     };
 
-    // Defaults mirror the shipping defaults: RMB on, MMB off, 300 ms hold, move-cancel on at 5 px.
+    // Test baseline: RMB on, MMB off, move-cancel on at 5 px. The hold is pinned to 300 ms here so a
+    // release at tick 400 reads as "past threshold" and the hold-mechanics tests below stay concise.
+    // The shipping default is 1200 ms (see MouseButtonLockCore.h / DEFAULT_HOLD_DURATION_MS, matching
+    // Windows ClickLock); tests that pivot on the exact threshold set holdDurationMs themselves.
     Settings DefaultSettings()
     {
-        return Settings{};
+        Settings s;
+        s.holdDurationMs = 300;
+        return s;
     }
 }
 

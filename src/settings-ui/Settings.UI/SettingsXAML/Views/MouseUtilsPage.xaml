@@ -16,6 +16,7 @@
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
+        <converters:MillisecondsLabelConverter x:Key="MillisecondsLabelConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -96,15 +97,25 @@
                                 <CheckBox x:Uid="MouseUtils_MouseButtonLock_MmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockMmbEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="MouseUtilsMouseButtonLockHoldDuration" x:Uid="MouseUtils_MouseButtonLock_HoldDuration">
-                                <NumberBox
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
-                                    LargeChange="100"
-                                    Maximum="2000"
-                                    Minimum="50"
-                                    SmallChange="50"
-                                    SpinButtonPlacementMode="Compact"
-                                    Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <TextBlock
+                                        MinWidth="56"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=OneWay, Converter={StaticResource MillisecondsLabelConverter}}"
+                                        TextAlignment="Right" />
+                                    <Slider
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
+                                        LargeChange="400"
+                                        Maximum="2200"
+                                        Minimum="200"
+                                        SmallChange="200"
+                                        SnapsTo="StepValues"
+                                        StepFrequency="200"
+                                        ThumbToolTipValueConverter="{StaticResource MillisecondsLabelConverter}"
+                                        Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
+                                </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_MouseButtonLock_MoveCancel" IsChecked="{x:Bind ViewModel.MouseButtonLockMoveCancelEnabled, Mode=TwoWay}" />
