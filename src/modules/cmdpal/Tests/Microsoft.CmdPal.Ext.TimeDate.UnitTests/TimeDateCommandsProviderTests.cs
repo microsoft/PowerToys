@@ -57,10 +57,12 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsNotNull(commands);
-            Assert.AreEqual(1, commands.Length);
+            Assert.AreEqual(2, commands.Length);
             Assert.IsNotNull(commands[0]);
             Assert.IsNotNull(commands[0].Title);
             Assert.IsNotNull(commands[0].Icon);
+            Assert.AreEqual(Resources.timedate_custom_clocks_manage, commands[1].Title);
+            Assert.IsNotNull(commands[1].Icon);
         }
 
         [TestMethod]

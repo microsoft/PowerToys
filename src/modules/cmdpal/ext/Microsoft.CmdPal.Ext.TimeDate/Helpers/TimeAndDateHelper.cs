@@ -32,9 +32,6 @@ internal static class TimeAndDateHelper
     private static readonly Regex _regexCustomDateTimeExc = new Regex(@"(?<!\\)EXC");
     private static readonly Regex _regexCustomDateTimeExf = new Regex(@"(?<!\\)EXF");
 
-    private static readonly CompositeFormat _dockWeekNumberFormat = CompositeFormat.Parse(Resources.timedate_dock_week_number_format);
-    private static readonly CompositeFormat _dockDateWeekFormat = CompositeFormat.Parse(Resources.timedate_dock_date_week_format);
-
     private const long UnixTimeSecondsMin = -62135596800;
     private const long UnixTimeSecondsMax = 253402300799;
     private const long UnixTimeMillisecondsMin = -62135596800000;
@@ -443,117 +440,6 @@ internal static class TimeAndDateHelper
     internal static int GetWeekOfYear(DateTime date, ISettingsInterface settings)
     {
         return GetWeekOfYear(date, GetCalendarWeekRule(settings.FirstWeekOfYear), GetFirstDayOfWeek(settings.FirstDayOfWeek));
-    }
-
-    /// <summary>
-    /// Returns the ISO 8601 week date representation (e.g. "2026-W28-1"). Always
-    /// calculated with ISOWeek, so the string is ISO compliant independent of the
-    /// first week/first day settings; the week-based year differs from the calendar
-    /// year at year boundaries.
-    /// </summary>
-    /// <param name="date">Date to format.</param>
-    /// <returns>The ISO 8601 week date string.</returns>
-    internal static string GetIsoWeekDateString(DateTime date)
-    {
-        var isoDayOfWeek = date.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)date.DayOfWeek;
-        return string.Format(CultureInfo.InvariantCulture, "{0:D4}-W{1:D2}-{2}", ISOWeek.GetYear(date), ISOWeek.GetWeekOfYear(date), isoDayOfWeek);
-    }
-
-    /// <summary>
-    /// Builds the date line (subtitle) of the Clock dock band for the given date and settings.
-    /// </summary>
-    /// <param name="dateTimeNow">Date/time to render (local time).</param>
-    /// <param name="settings">Plugin settings.</param>
-    /// <returns>The rendered date line.</returns>
-    internal static string GetClockBandDateLine(DateTime dateTimeNow, ISettingsInterface settings)
-    {
-        var dateString = dateTimeNow.ToString(GetStringFormat(FormatStringType.Date, false, false), CultureInfo.CurrentCulture);
-
-        switch (settings.ClockBandDateMode)
-        {
-            case 1: // Date and week number (e.g. "06.07.2026 · W28")
-                var weekString = string.Format(CultureInfo.CurrentCulture, _dockWeekNumberFormat, GetWeekOfYear(dateTimeNow, settings));
-                return string.Format(CultureInfo.CurrentCulture, _dockDateWeekFormat, dateString, weekString);
-            case 2: // ISO 8601 week date (e.g. "2026-W28-1"), always ISO compliant
-                return GetIsoWeekDateString(dateTimeNow);
-            case 3: // Custom format; an empty format falls back to the system date, an
-                    // invalid one renders as raw text (same recovery as the search results)
-                // WOY uses the first week/first day settings here, matching the
-                // behavior of the 'Custom formats' search results. The IWOY, IWYR,
-                // IWYY and IDOW tokens are always ISO 8601.
-                var firstWeekRule = GetCalendarWeekRule(settings.FirstWeekOfYear);
-                var firstDayOfTheWeek = GetFirstDayOfWeek(settings.FirstDayOfWeek);
-                var weekOfYear = GetWeekOfYear(dateTimeNow, firstWeekRule, firstDayOfTheWeek);
-                return TryFormatCustomString(dateTimeNow, settings.CustomDateFormatInClockBand, weekOfYear, firstWeekRule, firstDayOfTheWeek, out var customString)
-                    ? customString
-                    : dateString;
-            default: // System date only
-                return dateString;
-        }
-    }
-
-    /// <summary>
-    /// Formats a single date/time using our custom format syntax (same syntax as the
-    /// 'Custom formats' setting). Used for the Clock dock band.
-    /// </summary>
-    /// <param name="dateTimeNow">Date/time to format (local time).</param>
-    /// <param name="formatSyntax">Format definition, optionally prefixed with "UTC:".</param>
-    /// <param name="weekOfYear">Week number to use for the WOY placeholder.</param>
-    /// <param name="firstWeekRule">Rule for the first week of the year.</param>
-    /// <param name="firstDayOfTheWeek">First day of the week.</param>
-    /// <param name="result">The formatted string on success.</param>
-    /// <returns>True on success; otherwise, false (e.g. empty format).</returns>
-    internal static bool TryFormatCustomString(DateTime dateTimeNow, string formatSyntax, int weekOfYear, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek, out string result)
-    {
-        result = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(formatSyntax))
-        {
-            return false;
-        }
-
-        try
-        {
-            var calendar = CultureInfo.CurrentCulture.Calendar;
-            var dateTimeNowUtc = dateTimeNow.ToUniversalTime();
-            var dtObject = dateTimeNow;
-            var syntax = formatSyntax.Trim();
-
-            if (syntax.StartsWith("UTC:", StringComparison.InvariantCulture))
-            {
-                dtObject = dateTimeNowUtc;
-                syntax = syntax.Substring(4);
-            }
-
-            var unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
-            var unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();
-            var eraShort = DateTimeFormatInfo.CurrentInfo.GetAbbreviatedEraName(calendar.GetEra(dateTimeNow));
-            var value = ConvertToCustomFormat(dtObject, unixTimestamp, unixTimestampMilliseconds, weekOfYear, eraShort, syntax, firstWeekRule, firstDayOfTheWeek);
-            try
-            {
-                value = dtObject.ToString(value, CultureInfo.CurrentCulture);
-            }
-            catch (Exception ex)
-            {
-                // Same recovery as the custom format search results: a single token
-                // like 'IDOW' can replace to a string that no longer parses as a
-                // .NET date format (a lone digit is read as a standard format
-                // specifier and throws), and for genuinely broken formats showing
-                // the raw pattern in the dock tells the user their format is wrong
-                // instead of being indistinguishable from an ignored setting. Fix
-                // the escape backslashes and use the replaced string as-is.
-                Logger.LogWarning($"Showing the custom Clock band format '{formatSyntax}' as text: {ex.Message}");
-                value = Regex.Replace(value, @"(?<!\\)\\", string.Empty).Replace("\\\\", "\\");
-            }
-
-            result = value;
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to format the custom Clock band format '{formatSyntax}': {ex.Message}");
-            return false;
-        }
     }
 
     /// <summary>
