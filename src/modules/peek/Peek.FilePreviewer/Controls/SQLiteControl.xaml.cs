@@ -13,36 +13,36 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Peek.Common.Helpers;
 using Peek.FilePreviewer.Previewers;
-using Peek.FilePreviewer.Previewers.SQLitePreviewer;
-using Peek.FilePreviewer.Previewers.SQLitePreviewer.Models;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
 namespace Peek.FilePreviewer.Controls
 {
-    public sealed partial class SQLiteControl : UserControl
+    public sealed partial class SqliteControl : UserControl
     {
         public static readonly DependencyProperty TablesProperty = DependencyProperty.Register(
             nameof(Tables),
-            typeof(ObservableCollection<SQLiteTableInfo>),
-            typeof(SQLitePreviewer),
+            typeof(ObservableCollection<SqliteTableInfo>),
+            typeof(SqlitePreviewer),
             new PropertyMetadata(null, OnTablesPropertyChanged));
 
         public static readonly DependencyProperty LoadingStateProperty = DependencyProperty.Register(
             nameof(LoadingState),
             typeof(PreviewState),
-            typeof(SQLitePreviewer),
+            typeof(SqlitePreviewer),
             new PropertyMetadata(PreviewState.Uninitialized));
 
         public static readonly DependencyProperty TableCountProperty = DependencyProperty.Register(
             nameof(TableCount),
             typeof(string),
-            typeof(SQLitePreviewer),
+            typeof(SqlitePreviewer),
             new PropertyMetadata(null));
 
         private double _lastColumnAutoWidth = double.NaN;
 
-        public ObservableCollection<SQLiteTableInfo>? Tables
+        public ObservableCollection<SqliteTableInfo>? Tables
         {
-            get => (ObservableCollection<SQLiteTableInfo>?)GetValue(TablesProperty);
+            get => (ObservableCollection<SqliteTableInfo>?)GetValue(TablesProperty);
             set => SetValue(TablesProperty, value);
         }
 
@@ -58,16 +58,16 @@ namespace Peek.FilePreviewer.Controls
             set => SetValue(TableCountProperty, value);
         }
 
-        public SQLiteControl()
+        public SqliteControl()
         {
             this.InitializeComponent();
         }
 
         private static void OnTablesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var control = (SQLiteControl)d;
+            var control = (SqliteControl)d;
 
-            if (e.OldValue is ObservableCollection<SQLiteTableInfo> oldCollection)
+            if (e.OldValue is ObservableCollection<SqliteTableInfo> oldCollection)
             {
                 oldCollection.CollectionChanged -= control.OnTablesCollectionChanged;
             }
@@ -75,7 +75,7 @@ namespace Peek.FilePreviewer.Controls
             control.TableTreeView.RootNodes.Clear();
             control.ClearDataView();
 
-            if (e.NewValue is ObservableCollection<SQLiteTableInfo> newCollection)
+            if (e.NewValue is ObservableCollection<SqliteTableInfo> newCollection)
             {
                 newCollection.CollectionChanged += control.OnTablesCollectionChanged;
                 foreach (var table in newCollection)
@@ -89,7 +89,7 @@ namespace Peek.FilePreviewer.Controls
         {
             if (e.Action == NotifyCollectionChangedAction.Add && e.NewItems != null)
             {
-                foreach (SQLiteTableInfo table in e.NewItems)
+                foreach (SqliteTableInfo table in e.NewItems)
                 {
                     AddTableNode(table);
                 }
@@ -101,17 +101,17 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
-        private void AddTableNode(SQLiteTableInfo table)
+        private void AddTableNode(SqliteTableInfo table)
         {
             var tableNode = new TreeViewNode
             {
-                Content = new SQLiteTreeNode { Name = table.Name, Glyph = "\uE14E", Table = table, },
+                Content = new SqliteTreeNode { Name = table.Name, Glyph = "\uE14E", Table = table, },
             };
             foreach (var col in table.Columns)
             {
                 tableNode.Children.Add(new TreeViewNode
                 {
-                    Content = new SQLiteTreeNode { Name = col.DisplayText, Glyph = "\uE1C3", },
+                    Content = new SqliteTreeNode { Name = col.DisplayText, Glyph = "\uE1C3", },
                 });
             }
 
@@ -120,13 +120,13 @@ namespace Peek.FilePreviewer.Controls
 
         private void TableTreeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItem is TreeViewNode { Content: SQLiteTreeNode { Table: SQLiteTableInfo table } })
+            if (args.InvokedItem is TreeViewNode { Content: SqliteTreeNode { Table: SqliteTableInfo table } })
             {
                 ShowTableData(table);
             }
         }
 
-        private void ShowTableData(SQLiteTableInfo table)
+        private void ShowTableData(SqliteTableInfo table)
         {
             _lastColumnAutoWidth = double.NaN;
             TableDataGrid.Columns.Clear();
@@ -149,12 +149,12 @@ namespace Peek.FilePreviewer.Controls
             RecordCountText.Text = table.RowCount > table.Rows.Count
                 ? string.Format(
                     CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Row_Count_Truncated"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Row_Count_Truncated"),
                     table.Rows.Count,
                     table.RowCount)
                 : string.Format(
                     CultureInfo.CurrentCulture,
-                    ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Row_Count"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Row_Count"),
                     table.RowCount);
 
             RecordCountHeader.Visibility = Visibility.Visible;
@@ -210,13 +210,13 @@ namespace Peek.FilePreviewer.Controls
             NoSelectionText.Visibility = Visibility.Visible;
         }
 
-        public sealed class SQLiteTreeNode
+        public sealed class SqliteTreeNode
         {
             public string Name { get; set; } = string.Empty;
 
             public string Glyph { get; set; } = string.Empty;
 
-            public SQLiteTableInfo? Table { get; set; }
+            public SqliteTableInfo? Table { get; set; }
         }
     }
 }

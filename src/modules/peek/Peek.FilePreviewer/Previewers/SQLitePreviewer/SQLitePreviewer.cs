@@ -17,13 +17,13 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
-using Peek.FilePreviewer.Previewers.SQLitePreviewer.Helpers;
-using Peek.FilePreviewer.Previewers.SQLitePreviewer.Models;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer.Helpers;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 using Windows.Foundation;
 
-namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
+namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
 {
-    public partial class SQLitePreviewer : ObservableObject, ISQLitePreviewer
+    public partial class SqlitePreviewer : ObservableObject, ISqlitePreviewer
     {
         [ObservableProperty]
         private PreviewState _state;
@@ -31,7 +31,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
         [ObservableProperty]
         private string? _tableCountText;
 
-        public ObservableCollection<SQLiteTableInfo> Tables { get; } = [];
+        public ObservableCollection<SqliteTableInfo> Tables { get; } = [];
 
         private IFileSystemItem Item { get; }
 
@@ -39,7 +39,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
         private static readonly HashSet<string> _supportedFileTypes = [".db", ".sqlite", ".sqlite3"];
 
-        public SQLitePreviewer(IFileSystemItem file)
+        public SqlitePreviewer(IFileSystemItem file)
         {
             Item = file;
             Dispatcher = DispatcherQueue.GetForCurrentThread();
@@ -84,15 +84,15 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var tableInfo = new SQLiteTableInfo { Name = tableName };
+                var tableInfo = new SqliteTableInfo { Name = tableName };
 
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = $"PRAGMA table_info({SQLiteHelpers.QuoteIdentifier(tableName)});";
+                    cmd.CommandText = $"PRAGMA table_info({SqliteHelpers.QuoteIdentifier(tableName)});";
                     using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     while (await reader.ReadAsync(cancellationToken))
                     {
-                        tableInfo.Columns.Add(new SQLiteColumnInfo
+                        tableInfo.Columns.Add(new SqliteColumnInfo
                         {
                             Name = reader.GetString(1),
                             Type = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
@@ -104,15 +104,15 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
                 using (var cmd = connection.CreateCommand())
                 {
-                    SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
+                    SqliteHelpers.AssignBindingKeys(tableInfo.Columns);
 
-                    cmd.CommandText = $"SELECT COUNT(*) FROM {SQLiteHelpers.QuoteIdentifier(tableName)};";
+                    cmd.CommandText = $"SELECT COUNT(*) FROM {SqliteHelpers.QuoteIdentifier(tableName)};";
                     tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
                 }
 
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT * FROM {SQLiteHelpers.QuoteIdentifier(tableName)} LIMIT 200;";
+                    cmd.CommandText = $"SELECT * FROM {SqliteHelpers.QuoteIdentifier(tableName)} LIMIT 200;";
                     using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -132,7 +132,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
             TableCountText = string.Format(
                 CultureInfo.CurrentCulture,
-                ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Table_Count"),
+                ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Table_Count"),
                 tableNames.Count);
 
             State = PreviewState.Loaded;

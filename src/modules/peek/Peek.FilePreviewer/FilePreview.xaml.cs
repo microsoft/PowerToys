@@ -64,7 +64,7 @@ namespace Peek.FilePreviewer
         [NotifyPropertyChangedFor(nameof(AudioPreviewer))]
         [NotifyPropertyChangedFor(nameof(BrowserPreviewer))]
         [NotifyPropertyChangedFor(nameof(ArchivePreviewer))]
-        [NotifyPropertyChangedFor(nameof(SQLitePreviewer))]
+        [NotifyPropertyChangedFor(nameof(SqlitePreviewer))]
         [NotifyPropertyChangedFor(nameof(ShellPreviewHandlerPreviewer))]
         [NotifyPropertyChangedFor(nameof(DrivePreviewer))]
         [NotifyPropertyChangedFor(nameof(SpecialFolderPreviewer))]
@@ -119,7 +119,7 @@ namespace Peek.FilePreviewer
 
         public IArchivePreviewer? ArchivePreviewer => Previewer as IArchivePreviewer;
 
-        public ISQLitePreviewer? SQLitePreviewer => Previewer as ISQLitePreviewer;
+        public ISqlitePreviewer? SqlitePreviewer => Previewer as ISqlitePreviewer;
 
         public IShellPreviewHandlerPreviewer? ShellPreviewHandlerPreviewer => Previewer as IShellPreviewHandlerPreviewer;
 
@@ -241,7 +241,7 @@ namespace Peek.FilePreviewer
                 AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
-                SQLitePreview.Visibility = Visibility.Collapsed;
+                SqlitePreview.Visibility = Visibility.Collapsed;
                 DrivePreview.Visibility = Visibility.Collapsed;
                 UnsupportedFilePreview.Visibility = Visibility.Collapsed;
 
@@ -309,7 +309,7 @@ namespace Peek.FilePreviewer
             ImagePreview.Source = null;
             ArchivePreview.Source = null;
             BrowserPreview.Source = null;
-            SQLitePreview.Tables = null;
+            SqlitePreview.Tables = null;
             DrivePreview.Source = null;
 
             ShellPreviewHandlerPreviewer?.Clear();

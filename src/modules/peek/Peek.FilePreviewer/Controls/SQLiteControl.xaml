@@ -2,7 +2,7 @@
 <!--  Licensed under the MIT License. See LICENSE in the project root for license information.  -->
 
 <UserControl
-    x:Class="Peek.FilePreviewer.Controls.SQLiteControl"
+    x:Class="Peek.FilePreviewer.Controls.SqliteControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -111,7 +111,7 @@
                 VerticalAlignment="Center"
                 Spacing="16">
                 <FontIcon Glyph="&#xE14E;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock x:Uid="SQLite_NoTableSelected" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="Sqlite_NoTableSelected" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
         </Grid>
     </Grid>

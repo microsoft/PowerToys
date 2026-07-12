@@ -19,7 +19,7 @@
     <None Remove="Controls\BrowserControl.xaml" />
     <None Remove="Controls\DriveControl.xaml" />
     <None Remove="Controls\ShellPreviewHandlerControl.xaml" />
-    <None Remove="Controls\SQLiteControl.xaml" />
+    <None Remove="Controls\SqliteControl.xaml" />
     <None Remove="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml" />
     <None Remove="Controls\SpecialFolderPreview\SpecialFolderPreview.xaml" />
     <None Remove="Controls\UnsupportedFilePreview\FailedFallbackPreviewControl.xaml" />
@@ -93,7 +93,7 @@
     <Page Update="Controls\ArchiveControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Controls\SQLiteControl.xaml">
+    <Page Update="Controls\SqliteControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SpecialFolderPreview\SpecialFolderInformationalPreviewControl.xaml">

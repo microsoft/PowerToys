@@ -390,20 +390,20 @@
   <data name="VideoCodecStoreLink.Text" xml:space="preserve">
     <value>Search in Microsoft Store</value>
   </data>
-  <data name="SQLite_Table_Count" xml:space="preserve">
+  <data name="Sqlite_Table_Count" xml:space="preserve">
     <value>{0} tables</value>
-    <comment>{0} is the number of tables in the SQLite database</comment>
+    <comment>{0} is the number of tables in the Sqlite database</comment>
   </data>
-  <data name="SQLite_Row_Count" xml:space="preserve">
+  <data name="Sqlite_Row_Count" xml:space="preserve">
     <value>Records: {0}</value>
-    <comment>{0} is the number of rows in the selected SQLite table</comment>
+    <comment>{0} is the number of rows in the selected Sqlite table</comment>
   </data>
-  <data name="SQLite_Row_Count_Truncated" xml:space="preserve">
+  <data name="Sqlite_Row_Count_Truncated" xml:space="preserve">
     <value>Records: {0} of {1}</value>
     <comment>{0} is the number of rows shown (limited), {1} is the total row count</comment>
   </data>
-  <data name="SQLite_NoTableSelected.Text" xml:space="preserve">
+  <data name="Sqlite_NoTableSelected.Text" xml:space="preserve">
     <value>Select a table to view its data</value>
-    <comment>Placeholder shown in the SQLite previewer when no table is selected</comment>
+    <comment>Placeholder shown in the Sqlite previewer when no table is selected</comment>
   </data>
 </root>

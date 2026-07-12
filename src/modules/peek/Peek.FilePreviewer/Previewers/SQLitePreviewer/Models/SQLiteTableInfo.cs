@@ -4,13 +4,13 @@
 
 using System.Collections.Generic;
 
-namespace Peek.FilePreviewer.Previewers.SQLitePreviewer.Models
+namespace Peek.FilePreviewer.Previewers.SqlitePreviewer.Models
 {
-    public class SQLiteTableInfo
+    public class SqliteTableInfo
     {
         public string Name { get; set; } = string.Empty;
 
-        public List<SQLiteColumnInfo> Columns { get; set; } = new();
+        public List<SqliteColumnInfo> Columns { get; set; } = new();
 
         public long RowCount { get; set; }
 

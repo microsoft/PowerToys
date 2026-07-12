@@ -4,9 +4,9 @@
 
 using System.Text;
 
-namespace Peek.FilePreviewer.Previewers.SQLitePreviewer.Models
+namespace Peek.FilePreviewer.Previewers.SqlitePreviewer.Models
 {
-    public class SQLiteColumnInfo
+    public class SqliteColumnInfo
     {
         public string Name { get; set; } = string.Empty;
 
@@ -17,7 +17,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer.Models
         public bool IsNotNull { get; set; }
 
         /// <summary>
-        /// Sanitized key used for WinUI binding paths and row dictionary keys.
+        /// Gets or sets sanitized key used for WinUI binding paths and row dictionary keys.
         /// Computed after all columns are loaded to handle potential collisions.
         /// </summary>
         public string BindingKey { get; set; } = string.Empty;

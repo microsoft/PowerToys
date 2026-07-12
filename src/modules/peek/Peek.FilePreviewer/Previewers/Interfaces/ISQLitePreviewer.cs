@@ -5,13 +5,13 @@
 using System;
 using System.Collections.ObjectModel;
 
-using Peek.FilePreviewer.Previewers.SQLitePreviewer.Models;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
 namespace Peek.FilePreviewer.Previewers.Interfaces
 {
-    public interface ISQLitePreviewer : IPreviewer, IPreviewTarget, IDisposable
+    public interface ISqlitePreviewer : IPreviewer, IPreviewTarget, IDisposable
     {
-        ObservableCollection<SQLiteTableInfo> Tables { get; }
+        ObservableCollection<SqliteTableInfo> Tables { get; }
 
         string? TableCountText { get; }
     }

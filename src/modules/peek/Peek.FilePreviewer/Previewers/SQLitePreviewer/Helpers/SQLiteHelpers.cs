@@ -3,18 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using Peek.FilePreviewer.Previewers.SQLitePreviewer.Models;
+using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
-namespace Peek.FilePreviewer.Previewers.SQLitePreviewer.Helpers
+namespace Peek.FilePreviewer.Previewers.SqlitePreviewer.Helpers
 {
-    internal static class SQLiteHelpers
+    internal static class SqliteHelpers
     {
         internal static string QuoteIdentifier(string identifier)
         {
             return $"\"{identifier.Replace("\"", "\"\"")}\"";
         }
 
-        internal static void AssignBindingKeys(List<SQLiteColumnInfo> columns)
+        internal static void AssignBindingKeys(List<SqliteColumnInfo> columns)
         {
             var usedKeys = new HashSet<string>();
             foreach (var col in columns)

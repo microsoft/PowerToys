@@ -11,7 +11,7 @@ using Peek.FilePreviewer.Previewers.Archives;
 using Peek.FilePreviewer.Previewers.Drive;
 using Peek.FilePreviewer.Previewers.MediaPreviewer;
 using Peek.UI.Telemetry.Events;
-using SQLiteNS = Peek.FilePreviewer.Previewers.SQLitePreviewer;
+using SqliteNS = Peek.FilePreviewer.Previewers.SqlitePreviewer;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -42,9 +42,9 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new WebBrowserPreviewer(item, _previewSettings);
             }
-            else if (SQLiteNS.SQLitePreviewer.IsItemSupported(item))
+            else if (SqliteNS.SqlitePreviewer.IsItemSupported(item))
             {
-                return new SQLiteNS.SQLitePreviewer(item);
+                return new SqliteNS.SqlitePreviewer(item);
             }
             else if (ArchivePreviewer.IsItemSupported(item))
             {
