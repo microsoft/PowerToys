@@ -785,12 +785,15 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private static string FormatAsBitsPerSecString(float value)
     {
         // Kbps/Mbps/Gbps use SI decimal prefixes, so scale by 1000.
+        // The "< 999.5" thresholds (instead of "< 1000") roll a value over to the next unit
+        // when the "{0:0}" format would otherwise round it up to the base (e.g. 999.6 -> "1.0 Mbps",
+        // not "1000 Kbps").
         // Bytes to bits
         value *= 8;
 
         // bits to Kbits
         value /= 1000;
-        if (value < 1000)
+        if (value < 999.5f)
         {
             if (value < 100)
             {
@@ -802,7 +805,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
         // Kbits to Mbits
         value /= 1000;
-        if (value < 1000)
+        if (value < 999.5f)
         {
             if (value < 100)
             {
@@ -825,9 +828,12 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private static string FormatAsBytesPerSecString(float value)
     {
         // KB/s, MB/s and GB/s use SI decimal prefixes, so scale by 1000.
+        // The "< 999.5" thresholds (instead of "< 1000") roll a value over to the next unit
+        // when the "{0:0}" format would otherwise round it up to the base (e.g. 999.6 -> "1.0 MB/s",
+        // not "1000 KB/s").
         // Bytes to KB
         value /= 1000;
-        if (value < 1000)
+        if (value < 999.5f)
         {
             if (value < 100)
             {
@@ -839,7 +845,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
         // KB to MB
         value /= 1000;
-        if (value < 1000)
+        if (value < 999.5f)
         {
             if (value < 100)
             {
@@ -862,9 +868,12 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private static string FormatAsBinaryBytesPerSecString(float value)
     {
         // KiB/s, MiB/s and GiB/s use IEC binary prefixes, so scale by 1024.
+        // The "< 1023.5" thresholds (instead of "< 1024") roll a value over to the next unit
+        // when the "{0:0}" format would otherwise round it up to the base (e.g. 1023.6 -> "1.0 MiB/s",
+        // not "1024 KiB/s").
         // Bytes to KiB
         value /= 1024;
-        if (value < 1024)
+        if (value < 1023.5f)
         {
             if (value < 100)
             {
@@ -876,7 +885,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
         // KiB to MiB
         value /= 1024;
-        if (value < 1024)
+        if (value < 1023.5f)
         {
             if (value < 100)
             {
