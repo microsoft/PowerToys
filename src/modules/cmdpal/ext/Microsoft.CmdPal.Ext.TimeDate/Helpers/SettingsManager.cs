@@ -7,11 +7,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
-public class SettingsManager : JsonSettingsManager, ISettingsInterface
+public class SettingsManager : JsonSettingsManager, IDockClockSettings
 {
     // Line break character used in WinUI3 TextBox and TextBlock.
     private const char TEXTBOXNEWLINE = '\r';
@@ -19,6 +20,11 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     private const string CUSTOMFORMATPLACEHOLDER = "MyFormat=dd-MMM-yyyy\rMySecondFormat=dddd (Da\\y nu\\mber: DOW)\rMyUtcFormat=UTC:hh:mm:ss";
 
     private static readonly string _namespace = "timeDate";
+
+    private string _dockClockTitleFormat = "t";
+    private string _dockClockSubtitleFormat = "d";
+
+    internal event EventHandler? DockClockFormatsChanged;
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
@@ -31,6 +37,13 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     };
 
     private static readonly List<ChoiceSetSetting.Choice> _firstDayOfWeekChoices = GetFirstDayOfWeekChoices();
+
+    private static readonly List<ChoiceSetSetting.Choice> _dockClockClickActionChoices = new()
+    {
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_default, "default"),
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_notification_center, "notificationCenter"),
+        new ChoiceSetSetting.Choice(Resources.timedate_dock_clock_click_action_all_clocks, "allClocks"),
+    };
 
     private static List<ChoiceSetSetting.Choice> GetFirstDayOfWeekChoices()
     {
@@ -75,29 +88,23 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_timedate_SettingFirstDayOfWeek,
         _firstDayOfWeekChoices);
 
-    private readonly ToggleSetting _enableFallbackItems = new(
-        Namespaced(nameof(EnableFallbackItems)),
-        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems,
-        Resources.Microsoft_plugin_timedate_SettingEnableFallbackItems_Description,
-        true);
-
     private readonly ToggleSetting _timeWithSeconds = new(
         Namespaced(nameof(TimeWithSecond)),
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds,
         Resources.Microsoft_plugin_timedate_SettingTimeWithSeconds_Description,
         false); // TODO -- double check default value
 
-    private readonly ToggleSetting _dockClockWithSeconds = new(
-        Namespaced(nameof(DockClockWithSecond)),
-        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds,
-        Resources.Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description,
-        false);
-
     private readonly ToggleSetting _dateWithWeekday = new(
         Namespaced(nameof(DateWithWeekday)),
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday,
         Resources.Microsoft_plugin_timedate_SettingDateWithWeekday_Description,
         false); // TODO -- double check default value
+
+    private readonly ChoiceSetSetting _dockClockClickAction = new(
+        Namespaced(nameof(DockClockClickAction)),
+        Resources.timedate_dock_clock_click_action,
+        Resources.timedate_dock_clock_click_action_description,
+        _dockClockClickActionChoices);
 
     private readonly TextSetting _customFormats = new(
         Namespaced(nameof(CustomFormats)),
@@ -145,15 +152,65 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         }
     }
 
-    public bool EnableFallbackItems => _enableFallbackItems.Value;
-
     public bool TimeWithSecond => _timeWithSeconds.Value;
 
-    public bool DockClockWithSecond => _dockClockWithSeconds.Value;
+    public string DockClockTitleFormat => _dockClockTitleFormat;
+
+    public string DockClockSubtitleFormat => _dockClockSubtitleFormat;
+
+    public string DockClockClickAction => _dockClockClickAction.Value ?? "default";
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
     public List<string> CustomFormats => (_customFormats.Value ?? string.Empty).Split(TEXTBOXNEWLINE).ToList();
+
+    public void SetDockClockFormats(string titleFormat, string subtitleFormat)
+    {
+        _dockClockTitleFormat = titleFormat;
+        _dockClockSubtitleFormat = subtitleFormat;
+        SaveSettings();
+        DockClockFormatsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public override void LoadSettings()
+    {
+        base.LoadSettings();
+        if (!File.Exists(FilePath))
+        {
+            return;
+        }
+
+        try
+        {
+            if (JsonNode.Parse(File.ReadAllText(FilePath)) is JsonObject settings)
+            {
+                _dockClockTitleFormat = settings[Namespaced(nameof(DockClockTitleFormat))]?.GetValue<string>() ?? "t";
+                _dockClockSubtitleFormat = settings[Namespaced(nameof(DockClockSubtitleFormat))]?.GetValue<string>() ?? "d";
+            }
+        }
+        catch (Exception ex)
+        {
+            ExtensionHost.LogMessage($"Failed to load dock clock formats: {ex.Message}");
+        }
+    }
+
+    public override void SaveSettings()
+    {
+        base.SaveSettings();
+        try
+        {
+            if (JsonNode.Parse(File.ReadAllText(FilePath)) is JsonObject settings)
+            {
+                settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
+                settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
+                File.WriteAllText(FilePath, settings.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+            }
+        }
+        catch (Exception ex)
+        {
+            ExtensionHost.LogMessage($"Failed to save dock clock formats: {ex.Message}");
+        }
+    }
 
     internal static string SettingsJsonPath()
     {
@@ -167,10 +224,9 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
     {
         FilePath = SettingsJsonPath();
 
-        Settings.Add(_enableFallbackItems);
         Settings.Add(_timeWithSeconds);
-        Settings.Add(_dockClockWithSeconds);
         Settings.Add(_dateWithWeekday);
+        Settings.Add(_dockClockClickAction);
         Settings.Add(_firstWeekOfYear);
         Settings.Add(_firstDayOfWeek);
 

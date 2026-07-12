@@ -16,13 +16,20 @@ public interface ISettingsInterface
 
     public int FirstDayOfWeek { get; }
 
-    public bool EnableFallbackItems { get; }
-
     public bool TimeWithSecond { get; }
-
-    public bool DockClockWithSecond { get; }
 
     public bool DateWithWeekday { get; }
 
     public List<string> CustomFormats { get; }
+}
+
+internal interface IDockClockSettings : ISettingsInterface
+{
+    string DockClockTitleFormat { get; }
+
+    string DockClockSubtitleFormat { get; }
+
+    string DockClockClickAction { get; }
+
+    void SetDockClockFormats(string titleFormat, string subtitleFormat);
 }

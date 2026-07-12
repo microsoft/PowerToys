@@ -5,19 +5,23 @@
 using System;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class NowDockBand : ListItem, IDisposable
 {
-    private static readonly TimeSpan PerSecondUpdateInterval = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan PerMinuteUpdateInterval = TimeSpan.FromMinutes(1);
-
-    private readonly System.Timers.Timer _timer;
     private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
+    private readonly ClockUpdateService _clockUpdateService;
+    private readonly bool _ownsClockUpdateService;
     private bool _timeWithSeconds;
+    private ISettingsInterface? _settings;
+    private ICommand? _allClocksPage;
+    private string? _titleFormat;
+    private string? _subtitleFormat;
 
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
@@ -26,11 +30,13 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     internal CopyTextCommand CopyDateCommand => _copyDateCommand;
 
-    internal NowDockBand(bool timeWithSeconds = false, Action? onUpdated = null, Func<DateTime>? clock = null)
+    internal NowDockBand(bool timeWithSeconds = false, Action? onUpdated = null, Func<DateTime>? clock = null, ClockUpdateService? clockUpdateService = null)
     {
         _timeWithSeconds = timeWithSeconds;
         _onUpdated = onUpdated;
         _clock = clock ?? (() => DateTime.Now);
+        _clockUpdateService = clockUpdateService ?? new ClockUpdateService();
+        _ownsClockUpdateService = clockUpdateService is null;
 
         Command = new OpenUrlCommand("ms-actioncenter:")
         {
@@ -48,8 +54,16 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
         UpdateText();
 
-        _timer = new System.Timers.Timer() { AutoReset = true };
-        ConfigureTimer();
+        _clockUpdateService.Tick += ClockUpdateService_Tick;
+        _clockUpdateService.SetRequiresSecondUpdates(this, _timeWithSeconds);
+    }
+
+    internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, Action? onUpdated = null, Func<DateTime>? clock = null, ClockUpdateService? clockUpdateService = null)
+        : this(false, onUpdated, clock, clockUpdateService)
+    {
+        _allClocksPage = allClocksPage;
+        UpdateSettings(settings);
+        MoreCommands = [.. MoreCommands, new CommandContextItem(new EditDefaultDockClockPage(settings))];
     }
 
     // Reads the current "show seconds" preference and, if it changed, reconfigures
@@ -64,59 +78,43 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         }
 
         _timeWithSeconds = timeWithSeconds;
-        ConfigureTimer();
+        _clockUpdateService.SetRequiresSecondUpdates(this, _timeWithSeconds);
         UpdateText();
     }
 
-    private void ConfigureTimer()
+    internal void UpdateSettings(IDockClockSettings settings)
     {
-        _timer.Stop();
-        _timer.Elapsed -= Timer_Elapsed;
-        _timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-
-        if (_timeWithSeconds)
-        {
-            _timer.Interval = PerSecondUpdateInterval.TotalMilliseconds;
-            _timer.Elapsed += Timer_Elapsed;
-        }
-        else
-        {
-            // Align the first tick to the next minute boundary so the clock flips
-            // exactly when the system clock does, then fall back to a per-minute cadence.
-            var now = _clock();
-            _timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
-            _timer.Elapsed += Timer_ElapsedFirstMinuteTick;
-        }
-
-        _timer.Start();
-    }
-
-    private void Timer_ElapsedFirstMinuteTick(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        if (sender is System.Timers.Timer timer)
-        {
-            timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds;
-            timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-            timer.Elapsed += Timer_Elapsed;
-        }
-
-        Timer_Elapsed(sender, e);
-    }
-
-    private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
-    {
+        _settings = settings;
+        _titleFormat = settings.DockClockTitleFormat;
+        _subtitleFormat = settings.DockClockSubtitleFormat;
+        Command = settings.DockClockClickAction == "allClocks" && _allClocksPage is not null
+            ? _allClocksPage
+            : new OpenUrlCommand("ms-actioncenter:")
+            {
+                Id = "com.microsoft.cmdpal.timedate.dockBand",
+                Name = Resources.timedate_show_notification_center_command_name,
+                Result = CommandResult.Dismiss(),
+            };
+        _clockUpdateService.SetRequiresSecondUpdates(this, CustomClockDisplay.RequiresSecondUpdates(_titleFormat, _subtitleFormat));
         UpdateText();
+    }
+
+    private void ClockUpdateService_Tick(object? sender, EventArgs e)
+    {
+        var now = _clock();
+        var timeString = GetTitle(now);
+        var dateString = GetSubtitle(now);
+        if (timeString != Title || dateString != Subtitle)
+        {
+            UpdateText();
+        }
     }
 
     internal void UpdateText()
     {
         var now = _clock();
-        var timeString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false),
-            CultureInfo.CurrentCulture);
-        var dateString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false),
-            CultureInfo.CurrentCulture);
+        var timeString = GetTitle(now);
+        var dateString = GetSubtitle(now);
 
         Title = timeString;
         Subtitle = dateString;
@@ -126,9 +124,21 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         _onUpdated?.Invoke(); // Must remain last — ViewModel reads Title/Subtitle via GetItems() on callback
     }
 
+    private string GetTitle(DateTime now) => _settings is null
+        ? now.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false), CultureInfo.CurrentCulture)
+        : CustomClockDisplay.Format(new DateTimeOffset(now), _titleFormat!, _settings);
+
+    private string GetSubtitle(DateTime now) => _settings is null
+        ? now.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false), CultureInfo.CurrentCulture)
+        : CustomClockDisplay.Format(new DateTimeOffset(now), _subtitleFormat!, _settings);
+
     public void Dispose()
     {
-        _timer.Stop();
-        _timer.Dispose();
+        _clockUpdateService.Tick -= ClockUpdateService_Tick;
+        _clockUpdateService.SetRequiresSecondUpdates(this, false);
+        if (_ownsClockUpdateService)
+        {
+            _clockUpdateService.Dispose();
+        }
     }
 }
