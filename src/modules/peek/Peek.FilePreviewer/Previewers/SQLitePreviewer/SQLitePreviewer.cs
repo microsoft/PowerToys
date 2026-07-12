@@ -105,26 +105,6 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                 using (var cmd = connection.CreateCommand())
                 {
                     SqliteHelpers.AssignBindingKeys(tableInfo.Columns);
-
-                    cmd.CommandText = $"SELECT COUNT(*) FROM {SqliteHelpers.QuoteIdentifier(tableName)};";
-                    tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
-                }
-
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = $"SELECT * FROM {SqliteHelpers.QuoteIdentifier(tableName)} LIMIT 200;";
-                    using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-                    while (await reader.ReadAsync(cancellationToken))
-                    {
-                        var row = new Dictionary<string, string?>(reader.FieldCount, StringComparer.Ordinal);
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            var col = tableInfo.Columns[i];
-                            row[col.BindingKey] = reader.IsDBNull(i) ? null : reader.GetValue(i)?.ToString();
-                        }
-
-                        tableInfo.Rows.Add(row);
-                    }
                 }
 
                 await Dispatcher.RunOnUiThread(() => Tables.Add(tableInfo));
@@ -136,6 +116,46 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                 tableNames.Count);
 
             State = PreviewState.Loaded;
+        }
+
+        public async Task LoadTableDataAsync(SqliteTableInfo tableInfo, CancellationToken cancellationToken)
+        {
+            if (tableInfo.Rows.Count > 0)
+            {
+                return;
+            }
+
+            var connectionString = new SqliteConnectionStringBuilder
+            {
+                DataSource = Item.Path,
+                Mode = SqliteOpenMode.ReadOnly,
+            }.ToString();
+
+            using var connection = new SqliteConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = $"SELECT COUNT(*) FROM {SqliteHelpers.QuoteIdentifier(tableInfo.Name)};";
+                tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
+            }
+
+            using (var cmd = connection.CreateCommand())
+            {
+                cmd.CommandText = $"SELECT * FROM {SqliteHelpers.QuoteIdentifier(tableInfo.Name)} LIMIT 200;";
+                using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    var row = new Dictionary<string, string?>(reader.FieldCount, StringComparer.Ordinal);
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        var col = tableInfo.Columns[i];
+                        row[col.BindingKey] = reader.IsDBNull(i) ? null : reader.GetValue(i)?.ToString();
+                    }
+
+                    tableInfo.Rows.Add(row);
+                }
+            }
         }
 
         public async Task CopyAsync()

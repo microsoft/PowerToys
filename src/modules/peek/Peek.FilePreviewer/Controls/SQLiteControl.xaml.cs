@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -13,12 +14,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Peek.Common.Helpers;
 using Peek.FilePreviewer.Previewers;
+using Peek.FilePreviewer.Previewers.Interfaces;
 using Peek.FilePreviewer.Previewers.SqlitePreviewer;
 using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
 namespace Peek.FilePreviewer.Controls
 {
-    public sealed partial class SqliteControl : UserControl
+    public sealed partial class SqliteControl : UserControl, IDisposable
     {
         public static readonly DependencyProperty TablesProperty = DependencyProperty.Register(
             nameof(Tables),
@@ -36,6 +38,12 @@ namespace Peek.FilePreviewer.Controls
             nameof(TableCount),
             typeof(string),
             typeof(SqlitePreviewer),
+            new PropertyMetadata(null));
+
+        public static readonly DependencyProperty PreviewerProperty = DependencyProperty.Register(
+            nameof(Previewer),
+            typeof(ISqlitePreviewer),
+            typeof(SqliteControl),
             new PropertyMetadata(null));
 
         private double _lastColumnAutoWidth = double.NaN;
@@ -56,6 +64,12 @@ namespace Peek.FilePreviewer.Controls
         {
             get => (string?)GetValue(TableCountProperty);
             set => SetValue(TableCountProperty, value);
+        }
+
+        public ISqlitePreviewer? Previewer
+        {
+            get => (ISqlitePreviewer?)GetValue(PreviewerProperty);
+            set => SetValue(PreviewerProperty, value);
         }
 
         public SqliteControl()
@@ -118,11 +132,33 @@ namespace Peek.FilePreviewer.Controls
             TableTreeView.RootNodes.Add(tableNode);
         }
 
-        private void TableTreeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
+        private System.Threading.CancellationTokenSource? _loadTableDataCts;
+
+        private async void TableTreeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
             if (args.InvokedItem is TreeViewNode { Content: SqliteTreeNode { Table: SqliteTableInfo table } })
             {
-                ShowTableData(table);
+                _loadTableDataCts?.Cancel();
+                _loadTableDataCts?.Dispose();
+                _loadTableDataCts = new System.Threading.CancellationTokenSource();
+                var token = _loadTableDataCts.Token;
+
+                if (Previewer != null)
+                {
+                    try
+                    {
+                        await Previewer.LoadTableDataAsync(table, token);
+                    }
+                    catch (System.OperationCanceledException)
+                    {
+                        return;
+                    }
+                }
+
+                if (!token.IsCancellationRequested)
+                {
+                    ShowTableData(table);
+                }
             }
         }
 
@@ -208,6 +244,11 @@ namespace Peek.FilePreviewer.Controls
             RecordCountHeader.Visibility = Visibility.Collapsed;
             TableDataGrid.Visibility = Visibility.Collapsed;
             NoSelectionText.Visibility = Visibility.Visible;
+        }
+
+        public void Dispose()
+        {
+            _loadTableDataCts?.Dispose();
         }
 
         public sealed class SqliteTreeNode

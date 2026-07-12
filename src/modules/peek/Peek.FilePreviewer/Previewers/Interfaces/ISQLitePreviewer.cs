@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
@@ -14,5 +16,7 @@ namespace Peek.FilePreviewer.Previewers.Interfaces
         ObservableCollection<SqliteTableInfo> Tables { get; }
 
         string? TableCountText { get; }
+
+        Task LoadTableDataAsync(SqliteTableInfo tableInfo, CancellationToken cancellationToken);
     }
 }
