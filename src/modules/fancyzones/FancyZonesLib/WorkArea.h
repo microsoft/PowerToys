@@ -53,6 +53,7 @@ public:
     void ShowZones(const ZoneIndexSet& highlight, HWND draggedWindow = nullptr);
     void HideZones();
     void FlashZones();
+    void ShowLayoutNameLabel(const std::wstring& name);
     
     void CycleWindows(HWND window, bool reverse);
 

@@ -204,6 +204,14 @@ void WorkArea::FlashZones()
     }
 }
 
+void WorkArea::ShowLayoutNameLabel(const std::wstring& name)
+{
+    if (m_zonesOverlay)
+    {
+        m_zonesOverlay->ShowLayoutName(name, Colors::GetZoneColors());
+    }
+}
+
 void WorkArea::InitLayout()
 {
     InitLayout({});

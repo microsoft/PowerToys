@@ -1234,6 +1234,11 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
             RefreshLayouts();
             FlashZones();
             AppliedLayouts::instance().SaveData();
+
+            if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(layoutId.value()); layoutData.has_value())
+            {
+                workArea->ShowLayoutNameLabel(layoutData->name);
+            }
         }
     }
 }
@@ -1269,6 +1274,11 @@ void FancyZones::CycleLayoutByWheel(bool reverse) noexcept
         RefreshLayouts();
         FlashZones();
         AppliedLayouts::instance().SaveData();
+
+        if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(nextId.value()); layoutData.has_value())
+        {
+            workArea->ShowLayoutNameLabel(layoutData->name);
+        }
     }
 }
 

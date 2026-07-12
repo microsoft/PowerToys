@@ -31,6 +31,14 @@ class ZonesOverlay
         bool autoHide;
     };
 
+    struct LayoutNameLabel
+    {
+        std::wstring text;
+        D2D1_COLOR_F textColor;
+        D2D1_COLOR_F backgroundColor;
+        std::chrono::steady_clock::time_point tStart;
+    };
+
     enum struct RenderResult
     {
         Ok,
@@ -42,11 +50,13 @@ class ZonesOverlay
     RECT m_clientRect{};
     ID2D1HwndRenderTarget* m_renderTarget = nullptr;
     std::optional<AnimationInfo> m_animation;
+    std::optional<LayoutNameLabel> m_layoutNameLabel;
 
     std::mutex m_mutex;
     std::vector<DrawableRect> m_sceneRects;
 
     float GetAnimationAlpha();
+    float GetLayoutNameLabelAlpha();
     static IDWriteFactory* GetWriteFactory();
     static D2D1_COLOR_F ConvertColor(COLORREF color);
     static D2D1_RECT_F ConvertRect(RECT rect);
@@ -69,4 +79,5 @@ public:
                            const ZoneIndexSet& highlightZones,
                            const Colors::ZoneColors& colors,
                            const bool showZoneText);
+    void ShowLayoutName(const std::wstring& text, const Colors::ZoneColors& colors);
 };
