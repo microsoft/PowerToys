@@ -869,6 +869,9 @@ opera.exe</value>
   <data name="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use middle-click mouse button to toggle multiple zones spanning</value>
   </data>
+  <data name="FancyZones_MouseWheelLayoutSwitchCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Use mouse wheel while dragging to switch between layouts</value>
+  </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>

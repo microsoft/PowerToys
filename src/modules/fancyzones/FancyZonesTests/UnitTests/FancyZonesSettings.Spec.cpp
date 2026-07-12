@@ -29,6 +29,7 @@ namespace FancyZonesUnitTests
     {
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
         Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
+        Assert::AreEqual(expected.mouseWheelLayoutSwitch, actual.mouseWheelLayoutSwitch);
         Assert::AreEqual(expected.displayOrWorkAreaChange_moveWindows, actual.displayOrWorkAreaChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
@@ -69,6 +70,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", m_defaultSettings.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", m_defaultSettings.mouseSwitch);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", m_defaultSettings.mouseWheelLayoutSwitch);
             values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", m_defaultSettings.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", m_defaultSettings.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", m_defaultSettings.zoneSetChange_moveWindows);
@@ -112,6 +114,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", expected.mouseWheelLayoutSwitch);
             values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", expected.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
@@ -140,6 +143,17 @@ namespace FancyZonesUnitTests
             FancyZonesSettings::instance().LoadSettings();
             auto actual = FancyZonesSettings::settings();
             compareSettings(expected, actual);
+        }
+
+        TEST_METHOD (ParseMouseWheelLayoutSwitch)
+        {
+            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", true);
+
+            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
+
+            FancyZonesSettings::instance().LoadSettings();
+            Assert::IsTrue(FancyZonesSettings::settings().mouseWheelLayoutSwitch);
         }
 
         TEST_METHOD (ParseInvalid)

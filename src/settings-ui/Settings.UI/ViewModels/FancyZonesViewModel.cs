@@ -68,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _shiftDrag = Settings.Properties.FancyzonesShiftDrag.Value;
             _mouseSwitch = Settings.Properties.FancyzonesMouseSwitch.Value;
             _mouseMiddleButtonSpanningMultipleZones = Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value;
+            _mouseWheelLayoutSwitch = Settings.Properties.FancyzonesMouseWheelLayoutSwitch.Value;
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
@@ -153,6 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _shiftDrag;
         private bool _mouseSwitch;
         private bool _mouseMiddleButtonSpanningMultipleZones;
+        private bool _mouseWheelLayoutSwitch;
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
         private MoveWindowBehaviour _moveWindowBehaviour;
@@ -295,6 +297,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _mouseMiddleButtonSpanningMultipleZones = value;
                     Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseWheelLayoutSwitch
+        {
+            get
+            {
+                return _mouseWheelLayoutSwitch;
+            }
+
+            set
+            {
+                if (value != _mouseWheelLayoutSwitch)
+                {
+                    _mouseWheelLayoutSwitch = value;
+                    Settings.Properties.FancyzonesMouseWheelLayoutSwitch.Value = value;
                     NotifyPropertyChanged();
                 }
             }

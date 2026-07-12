@@ -28,6 +28,7 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/util.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowKeyboardSnap.h>
 #include <FancyZonesLib/WindowMouseSnap.h>
@@ -66,6 +67,25 @@ namespace NonLocalizable
     const wchar_t FZEditorExecutablePath[] = L"PowerToys.FancyZonesEditor.exe";
 }
 
+namespace
+{
+    // Layouts the mouse wheel cycles through while dragging: the ones with quick-switch
+    // hotkeys assigned (in hotkey order); when fewer than two of those exist, all custom
+    // layouts in the order they appear in the editor.
+    std::vector<GUID> WheelCycleLayoutIds() noexcept
+    {
+        auto ids = LayoutHotkeys::instance().GetLayoutIds();
+        std::erase_if(ids, [](const GUID& id) { return !CustomLayouts::instance().GetCustomLayoutData(id).has_value(); });
+
+        if (ids.size() < 2)
+        {
+            ids = CustomLayouts::instance().GetLayoutIdsInOrder();
+        }
+
+        return ids;
+    }
+}
+
 struct FancyZones : public winrt::implements<FancyZones, IFancyZones, IFancyZonesCallback>, public SettingsObserver
 {
 public:
@@ -74,6 +94,15 @@ public:
         m_hinstance(hinstance),
         m_draggingState([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        },
+        [this](bool up) {
+            if (WheelCycleLayoutIds().size() < 2)
+            {
+                return false;
+            }
+
+            PostMessageW(m_window, WM_PRIV_WHEEL_LAYOUT_SWITCH, up ? 1 : 0, NULL);
+            return true;
         })
     {
         if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL))
@@ -173,6 +202,7 @@ private:
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    void CycleLayoutByWheel(bool reverse) noexcept;
     void FlashZones() noexcept;
 
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
@@ -753,6 +783,11 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             ApplyQuickLayout(static_cast<int>(lparam));
         }
+        else if (message == WM_PRIV_WHEEL_LAYOUT_SWITCH)
+        {
+            // wheel up cycles backwards, wheel down cycles forward
+            CycleLayoutByWheel(wparam != 0);
+        }
         else if (message == WM_PRIV_SETTINGS_CHANGED)
         {
             FancyZonesSettings::instance().LoadSettings();
@@ -1104,7 +1139,7 @@ void FancyZones::SettingsUpdate(SettingId id)
     break;
     case SettingId::SpanZonesAcrossMonitors:
     {
-        // See UpdateWorkAreas() — same WindowMouseSnap dangling-WorkArea*
+        // See UpdateWorkAreas() - same WindowMouseSnap dangling-WorkArea*
         // hazard if the user toggles this setting mid-drag.
         MoveSizeEnd();
         m_workAreaConfiguration.Clear();
@@ -1200,6 +1235,40 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
             FlashZones();
             AppliedLayouts::instance().SaveData();
         }
+    }
+}
+
+void FancyZones::CycleLayoutByWheel(bool reverse) noexcept
+{
+    auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+    if (!workArea)
+    {
+        return;
+    }
+
+    std::optional<GUID> currentId{};
+    if (const auto current = AppliedLayouts::instance().GetDeviceLayout(workArea->UniqueId()); current.has_value())
+    {
+        currentId = current->uuid;
+    }
+
+    const auto nextId = FancyZonesUtils::PickNextLayoutId(WheelCycleLayoutIds(), currentId, reverse);
+    if (!nextId.has_value())
+    {
+        return;
+    }
+
+    const auto layout = CustomLayouts::instance().GetLayout(nextId.value());
+    if (!layout.has_value())
+    {
+        return;
+    }
+
+    if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
+    {
+        RefreshLayouts();
+        FlashZones();
+        AppliedLayouts::instance().SaveData();
     }
 }
 

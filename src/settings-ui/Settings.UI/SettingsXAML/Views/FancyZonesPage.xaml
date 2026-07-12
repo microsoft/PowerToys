@@ -73,6 +73,9 @@
                             <tkcontrols:SettingsCard Name="FancyZonesMouseMiddleClickSpanningMultipleZonesCheckBoxControlHeader" ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header" IsChecked="{x:Bind ViewModel.MouseMiddleClickSpanningMultipleZones, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="FancyZonesMouseWheelLayoutSwitchCheckBoxControlHeader" ContentAlignment="Left">
+                                <CheckBox x:Uid="FancyZones_MouseWheelLayoutSwitchCheckBoxControl_Header" IsChecked="{x:Bind ViewModel.MouseWheelLayoutSwitch, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="FancyZonesShowZonesOnAllMonitorsCheckBoxControl" ContentAlignment="Left">
                                 <CheckBox x:Uid="FancyZones_ShowZonesOnAllMonitorsCheckBoxControl" IsChecked="{x:Bind ViewModel.ShowOnAllMonitors, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
