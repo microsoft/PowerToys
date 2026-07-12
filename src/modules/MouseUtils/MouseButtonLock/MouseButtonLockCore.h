@@ -16,6 +16,7 @@ namespace mousebuttonlock
 {
     enum class MouseButton
     {
+        Left,
         Right,
         Middle,
     };
@@ -29,6 +30,9 @@ namespace mousebuttonlock
 
     struct Settings
     {
+        // The left (primary) button is off by default: it is the main interaction button and
+        // Windows already ships ClickLock for it, so locking it is strictly opt-in.
+        bool lmbEnabled = false;
         bool rmbEnabled = true;
         bool mmbEnabled = false;
         int holdDurationMs = 300;
@@ -129,6 +133,7 @@ namespace mousebuttonlock
             }
             const int holdMs = s.holdDurationMs < 0 ? 0 : s.holdDurationMs;
             const int pixels = s.moveCancelPixels < 0 ? 0 : s.moveCancelPixels;
+            CheckMoveCancel(m_left, tick, holdMs, pixels, pt);
             CheckMoveCancel(m_right, tick, holdMs, pixels, pt);
             CheckMoveCancel(m_middle, tick, holdMs, pixels, pt);
         }
@@ -136,6 +141,10 @@ namespace mousebuttonlock
         // Release any button whose lock has just been turned off in settings.
         void EnforceEnabled(const Settings& s)
         {
+            if (!s.lmbEnabled)
+            {
+                ReleaseButton(m_left, MouseButton::Left);
+            }
             if (!s.rmbEnabled)
             {
                 ReleaseButton(m_right, MouseButton::Right);
@@ -149,6 +158,7 @@ namespace mousebuttonlock
         // Release every locked button (crash/shutdown safety).
         void ReleaseAll()
         {
+            ReleaseButton(m_left, MouseButton::Left);
             ReleaseButton(m_right, MouseButton::Right);
             ReleaseButton(m_middle, MouseButton::Middle);
         }
@@ -157,6 +167,7 @@ namespace mousebuttonlock
         // disable/enable cycle can't produce a spurious lock or a swallowed later click.
         void ResetTransient()
         {
+            ResetOne(m_left);
             ResetOne(m_right);
             ResetOne(m_middle);
         }
@@ -179,17 +190,44 @@ namespace mousebuttonlock
 
         ButtonState& State(MouseButton b)
         {
-            return b == MouseButton::Right ? m_right : m_middle;
+            switch (b)
+            {
+            case MouseButton::Left:
+                return m_left;
+            case MouseButton::Middle:
+                return m_middle;
+            case MouseButton::Right:
+            default:
+                return m_right;
+            }
         }
 
         const ButtonState& State(MouseButton b) const
         {
-            return b == MouseButton::Right ? m_right : m_middle;
+            switch (b)
+            {
+            case MouseButton::Left:
+                return m_left;
+            case MouseButton::Middle:
+                return m_middle;
+            case MouseButton::Right:
+            default:
+                return m_right;
+            }
         }
 
         static bool Enabled(MouseButton b, const Settings& s)
         {
-            return b == MouseButton::Right ? s.rmbEnabled : s.mmbEnabled;
+            switch (b)
+            {
+            case MouseButton::Left:
+                return s.lmbEnabled;
+            case MouseButton::Middle:
+                return s.mmbEnabled;
+            case MouseButton::Right:
+            default:
+                return s.rmbEnabled;
+            }
         }
 
         static void CheckMoveCancel(ButtonState& st, uint64_t now, int holdMs, int pixels, PointL pt)
@@ -234,6 +272,7 @@ namespace mousebuttonlock
         }
 
         IButtonUpInjector& m_injector;
+        ButtonState m_left;
         ButtonState m_right;
         ButtonState m_middle;
     };

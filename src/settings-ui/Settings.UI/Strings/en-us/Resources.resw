@@ -2545,7 +2545,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock.Description" xml:space="preserve">
-    <value>Hold the right or middle mouse button to lock it down, like ClickLock. Tap the same button again to release. Some games that read the mouse with raw or exclusive input may not respond to the lock.</value>
+    <value>Hold the left, right, or middle mouse button to lock it down, like ClickLock. Tap the same button again to release. Windows already provides ClickLock for the left button, so left-button locking here is off by default. Some games that read the mouse with raw or exclusive input may not respond to the lock.</value>
     <comment>Mouse as in the hardware peripheral. ClickLock is a Windows feature name.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseButtonLock.Header" xml:space="preserve">
@@ -2557,6 +2557,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="MouseUtils_MouseButtonLock_Options.Description" xml:space="preserve">
     <value>Choose which buttons lock and tune the hold-to-lock behavior.</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock.Content" xml:space="preserve">
+    <value>Lock the left (primary) mouse button</value>
+    <comment>Mouse as in the hardware peripheral. The left button is the primary/main mouse button. Windows also ships its own ClickLock for this button.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock_RmbLock.Content" xml:space="preserve">
     <value>Lock the right mouse button</value>

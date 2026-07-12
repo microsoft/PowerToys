@@ -8,6 +8,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MouseButtonLockProperties
     {
+        [JsonPropertyName("lmb_lock_enabled")]
+        public BoolProperty LmbLockEnabled { get; set; }
+
         [JsonPropertyName("rmb_lock_enabled")]
         public BoolProperty RmbLockEnabled { get; set; }
 
@@ -25,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public MouseButtonLockProperties()
         {
+            LmbLockEnabled = new BoolProperty(false);
             RmbLockEnabled = new BoolProperty(true);
             MmbLockEnabled = new BoolProperty(false);
             HoldDurationMs = new IntProperty(300);

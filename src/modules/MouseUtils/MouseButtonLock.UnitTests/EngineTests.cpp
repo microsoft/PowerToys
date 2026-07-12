@@ -205,6 +205,59 @@ namespace MouseButtonLockEngineTests
             Assert::IsFalse(e.IsLocked(MouseButton::Middle));
         }
 
+        TEST_METHOD(LeftButtonOffByDefault)
+        {
+            FakeInjector inj;
+            Engine e(inj);
+            Settings s = DefaultSettings(); // lmbEnabled defaults to false
+
+            Assert::IsFalse(s.lmbEnabled);
+            e.OnButtonDown(MouseButton::Left, 0, PointL{ 0, 0 }, s);
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Left, 400, s)); // held past threshold but disabled
+            Assert::IsFalse(e.IsLocked(MouseButton::Left));
+        }
+
+        TEST_METHOD(LeftButtonLocksWhenEnabled)
+        {
+            FakeInjector inj;
+            Engine e(inj);
+            Settings s = DefaultSettings();
+            s.lmbEnabled = true;
+
+            e.OnButtonDown(MouseButton::Left, 0, PointL{ 0, 0 }, s);
+            Assert::IsTrue(e.OnButtonUp(MouseButton::Left, 400, s)); // held >= 300 ms -> suppress UP
+            Assert::IsTrue(e.IsLocked(MouseButton::Left));
+
+            // A left-lock is released by the injected LEFTUP path just like the other buttons.
+            Assert::IsTrue(e.OnButtonDown(MouseButton::Left, 1000, PointL{ 0, 0 }, s));
+            Assert::IsFalse(e.IsLocked(MouseButton::Left));
+            Assert::AreEqual(static_cast<size_t>(1), inj.calls.size());
+            Assert::IsTrue(inj.calls[0] == MouseButton::Left);
+        }
+
+        TEST_METHOD(LeftIsIndependentOfRightAndMiddle)
+        {
+            FakeInjector inj;
+            Engine e(inj);
+            Settings s = DefaultSettings();
+            s.lmbEnabled = true;
+            s.rmbEnabled = true;
+            s.mmbEnabled = true;
+
+            // Lock the left button.
+            e.OnButtonDown(MouseButton::Left, 0, PointL{ 0, 0 }, s);
+            e.OnButtonUp(MouseButton::Left, 400, s);
+            // Quick right and middle taps must not lock, and must not disturb the left lock.
+            e.OnButtonDown(MouseButton::Right, 500, PointL{ 0, 0 }, s);
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Right, 550, s));
+            e.OnButtonDown(MouseButton::Middle, 600, PointL{ 0, 0 }, s);
+            Assert::IsFalse(e.OnButtonUp(MouseButton::Middle, 650, s));
+
+            Assert::IsTrue(e.IsLocked(MouseButton::Left));
+            Assert::IsFalse(e.IsLocked(MouseButton::Right));
+            Assert::IsFalse(e.IsLocked(MouseButton::Middle));
+        }
+
         TEST_METHOD(EnforceEnabledReleasesNowDisabledButton)
         {
             FakeInjector inj;

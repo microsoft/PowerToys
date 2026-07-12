@@ -16,7 +16,7 @@
 
 // Mouse Button Lock
 //
-// A ClickLock equivalent for the right and middle mouse buttons. Hold a button past a
+// A ClickLock equivalent for the left, right, and middle mouse buttons. Hold a button past a
 // configurable threshold and release it: the physical button-up is suppressed inside the
 // low-level mouse hook, so the OS keeps believing the button is held. The next physical tap
 // of that button releases the synthetic hold (and is itself swallowed cleanly so downstream
@@ -50,6 +50,7 @@ namespace
 {
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    const wchar_t JSON_KEY_LMB_LOCK_ENABLED[] = L"lmb_lock_enabled";
     const wchar_t JSON_KEY_RMB_LOCK_ENABLED[] = L"rmb_lock_enabled";
     const wchar_t JSON_KEY_MMB_LOCK_ENABLED[] = L"mmb_lock_enabled";
     const wchar_t JSON_KEY_HOLD_DURATION_MS[] = L"hold_duration_ms";
@@ -79,7 +80,20 @@ namespace
     public:
         bool InjectUp(mousebuttonlock::MouseButton button) override
         {
-            const DWORD flag = button == mousebuttonlock::MouseButton::Right ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_MIDDLEUP;
+            DWORD flag = MOUSEEVENTF_RIGHTUP;
+            switch (button)
+            {
+            case mousebuttonlock::MouseButton::Left:
+                flag = MOUSEEVENTF_LEFTUP;
+                break;
+            case mousebuttonlock::MouseButton::Middle:
+                flag = MOUSEEVENTF_MIDDLEUP;
+                break;
+            case mousebuttonlock::MouseButton::Right:
+            default:
+                flag = MOUSEEVENTF_RIGHTUP;
+                break;
+            }
             INPUT input{};
             input.type = INPUT_MOUSE;
             input.mi.dwFlags = flag;
@@ -113,6 +127,7 @@ private:
     std::atomic<bool> m_enabled{ false };
 
     // Settings. Read on the hook thread, written by set_config on the runner thread, so atomic.
+    std::atomic<bool> m_lmbLockEnabled{ false };
     std::atomic<bool> m_rmbLockEnabled{ true };
     std::atomic<bool> m_mmbLockEnabled{ false };
     std::atomic<bool> m_moveCancelEnabled{ true };
@@ -334,6 +349,7 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
         }
     };
 
+    readBool(JSON_KEY_LMB_LOCK_ENABLED, m_lmbLockEnabled);
     readBool(JSON_KEY_RMB_LOCK_ENABLED, m_rmbLockEnabled);
     readBool(JSON_KEY_MMB_LOCK_ENABLED, m_mmbLockEnabled);
     readBool(JSON_KEY_MOVE_CANCEL_ENABLED, m_moveCancelEnabled);
@@ -344,6 +360,7 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
 mousebuttonlock::Settings MouseButtonLock::SettingsSnapshot() const
 {
     mousebuttonlock::Settings s;
+    s.lmbEnabled = m_lmbLockEnabled.load();
     s.rmbEnabled = m_rmbLockEnabled.load();
     s.mmbEnabled = m_mmbLockEnabled.load();
     s.moveCancelEnabled = m_moveCancelEnabled.load();
@@ -427,6 +444,10 @@ bool MouseButtonLock::HandleMouseMessage(WPARAM wParam, const MSLLHOOKSTRUCT* da
 
     switch (wParam)
     {
+    case WM_LBUTTONDOWN:
+        return m_engine.OnButtonDown(mousebuttonlock::MouseButton::Left, tick, pt, snapshot);
+    case WM_LBUTTONUP:
+        return m_engine.OnButtonUp(mousebuttonlock::MouseButton::Left, tick, snapshot);
     case WM_RBUTTONDOWN:
         return m_engine.OnButtonDown(mousebuttonlock::MouseButton::Right, tick, pt, snapshot);
     case WM_RBUTTONUP:

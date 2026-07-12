@@ -1,10 +1,10 @@
 # Mouse Button Lock
 
-Mouse Button Lock is a [ClickLock](https://support.microsoft.com/windows/make-the-mouse-easier-to-use-10733da7-6fb8-4ddf-9b30-9a72b814f5d5) equivalent for the **right** and **middle** mouse buttons. Windows ships ClickLock for the left button only; this module closes that gap for the secondary and middle buttons.
+Mouse Button Lock is a [ClickLock](https://support.microsoft.com/windows/make-the-mouse-easier-to-use-10733da7-6fb8-4ddf-9b30-9a72b814f5d5) equivalent for the **left**, **right**, and **middle** mouse buttons. Windows ships ClickLock for the left button only; this module closes that gap for the secondary and middle buttons, and can optionally cover the left (primary) button too, as a one-stop alternative to the built-in Windows ClickLock. Because the left button is the primary interaction button (and Windows already provides ClickLock for it), left-button locking is **off by default** and strictly opt-in.
 
 ## Behavior
 
-For each enabled button (RMB and/or MMB):
+For each enabled button (LMB, RMB, and/or MMB):
 
 1. Hold the button for at least the configured hold duration, then release.
 2. The physical button-up is suppressed inside the low-level mouse hook, so the OS keeps perceiving the button as held.
@@ -27,6 +27,7 @@ Stored at `%LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json`. Pr
 
 | Key | Type | Default | Meaning |
 | --- | --- | --- | --- |
+| `lmb_lock_enabled` | bool | `false` | Lock the left (primary) mouse button. Off by default; overlaps Windows' own left-button ClickLock |
 | `rmb_lock_enabled` | bool | `true` | Lock the right mouse button |
 | `mmb_lock_enabled` | bool | `false` | Lock the middle mouse button |
 | `hold_duration_ms` | int | `300` | How long to hold before locking |
@@ -50,6 +51,7 @@ Settings  >  Mouse utilities
 |   [v]   Buttons and behavior                                           |
 |         Choose which buttons lock and tune the hold-to-lock behavior.  |
 +------------------------------------------------------------------------+
+|   [ ]   Lock the left (primary) mouse button                           |
 |   [x]   Lock the right mouse button                                    |
 |   [ ]   Lock the middle mouse button                                   |
 |                                                                        |
@@ -69,6 +71,7 @@ Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section,
 | Control | Type (UI range) | Setting key | ViewModel property | Default |
 | --- | --- | --- | --- | --- |
 | Mouse Button Lock | toggle | `EnabledModules.MouseButtonLock` | `IsMouseButtonLockEnabled` | off |
+| Lock the left (primary) mouse button | checkbox | `lmb_lock_enabled` | `MouseButtonLockLmbEnabled` | off |
 | Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
 | Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
 | Hold duration (ms) | number box (50-2000, step 50) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 300 |
@@ -89,7 +92,7 @@ Mouse Button Lock builds as part of the PowerToys solution. The runtime is a nat
 - Native module only (after a NuGet restore): `msbuild src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj /p:Platform=x64 /p:Configuration=Release`.
 - Debugging: the hook runs inside the runner, so start or attach the debugger to `PowerToys.exe` and set breakpoints in `dllmain.cpp`. Enable the module from the Mouse Utilities settings page, then exercise the lock with a real right or middle button hold. Keep the hook callback non-blocking: a slow callback risks `LowLevelHooksTimeout` eviction by Windows.
 
-Build status: the module is build-verified. A local x64 Release build compiles `version`/`logger`/`SettingsAPI` and the module, and links `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`) with clean C++ code analysis.
+Build status: build- and runtime-verified. The module builds in the full `PowerToys.slnx` solution (x64 Release) under Visual Studio 2026 with the .NET 10 toolset the repo now targets, linking `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`) with clean C++ code analysis, and all 18 `MouseButtonLock.UnitTests` pass. At runtime the built runner loads the module via `knownModules`, the Settings UI shows the controls, and the lock latches/releases correctly in real apps (see Open items #4).
 
 ## Runtime verification
 
@@ -110,12 +113,12 @@ PowerToys requires fuzzing for user-input modules (`AGENTS.md`: "New modules han
 - Target: `MouseButtonLock.FuzzingTest.cpp` decodes the fuzzer's bytes into a sequence of engine events (button down/up, cursor move, settings changes, and the lifecycle calls `EnforceEnabled` / `ReleaseAll` / `ResetTransient` / `IsLocked`) with adversarial ticks, coordinates, and settings, driving `mousebuttonlock::Engine` with a recording stand-in for the `SendInput` injector. The engine is header-only and Win32-free, so the target needs no project reference and touches no OS state.
 - Registration: listed in `PowerToys.slnx` under `/modules/MouseUtils/Tests/` (ARM64 build disabled, which OneFuzz does not support) and emitted to `x64\Release\tests\MouseButtonLock.FuzzTests\`, so the OneFuzz pipeline's existing `**/tests/*.FuzzTests/**` glob (`.pipelines/v2/templates/job-fuzz.yml`) picks it up with no pipeline edit. `OneFuzzConfig.json` uses the repo's v3 schema (the shape `PowerRename` uses, not the older `fuzzers[]` example in `fuzzingtesting.md`); the `adoTemplate` `AssignedTo` / notification fields carry the repo defaults and must be set by whoever owns the OneFuzz submission.
 - Local run: the ASan toolchain is available via the "C++ AddressSanitizer" VS component. `build_mbl_fuzzer.cmd` (in the gitignored `x64\Release\`) compiles the target with `/fsanitize=address /fsanitize=fuzzer` directly through cl.exe (bypassing the repo's vcpkg-gated msbuild) and copies the ASan runtime DLL beside it. A 26-second run executed 815,727 inputs with zero crashes and no ASan findings.
-- Hardening it surfaced: `Engine::CheckMoveCancel` computed the squared cursor displacement as `long long` (`dx*dx + dy*dy`), which can overflow signed 64-bit for extreme coordinates. Production coordinates are screen-bounded so it never triggered, but the comparison is now done in `double` to stay defined across the full coordinate range the fuzzer drives. All 15 unit tests still pass after the change.
+- Hardening it surfaced: `Engine::CheckMoveCancel` computed the squared cursor displacement as `long long` (`dx*dx + dy*dy`), which can overflow signed 64-bit for extreme coordinates. Production coordinates are screen-bounded so it never triggered, but the comparison is now done in `double` to stay defined across the full coordinate range the fuzzer drives. All unit tests still pass after the change.
 - Possible second target (not yet added): the settings-JSON path (`parse_settings` in `dllmain.cpp`). It needs the WinRT JSON parser and SettingsAPI wired in, so it is heavier than the header-only engine target, which already covers the core user-input state machine.
 
 ## Open items / not yet wired
 
-Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed. A 36x36 settings/dashboard icon (`MouseButtonLock.png`) and a C++ unit-test project (`MouseButtonLock.UnitTests`, 15 tests over the state machine) are in place; the test runs in CI via the solution's `Build;Test` target, so no pipeline edit is needed.
+Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed. A 36x36 settings/dashboard icon (`MouseButtonLock.png`) and a C++ unit-test project (`MouseButtonLock.UnitTests`, 18 tests over the state machine, including left-button coverage) are in place; the test runs in CI via the solution's `Build;Test` target, so no pipeline edit is needed. The left (primary) mouse button is supported alongside right and middle (off by default; see the Settings section), and the fuzz target exercises all three buttons.
 
 Still open, roughly by priority. Items 1-3 and 7 were found by auditing the module against the dev docs and the conventions of the sibling MouseUtils modules; none are runtime blockers, but 1-3 are parity/registration gaps a reviewer will expect closed.
 
@@ -125,7 +128,7 @@ Still open, roughly by priority. Items 1-3 and 7 were found by auditing the modu
 
 3. **UI test (partial).** Mouse Button Lock is now included in the `MouseUtils.UITests` restart scope (`FindMyMouseTests.cs`), matching CursorWrap. A dedicated `MouseButtonLockTests.cs` remains a follow-up: no passive MouseUtils sibling (including CursorWrap, the module this was copied from) has one, the shared `MouseUtilsSettings` helper would need a Mouse Button Lock entry (enum + accessibility id + name maps), and authoring/verifying it needs WinAppDriver, which is not available in this environment. The engine is already covered by `MouseButtonLock.UnitTests`; the module's Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"` for when the test is written.
 
-4. **Full-solution build + manual runtime validation.** Build the whole solution and confirm the runner loads the module and the lock works in real apps. Per `AGENTS.md`: first `tools\build\build-essentials.cmd` (NuGet restore), then `tools\build\build.ps1 -Platform x64 -Configuration Release` (or just `runner` + `Settings.UI` for a faster launchable app). Exit code 0 is success; on failure read `build.Release.x64.errors.log`. Then run `x64\Release\PowerToys.exe`, enable Mouse Button Lock on the Mouse utilities page, and feel: RMB hold keeps a context menu open; toggling the module off mid-lock releases cleanly; enable `mmb_lock_enabled` and verify the middle button independently. The hook path is already runtime-verified (see Runtime verification); this adds the runner + Settings UI + real-app layer.
+4. **Full-solution build + manual runtime validation (done).** The full `PowerToys.slnx` was built x64 Release under Visual Studio 2026 (the repo targets `net10.0`, which needs VS 2026 or a VS 2022 17.14 servicing new enough to drive the .NET 10 SDK; older VS falls back to .NET 9 and fails restore with NETSDK1045). The built `x64\Release\PowerToys.exe` runner loaded the module via `knownModules`, the Settings UI showed the Mouse Button Lock controls including the left-button checkbox, and the lock was confirmed in a real app: with left-button lock on, a hold-past-threshold then release latches the button so a drag/text-selection continues with no button held, and a tap releases it. Toggling the module off mid-lock releases cleanly. (Build note: `build-essentials.cmd` restores + builds runner/Settings.UI; a whole-solution build via `build.ps1` also builds the other module DLLs so the runner starts without "failed to load" dialogs for unbuilt modules.)
 
 5. **Game compatibility validation.** `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput. Needs a real-game pass; neither the harness nor the LL hook can prove this.
 

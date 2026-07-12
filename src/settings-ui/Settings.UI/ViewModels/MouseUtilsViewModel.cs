@@ -137,12 +137,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe in case a hand-edited settings.json carries explicit nulls: repair the
             // property objects to their defaults so both the reads below and the property setters
             // are safe (mirrors the null-handling the CursorWrap block above uses).
+            MouseButtonLockSettingsConfig.Properties.LmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(300);
             MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
 
+            _mouseButtonLockLmbEnabled = MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value;
             _mouseButtonLockRmbEnabled = MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value;
             _mouseButtonLockMmbEnabled = MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value;
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
@@ -1377,6 +1379,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _mouseButtonLockEnabledStateIsGPOConfigured;
         }
 
+        public bool MouseButtonLockLmbEnabled
+        {
+            get => _mouseButtonLockLmbEnabled;
+            set
+            {
+                if (value != _mouseButtonLockLmbEnabled)
+                {
+                    _mouseButtonLockLmbEnabled = value;
+                    MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
         public bool MouseButtonLockRmbEnabled
         {
             get => _mouseButtonLockRmbEnabled;
@@ -1532,6 +1548,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private GpoRuleConfigured _mouseButtonLockEnabledGpoRuleConfiguration;
         private bool _mouseButtonLockEnabledStateIsGPOConfigured;
         private bool _isMouseButtonLockEnabled;
+        private bool _mouseButtonLockLmbEnabled;
         private bool _mouseButtonLockRmbEnabled;
         private bool _mouseButtonLockMmbEnabled;
         private int _mouseButtonLockHoldDurationMs;

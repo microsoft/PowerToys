@@ -87,6 +87,9 @@
                         IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_LmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockLmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_MouseButtonLock_RmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockRmbEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">

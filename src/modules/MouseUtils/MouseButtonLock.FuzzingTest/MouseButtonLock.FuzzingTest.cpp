@@ -101,11 +101,26 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
             settings.rmbEnabled = (flags & 0x01u) != 0u;
             settings.mmbEnabled = (flags & 0x02u) != 0u;
             settings.moveCancelEnabled = (flags & 0x04u) != 0u;
+            settings.lmbEnabled = (flags & 0x08u) != 0u;
             settings.holdDurationMs = static_cast<int>(r.u32());
             settings.moveCancelPixels = static_cast<int>(r.u32());
         }
 
-        const MouseButton button = (op & 0x80u) ? MouseButton::Middle : MouseButton::Right;
+        // Pick one of the three buttons from two otherwise-unused op bits (bits 3-4; bits 0-2
+        // are the operation, bit 6 the settings-mutate flag).
+        MouseButton button = MouseButton::Right;
+        switch ((op >> 3) & 0x03u)
+        {
+        case 0:
+            button = MouseButton::Left;
+            break;
+        case 1:
+            button = MouseButton::Middle;
+            break;
+        default:
+            button = MouseButton::Right;
+            break;
+        }
         const long x = static_cast<long>(static_cast<int32_t>(r.u32()));
         const long y = static_cast<long>(static_cast<int32_t>(r.u32()));
         const PointL pt{ x, y };
