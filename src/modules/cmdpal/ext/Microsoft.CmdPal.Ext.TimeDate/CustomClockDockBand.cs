@@ -28,8 +28,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
         _titleFormat = CustomClockDisplay.CompileFormat(clockDefinition.TitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(clockDefinition.SubtitleFormat);
-        _clockUpdateService.Tick += ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         MoreCommands = [new CommandContextItem(new EditCustomClockPage(clockManager, settings, clockDefinition, customizeDock: true))];
         UpdateText();
     }
@@ -52,7 +51,6 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
-        _clockUpdateService.Tick -= ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, false);
+        _clockUpdateService.Unsubscribe(this);
     }
 }

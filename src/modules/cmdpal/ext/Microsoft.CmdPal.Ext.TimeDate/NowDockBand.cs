@@ -52,8 +52,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
         UpdateText();
 
-        _clockUpdateService.Tick += ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, _timeWithSeconds);
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _timeWithSeconds);
     }
 
     internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, Func<DateTime>? clock = null, ClockUpdateService? clockUpdateService = null)
@@ -130,8 +129,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
-        _clockUpdateService.Tick -= ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, false);
+        _clockUpdateService.Unsubscribe(this);
         if (_ownsClockUpdateService)
         {
             _clockUpdateService.Dispose();
