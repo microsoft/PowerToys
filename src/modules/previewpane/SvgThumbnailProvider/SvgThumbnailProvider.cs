@@ -117,8 +117,6 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
             _browser.Visible = true;
             _browser.Width = (int)cx;
             _browser.Height = (int)cx;
-
-            // Render on a transparent background so transparent SVGs keep their alpha.
             _browser.DefaultBackgroundColor = Color.Transparent;
             _browser.NavigationCompleted += async (object sender, CoreWebView2NavigationCompletedEventArgs args) =>
             {
