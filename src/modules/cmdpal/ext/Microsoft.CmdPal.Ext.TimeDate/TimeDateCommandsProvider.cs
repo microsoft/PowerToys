@@ -54,29 +54,15 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         Icon = _timeDateExtensionPage.Icon;
         Settings = _settingsManager.Settings;
 
-        WrappedDockItem? wrappedBand = null;
-
-        // During NowDockBand construction, UpdateText() runs synchronously.
-        // At that point wrappedBand is still null so the callback is a no-op.
-        // On subsequent timer ticks, wrappedBand is non-null and SetItems fires
-        // RaiseItemsChanged - the framework marshals to the UI thread in
-        // DockBandViewModel.InitializeFromList via DoOnUiThread.
         _nowDockBand = new NowDockBand(
             _settingsManager,
             _timeDateExtensionPage.CustomClockListPage,
-            onUpdated: () =>
-            {
-                if (wrappedBand is not null)
-                {
-                    wrappedBand.Items = [_nowDockBand!];
-                }
-            },
             clockUpdateService: _clockUpdateService);
 
         _settingsManager.DockClockFormatsChanged += DockClockFormatsChanged;
         _settingsManager.Settings.SettingsChanged += SettingsChanged;
 
-        wrappedBand = new WrappedDockItem(
+        _bandItem = new WrappedDockItem(
             [_nowDockBand],
             "com.microsoft.cmdpal.timedate.dockBand",
             Resources.Microsoft_plugin_timedate_dock_band_title)
@@ -84,7 +70,6 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
             Icon = Icons.TimeDateExtIcon,
         };
 
-        _bandItem = wrappedBand;
         RebuildCustomClockBands();
         _customClockManager.ClocksChanged += CustomClockManager_ClocksChanged;
 
@@ -113,12 +98,37 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         return [_bandItem, _notificationCenterBandItem, .. _customClockBandItems];
     }
 
-    public override ICommandItem? GetCommandItem(string id) => id == CustomClockListPage.PageId
-        ? new WrappedDockItem(
-            [new ListItem(_timeDateExtensionPage.CustomClockListPage) { Title = Resources.timedate_all_clocks, Icon = Icons.TimeIcon }],
-            CustomClockListPage.PageId,
-            Resources.timedate_all_clocks)
-        : null;
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        if (id == CustomClockListPage.PageId)
+        {
+            return new WrappedDockItem(
+                [new ListItem(_timeDateExtensionPage.CustomClockListPage) { Title = Resources.timedate_all_clocks, Icon = Icons.TimeIcon }],
+                CustomClockListPage.PageId,
+                Resources.timedate_all_clocks);
+        }
+
+        if (id == CustomClockIds.LocalDetailPage && _nowDockBand is not null)
+        {
+            return CreateClockDockItem(_nowDockBand, id, Resources.Microsoft_plugin_timedate_dock_band_title);
+        }
+
+        foreach (var clock in _customClockManager.Clocks)
+        {
+            if (id == CustomClockIds.GetDetailPage(clock.Id))
+            {
+                var band = _customClockBands.Find(candidate => candidate.ClockId == clock.Id);
+                if (band is not null)
+                {
+                    return CreateClockDockItem(band, id, CustomClockDisplay.GetName(clock));
+                }
+
+                break;
+            }
+        }
+
+        return null;
+    }
 
     private void DockClockFormatsChanged(object? sender, EventArgs e) => _nowDockBand?.UpdateSettings(_settingsManager);
 
@@ -141,22 +151,19 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         var dockItems = new List<WrappedDockItem>();
         foreach (var clock in _customClockManager.Clocks)
         {
-            WrappedDockItem? wrappedBand = null;
-            CustomClockDockBand? clockBand = null;
-            clockBand = new CustomClockDockBand(clock, _customClockManager, _settingsManager, _clockUpdateService, () =>
-            {
-                if (wrappedBand is not null && clockBand is not null)
-                {
-                    wrappedBand.Items = [clockBand];
-                }
-            });
-            wrappedBand = new WrappedDockItem([clockBand], CustomClockIds.GetDockBand(clock.Id), CustomClockDisplay.GetName(clock)) { Icon = Icons.TimeDateExtIcon };
+            var clockBand = new CustomClockDockBand(clock, _customClockManager, _settingsManager, _clockUpdateService);
+            var wrappedBand = new WrappedDockItem([clockBand], CustomClockIds.GetDockBand(clock.Id), CustomClockDisplay.GetName(clock)) { Icon = Icons.TimeDateExtIcon };
             _customClockBands.Add(clockBand);
             dockItems.Add(wrappedBand);
         }
 
         _customClockBandItems = [.. dockItems];
     }
+
+    private static WrappedDockItem CreateClockDockItem(IListItem clockBand, string id, string title) => new([clockBand], id, title)
+    {
+        Icon = Icons.TimeDateExtIcon,
+    };
 
     public override void Dispose()
     {

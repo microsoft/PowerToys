@@ -67,34 +67,6 @@ public class NowDockBandTests
     }
 
     [TestMethod]
-    public void UpdateText_FiresOnUpdatedCallback()
-    {
-        var callbackFired = false;
-        _band = new NowDockBand(onUpdated: () => callbackFired = true, clock: () => FixedTime);
-
-        callbackFired = false; // reset — constructor already fired it once during synchronous UpdateText()
-
-        _band.UpdateText();
-
-        Assert.IsTrue(callbackFired);
-    }
-
-    [TestMethod]
-    public void UpdateText_CallbackFiredAfterAssignments()
-    {
-        var titleAtCallback = string.Empty;
-        _band = new NowDockBand(
-            onUpdated: () => titleAtCallback = _band?.Title ?? string.Empty,
-            clock: () => FixedTime);
-
-        titleAtCallback = string.Empty; // reset after construction callback
-
-        _band.UpdateText();
-
-        Assert.IsFalse(string.IsNullOrEmpty(titleAtCallback), "Title should be assigned before callback fires");
-    }
-
-    [TestMethod]
     public void UpdateText_CopyCommandsUpdated()
     {
         _band = new NowDockBand(clock: () => FixedTime);
@@ -143,18 +115,5 @@ public class NowDockBandTests
         _band.UpdateSettings(timeWithSeconds: false);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
-    }
-
-    [TestMethod]
-    public void UpdateSettings_NoChange_FiresNoCallback()
-    {
-        var callbackCount = 0;
-        _band = new NowDockBand(timeWithSeconds: false, onUpdated: () => callbackCount++, clock: () => FixedTime);
-
-        callbackCount = 0; // reset after construction callback
-
-        _band.UpdateSettings(timeWithSeconds: false);
-
-        Assert.AreEqual(0, callbackCount, "A no-op settings change should not refresh the band");
     }
 }
