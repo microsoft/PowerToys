@@ -17,6 +17,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly Func<DateTime> _utcNow;
     private readonly CompiledClockFormat _titleFormat;
     private readonly CompiledClockFormat _subtitleFormat;
+    private readonly TimeZoneInfo? _explicitTimeZone;
 
     internal Guid ClockId => _clockDefinition.Id;
 
@@ -28,6 +29,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
         _titleFormat = CustomClockDisplay.CompileFormat(clockDefinition.TitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(clockDefinition.SubtitleFormat);
+        _explicitTimeZone = CustomClockDisplay.ResolveExplicitTimeZone(clockDefinition);
         _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         MoreCommands = [new CommandContextItem(new EditCustomClockPage(clockManager, settings, clockDefinition, customizeDock: true))];
         UpdateText();
@@ -37,7 +39,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
     internal void UpdateText()
     {
-        var now = CustomClockDisplay.GetCurrentTime(_clockDefinition, new DateTimeOffset(DateTime.SpecifyKind(_utcNow(), DateTimeKind.Utc)));
+        var now = CustomClockDisplay.GetCurrentTime(_explicitTimeZone ?? TimeZoneInfo.Local, new DateTimeOffset(DateTime.SpecifyKind(_utcNow(), DateTimeKind.Utc)));
         var title = CustomClockDisplay.Format(now, _titleFormat, _settings);
         var subtitle = CustomClockDisplay.Format(now, _subtitleFormat, _settings);
         if (title == Title && subtitle == Subtitle)

@@ -153,6 +153,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
     private readonly ISettingsInterface _settings;
     private readonly CompiledClockFormat _titleFormat;
     private readonly CompiledClockFormat _subtitleFormat;
+    private readonly TimeZoneInfo? _explicitTimeZone;
 
     internal CustomClockOverviewItem(CustomClock clock, ISettingsInterface settings, ClockUpdateService clockUpdateService)
     {
@@ -161,6 +162,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
         _clockUpdateService = clockUpdateService;
         _titleFormat = CustomClockDisplay.CompileFormat(clock.TitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(clock.SubtitleFormat);
+        _explicitTimeZone = CustomClockDisplay.ResolveExplicitTimeZone(clock);
         Icon = Icons.TimeIcon;
         Command = new CustomClockDetailPage(settings, clock);
         UpdateText();
@@ -207,10 +209,11 @@ internal sealed partial class CustomClockOverviewItem : ListItem
 
     private void UpdateText()
     {
-        var now = CustomClockDisplay.GetCurrentTime(Clock);
+        var timeZone = _explicitTimeZone ?? TimeZoneInfo.Local;
+        var now = CustomClockDisplay.GetCurrentTime(timeZone);
         var title = CustomClockDisplay.Format(now, _titleFormat, _settings);
         var subtitle = CustomClockDisplay.Format(now, _subtitleFormat, _settings);
-        var name = CustomClockDisplay.GetName(Clock, now.ToUniversalTime());
+        var name = CustomClockDisplay.GetName(Clock, timeZone, now);
         var offsetDifference = CustomClockDisplay.GetLocalOffsetDifference(now);
 
         // The overview needs to make the clock's identity visible alongside its live value.

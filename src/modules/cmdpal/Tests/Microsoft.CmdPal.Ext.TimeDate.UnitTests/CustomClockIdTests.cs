@@ -87,6 +87,20 @@ public class CustomClockIdTests
         Assert.AreEqual($"2025 {expectedWeek} {expectedUnixTime}", rendered);
     }
 
+    [TestMethod]
+    public void CustomClockDisplay_CachedExplicitZoneAppliesDaylightSavingRules()
+    {
+        var clock = new CustomClock { TimeZoneId = "Pacific Standard Time" };
+        var timeZone = CustomClockDisplay.ResolveExplicitTimeZone(clock);
+
+        Assert.IsNotNull(timeZone);
+        var winter = CustomClockDisplay.GetCurrentTime(timeZone, new DateTimeOffset(2025, 1, 15, 12, 0, 0, TimeSpan.Zero));
+        var summer = CustomClockDisplay.GetCurrentTime(timeZone, new DateTimeOffset(2025, 7, 15, 12, 0, 0, TimeSpan.Zero));
+
+        Assert.AreEqual(TimeSpan.FromHours(-8), winter.Offset);
+        Assert.AreEqual(TimeSpan.FromHours(-7), summer.Offset);
+    }
+
     [DataTestMethod]
     [DataRow("T")]
     [DataRow("s")]
