@@ -55,6 +55,22 @@ public class ManifestTests
     }
 
     [TestMethod]
+    public void Validator_Flags_IdWithUnsafeCharacters()
+    {
+        var manifest = new PowerScriptManifest { Id = "my script", Name = "x", Entry = "run.ps1" };
+        var errors = ManifestValidator.Validate(manifest, folderName: "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("'id' may only contain")));
+    }
+
+    [TestMethod]
+    public void Validator_Allows_IdWithSafeCharacters()
+    {
+        var manifest = new PowerScriptManifest { Id = "py_greet-1.0", Name = "x", Entry = "run.ps1" };
+        var errors = ManifestValidator.Validate(manifest, folderName: "abc");
+        Assert.IsFalse(errors.Any(e => e.Contains("'id'")));
+    }
+
+    [TestMethod]
     public void Validator_Flags_FileKind_WithoutExtensions()
     {
         var manifest = new PowerScriptManifest

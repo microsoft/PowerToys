@@ -24,6 +24,12 @@ public static class ManifestValidator
         {
             errors.Add("'id' is required.");
         }
+        else if (!IsValidId(manifest.Id))
+        {
+            // The id is embedded unquoted into shell-verb commands and native context-menu args, and
+            // is parsed by splitting on spaces, so restrict it to a safe, portable character set.
+            errors.Add("'id' may only contain letters, digits, '.', '_' or '-'.");
+        }
 
         if (string.IsNullOrWhiteSpace(manifest.Name))
         {
@@ -60,6 +66,23 @@ public static class ManifestValidator
         ValidateParameters(manifest, errors);
 
         return errors;
+    }
+
+    private static bool IsValidId(string id)
+    {
+        foreach (var c in id)
+        {
+            var ok = (c >= 'A' && c <= 'Z')
+                || (c >= 'a' && c <= 'z')
+                || (c >= '0' && c <= '9')
+                || c is '.' or '_' or '-';
+            if (!ok)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static void ValidateParameters(PowerScriptManifest manifest, List<string> errors)

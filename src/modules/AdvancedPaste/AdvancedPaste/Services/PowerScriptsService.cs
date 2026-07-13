@@ -123,8 +123,14 @@ internal static class PowerScriptsService
         await process.StandardInput.WriteAsync(payload);
         process.StandardInput.Close();
 
-        string output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+        // Read stdout and stderr concurrently: the host writes all of stderr before any stdout, so
+        // draining only stdout would deadlock on a script that emits more than the pipe buffer to stderr.
+        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await Task.WhenAll(outputTask, errorTask);
         await process.WaitForExitAsync(cancellationToken);
+
+        string output = await outputTask;
 
         if (process.ExitCode != 0 || string.IsNullOrWhiteSpace(output))
         {

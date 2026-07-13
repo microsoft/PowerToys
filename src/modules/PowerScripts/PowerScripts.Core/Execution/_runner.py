@@ -27,6 +27,7 @@ A script may also just return a plain string (treated as text) or a path-like va
 """
 
 import importlib.util
+import inspect
 import json
 import re
 import sys
@@ -118,11 +119,17 @@ def main():
 
         params = payload.get("params") or {}
         args = _build_args(input_format, payload)
-        try:
-            result = function(*args, **params) if params else function(*args)
-        except TypeError:
-            # The script may not accept keyword params; retry positionally only.
-            result = function(*args)
+
+        # Decide up front whether the function accepts the keyword params, rather than catching a
+        # TypeError from the call itself: a TypeError raised *inside* the function body (after it has
+        # already run side effects) would otherwise trigger a positional retry and double-execute it.
+        if params:
+            try:
+                inspect.signature(function).bind(*args, **params)
+            except TypeError:
+                params = {}
+
+        result = function(*args, **params) if params else function(*args)
 
         sys.stdout.write(json.dumps(_normalize_result(result)))
     except SystemExit:

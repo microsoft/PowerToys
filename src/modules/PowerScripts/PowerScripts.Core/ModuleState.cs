@@ -30,9 +30,11 @@ public static class ModuleState
     ///   - The <see cref="IgnoreEnabledEnvironmentVariable"/> bypass wins if set.
     ///   - If the PowerToys settings file is absent (no PowerToys governance — standalone/dev/test),
     ///     execution is allowed.
-    ///   - If the settings file exists, the module must be explicitly enabled
-    ///     (<c>enabled.PowerScripts == true</c>); an absent key means off, mirroring PowerToys'
-    ///     "default off" for this module.
+    ///   - If the settings file exists but has no <c>enabled.PowerScripts</c> key, execution is
+    ///     allowed. Because the runner strips unknown modules from settings.json on launch, an absent
+    ///     key is ambiguous rather than a deliberate "off", so the gate fails open to keep existing
+    ///     hotkey/context-menu bindings working; an explicit <c>false</c> is still honored, as is an
+    ///     explicit off recorded in the module's own config.json.
     ///   - If the settings file is unreadable, we fail open (allow) so a transient/corrupt file does
     ///     not silently break a user's existing hotkeys; the context-menu install/remove still tracks
     ///     the toggle in that edge case.
