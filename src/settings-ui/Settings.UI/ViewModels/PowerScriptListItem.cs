@@ -39,6 +39,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool Trusted { get; set; }
 
         /// <summary>
+        /// Absolute path to the folder containing this script's <c>manifest.json</c>. Surfaced with an
+        /// "open folder" button so users can quickly locate a script on disk (e.g. to edit or inspect it).
+        /// </summary>
+        public string FolderPath { get; set; } = string.Empty;
+
+        /// <summary>Absolute path to the script's entry file (<c>FolderPath</c> + the manifest's entry).</summary>
+        public string EntryFullPath { get; set; } = string.Empty;
+
+        /// <summary>
         /// The parameters this script declares in its manifest. Surfaced under each script so users
         /// know what a community-authored script will ask for before running it.
         /// </summary>
@@ -86,5 +95,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public string TrustDisplay => Trusted
             ? "Trusted"
             : "Not yet trusted — you'll be asked to allow it the first time it runs";
+
+        /// <summary>True when a folder path is known, so the location card and open button can show.</summary>
+        public bool HasFolderPath => !string.IsNullOrEmpty(FolderPath);
     }
 }

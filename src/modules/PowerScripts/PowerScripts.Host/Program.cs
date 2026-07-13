@@ -93,6 +93,8 @@ internal static class Program
                     s.Source,
                     s.Surfaces,
                     s.Capabilities,
+                    folderPath = s.FolderPath,
+                    entryFullPath = s.EntryFullPath,
                     trusted = trustStore.IsTrusted(s.Id, ScriptIntegrity.ComputeHash(s)),
                     input = s.Input,
                     parameters = s.Parameters,

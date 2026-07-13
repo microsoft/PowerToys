@@ -170,6 +170,28 @@
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                                 Text="{x:Bind TrustDisplay}" />
                                         </tkcontrols:SettingsCard>
+                                        <tkcontrols:SettingsCard
+                                            Header="Location"
+                                            Visibility="{x:Bind HasFolderPath, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel
+                                                HorizontalAlignment="Right"
+                                                Orientation="Horizontal"
+                                                Spacing="8">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    IsTextSelectionEnabled="True"
+                                                    Text="{x:Bind FolderPath}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    ToolTipService.ToolTip="{x:Bind FolderPath}" />
+                                                <Button
+                                                    Click="OpenScriptFolderButton_Click"
+                                                    DataContext="{x:Bind}"
+                                                    ToolTipService.ToolTip="Open script folder">
+                                                    <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                                </Button>
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard>
                                     </tkcontrols:SettingsExpander.Items>
                                 </tkcontrols:SettingsExpander>
                             </DataTemplate>

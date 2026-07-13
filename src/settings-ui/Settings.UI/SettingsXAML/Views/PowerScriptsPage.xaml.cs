@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -50,6 +52,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void ResetScriptsFolderButton_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ResetScriptsFolder();
+        }
+
+        // Opens the script's folder in File Explorer, selecting the entry file when known.
+        private void OpenScriptFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: PowerScriptListItem script })
+            {
+                return;
+            }
+
+            try
+            {
+                if (!string.IsNullOrEmpty(script.EntryFullPath) && File.Exists(script.EntryFullPath))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{script.EntryFullPath}\"");
+                }
+                else if (Directory.Exists(script.FolderPath))
+                {
+                    Process.Start("explorer.exe", $"\"{script.FolderPath}\"");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to open PowerScript folder '{script.FolderPath}'.", ex);
+            }
         }
 
         private void BrowsePythonInterpreterButton_Click(object sender, RoutedEventArgs e)
