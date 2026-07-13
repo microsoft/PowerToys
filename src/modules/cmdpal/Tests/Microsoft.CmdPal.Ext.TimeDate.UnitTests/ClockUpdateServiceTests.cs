@@ -81,4 +81,17 @@ public class ClockUpdateServiceTests
 
         Assert.AreEqual(2, updates);
     }
+
+    [TestMethod]
+    public void DispatchTick_HandlerFailureDoesNotPreventOtherClientsFromUpdating()
+    {
+        using var service = new ClockUpdateService(() => InitialTime, enableTimer: false);
+        var updates = 0;
+        service.Subscribe(new object(), (_, _) => throw new InvalidOperationException("Test failure"), requiresSecondUpdates: true);
+        service.Subscribe(new object(), (_, _) => updates++, requiresSecondUpdates: false);
+
+        service.DispatchTick(InitialTime.AddMinutes(1));
+
+        Assert.AreEqual(1, updates);
+    }
 }
