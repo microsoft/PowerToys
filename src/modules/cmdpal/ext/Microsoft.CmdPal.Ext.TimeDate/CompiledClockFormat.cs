@@ -34,6 +34,7 @@ internal sealed class CompiledClockFormat
         IsUtc = format.StartsWith("UTC:", StringComparison.Ordinal);
         _format = IsUtc ? format[4..] : format;
         (_segments, _tokens) = ParseSegments(_format);
+        _ = DateTime.UtcNow.ToString(GetStandardFormat(_format, _segments, _tokens), CultureInfo.CurrentCulture);
         RequiresSecondUpdates = DetermineRequiresSecondUpdates(_format, _segments, _tokens);
     }
 
@@ -265,13 +266,23 @@ internal sealed class CompiledClockFormat
             return ContainsSecondToken(format);
         }
 
+        return ContainsSecondToken(GetStandardFormat(format, segments, tokens));
+    }
+
+    private static string GetStandardFormat(string format, FormatSegment[] segments, CustomFormatToken tokens)
+    {
+        if (tokens == CustomFormatToken.None)
+        {
+            return format;
+        }
+
         var standardFormat = new StringBuilder(format.Length);
         foreach (var segment in segments)
         {
             standardFormat.Append(segment.Token == CustomFormatToken.None ? segment.Literal : "000");
         }
 
-        return ContainsSecondToken(standardFormat.ToString());
+        return standardFormat.ToString();
     }
 
     private static bool ContainsSecondToken(string format)

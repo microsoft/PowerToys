@@ -131,4 +131,17 @@ public class CustomClockIdTests
 
         Assert.IsFalse(CustomClockDisplay.RequiresSecondUpdates(clock));
     }
+
+    [DataTestMethod]
+    [DataRow("%")]
+    [DataRow("UTC:%")]
+    [DataRow("WOY %")]
+    public void CustomClockManager_SaveRejectsInvalidFormats(string format)
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var manager = new CustomClockManager(statePath);
+        var clock = new CustomClock { TitleFormat = format };
+
+        Assert.ThrowsException<ArgumentException>(() => manager.Save(clock));
+    }
 }
