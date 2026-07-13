@@ -48,6 +48,7 @@
             <!--  Backdrop requires ShouldConstrainToRootBounds="False"  -->
             <Flyout
                 x:Name="ContextMenuFlyout"
+                Closed="ContextMenuFlyout_Closed"
                 FlyoutPresenterStyle="{StaticResource ContextMenuFlyoutStyle}"
                 Opened="ContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"

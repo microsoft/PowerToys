@@ -156,8 +156,11 @@ public sealed partial class CommandBar : UserControl,
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
-        ContextControl.FocusSearchBox();
+        ContextControl.CompleteMenuOpen();
+    }
+
+    private void ContextMenuFlyout_Closed(object sender, object e)
+    {
+        ContextControl.NotifyMenuClosed();
     }
 }

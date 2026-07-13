@@ -99,4 +99,51 @@ public class HoverActionSelectionTests
         Assert.IsFalse(HoverActionSelection.TrySelectLastOnBackwardEntry(ref index, 3, stripVisible: true));
         Assert.AreEqual(1, index);
     }
+
+    [TestMethod]
+    public void RunStyleTabCycle_ForwardFromNoSelectionThroughStripAndExit()
+    {
+        var index = HoverActionSelection.NoSelection;
+        var rowTabFocused = false;
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.IsTrue(rowTabFocused);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(0, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(1, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(2, index);
+
+        Assert.IsFalse(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(HoverActionSelection.NoSelection, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleForward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.IsTrue(rowTabFocused);
+    }
+
+    [TestMethod]
+    public void RunStyleTabCycle_BackwardFromNoSelectionSelectsLastThenExits()
+    {
+        var index = HoverActionSelection.NoSelection;
+        var rowTabFocused = false;
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleBackward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(2, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleBackward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(1, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleBackward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(0, index);
+
+        Assert.IsTrue(HoverActionTabNavigation.TryHandleBackward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.IsTrue(rowTabFocused);
+
+        Assert.IsFalse(HoverActionTabNavigation.TryHandleBackward(ref index, ref rowTabFocused, 3, stripVisible: true));
+        Assert.AreEqual(HoverActionSelection.NoSelection, index);
+    }
 }

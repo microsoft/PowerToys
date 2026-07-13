@@ -179,8 +179,42 @@ public sealed partial class ListItemsView : UserControl,
             }
 
             // Ensure the command bar refreshes with the restored page's commands.
+            SyncListSelectionForHoverActions();
             PushSelectionToVm();
         });
+    }
+
+    /// <summary>
+    /// Keeps <see cref="ListItemViewModel.IsListSelected"/> in sync when selection is set
+    /// programmatically (filter updates suppress <see cref="Items_SelectionChanged"/>).
+    /// </summary>
+    private void SyncListSelectionForHoverActions()
+    {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
+        var selected = ItemView.SelectedItem as ListItemViewModel;
+        if (selected is not null && IsSeparator(selected))
+        {
+            selected = null;
+        }
+
+        foreach (var item in ViewModel.FilteredItems)
+        {
+            if (!item.IsInteractive)
+            {
+                continue;
+            }
+
+            item.SetListSelected(ReferenceEquals(item, selected));
+        }
+
+        if (selected is not null)
+        {
+            _stickySelectedItem = selected;
+        }
     }
 
     /// <summary>
@@ -348,6 +382,10 @@ public sealed partial class ListItemsView : UserControl,
             {
                 args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
             }
+            else if (ReferenceEquals(vm, ItemView.SelectedItem))
+            {
+                vm.SetListSelected(true);
+            }
         }
     }
 
@@ -375,6 +413,7 @@ public sealed partial class ListItemsView : UserControl,
             hoverList.Tag = vm;
             hoverList.ItemClick -= _hoverActionsItemClickHandler;
             hoverList.ItemClick += _hoverActionsItemClickHandler;
+            SyncHoverListSelectionVisual(vm);
         }
 
         return true;
@@ -872,25 +911,18 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        if (!item.HasSelectedHoverAction)
-        {
-            return;
-        }
-
         if (message.Forward)
         {
-            message.Handled = item.SelectNextHoverAction();
-        }
-        else if (item.HoverActionSelectedIndex == ListItemViewModel.NoHoverActionSelectionIndex)
-        {
-            // Run parity: first Shift+Tab into a row with actions selects the last icon.
-            item.SelectLastHoverAction();
-            message.Handled = item.HasSelectedHoverAction;
+            message.Handled = item.HandleForwardHoverTab();
         }
         else
         {
-            message.Handled = item.SelectPrevHoverAction();
+            message.Handled = item.HandleBackwardHoverTab();
         }
+
+        // WinUI nested ListViews often keep SelectedIndex coerced off -1; force visuals
+        // to match VM so row outline and icon outline never show together.
+        SyncHoverListSelectionVisual(item);
 
         if (message.Handled)
         {
@@ -898,11 +930,76 @@ public sealed partial class ListItemsView : UserControl,
             {
                 AnnounceSelectedHoverAction(item);
             }
+            else if (item.IsRowTabFocused)
+            {
+                AnnounceRowTabFocus(item);
+            }
             else
             {
                 ResetHoverActionAnnouncement();
             }
         }
+    }
+
+    private void SyncHoverListSelectionVisual(ListItemViewModel item)
+    {
+        if (ItemView.ContainerFromItem(item) is not ListViewItem container)
+        {
+            return;
+        }
+
+        var hoverList = FindRowHoverActionsList(GetRowContentGrid(container));
+        if (hoverList is null)
+        {
+            return;
+        }
+
+        var desired = item.IsRowTabFocused || !item.HasSelectedHoverAction
+            ? -1
+            : item.HoverActionSelectedIndex;
+
+        if (desired < 0)
+        {
+            if (hoverList.SelectedIndex != -1 || hoverList.SelectedItem is not null)
+            {
+                hoverList.SelectedItem = null;
+            }
+
+            return;
+        }
+
+        if (hoverList.SelectedIndex != desired)
+        {
+            hoverList.SelectedIndex = desired;
+        }
+    }
+
+    private void AnnounceRowTabFocus(ListItemViewModel row)
+    {
+        if (FrameworkElementAutomationPeer.FromElement(ItemsList) is null)
+        {
+            return;
+        }
+
+        var title = row.Title;
+        if (string.IsNullOrEmpty(title))
+        {
+            return;
+        }
+
+        var rowId = row.Command.Id ?? string.Empty;
+        var selectionKey = (rowId, ListItemViewModel.NoHoverActionSelectionIndex, title);
+        if (selectionKey == _lastAnnouncedHoverActionKey)
+        {
+            return;
+        }
+
+        _lastAnnouncedHoverActionKey = selectionKey;
+
+        UIHelper.AnnounceActionForAccessibility(
+            ItemsList,
+            title,
+            "CommandPaletteHoverRowTabFocus");
     }
 
     private void ResetHoverActionAnnouncement() =>
@@ -1359,6 +1456,7 @@ public sealed partial class ListItemsView : UserControl,
             }
         }
 
+        SyncListSelectionForHoverActions();
         PushSelectionToVm();
         return true;
     }

@@ -14,6 +14,7 @@ public partial class ListItemViewModel
 
     private bool _isRowHovered;
     private bool _isListSelected;
+    private bool _isRowTabFocused;
     private int _hoverActionSelectedIndex = NoHoverActionSelectionIndex;
     private IReadOnlyList<CommandContextItemViewModel> _hoverActions = [];
 
@@ -37,17 +38,36 @@ public partial class ListItemViewModel
             }
 
             _hoverActionSelectedIndex = value;
+
+            // Icon focus and row-outline focus must never show at the same time.
+            if (_hoverActionSelectedIndex >= 0 && _isRowTabFocused)
+            {
+                _isRowTabFocused = false;
+                UpdateProperty(
+                    nameof(HoverActionSelectedIndex),
+                    nameof(HasSelectedHoverAction),
+                    nameof(IsRowTabFocused));
+                SyncHoverActionKeyboardSelection();
+                return;
+            }
+
             UpdateProperty(nameof(HoverActionSelectedIndex), nameof(HasSelectedHoverAction));
+            SyncHoverActionKeyboardSelection();
         }
     }
 
     public bool HasSelectedHoverAction =>
         _hoverActionSelectedIndex >= 0 && _hoverActionSelectedIndex < _hoverActions.Count;
 
+    /// <summary>
+    /// Visual-only Tab step: the list row is highlighted before cycling hover icons.
+    /// </summary>
+    public bool IsRowTabFocused => _isRowTabFocused;
+
     public bool AreHoverActionsVisible =>
         HoverActionResolver.ShouldShowHoverStrip(BuildHoverActionContext(), HasHoverActions);
 
-    public bool ShowTagsWhenNotHovering => HasTags && !AreHoverActionsVisible;
+    public bool ShowTags => HasTags;
 
     internal bool CanResolveHoverActions => IsSelectedInitialized;
 
@@ -88,33 +108,73 @@ public partial class ListItemViewModel
     public void ClearHoverActionSelection()
     {
         HoverActionSelectedIndex = NoHoverActionSelectionIndex;
+        SetRowTabFocused(false);
+    }
+
+    public void SetRowTabFocused(bool focused)
+    {
+        if (_isRowTabFocused == focused)
+        {
+            return;
+        }
+
+        _isRowTabFocused = focused;
+
+        // Row outline is a dedicated Tab step before icons; clear any icon selection.
+        if (focused && _hoverActionSelectedIndex != NoHoverActionSelectionIndex)
+        {
+            _hoverActionSelectedIndex = NoHoverActionSelectionIndex;
+            UpdateProperty(
+                nameof(IsRowTabFocused),
+                nameof(HoverActionSelectedIndex),
+                nameof(HasSelectedHoverAction));
+            SyncHoverActionKeyboardSelection();
+            return;
+        }
+
+        UpdateProperty(nameof(IsRowTabFocused));
+        if (focused)
+        {
+            SyncHoverActionKeyboardSelection();
+        }
+    }
+
+    private void SyncHoverActionKeyboardSelection()
+    {
+        for (var i = 0; i < _hoverActions.Count; i++)
+        {
+            _hoverActions[i].IsHoverKeyboardSelected = i == _hoverActionSelectedIndex;
+        }
     }
 
     /// <returns>False when Tab should leave the hover strip (past last icon or no actions).</returns>
-    public bool SelectNextHoverAction()
+    public bool HandleForwardHoverTab()
     {
         var index = _hoverActionSelectedIndex;
-        var handled = HoverActionSelection.TrySelectNext(ref index, _hoverActions.Count, AreHoverActionsVisible);
+        var rowTabFocused = _isRowTabFocused;
+        var handled = HoverActionTabNavigation.TryHandleForward(
+            ref index,
+            ref rowTabFocused,
+            _hoverActions.Count,
+            AreHoverActionsVisible);
         HoverActionSelectedIndex = index;
+        SetRowTabFocused(rowTabFocused);
         return handled;
     }
 
-    /// <returns>False when Shift+Tab should leave the hover strip (before first icon).</returns>
-    public bool SelectPrevHoverAction()
+    /// <returns>False when Shift+Tab should leave the hover strip.</returns>
+    public bool HandleBackwardHoverTab()
     {
         var index = _hoverActionSelectedIndex;
-        var handled = HoverActionSelection.TrySelectPrev(ref index, _hoverActions.Count, AreHoverActionsVisible);
+        var rowTabFocused = _isRowTabFocused;
+        var handled = HoverActionTabNavigation.TryHandleBackward(
+            ref index,
+            ref rowTabFocused,
+            _hoverActions.Count,
+            AreHoverActionsVisible);
         HoverActionSelectedIndex = index;
+        SetRowTabFocused(rowTabFocused);
         return handled;
-    }
-
-    public void SelectLastHoverAction()
-    {
-        var index = _hoverActionSelectedIndex;
-        if (HoverActionSelection.TrySelectLastOnBackwardEntry(ref index, _hoverActions.Count, AreHoverActionsVisible))
-        {
-            HoverActionSelectedIndex = index;
-        }
     }
 
     public bool TryGetSelectedHoverAction(out CommandContextItemViewModel? action)
@@ -147,6 +207,10 @@ public partial class ListItemViewModel
         if (_hoverActionSelectedIndex >= _hoverActions.Count)
         {
             ClearHoverActionSelection();
+        }
+        else
+        {
+            SyncHoverActionKeyboardSelection();
         }
 
         UpdateHoverVisibilityProperties();
@@ -189,7 +253,7 @@ public partial class ListItemViewModel
     {
         if (!IsListHoverActionsEnabled)
         {
-            UpdateProperty(nameof(AreHoverActionsVisible), nameof(ShowTagsWhenNotHovering));
+            UpdateProperty(nameof(AreHoverActionsVisible));
             return;
         }
 
@@ -197,8 +261,8 @@ public partial class ListItemViewModel
             nameof(HoverActions),
             nameof(HasHoverActions),
             nameof(AreHoverActionsVisible),
-            nameof(ShowTagsWhenNotHovering),
             nameof(HoverActionSelectedIndex),
-            nameof(HasSelectedHoverAction));
+            nameof(HasSelectedHoverAction),
+            nameof(IsRowTabFocused));
     }
 }

@@ -5,14 +5,16 @@
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
-/// Cycles keyboard selection across hover action icons on the selected list row (Run-style Tab).
+/// Cycles keyboard selection across the selected list row and its hover icons (Run-style Tab).
+/// The first Tab highlights the row; subsequent Tabs cycle icons while focus stays in search.
 /// </summary>
 public class NavigateHoverActionTabMessage(bool forward, bool searchBoxFocused = false)
 {
     public bool Forward { get; } = forward;
 
     /// <summary>
-    /// When true, cycling only occurs if a hover icon is already highlighted.
+    /// When true, the search box has focus and Tab cycles hover icons without moving focus
+    /// (Run-style visual selection). When false, the message is ignored.
     /// </summary>
     public bool SearchBoxFocused { get; } = searchBoxFocused;
 
