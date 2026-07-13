@@ -147,10 +147,20 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                 while (await reader.ReadAsync(cancellationToken))
                 {
                     var row = new Dictionary<string, string?>(reader.FieldCount, StringComparer.Ordinal);
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    for (int i = 0; i < reader.FieldCount && i < tableInfo.Columns.Count; i++)
                     {
                         var col = tableInfo.Columns[i];
-                        row[col.BindingKey] = reader.IsDBNull(i) ? null : reader.GetValue(i)?.ToString();
+                        if (reader.IsDBNull(i))
+                        {
+                            row[col.BindingKey] = null;
+                        }
+                        else
+                        {
+                            var value = reader.GetValue(i);
+                            row[col.BindingKey] = value is byte[] blob
+                                ? string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Blob_Value"), blob.Length)
+                                : value?.ToString();
+                        }
                     }
 
                     tableInfo.Rows.Add(row);
