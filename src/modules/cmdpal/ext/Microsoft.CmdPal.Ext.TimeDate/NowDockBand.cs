@@ -19,8 +19,8 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private bool _timeWithSeconds;
     private ISettingsInterface? _settings;
     private ICommand? _allClocksPage;
-    private string? _titleFormat;
-    private string? _subtitleFormat;
+    private CompiledClockFormat? _titleFormat;
+    private CompiledClockFormat? _subtitleFormat;
 
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
@@ -83,8 +83,8 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     internal void UpdateSettings(IDockClockSettings settings)
     {
         _settings = settings;
-        _titleFormat = settings.DockClockTitleFormat;
-        _subtitleFormat = settings.DockClockSubtitleFormat;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
         Command = settings.DockClockClickAction == "allClocks" && _allClocksPage is not null
             ? _allClocksPage
             : new OpenUrlCommand("ms-actioncenter:")
@@ -93,7 +93,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
                 Name = Resources.timedate_show_notification_center_command_name,
                 Result = CommandResult.Dismiss(),
             };
-        _clockUpdateService.SetRequiresSecondUpdates(this, CustomClockDisplay.RequiresSecondUpdates(_titleFormat, _subtitleFormat));
+        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         UpdateText();
     }
 
