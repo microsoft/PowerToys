@@ -151,12 +151,16 @@ internal sealed partial class CustomClockOverviewItem : ListItem
 {
     private readonly ClockUpdateService _clockUpdateService;
     private readonly ISettingsInterface _settings;
+    private readonly CompiledClockFormat _titleFormat;
+    private readonly CompiledClockFormat _subtitleFormat;
 
     internal CustomClockOverviewItem(CustomClock clock, ISettingsInterface settings, ClockUpdateService clockUpdateService)
     {
         Clock = clock;
         _settings = settings;
         _clockUpdateService = clockUpdateService;
+        _titleFormat = CustomClockDisplay.CompileFormat(clock.TitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(clock.SubtitleFormat);
         Icon = Icons.TimeIcon;
         Command = new CustomClockDetailPage(settings, clock);
         UpdateText();
@@ -192,7 +196,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
     internal void StartUpdating()
     {
         _clockUpdateService.Tick += ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, CustomClockDisplay.RequiresSecondUpdates(Clock));
+        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
     }
 
     internal void StopUpdating()
@@ -206,8 +210,8 @@ internal sealed partial class CustomClockOverviewItem : ListItem
     private void UpdateText()
     {
         var now = CustomClockDisplay.GetCurrentTime(Clock);
-        var title = CustomClockDisplay.Format(now, Clock.TitleFormat, _settings);
-        var subtitle = CustomClockDisplay.Format(now, Clock.SubtitleFormat, _settings);
+        var title = CustomClockDisplay.Format(now, _titleFormat, _settings);
+        var subtitle = CustomClockDisplay.Format(now, _subtitleFormat, _settings);
         var name = CustomClockDisplay.GetName(Clock, now.ToUniversalTime());
         var offsetDifference = CustomClockDisplay.GetLocalOffsetDifference(now);
 

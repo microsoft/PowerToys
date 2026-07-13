@@ -157,7 +157,7 @@ internal sealed class CustomClockManager
             !format.StartsWith("UTC:", StringComparison.Ordinal) &&
             !TimeAndDateHelper.StringContainsCustomFormatSyntax(format))
         {
-            _ = DateTime.UtcNow.ToString(CustomClockDisplay.NormalizeRelativeDayToken(format).Replace("REL", "'Today'", StringComparison.Ordinal), CultureInfo.CurrentCulture);
+            _ = DateTime.UtcNow.ToString(format.Replace("REL", "'Today'", StringComparison.Ordinal), CultureInfo.CurrentCulture);
         }
     }
 }

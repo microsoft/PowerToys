@@ -220,5 +220,27 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             Assert.AreEqual(expected, result);
         }
+
+        [DataTestMethod]
+        [DataRow("\\IWOY IWOY", "IWOY 28")]
+        [DataRow("\\IWYR IWYR", "IWYR 2026")]
+        [DataRow("\\IWYY IWYY", "IWYY 26")]
+        [DataRow("\\IDOW IDOW", "IDOW 1")]
+        public void EscapedIsoTokensStayLiteral(string format, string expected)
+        {
+            var result = CustomClockDisplay.Format(new DateTime(2026, 7, 6), format, new Settings());
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [TestMethod]
+        public void UtcFormatsUseTheUtcWeekDateAtTheYearBoundary()
+        {
+            var time = new DateTimeOffset(2024, 12, 30, 1, 0, 0, TimeSpan.FromHours(2));
+            var settings = new Settings(firstWeekOfYear: 2, firstDayOfWeek: 1);
+
+            Assert.AreEqual("2025-W01-1 1", CustomClockDisplay.Format(time, "IWYR-\\WIWOY-IDOW WOY", settings));
+            Assert.AreEqual("2024-W52-7 52", CustomClockDisplay.Format(time, "UTC:IWYR-\\WIWOY-IDOW WOY", settings));
+        }
     }
 }

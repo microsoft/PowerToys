@@ -15,6 +15,8 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly ISettingsInterface _settings;
     private readonly ClockUpdateService _clockUpdateService;
     private readonly Func<DateTime> _utcNow;
+    private readonly CompiledClockFormat _titleFormat;
+    private readonly CompiledClockFormat _subtitleFormat;
 
     internal Guid ClockId => _clockDefinition.Id;
 
@@ -24,8 +26,10 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         _settings = settings;
         _clockUpdateService = clockUpdateService;
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
+        _titleFormat = CustomClockDisplay.CompileFormat(clockDefinition.TitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(clockDefinition.SubtitleFormat);
         _clockUpdateService.Tick += ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, CustomClockDisplay.RequiresSecondUpdates(clockDefinition));
+        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         MoreCommands = [new CommandContextItem(new EditCustomClockPage(clockManager, settings, clockDefinition, customizeDock: true))];
         UpdateText();
     }
@@ -35,8 +39,8 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     internal void UpdateText()
     {
         var now = CustomClockDisplay.GetCurrentTime(_clockDefinition, new DateTimeOffset(DateTime.SpecifyKind(_utcNow(), DateTimeKind.Utc)));
-        var title = CustomClockDisplay.Format(now, _clockDefinition.TitleFormat, _settings);
-        var subtitle = CustomClockDisplay.Format(now, _clockDefinition.SubtitleFormat, _settings);
+        var title = CustomClockDisplay.Format(now, _titleFormat, _settings);
+        var subtitle = CustomClockDisplay.Format(now, _subtitleFormat, _settings);
         if (title == Title && subtitle == Subtitle)
         {
             return;
