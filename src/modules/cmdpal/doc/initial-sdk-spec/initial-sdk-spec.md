@@ -580,6 +580,10 @@ interface IToastArgs requires ICommandResultArgs{
     String Message { get; };
     ICommandResult Result { get; };
 }
+interface IToastArgs2 requires IToastArgs{
+    IIconInfo Icon { get; };
+    ICommand Command { get; };
+}
 interface IConfirmationArgs requires ICommandResultArgs{
     String Title { get; };
     String Description { get; };
@@ -707,6 +711,15 @@ Use cases for each `CommandResultKind`:
     before the previous one is dismissed, the new toast will replace the old
     one. This includes if the `Result` of one `IToastArgs` is another
     `IToastArgs`.
+  * An extension can optionally customize the toast via `IToastArgs2` (the
+    toolkit's `ToastArgs` already implements it):
+    * `Icon` is displayed next to the message.
+    * `Command` manifests as an action button on the right side of the toast
+      (e.g. "Undo", "View details"), using the command's icon and name. When
+      clicked, the toast is dismissed and the command is performed — an
+      invokable command is invoked directly, and a page command summons the
+      palette and navigates to the page.
+    * Hosts that predate `IToastArgs2` display just the message.
 * `Confirm`: Display a confirmation dialog to the user. This is useful for
   actions that are destructive or irreversible. The `ConfirmationArgs` will
   specify the title, and description for the dialog. The primary button of the

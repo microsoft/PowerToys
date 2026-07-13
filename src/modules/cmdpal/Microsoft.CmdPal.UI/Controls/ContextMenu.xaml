@@ -144,6 +144,18 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
+
+        <!--
+            Hidden element used solely for raising Narrator notifications.
+            It must be Content-visible in UIA but has no visual presence.
+        -->
+        <TextBlock
+            x:Name="NarratorAnnouncer"
+            Width="0"
+            Height="0"
+            AutomationProperties.AccessibilityView="Content"
+            AutomationProperties.LiveSetting="Assertive" />
+
         <ListView
             x:Name="CommandsDropdown"
             MinWidth="248"
@@ -180,6 +192,7 @@
             AutomationProperties.Name="Filter commands"
             Margin="0"
             Padding="10,7,6,8"
+            AutomationProperties.AccessibilityView="Raw"
             Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
             BorderThickness="0,0,0,2"
             CornerRadius="8, 8, 0, 0"

@@ -79,6 +79,46 @@ internal sealed partial class SampleToastsPage : DynamicListPage
                 Icon = new IconInfo("\uE8A7"),
             },
 
+            // Toast with an icon (IToastArgs2). Older hosts show just the text.
+            new ListItem(new AnonymousCommand(() => { })
+            {
+                Name = "Show toast with icon",
+                Result = CommandResult.ShowToast(new ToastArgs
+                {
+                    Message = "This toast has an icon next to its message.",
+                    Icon = new IconInfo(""), // CheckMark
+                    Result = CommandResult.KeepOpen(),
+                }),
+            })
+            {
+                Title = "Toast with an icon",
+                Subtitle = "ToastArgs.Icon — hosts without IToastArgs2 show only the text",
+                Icon = new IconInfo(""),
+            },
+
+            // Toast with an action button (IToastArgs2.Command) — e.g. Undo.
+            new ListItem(new AnonymousCommand(() => { })
+            {
+                Name = "Show toast with action",
+                Result = CommandResult.ShowToast(new ToastArgs
+                {
+                    Message = "Item deleted.",
+                    Icon = new IconInfo(""), // Delete
+                    Command = new AnonymousCommand(() => { })
+                    {
+                        Name = "Undo",
+                        Icon = new IconInfo(""), // Undo
+                        Result = CommandResult.ShowToast("Delete undone!"),
+                    },
+                    Result = CommandResult.KeepOpen(),
+                }),
+            })
+            {
+                Title = "Toast with an action button",
+                Subtitle = "ToastArgs.Command renders as a button on the right (e.g. Undo)",
+                Icon = new IconInfo(""),
+            },
+
             // Long message exercises wrapping inside the banner.
             new ListItem(new AnonymousCommand(() => { })
             {

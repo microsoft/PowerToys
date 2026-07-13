@@ -29,7 +29,29 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Backdrops;
 /// </remarks>
 public sealed partial class AlwaysActiveDesktopAcrylicBackdrop : SystemBackdrop
 {
+    /// <summary>
+    /// Identifies the <see cref="Kind"/> dependency property.
+    /// </summary>
+    public static readonly DependencyProperty KindProperty = DependencyProperty.Register(
+        nameof(Kind),
+        typeof(DesktopAcrylicKind),
+        typeof(AlwaysActiveDesktopAcrylicBackdrop),
+        new PropertyMetadata(DesktopAcrylicKind.Default, OnKindChanged));
+
     private readonly Dictionary<ICompositionSupportsSystemBackdrop, BackdropTarget> _targets = new();
+
+    /// <summary>
+    /// Gets or sets the desktop acrylic material variant to render. Defaults to
+    /// <see cref="DesktopAcrylicKind.Default"/> (the standard, more opaque
+    /// acrylic); <see cref="DesktopAcrylicKind.Thin"/> renders a lighter, more
+    /// translucent material and <see cref="DesktopAcrylicKind.Base"/> the base
+    /// material. Changing this updates any live backdrop targets immediately.
+    /// </summary>
+    public DesktopAcrylicKind Kind
+    {
+        get => (DesktopAcrylicKind)GetValue(KindProperty);
+        set => SetValue(KindProperty, value);
+    }
 
     protected override void OnTargetConnected(ICompositionSupportsSystemBackdrop connectedTarget, XamlRoot xamlRoot)
     {
@@ -41,7 +63,10 @@ public sealed partial class AlwaysActiveDesktopAcrylicBackdrop : SystemBackdrop
             Theme = ResolveTheme(xamlRoot),
         };
 
-        var controller = new DesktopAcrylicController();
+        var controller = new DesktopAcrylicController
+        {
+            Kind = Kind,
+        };
         controller.SetSystemBackdropConfiguration(configuration);
         controller.AddSystemBackdropTarget(connectedTarget);
 
@@ -67,6 +92,17 @@ public sealed partial class AlwaysActiveDesktopAcrylicBackdrop : SystemBackdrop
 
             target.Controller.RemoveSystemBackdropTarget(disconnectedTarget);
             target.Controller.Dispose();
+        }
+    }
+
+    private static void OnKindChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var self = (AlwaysActiveDesktopAcrylicBackdrop)d;
+        var kind = (DesktopAcrylicKind)e.NewValue;
+
+        foreach (var target in self._targets.Values)
+        {
+            target.Controller.Kind = kind;
         }
     }
 
