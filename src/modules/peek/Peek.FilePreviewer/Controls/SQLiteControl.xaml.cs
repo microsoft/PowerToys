@@ -25,7 +25,7 @@ namespace Peek.FilePreviewer.Controls
         public static readonly DependencyProperty TablesProperty = DependencyProperty.Register(
             nameof(Tables),
             typeof(ObservableCollection<SqliteTableInfo>),
-            typeof(SqlitePreviewer),
+            typeof(SqliteControl),
             new PropertyMetadata(null, OnTablesPropertyChanged));
 
         public static readonly DependencyProperty LoadingStateProperty = DependencyProperty.Register(
