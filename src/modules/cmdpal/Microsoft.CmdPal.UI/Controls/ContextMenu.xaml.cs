@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common.Text;
@@ -28,6 +30,15 @@ public sealed partial class ContextMenu : UserControl,
     public static readonly DependencyProperty SubscribeToCommandBarProperty =
         DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
 
+    private static readonly CompositeFormat _contextMenuOpenedFormat =
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
+
+    /// <summary>
+    /// True while the context menu is transitioning from PrepareForOpen to AnnounceOpened.
+    /// Prevents ViewModel_PropertyChanged from triggering UIA-visible selection changes.
+    /// </summary>
+    private bool _isOpening;
+
     public bool ShowFilterBox
     {
         get => (bool)GetValue(ShowFilterBoxProperty);
@@ -46,12 +57,6 @@ public sealed partial class ContextMenu : UserControl,
     }
 
     public ContextMenuViewModel ViewModel { get; }
-
-    private bool _suppressProgrammaticUpdates;
-
-    private bool _isMenuOpen;
-
-    private (int Index, string Title) _lastAnnouncedSelectionKey = (-1, string.Empty);
 
     public ContextMenu()
     {
@@ -110,9 +115,7 @@ public sealed partial class ContextMenu : UserControl,
 
     internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
     {
-        _isMenuOpen = true;
-        _suppressProgrammaticUpdates = true;
-        _lastAnnouncedSelectionKey = (-1, string.Empty);
+        _isOpening = true;
 
         ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
         ViewModel.ResetContextMenu();
@@ -121,35 +124,36 @@ public sealed partial class ContextMenu : UserControl,
     }
 
     /// <summary>
-    /// Called after the flyout is in the visual tree. Focuses the filter box and
-    /// raises a single consolidated Narrator announcement for the opened menu.
+    /// Fires a single consolidated Narrator announcement.
+    /// Call this after the flyout is opened and focus has been set.
     /// </summary>
-    internal void CompleteMenuOpen()
+    internal void AnnounceOpened()
     {
-        _suppressProgrammaticUpdates = true;
-
-        if (CommandsDropdown.Items.Count > 0 && CommandsDropdown.SelectedIndex < 0)
+        // Defer the announcement to the next dispatcher cycle. This ensures
+        // any pending FilteredItems updates have completed and the flyout
+        // content is fully materialized in the UIA tree.
+        DispatcherQueue.TryEnqueue(() =>
         {
-            CommandsDropdown.SelectedIndex = 0;
-        }
+            _isOpening = false;
 
-        _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-        {
-            AnnounceMenuOpened();
+            var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
+            var itemCount = commandItems.Count;
+            var selectedItem = CommandsDropdown.SelectedItem as CommandContextItemViewModel;
+            var selectedName = selectedItem?.Title ?? string.Empty;
+            var selectedIndex = selectedItem is not null ? commandItems.IndexOf(selectedItem) + 1 : 0;
 
-            _ = DispatcherQueue.TryEnqueue(() =>
-            {
-                FocusSearchBox();
-                _suppressProgrammaticUpdates = false;
-            });
+            var announcement = string.Format(
+                CultureInfo.CurrentCulture,
+                _contextMenuOpenedFormat,
+                itemCount,
+                selectedName,
+                selectedIndex);
+
+            RaiseNarratorNotification(
+                AutomationNotificationKind.ActionCompleted,
+                announcement,
+                "ContextMenuOpened");
         });
-    }
-
-    internal void NotifyMenuClosed()
-    {
-        _isMenuOpen = false;
-        _suppressProgrammaticUpdates = false;
-        _lastAnnouncedSelectionKey = (-1, string.Empty);
     }
 
     public void Receive(UpdateCommandBarMessage message)
@@ -240,7 +244,7 @@ public sealed partial class ContextMenu : UserControl,
     {
         var prop = e.PropertyName;
 
-        if (prop == nameof(ContextMenuViewModel.FilteredItems))
+        if (prop == nameof(ContextMenuViewModel.FilteredItems) && !_isOpening)
         {
             UpdateUiForStackChange();
         }
@@ -248,22 +252,12 @@ public sealed partial class ContextMenu : UserControl,
 
     private void ContextFilterBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (_suppressProgrammaticUpdates)
-        {
-            return;
-        }
-
-        _suppressProgrammaticUpdates = true;
-
         ViewModel?.SetSearchText(ContextFilterBox.Text);
 
-        if (CommandsDropdown.Items.Count > 0)
+        if (CommandsDropdown.SelectedIndex == -1)
         {
             CommandsDropdown.SelectedIndex = 0;
         }
-
-        _lastAnnouncedSelectionKey = (-1, string.Empty);
-        _suppressProgrammaticUpdates = false;
     }
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -308,12 +302,14 @@ public sealed partial class ContextMenu : UserControl,
         if (e.Key == VirtualKey.Up)
         {
             NavigateUp();
+            AnnounceSelectedItem();
 
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Down)
         {
             NavigateDown();
+            AnnounceSelectedItem();
 
             e.Handled = true;
         }
@@ -356,7 +352,6 @@ public sealed partial class ContextMenu : UserControl,
         }
 
         CommandsDropdown.SelectedIndex = newIndex;
-        AnnounceSelectedCommand();
     }
 
     private void NavigateDown()
@@ -394,7 +389,6 @@ public sealed partial class ContextMenu : UserControl,
         }
 
         CommandsDropdown.SelectedIndex = newIndex;
-        AnnounceSelectedCommand();
     }
 
     private bool IsSeparator(object item)
@@ -402,151 +396,51 @@ public sealed partial class ContextMenu : UserControl,
         return item is SeparatorViewModel;
     }
 
+    private void AnnounceSelectedItem()
+    {
+        if (CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
+        {
+            return;
+        }
+
+        var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
+        var position = commandItems.IndexOf(selected) + 1;
+        var total = commandItems.Count;
+        var announcement = $"{selected.Title}, {position} of {total}";
+
+        RaiseNarratorNotification(
+            AutomationNotificationKind.ItemAdded,
+            announcement,
+            "ContextMenuSelectionChanged");
+    }
+
+    /// <summary>
+    /// Raises a UIA notification via the dedicated NarratorAnnouncer element.
+    /// Ensures the element has a peer (forcing layout if needed on first use).
+    /// </summary>
+    private void RaiseNarratorNotification(AutomationNotificationKind kind, string announcement, string activityId)
+    {
+        // On first flyout open the announcer may not have a peer yet.
+        // UpdateLayout ensures the element is materialized in the UIA tree.
+        var peer = FrameworkElementAutomationPeer.FromElement(NarratorAnnouncer);
+        if (peer is null)
+        {
+            NarratorAnnouncer.UpdateLayout();
+            peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
+        }
+
+        peer?.RaiseNotificationEvent(
+            kind,
+            AutomationNotificationProcessing.ImportantMostRecent,
+            announcement,
+            activityId);
+    }
+
     private void UpdateUiForStackChange()
     {
-        var previousSuppress = _suppressProgrammaticUpdates;
-        _suppressProgrammaticUpdates = true;
-
         ContextFilterBox.Text = string.Empty;
         ViewModel?.SetSearchText(string.Empty);
-
-        if (CommandsDropdown.Items.Count > 0)
-        {
-            CommandsDropdown.SelectedIndex = 0;
-        }
-        else
-        {
-            CommandsDropdown.SelectedIndex = -1;
-        }
-
-        _lastAnnouncedSelectionKey = (-1, string.Empty);
-        _suppressProgrammaticUpdates = previousSuppress || _isMenuOpen;
-    }
-
-    internal void AnnounceSelectedCommand()
-    {
-        if (_suppressProgrammaticUpdates || FrameworkElementAutomationPeer.FromElement(CommandsDropdown) is null)
-        {
-            return;
-        }
-
-        var index = CommandsDropdown.SelectedIndex;
-        if (index < 0 || index >= CommandsDropdown.Items.Count)
-        {
-            return;
-        }
-
-        if (CommandsDropdown.Items[index] is not CommandContextItemViewModel item || IsSeparator(item))
-        {
-            return;
-        }
-
-        var title = item.Title ?? string.Empty;
-        var selectionKey = (index, title);
-        if (selectionKey == _lastAnnouncedSelectionKey)
-        {
-            return;
-        }
-
-        _lastAnnouncedSelectionKey = selectionKey;
-
-        var announcement = BuildCommandAnnouncementWithPosition(item, index);
-        UIHelper.AnnounceActionForAccessibility(
-            ContextMenuGrid,
-            announcement,
-            "CommandPaletteContextMenuSelectionChanged");
-    }
-
-    private void AnnounceMenuOpened()
-    {
-        var openedText = ResourceLoaderInstance.GetString("ContextMenu_OpenedAnnouncement");
-        var count = CountVisibleCommands();
-        var selectionText = BuildOpenSelectionAnnouncement();
-
-        string announcement;
-        if (count == 0)
-        {
-            announcement = $"{openedText}, no items";
-        }
-        else if (string.IsNullOrEmpty(selectionText))
-        {
-            announcement = $"{openedText}, {count} items";
-        }
-        else
-        {
-            announcement = $"{openedText}, {count} items, {selectionText}";
-        }
-
-        if (CommandsDropdown.SelectedIndex is var index and >= 0 &&
-            CommandsDropdown.Items[index] is CommandContextItemViewModel item &&
-            !IsSeparator(item))
-        {
-            _lastAnnouncedSelectionKey = (index, item.Title ?? string.Empty);
-        }
-
-        UIHelper.AnnounceActionForAccessibility(
-            ContextMenuGrid,
-            announcement,
-            "CommandPaletteContextMenuOpened");
-    }
-
-    private string BuildOpenSelectionAnnouncement()
-    {
-        var index = CommandsDropdown.SelectedIndex;
-        if (index < 0 || index >= CommandsDropdown.Items.Count ||
-            CommandsDropdown.Items[index] is not CommandContextItemViewModel item ||
-            IsSeparator(item))
-        {
-            return string.Empty;
-        }
-
-        return BuildCommandAnnouncementWithPosition(item, index);
-    }
-
-    private string BuildCommandAnnouncementWithPosition(CommandContextItemViewModel item, int listIndex)
-    {
-        var text = UIHelper.BuildContextCommandAnnouncement(item);
-        var count = CountVisibleCommands();
-        if (count <= 1)
-        {
-            return text;
-        }
-
-        var position = GetVisibleCommandPosition(listIndex);
-        return $"{text}, {position} of {count}";
-    }
-
-    private int CountVisibleCommands()
-    {
-        var count = 0;
-        foreach (var item in CommandsDropdown.Items)
-        {
-            if (!IsSeparator(item))
-            {
-                count++;
-            }
-        }
-
-        return count;
-    }
-
-    private int GetVisibleCommandPosition(int listIndex)
-    {
-        if (listIndex < 0)
-        {
-            return 0;
-        }
-
-        var position = 0;
-        for (var i = 0; i <= listIndex && i < CommandsDropdown.Items.Count; i++)
-        {
-            if (!IsSeparator(CommandsDropdown.Items[i]))
-            {
-                position++;
-            }
-        }
-
-        return position;
+        CommandsDropdown.SelectedIndex = 0;
     }
 
     /// <summary>

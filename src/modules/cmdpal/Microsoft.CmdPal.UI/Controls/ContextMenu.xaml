@@ -29,7 +29,7 @@
 
             <!--  Template for context items in the context item menu  -->
             <DataTemplate x:Key="DefaultContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
-                <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.AccessibilityView="Raw">
+                <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -69,7 +69,6 @@
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
                         Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
@@ -78,7 +77,7 @@
 
             <!--  Template for context items flagged as critical  -->
             <DataTemplate x:Key="CriticalContextMenuViewModelTemplate" x:DataType="viewModels:CommandContextItemViewModel">
-                <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.AccessibilityView="Raw">
+                <Grid Padding="{StaticResource DefaultContextMenuItemPadding}" AutomationProperties.Name="{x:Bind Title, Mode=OneWay}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="32" />
                         <ColumnDefinition Width="*" />
@@ -120,7 +119,6 @@
                         Margin="16,0,0,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        AutomationProperties.AccessibilityView="Raw"
                         Style="{StaticResource ContextItemCaptionTextBlockCriticalStyle}"
                         Text="{x:Bind RequestedShortcut, Mode=OneWay, Converter={StaticResource KeyChordToStringConverter}}" />
                 </Grid>
@@ -136,10 +134,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid
-        x:Name="ContextMenuGrid"
-        AutomationProperties.Name="More actions menu"
-        XYFocusKeyboardNavigation="Enabled">
+    <Grid x:Name="ContextMenuGrid">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
@@ -160,11 +155,8 @@
             x:Name="CommandsDropdown"
             MinWidth="248"
             Margin="0,4,0,2"
-            AllowFocusOnInteraction="False"
             AutomationProperties.AccessibilityView="Raw"
-            AutomationProperties.LiveSetting="Off"
             IsItemClickEnabled="True"
-            IsTabStop="False"
             ItemClick="CommandsDropdown_ItemClick"
             ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
             ItemsSource="{x:Bind ViewModel.FilteredItems, Mode=OneWay}"
@@ -175,8 +167,6 @@
             </ListView.Resources>
             <ListView.ItemContainerStyle>
                 <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
-                    <Setter Property="AllowFocusOnInteraction" Value="False" />
-                    <Setter Property="IsTabStop" Value="False" />
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="Padding" Value="0" />
                 </Style>
@@ -189,7 +179,6 @@
         <TextBox
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
-            AutomationProperties.Name="Filter commands"
             Margin="0"
             Padding="10,7,6,8"
             AutomationProperties.AccessibilityView="Raw"

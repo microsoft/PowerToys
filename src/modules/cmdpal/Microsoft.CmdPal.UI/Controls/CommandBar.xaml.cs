@@ -156,11 +156,9 @@ public sealed partial class CommandBar : UserControl,
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        ContextControl.CompleteMenuOpen();
-    }
-
-    private void ContextMenuFlyout_Closed(object sender, object e)
-    {
-        ContextControl.NotifyMenuClosed();
+        // Focus the filter box so the flyout captures keyboard input,
+        // then fire a single consolidated Narrator announcement.
+        ContextControl.FocusSearchBox();
+        ContextControl.AnnounceOpened();
     }
 }
