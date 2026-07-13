@@ -195,14 +195,12 @@ internal sealed partial class CustomClockOverviewItem : ListItem
 
     internal void StartUpdating()
     {
-        _clockUpdateService.Tick += ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
     }
 
     internal void StopUpdating()
     {
-        _clockUpdateService.Tick -= ClockUpdateService_Tick;
-        _clockUpdateService.SetRequiresSecondUpdates(this, false);
+        _clockUpdateService.Unsubscribe(this);
     }
 
     private void ClockUpdateService_Tick(object? sender, EventArgs e) => UpdateText();
