@@ -9,6 +9,7 @@ using ColorPicker.ViewModelContracts;
 using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.UI.Xaml;
+using WinUIEx;
 
 using static ColorPicker.Helpers.NativeMethodsHelper;
 
@@ -141,7 +142,7 @@ namespace ColorPicker.Helpers
 
                 // The export commands' FileSavePicker needs the editor window's HWND
                 // (InitializeWithWindow); assign it here, once the window exists.
-                _colorEditorViewModel.WindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(_colorEditorWindow);
+                _colorEditorViewModel.WindowHandle = _colorEditorWindow.GetWindowHandle();
                 _colorEditorWindow.ContentPresenter.Content = new Views.ColorEditorView { DataContext = _colorEditorViewModel };
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;
@@ -152,14 +153,14 @@ namespace ColorPicker.Helpers
             }
 
             _colorEditorViewModel.Initialize();
-            _colorEditorWindow.AppWindow.Show();
+            _colorEditorWindow.Show();
             _colorEditorWindow.Activate();
             SessionEventHelper.Event.EditorOpened = true;
         }
 
         private void HideColorPickerEditor()
         {
-            _colorEditorWindow?.AppWindow.Hide();
+            _colorEditorWindow?.Hide();
         }
 
         public bool IsColorPickerEditorVisible()
@@ -184,7 +185,7 @@ namespace ColorPicker.Helpers
                 ShowColorPicker();
             }
 
-            _colorEditorWindow?.AppWindow.Hide();
+            _colorEditorWindow?.Hide();
         }
 
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)

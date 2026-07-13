@@ -9,6 +9,7 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
+using WinUIEx;
 
 namespace ColorPicker
 {
@@ -101,7 +102,7 @@ namespace ColorPicker
             var overlay = new ColorPickerOverlayWindow();
             Window = overlay;
 
-            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(overlay);
+            var hwnd = overlay.GetWindowHandle();
             var mainViewModel = GetService<ColorPicker.ViewModelContracts.IMainViewModel>();
             overlay.ColorPickerViewControl.DataContext = mainViewModel;
             mainViewModel.RegisterWindowHandle(hwnd);

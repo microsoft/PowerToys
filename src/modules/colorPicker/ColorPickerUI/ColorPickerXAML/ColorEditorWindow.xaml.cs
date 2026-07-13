@@ -30,13 +30,11 @@ namespace ColorPicker
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
 
-            var title = AppTitleBar.Title;
-            Title = title;
-            AppWindow.Title = title;
+            Title = AppTitleBar.Title;
 
             // The native title bar / taskbar otherwise shows the generic WinUI placeholder icon;
             // point it at the ColorPicker app icon (copied next to the exe by the csproj).
-            AppWindow.SetIcon("Assets/ColorPicker/icon.ico");
+            this.SetIcon("Assets/ColorPicker/icon.ico");
 
             // Port of the WPF WindowStartupLocation="CenterScreen": WinUI windows open at the OS
             // default (cascade near the top-left), so center the fixed-size editor on the display.

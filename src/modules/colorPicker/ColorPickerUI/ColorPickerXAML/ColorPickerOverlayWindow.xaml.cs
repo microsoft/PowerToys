@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Animation;
 using Windows.Foundation;
 using Windows.Graphics;
+using WinUIEx;
 
 namespace ColorPicker
 {
@@ -63,7 +64,7 @@ namespace ColorPicker
         public ColorPickerOverlayWindow()
         {
             InitializeComponent();
-            _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _hwnd = this.GetWindowHandle();
         }
 
         /// <summary>
