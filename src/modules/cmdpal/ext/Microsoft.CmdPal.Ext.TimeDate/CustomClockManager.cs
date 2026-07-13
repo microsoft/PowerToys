@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -147,17 +146,14 @@ internal sealed class CustomClockManager
             _ = TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
         }
 
-        ValidateFormat(clock.TitleFormat);
-        ValidateFormat(clock.SubtitleFormat);
-    }
-
-    private static void ValidateFormat(string format)
-    {
-        if (!string.IsNullOrEmpty(format) &&
-            !format.StartsWith("UTC:", StringComparison.Ordinal) &&
-            !TimeAndDateHelper.StringContainsCustomFormatSyntax(format))
+        try
         {
-            _ = DateTime.UtcNow.ToString(format.Replace("REL", "'Today'", StringComparison.Ordinal), CultureInfo.CurrentCulture);
+            _ = CustomClockDisplay.CompileFormat(clock.TitleFormat);
+            _ = CustomClockDisplay.CompileFormat(clock.SubtitleFormat);
+        }
+        catch (FormatException ex)
+        {
+            throw new ArgumentException("The custom clock contains an invalid format.", nameof(clock), ex);
         }
     }
 }
