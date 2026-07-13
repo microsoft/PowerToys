@@ -873,6 +873,17 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Only act on a genuine user toggle, where the control's new state diverges from the model.
+            // ListView container recycling (heavy during filtering, bulk-delete reloads and scrolling of a
+            // long list) re-applies the OneTime IsOn binding to the recycled-in item, which also raises
+            // Toggled. Without this guard those spurious events call Enable/DisableShortcut, whose
+            // non-idempotent ToggleShortcutKeyMappingActiveState flips the wrong entry's persisted active
+            // state — making unrelated mappings silently turn OFF.
+            if (toggleSwitch.IsOn == shortcut.IsActive)
+            {
+                return;
+            }
+
             try
             {
                 bool desiredState = toggleSwitch.IsOn;
