@@ -48,7 +48,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
     private readonly ISystemClock _clock;
-    private readonly ProfileOperationCoordinator _profileOperations = new();
+    private readonly SemaphoreSlim _profileOperationGate = new(1, 1);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
@@ -67,6 +67,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HasProfiles))]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
     public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
+    public partial bool IsProfilesLoading { get; private set; }
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -103,12 +107,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
 
-        _profileOperations.IsRunningChanged += (_, _) =>
-        {
-            OnPropertyChanged(nameof(IsProfilesLoading));
-            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
-        };
-
         _ = InitializeProfilesAsync(_cancellationTokenSource.Token);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
@@ -127,8 +125,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     public bool HasProfiles => Profiles.Count > 0;
-
-    public bool IsProfilesLoading => _profileOperations.IsRunning;
 
     // UI display control properties - loaded from settings
     [ObservableProperty]
@@ -445,14 +441,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         try
         {
-            _profileOperations?.Dispose();
-        }
-        catch
-        {
-        }
-
-        try
-        {
             _cancellationTokenSource?.Dispose();
         }
         catch
@@ -477,7 +465,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            await _profileOperations.RunAsync(
+            await RunProfileOperationAsync(
                 async token =>
                 {
                     var profilesData = await ProfileService.LoadProfilesEnsuringIdsAsync(token);
@@ -501,6 +489,24 @@ public partial class MainViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(HasProfiles));
             OnPropertyChanged(nameof(ShowProfileSwitcherButton));
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
+        }
+    }
+
+    private async Task RunProfileOperationAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        await _profileOperationGate.WaitAsync(cancellationToken);
+        try
+        {
+            IsProfilesLoading = true;
+            await operation(cancellationToken);
+        }
+        finally
+        {
+            IsProfilesLoading = false;
+            _profileOperationGate.Release();
         }
     }
 

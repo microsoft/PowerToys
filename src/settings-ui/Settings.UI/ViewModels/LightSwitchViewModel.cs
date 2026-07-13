@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class LightSwitchViewModel : PageViewModelBase
     {
-        private readonly ProfileOperationCoordinator _profileOperations = new();
+        private bool _isProfilesLoading;
 
         protected override string ModuleName => LightSwitchSettings.ModuleName;
 
@@ -50,12 +50,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _moduleSettings = initialSettings ?? new LightSwitchSettings();
             SendConfigMSG = ipcMSGCallBackFunc ?? (_ => 0);
 
-            _profileOperations.IsRunningChanged += (_, _) =>
-            {
-                NotifyPropertyChanged(nameof(IsProfilesLoading));
-                NotifyPropertyChanged(nameof(CanSelectPowerDisplayProfile));
-            };
-
             ForceLightCommand = new RelayCommand(ForceLightNow);
             ForceDarkCommand = new RelayCommand(ForceDarkNow);
 
@@ -69,14 +63,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Check if PowerDisplay is enabled
             CheckPowerDisplayEnabled();
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Base class PageViewModelBase.Dispose() handles GC.SuppressFinalize")]
-        public override void Dispose()
-        {
-            _profileOperations.Dispose();
-
-            base.Dispose();
         }
 
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
@@ -627,7 +613,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool ShowPowerDisplayDisabledWarning => !IsPowerDisplayEnabled;
 
-        public bool IsProfilesLoading => _profileOperations.IsRunning;
+        public bool IsProfilesLoading
+        {
+            get => _isProfilesLoading;
+            private set
+            {
+                if (_isProfilesLoading == value)
+                {
+                    return;
+                }
+
+                _isProfilesLoading = value;
+                NotifyPropertyChanged(nameof(IsProfilesLoading));
+                NotifyPropertyChanged(nameof(CanSelectPowerDisplayProfile));
+            }
+        }
 
         public bool CanSelectPowerDisplayProfile => IsPowerDisplayEnabled && !IsProfilesLoading;
 
@@ -709,28 +709,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
         {
+            if (IsProfilesLoading)
+            {
+                return;
+            }
+
+            IsProfilesLoading = true;
             _suppressProfileSelectionPersistence = true;
             try
             {
-                await _profileOperations.RunAsync(
-                    async token =>
-                    {
-                        var profilesData = await ProfileHelper.LoadProfilesEnsuringIdsAsync(token);
-                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                            ModuleSettings,
-                            profilesData,
-                            SendConfigMSG);
+                var profilesData = await ProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken);
+                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                    ModuleSettings,
+                    profilesData,
+                    SendConfigMSG);
 
-                        AvailableProfiles.Clear();
-                        foreach (var profile in profilesData.Profiles)
-                        {
-                            AvailableProfiles.Add(profile);
-                        }
+                AvailableProfiles.Clear();
+                foreach (var profile in profilesData.Profiles)
+                {
+                    AvailableProfiles.Add(profile);
+                }
 
-                        SelectByStoredReference(isDarkMode: true);
-                        SelectByStoredReference(isDarkMode: false);
-                    },
-                    cancellationToken);
+                SelectByStoredReference(isDarkMode: true);
+                SelectByStoredReference(isDarkMode: false);
             }
             catch (Exception ex)
             {
@@ -741,6 +742,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             finally
             {
                 _suppressProfileSelectionPersistence = false;
+                IsProfilesLoading = false;
             }
         }
 

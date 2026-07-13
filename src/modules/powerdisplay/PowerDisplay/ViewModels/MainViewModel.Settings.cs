@@ -591,13 +591,14 @@ public partial class MainViewModel
     {
         try
         {
-            var anyChanged = await _profileOperations.RunAsync(
+            var anyChanged = false;
+            await RunProfileOperationAsync(
                 async token =>
                 {
-                    var changed = await ProfileService.UpdateProfilesAsync(
+                    anyChanged = await ProfileService.UpdateProfilesAsync(
                         profiles => MigrateLegacyMonitorIds(profiles, discovered),
                         token);
-                    if (changed)
+                    if (anyChanged)
                     {
                         var profilesData = await ProfileService.LoadProfilesAsync(token);
                         Profiles.Clear();
@@ -609,8 +610,6 @@ public partial class MainViewModel
                         OnPropertyChanged(nameof(HasProfiles));
                         OnPropertyChanged(nameof(ShowProfileSwitcherButton));
                     }
-
-                    return changed;
                 },
                 cancellationToken);
 

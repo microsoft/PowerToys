@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             "PowerDisplay",
             "crash_detected.flag");
 
-        private readonly ProfileOperationCoordinator _profileOperations = new();
+        private bool _isProfilesLoading;
 
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
@@ -81,12 +81,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
-
-            _profileOperations.IsRunningChanged += (_, _) =>
-            {
-                OnPropertyChanged(nameof(IsProfilesLoading));
-                OnPropertyChanged(nameof(CanUseProfiles));
-            };
 
             _profiles.CollectionChanged += Profiles_CollectionChanged;
 
@@ -522,8 +516,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _monitors.CollectionChanged -= Monitors_CollectionChanged;
             }
 
-            _profileOperations.Dispose();
-
             base.Dispose();
         }
 
@@ -775,7 +767,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(HasProfiles));
         }
 
-        public bool IsProfilesLoading => _profileOperations.IsRunning;
+        public bool IsProfilesLoading
+        {
+            get => _isProfilesLoading;
+            private set
+            {
+                if (_isProfilesLoading == value)
+                {
+                    return;
+                }
+
+                _isProfilesLoading = value;
+                OnPropertyChanged(nameof(IsProfilesLoading));
+                OnPropertyChanged(nameof(CanUseProfiles));
+            }
+        }
 
         public bool CanUseProfiles => IsEnabled && !IsProfilesLoading;
 
@@ -801,20 +807,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
         {
+            if (IsProfilesLoading)
+            {
+                return;
+            }
+
+            IsProfilesLoading = true;
             _suppressProfileSelectionPersistence = true;
             try
             {
-                await _profileOperations.RunAsync(
-                    async token =>
-                    {
-                        var (loaded, lightSwitch) = await LoadProfilesCoreAsync(token);
-                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                            lightSwitch,
-                            loaded,
-                            SendConfigMSG);
-                        ReplaceProfiles(loaded);
-                    },
-                    cancellationToken);
+                var (loaded, lightSwitch) = await LoadProfilesCoreAsync(cancellationToken);
+                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                    lightSwitch,
+                    loaded,
+                    SendConfigMSG);
+                ReplaceProfiles(loaded);
             }
             catch (Exception ex)
             {
@@ -824,6 +831,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             finally
             {
                 _suppressProfileSelectionPersistence = false;
+                IsProfilesLoading = false;
                 OnPropertyChanged(nameof(HasProfiles));
             }
         }
@@ -898,25 +906,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task UpsertProfileAsync(PowerDisplayProfile profile, bool isNew)
         {
+            if (profile == null || !profile.IsValid())
+            {
+                Logger.LogWarning("Invalid profile");
+                return;
+            }
+
+            if (IsProfilesLoading)
+            {
+                Logger.LogWarning("A profile operation is already in progress");
+                return;
+            }
+
+            IsProfilesLoading = true;
             try
             {
-                if (profile == null || !profile.IsValid())
-                {
-                    Logger.LogWarning("Invalid profile");
-                    return;
-                }
-
-                await _profileOperations.RunAsync(
-                    async token =>
-                    {
-                        await ProfileHelper.AddOrUpdateProfileAsync(profile, token);
-                        var (profiles, lightSwitch) = await LoadProfilesCoreAsync(token);
-                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                            lightSwitch,
-                            profiles,
-                            SendConfigMSG);
-                        ReplaceProfiles(profiles);
-                    });
+                await ProfileHelper.AddOrUpdateProfileAsync(profile);
+                var (profiles, lightSwitch) = await LoadProfilesCoreAsync(CancellationToken.None);
+                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                    lightSwitch,
+                    profiles,
+                    SendConfigMSG);
+                ReplaceProfiles(profiles);
                 SignalSettingsUpdated();
             }
             catch (Exception ex)
@@ -924,45 +935,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Profiles.Clear();
                 Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile: {ex.Message}");
             }
+            finally
+            {
+                IsProfilesLoading = false;
+            }
         }
 
         public async Task DeleteProfileAsync(int id)
         {
+            if (id < 1)
+            {
+                return;
+            }
+
+            if (IsProfilesLoading)
+            {
+                Logger.LogWarning("A profile operation is already in progress");
+                return;
+            }
+
+            IsProfilesLoading = true;
             try
             {
-                if (id < 1)
-                {
-                    return;
-                }
-
-                var removed = await _profileOperations.RunAsync(
-                    async token =>
-                    {
-                        if (!await ProfileHelper.RemoveProfileByIdAsync(id, token))
-                        {
-                            return false;
-                        }
-
-                        var (profiles, lightSwitch) = await LoadProfilesCoreAsync(token);
-                        LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                            lightSwitch,
-                            profiles,
-                            SendConfigMSG);
-                        ReplaceProfiles(profiles);
-                        return true;
-                    });
-                if (!removed)
+                if (!await ProfileHelper.RemoveProfileByIdAsync(id))
                 {
                     Logger.LogWarning($"Profile id {id} was not found");
                     return;
                 }
 
+                var (profiles, lightSwitch) = await LoadProfilesCoreAsync(CancellationToken.None);
+                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
+                    lightSwitch,
+                    profiles,
+                    SendConfigMSG);
+                ReplaceProfiles(profiles);
                 SignalSettingsUpdated();
             }
             catch (Exception ex)
             {
                 Profiles.Clear();
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
+            }
+            finally
+            {
+                IsProfilesLoading = false;
             }
         }
 
