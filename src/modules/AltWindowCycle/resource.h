@@ -5,7 +5,7 @@
 //////////////////////////////
 // Non-localizable
 
-#define FILE_DESCRIPTION "PowerToys AltWindowCycle"
+#define FILE_DESCRIPTION "PowerToys Window Hopper"
 #define INTERNAL_NAME "AltWindowCycle"
 #define ORIGINAL_FILENAME "PowerToys.AltWindowCycle.dll"
 

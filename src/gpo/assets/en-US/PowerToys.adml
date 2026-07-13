@@ -244,7 +244,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureAllUtilityGlobalEnabledState">Configure global utility enabled state</string>
       <string id="ConfigureEnabledUtilityAdvancedPaste">Advanced Paste: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAlwaysOnTop">Always On Top: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityAltWindowCycle">AltWindowCycle: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityAltWindowCycle">Window Hopper: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityAwake">Awake: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityColorPicker">Color Picker: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCmdNotFound">Command Not Found: Configure enabled state</string>

@@ -44,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.TextExtractor, false),
             (PowerToysModules.MeasureTool, false),
             (PowerToysModules.Hosts, false),
+            (PowerToysModules.AltWindowCycle, false),
             (PowerToysModules.Workspaces, false),
             (PowerToysModules.GrabAndMove, false),
             (PowerToysModules.RegistryPreview, false),
