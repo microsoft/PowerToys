@@ -37,7 +37,7 @@ namespace Peek.FilePreviewer.Controls
         public static readonly DependencyProperty TableCountProperty = DependencyProperty.Register(
             nameof(TableCount),
             typeof(string),
-            typeof(SqlitePreviewer),
+            typeof(SqliteControl),
             new PropertyMetadata(null));
 
         public static readonly DependencyProperty PreviewerProperty = DependencyProperty.Register(
@@ -167,8 +167,12 @@ namespace Peek.FilePreviewer.Controls
             _lastColumnAutoWidth = double.NaN;
             TableDataGrid.Columns.Clear();
             foreach (var col in table.Columns)
-            {
                 TableDataGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = col.Name,
+                    Binding = new Binding { Path = new PropertyPath($"[{col.BindingKey}]") },
+                    IsReadOnly = true,
+                });
                 {
                     Header = col.Name,
                     Binding = new Binding { Path = new PropertyPath($"[{col.BindingKey}]") },
