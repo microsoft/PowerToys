@@ -406,4 +406,8 @@
     <value>Select a table to view its data</value>
     <comment>Placeholder shown in the Sqlite previewer when no table is selected</comment>
   </data>
+  <data name="Sqlite_Blob_Value" xml:space="preserve">
+    <value>[BLOB, {0} bytes]</value>
+    <comment>Placeholder shown in a Sqlite cell for binary (BLOB) data; {0} is the size in bytes</comment>
+  </data>
 </root>

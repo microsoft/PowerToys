@@ -47,7 +47,28 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(item.Extension.ToLowerInvariant());
+            if (!_supportedFileTypes.Contains(item.Extension.ToLowerInvariant()))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var stream = System.IO.File.OpenRead(item.Path);
+                var buffer = new byte[16];
+                int bytesRead = stream.Read(buffer, 0, 16);
+                if (bytesRead == 16)
+                {
+                    var header = System.Text.Encoding.ASCII.GetString(buffer);
+                    return header == "SQLite format 3\0";
+                }
+            }
+            catch
+            {
+                // Ignored
+            }
+
+            return false;
         }
 
         public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)

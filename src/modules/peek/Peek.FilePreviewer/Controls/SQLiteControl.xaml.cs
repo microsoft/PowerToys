@@ -15,7 +15,6 @@ using Microsoft.UI.Xaml.Data;
 using Peek.Common.Helpers;
 using Peek.FilePreviewer.Previewers;
 using Peek.FilePreviewer.Previewers.Interfaces;
-using Peek.FilePreviewer.Previewers.SqlitePreviewer;
 using Peek.FilePreviewer.Previewers.SqlitePreviewer.Models;
 
 namespace Peek.FilePreviewer.Controls
@@ -167,12 +166,8 @@ namespace Peek.FilePreviewer.Controls
             _lastColumnAutoWidth = double.NaN;
             TableDataGrid.Columns.Clear();
             foreach (var col in table.Columns)
+            {
                 TableDataGrid.Columns.Add(new DataGridTextColumn
-                {
-                    Header = col.Name,
-                    Binding = new Binding { Path = new PropertyPath($"[{col.BindingKey}]") },
-                    IsReadOnly = true,
-                });
                 {
                     Header = col.Name,
                     Binding = new Binding { Path = new PropertyPath($"[{col.BindingKey}]") },
