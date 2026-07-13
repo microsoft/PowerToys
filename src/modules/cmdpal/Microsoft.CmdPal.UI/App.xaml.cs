@@ -16,6 +16,7 @@ using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
+using Microsoft.CmdPal.Ext.PowerScripts;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
@@ -196,6 +197,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
+        services.AddSingleton<ICommandProvider, PowerScriptsCommandsProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
 
         var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);
