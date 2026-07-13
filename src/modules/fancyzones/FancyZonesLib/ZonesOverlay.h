@@ -12,6 +12,7 @@
 #include "FancyZones.h"
 #include "Colors.h"
 #include "LayoutConfigurator.h"
+#include "Settings.h"
 
 class ZonesOverlay
 {
@@ -36,6 +37,11 @@ class ZonesOverlay
         std::wstring text;
         D2D1_COLOR_F textColor;
         D2D1_COLOR_F backgroundColor;
+        float fontSize;
+        float paddingX;
+        float paddingY;
+        int durationMillis;
+        LayoutNameLabelPlacement placement;
         std::chrono::steady_clock::time_point tStart;
     };
 
@@ -69,6 +75,15 @@ class ZonesOverlay
     std::thread m_renderThread;
 
 public:
+    struct LayoutNameLabelOptions
+    {
+        COLORREF textColor;
+        COLORREF backgroundColor;
+        int fontSize;
+        int padding;
+        int durationMillis;
+        LayoutNameLabelPlacement placement;
+    };
 
     ~ZonesOverlay();
     ZonesOverlay(HWND window);
@@ -79,5 +94,5 @@ public:
                            const ZoneIndexSet& highlightZones,
                            const Colors::ZoneColors& colors,
                            const bool showZoneText);
-    void ShowLayoutName(const std::wstring& text, const Colors::ZoneColors& colors);
+    void ShowLayoutName(const std::wstring& text, const LayoutNameLabelOptions& options);
 };

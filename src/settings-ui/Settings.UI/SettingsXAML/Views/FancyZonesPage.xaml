@@ -152,6 +152,76 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="FancyZonesLayoutNameLabel"
+                        x:Uid="FancyZones_LayoutNameLabel_GroupSettings"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8D2;}"
+                        IsExpanded="False">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelPlacement"
+                                x:Uid="FancyZones_LayoutNameLabelPlacement"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.LayoutNameLabelPlacement, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementTopLeft" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementTopCenter" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementTopRight" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementCenter" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementBottomLeft" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementBottomCenter" />
+                                    <ComboBoxItem x:Uid="FancyZones_LayoutNameLabelPlacementBottomRight" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelTextColor"
+                                x:Uid="FancyZones_LayoutNameLabelTextColor"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.LayoutNameLabelTextColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelBackgroundColor"
+                                x:Uid="FancyZones_LayoutNameLabelBackgroundColor"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <controls:ColorPickerButton SelectedColor="{x:Bind Path=ViewModel.LayoutNameLabelBackgroundColor, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelFontSize"
+                                x:Uid="FancyZones_LayoutNameLabelFontSize"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="128"
+                                    Minimum="8"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.LayoutNameLabelFontSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelPadding"
+                                x:Uid="FancyZones_LayoutNameLabelPadding"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="64"
+                                    Minimum="0"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.LayoutNameLabelPadding, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="FancyZonesLayoutNameLabelDuration"
+                                x:Uid="FancyZones_LayoutNameLabelDuration"
+                                IsEnabled="{x:Bind ViewModel.LayoutNameLabelEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="10000"
+                                    Minimum="300"
+                                    SmallChange="100"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.LayoutNameLabelDuration, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="FancyZones_Windows" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

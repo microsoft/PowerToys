@@ -14,14 +14,11 @@ namespace
     const int FadeInDurationMillis = 200;
     const int FlashZonesDurationMillis = 700;
 
-    const int LayoutNameDurationMillis = 1500;
     const int LayoutNameFadeInMillis = 150;
     const int LayoutNameFadeOutMillis = 300;
-    const float LayoutNameFontSize = 36.f;
-    const float LayoutNamePaddingX = 24.f;
-    const float LayoutNamePaddingY = 12.f;
     const float LayoutNameCornerRadius = 8.f;
-    const float LayoutNameTopOffsetRatio = 0.08f; // distance from the top of the work area, relative to its height
+    const float LayoutNameMarginXRatio = 0.02f; // distance from the side edges of the work area, relative to its width
+    const float LayoutNameMarginYRatio = 0.08f; // distance from the top/bottom edges of the work area, relative to its height
 }
 
 namespace NonLocalizable
@@ -62,20 +59,24 @@ float ZonesOverlay::GetLayoutNameLabelAlpha()
     auto tNow = std::chrono::steady_clock().now();
     auto millis = (tNow - m_layoutNameLabel->tStart).count() / 1e6f;
 
-    if (millis >= LayoutNameDurationMillis)
+    const float duration = static_cast<float>(m_layoutNameLabel->durationMillis);
+    const float fadeIn = std::min<float>(LayoutNameFadeInMillis, duration / 3.f);
+    const float fadeOut = std::min<float>(LayoutNameFadeOutMillis, duration / 3.f);
+
+    if (millis >= duration)
     {
         return 0.f;
     }
 
-    if (millis < LayoutNameFadeInMillis)
+    if (millis < fadeIn)
     {
-        return millis / LayoutNameFadeInMillis;
+        return millis / fadeIn;
     }
 
-    const auto remainingMillis = LayoutNameDurationMillis - millis;
-    if (remainingMillis < LayoutNameFadeOutMillis)
+    const auto remainingMillis = duration - millis;
+    if (remainingMillis < fadeOut)
     {
-        return remainingMillis / LayoutNameFadeOutMillis;
+        return remainingMillis / fadeOut;
     }
 
     return 1.f;
@@ -249,7 +250,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
             labelAlpha *= animationAlpha;
 
             IDWriteTextFormat* nameFormat = nullptr;
-            writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, LayoutNameFontSize, L"en-US", &nameFormat);
+            writeFactory->CreateTextFormat(NonLocalizable::SegoeUiFont, nullptr, DWRITE_FONT_WEIGHT_SEMI_BOLD, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, m_layoutNameLabel->fontSize, L"en-US", &nameFormat);
 
             IDWriteTextLayout* nameLayout = nullptr;
             const float clientWidth = static_cast<float>(m_clientRect.right - m_clientRect.left);
@@ -265,14 +266,42 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
                 DWRITE_TEXT_METRICS metrics{};
                 nameLayout->GetMetrics(&metrics);
 
-                const float centerX = clientWidth / 2.f;
-                const float top = clientHeight * LayoutNameTopOffsetRatio;
+                const float chipWidth = metrics.width + 2 * m_layoutNameLabel->paddingX;
+                const float chipHeight = metrics.height + 2 * m_layoutNameLabel->paddingY;
+                const float marginX = clientWidth * LayoutNameMarginXRatio;
+                const float marginY = clientHeight * LayoutNameMarginYRatio;
+
+                float left = (clientWidth - chipWidth) / 2.f;
+                float top = marginY;
+                switch (m_layoutNameLabel->placement)
+                {
+                case LayoutNameLabelPlacement::TopLeft:
+                    left = marginX;
+                    break;
+                case LayoutNameLabelPlacement::TopRight:
+                    left = clientWidth - marginX - chipWidth;
+                    break;
+                case LayoutNameLabelPlacement::Center:
+                    top = (clientHeight - chipHeight) / 2.f;
+                    break;
+                case LayoutNameLabelPlacement::BottomLeft:
+                    left = marginX;
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::BottomCenter:
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::BottomRight:
+                    left = clientWidth - marginX - chipWidth;
+                    top = clientHeight - marginY - chipHeight;
+                    break;
+                case LayoutNameLabelPlacement::TopCenter:
+                default:
+                    break;
+                }
 
                 D2D1_ROUNDED_RECT chip{
-                    .rect = D2D1::RectF(centerX - metrics.width / 2.f - LayoutNamePaddingX,
-                                        top,
-                                        centerX + metrics.width / 2.f + LayoutNamePaddingX,
-                                        top + metrics.height + 2 * LayoutNamePaddingY),
+                    .rect = D2D1::RectF(left, top, left + chipWidth, top + chipHeight),
                     .radiusX = LayoutNameCornerRadius,
                     .radiusY = LayoutNameCornerRadius,
                 };
@@ -295,7 +324,7 @@ ZonesOverlay::RenderResult ZonesOverlay::Render()
 
                 if (nameBrush)
                 {
-                    m_renderTarget->DrawTextLayout(D2D1::Point2F(centerX - metrics.width / 2.f, top + LayoutNamePaddingY), nameLayout, nameBrush);
+                    m_renderTarget->DrawTextLayout(D2D1::Point2F(left + m_layoutNameLabel->paddingX, top + m_layoutNameLabel->paddingY), nameLayout, nameBrush);
                     nameBrush->Release();
                 }
 
@@ -458,7 +487,7 @@ void ZonesOverlay::DrawActiveZoneSet(const ZonesMap& zones,
     }
 }
 
-void ZonesOverlay::ShowLayoutName(const std::wstring& text, const Colors::ZoneColors& colors)
+void ZonesOverlay::ShowLayoutName(const std::wstring& text, const LayoutNameLabelOptions& options)
 {
     if (text.empty())
     {
@@ -467,13 +496,18 @@ void ZonesOverlay::ShowLayoutName(const std::wstring& text, const Colors::ZoneCo
 
     std::unique_lock lock(m_mutex);
 
-    auto backgroundColor = ConvertColor(colors.primaryColor);
+    auto backgroundColor = ConvertColor(options.backgroundColor);
     backgroundColor.a = 0.9f;
 
     m_layoutNameLabel.emplace(LayoutNameLabel{
         .text = text,
-        .textColor = ConvertColor(colors.numberColor),
+        .textColor = ConvertColor(options.textColor),
         .backgroundColor = backgroundColor,
+        .fontSize = static_cast<float>(std::max<int>(options.fontSize, 8)),
+        .paddingX = static_cast<float>(2 * std::max<int>(options.padding, 0)),
+        .paddingY = static_cast<float>(std::max<int>(options.padding, 0)),
+        .durationMillis = std::max<int>(options.durationMillis, 300),
+        .placement = options.placement,
         .tStart = std::chrono::steady_clock().now(),
     });
 }
