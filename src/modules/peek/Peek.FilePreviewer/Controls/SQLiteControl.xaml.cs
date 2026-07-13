@@ -31,7 +31,7 @@ namespace Peek.FilePreviewer.Controls
         public static readonly DependencyProperty LoadingStateProperty = DependencyProperty.Register(
             nameof(LoadingState),
             typeof(PreviewState),
-            typeof(SqlitePreviewer),
+            typeof(SqliteControl),
             new PropertyMetadata(PreviewState.Uninitialized));
 
         public static readonly DependencyProperty TableCountProperty = DependencyProperty.Register(
