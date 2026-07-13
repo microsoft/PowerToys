@@ -65,14 +65,13 @@ internal sealed partial class EditCustomClockForm : FormContent
 
     public override CommandResult SubmitForm(string payload)
     {
-        var input = JsonNode.Parse(payload);
-        if (input is null)
-        {
-            return CommandResult.GoHome();
-        }
-
         try
         {
+            if (JsonNode.Parse(payload) is not JsonObject input)
+            {
+                return CommandResult.KeepOpen();
+            }
+
             _clockManager.Save(new CustomClock
             {
                 Id = _existingClock?.Id ?? Guid.NewGuid(),
@@ -81,13 +80,14 @@ internal sealed partial class EditCustomClockForm : FormContent
                 TitleFormat = input["titleFormat"]?.ToString() ?? "t",
                 SubtitleFormat = input["subtitleFormat"]?.ToString() ?? "REL",
             });
+
+            return CommandResult.GoHome();
         }
-        catch (ArgumentException ex)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or ArgumentException)
         {
             ExtensionHost.LogMessage($"Custom clock was not saved: {ex.Message}");
+            return CommandResult.KeepOpen();
         }
-
-        return CommandResult.GoHome();
     }
 
     private static string Encode(string value) => JsonSerializer.Serialize(value, CustomClockJsonContext.Default.String);

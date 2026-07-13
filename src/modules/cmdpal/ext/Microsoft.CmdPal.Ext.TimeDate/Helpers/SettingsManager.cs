@@ -166,49 +166,50 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     public void SetDockClockFormats(string titleFormat, string subtitleFormat)
     {
+        ValidateDockClockFormat(titleFormat, nameof(titleFormat));
+        ValidateDockClockFormat(subtitleFormat, nameof(subtitleFormat));
+
         _dockClockTitleFormat = titleFormat;
         _dockClockSubtitleFormat = subtitleFormat;
         SaveSettings();
         DockClockFormatsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public override void LoadSettings()
+    protected override void LoadAdditionalSettings(JsonObject settings)
     {
-        base.LoadSettings();
-        if (!File.Exists(FilePath))
-        {
-            return;
-        }
+        _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), "t");
+        _dockClockSubtitleFormat = LoadDockClockFormat(settings, nameof(DockClockSubtitleFormat), "d");
+    }
 
+    protected override void SaveAdditionalSettings(JsonObject settings)
+    {
+        settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
+        settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
+    }
+
+    private static string LoadDockClockFormat(JsonObject settings, string propertyName, string defaultFormat)
+    {
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(FilePath)) is JsonObject settings)
-            {
-                _dockClockTitleFormat = settings[Namespaced(nameof(DockClockTitleFormat))]?.GetValue<string>() ?? "t";
-                _dockClockSubtitleFormat = settings[Namespaced(nameof(DockClockSubtitleFormat))]?.GetValue<string>() ?? "d";
-            }
+            var format = settings[Namespaced(propertyName)]?.GetValue<string>() ?? defaultFormat;
+            _ = CustomClockDisplay.CompileFormat(format);
+            return format;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is FormatException or InvalidOperationException)
         {
-            ExtensionHost.LogMessage($"Failed to load dock clock formats: {ex.Message}");
+            return defaultFormat;
         }
     }
 
-    public override void SaveSettings()
+    private static void ValidateDockClockFormat(string format, string parameterName)
     {
-        base.SaveSettings();
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(FilePath)) is JsonObject settings)
-            {
-                settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
-                settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
-                File.WriteAllText(FilePath, settings.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
-            }
+            _ = CustomClockDisplay.CompileFormat(format);
         }
-        catch (Exception ex)
+        catch (FormatException ex)
         {
-            ExtensionHost.LogMessage($"Failed to save dock clock formats: {ex.Message}");
+            throw new ArgumentException("The dock clock contains an invalid format.", parameterName, ex);
         }
     }
 
@@ -221,8 +222,13 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
     }
 
     public SettingsManager()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
+
+    internal SettingsManager(string filePath)
+    {
+        FilePath = filePath;
 
         Settings.Add(_timeWithSeconds);
         Settings.Add(_dateWithWeekday);

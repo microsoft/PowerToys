@@ -189,7 +189,7 @@ internal sealed class CompiledClockFormat
         for (var index = 0; index <= format.Length - 3; index++)
         {
             if (!TryGetToken(format.AsSpan(index, 3), out var token) ||
-                (token != CustomFormatToken.RelativeDay && index > 0 && format[index - 1] == '\\'))
+                (index > 0 && format[index - 1] == '\\'))
             {
                 continue;
             }

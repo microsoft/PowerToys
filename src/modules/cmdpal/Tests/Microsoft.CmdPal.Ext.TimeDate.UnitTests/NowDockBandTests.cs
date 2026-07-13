@@ -19,6 +19,7 @@ public class NowDockBandTests
 
     private CultureInfo _originalCulture = null!;
     private CultureInfo _originalUiCulture = null!;
+    private ClockUpdateService _clockUpdateService = null!;
     private NowDockBand? _band;
 
     [TestInitialize]
@@ -28,6 +29,7 @@ public class NowDockBandTests
         _originalUiCulture = CultureInfo.CurrentUICulture;
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
         CultureInfo.CurrentUICulture = new CultureInfo("en-US", false);
+        _clockUpdateService = new ClockUpdateService(() => FixedTime, enableTimer: false);
     }
 
     [TestCleanup]
@@ -35,6 +37,7 @@ public class NowDockBandTests
     {
         _band?.Dispose();
         _band = null;
+        _clockUpdateService.Dispose();
         CultureInfo.CurrentCulture = _originalCulture;
         CultureInfo.CurrentUICulture = _originalUiCulture;
     }
@@ -42,7 +45,7 @@ public class NowDockBandTests
     [TestMethod]
     public void Constructor_TitleIsSetImmediately()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         Assert.AreEqual("2:05 PM", _band.Title);
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle));
@@ -51,7 +54,7 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateText_LongTimeFormat_TitleContainsSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
+        _band = CreateBand(titleFormat: "T");
 
         _band.UpdateText();
 
@@ -61,7 +64,7 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateText_ShortDateFormat_SubtitleIsShortDate()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         _band.UpdateText();
 
@@ -71,7 +74,7 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateText_CopyCommandsUpdated()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         _band.UpdateText();
 
@@ -82,19 +85,17 @@ public class NowDockBandTests
     [TestMethod]
     public void Tick_ReadsClockOnce()
     {
-        using var clockUpdateService = new ClockUpdateService(() => FixedTime, enableTimer: false);
         var clockReads = 0;
-        _band = new NowDockBand(
-            timeWithSeconds: true,
+        _band = CreateBand(
+            titleFormat: "T",
             clock: () =>
             {
                 clockReads++;
                 return FixedTime;
-            },
-            clockUpdateService: clockUpdateService);
+            });
         var readsAfterConstruction = clockReads;
 
-        clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
+        _clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
 
         Assert.AreEqual(readsAfterConstruction + 1, clockReads);
     }
@@ -109,7 +110,7 @@ public class NowDockBandTests
         CultureInfo.CurrentCulture = new CultureInfo(cultureName, false);
         CultureInfo.CurrentUICulture = new CultureInfo(cultureName, false);
 
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         Assert.IsFalse(string.IsNullOrEmpty(_band.Title), $"Title should be non-empty for culture '{cultureName}'");
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle), $"Subtitle should be non-empty for culture '{cultureName}'");
@@ -119,7 +120,7 @@ public class NowDockBandTests
     public void UpdateSettings_EnablingSeconds_TitleIncludesSeconds()
     {
         var settings = new TestDockClockSettings();
-        _band = new NowDockBand(settings, new NoOpCommand(), clock: () => FixedTime);
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock: () => FixedTime);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Precondition: seconds hidden by default");
 
@@ -133,7 +134,7 @@ public class NowDockBandTests
     public void UpdateSettings_DisablingSeconds_TitleDropsSeconds()
     {
         var settings = new TestDockClockSettings(titleFormat: "T");
-        _band = new NowDockBand(settings, new NoOpCommand(), clock: () => FixedTime);
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock: () => FixedTime);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: seconds shown");
 
@@ -141,6 +142,12 @@ public class NowDockBandTests
         _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
+    }
+
+    private NowDockBand CreateBand(string titleFormat = "t", Func<DateTime>? clock = null)
+    {
+        var settings = new TestDockClockSettings(titleFormat);
+        return new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock ?? (() => FixedTime));
     }
 
     private sealed class TestDockClockSettings(string titleFormat = "t", string subtitleFormat = "d") : Settings, IDockClockSettings

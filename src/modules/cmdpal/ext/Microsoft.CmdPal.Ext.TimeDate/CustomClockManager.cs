@@ -132,6 +132,14 @@ internal sealed class CustomClockManager
         {
             return false;
         }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
+        catch (InvalidTimeZoneException)
+        {
+            return false;
+        }
     }
 
     private static void Validate(CustomClock clock)
@@ -143,7 +151,14 @@ internal sealed class CustomClockManager
 
         if (clock.TimeZoneId != CustomClock.CurrentTimeZoneId)
         {
-            _ = TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
+            try
+            {
+                _ = TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
+            }
+            catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+            {
+                throw new ArgumentException("The custom clock contains an invalid time zone.", nameof(clock), ex);
+            }
         }
 
         try
