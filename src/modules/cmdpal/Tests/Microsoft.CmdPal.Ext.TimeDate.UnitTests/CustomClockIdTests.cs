@@ -3,12 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -40,6 +44,97 @@ public class CustomClockIdTests
     }
 
     [TestMethod]
+    public void CustomClockListPage_ImplementsDynamicSearchContract()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        using var updateService = new ClockUpdateService(enableTimer: false);
+        using var page = new CustomClockListPage(new CustomClockManager(statePath), new Settings(), updateService);
+        var dynamicPage = page as IDynamicListPage;
+        var itemsChanged = false;
+        page.ItemsChanged += (_, _) => itemsChanged = true;
+
+        Assert.IsNotNull(dynamicPage);
+        dynamicPage.SearchText = "search";
+
+        Assert.AreEqual("search", page.SearchText);
+        Assert.IsTrue(itemsChanged);
+    }
+
+    [TestMethod]
+    public void CustomClockListPage_LoadedStartsUpdatingFetchedItemsWithoutReplacingThem()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var manager = new CustomClockManager(statePath);
+        manager.Save(new CustomClock());
+
+        try
+        {
+            using var updateService = new ClockUpdateService(enableTimer: false);
+            using var page = new CustomClockListPage(manager, new Settings(), updateService);
+            var fetchedItems = page.GetItems();
+            global::Windows.Foundation.TypedEventHandler<object, IItemsChangedEventArgs> handler = (_, _) => { };
+
+            page.ItemsChanged += handler;
+            var loadedItems = page.GetItems();
+            page.ItemsChanged -= handler;
+
+            Assert.AreSame(fetchedItems[3], loadedItems[3]);
+        }
+        finally
+        {
+            File.Delete(statePath);
+        }
+    }
+
+    [TestMethod]
+    public void CustomClockOverviewItem_StartUpdatingRefreshesTextImmediately()
+    {
+        using var updateService = new ClockUpdateService(enableTimer: false);
+        var item = new CustomClockOverviewItem(new CustomClock(), new Settings(), updateService)
+        {
+            Title = "stale",
+        };
+
+        item.StartUpdating();
+
+        Assert.AreNotEqual("stale", item.Title);
+        item.StopUpdating();
+    }
+
+    [DataTestMethod]
+    [DataRow("en-US")]
+    [DataRow("de-DE")]
+    public void CustomClockFormatOptions_AppendExampleUsingCurrentCulture(string cultureName)
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            var option = CustomClockFormatOptions.Get(new Settings()).Single(candidate => candidate.Value == "d");
+            var exampleDateTime = new DateTimeOffset(2000, 1, 2, 15, 4, 5, TimeSpan.FromHours(2));
+            var expected = CustomClockDisplay.Format(exampleDateTime, "d", new Settings());
+
+            StringAssert.EndsWith(option.Title, $"({expected})");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [TestMethod]
+    public void CustomClockFormatOptions_InvalidCustomFormatDoesNotPreventFormCreation()
+    {
+        var settings = new Settings(customFormats: ["Invalid=UTC:%"]);
+
+        var option = CustomClockFormatOptions.Get(settings).Single(candidate => candidate.Value == "UTC:%");
+
+        Assert.AreEqual("Invalid", option.Title);
+        Assert.IsNotNull(new EditCustomClockPage(new CustomClockManager(Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json")), settings, null));
+    }
+
+    [TestMethod]
     public void CustomClockDisplay_RelativeDayTokenIsRenderedAsLiteral()
     {
         var now = DateTimeOffset.Now;
@@ -47,6 +142,14 @@ public class CustomClockIdTests
 
         Assert.AreNotEqual("To12a26", rendered);
         Assert.IsFalse(string.IsNullOrEmpty(rendered));
+    }
+
+    [TestMethod]
+    public void CustomClockDisplay_EscapedRelativeDayTokenIsRenderedLiterally()
+    {
+        var rendered = CustomClockDisplay.Format(DateTimeOffset.Now, @"\REL", new Settings());
+
+        Assert.AreEqual("REL", rendered);
     }
 
     [TestMethod]
@@ -143,5 +246,52 @@ public class CustomClockIdTests
         var clock = new CustomClock { TitleFormat = format };
 
         Assert.ThrowsException<ArgumentException>(() => manager.Save(clock));
+    }
+
+    [TestMethod]
+    public void CustomClockManager_LoadSkipsInvalidTimeZoneWithoutDiscardingValidClocks()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var validClock = new CustomClock { Title = "Valid" };
+        var invalidClock = new CustomClock { Title = "Invalid", TimeZoneId = "Invalid time zone" };
+        File.WriteAllText(
+            statePath,
+            JsonSerializer.Serialize(new List<CustomClock> { validClock, invalidClock }, CustomClockJsonContext.Default.ListCustomClock));
+
+        try
+        {
+            var manager = new CustomClockManager(statePath);
+
+            Assert.AreEqual(1, manager.Clocks.Count);
+            Assert.AreEqual(validClock.Id, manager.Clocks[0].Id);
+        }
+        finally
+        {
+            File.Delete(statePath);
+        }
+    }
+
+    [TestMethod]
+    public void EditCustomClockForm_InvalidSubmissionsKeepFormOpenWithoutSaving()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var manager = new CustomClockManager(statePath);
+            var form = new EditCustomClockForm(manager, new Settings(), null);
+
+            var malformedResult = form.SubmitForm("{");
+            var invalidTimeZoneResult = form.SubmitForm("""{"timeZoneId":"Invalid time zone","titleFormat":"t","subtitleFormat":"d"}""");
+
+            Assert.AreEqual(CommandResultKind.KeepOpen, malformedResult.Kind);
+            Assert.AreEqual(CommandResultKind.KeepOpen, invalidTimeZoneResult.Kind);
+            Assert.AreEqual(0, manager.Clocks.Count);
+            Assert.IsFalse(File.Exists(statePath));
+        }
+        finally
+        {
+            File.Delete(statePath);
+        }
     }
 }

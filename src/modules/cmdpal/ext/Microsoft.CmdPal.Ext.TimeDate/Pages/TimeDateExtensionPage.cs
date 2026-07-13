@@ -17,11 +17,6 @@ internal sealed partial class TimeDateExtensionPage : DynamicListPage, IDisposab
 
     internal CustomClockListPage CustomClockListPage => _customClockListPage;
 
-    public TimeDateExtensionPage(ISettingsInterface settingsManager)
-        : this(settingsManager, new CustomClockManager(), new ClockUpdateService())
-    {
-    }
-
     public TimeDateExtensionPage(ISettingsInterface settingsManager, CustomClockManager customClockManager, ClockUpdateService clockUpdateService)
     {
         Icon = Icons.TimeDateExtIcon;

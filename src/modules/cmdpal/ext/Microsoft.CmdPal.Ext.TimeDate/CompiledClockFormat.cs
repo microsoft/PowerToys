@@ -227,7 +227,7 @@ internal sealed class CompiledClockFormat
                 continue;
             }
 
-            if (token != CustomFormatToken.RelativeDay && index > 0 && format[index - 1] == '\\')
+            if (index > 0 && format[index - 1] == '\\')
             {
                 index += tokenLength - 1;
                 continue;

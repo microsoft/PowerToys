@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Common.Commands;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CommandPalette.Extensions;
@@ -23,7 +24,10 @@ internal sealed partial class CustomClockListPage : OnLoadDynamicListPage, IDisp
     private readonly IDockClockSettings? _dockClockSettings;
     private readonly ClockUpdateService _clockUpdateService;
     private readonly CustomClockOverviewItem _localClockItem;
-    private List<CustomClockOverviewItem> _clockItems = [];
+    private readonly Lock _stateLock = new();
+    private CustomClockOverviewItem[] _clockItems = [];
+    private bool _isLoaded;
+    private bool _disposed;
 
     internal CustomClockListPage(CustomClockManager clockManager, ISettingsInterface settings, ClockUpdateService clockUpdateService)
     {
@@ -47,7 +51,12 @@ internal sealed partial class CustomClockListPage : OnLoadDynamicListPage, IDisp
             _localClockItem.AddDockCustomizationCommand(_dockClockSettings);
         }
 
-        RebuildItems();
+        _clockManager.ClocksChanged += ClockManager_ClocksChanged;
+        lock (_stateLock)
+        {
+            RebuildItems();
+        }
+
         Id = PageId;
         Title = Resources.timedate_custom_clocks;
         Name = Title;
@@ -57,49 +66,68 @@ internal sealed partial class CustomClockListPage : OnLoadDynamicListPage, IDisp
 
     public override IListItem[] GetItems()
     {
+        CustomClockOverviewItem[] clockItems;
+        lock (_stateLock)
+        {
+            clockItems = _clockItems;
+        }
+
         var items = new List<IListItem>
         {
             new Separator(Resources.timedate_custom_clock_local),
             _localClockItem,
         };
         items.Add(new Separator(Resources.timedate_custom_clocks));
-        items.AddRange(_clockItems.Where(clock => string.IsNullOrWhiteSpace(SearchText) || CustomClockDisplay.GetName(clock.Clock).Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)));
+        items.AddRange(clockItems.Where(clock => string.IsNullOrWhiteSpace(SearchText) || CustomClockDisplay.GetName(clock.Clock).Contains(SearchText, StringComparison.CurrentCultureIgnoreCase)));
         items.Add(new ListItem(new EditCustomClockPage(_clockManager, _settings, null)) { Title = Resources.timedate_custom_clock_add, Icon = Icons.AddIcon });
         return [.. items];
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
-        SetSearchNoUpdate(newSearch);
         RaiseItemsChanged(-2);
     }
 
     public void Dispose()
     {
-        if (_isLoaded)
+        lock (_stateLock)
         {
-            Unloaded();
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        foreach (var item in _clockItems)
-        {
-            item.StopUpdating();
-        }
+            _disposed = true;
+            _isLoaded = false;
+            _clockManager.ClocksChanged -= ClockManager_ClocksChanged;
+            foreach (var item in _clockItems)
+            {
+                item.StopUpdating();
+            }
 
-        _localClockItem.StopUpdating();
+            _localClockItem.StopUpdating();
+        }
     }
 
     private void ClockManager_ClocksChanged(object? sender, EventArgs e)
     {
-        foreach (var item in _clockItems)
+        lock (_stateLock)
         {
-            item.StopUpdating();
-        }
+            if (_disposed)
+            {
+                return;
+            }
 
-        RebuildItems();
-        if (_isLoaded)
-        {
-            StartUpdatingItems();
+            foreach (var item in _clockItems)
+            {
+                item.StopUpdating();
+            }
+
+            RebuildItems();
+            if (_isLoaded)
+            {
+                StartUpdatingItems();
+            }
         }
 
         RaiseItemsChanged();
@@ -115,27 +143,38 @@ internal sealed partial class CustomClockListPage : OnLoadDynamicListPage, IDisp
         })];
     }
 
-    private bool _isLoaded;
-
     protected override void Loaded()
     {
-        _isLoaded = true;
-        RebuildItems();
-        _clockManager.ClocksChanged += ClockManager_ClocksChanged;
-        _localClockItem.StartUpdating();
-        StartUpdatingItems();
+        lock (_stateLock)
+        {
+            if (_disposed || _isLoaded)
+            {
+                return;
+            }
+
+            _isLoaded = true;
+            _localClockItem.StartUpdating();
+            StartUpdatingItems();
+        }
     }
 
     protected override void Unloaded()
     {
-        _isLoaded = false;
-        _clockManager.ClocksChanged -= ClockManager_ClocksChanged;
-        foreach (var item in _clockItems)
+        lock (_stateLock)
         {
-            item.StopUpdating();
-        }
+            if (!_isLoaded)
+            {
+                return;
+            }
 
-        _localClockItem.StopUpdating();
+            _isLoaded = false;
+            foreach (var item in _clockItems)
+            {
+                item.StopUpdating();
+            }
+
+            _localClockItem.StopUpdating();
+        }
     }
 
     private void StartUpdatingItems()
@@ -197,6 +236,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
 
     internal void StartUpdating()
     {
+        UpdateText();
         _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
     }
 

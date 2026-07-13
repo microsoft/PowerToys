@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -18,9 +19,9 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private static readonly CompositeFormat MicrosoftPluginTimedatePluginDescription = System.Text.CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_plugin_description);
     private readonly CommandItem _command;
     private readonly CommandItem _customClocksCommand;
-    private readonly SettingsManager _settingsManager = new();
-    private readonly CustomClockManager _customClockManager = new();
-    private readonly ClockUpdateService _clockUpdateService = new();
+    private readonly SettingsManager _settingsManager;
+    private readonly CustomClockManager _customClockManager;
+    private readonly ClockUpdateService _clockUpdateService;
     private readonly TimeDateExtensionPage _timeDateExtensionPage;
     private readonly FallbackTimeDateItem _fallbackTimeDateItem;
 
@@ -28,13 +29,23 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private readonly WrappedDockItem _notificationCenterBandItem;
 
     // Keep a reference to the band so we can dispose it when the provider is disposed.
+    private readonly Lock _customClockBandsLock = new();
     private readonly List<CustomClockDockBand> _customClockBands = [];
     private WrappedDockItem[] _customClockBandItems = [];
 
     private NowDockBand? _nowDockBand;
+    private bool _disposed;
 
     public TimeDateCommandsProvider()
+        : this(new SettingsManager(), new CustomClockManager(), new ClockUpdateService())
     {
+    }
+
+    internal TimeDateCommandsProvider(SettingsManager settingsManager, CustomClockManager customClockManager, ClockUpdateService clockUpdateService)
+    {
+        _settingsManager = settingsManager;
+        _customClockManager = customClockManager;
+        _clockUpdateService = clockUpdateService;
         _timeDateExtensionPage = new(_settingsManager, _customClockManager, _clockUpdateService);
         _fallbackTimeDateItem = new(_settingsManager);
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
@@ -57,7 +68,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         _nowDockBand = new NowDockBand(
             _settingsManager,
             _timeDateExtensionPage.CustomClockListPage,
-            clockUpdateService: _clockUpdateService);
+            _clockUpdateService);
 
         _settingsManager.DockClockFormatsChanged += DockClockFormatsChanged;
         _settingsManager.Settings.SettingsChanged += SettingsChanged;
@@ -95,7 +106,10 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     public override ICommandItem[] GetDockBands()
     {
-        return [_bandItem, _notificationCenterBandItem, .. _customClockBandItems];
+        lock (_customClockBandsLock)
+        {
+            return [_bandItem, _notificationCenterBandItem, .. _customClockBandItems];
+        }
     }
 
     public override ICommandItem? GetCommandItem(string id)
@@ -117,10 +131,13 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         {
             if (id == CustomClockIds.GetDetailPage(clock.Id))
             {
-                var band = _customClockBands.Find(candidate => candidate.ClockId == clock.Id);
-                if (band is not null)
+                lock (_customClockBandsLock)
                 {
-                    return CreateClockDockItem(band, id, CustomClockDisplay.GetName(clock));
+                    var band = _customClockBands.Find(candidate => candidate.ClockId == clock.Id);
+                    if (band is not null)
+                    {
+                        return CreateClockDockItem(band, id, CustomClockDisplay.GetName(clock));
+                    }
                 }
 
                 break;
@@ -136,28 +153,39 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     private void CustomClockManager_ClocksChanged(object? sender, EventArgs e)
     {
-        RebuildCustomClockBands();
-        RaiseItemsChanged();
+        if (RebuildCustomClockBands())
+        {
+            RaiseItemsChanged();
+        }
     }
 
-    private void RebuildCustomClockBands()
+    private bool RebuildCustomClockBands()
     {
-        foreach (var band in _customClockBands)
+        lock (_customClockBandsLock)
         {
-            band.Dispose();
-        }
+            if (_disposed)
+            {
+                return false;
+            }
 
-        _customClockBands.Clear();
-        var dockItems = new List<WrappedDockItem>();
-        foreach (var clock in _customClockManager.Clocks)
-        {
-            var clockBand = new CustomClockDockBand(clock, _customClockManager, _settingsManager, _clockUpdateService);
-            var wrappedBand = new WrappedDockItem([clockBand], CustomClockIds.GetDockBand(clock.Id), CustomClockDisplay.GetName(clock)) { Icon = Icons.TimeDateExtIcon };
-            _customClockBands.Add(clockBand);
-            dockItems.Add(wrappedBand);
-        }
+            foreach (var band in _customClockBands)
+            {
+                band.Dispose();
+            }
 
-        _customClockBandItems = [.. dockItems];
+            _customClockBands.Clear();
+            var dockItems = new List<WrappedDockItem>();
+            foreach (var clock in _customClockManager.Clocks)
+            {
+                var clockBand = new CustomClockDockBand(clock, _customClockManager, _settingsManager, _clockUpdateService);
+                var wrappedBand = new WrappedDockItem([clockBand], CustomClockIds.GetDockBand(clock.Id), CustomClockDisplay.GetName(clock)) { Icon = Icons.TimeDateExtIcon };
+                _customClockBands.Add(clockBand);
+                dockItems.Add(wrappedBand);
+            }
+
+            _customClockBandItems = [.. dockItems];
+            return true;
+        }
     }
 
     private static WrappedDockItem CreateClockDockItem(IListItem clockBand, string id, string title) => new([clockBand], id, title)
@@ -167,17 +195,28 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     public override void Dispose()
     {
+        lock (_customClockBandsLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            foreach (var band in _customClockBands)
+            {
+                band.Dispose();
+            }
+
+            _customClockBands.Clear();
+            _customClockBandItems = [];
+        }
+
         _settingsManager.DockClockFormatsChanged -= DockClockFormatsChanged;
         _settingsManager.Settings.SettingsChanged -= SettingsChanged;
         _customClockManager.ClocksChanged -= CustomClockManager_ClocksChanged;
         _nowDockBand?.Dispose();
         _nowDockBand = null;
-        foreach (var band in _customClockBands)
-        {
-            band.Dispose();
-        }
-
-        _customClockBands.Clear();
         _timeDateExtensionPage.Dispose();
         _clockUpdateService.Dispose();
         GC.SuppressFinalize(this);

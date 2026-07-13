@@ -4,6 +4,10 @@
 
 using System;
 using System.Globalization;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
@@ -113,6 +117,51 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             Assert.IsTrue(bands.Length > 1, "Expected notification center band to be present");
             Assert.IsNull(bands[1].Icon, "Notification center band should not set a dock icon");
+        }
+
+        [TestMethod]
+        public async Task GetCommandItem_ConcurrentClockChangesDoNotThrow()
+        {
+            var clockFilePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+            var settingsFilePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+            var clock = new CustomClock();
+
+            try
+            {
+                var clockManager = new CustomClockManager(clockFilePath);
+                clockManager.Save(clock);
+                using var provider = new TimeDateCommandsProvider(
+                    new SettingsManager(settingsFilePath),
+                    clockManager,
+                    new ClockUpdateService(enableTimer: false));
+                using var start = new ManualResetEventSlim();
+                var detailPageId = CustomClockIds.GetDetailPage(clock.Id);
+
+                var writer = Task.Run(() =>
+                {
+                    start.Wait();
+                    for (var index = 0; index < 100; index++)
+                    {
+                        clockManager.Save(new CustomClock { Id = clock.Id, Title = index.ToString(CultureInfo.InvariantCulture) });
+                    }
+                });
+                var reader = Task.Run(() =>
+                {
+                    start.Wait();
+                    for (var index = 0; index < 10_000; index++)
+                    {
+                        _ = provider.GetCommandItem(detailPageId);
+                    }
+                });
+
+                start.Set();
+                await Task.WhenAll(writer, reader);
+            }
+            finally
+            {
+                File.Delete(clockFilePath);
+                File.Delete(settingsFilePath);
+            }
         }
     }
 }

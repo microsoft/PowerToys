@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
@@ -15,12 +14,10 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 {
     private readonly Func<DateTime> _clock;
     private readonly ClockUpdateService _clockUpdateService;
-    private readonly bool _ownsClockUpdateService;
-    private bool _timeWithSeconds;
-    private ISettingsInterface? _settings;
-    private ICommand? _allClocksPage;
-    private CompiledClockFormat? _titleFormat;
-    private CompiledClockFormat? _subtitleFormat;
+    private readonly ICommand _allClocksPage;
+    private IDockClockSettings _settings;
+    private CompiledClockFormat _titleFormat;
+    private CompiledClockFormat _subtitleFormat;
 
     private CopyTextCommand _copyTimeCommand;
     private CopyTextCommand _copyDateCommand;
@@ -29,19 +26,16 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     internal CopyTextCommand CopyDateCommand => _copyDateCommand;
 
-    internal NowDockBand(bool timeWithSeconds = false, Func<DateTime>? clock = null, ClockUpdateService? clockUpdateService = null)
+    internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, ClockUpdateService clockUpdateService, Func<DateTime>? clock = null)
     {
-        _timeWithSeconds = timeWithSeconds;
+        _settings = settings;
+        _allClocksPage = allClocksPage;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
         _clock = clock ?? (() => DateTime.Now);
-        _clockUpdateService = clockUpdateService ?? new ClockUpdateService();
-        _ownsClockUpdateService = clockUpdateService is null;
+        _clockUpdateService = clockUpdateService;
 
-        Command = new OpenUrlCommand("ms-actioncenter:")
-        {
-            Id = "com.microsoft.cmdpal.timedate.dockBand",
-            Name = Resources.timedate_show_notification_center_command_name,
-            Result = CommandResult.Dismiss(),
-        };
+        UpdateCommand(settings);
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         MoreCommands =
@@ -51,16 +45,8 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         ];
 
         UpdateText();
-
-        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _timeWithSeconds);
-    }
-
-    internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, Func<DateTime>? clock = null, ClockUpdateService? clockUpdateService = null)
-        : this(false, clock, clockUpdateService)
-    {
-        _allClocksPage = allClocksPage;
-        UpdateSettings(settings);
         MoreCommands = [.. MoreCommands, new CommandContextItem(new EditDefaultDockClockPage(settings))];
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
     }
 
     internal void UpdateSettings(IDockClockSettings settings)
@@ -68,7 +54,16 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         _settings = settings;
         _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
-        Command = settings.DockClockClickAction == "allClocks" && _allClocksPage is not null
+        UpdateCommand(settings);
+        _clockUpdateService.SetRequiresSecondUpdates(this, RequiresSecondUpdates);
+        UpdateText();
+    }
+
+    private bool RequiresSecondUpdates => _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates;
+
+    private void UpdateCommand(IDockClockSettings settings)
+    {
+        Command = settings.DockClockClickAction == "allClocks"
             ? _allClocksPage
             : new OpenUrlCommand("ms-actioncenter:")
             {
@@ -76,8 +71,6 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
                 Name = Resources.timedate_show_notification_center_command_name,
                 Result = CommandResult.Dismiss(),
             };
-        _clockUpdateService.SetRequiresSecondUpdates(this, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
-        UpdateText();
     }
 
     private void ClockUpdateService_Tick(object? sender, EventArgs e)
@@ -101,20 +94,12 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         _copyDateCommand.Text = dateString;
     }
 
-    private string GetTitle(DateTime now) => _settings is null
-        ? now.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false), CultureInfo.CurrentCulture)
-        : CustomClockDisplay.Format(new DateTimeOffset(now), _titleFormat!, _settings);
+    private string GetTitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _titleFormat, _settings);
 
-    private string GetSubtitle(DateTime now) => _settings is null
-        ? now.ToString(TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false), CultureInfo.CurrentCulture)
-        : CustomClockDisplay.Format(new DateTimeOffset(now), _subtitleFormat!, _settings);
+    private string GetSubtitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _subtitleFormat, _settings);
 
     public void Dispose()
     {
         _clockUpdateService.Unsubscribe(this);
-        if (_ownsClockUpdateService)
-        {
-            _clockUpdateService.Dispose();
-        }
     }
 }

@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.Pages;
 /// CmdPal attaches an <see cref="ItemsChanged"/> handler when the page is loaded
 /// and removes it after the page is no longer in use.
 /// </summary>
-internal abstract partial class OnLoadDynamicListPage : Page, IListPage
+internal abstract partial class OnLoadDynamicListPage : Page, IDynamicListPage
 {
     private readonly Lock _loadLock = new();
     private int _loadCount;
@@ -27,7 +27,16 @@ internal abstract partial class OnLoadDynamicListPage : Page, IListPage
 
     public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
 
-    public virtual string SearchText { get => _searchText; set => SetProperty(ref _searchText, value); }
+    public virtual string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            var oldSearch = _searchText;
+            SetSearchNoUpdate(value);
+            UpdateSearchText(oldSearch, value);
+        }
+    }
 
     public virtual bool ShowDetails { get; set => SetProperty(ref field, value); }
 

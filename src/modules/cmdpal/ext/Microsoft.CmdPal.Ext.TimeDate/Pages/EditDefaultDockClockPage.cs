@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -53,15 +54,24 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
 
     public override CommandResult SubmitForm(string payload)
     {
-        var input = JsonNode.Parse(payload);
-        if (input is not null)
+        try
         {
+            if (JsonNode.Parse(payload) is not JsonObject input)
+            {
+                return CommandResult.KeepOpen();
+            }
+
             _settings.SetDockClockFormats(
                 input["titleFormat"]?.ToString() ?? "t",
                 input["subtitleFormat"]?.ToString() ?? "d");
-        }
 
-        return CommandResult.GoBack();
+            return CommandResult.GoBack();
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException or ArgumentException)
+        {
+            ExtensionHost.LogMessage($"Dock clock formats were not saved: {ex.Message}");
+            return CommandResult.KeepOpen();
+        }
     }
 
     private static string BuildChoices(ISettingsInterface settings, string selectedValue, bool includeNoText = true)
