@@ -2577,14 +2577,17 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_MouseButtonLock_HoldDuration.Description" xml:space="preserve">
     <value>How long to hold a button before it locks</value>
   </data>
-  <data name="MouseUtils_MouseButtonLock_MoveCancel.Content" xml:space="preserve">
-    <value>Cancel locking if the cursor moves while holding</value>
-  </data>
   <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Header" xml:space="preserve">
-    <value>Move cancel distance (pixels)</value>
+    <value>Drag threshold (pixels)</value>
   </data>
   <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Description" xml:space="preserve">
     <value>Movement beyond this distance during the hold is treated as a drag and will not lock.</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_DragLocks.Header" xml:space="preserve">
+    <value>Allow a held drag to lock</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_DragLocks.Description" xml:space="preserve">
+    <value>When on, a button held past the threshold locks even if you then drag (useful for a hands-free camera pan in games). When off, dragging never locks, so text selection and window or file drags end normally.</value>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation and behavior</value>

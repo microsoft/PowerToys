@@ -38,12 +38,18 @@ namespace mousebuttonlock
         // Matches Windows' built-in ClickLock default (1200 ms). Every field is overwritten from
         // settings in production (SettingsSnapshot), so this default only surfaces in tests.
         int holdDurationMs = 1200;
-        bool moveCancelEnabled = true;
+        // The dead-zone (in pixels) that separates hand jitter from a deliberate drag.
         int moveCancelPixels = 5;
+        // The single control over how a moving hold behaves. When false (the default), any motion
+        // beyond the dead-zone marks the gesture as a drag (text selection, window/file drag) and
+        // cancels the pending lock, so the button-up passes through normally. When true, motion never
+        // cancels, so a sustained hold-and-drag (e.g. a gaming camera pan) still locks.
+        bool dragLocksEnabled = false;
     };
 
-    // Abstraction over the synthetic button-up injection (SendInput in production, a recording
-    // fake in tests). Returns true if the OS accepted the synthetic event.
+    // Abstraction over the synthetic button-up injection (SendInput in production, a recording fake in
+    // tests). Returns true if the OS accepted the synthetic event. A lock is held by suppressing the
+    // physical up, so the only injection the engine needs is the up that releases a lock.
     struct IButtonUpInjector
     {
         virtual ~IButtonUpInjector() = default;
@@ -62,23 +68,35 @@ namespace mousebuttonlock
         Engine& operator=(const Engine&) = delete;
 
         // Handle a physical button-down. Returns true if the DOWN should be suppressed.
+        //
+        // A press of ANY button ends every active lock, so a locked button never leaves the mouse
+        // stuck: you can free it with a normal click of any button rather than only a tap of the same
+        // one. The pressed button's own lock is a tap-to-release (its down is suppressed and its paired
+        // up swallowed); a different pressed button just releases the held button and then clicks
+        // normally. Because that release happens while this button is physically down, the injected up
+        // is chorded, so releasing a right/middle lock this way fires no context menu.
         bool OnButtonDown(MouseButton button, uint64_t tick, PointL pt, const Settings& s)
         {
             ButtonState& st = State(button);
 
-            // Tap-to-release. exchange() claims the lock atomically so a concurrent release
-            // (settings change / shutdown) can't double-act. If we claimed it, inject the
-            // synthetic up; on success suppress the DOWN and swallow its paired UP, on failure
-            // drop the lock and let the physical events through so the OS can resolve the state.
+            // Tap-to-release the pressed button's own lock. exchange() claims the lock atomically so a
+            // concurrent release (settings change / shutdown) can't double-act. On successful injection
+            // suppress the DOWN and swallow its paired UP; on failure drop the lock and let the physical
+            // events through so the OS can resolve the state.
             if (st.locked.exchange(false))
             {
                 if (m_injector.InjectUp(button))
                 {
                     st.swallowNextRealUp = true;
+                    ReleaseAllExcept(button); // also free any other held button
                     return true;
                 }
+                ReleaseAllExcept(button);
                 return false;
             }
+
+            // A different button was pressed: release any held button, then let this press proceed.
+            ReleaseAllExcept(button);
 
             if (!Enabled(button, s))
             {
@@ -92,8 +110,10 @@ namespace mousebuttonlock
             return false;
         }
 
-        // Handle a physical button-up. Returns true if the UP should be suppressed (i.e. the
-        // button just locked, or this UP is the swallowed pair of a release tap).
+        // Handle a physical button-up. Returns true if the UP should be suppressed (i.e. this UP is
+        // the swallowed pair of a release tap). A hold that reaches the threshold locks the button by
+        // injecting a genuine button-down; the physical up is NOT suppressed, so the original click
+        // completes and the injected down begins a real drag that the OS and applications honor.
         bool OnButtonUp(MouseButton button, uint64_t tick, const Settings& s)
         {
             ButtonState& st = State(button);
@@ -119,25 +139,26 @@ namespace mousebuttonlock
             const uint64_t elapsed = tick - st.downTick;
             if (!st.moveCancelled && elapsed >= static_cast<uint64_t>(holdMs))
             {
+                // Suppress the physical up so the button stays held without the original click ever
+                // completing. This matters for the right/middle buttons (a completed click would fire
+                // a context menu / paste) and avoids a premature caret for the left button. The clean
+                // release later (a single deferred injected up, see the adapter) is what preserves a
+                // text selection made during the hold; injecting a fresh down here is not needed.
                 st.locked.store(true);
                 return true;
             }
             return false;
         }
 
-        // Handle cursor movement (never suppressed). Cancels an in-progress hold if the cursor
-        // leaves the dead-zone before the threshold elapses; once armed, motion no longer cancels.
-        void OnMove(uint64_t tick, PointL pt, const Settings& s)
+        // Handle cursor movement (never suppressed). Unless a held drag is allowed to lock, a cursor
+        // move beyond the dead-zone marks the gesture as a drag and cancels the pending lock, so the
+        // button-up passes through normally instead of latching.
+        void OnMove(uint64_t /*tick*/, PointL pt, const Settings& s)
         {
-            if (!s.moveCancelEnabled)
-            {
-                return;
-            }
-            const int holdMs = s.holdDurationMs < 0 ? 0 : s.holdDurationMs;
             const int pixels = s.moveCancelPixels < 0 ? 0 : s.moveCancelPixels;
-            CheckMoveCancel(m_left, tick, holdMs, pixels, pt);
-            CheckMoveCancel(m_right, tick, holdMs, pixels, pt);
-            CheckMoveCancel(m_middle, tick, holdMs, pixels, pt);
+            CheckMoveCancel(m_left, pixels, s.dragLocksEnabled, pt);
+            CheckMoveCancel(m_right, pixels, s.dragLocksEnabled, pt);
+            CheckMoveCancel(m_middle, pixels, s.dragLocksEnabled, pt);
         }
 
         // Release any button whose lock has just been turned off in settings.
@@ -232,13 +253,13 @@ namespace mousebuttonlock
             }
         }
 
-        static void CheckMoveCancel(ButtonState& st, uint64_t now, int holdMs, int pixels, PointL pt)
+        static void CheckMoveCancel(ButtonState& st, int pixels, bool dragLocks, PointL pt)
         {
-            if (!st.physicalDown || st.locked.load() || st.moveCancelled)
-            {
-                return;
-            }
-            if (now - st.downTick >= static_cast<uint64_t>(holdMs))
+            // When a held drag is allowed to lock, motion never cancels, so a sustained hold-and-drag
+            // still locks. Otherwise any motion beyond the dead-zone marks the gesture as a drag and
+            // cancels the pending lock. (Motion after the button locks never reaches here: physicalDown
+            // is already false by then, so a genuine lock-then-drag is unaffected either way.)
+            if (dragLocks || !st.physicalDown || st.locked.load() || st.moveCancelled)
             {
                 return;
             }
@@ -262,6 +283,24 @@ namespace mousebuttonlock
             if (st.locked.exchange(false))
             {
                 m_injector.InjectUp(button);
+            }
+        }
+
+        // Release every locked button other than `keep` (the one currently being pressed). Used so any
+        // button press frees a held button instead of leaving the mouse stuck on the locked one.
+        void ReleaseAllExcept(MouseButton keep)
+        {
+            if (keep != MouseButton::Left)
+            {
+                ReleaseButton(m_left, MouseButton::Left);
+            }
+            if (keep != MouseButton::Right)
+            {
+                ReleaseButton(m_right, MouseButton::Right);
+            }
+            if (keep != MouseButton::Middle)
+            {
+                ReleaseButton(m_middle, MouseButton::Middle);
             }
         }
 

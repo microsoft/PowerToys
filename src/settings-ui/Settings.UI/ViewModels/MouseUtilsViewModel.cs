@@ -141,15 +141,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(1200);
-            MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled ??= new BoolProperty(true);
             MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
+            MouseButtonLockSettingsConfig.Properties.DragLocksEnabled ??= new BoolProperty(false);
 
             _mouseButtonLockLmbEnabled = MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value;
             _mouseButtonLockRmbEnabled = MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value;
             _mouseButtonLockMmbEnabled = MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value;
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
-            _mouseButtonLockMoveCancelEnabled = MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled.Value;
             _mouseButtonLockMoveCancelPixels = MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value;
+            _mouseButtonLockDragLocksEnabled = MouseButtonLockSettingsConfig.Properties.DragLocksEnabled.Value;
 
             int isEnabled = 0;
 
@@ -1435,20 +1435,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool MouseButtonLockMoveCancelEnabled
-        {
-            get => _mouseButtonLockMoveCancelEnabled;
-            set
-            {
-                if (value != _mouseButtonLockMoveCancelEnabled)
-                {
-                    _mouseButtonLockMoveCancelEnabled = value;
-                    MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled.Value = value;
-                    NotifyMouseButtonLockPropertyChanged();
-                }
-            }
-        }
-
         public int MouseButtonLockMoveCancelPixels
         {
             get => _mouseButtonLockMoveCancelPixels;
@@ -1458,6 +1444,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _mouseButtonLockMoveCancelPixels = value;
                     MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value = value;
+                    NotifyMouseButtonLockPropertyChanged();
+                }
+            }
+        }
+
+        public bool MouseButtonLockDragLocksEnabled
+        {
+            get => _mouseButtonLockDragLocksEnabled;
+            set
+            {
+                if (value != _mouseButtonLockDragLocksEnabled)
+                {
+                    _mouseButtonLockDragLocksEnabled = value;
+                    MouseButtonLockSettingsConfig.Properties.DragLocksEnabled.Value = value;
                     NotifyMouseButtonLockPropertyChanged();
                 }
             }
@@ -1552,7 +1552,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mouseButtonLockRmbEnabled;
         private bool _mouseButtonLockMmbEnabled;
         private int _mouseButtonLockHoldDurationMs;
-        private bool _mouseButtonLockMoveCancelEnabled;
         private int _mouseButtonLockMoveCancelPixels;
+        private bool _mouseButtonLockDragLocksEnabled;
     }
 }

@@ -26,8 +26,8 @@ using namespace mousebuttonlock;
 
 namespace
 {
-    // Records release-injection calls and can be told to fail, exercising the tap-to-release
-    // injection-failure path in the engine.
+    // Records release-injection calls and can be told to fail, exercising the release (up) injection
+    // path, including its failure branch, in the engine.
     class CountingInjector : public IButtonUpInjector
     {
     public:
@@ -100,7 +100,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
             const uint8_t flags = r.u8();
             settings.rmbEnabled = (flags & 0x01u) != 0u;
             settings.mmbEnabled = (flags & 0x02u) != 0u;
-            settings.moveCancelEnabled = (flags & 0x04u) != 0u;
+            settings.dragLocksEnabled = (flags & 0x04u) != 0u;
             settings.lmbEnabled = (flags & 0x08u) != 0u;
             settings.holdDurationMs = static_cast<int>(r.u32());
             settings.moveCancelPixels = static_cast<int>(r.u32());

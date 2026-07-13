@@ -20,11 +20,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("hold_duration_ms")]
         public IntProperty HoldDurationMs { get; set; }
 
-        [JsonPropertyName("move_cancel_enabled")]
-        public BoolProperty MoveCancelEnabled { get; set; }
-
         [JsonPropertyName("move_cancel_pixels")]
         public IntProperty MoveCancelPixels { get; set; }
+
+        [JsonPropertyName("drag_locks_enabled")]
+        public BoolProperty DragLocksEnabled { get; set; }
 
         public MouseButtonLockProperties()
         {
@@ -32,8 +32,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             RmbLockEnabled = new BoolProperty(true);
             MmbLockEnabled = new BoolProperty(false);
             HoldDurationMs = new IntProperty(1200);
-            MoveCancelEnabled = new BoolProperty(true);
             MoveCancelPixels = new IntProperty(5);
+            DragLocksEnabled = new BoolProperty(false);
         }
     }
 }

@@ -7,19 +7,27 @@ Mouse Button Lock is a [ClickLock](https://support.microsoft.com/windows/make-th
 For each enabled button (LMB, RMB, and/or MMB):
 
 1. Hold the button for at least the configured hold duration, then release.
-2. The physical button-up is suppressed inside the low-level mouse hook, so the OS keeps perceiving the button as held.
-3. The next physical tap of that button releases the synthetic hold (and that tap is swallowed cleanly, so downstream apps only ever see the injected up).
+2. The physical button-up is suppressed inside the low-level mouse hook, so the OS keeps perceiving the button as held (the original click never completes). Moving the mouse then performs a true drag: dragging a window or file, marquee-selecting, orbiting a 3D/CAD camera, or selecting text.
+3. Pressing **any** button releases the hold. The module injects the held button's synthetic up (and, when releasing via the *same* button, suppresses that release tap). Because the release is a real up injected cleanly (see deferred injection below), a text selection or drag made during the hold survives it.
 
-If "cancel on move" is enabled and the cursor moves beyond the dead-zone *before* the hold threshold elapses, the gesture is treated as a drag and does not lock. Once the threshold elapses the lock is armed and further motion no longer prevents it, so a held-button camera drag (the primary gaming use case) still locks.
+Releasing on any button press (not only a same-button tap) is deliberate: a held button otherwise leaves the mouse "stuck" (its capture blocks other clicks) until you tap the exact same button. So a left-click frees a right-lock, etc.
+
+This is a "hands-free drag" accessibility feature (for users with motor disabilities, RSI, or tremors), modeled on the reference project https://github.com/owenpkent/linux-quickdrag. It generalizes Windows' built-in ClickLock, which covers the left button only, to the right and middle buttons.
+
+**Right-button caveat (context menu).** Releasing a right-button lock necessarily emits a right-button-up, which applications answer with a context menu (that is just what a right-click is). To keep hands-free right-drag usable, the module injects an `Esc` immediately after the release up to dismiss that menu. Normal quick right-clicks never lock and are untouched, so context menus still work; only a lock *release* auto-dismisses. The trade-off is that a genuine right-drag-drop menu (e.g. Explorer's copy/move) is also dismissed.
+
+Whether a moving hold locks is governed by a single setting, "Allow a held drag to lock" (`drag_locks_enabled`, off by default). When it is off, any cursor move beyond the dead-zone during the hold marks the gesture as a drag (text selection, window or file drag), cancels the pending lock, and lets the button-up pass through normally. When it is on, motion never cancels, so a held-button camera drag (the gaming use case) still locks. The "Drag threshold (pixels)" value (`move_cancel_pixels`) is the dead-zone that separates hand jitter from a deliberate drag; it only matters when drag-locking is off. Motion after the button actually locks never affects this either way, because `physicalDown` is already false by then, so a genuine lock-then-drag is unaffected.
 
 ## Architecture
 
 This is a native C++ in-process module, like the other Mouse Utilities (Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, CursorWrap). The C++ implementation was ported from the standalone reference app at https://github.com/owenpkent/windows-right-click-lock.
 
 - `dllmain.cpp` implements `PowertoyModuleIface`. `enable()` spins up a dedicated thread that installs `WH_MOUSE_LL` and runs a message pump (low-level hook callbacks are delivered to the installing thread). `disable()` signals a terminate event, joins the thread, and releases any locked button.
-- The hook callback runs a small per-button state machine. It suppresses the matching button-up (`WM_RBUTTONUP` / `WM_MBUTTONUP`) by returning `1`, and injects the synthetic release (`MOUSEEVENTF_RIGHTUP` / `MOUSEEVENTF_MIDDLEUP`) via `SendInput`.
-- Self-injection tag: every injected event sets `dwExtraInfo = 0x57494E4D` (`'WINM'`). The hook ignores events carrying this tag so it never recurses on its own synthetic input.
-- The decision logic lives in `MouseButtonLockCore.h` as a Win32-free `Engine` (the clock is passed in and synthetic-up injection is behind an `IButtonUpInjector` interface), so `dllmain.cpp` is a thin Win32 adapter and the state machine is unit tested by `MouseButtonLock.UnitTests` (`EngineTests.cpp`).
+- The hook callback runs a small per-button state machine. On lock it suppresses the matching button-up (returns `1`), so the button stays held with the original click never completing. Any button-down releases every held button by injecting its synthetic up (`MOUSEEVENTF_LEFTUP` / `RIGHTUP` / `MIDDLEUP`); a same-button release tap is additionally suppressed and its paired up swallowed.
+- **Deferred injection (critical):** `SendInput` is **not** called synchronously inside the hook callback. Doing so lets the very event being suppressed leak to applications (it reads as a stray click that collapses a text selection). Instead `WinInjector` posts a `WM_MBL_INJECT` thread message back to the hook thread; the message loop performs the `SendInput` after the callback has returned and the physical event is fully suppressed. On shutdown the target thread is cleared so `ReleaseAll`'s injections run inline (the loop is gone by then, and we are no longer inside a callback, so a direct `SendInput` is safe).
+- **Context-menu dismiss:** after injecting a right-button up (always a lock release), `WinInjector` injects an `Esc` so the context menu the up would open is dismissed (see the right-button caveat under Behavior).
+- Self-injection tag: every injected event sets `dwExtraInfo = 0x57494E4D` (`'WINM'`). The hook ignores events carrying this tag so it never recurses on its own synthetic input (the injected `Esc` is a keyboard event and the module hooks only the mouse, so it can't feed back either).
+- The decision logic lives in `MouseButtonLockCore.h` as a Win32-free `Engine` (the clock is passed in and synthetic-up injection is behind the `IButtonUpInjector` interface), so `dllmain.cpp` is a thin Win32 adapter and the state machine is unit tested by `MouseButtonLock.UnitTests` (`EngineTests.cpp`).
 
 ## Settings
 
@@ -31,14 +39,14 @@ Stored at `%LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json`. Pr
 | `rmb_lock_enabled` | bool | `true` | Lock the right mouse button |
 | `mmb_lock_enabled` | bool | `false` | Lock the middle mouse button |
 | `hold_duration_ms` | int | `1200` | How long to hold before locking. Default and range mirror Windows' built-in ClickLock (1200 ms, 200-2200 ms) |
-| `move_cancel_enabled` | bool | `true` | Cancel locking if the cursor moves during the hold |
-| `move_cancel_pixels` | int | `5` | Dead-zone radius for move-cancel |
+| `drag_locks_enabled` | bool | `false` | When on, a moving hold still locks (gaming camera drag). When off (default), a drag cancels the lock so text selection and window/file drags end normally |
+| `move_cancel_pixels` | int | `5` | Drag threshold: dead-zone radius separating hand jitter from a deliberate drag. Only used when `drag_locks_enabled` is off |
 
 The module on/off state lives in `EnabledModules.MouseButtonLock` in the global settings, not in the per-module properties. The settings UI is a section on the shared Mouse Utilities page (`MouseUtilsPage.xaml` / `MouseUtilsViewModel.cs`). There is no activation hotkey: activation is the physical hold.
 
 ## Settings UI
 
-Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on, and "Move cancel distance" is greyed out unless "Cancel locking..." is checked.
+Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on, and "Drag threshold (pixels)" is greyed out when "Allow a held drag to lock" is on (the threshold has no effect then).
 
 ```text
 Settings  >  Mouse utilities
@@ -58,9 +66,11 @@ Settings  >  Mouse utilities
 |   Hold duration (ms)                           1200 ms  [=====O======] |
 |      How long to hold a button before it locks                         |
 |                                                                        |
-|   [x]   Cancel locking if the cursor moves while holding               |
+|   Allow a held drag to lock                                  Off  (o ) |
+|      When on, a button held past the threshold locks even if you       |
+|      then drag. When off, dragging never locks.                        |
 |                                                                        |
-|   Move cancel distance (pixels)                          [     5  ^v ] |
+|   Drag threshold (pixels)                                [     5  ^v ] |
 |      Movement beyond this distance during the hold is treated as a     |
 |      drag and will not lock.                                           |
 +------------------------------------------------------------------------+
@@ -74,15 +84,15 @@ Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section,
 | Lock the left (primary) mouse button | checkbox | `lmb_lock_enabled` | `MouseButtonLockLmbEnabled` | off |
 | Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
 | Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
-| Hold duration (ms) | slider (200-2200 ms, snaps in 200 ms steps) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 1200 |
-| Cancel locking if the cursor moves while holding | checkbox | `move_cancel_enabled` | `MouseButtonLockMoveCancelEnabled` | on |
-| Move cancel distance (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
+| Hold duration (ms) | slider (200-2200 ms, snaps in 100 ms steps) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 1200 |
+| Allow a held drag to lock | toggle | `drag_locks_enabled` | `MouseButtonLockDragLocksEnabled` | off |
+| Drag threshold (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
 
-The UI slider snaps (`SnapsTo="StepValues"`, `StepFrequency="200"`) to 200 ms increments, i.e. the same 11 values as Windows' built-in ClickLock slider: each step is 200 ms, the middle value is the 1200 ms default, so Short = 200 ms and Long = 2200 ms. Visual tick marks were dropped (they looked cluttered inside the settings card, and `SnapsTo` gives the notch-to-notch feel without them); the live "N ms" label beside the track (`MillisecondsLabelConverter`) shows the current value. The C++ `parse_settings` clamps a hand-edited file to 200-60000 ms (same 200 ms floor, a looser ceiling) and accepts any value in that range, so a hand-edited file is not restricted to the 11 slider steps. The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the hold-duration slider and the move-cancel number box carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
+The UI slider snaps (`SnapsTo="StepValues"`, `StepFrequency="100"`) to 100 ms increments across the 200-2200 ms range (Short = 200 ms, Long = 2200 ms, 1200 ms default). This is finer than Windows' built-in ClickLock slider (which uses 200 ms notches) so shorter holds such as 300 ms are reachable from the UI. Visual tick marks were dropped (they looked cluttered inside the settings card, and `SnapsTo` gives the notch-to-notch feel without them); the live "N ms" label beside the track (`MillisecondsLabelConverter`) shows the current value. The C++ `parse_settings` clamps a hand-edited file to 200-60000 ms (same 200 ms floor, a looser ceiling) and accepts any value in that range, so a hand-edited file is not restricted to the 11 slider steps. The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the hold-duration slider and the move-cancel number box carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
 
 ## Safety
 
-A logically-locked button whose up was suppressed leaves the OS believing the button is held. The module injects a synthetic up for every locked button on `disable()` and on graceful hook-thread shutdown, so toggling the module off or exiting PowerToys releases cleanly. A hard `TerminateProcess` of the runner mid-lock is the residual risk (same class of risk as the standalone reference app); see the open items below.
+A logically-locked button whose up was suppressed leaves the OS believing the button is held. The module injects a synthetic up for every locked button on `disable()` and on graceful hook-thread shutdown, so toggling the module off or exiting PowerToys releases cleanly. A hard `TerminateProcess` of the runner mid-lock is the residual risk (it would strand the button in the held state); see the open items below.
 
 ## Building and debugging
 
@@ -92,15 +102,15 @@ Mouse Button Lock builds as part of the PowerToys solution. The runtime is a nat
 - Native module only (after a NuGet restore): `msbuild src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj /p:Platform=x64 /p:Configuration=Release`.
 - Debugging: the hook runs inside the runner, so start or attach the debugger to `PowerToys.exe` and set breakpoints in `dllmain.cpp`. Enable the module from the Mouse Utilities settings page, then exercise the lock with a real right or middle button hold. Keep the hook callback non-blocking: a slow callback risks `LowLevelHooksTimeout` eviction by Windows.
 
-Build status: build- and runtime-verified. The module builds in the full `PowerToys.slnx` solution (x64 Release) under Visual Studio 2026 with the .NET 10 toolset the repo now targets, linking `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`) with clean C++ code analysis, and all 18 `MouseButtonLock.UnitTests` pass. At runtime the built runner loads the module via `knownModules`, the Settings UI shows the controls, and the lock latches/releases correctly in real apps (see Open items #4).
+Build status: build- and runtime-verified. The module builds under Visual Studio 2026 with the .NET 10 toolset the repo now targets (Visual Studio 2022 / MSBuild 17.x cannot build the .NET 10 managed projects; use the VS 2026 / MSBuild 18 toolset), linking `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`), and all 18 `MouseButtonLock.UnitTests` pass. At runtime the built runner loads the module via `knownModules`, the Settings UI shows the controls, and the lock latches/releases correctly in real apps: a text selection made during a hands-free left-drag survives release, any button press frees a held button, and a right-button hands-free drag releases without leaving a context menu (all verified live in Notepad and Chrome).
 
 ## Runtime verification
 
-The unit tests cover the Win32-free `Engine`. The Win32 glue in `dllmain.cpp` (hook install, the message pump, suppression by returning `1`, the tagged `SendInput` injection, and the injection-tag self-filter) is exercised end to end by a small standalone harness:
+The unit tests cover the Win32-free `Engine`. The Win32 glue in `dllmain.cpp` (hook install, the message pump, the deferred `WM_MBL_INJECT` injection, suppression of the up by returning `1`, the `Esc` context-menu dismiss, and the injection-tag self-filter) was verified live against the running runner with temporary `MBL`-tagged trace logging in `dllmain.cpp` (since removed):
 
-- The harness `LoadLibrary`s the built `PowerToys.MouseButtonLock.dll`, calls the exported `powertoy_create()` and `enable()` to install the real `WH_MOUSE_LL` hook on the module's own thread, then synthesizes gestures with untagged `SendInput`. Untagged injected input is indistinguishable from physical input to the hook (the hook filters only its own events, by `dwExtraInfo == 0x57494E4D`), so this drives the production code path rather than a stub.
-- It observes `GetAsyncKeyState(VK_RBUTTON)`, which reads held only while the OS believes the button is down. That is a direct proxy for "the suppressed up actually took effect".
-- Scenarios, all passing (3 runs, 5/5): baseline up; a quick tap below the threshold does not lock; a hold past the threshold then release locks (up suppressed, button stays held); a release tap clears the lock; a drag past the dead-zone cancels the lock. Clicks are contained to a transient top-most scratch window under the cursor, and the harness force-releases the button and disables the module on exit.
+- `GetAsyncKeyState(VK_LBUTTON)` reads held only while the OS believes the button is down: it stays held through the drag and clears on release, a direct proxy for "the suppressed up took effect".
+- The drag-select collapse (a text selection made during the hold vanishing on release) traced to `SendInput` being called synchronously inside the hook callback, which leaked the suppressed release click to the app. Deferring the injection to the hook thread's message loop (see Architecture) fixed it; the selection is now preserved.
+- The RMB "left-click gets stuck" report traced to the lock only releasing on a same-button tap, so other clicks passed through but the still-held right button blocked them. Fixed by releasing every held button on any button-down. The context menu that a right release then produced is cleared by the injected `Esc`. Verified live in Notepad and Chrome.
 
 Source and build script currently live in the gitignored build output at `x64\Release\` (`mbl_harness.cpp`, `build_harness.cmd`). Rebuild with `build_harness.cmd`; run `x64\Release\mbl_harness.exe` from that folder so it finds the DLL. The harness is ephemeral there (a clean of `x64\` wipes it). To keep it, promote it to a tracked `tools\` project per the [tools convention](../../tools/readme.md) (PowerToys keeps standalone debug/test apps under `tools\`, built into `{install}\tools`), with a short page under `doc\devdocs\tools\` and an entry in that readme.
 
