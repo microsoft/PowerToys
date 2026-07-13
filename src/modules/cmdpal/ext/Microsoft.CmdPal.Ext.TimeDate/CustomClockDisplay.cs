@@ -9,9 +9,13 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal static class CustomClockDisplay
 {
-    internal static DateTimeOffset GetCurrentTime(CustomClock clock, DateTimeOffset? utcNow = null) => TimeZoneInfo.ConvertTime(
+    internal static TimeZoneInfo? ResolveExplicitTimeZone(CustomClock clock) => clock.TimeZoneId == CustomClock.CurrentTimeZoneId
+        ? null
+        : TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
+
+    internal static DateTimeOffset GetCurrentTime(TimeZoneInfo timeZone, DateTimeOffset? utcNow = null) => TimeZoneInfo.ConvertTime(
         utcNow ?? DateTimeOffset.UtcNow,
-        clock.TimeZoneId == CustomClock.CurrentTimeZoneId ? TimeZoneInfo.Local : TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId));
+        timeZone);
 
     internal static string GetName(CustomClock clock, DateTimeOffset? utcNow = null)
     {
@@ -20,8 +24,18 @@ internal static class CustomClockDisplay
             return clock.Title;
         }
 
-        var timeZone = clock.TimeZoneId == CustomClock.CurrentTimeZoneId ? TimeZoneInfo.Local : TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
-        var currentTime = GetCurrentTime(clock, utcNow);
+        var timeZone = ResolveExplicitTimeZone(clock) ?? TimeZoneInfo.Local;
+        var currentTime = GetCurrentTime(timeZone, utcNow);
+        return GetName(clock, timeZone, currentTime);
+    }
+
+    internal static string GetName(CustomClock clock, TimeZoneInfo timeZone, DateTimeOffset currentTime)
+    {
+        if (!string.IsNullOrWhiteSpace(clock.Title))
+        {
+            return clock.Title;
+        }
+
         return timeZone.IsDaylightSavingTime(currentTime) && !string.IsNullOrWhiteSpace(timeZone.DaylightName)
             ? timeZone.DaylightName
             : timeZone.StandardName;

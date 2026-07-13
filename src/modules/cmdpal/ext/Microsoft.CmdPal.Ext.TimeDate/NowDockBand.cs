@@ -63,22 +63,6 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         MoreCommands = [.. MoreCommands, new CommandContextItem(new EditDefaultDockClockPage(settings))];
     }
 
-    // Reads the current "show seconds" preference and, if it changed, reconfigures
-    // the timer cadence and refreshes the displayed text. Safe to call at any time
-    // (e.g. from a settings-changed handler) so the dock clock stays in sync without
-    // requiring the app to restart.
-    internal void UpdateSettings(bool timeWithSeconds)
-    {
-        if (_timeWithSeconds == timeWithSeconds)
-        {
-            return;
-        }
-
-        _timeWithSeconds = timeWithSeconds;
-        _clockUpdateService.SetRequiresSecondUpdates(this, _timeWithSeconds);
-        UpdateText();
-    }
-
     internal void UpdateSettings(IDockClockSettings settings)
     {
         _settings = settings;
@@ -98,13 +82,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     private void ClockUpdateService_Tick(object? sender, EventArgs e)
     {
-        var now = _clock();
-        var timeString = GetTitle(now);
-        var dateString = GetSubtitle(now);
-        if (timeString != Title || dateString != Subtitle)
-        {
-            UpdateText();
-        }
+        UpdateText();
     }
 
     internal void UpdateText()
@@ -112,6 +90,10 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         var now = _clock();
         var timeString = GetTitle(now);
         var dateString = GetSubtitle(now);
+        if (timeString == Title && dateString == Subtitle)
+        {
+            return;
+        }
 
         Title = timeString;
         Subtitle = dateString;

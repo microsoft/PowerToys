@@ -5,6 +5,8 @@
 using System;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
@@ -77,6 +79,26 @@ public class NowDockBandTests
         Assert.AreEqual(_band.Subtitle, _band.CopyDateCommand.Text);
     }
 
+    [TestMethod]
+    public void Tick_ReadsClockOnce()
+    {
+        using var clockUpdateService = new ClockUpdateService(() => FixedTime, enableTimer: false);
+        var clockReads = 0;
+        _band = new NowDockBand(
+            timeWithSeconds: true,
+            clock: () =>
+            {
+                clockReads++;
+                return FixedTime;
+            },
+            clockUpdateService: clockUpdateService);
+        var readsAfterConstruction = clockReads;
+
+        clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
+
+        Assert.AreEqual(readsAfterConstruction + 1, clockReads);
+    }
+
     [DataTestMethod]
     [DataRow("de-DE")]
     [DataRow("fr-FR")]
@@ -96,11 +118,13 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateSettings_EnablingSeconds_TitleIncludesSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: false, clock: () => FixedTime);
+        var settings = new TestDockClockSettings();
+        _band = new NowDockBand(settings, new NoOpCommand(), clock: () => FixedTime);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Precondition: seconds hidden by default");
 
-        _band.UpdateSettings(timeWithSeconds: true);
+        settings.SetDockClockFormats("T", "d");
+        _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Title should update live to include seconds");
     }
@@ -108,12 +132,29 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateSettings_DisablingSeconds_TitleDropsSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
+        var settings = new TestDockClockSettings(titleFormat: "T");
+        _band = new NowDockBand(settings, new NoOpCommand(), clock: () => FixedTime);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: seconds shown");
 
-        _band.UpdateSettings(timeWithSeconds: false);
+        settings.SetDockClockFormats("t", "d");
+        _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
+    }
+
+    private sealed class TestDockClockSettings(string titleFormat = "t", string subtitleFormat = "d") : Settings, IDockClockSettings
+    {
+        public string DockClockTitleFormat { get; private set; } = titleFormat;
+
+        public string DockClockSubtitleFormat { get; private set; } = subtitleFormat;
+
+        public string DockClockClickAction => "default";
+
+        public void SetDockClockFormats(string titleFormat, string subtitleFormat)
+        {
+            DockClockTitleFormat = titleFormat;
+            DockClockSubtitleFormat = subtitleFormat;
+        }
     }
 }
