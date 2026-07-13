@@ -81,14 +81,15 @@
                             Style="{StaticResource CustomShortcutToggleButtonStyle}"
                             Unchecked="TriggerKeyToggleBtn_Unchecked">
                             <ToggleButton.Content>
-                                <Grid>
-                                    <TextBlock
-                                        x:Name="TriggerKeyPlaceholder"
-                                        x:Uid="TriggerKeyPlaceholder"
+                                <Grid RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <ItemsControl
+                                        x:Name="TriggerKeys"
                                         HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
-                                    <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
+                                        IsTabStop="False">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <controls:WrapPanel
@@ -103,6 +104,12 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                    <TextBlock
+                                        x:Name="TriggerKeyPlaceholder"
+                                        x:Uid="TriggerKeyPlaceholder"
+                                        Grid.Row="1"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorDisabledBrush}" />
                                 </Grid>
                             </ToggleButton.Content>
                         </ToggleButton>
@@ -243,14 +250,15 @@
                         Style="{StaticResource CustomShortcutToggleButtonStyle}"
                         Unchecked="ActionKeyToggleBtn_Unchecked">
                         <ToggleButton.Content>
-                            <Grid>
-                                <TextBlock
-                                    x:Name="ActionKeyPlaceholder"
-                                    x:Uid="ActionKeyPlaceholder"
+                            <Grid RowSpacing="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ItemsControl
+                                    x:Name="ActionKeys"
                                     HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Foreground="{ThemeResource TextFillColorDisabledBrush}" />
-                                <ItemsControl x:Name="ActionKeys" IsTabStop="False">
+                                    IsTabStop="False">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
                                             <controls:WrapPanel
@@ -268,6 +276,12 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                <TextBlock
+                                    x:Name="ActionKeyPlaceholder"
+                                    x:Uid="ActionKeyPlaceholder"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorDisabledBrush}" />
                             </Grid>
                         </ToggleButton.Content>
                     </ToggleButton>

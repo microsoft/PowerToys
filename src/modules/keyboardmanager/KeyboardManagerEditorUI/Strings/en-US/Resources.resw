@@ -219,6 +219,12 @@
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
   </data>
+  <data name="KeyDropDownButton_AddAutomationName" xml:space="preserve">
+    <value>Add key</value>
+  </data>
+  <data name="KeyDropDownButton_AddTooltip" xml:space="preserve">
+    <value>Add a key</value>
+  </data>
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>
@@ -455,6 +461,12 @@
   </data>
   <data name="Warning_RepeatedModifier" xml:space="preserve">
     <value>This shortcut already contains a modifier of the same type.</value>
+  </data>
+  <data name="Warning_ModifierAfterAction" xml:space="preserve">
+    <value>Modifier keys must come before the action key.</value>
+  </data>
+  <data name="Warning_ChordsDisabled" xml:space="preserve">
+    <value>Enable Allow chords to add a second action key.</value>
   </data>
   <data name="Warning_MaxShortcutSize" xml:space="preserve">
     <value>Maximum shortcut size reached (4 modifiers + 1 action key).</value>

@@ -41,6 +41,14 @@
             </Flyout>
         </DropDownButton.Flyout>
 
-        <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+        <Grid>
+            <commoncontrols:KeyCharPresenter x:Name="KeyNamePresenter" Content="{x:Bind KeyName, Mode=OneWay}" />
+            <FontIcon
+                x:Name="AddIcon"
+                AutomationProperties.AccessibilityView="Raw"
+                FontSize="16"
+                Glyph="&#xE710;"
+                Visibility="Collapsed" />
+        </Grid>
     </DropDownButton>
 </UserControl>

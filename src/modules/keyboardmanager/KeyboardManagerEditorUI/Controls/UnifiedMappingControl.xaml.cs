@@ -163,6 +163,9 @@ namespace KeyboardManagerEditorUI.Controls
                 RaiseValidationStateChanged();
             };
 
+            NormalizeKeySlots(_triggerKeys);
+            NormalizeKeySlots(_actionKeys);
+
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
 
@@ -311,6 +314,7 @@ namespace KeyboardManagerEditorUI.Controls
                 // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
                 dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
                 dropDown.Unloaded += TriggerKeyDropDown_Unloaded;
+                dropDown.IsEnabled = TriggerKeyToggleBtn.IsChecked != true;
             }
         }
 
@@ -334,6 +338,7 @@ namespace KeyboardManagerEditorUI.Controls
                 // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
                 dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
                 dropDown.Unloaded += ActionKeyDropDown_Unloaded;
+                dropDown.IsEnabled = ActionKeyToggleBtn.IsChecked != true;
             }
         }
 
@@ -350,27 +355,8 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (sender is KeyDropDownButton dropDown)
             {
-                int index = GetDropDownIndex(TriggerKeys, dropDown);
-                if (index >= 0 && index < _triggerKeys.Count)
-                {
-                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
-                    if (e.NewKeyCode == 0)
-                    {
-                        RevertKeySelection(_triggerKeys, index);
-                        return;
-                    }
-
-                    string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
-                    if (validationError != null)
-                    {
-                        RevertKeySelection(_triggerKeys, index);
-                        ShowNotificationTip(validationError);
-                        return;
-                    }
-
-                    _triggerKeys[index] = e.NewKeyName;
-                    HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
-                }
+                ApplyKeySelection(_triggerKeys, TriggerKeys, dropDown, e);
+                UpdateAppSpecificCheckBoxState();
             }
         }
 
@@ -378,39 +364,48 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (sender is KeyDropDownButton dropDown)
             {
-                int index = GetDropDownIndex(ActionKeys, dropDown);
-                if (index >= 0 && index < _actionKeys.Count)
-                {
-                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
-                    if (e.NewKeyCode == 0)
-                    {
-                        RevertKeySelection(_actionKeys, index);
-                        return;
-                    }
-
-                    string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
-                    if (validationError != null)
-                    {
-                        RevertKeySelection(_actionKeys, index);
-                        ShowNotificationTip(validationError);
-                        return;
-                    }
-
-                    _actionKeys[index] = e.NewKeyName;
-                    HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
-                }
+                ApplyKeySelection(_actionKeys, ActionKeys, dropDown, e);
             }
         }
 
-        /// <summary>
-        /// Reverts a key selection by re-inserting the current value via the bound ObservableCollection,
-        /// which forces the binding to refresh without breaking the binding expression.
-        /// </summary>
-        private static void RevertKeySelection(ObservableCollection<string> keys, int index)
+        private void ApplyKeySelection(
+            ObservableCollection<string> keys,
+            ItemsControl itemsControl,
+            KeyDropDownButton dropDown,
+            KeyChangedEventArgs eventArgs)
         {
-            string current = keys[index];
-            keys.RemoveAt(index);
-            keys.Insert(index, current);
+            int changedIndex = GetDropDownIndex(itemsControl, dropDown);
+            List<string> realKeys = GetRealKeys(keys);
+            if (changedIndex < 0 || changedIndex > realKeys.Count || eventArgs.NewKeyCode == 0)
+            {
+                return;
+            }
+
+            var keyTypes = GetKeyTypes(realKeys);
+            var selectedKeyType = (KeyType)KeyboardManagerInterop.GetKeyType(eventArgs.NewKeyCode);
+            KeySequenceUpdate update = KeySequenceRules.EvaluateSelection(keyTypes, changedIndex, selectedKeyType, AllowChords);
+            if (!update.IsValid)
+            {
+                ShowNotificationTip(GetKeySequenceErrorMessage(update.Error));
+                return;
+            }
+
+            if (changedIndex == realKeys.Count)
+            {
+                realKeys.Add(eventArgs.NewKeyName);
+            }
+            else
+            {
+                realKeys[changedIndex] = eventArgs.NewKeyName;
+            }
+
+            if (realKeys.Count > update.ResultCount)
+            {
+                realKeys.RemoveRange(update.ResultCount, realKeys.Count - update.ResultCount);
+            }
+
+            ReplaceKeyCollection(keys, realKeys);
+            NormalizeKeySlots(keys);
         }
 
         private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)
@@ -454,75 +449,64 @@ namespace KeyboardManagerEditorUI.Controls
             return null;
         }
 
-        /// <summary>
-        /// Validates a key selection from a dropdown before it is applied.
-        /// Returns null if valid, or an error message string if invalid.
-        /// </summary>
-        private static string? ValidateDropDownSelection(ObservableCollection<string> keys, int changedIndex, int newKeyCode, string newKeyName)
+        private static string GetKeySequenceErrorMessage(KeySequenceError error)
         {
-            const int maxShortcutSize = 5;
-
-            // KeyType: 0=Win, 1=Ctrl, 2=Alt, 3=Shift, 4=Action
-            int newKeyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
-            bool isModifier = newKeyType < 4;
-
-            // Count only non-empty (real) entries to determine effective shortcut size.
-            int nonEmptyCount = keys.Count(k => !string.IsNullOrEmpty(k));
-
-            // Rule: action key at position 0 in multi-key shortcut (shortcut must start with modifier)
-            if (!isModifier && changedIndex == 0 && nonEmptyCount > 1)
+            return error switch
             {
-                return ResourceHelper.GetString("Warning_ShortcutStartWithModifier");
-            }
-
-            // Rule: no repeated modifier types (skip empty placeholder slots)
-            if (isModifier)
-            {
-                for (int i = 0; i < keys.Count; i++)
-                {
-                    if (i == changedIndex || string.IsNullOrEmpty(keys[i]))
-                    {
-                        continue;
-                    }
-
-                    int existingKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(keys[i]);
-                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
-
-                    if (existingKeyType == newKeyType)
-                    {
-                        return ResourceHelper.GetString("Warning_RepeatedModifier");
-                    }
-                }
-            }
-
-            // Rule: modifier at last position when already at max size
-            if (isModifier && changedIndex == keys.Count - 1 && nonEmptyCount >= maxShortcutSize)
-            {
-                return ResourceHelper.GetString("Warning_MaxShortcutSize");
-            }
-
-            return null;
+                KeySequenceError.ShortcutStartWithModifier => ResourceHelper.GetString("Warning_ShortcutStartWithModifier"),
+                KeySequenceError.RepeatedModifier => ResourceHelper.GetString("Warning_RepeatedModifier"),
+                KeySequenceError.ModifierAfterAction => ResourceHelper.GetString("Warning_ModifierAfterAction"),
+                KeySequenceError.ChordsDisabled => ResourceHelper.GetString("Warning_ChordsDisabled"),
+                _ => ResourceHelper.GetString("Warning_MaxShortcutSize"),
+            };
         }
 
-        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        private void NormalizeKeySlots(ObservableCollection<string> keys)
         {
-            const int maxShortcutSize = 5;
-
-            int keyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
-            bool isModifier = keyType < 4;
-
-            if (isModifier && changedIndex == keys.Count - 1 && keys.Count < maxShortcutSize)
+            for (int i = keys.Count - 1; i >= 0; i--)
             {
-                // Modifier at last position — auto-grow: add placeholder for next key
+                if (string.IsNullOrEmpty(keys[i]))
+                {
+                    keys.RemoveAt(i);
+                }
+            }
+
+            List<string> realKeys = GetRealKeys(keys);
+            if (KeySequenceRules.CanAppend(GetKeyTypes(realKeys), AllowChords))
+            {
                 keys.Add(string.Empty);
             }
-            else if (!isModifier)
+        }
+
+        private static List<string> GetRealKeys(IEnumerable<string> keys) =>
+            keys.Where(key => !string.IsNullOrEmpty(key)).ToList();
+
+        private static List<KeyType> GetKeyTypes(IEnumerable<string> keys)
+        {
+            return keys.Select(key =>
             {
-                // Action key — trim any trailing entries after this one
-                while (keys.Count > changedIndex + 1)
-                {
-                    keys.RemoveAt(keys.Count - 1);
-                }
+                int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(key);
+                return (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
+            }).ToList();
+        }
+
+        private static void ReplaceKeyCollection(ObservableCollection<string> destination, IEnumerable<string> keys)
+        {
+            destination.Clear();
+            foreach (string key in keys)
+            {
+                destination.Add(key);
+            }
+        }
+
+        private static void RemoveChordAction(ObservableCollection<string> keys)
+        {
+            List<string> realKeys = GetRealKeys(keys);
+            int allowedCount = KeySequenceRules.GetKeyCountWithoutChord(GetKeyTypes(realKeys));
+            if (realKeys.Count > allowedCount)
+            {
+                realKeys.RemoveRange(allowedCount, realKeys.Count - allowedCount);
+                ReplaceKeyCollection(keys, realKeys);
             }
         }
 
@@ -548,7 +532,7 @@ namespace KeyboardManagerEditorUI.Controls
         private void UpdateAppSpecificCheckBoxState()
         {
             // Only enable app-specific remapping for shortcuts (multiple keys).
-            bool isShortcut = _triggerKeys.Count > 1;
+            bool isShortcut = GetRealKeys(_triggerKeys).Count > 1;
             bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
 
             try
@@ -673,21 +657,14 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
-                _triggerKeys.Clear();
-                foreach (var keyName in formattedKeys)
-                {
-                    _triggerKeys.Add(keyName);
-                }
-
+                ReplaceKeyCollection(_triggerKeys, formattedKeys);
+                NormalizeKeySlots(_triggerKeys);
                 UpdateAppSpecificCheckBoxState();
             }
             else if (_currentInputMode == KeyInputMode.RemappedKeys)
             {
-                _actionKeys.Clear();
-                foreach (var keyName in formattedKeys)
-                {
-                    _actionKeys.Add(keyName);
-                }
+                ReplaceKeyCollection(_actionKeys, formattedKeys);
+                NormalizeKeySlots(_actionKeys);
             }
         }
 
@@ -696,10 +673,13 @@ namespace KeyboardManagerEditorUI.Controls
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
                 _triggerKeys.Clear();
+                NormalizeKeySlots(_triggerKeys);
+                UpdateAppSpecificCheckBoxState();
             }
             else
             {
                 _actionKeys.Clear();
+                NormalizeKeySlots(_actionKeys);
             }
         }
 
@@ -808,14 +788,14 @@ namespace KeyboardManagerEditorUI.Controls
         public bool IsInputComplete()
         {
             // Trigger keys are always required
-            if (_triggerKeys.Count == 0)
+            if (GetRealKeys(_triggerKeys).Count == 0)
             {
                 return false;
             }
 
             return CurrentActionType switch
             {
-                ActionType.KeyOrShortcut => _actionKeys.Count > 0,
+                ActionType.KeyOrShortcut => GetRealKeys(_actionKeys).Count > 0,
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
@@ -842,6 +822,7 @@ namespace KeyboardManagerEditorUI.Controls
                 }
             }
 
+            NormalizeKeySlots(_triggerKeys);
             UpdateAppSpecificCheckBoxState();
         }
 
@@ -858,6 +839,8 @@ namespace KeyboardManagerEditorUI.Controls
                     _actionKeys.Add(key);
                 }
             }
+
+            NormalizeKeySlots(_actionKeys);
         }
 
         /// <summary>
@@ -1036,14 +1019,14 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (TriggerKeyPlaceholder != null)
             {
-                TriggerKeyPlaceholder.Visibility = _triggerKeys.Count == 0
+                TriggerKeyPlaceholder.Visibility = GetRealKeys(_triggerKeys).Count == 0
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
 
             if (ActionKeyPlaceholder != null)
             {
-                ActionKeyPlaceholder.Visibility = _actionKeys.Count == 0
+                ActionKeyPlaceholder.Visibility = GetRealKeys(_actionKeys).Count == 0
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
@@ -1186,6 +1169,15 @@ namespace KeyboardManagerEditorUI.Controls
                 VisibilityComboBox.SelectedIndex = 0;
             }
 
+            AllowChords = true;
+            if (AllowChordsCheckBox != null)
+            {
+                AllowChordsCheckBox.IsChecked = true;
+            }
+
+            NormalizeKeySlots(_triggerKeys);
+            NormalizeKeySlots(_actionKeys);
+            UpdateAppSpecificCheckBoxState();
             HideValidationMessage();
         }
 
@@ -1286,6 +1278,16 @@ namespace KeyboardManagerEditorUI.Controls
         private void AllowChordsCheckBox_Click(object sender, RoutedEventArgs e)
         {
             AllowChords = AllowChordsCheckBox.IsChecked == true;
+            if (!AllowChords)
+            {
+                RemoveChordAction(_triggerKeys);
+                RemoveChordAction(_actionKeys);
+            }
+
+            NormalizeKeySlots(_triggerKeys);
+            NormalizeKeySlots(_actionKeys);
+            UpdateAppSpecificCheckBoxState();
+            RaiseValidationStateChanged();
         }
     }
 }

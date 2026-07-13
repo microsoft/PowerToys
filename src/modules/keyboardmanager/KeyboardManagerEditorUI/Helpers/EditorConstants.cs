@@ -14,5 +14,15 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         // Default notification timeout
         public const int DefaultNotificationTimeout = 1500;
+
+        public const int MaxShortcutModifiers = 4;
+
+        public const int MaxShortcutActions = 1;
+
+        public const int MaxChordActions = 2;
+
+        public const int MaxShortcutSize = MaxShortcutModifiers + MaxShortcutActions;
+
+        public const int MaxChordSize = MaxShortcutModifiers + MaxChordActions;
     }
 }

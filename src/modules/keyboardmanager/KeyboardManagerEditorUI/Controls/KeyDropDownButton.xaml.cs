@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 
 namespace KeyboardManagerEditorUI.Controls
@@ -21,7 +23,7 @@ namespace KeyboardManagerEditorUI.Controls
                 nameof(KeyName),
                 typeof(string),
                 typeof(KeyDropDownButton),
-                new PropertyMetadata(string.Empty));
+                new PropertyMetadata(string.Empty, OnKeyNameChanged));
 
         public static readonly DependencyProperty IsShortcutProperty =
             DependencyProperty.Register(
@@ -66,7 +68,40 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     KeyButton.Style = (Style)Application.Current.Resources["AccentKeyVisualDropDownButtonStyle"];
                 }
+
+                UpdateVisualState();
             };
+        }
+
+        private static void OnKeyNameChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+        {
+            if (dependencyObject is KeyDropDownButton control)
+            {
+                control.UpdateVisualState();
+            }
+        }
+
+        private void UpdateVisualState()
+        {
+            if (KeyNamePresenter == null || AddIcon == null || KeyButton == null)
+            {
+                return;
+            }
+
+            bool isAddSlot = string.IsNullOrEmpty(KeyName);
+            KeyNamePresenter.Visibility = isAddSlot ? Visibility.Collapsed : Visibility.Visible;
+            AddIcon.Visibility = isAddSlot ? Visibility.Visible : Visibility.Collapsed;
+
+            if (isAddSlot)
+            {
+                AutomationProperties.SetName(KeyButton, ResourceHelper.GetString("KeyDropDownButton_AddAutomationName"));
+                ToolTipService.SetToolTip(KeyButton, ResourceHelper.GetString("KeyDropDownButton_AddTooltip"));
+            }
+            else
+            {
+                AutomationProperties.SetName(KeyButton, KeyName);
+                KeyButton.ClearValue(ToolTipService.ToolTipProperty);
+            }
         }
 
         private void KeyListView_ItemClick(object sender, ItemClickEventArgs e)
