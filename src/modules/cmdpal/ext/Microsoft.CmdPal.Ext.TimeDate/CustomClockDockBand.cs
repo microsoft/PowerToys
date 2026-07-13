@@ -14,15 +14,15 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly CustomClock _clockDefinition;
     private readonly ISettingsInterface _settings;
     private readonly ClockUpdateService _clockUpdateService;
-    private readonly Action _onUpdated;
     private readonly Func<DateTime> _utcNow;
 
-    internal CustomClockDockBand(CustomClock clockDefinition, CustomClockManager clockManager, ISettingsInterface settings, ClockUpdateService clockUpdateService, Action onUpdated, Func<DateTime>? utcNow = null)
+    internal Guid ClockId => _clockDefinition.Id;
+
+    internal CustomClockDockBand(CustomClock clockDefinition, CustomClockManager clockManager, ISettingsInterface settings, ClockUpdateService clockUpdateService, Func<DateTime>? utcNow = null)
     {
         _clockDefinition = clockDefinition;
         _settings = settings;
         _clockUpdateService = clockUpdateService;
-        _onUpdated = onUpdated;
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
         _clockUpdateService.Tick += ClockUpdateService_Tick;
         _clockUpdateService.SetRequiresSecondUpdates(this, CustomClockDisplay.RequiresSecondUpdates(clockDefinition));
@@ -44,7 +44,6 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
         Title = title;
         Subtitle = subtitle;
-        _onUpdated();
     }
 
     public void Dispose()
