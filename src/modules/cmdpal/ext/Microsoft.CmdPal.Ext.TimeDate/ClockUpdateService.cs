@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
@@ -160,7 +161,14 @@ internal sealed partial class ClockUpdateService : IDisposable
     {
         foreach (var handler in handlers)
         {
-            handler(this, EventArgs.Empty);
+            try
+            {
+                handler(this, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                ExtensionHost.LogMessage($"Clock update failed: {ex.Message}");
+            }
         }
     }
 
