@@ -2,8 +2,16 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# @powerscript:name   Uppercase File (Python)
-# @powerscript:desc   Write an UPPERCASED copy of each selected text file
+# @powerscript.id           py_uppercase_files
+# @powerscript.name         Uppercase File (Python)
+# @powerscript.description   Write an UPPERCASED copy of the selected text file(s) next to the original. A Python file PowerScript for the Explorer right-click menu.
+# @powerscript.kind         file
+# @powerscript.publisher    PowerToys samples
+# @powerscript.version      1.0.0
+# @powerscript.extensions   .txt .md
+# @powerscript.output       convertedFile
+# @powerscript.outputextension .UPPER.txt
+# @powerscript.capability   fileRead fileWrite
 
 import os
 

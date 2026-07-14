@@ -50,7 +50,6 @@ internal static class Program
                 "transform" => RunTransform(registry, positional, options),
                 "trust" => RunTrust(registry, positional),
                 "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
-                "set-extensions" => RunSetExtensions(registry, positional, options),
                 "shell-menu" => RunShellMenu(registry, options),
                 "shell-install" => ShellRegistration.Install(registry, Environment.ProcessPath ?? "PowerScripts.Host.exe"),
                 "shell-uninstall" => ShellRegistration.Uninstall(registry),
@@ -521,72 +520,6 @@ internal static class Program
     }
 
     /// <summary>
-    /// Rewrites a file script's declared input extensions in its manifest.json. This is the write
-    /// side of the Settings "trigger on these file types" editor; the user picks the extensions and
-    /// every surface (context menu, selection matching) then reflects them. System scripts have no
-    /// file input, so they are rejected.
-    /// </summary>
-    private static int RunSetExtensions(
-        ScriptRegistry registry,
-        IReadOnlyList<string> positional,
-        IReadOnlyDictionary<string, List<string>> options)
-    {
-        if (positional.Count == 0)
-        {
-            Console.Error.WriteLine("set-extensions: missing <id>.");
-            return 1;
-        }
-
-        var manifest = registry.Get(positional[0]);
-        if (manifest is null)
-        {
-            Console.Error.WriteLine($"set-extensions: no script with id '{positional[0]}'. Try 'list'.");
-            return 1;
-        }
-
-        if (manifest.Kind != ScriptKind.File)
-        {
-            Console.Error.WriteLine($"set-extensions: '{manifest.Id}' is a {manifest.Kind} script; extensions only apply to File scripts.");
-            return 1;
-        }
-
-        var raw = options.TryGetValue("ext", out var values) ? values : new List<string>();
-        var normalized = raw
-            .SelectMany(v => v.Split(new[] { ',', ';', ' ' }, StringSplitOptions.RemoveEmptyEntries))
-            .Select(NormalizeExtension)
-            .Where(e => !string.IsNullOrEmpty(e))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        if (normalized.Count == 0)
-        {
-            Console.Error.WriteLine("set-extensions: at least one extension is required (e.g. --ext .md .txt).");
-            return 1;
-        }
-
-        manifest.Input ??= new ScriptInput();
-        manifest.Input.Extensions = normalized;
-
-        var manifestPath = Path.Combine(manifest.FolderPath, PowerScriptsPaths.ManifestFileName);
-        File.WriteAllText(manifestPath, ManifestSerializer.Serialize(manifest));
-
-        Console.WriteLine($"set-extensions: {manifest.Id} -> [{string.Join(", ", normalized)}]");
-        return 0;
-    }
-
-    /// <summary>Normalizes a user-typed extension to lower-case with a leading dot ("md" -> ".md").</summary>
-    private static string NormalizeExtension(string raw)
-    {
-        var e = raw.Trim().ToLowerInvariant();
-        if (string.IsNullOrEmpty(e) || e == "*")
-        {
-            return e;
-        }
-
-        return e.StartsWith('.') ? e : "." + e;
-    }
-
-    /// <summary>
     /// Minimal parser. Recognizes <c>--name value [value ...]</c> (multi-value, e.g. --files) and
     /// <c>--flag</c> (no value, e.g. --json). Everything else is positional.
     /// </summary>
@@ -635,7 +568,6 @@ internal static class Program
         Console.WriteLine("  transform <id> [--no-consent]       (run as a data transform; JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
-        Console.WriteLine("  set-extensions <id> --ext <.md .txt ...>  (set a file script's trigger extensions)");
         Console.WriteLine("  shell-menu --files <f1> <f2> ...    (tab-separated id/name of matching file scripts)");
         Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
         Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");

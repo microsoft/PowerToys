@@ -1,4 +1,13 @@
-# Convert Markdown to Text — a "file" PowerScript surfaced on .md right-click.
+# @powerscript.id           convert_md_to_txt
+# @powerscript.name         Convert Markdown to Text
+# @powerscript.description   Convert the selected Markdown file(s) to a plain .txt file next to the original.
+# @powerscript.kind         file
+# @powerscript.extensions   .md
+# @powerscript.output       convertedFile
+# @powerscript.outputextension .txt
+# @powerscript.capability   fileRead fileWrite
+#
+# A "file" PowerScript surfaced on .md right-click (contextMenu is inferred from the file kind).
 # Writes a plain .txt next to each selected .md file (light Markdown stripping).
 
 param(

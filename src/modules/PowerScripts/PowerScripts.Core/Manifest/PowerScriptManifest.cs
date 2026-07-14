@@ -126,8 +126,9 @@ public sealed class ScriptParameter
 }
 
 /// <summary>
-/// The on-disk description of a single PowerScript. One script lives in its own folder containing
-/// a <c>manifest.json</c> (this type) plus the script body referenced by <see cref="Entry"/>.
+/// The parsed description of a single PowerScript. It is built from the script file's leading
+/// <c>@powerscript.*</c> comment header (see <see cref="ScriptHeaderParser"/>); <see cref="Entry"/>
+/// names the script body file itself.
 /// </summary>
 public sealed class PowerScriptManifest
 {

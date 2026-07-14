@@ -29,24 +29,27 @@ public class ScriptRegistryTests
         }
     }
 
-    private void WriteScript(string id, string manifestJson, string entryFile = "run.ps1")
+    private void WriteScript(string id, string header, string entryFile = "run.ps1")
     {
-        var folder = Path.Combine(_root, id);
-        Directory.CreateDirectory(folder);
-        File.WriteAllText(Path.Combine(folder, "manifest.json"), manifestJson);
-        File.WriteAllText(Path.Combine(folder, entryFile), "# noop");
+        // Scripts are single self-contained files with a @powerscript.* comment header. Write each
+        // one as a loose file under the root, using the id as the file name so ids stay unique.
+        var ext = Path.GetExtension(entryFile);
+        File.WriteAllText(Path.Combine(_root, id + ext), header + "\n# noop\n");
     }
 
     [TestMethod]
     public void Load_Skips_Invalid_And_Records_Error()
     {
         WriteScript("good", """
-            { "id": "good", "name": "Good", "kind": "system", "entry": "run.ps1" }
+            # @powerscript.id good
+            # @powerscript.name Good
+            # @powerscript.kind system
             """);
 
         // Missing 'id' -> should be rejected.
         WriteScript("bad", """
-            { "name": "Bad", "kind": "system", "entry": "run.ps1" }
+            # @powerscript.name Bad
+            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -58,11 +61,13 @@ public class ScriptRegistryTests
     }
 
     [TestMethod]
-    public void Load_Allows_IdDecoupledFromFolder()
+    public void Load_Allows_IdDecoupledFromFileName()
     {
-        // The folder name differs from the id; the script is still loaded and keyed by its id.
-        WriteScript("some-folder", """
-            { "id": "portable.id", "name": "Portable", "kind": "system", "entry": "run.ps1" }
+        // The file name differs from the id; the script is still loaded and keyed by its id.
+        WriteScript("some-file", """
+            # @powerscript.id portable.id
+            # @powerscript.name Portable
+            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -77,11 +82,15 @@ public class ScriptRegistryTests
     [TestMethod]
     public void Load_Rejects_DuplicateIds()
     {
-        WriteScript("folder-a", """
-            { "id": "dup", "name": "First", "kind": "system", "entry": "run.ps1" }
+        WriteScript("file-a", """
+            # @powerscript.id dup
+            # @powerscript.name First
+            # @powerscript.kind system
             """);
-        WriteScript("folder-b", """
-            { "id": "dup", "name": "Second", "kind": "system", "entry": "run.ps1" }
+        WriteScript("file-b", """
+            # @powerscript.id dup
+            # @powerscript.name Second
+            # @powerscript.kind system
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -97,13 +106,17 @@ public class ScriptRegistryTests
     public void FileScriptsFor_Matches_Extension_And_Wildcard()
     {
         WriteScript("png-only", """
-            { "id": "png-only", "name": "PNG", "kind": "file", "entry": "run.ps1",
-              "input": { "extensions": [".png"], "minFiles": 1, "maxFiles": 0 } }
+            # @powerscript.id png-only
+            # @powerscript.name PNG
+            # @powerscript.kind file
+            # @powerscript.extensions .png
             """);
 
         WriteScript("any-file", """
-            { "id": "any-file", "name": "Any", "kind": "file", "entry": "run.ps1",
-              "input": { "extensions": ["*"], "minFiles": 1, "maxFiles": 0 } }
+            # @powerscript.id any-file
+            # @powerscript.name Any
+            # @powerscript.kind file
+            # @powerscript.extensions *
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -120,8 +133,12 @@ public class ScriptRegistryTests
     public void FileScriptsForSelection_Respects_MinMax_And_MixedExtensions()
     {
         WriteScript("single-png", """
-            { "id": "single-png", "name": "Single PNG", "kind": "file", "entry": "run.ps1",
-              "input": { "extensions": [".png"], "minFiles": 1, "maxFiles": 1 } }
+            # @powerscript.id single-png
+            # @powerscript.name Single PNG
+            # @powerscript.kind file
+            # @powerscript.extensions .png
+            # @powerscript.minfiles 1
+            # @powerscript.maxfiles 1
             """);
 
         var registry = new ScriptRegistry(_root);
@@ -141,11 +158,15 @@ public class ScriptRegistryTests
     public void SystemScripts_Filters_ByKind()
     {
         WriteScript("sys", """
-            { "id": "sys", "name": "Sys", "kind": "system", "entry": "run.ps1" }
+            # @powerscript.id sys
+            # @powerscript.name Sys
+            # @powerscript.kind system
             """);
         WriteScript("file", """
-            { "id": "file", "name": "File", "kind": "file", "entry": "run.ps1",
-              "input": { "extensions": ["*"] } }
+            # @powerscript.id file
+            # @powerscript.name File
+            # @powerscript.kind file
+            # @powerscript.extensions *
             """);
 
         var registry = new ScriptRegistry(_root);

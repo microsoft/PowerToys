@@ -33,9 +33,15 @@ public sealed class ScriptRegistry
 
     public IReadOnlyList<ScriptLoadError> Errors => _errors;
 
+    private static readonly string[] HeaderScriptExtensions = { ".ps1", ".py" };
+
     /// <summary>
-    /// Scans <see cref="Root"/> for <c>&lt;id&gt;/manifest.json</c> folders, parses and validates each,
-    /// and rebuilds the in-memory catalogue. Bad scripts are recorded in <see cref="Errors"/> and skipped.
+    /// Rebuilds the in-memory catalogue by scanning <see cref="Root"/> for scripts, each of which is a
+    /// single self-contained file carrying its metadata in a leading <c>@powerscript.*</c> comment
+    /// header (see <see cref="ScriptHeaderParser"/>). Scripts are discovered either as a loose file
+    /// directly under the root (e.g. <c>whats-my-ip.ps1</c>) or as the one header script inside a
+    /// sub-folder (which lets a script keep companion assets). Surfaces are inferred from the script
+    /// kind when none are declared. Bad scripts are recorded in <see cref="Errors"/> and skipped.
     /// </summary>
     public void Load()
     {
@@ -49,39 +55,18 @@ public sealed class ScriptRegistry
 
         var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var folder in Directory.EnumerateDirectories(Root))
+        void TryAdd(PowerScriptManifest manifest, string folder, string context)
         {
-            var manifestPath = Path.Combine(folder, PowerScriptsPaths.ManifestFileName);
-            if (!File.Exists(manifestPath))
-            {
-                continue;
-            }
-
-            PowerScriptManifest? manifest;
-            try
-            {
-                manifest = ManifestSerializer.Deserialize(File.ReadAllText(manifestPath));
-            }
-            catch (Exception ex)
-            {
-                _errors.Add(new ScriptLoadError(folder, $"failed to parse manifest.json: {ex.Message}"));
-                continue;
-            }
-
-            if (manifest is null)
-            {
-                _errors.Add(new ScriptLoadError(folder, "manifest.json deserialized to null."));
-                continue;
-            }
-
             manifest.FolderPath = folder;
 
-            var folderName = new DirectoryInfo(folder).Name;
-            var validationErrors = ManifestValidator.Validate(manifest, folderName);
+            // Authors don't hand-list surfaces; the ingestion side infers them from the kind.
+            SurfaceInference.ApplyDefaults(manifest);
+
+            var validationErrors = ManifestValidator.Validate(manifest, new DirectoryInfo(folder).Name);
             if (validationErrors.Count > 0)
             {
-                _errors.Add(new ScriptLoadError(folder, string.Join(" ", validationErrors)));
-                continue;
+                _errors.Add(new ScriptLoadError(context, string.Join(" ", validationErrors)));
+                return;
             }
 
             // Ids are the portable identity and must be unique across the catalogue, since every
@@ -89,15 +74,61 @@ public sealed class ScriptRegistry
             // is reported and the duplicate skipped rather than silently shadowed.
             if (!seenIds.Add(manifest.Id))
             {
-                _errors.Add(new ScriptLoadError(folder, $"duplicate id '{manifest.Id}' - already defined by another script; skipped."));
-                continue;
+                _errors.Add(new ScriptLoadError(context, $"duplicate id '{manifest.Id}' - already defined by another script; skipped."));
+                return;
             }
 
             _scripts.Add(manifest);
         }
 
+        // Loose header script files placed directly under the root (single-file scripts).
+        foreach (var file in EnumerateHeaderCandidates(Root))
+        {
+            var manifest = ScriptHeaderParser.TryParseFile(file);
+            if (manifest is not null)
+            {
+                TryAdd(manifest, Root, file);
+            }
+        }
+
+        // A header script inside a sub-folder (keeps companion assets next to the script).
+        foreach (var folder in Directory.EnumerateDirectories(Root))
+        {
+            var file = FindHeaderScript(folder);
+            if (file is not null)
+            {
+                var manifest = ScriptHeaderParser.TryParseFile(file);
+                if (manifest is not null)
+                {
+                    TryAdd(manifest, folder, file);
+                }
+            }
+        }
+
         _scripts.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
     }
+
+    /// <summary>
+    /// Returns the path of the first script file inside <paramref name="folder"/> that carries embedded
+    /// <c>@powerscript.*</c> metadata, or null when none qualifies.
+    /// </summary>
+    private static string? FindHeaderScript(string folder)
+    {
+        foreach (var file in EnumerateHeaderCandidates(folder))
+        {
+            if (ScriptHeaderParser.TryParseFile(file) is not null)
+            {
+                return file;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateHeaderCandidates(string directory) =>
+        Directory.EnumerateFiles(directory)
+            .Where(f => HeaderScriptExtensions.Contains(Path.GetExtension(f), StringComparer.OrdinalIgnoreCase))
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
 
     public PowerScriptManifest? Get(string id) =>
         _scripts.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));

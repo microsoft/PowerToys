@@ -1,7 +1,7 @@
 # PowerScripts (prototype)
 
 > **Status: prototype.** Write a small script once and surface it across PowerToys.
-> This folder contains the **working core** (manifest schema, registry, shared executor
+> This folder contains the **working core** (script header format, registry, shared executor
 > `PowerScripts.Host.exe`) plus sample scripts, and three **implemented surfaces**:
 > a Settings module page, the Explorer right-click menu, and the Keyboard Manager editor.
 
@@ -10,7 +10,7 @@
 | Surface | What it does | How |
 | --- | --- | --- |
 | **Settings module** | New "PowerScripts" page in the Settings app that lists installed scripts and has an enable toggle. Enabling/disabling installs/removes the Explorer context-menu entries. | `src/settings-ui/.../Views/PowerScriptsPage.xaml(.cs)` + `PowerScriptsViewModel`; reads `Host.exe list --json`; toggle runs `Host.exe shell-install`/`shell-uninstall`. |
-| **Explorer right-click** | Right-click a file → "PowerScript" submenu lists scripts whose manifest declares that extension; clicking runs the script on the file. | `Host.exe shell-install` writes `HKCU\Software\Classes\SystemFileAssociations\<ext>\shell\PowerScripts` cascading verbs → `Host.exe run <id> --files "%1"`. |
+| **Explorer right-click** | Right-click a file → "PowerScript" submenu lists scripts whose header declares that extension; clicking runs the script on the file. | `Host.exe shell-install` writes `HKCU\Software\Classes\SystemFileAssociations\<ext>\shell\PowerScripts` cascading verbs → `Host.exe run <id> --files "%1"`. |
 | **Keyboard Manager** | A new "PowerScript" action in the KBM editor; pick a system script and assign it to a hotkey. | `KeyboardManagerEditorUI` action picker saves an ordinary `RunProgram` mapping → `Host.exe run <id>`. |
 
 ### End-to-end demo
@@ -22,11 +22,11 @@
 
 ## The idea
 
-A **PowerScript** is a script plus a manifest, living in its own folder. Two flavours:
+A **PowerScript** is a single script file with its metadata in a header comment. Two flavours:
 
-- **System** (`kind: "system"`) — "do something on my PC". No file input. Triggered by a Keyboard
+- **System** (`kind: system`) — "do something on my PC". No file input. Triggered by a Keyboard
   Manager hotkey (and later the Command Palette).
-- **File** (`kind: "file"`) — "do something with this file". Input is one or more files of declared
+- **File** (`kind: file`) — "do something with this file". Input is one or more files of declared
   types. Surfaced in the Explorer right-click menu.
 
 Every surface is a thin consumer of one **registry** and invokes one **executor** — so a script is
@@ -36,8 +36,8 @@ authored once and appears everywhere it's declared.
 
 ```
  Registry (PowerScripts.Core)  ──read──►  surfaces:
-   scans <root>/<id>/manifest.json          • Explorer context menu  (file actions)
-                                            • Keyboard Manager editor (system actions)
+   scans <root> for @powerscript.*          • Explorer context menu  (file actions)
+   header scripts                           • Keyboard Manager editor (system actions)
                                             • Command Palette / Advanced Paste (later)
         ▲                                          │ invoke
         └──────────── all surfaces ────────────────┘
@@ -46,7 +46,7 @@ authored once and appears everywhere it's declared.
               list [--json] | run <id> [--files ...] [--set k=v ...]
 ```
 
-- **`PowerScripts.Core`** — manifest model + JSON (`Manifest/`), validation, registry (`Registry/`),
+- **`PowerScripts.Core`** — manifest model + header parser (`Manifest/`), validation, registry (`Registry/`),
   executor (`Execution/`).
 - **`PowerScripts.Host`** — the CLI every surface points at. `list --json` is the structured catalogue
   the KBM editor picker and future agents/MCP consume; `run <id>` executes.
@@ -54,48 +54,78 @@ authored once and appears everywhere it's declared.
 
 ### Scripts root
 
-`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts\<id>\manifest.json`
+`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts\<id>.ps1` (or `.py`)
 (override with the `POWERSCRIPTS_ROOT` env var or `--root`).
 
-## Manifest schema (v1)
+## Script format (header metadata)
 
-```jsonc
-{
-  "schemaVersion": 1,
-  "id": "heic-to-jpg",            // portable identity; need not match the folder name
-  "name": "Convert HEIC to JPG",
-  "description": "…",
-  "kind": "file",                 // "system" | "file"
-  "runtime": "powershell",        // "powershell" | "python"
-  "entry": "run.ps1",
-  "input": { "extensions": [".heic"], "minFiles": 1, "maxFiles": 0 }, // file kind
-  "output": { "type": "convertedFile", "extension": ".jpg" },
-  "promptForParameters": true,    // optional: show a dialog to collect parameters before running
-  "parameters": [
-    { "name": "quality", "type": "int", "default": "90", "min": 1, "max": 100 },
-    { "name": "mode", "type": "choice", "options": ["fast", "best"], "default": "best", "label": "Mode" },
-    { "name": "overwrite", "type": "bool", "default": "false" }
-  ],
-  "surfaces": ["contextMenu", "keyboardManager"],
-  "capabilities": ["fileWrite"],  // consent string + agent permission contract
-  "elevation": "asInvoker"        // prototype always runs non-elevated
-}
+A PowerScript is a **single self-contained file**. Its metadata lives in the file's **leading comment
+block** as `@powerscript.*` directives (the Raycast-style model), so one file is the whole thing and is
+trivial to share — there is no separate `manifest.json`. Directives are `#`-comment lines of the form
+`# @powerscript.<key> <value>`:
+
+```powershell
+# @powerscript.id           whats-my-ip
+# @powerscript.name         What's my IP
+# @powerscript.description   Look up this PC's public IP address and show it.
+# @powerscript.kind         system          # "system" (or alias "action") | "file" (or "content")
+# @powerscript.capability   network
+# @powerscript.param        name=greeting type=string label="Greeting" default=Hello
+
+Write-Host 'script body starts here'
 ```
+
+**Field reference** (all optional unless noted):
+
+| Directive | Meaning |
+| --- | --- |
+| `id` **(required)** | Portable identity; unique across the catalogue. Letters/digits/`. _ -` only. |
+| `name` **(required)** | Display name. |
+| `description` (`desc`) | One-line description. |
+| `kind` | `system`/`action` (no input) or `file`/`content` (file input). Default `system`. |
+| `runtime` | `powershell` or `python`. Inferred from the extension (`.py`→Python, else PowerShell) if omitted. |
+| `extensions` | File kinds: accepted extensions (`.md .txt` or `*`). Repeatable / comma- or space-separated. |
+| `minfiles` / `maxfiles` | File kinds: selection bounds (`maxfiles` 0 = unbounded). |
+| `output` / `outputextension` | File kinds: `convertedFile`/`sideEffect`/`none` and the produced extension. |
+| `capability` | Declared capability (consent string + agent permission). Repeatable. |
+| `surface` | Where it appears. **Usually omit** — inferred from `kind` (see below). Repeatable. |
+| `param` | A typed parameter (see Parameters). Repeatable. |
+| `prompt` | `true` to show the parameter dialog before running. |
+| `publisher` (`author`), `version`, `icon`, `source` | Informational metadata. |
+
+The header ends at the first non-blank, non-comment line; non-directive comments (e.g. a license
+header) are ignored, and a file with **no** `@powerscript.*` directives is skipped — so a plain helper
+script is never mistaken for a PowerScript. Scripts are discovered as a **loose file directly under the
+scripts root** (e.g. `scripts\whats-my-ip.ps1`) or as the one header script inside a sub-folder (which
+lets a script keep companion assets next to it).
+
+### Inferred surfaces
+
+Authors don't hand-list which PowerToys expose a script — that's brittle and not future-proof. When no
+`surface` is declared, the ingestion side infers it from the script `kind`:
+
+- `file` (needs an input object) → `contextMenu`.
+- `system` (an action, no input) → `keyboardManager` + `commandPalette`.
+
+Declaring `surface` explicitly still wins and is left untouched (e.g. the `uppercase` sample opts into
+`advancedPaste`).
 
 ### Parameters (optional)
 
-A script may declare typed `parameters`. When `promptForParameters` is `true`, PowerScripts shows a
+A script may declare typed `param` directives. When `prompt` is `true`, PowerScripts shows a
 small **WinUI 3** dialog before running so the user can pick/enter values; the chosen values are passed
 to the script (PowerShell as `-Name value`, Python as keyword arguments). Values arrive as **strings**,
-so a `bool` parameter is passed as the literal `"true"`/`"false"`. Supported types:
+so a `bool` parameter is passed as the literal `"true"`/`"false"`. A `param` uses quote-aware
+`key=value` tokens (`name=`, `type=`, `label=`, `description=`, `default=`, `options=`, `min=`, `max=`),
+with the first two bare tokens treated as name and type. Supported types:
 
 - `choice` — one value from a fixed `options` list (rendered as a dropdown / `ComboBox`).
 - `bool` — a `ToggleSwitch`.
 - `int` — a `NumberBox` honoring `min`/`max`.
 - `string` — a `TextBox`.
 
-When `promptForParameters` is omitted/`false`, no UI shows and parameters only come from an explicit
-`--set name=value` (unchanged behavior). Pass `--no-prompt` to `run` to suppress the dialog for
+When `prompt` is omitted/`false`, no UI shows and parameters only come from an explicit
+`--set name=value`. Pass `--no-prompt` to `run` to suppress the dialog for
 automated invocations. See the `greet` (PowerShell) and `py_greet` (Python) samples.
 
 The prompt is a separate helper process — `PowerScripts.PromptUI` (a self-contained, unpackaged

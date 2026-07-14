@@ -9,9 +9,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     /// <summary>
     /// A single PowerScript shown in the Settings list. This is a read-only projection of the
-    /// script's <c>manifest.json</c> (the source of truth), as emitted by
+    /// script's header metadata (the source of truth), as emitted by
     /// <c>PowerScripts.Host.exe list --json</c>. The Settings page only displays this information;
-    /// authors change it by editing the manifest.
+    /// authors change it by editing the script file's <c>@powerscript.*</c> header.
     /// </summary>
     public sealed class PowerScriptListItem
     {
@@ -39,12 +39,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool Trusted { get; set; }
 
         /// <summary>
-        /// Absolute path to the folder containing this script's <c>manifest.json</c>. Surfaced with an
+        /// Absolute path to the folder containing this script. Surfaced with an
         /// "open folder" button so users can quickly locate a script on disk (e.g. to edit or inspect it).
         /// </summary>
         public string FolderPath { get; set; } = string.Empty;
 
-        /// <summary>Absolute path to the script's entry file (<c>FolderPath</c> + the manifest's entry).</summary>
+        /// <summary>Absolute path to the script file itself.</summary>
         public string EntryFullPath { get; set; } = string.Empty;
 
         /// <summary>

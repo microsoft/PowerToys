@@ -63,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool HasScripts => Scripts.Count > 0;
 
         /// <summary>
-        /// The folder PowerScripts scans for <c>&lt;id&gt;\manifest.json</c> script folders. Persisted to
+        /// The folder PowerScripts scans for <c>@powerscript.*</c> header script files. Persisted to
         /// the shared <c>config.json</c> so every surface (Settings, the Explorer context menu, and the
         /// Keyboard Manager mapping) resolves the same folder.
         /// </summary>

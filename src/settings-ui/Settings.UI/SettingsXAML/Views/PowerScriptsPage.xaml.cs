@@ -54,6 +54,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel.ResetScriptsFolder();
         }
 
+        // Opens the current scripts root folder in File Explorer.
+        private void OpenScriptsFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = ViewModel.ScriptsFolder;
+            try
+            {
+                if (!string.IsNullOrEmpty(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                    Process.Start("explorer.exe", $"\"{folder}\"");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to open PowerScripts folder '{folder}'.", ex);
+            }
+        }
+
         // Opens the script's folder in File Explorer, selecting the entry file when known.
         private void OpenScriptFolderButton_Click(object sender, RoutedEventArgs e)
         {

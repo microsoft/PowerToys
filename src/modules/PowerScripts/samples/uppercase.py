@@ -2,8 +2,13 @@
 # The Microsoft Corporation licenses this file to you under the MIT license.
 # See the LICENSE file in the project root for more information.
 
-# @powerscript:name   Uppercase Text
-# @powerscript:desc   Convert clipboard text to UPPERCASE
+# @powerscript.id           uppercase
+# @powerscript.name         Uppercase Text
+# @powerscript.description   Convert clipboard text to UPPERCASE. A Python PowerScript usable from Advanced Paste or a hotkey.
+# @powerscript.kind         system
+# @powerscript.publisher    PowerToys samples
+# @powerscript.version      1.0.0
+# @powerscript.surface      advancedPaste keyboardManager
 
 
 def powerscript_from_text_to_text(text: str) -> str:

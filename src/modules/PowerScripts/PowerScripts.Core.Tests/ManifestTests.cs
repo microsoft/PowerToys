@@ -11,32 +11,6 @@ namespace PowerScripts.Core.Tests;
 public class ManifestTests
 {
     [TestMethod]
-    public void Serializer_RoundTrips_WithCamelCaseEnums()
-    {
-        var manifest = new PowerScriptManifest
-        {
-            Id = "demo",
-            Name = "Demo",
-            Kind = ScriptKind.File,
-            Runtime = ScriptRuntime.PowerShell,
-            Entry = "run.ps1",
-            Input = new ScriptInput { Extensions = { ".png" }, MinFiles = 1, MaxFiles = 0 },
-            Output = new ScriptOutput { Type = ScriptOutputType.SideEffect },
-            Surfaces = { "contextMenu" },
-        };
-
-        var json = ManifestSerializer.Serialize(manifest);
-        StringAssert.Contains(json, "\"kind\": \"file\"");
-        StringAssert.Contains(json, "\"runtime\": \"powerShell\"");
-
-        var back = ManifestSerializer.Deserialize(json);
-        Assert.IsNotNull(back);
-        Assert.AreEqual(ScriptKind.File, back!.Kind);
-        Assert.AreEqual(ScriptOutputType.SideEffect, back.Output!.Type);
-        Assert.AreEqual(".png", back.Input!.Extensions[0]);
-    }
-
-    [TestMethod]
     public void Validator_Allows_IdFolderMismatch()
     {
         // A script's id is portable and intentionally decoupled from its folder name, so a mismatch
@@ -102,7 +76,7 @@ public class ManifestTests
     }
 
     [TestMethod]
-    public void Serializer_RoundTrips_ChoiceParameter_WithOptions()
+    public void ChoiceParameter_Exposes_Options_And_DisplayLabel()
     {
         var manifest = new PowerScriptManifest
         {
@@ -123,14 +97,8 @@ public class ManifestTests
             },
         };
 
-        var json = ManifestSerializer.Serialize(manifest);
-        StringAssert.Contains(json, "\"promptForParameters\": true");
-        StringAssert.Contains(json, "\"type\": \"choice\"");
-
-        var back = ManifestSerializer.Deserialize(json);
-        Assert.IsNotNull(back);
-        Assert.IsTrue(back!.PromptForParameters);
-        var p = back.Parameters.Single();
+        Assert.IsTrue(manifest.PromptForParameters);
+        var p = manifest.Parameters.Single();
         Assert.IsTrue(p.IsChoice);
         CollectionAssert.AreEqual(new[] { "Hello", "Hi" }, p.Options);
         Assert.AreEqual("Greeting", p.DisplayLabel);

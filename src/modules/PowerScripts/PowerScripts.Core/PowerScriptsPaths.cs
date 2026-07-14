@@ -16,9 +16,6 @@ public static class PowerScriptsPaths
     /// <summary>Environment variable that overrides the default scripts root.</summary>
     public const string RootEnvironmentVariable = "POWERSCRIPTS_ROOT";
 
-    /// <summary>The folder a single script lives in must contain a file with this name.</summary>
-    public const string ManifestFileName = "manifest.json";
-
     /// <summary>The user-settings file name persisted next to the module data.</summary>
     public const string ConfigFileName = "config.json";
 
