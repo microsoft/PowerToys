@@ -14,6 +14,10 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private static readonly TimeSpan PerSecondUpdateInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan PerMinuteUpdateInterval = TimeSpan.FromMinutes(1);
 
+    // Manually set the icon to blank, to override the "open link" icon on the
+    // command itself
+    public override IconInfo Icon => new(string.Empty);
+
     private readonly System.Timers.Timer _timer;
     private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
