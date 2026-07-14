@@ -153,11 +153,11 @@ namespace MouseButtonLockEngineTests
             Assert::IsTrue(e.IsLocked(MouseButton::Right));
         }
 
-        TEST_METHOD(MoveAfterThresholdCancelsLockByDefault)
+        TEST_METHOD(MoveAfterThresholdCancelsLock)
         {
             FakeInjector inj;
             Engine e(inj);
-            Settings s = DefaultSettings(); // dragLocksEnabled is false by default
+            Settings s = DefaultSettings();
 
             // A drag past the dead-zone after the threshold is still a drag (e.g. selecting text),
             // so it cancels the pending lock and the button-up passes through normally.
@@ -165,19 +165,6 @@ namespace MouseButtonLockEngineTests
             e.OnMove(350, PointL{ 500, 500 }, s); // past 300 ms, but a drag -> cancels
             Assert::IsFalse(e.OnButtonUp(MouseButton::Right, 400, s));
             Assert::IsFalse(e.IsLocked(MouseButton::Right));
-        }
-
-        TEST_METHOD(MoveAfterThresholdStillLocksWhenDragLocksEnabled)
-        {
-            FakeInjector inj;
-            Engine e(inj);
-            Settings s = DefaultSettings();
-            s.dragLocksEnabled = true; // opt in to the hands-free camera-drag behavior
-
-            e.OnButtonDown(MouseButton::Right, 0, PointL{ 0, 0 }, s);
-            e.OnMove(350, PointL{ 500, 500 }, s); // past 300 ms -> armed, motion ignored
-            Assert::IsTrue(e.OnButtonUp(MouseButton::Right, 400, s)); // locks; up suppressed
-            Assert::IsTrue(e.IsLocked(MouseButton::Right));
         }
 
     };

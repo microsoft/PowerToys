@@ -142,14 +142,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
             MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(1200);
             MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
-            MouseButtonLockSettingsConfig.Properties.DragLocksEnabled ??= new BoolProperty(false);
 
             _mouseButtonLockLmbEnabled = MouseButtonLockSettingsConfig.Properties.LmbLockEnabled.Value;
             _mouseButtonLockRmbEnabled = MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value;
             _mouseButtonLockMmbEnabled = MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value;
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
             _mouseButtonLockMoveCancelPixels = MouseButtonLockSettingsConfig.Properties.MoveCancelPixels.Value;
-            _mouseButtonLockDragLocksEnabled = MouseButtonLockSettingsConfig.Properties.DragLocksEnabled.Value;
 
             int isEnabled = 0;
 
@@ -1449,20 +1447,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public bool MouseButtonLockDragLocksEnabled
-        {
-            get => _mouseButtonLockDragLocksEnabled;
-            set
-            {
-                if (value != _mouseButtonLockDragLocksEnabled)
-                {
-                    _mouseButtonLockDragLocksEnabled = value;
-                    MouseButtonLockSettingsConfig.Properties.DragLocksEnabled.Value = value;
-                    NotifyMouseButtonLockPropertyChanged();
-                }
-            }
-        }
-
         public void NotifyMouseButtonLockPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1553,6 +1537,5 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mouseButtonLockMmbEnabled;
         private int _mouseButtonLockHoldDurationMs;
         private int _mouseButtonLockMoveCancelPixels;
-        private bool _mouseButtonLockDragLocksEnabled;
     }
 }

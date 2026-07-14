@@ -2545,7 +2545,7 @@ From there, simply click on one of the supported files in the File Explorer and 
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
   <data name="MouseUtils_MouseButtonLock.Description" xml:space="preserve">
-    <value>Hold the left, right, or middle mouse button to lock it down, like ClickLock. Tap the same button again to release. Windows already provides ClickLock for the left button, so left-button locking here is off by default. Some games that read the mouse with raw or exclusive input may not respond to the lock.</value>
+    <value>Hold the left, right, or middle mouse button to lock it down, like ClickLock. Tap the same button again to release. Windows already provides ClickLock for the left button, so left-button locking here is off by default. Some games that read the mouse with raw or exclusive input may not respond to the lock. It also does not work over windows running as administrator or over on-screen keyboards.</value>
     <comment>Mouse as in the hardware peripheral. ClickLock is a Windows feature name.</comment>
   </data>
   <data name="MouseUtils_Enable_MouseButtonLock.Header" xml:space="preserve">
@@ -2583,11 +2583,13 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Description" xml:space="preserve">
     <value>Movement beyond this distance during the hold is treated as a drag and will not lock.</value>
   </data>
-  <data name="MouseUtils_MouseButtonLock_DragLocks.Header" xml:space="preserve">
-    <value>Allow a held drag to lock</value>
+  <data name="MouseUtils_MouseButtonLock_ButtonRecommendation.Title" xml:space="preserve">
+    <value>Recommended for the right and middle buttons</value>
+    <comment>Recommendation shown for the Mouse Button Lock feature. Right and middle refer to mouse buttons.</comment>
   </data>
-  <data name="MouseUtils_MouseButtonLock_DragLocks.Description" xml:space="preserve">
-    <value>When on, a button held past the threshold locks even if you then drag (useful for a hands-free camera pan in games). When off, dragging never locks, so text selection and window or file drags end normally.</value>
+  <data name="MouseUtils_MouseButtonLock_ButtonRecommendation.Message" xml:space="preserve">
+    <value>Windows already includes ClickLock for the left button. To turn it on, open Control Panel &gt; Mouse &gt; Buttons and select "Turn on ClickLock".</value>
+    <comment>ClickLock is a Windows feature name. "Control Panel &gt; Mouse &gt; Buttons" is a navigation path in the Windows Control Panel.</comment>
   </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation and behavior</value>

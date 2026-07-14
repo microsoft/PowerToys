@@ -56,7 +56,6 @@ namespace
     const wchar_t JSON_KEY_MMB_LOCK_ENABLED[] = L"mmb_lock_enabled";
     const wchar_t JSON_KEY_HOLD_DURATION_MS[] = L"hold_duration_ms";
     const wchar_t JSON_KEY_MOVE_CANCEL_PIXELS[] = L"move_cancel_pixels";
-    const wchar_t JSON_KEY_DRAG_LOCKS_ENABLED[] = L"drag_locks_enabled";
 
     // dwExtraInfo tag stamped on every event we inject via SendInput, so the hook ignores
     // our own synthetic events and we don't recurse. Magic value 'WINM' (carried over from the
@@ -204,7 +203,6 @@ private:
     std::atomic<bool> m_lmbLockEnabled{ false };
     std::atomic<bool> m_rmbLockEnabled{ true };
     std::atomic<bool> m_mmbLockEnabled{ false };
-    std::atomic<bool> m_dragLocksEnabled{ false };
     std::atomic<int> m_holdDurationMs{ DEFAULT_HOLD_DURATION_MS };
     std::atomic<int> m_moveCancelPixels{ DEFAULT_MOVE_CANCEL_PIXELS };
 
@@ -433,7 +431,6 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
     readBool(JSON_KEY_LMB_LOCK_ENABLED, m_lmbLockEnabled);
     readBool(JSON_KEY_RMB_LOCK_ENABLED, m_rmbLockEnabled);
     readBool(JSON_KEY_MMB_LOCK_ENABLED, m_mmbLockEnabled);
-    readBool(JSON_KEY_DRAG_LOCKS_ENABLED, m_dragLocksEnabled);
     readInt(JSON_KEY_HOLD_DURATION_MS, m_holdDurationMs, MIN_HOLD_DURATION_MS, MAX_HOLD_DURATION_MS);
     readInt(JSON_KEY_MOVE_CANCEL_PIXELS, m_moveCancelPixels, 0, MAX_MOVE_CANCEL_PIXELS);
 }
@@ -444,7 +441,6 @@ mousebuttonlock::Settings MouseButtonLock::SettingsSnapshot() const
     s.lmbEnabled = m_lmbLockEnabled.load();
     s.rmbEnabled = m_rmbLockEnabled.load();
     s.mmbEnabled = m_mmbLockEnabled.load();
-    s.dragLocksEnabled = m_dragLocksEnabled.load();
     s.holdDurationMs = m_holdDurationMs.load();
     s.moveCancelPixels = m_moveCancelPixels.load();
     return s;

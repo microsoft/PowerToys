@@ -118,17 +118,8 @@
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
-                                Name="MouseUtilsMouseButtonLockDragLocks"
-                                x:Uid="MouseUtils_MouseButtonLock_DragLocks">
-                                <ToggleSwitch
-                                    x:Uid="ToggleSwitch"
-                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockDragLocksId"
-                                    IsOn="{x:Bind ViewModel.MouseButtonLockDragLocksEnabled, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard
                                 Name="MouseUtilsMouseButtonLockMoveCancelPixels"
-                                x:Uid="MouseUtils_MouseButtonLock_MoveCancelPixels"
-                                IsEnabled="{x:Bind ViewModel.MouseButtonLockDragLocksEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                x:Uid="MouseUtils_MouseButtonLock_MoveCancelPixels">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     AutomationProperties.AutomationId="MouseUtils_MouseButtonLockMoveCancelPixelsId"
@@ -141,6 +132,13 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <InfoBar
+                        x:Uid="MouseUtils_MouseButtonLock_ButtonRecommendation"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Informational"
+                        Visibility="{x:Bind MouseUtilsMouseButtonLockSettingsExpander.IsExpanded, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">

@@ -38,13 +38,10 @@ namespace mousebuttonlock
         // Matches Windows' built-in ClickLock default (1200 ms). Every field is overwritten from
         // settings in production (SettingsSnapshot), so this default only surfaces in tests.
         int holdDurationMs = 1200;
-        // The dead-zone (in pixels) that separates hand jitter from a deliberate drag.
+        // The dead-zone (in pixels) that separates hand jitter from a deliberate drag: any motion
+        // beyond it during the hold marks the gesture as a drag (text selection, window/file drag)
+        // and cancels the pending lock, so the button-up passes through normally.
         int moveCancelPixels = 5;
-        // The single control over how a moving hold behaves. When false (the default), any motion
-        // beyond the dead-zone marks the gesture as a drag (text selection, window/file drag) and
-        // cancels the pending lock, so the button-up passes through normally. When true, motion never
-        // cancels, so a sustained hold-and-drag (e.g. a gaming camera pan) still locks.
-        bool dragLocksEnabled = false;
     };
 
     // Abstraction over the synthetic button-up injection (SendInput in production, a recording fake in
@@ -110,10 +107,11 @@ namespace mousebuttonlock
             return false;
         }
 
-        // Handle a physical button-up. Returns true if the UP should be suppressed (i.e. this UP is
-        // the swallowed pair of a release tap). A hold that reaches the threshold locks the button by
-        // injecting a genuine button-down; the physical up is NOT suppressed, so the original click
-        // completes and the injected down begins a real drag that the OS and applications honor.
+        // Handle a physical button-up. Returns true if the UP should be suppressed. Two paths suppress:
+        // this UP is the swallowed pair of a release tap, or the hold has reached the threshold and the
+        // button locks now. Locking suppresses the physical up so the button stays held without the
+        // original click ever completing; nothing is injected on lock (the held state IS the suppressed
+        // up, and the later clean release is a single injected up).
         bool OnButtonUp(MouseButton button, uint64_t tick, const Settings& s)
         {
             ButtonState& st = State(button);
@@ -150,15 +148,15 @@ namespace mousebuttonlock
             return false;
         }
 
-        // Handle cursor movement (never suppressed). Unless a held drag is allowed to lock, a cursor
-        // move beyond the dead-zone marks the gesture as a drag and cancels the pending lock, so the
-        // button-up passes through normally instead of latching.
+        // Handle cursor movement (never suppressed). A cursor move beyond the dead-zone during the hold
+        // marks the gesture as a drag (text selection, window/file drag) and cancels the pending lock,
+        // so the button-up passes through normally instead of latching.
         void OnMove(uint64_t /*tick*/, PointL pt, const Settings& s)
         {
             const int pixels = s.moveCancelPixels < 0 ? 0 : s.moveCancelPixels;
-            CheckMoveCancel(m_left, pixels, s.dragLocksEnabled, pt);
-            CheckMoveCancel(m_right, pixels, s.dragLocksEnabled, pt);
-            CheckMoveCancel(m_middle, pixels, s.dragLocksEnabled, pt);
+            CheckMoveCancel(m_left, pixels, pt);
+            CheckMoveCancel(m_right, pixels, pt);
+            CheckMoveCancel(m_middle, pixels, pt);
         }
 
         // Release any button whose lock has just been turned off in settings.
@@ -253,13 +251,12 @@ namespace mousebuttonlock
             }
         }
 
-        static void CheckMoveCancel(ButtonState& st, int pixels, bool dragLocks, PointL pt)
+        static void CheckMoveCancel(ButtonState& st, int pixels, PointL pt)
         {
-            // When a held drag is allowed to lock, motion never cancels, so a sustained hold-and-drag
-            // still locks. Otherwise any motion beyond the dead-zone marks the gesture as a drag and
-            // cancels the pending lock. (Motion after the button locks never reaches here: physicalDown
-            // is already false by then, so a genuine lock-then-drag is unaffected either way.)
-            if (dragLocks || !st.physicalDown || st.locked.load() || st.moveCancelled)
+            // Any motion beyond the dead-zone during the hold marks the gesture as a drag and cancels
+            // the pending lock. (Motion after the button locks never reaches here: physicalDown is
+            // already false by then, so a genuine lock-then-drag is unaffected.)
+            if (!st.physicalDown || st.locked.load() || st.moveCancelled)
             {
                 return;
             }

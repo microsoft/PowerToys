@@ -16,7 +16,9 @@ This is a "hands-free drag" accessibility feature (for users with motor disabili
 
 **Right-button caveat (context menu).** Releasing a right-button lock necessarily emits a right-button-up, which applications answer with a context menu (that is just what a right-click is). To keep hands-free right-drag usable, the module injects an `Esc` immediately after the release up to dismiss that menu. Normal quick right-clicks never lock and are untouched, so context menus still work; only a lock *release* auto-dismisses. The trade-off is that a genuine right-drag-drop menu (e.g. Explorer's copy/move) is also dismissed.
 
-Whether a moving hold locks is governed by a single setting, "Allow a held drag to lock" (`drag_locks_enabled`, off by default). When it is off, any cursor move beyond the dead-zone during the hold marks the gesture as a drag (text selection, window or file drag), cancels the pending lock, and lets the button-up pass through normally. When it is on, motion never cancels, so a held-button camera drag (the gaming use case) still locks. The "Drag threshold (pixels)" value (`move_cancel_pixels`) is the dead-zone that separates hand jitter from a deliberate drag; it only matters when drag-locking is off. Motion after the button actually locks never affects this either way, because `physicalDown` is already false by then, so a genuine lock-then-drag is unaffected.
+A moving hold does not lock. Any cursor move beyond the dead-zone during the hold marks the gesture as a drag (text selection, window or file drag), cancels the pending lock, and lets the button-up pass through normally. The "Drag threshold (pixels)" value (`move_cancel_pixels`) is the dead-zone that separates hand jitter from a deliberate drag: a larger value tolerates more hand tremor during the hold before the gesture is treated as a drag. Motion after the button actually locks never cancels, because `physicalDown` is already false by then, so a genuine lock-then-drag is unaffected.
+
+(An earlier revision had an "Allow a held drag to lock" toggle that let a sustained hold-and-drag still lock, for a hands-free gaming camera pan. It was removed: this is an accessibility feature, the gaming case was speculative, and "on" could latch a lock during a slow or tremor-laden drag, which is exactly what the default guards against.)
 
 ## Architecture
 
@@ -39,14 +41,13 @@ Stored at `%LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json`. Pr
 | `rmb_lock_enabled` | bool | `true` | Lock the right mouse button |
 | `mmb_lock_enabled` | bool | `false` | Lock the middle mouse button |
 | `hold_duration_ms` | int | `1200` | How long to hold before locking. Default and range mirror Windows' built-in ClickLock (1200 ms, 200-2200 ms) |
-| `drag_locks_enabled` | bool | `false` | When on, a moving hold still locks (gaming camera drag). When off (default), a drag cancels the lock so text selection and window/file drags end normally |
-| `move_cancel_pixels` | int | `5` | Drag threshold: dead-zone radius separating hand jitter from a deliberate drag. Only used when `drag_locks_enabled` is off |
+| `move_cancel_pixels` | int | `5` | Drag threshold: dead-zone radius separating hand jitter from a deliberate drag. A move beyond it during the hold is treated as a drag and cancels the pending lock |
 
 The module on/off state lives in `EnabledModules.MouseButtonLock` in the global settings, not in the per-module properties. The settings UI is a section on the shared Mouse Utilities page (`MouseUtilsPage.xaml` / `MouseUtilsViewModel.cs`). There is no activation hotkey: activation is the physical hold.
 
 ## Settings UI
 
-Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on, and "Drag threshold (pixels)" is greyed out when "Allow a held drag to lock" is on (the threshold has no effect then).
+Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on. Expanding it shows the button checkboxes, the hold-duration slider, and the drag-threshold box, plus an InfoBar recommending the right and middle buttons and pointing to Windows' built-in ClickLock (Control Panel > Mouse > Buttons) for the left button. The InfoBar sits as a sibling just below the expander with its `Visibility` bound to the expander's `IsExpanded` (through `BoolToVisibilityConverter`), so it appears only while the section is open. It is deliberately **not** an item inside `SettingsExpander.Items`: that compiles but throws at runtime when the item is realized (i.e. when the section is first expanded), so an `InfoBar` cannot be hosted there.
 
 ```text
 Settings  >  Mouse utilities
@@ -66,17 +67,20 @@ Settings  >  Mouse utilities
 |   Hold duration (ms)                           1200 ms  [=====O======] |
 |      How long to hold a button before it locks                         |
 |                                                                        |
-|   Allow a held drag to lock                                  Off  (o ) |
-|      When on, a button held past the threshold locks even if you       |
-|      then drag. When off, dragging never locks.                        |
-|                                                                        |
 |   Drag threshold (pixels)                                [     5  ^v ] |
 |      Movement beyond this distance during the hold is treated as a     |
 |      drag and will not lock.                                           |
 +------------------------------------------------------------------------+
+
++------------------------------------------------------------------------+
+|  (i)  Recommended for the right and middle buttons.                    |
+|       Windows already includes ClickLock for the left button;          |
+|       turn it on in Control Panel > Mouse > Buttons.                   |
++------------------------------------------------------------------------+
+        ^ InfoBar shown only while "Buttons and behavior" is expanded
 ```
 
-Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[=====O======]` slider with its live value label (e.g. `1200 ms`), `[ 5 ^v ]` number box with spinner. The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
+Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[=====O======]` slider with its live value label (e.g. `1200 ms`), `[ 5 ^v ]` number box with spinner, `(i)` informational InfoBar (shown only while the expander is open). The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
 
 | Control | Type (UI range) | Setting key | ViewModel property | Default |
 | --- | --- | --- | --- | --- |
@@ -85,7 +89,6 @@ Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section,
 | Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
 | Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
 | Hold duration (ms) | slider (200-2200 ms, snaps in 100 ms steps) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 1200 |
-| Allow a held drag to lock | toggle | `drag_locks_enabled` | `MouseButtonLockDragLocksEnabled` | off |
 | Drag threshold (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
 
 The UI slider snaps (`SnapsTo="StepValues"`, `StepFrequency="100"`) to 100 ms increments across the 200-2200 ms range (Short = 200 ms, Long = 2200 ms, 1200 ms default). This is finer than Windows' built-in ClickLock slider (which uses 200 ms notches) so shorter holds such as 300 ms are reachable from the UI. Visual tick marks were dropped (they looked cluttered inside the settings card, and `SnapsTo` gives the notch-to-notch feel without them); the live "N ms" label beside the track (`MillisecondsLabelConverter`) shows the current value. The C++ `parse_settings` clamps a hand-edited file to 200-60000 ms (same 200 ms floor, a looser ceiling) and accepts any value in that range, so a hand-edited file is not restricted to the 11 slider steps. The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the hold-duration slider and the move-cancel number box carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
@@ -147,5 +150,9 @@ Still open, roughly by priority. Items 1-3 and 7 were found by auditing the modu
 7. **`trace.cpp` include style (done).** `trace.cpp` no longer carries the redundant deep relative `#include "../../../../common/Telemetry/TraceBase.h"`; it includes `trace.h`, which already pulls in `<common/Telemetry/TraceBase.h>` via the angle-bracket form the sibling MouseUtils modules use and the project's include dirs resolve. Raised in PR review (#49279).
 
 8. **ETW telemetry** beyond the enable/disable event.
+
+9. **Elevated and UIAccess windows (known limitation).** The module runs inside the runner, which is medium integrity by default. Windows' UIPI (User Interface Privilege Isolation) then blocks the module from crossing the privilege boundary in both directions: a medium-integrity low-level hook cannot suppress the physical button-up headed to a higher-integrity window, and `SendInput` cannot inject the release up into it. So the lock never engages over windows running at a higher integrity level:
+    - **Apps launched elevated / as administrator** (Device Manager and other `mmc.exe` snap-ins, Registry Editor, Task Manager, etc.). **Workaround:** run PowerToys as administrator (General settings > "Always run as administrator"), which raises it to high integrity and restores the lock over these apps.
+    - **UIAccess accessibility apps** (the Windows On-Screen Keyboard `osk.exe`, and typically third-party on-screen keyboards). These sit *above* even an elevated admin process for input purposes, so running PowerToys as administrator does **not** cover them. Making them work needs the module (or the runner) to carry the UIAccess manifest flag, which requires a signed binary in a protected path (Program Files) plus a manifest change. This is the same unresolved constraint Keyboard Manager documents (see `doc/devdocs/modules/keyboardmanager/keyboardmanager.md` "UIPI Issues (not resolved)", tracking issues microsoft/PowerToys#3192 and #3255); Mouse Button Lock inherits it by running in the runner process.
 
 Cross-checks against the `AGENTS.md` validation checklist: no third-party dependencies were added (no `NOTICE.md` change needed); the settings schema is mirrored on both sides (C# `MouseButtonLockProperties` and C++ `parse_settings`); the work from this pass (the `CheckMoveCancel` hardening, the fuzz project, the telemetry and UI-test-scope edits, and this doc) is committed on `feature/mouse-button-lock`; keep the PR atomic and link the proposal issue microsoft/PowerToys#48302.

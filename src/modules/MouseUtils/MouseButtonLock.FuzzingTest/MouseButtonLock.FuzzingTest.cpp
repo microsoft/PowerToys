@@ -100,7 +100,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
             const uint8_t flags = r.u8();
             settings.rmbEnabled = (flags & 0x01u) != 0u;
             settings.mmbEnabled = (flags & 0x02u) != 0u;
-            settings.dragLocksEnabled = (flags & 0x04u) != 0u;
             settings.lmbEnabled = (flags & 0x08u) != 0u;
             settings.holdDurationMs = static_cast<int>(r.u32());
             settings.moveCancelPixels = static_cast<int>(r.u32());
