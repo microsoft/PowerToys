@@ -934,20 +934,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy date.
+        ///   Looks up a localized string similar to Copy {0}.
         /// </summary>
-        public static string timedate_copy_date_command_name {
+        public static string timedate_copy_custom_format_command_name {
             get {
-                return ResourceManager.GetString("timedate_copy_date_command_name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Copy time.
-        /// </summary>
-        public static string timedate_copy_time_command_name {
-            get {
-                return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
+                return ResourceManager.GetString("timedate_copy_custom_format_command_name", resourceCulture);
             }
         }
         
@@ -957,6 +948,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_custom_clock_add {
             get {
                 return ResourceManager.GetString("timedate_custom_clock_add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Additional copy format.
+        /// </summary>
+        public static string timedate_custom_clock_copy_format {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_copy_format", resourceCulture);
             }
         }
         

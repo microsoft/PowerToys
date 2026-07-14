@@ -4,6 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
@@ -12,6 +15,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate;
 internal static class CustomClockFormatOptions
 {
     private static readonly DateTimeOffset _exampleDateTime = new(2000, 1, 2, 15, 4, 5, TimeSpan.FromHours(2));
+    private static readonly CompositeFormat _copyCommandNameFormat = CompositeFormat.Parse(Resources.timedate_copy_custom_format_command_name);
 
     internal static IEnumerable<(string Title, string Value)> Get(ISettingsInterface settings, bool includeNoText = true)
     {
@@ -43,6 +47,27 @@ internal static class CustomClockFormatOptions
                 yield return WithExample(string.IsNullOrEmpty(parts[0]) ? parts[1] : parts[0], parts[1], settings);
             }
         }
+    }
+
+    internal static string GetCopyCommandName(ISettingsInterface settings, string format)
+    {
+        var option = Get(settings).FirstOrDefault(candidate => candidate.Value == format);
+        var title = option.Title ?? WithExample(format, format, settings).Title;
+        var commandTitle = IsBuiltInFormat(format) ? LowercaseFirstLetter(title) : title;
+        return string.Format(CultureInfo.CurrentCulture, _copyCommandNameFormat, commandTitle);
+    }
+
+    private static bool IsBuiltInFormat(string format) => format is
+        "t" or "T" or "d" or "g" or "UTC:t" or "UTC:g" or "s" or "UTC:s" or "R" or "WOY" or "UXT" or "UMS" or "WFT" or "REL";
+
+    private static string LowercaseFirstLetter(string value)
+    {
+        if (string.IsNullOrEmpty(value) || (value.Length > 1 && char.IsUpper(value[1])))
+        {
+            return value;
+        }
+
+        return char.ToLower(value[0], CultureInfo.CurrentCulture) + value[1..];
     }
 
     private static (string Title, string Value) WithExample(string title, string format, ISettingsInterface settings)

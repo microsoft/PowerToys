@@ -55,10 +55,11 @@ internal sealed partial class EditCustomClockForm : FormContent
     { "type": "Input.ChoiceSet", "id": "timeZoneId", "label": {{Encode(Resources.timedate_custom_clock_timezone)}}, "value": {{Encode(clock?.TimeZoneId ?? CustomClock.CurrentTimeZoneId)}}, "style": "compact", "choices": {{BuildTimeZoneChoices(clock?.TimeZoneId)}} },
     { "type": "Input.ChoiceSet", "id": "titleFormat", "label": {{Encode(Resources.timedate_custom_clock_title_format)}}, "value": {{Encode(GetTitleFormat(clock?.TitleFormat))}}, "style": "compact", "choices": {{BuildFormatChoices(GetDisplayFormats(includeNoText: false), GetTitleFormat(clock?.TitleFormat))}} },
     { "type": "Input.ChoiceSet", "id": "subtitleFormat", "label": {{Encode(Resources.timedate_custom_clock_subtitle_format)}}, "value": {{Encode(clock?.SubtitleFormat ?? "REL")}}, "style": "compact", "choices": {{BuildFormatChoices(GetDisplayFormats(), clock?.SubtitleFormat)}} },
+    { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(clock?.CopyFormat ?? string.Empty)}}, "style": "compact", "choices": {{BuildFormatChoices(GetDisplayFormats(), clock?.CopyFormat)}} },
     { "type": "TextBlock", "text": {{Encode(Resources.timedate_custom_clock_relative_hint)}}, "wrap": true, "isSubtle": true, "size": "Small" },
     { "type": "Input.Text", "id": "title", "label": {{Encode(Resources.timedate_custom_clock_name)}}, "value": {{Encode(clock?.Title ?? string.Empty)}}, "isRequired": false, "placeholder": {{Encode(Resources.timedate_custom_clock_name_placeholder)}} }
   ],
-  "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "title": "title", "timeZoneId": "timeZoneId", "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat" } } ]
+  "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "title": "title", "timeZoneId": "timeZoneId", "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat", "copyFormat": "copyFormat" } } ]
 }
 """;
     }
@@ -79,6 +80,7 @@ internal sealed partial class EditCustomClockForm : FormContent
                 TimeZoneId = input["timeZoneId"]?.ToString() ?? string.Empty,
                 TitleFormat = input["titleFormat"]?.ToString() ?? "t",
                 SubtitleFormat = input["subtitleFormat"]?.ToString() ?? "REL",
+                CopyFormat = input["copyFormat"]?.ToString() ?? string.Empty,
             });
 
             return CommandResult.GoHome();

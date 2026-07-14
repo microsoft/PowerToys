@@ -20,4 +20,6 @@ internal sealed record CustomClock
     public string TitleFormat { get; init; } = "t";
 
     public string SubtitleFormat { get; init; } = "REL";
+
+    public string CopyFormat { get; init; } = string.Empty;
 }

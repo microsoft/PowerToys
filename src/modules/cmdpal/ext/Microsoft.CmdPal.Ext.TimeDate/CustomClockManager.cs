@@ -165,6 +165,7 @@ internal sealed class CustomClockManager
         {
             _ = CustomClockDisplay.CompileFormat(clock.TitleFormat);
             _ = CustomClockDisplay.CompileFormat(clock.SubtitleFormat);
+            _ = CustomClockDisplay.CompileFormat(clock.CopyFormat);
         }
         catch (FormatException ex)
         {

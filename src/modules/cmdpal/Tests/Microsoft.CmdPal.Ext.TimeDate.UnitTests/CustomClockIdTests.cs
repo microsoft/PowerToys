@@ -101,6 +101,22 @@ public class CustomClockIdTests
         item.StopUpdating();
     }
 
+    [TestMethod]
+    public void CustomClockOverviewItem_ContextMenuIncludesDisplayAndOptionalCopyCommands()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var clock = new CustomClock { TitleFormat = "t", SubtitleFormat = "d", CopyFormat = "s" };
+        using var updateService = new ClockUpdateService(enableTimer: false);
+        var item = new CustomClockOverviewItem(clock, new Settings(), updateService);
+
+        item.AddManagementCommands(new CustomClockManager(statePath));
+
+        Assert.AreEqual(item.CopyTitleCommand.Text, CustomClockDisplay.Format(CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local), "t", new Settings()));
+        Assert.AreEqual(item.CopySubtitleCommand.Text, CustomClockDisplay.Format(CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local), "d", new Settings()));
+        Assert.IsNotNull(item.CopyCustomFormatCommand);
+        Assert.AreEqual(5, item.MoreCommands.Length);
+    }
+
     [DataTestMethod]
     [DataRow("en-US")]
     [DataRow("de-DE")]
@@ -132,6 +148,26 @@ public class CustomClockIdTests
 
         Assert.AreEqual("Invalid", option.Title);
         Assert.IsNotNull(new EditCustomClockPage(new CustomClockManager(Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json")), settings, null));
+    }
+
+    [TestMethod]
+    public void CustomClockFormatOptions_CopyCommandUsesSelectedCustomFormatTitle()
+    {
+        var settings = new Settings(customFormats: ["Sortable=yyyy-MM-dd"]);
+
+        var commandName = CustomClockFormatOptions.GetCopyCommandName(settings, "yyyy-MM-dd");
+
+        StringAssert.StartsWith(commandName, "Copy Sortable (");
+    }
+
+    [TestMethod]
+    public void CustomClockFormatOptions_CopyCommandPreservesCustomFormatNameCasing()
+    {
+        var settings = new Settings(customFormats: ["PowerToys time=HH:mm"]);
+
+        var commandName = CustomClockFormatOptions.GetCopyCommandName(settings, "HH:mm");
+
+        StringAssert.StartsWith(commandName, "Copy PowerToys time (");
     }
 
     [TestMethod]
@@ -249,6 +285,34 @@ public class CustomClockIdTests
     }
 
     [TestMethod]
+    public void CustomClockManager_SaveRejectsInvalidCopyFormat()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var manager = new CustomClockManager(statePath);
+
+        Assert.ThrowsException<ArgumentException>(() => manager.Save(new CustomClock { CopyFormat = "UTC:%" }));
+    }
+
+    [TestMethod]
+    public void CustomClockDockBand_CopyCommandsUseDisplayedAndOptionalFormats()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+        var clock = new CustomClock { TitleFormat = "t", SubtitleFormat = "d", CopyFormat = "s" };
+        var utcNow = new DateTime(2025, 7, 1, 12, 5, 32, DateTimeKind.Utc);
+        using var updateService = new ClockUpdateService(enableTimer: false);
+        using var band = new CustomClockDockBand(clock, new CustomClockManager(statePath), new Settings(), updateService, () => utcNow);
+
+        Assert.AreEqual(band.Title, band.CopyTitleCommand.Text);
+        Assert.AreEqual(band.Subtitle, band.CopySubtitleCommand.Text);
+        StringAssert.StartsWith(band.CopyTitleCommand.Name, "Copy time (");
+        StringAssert.StartsWith(band.CopySubtitleCommand.Name, "Copy date (");
+        Assert.IsNotNull(band.CopyCustomFormatCommand);
+        var localTime = CustomClockDisplay.GetCurrentTime(TimeZoneInfo.Local, new DateTimeOffset(utcNow));
+        Assert.AreEqual(CustomClockDisplay.Format(localTime, "s", new Settings()), band.CopyCustomFormatCommand.GetCurrentText());
+        StringAssert.StartsWith(band.CopyCustomFormatCommand.Name, "Copy ISO 8601");
+    }
+
+    [TestMethod]
     public void CustomClockManager_LoadSkipsInvalidTimeZoneWithoutDiscardingValidClocks()
     {
         var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
@@ -288,6 +352,27 @@ public class CustomClockIdTests
             Assert.AreEqual(CommandResultKind.KeepOpen, invalidTimeZoneResult.Kind);
             Assert.AreEqual(0, manager.Clocks.Count);
             Assert.IsFalse(File.Exists(statePath));
+        }
+        finally
+        {
+            File.Delete(statePath);
+        }
+    }
+
+    [TestMethod]
+    public void EditCustomClockForm_ValidSubmissionSavesOptionalCopyFormat()
+    {
+        var statePath = Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var manager = new CustomClockManager(statePath);
+            var form = new EditCustomClockForm(manager, new Settings(), null);
+
+            var result = form.SubmitForm("""{"timeZoneId":"current","titleFormat":"t","subtitleFormat":"d","copyFormat":"s"}""");
+
+            Assert.AreEqual(CommandResultKind.GoHome, result.Kind);
+            Assert.AreEqual("s", manager.Clocks.Single().CopyFormat);
         }
         finally
         {

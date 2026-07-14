@@ -430,13 +430,9 @@
     <value>Clock</value>
     <comment>Title for the time and date dock band</comment>
   </data>
-  <data name="timedate_copy_time_command_name" xml:space="preserve">
-    <value>Copy time</value>
-    <comment>Name of a command to copy the current time to the clipboard</comment>
-  </data>
-  <data name="timedate_copy_date_command_name" xml:space="preserve">
-    <value>Copy date</value>
-    <comment>Name of a command to copy the current date to the clipboard</comment>
+  <data name="timedate_copy_custom_format_command_name" xml:space="preserve">
+    <value>Copy {0}</value>
+    <comment>Name of a command to copy the clock using the named format. {0} is the selected format's display name.</comment>
   </data>
   <data name="timedate_show_notification_center_command_name" xml:space="preserve">
     <value>Open notification center</value>
@@ -529,6 +525,9 @@
   </data>
   <data name="timedate_custom_clock_format_none" xml:space="preserve">
     <value>No text</value>
+  </data>
+  <data name="timedate_custom_clock_copy_format" xml:space="preserve">
+    <value>Additional copy format</value>
   </data>
   <data name="timedate_custom_clock_format_system_time" xml:space="preserve">
     <value>Use system time format</value>

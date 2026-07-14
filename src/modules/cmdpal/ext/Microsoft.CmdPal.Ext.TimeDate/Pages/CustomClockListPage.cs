@@ -192,7 +192,11 @@ internal sealed partial class CustomClockOverviewItem : ListItem
     private readonly ISettingsInterface _settings;
     private readonly CompiledClockFormat _titleFormat;
     private readonly CompiledClockFormat _subtitleFormat;
+    private readonly CompiledClockFormat? _copyFormat;
     private readonly TimeZoneInfo? _explicitTimeZone;
+    private readonly CopyTextCommand _copyTitleCommand;
+    private readonly CopyTextCommand _copySubtitleCommand;
+    private readonly CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
 
     internal CustomClockOverviewItem(CustomClock clock, ISettingsInterface settings, ClockUpdateService clockUpdateService)
     {
@@ -201,19 +205,44 @@ internal sealed partial class CustomClockOverviewItem : ListItem
         _clockUpdateService = clockUpdateService;
         _titleFormat = CustomClockDisplay.CompileFormat(clock.TitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(clock.SubtitleFormat);
+        _copyFormat = string.IsNullOrEmpty(clock.CopyFormat) ? null : CustomClockDisplay.CompileFormat(clock.CopyFormat);
         _explicitTimeZone = CustomClockDisplay.ResolveExplicitTimeZone(clock);
+        _copyTitleCommand = new CopyTextCommand(string.Empty)
+        {
+            Name = CustomClockFormatOptions.GetCopyCommandName(settings, clock.TitleFormat),
+        };
+        _copySubtitleCommand = new CopyTextCommand(string.Empty)
+        {
+            Name = CustomClockFormatOptions.GetCopyCommandName(settings, clock.SubtitleFormat),
+        };
+        _copyCustomFormatCommand = _copyFormat is null
+            ? null
+            : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, clock.CopyFormat), GetCustomCopyText);
         Icon = Icons.TimeIcon;
         Command = new CustomClockDetailPage(settings, clock);
+        MoreCommands =
+        [
+            new CommandContextItem(_copyTitleCommand),
+            new CommandContextItem(_copySubtitleCommand),
+            .. _copyCustomFormatCommand is null ? [] : new CommandContextItem[] { new(_copyCustomFormatCommand) },
+        ];
         UpdateText();
     }
 
     internal CustomClock Clock { get; }
+
+    internal CopyTextCommand CopyTitleCommand => _copyTitleCommand;
+
+    internal CopyTextCommand CopySubtitleCommand => _copySubtitleCommand;
+
+    internal CopyCurrentClockFormatCommand? CopyCustomFormatCommand => _copyCustomFormatCommand;
 
     internal void AddManagementCommands(CustomClockManager clockManager)
     {
         var editPage = new EditCustomClockPage(clockManager, _settings, Clock);
         MoreCommands =
         [
+            .. MoreCommands,
             new CommandContextItem(editPage),
             new CommandContextItem(new ConfirmableCommand
             {
@@ -230,6 +259,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
     {
         MoreCommands =
         [
+            .. MoreCommands,
             new CommandContextItem(new EditDefaultDockClockPage(dockClockSettings)),
         ];
     }
@@ -267,6 +297,21 @@ internal sealed partial class CustomClockOverviewItem : ListItem
                 : string.IsNullOrEmpty(offsetDifference)
                     ? $"{subtitle} · {name}"
                     : $"{subtitle} · {name} · {offsetDifference}";
+        _copyTitleCommand.Text = title;
+        _copySubtitleCommand.Text = subtitle;
+    }
+
+    private string GetCustomCopyText()
+    {
+        var format = _copyFormat;
+        if (format is null)
+        {
+            return string.Empty;
+        }
+
+        var timeZone = _explicitTimeZone ?? TimeZoneInfo.Local;
+        var now = CustomClockDisplay.GetCurrentTime(timeZone);
+        return CustomClockDisplay.Format(now, format, _settings);
     }
 }
 

@@ -29,7 +29,9 @@ internal interface IDockClockSettings : ISettingsInterface
 
     string DockClockSubtitleFormat { get; }
 
+    string DockClockCopyFormat { get; }
+
     string DockClockClickAction { get; }
 
-    void SetDockClockFormats(string titleFormat, string subtitleFormat);
+    void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat);
 }

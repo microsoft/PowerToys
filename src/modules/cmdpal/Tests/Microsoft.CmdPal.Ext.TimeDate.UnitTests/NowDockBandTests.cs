@@ -78,8 +78,43 @@ public class NowDockBandTests
 
         _band.UpdateText();
 
-        Assert.AreEqual(_band.Title, _band.CopyTimeCommand.Text);
-        Assert.AreEqual(_band.Subtitle, _band.CopyDateCommand.Text);
+        Assert.AreEqual(_band.Title, _band.CopyTitleCommand.Text);
+        Assert.AreEqual(_band.Subtitle, _band.CopySubtitleCommand.Text);
+        StringAssert.StartsWith(_band.CopyTitleCommand.Name, "Copy time (");
+        StringAssert.StartsWith(_band.CopySubtitleCommand.Name, "Copy date (");
+    }
+
+    [TestMethod]
+    public void Constructor_OptionalCopyFormatAddsCurrentFormattedCopyCommand()
+    {
+        _band = CreateBand(copyFormat: "s");
+
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+        Assert.AreEqual("2025-07-01T14:05:32", _band.CopyCustomFormatCommand.GetCurrentText());
+        StringAssert.StartsWith(_band.CopyCustomFormatCommand.Name, "Copy ISO 8601");
+    }
+
+    [TestMethod]
+    public void Constructor_NoCopyFormatOmitsCustomCopyCommand()
+    {
+        _band = CreateBand();
+
+        Assert.IsNull(_band.CopyCustomFormatCommand);
+    }
+
+    [TestMethod]
+    public void UpdateSettings_AddsAndRemovesOptionalCopyCommand()
+    {
+        var settings = new TestDockClockSettings();
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, () => FixedTime);
+
+        settings.SetDockClockFormats("t", "d", "s");
+        _band.UpdateSettings(settings);
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+
+        settings.SetDockClockFormats("t", "d", string.Empty);
+        _band.UpdateSettings(settings);
+        Assert.IsNull(_band.CopyCustomFormatCommand);
     }
 
     [TestMethod]
@@ -124,7 +159,7 @@ public class NowDockBandTests
 
         Assert.AreEqual("2:05 PM", _band.Title, "Precondition: seconds hidden by default");
 
-        settings.SetDockClockFormats("T", "d");
+        settings.SetDockClockFormats("T", "d", string.Empty);
         _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Title should update live to include seconds");
@@ -138,30 +173,33 @@ public class NowDockBandTests
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: seconds shown");
 
-        settings.SetDockClockFormats("t", "d");
+        settings.SetDockClockFormats("t", "d", string.Empty);
         _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
     }
 
-    private NowDockBand CreateBand(string titleFormat = "t", Func<DateTime>? clock = null)
+    private NowDockBand CreateBand(string titleFormat = "t", string copyFormat = "", Func<DateTime>? clock = null)
     {
-        var settings = new TestDockClockSettings(titleFormat);
+        var settings = new TestDockClockSettings(titleFormat, copyFormat: copyFormat);
         return new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock ?? (() => FixedTime));
     }
 
-    private sealed class TestDockClockSettings(string titleFormat = "t", string subtitleFormat = "d") : Settings, IDockClockSettings
+    private sealed class TestDockClockSettings(string titleFormat = "t", string subtitleFormat = "d", string copyFormat = "") : Settings, IDockClockSettings
     {
         public string DockClockTitleFormat { get; private set; } = titleFormat;
 
         public string DockClockSubtitleFormat { get; private set; } = subtitleFormat;
 
+        public string DockClockCopyFormat { get; private set; } = copyFormat;
+
         public string DockClockClickAction => "default";
 
-        public void SetDockClockFormats(string titleFormat, string subtitleFormat)
+        public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
         {
             DockClockTitleFormat = titleFormat;
             DockClockSubtitleFormat = subtitleFormat;
+            DockClockCopyFormat = copyFormat;
         }
     }
 }
