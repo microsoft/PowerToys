@@ -13,16 +13,15 @@ namespace PowerDisplay.UnitTests;
 public class LightSwitchProfileSettingsUpdaterTests
 {
     [TestMethod]
-    public void ReconcileAndSend_ChangedReference_SendsExactlyOneMessage()
+    public void ReconcileAndSend_LegacyReference_SendsMigratedIdWithoutName()
     {
         var settings = new LightSwitchSettings();
         settings.Properties.DarkModeProfile.Value = "Night";
-        var profiles = Profiles(("Night", 7));
         var messages = new List<string>();
 
         var changed = LightSwitchProfileSettingsUpdater.ReconcileAndSend(
             settings,
-            profiles,
+            Profiles(("Night", 7)),
             message =>
             {
                 messages.Add(message);
@@ -31,21 +30,22 @@ public class LightSwitchProfileSettingsUpdaterTests
 
         Assert.IsTrue(changed);
         Assert.AreEqual(1, messages.Count);
+        Assert.AreEqual(7, settings.Properties.DarkModeProfileId.Value);
+        Assert.AreEqual(string.Empty, settings.Properties.DarkModeProfile.Value);
         StringAssert.Contains(messages[0], "\"darkModeProfileId\":{\"value\":7}");
+        StringAssert.Contains(messages[0], "\"darkModeProfile\":{\"value\":\"\"}");
     }
 
     [TestMethod]
-    public void ReconcileAndSend_UnchangedReference_DoesNotSend()
+    public void ReconcileAndSend_IdOnlyReference_DoesNotSend()
     {
         var settings = new LightSwitchSettings();
         settings.Properties.DarkModeProfileId.Value = 7;
-        settings.Properties.DarkModeProfile.Value = "Night";
-        var profiles = Profiles(("Night", 7));
         var sendCount = 0;
 
         var changed = LightSwitchProfileSettingsUpdater.ReconcileAndSend(
             settings,
-            profiles,
+            Profiles(("Night", 7)),
             _ =>
             {
                 sendCount++;
@@ -57,7 +57,7 @@ public class LightSwitchProfileSettingsUpdaterTests
     }
 
     [TestMethod]
-    public void ReconcileAndSend_EmptyProfilesClearStaleId_SendsExactlyOneMessage()
+    public void ReconcileAndSend_StaleId_ClearsReferenceAndSendsOnce()
     {
         var settings = new LightSwitchSettings();
         settings.Properties.DarkModeProfileId.Value = 7;

@@ -18,7 +18,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ArgumentNullException.ThrowIfNull(profiles);
             ArgumentNullException.ThrowIfNull(sendConfigMessage);
 
-            if (!LightSwitchProfileResolver.ReconcileReferences(settings.Properties, profiles))
+            if (!LightSwitchProfileReferenceHelper.ReconcileReferences(settings.Properties, profiles))
             {
                 return false;
             }

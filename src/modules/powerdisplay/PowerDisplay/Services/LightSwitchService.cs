@@ -10,64 +10,55 @@ using Settings.UI.Library;
 
 namespace PowerDisplay.Services
 {
-    /// <summary>
-    /// Service for handling LightSwitch theme change events.
-    /// Reads LightSwitch settings using the standard PowerToys settings pattern.
-    /// </summary>
     public static class LightSwitchService
     {
         private const string LogPrefix = "[LightSwitch]";
 
-        /// <summary>
-        /// Get the profile id to apply for the given theme.
-        /// </summary>
-        /// <param name="isLightMode">Whether the theme changed to light mode.</param>
-        /// <returns>The profile id to apply, or null if no profile is configured.</returns>
+        public static void MigrateLegacyProfileReferences()
+        {
+            try
+            {
+                var profiles = ProfileService.LoadProfilesEnsuringIds();
+                var settings = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(
+                    LightSwitchSettings.ModuleName);
+
+                if (!LightSwitchProfileReferenceHelper.ReconcileReferences(
+                    settings.Properties,
+                    profiles))
+                {
+                    return;
+                }
+
+                SettingsUtils.Default.SaveSettings(
+                    settings.ToJsonString(),
+                    LightSwitchSettings.ModuleName);
+                Logger.LogInfo($"{LogPrefix} Migrated legacy profile references to ids");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"{LogPrefix} Failed to migrate legacy profile references: {ex.Message}");
+            }
+        }
+
         public static int? GetProfileForTheme(bool isLightMode)
         {
             try
             {
-                Logger.LogInfo($"{LogPrefix} Processing theme change to {(isLightMode ? "light" : "dark")} mode");
+                var settings = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(
+                    LightSwitchSettings.ModuleName);
+                var profileId = LightSwitchProfileReferenceHelper.GetProfileIdForTheme(
+                    settings.Properties,
+                    isLightMode);
 
-                var settings = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(LightSwitchSettings.ModuleName);
-
-                if (settings?.Properties == null)
+                if (profileId is null)
                 {
-                    Logger.LogWarning($"{LogPrefix} LightSwitch settings not found");
+                    Logger.LogInfo(
+                        $"{LogPrefix} No enabled profile id configured for {(isLightMode ? "light" : "dark")} mode");
                     return null;
                 }
 
-                bool enabled;
-                int storedId;
-                string? storedName;
-                if (isLightMode)
-                {
-                    enabled = settings.Properties.EnableLightModeProfile.Value;
-                    storedId = settings.Properties.LightModeProfileId.Value;
-                    storedName = settings.Properties.LightModeProfile.Value;
-                }
-                else
-                {
-                    enabled = settings.Properties.EnableDarkModeProfile.Value;
-                    storedId = settings.Properties.DarkModeProfileId.Value;
-                    storedName = settings.Properties.DarkModeProfile.Value;
-                }
-
-                if (!enabled)
-                {
-                    Logger.LogInfo($"{LogPrefix} {(isLightMode ? "Light" : "Dark")} mode profile is disabled");
-                    return null;
-                }
-
-                var id = LightSwitchProfileResolver.Resolve(storedId, storedName, ProfileService.LoadProfiles());
-                if (id is null)
-                {
-                    Logger.LogInfo($"{LogPrefix} No profile resolved for {(isLightMode ? "light" : "dark")} mode");
-                    return null;
-                }
-
-                Logger.LogInfo($"{LogPrefix} Profile id to apply: {id.Value}");
-                return id;
+                Logger.LogInfo($"{LogPrefix} Profile id to apply: {profileId.Value}");
+                return profileId;
             }
             catch (Exception ex)
             {
