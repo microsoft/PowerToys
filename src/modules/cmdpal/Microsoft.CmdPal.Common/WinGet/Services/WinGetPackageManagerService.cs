@@ -245,7 +245,8 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
                     var findResult = await Task.Run(() => catalog.FindPackages(options), cancellationToken).ConfigureAwait(false);
                     if (findResult.Status != FindPackagesResultStatus.Ok)
                     {
-                        throw new InvalidOperationException($"Microsoft Store package lookup failed for '{id}': {findResult.Status}");
+                        CoreLogger.LogWarning($"Microsoft Store package lookup failed for '{id}': {findResult.Status}");
+                        return (id, (CatalogPackage?)null);
                     }
 
                     if (findResult.Matches.Count > 0 )
@@ -548,7 +549,10 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
 
         try
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new WinGetQueryResult<PackageCatalog>(null, false, "Operation canceled.");
+            }
 
             var options = initialization.Factory.CreateCreateCompositePackageCatalogOptions();
             options.CompositeSearchBehavior = searchBehavior;
