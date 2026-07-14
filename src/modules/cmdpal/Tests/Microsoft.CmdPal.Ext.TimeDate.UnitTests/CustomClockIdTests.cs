@@ -166,6 +166,14 @@ public class CustomClockIdTests
     }
 
     [TestMethod]
+    public void CustomClockFormatOptions_RelativeDayLabelDoesNotExposeSyntax()
+    {
+        var option = CustomClockFormatOptions.Get(new Settings()).Single(candidate => candidate.Value == "REL");
+
+        Assert.IsFalse(option.Title.Contains("REL", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void CustomClockFormatOptions_CopyCommandUsesSelectedCustomFormatTitle()
     {
         var settings = new Settings(customFormats: ["Sortable=yyyy-MM-dd"]);

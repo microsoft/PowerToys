@@ -45,8 +45,7 @@ internal sealed partial class EditDefaultDockClockForm : FormContent
   "body": [
     { "type": "Input.ChoiceSet", "id": "titleFormat", "label": {{Encode(Resources.timedate_custom_clock_title_format)}}, "value": {{Encode(GetTitleFormat(settings.DockClockTitleFormat))}}, "style": "compact", "choices": {{BuildChoices(settings, GetTitleFormat(settings.DockClockTitleFormat), includeNoText: false)}} },
     { "type": "Input.ChoiceSet", "id": "subtitleFormat", "label": {{Encode(Resources.timedate_custom_clock_subtitle_format)}}, "value": {{Encode(settings.DockClockSubtitleFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockSubtitleFormat)}} },
-    { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(settings.DockClockCopyFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockCopyFormat)}} },
-    { "type": "TextBlock", "text": {{Encode(Resources.timedate_custom_clock_relative_hint)}}, "wrap": true, "isSubtle": true, "size": "Small" }
+    { "type": "Input.ChoiceSet", "id": "copyFormat", "label": {{Encode(Resources.timedate_custom_clock_copy_format)}}, "value": {{Encode(settings.DockClockCopyFormat)}}, "style": "compact", "choices": {{BuildChoices(settings, settings.DockClockCopyFormat)}} }
   ],
   "actions": [ { "type": "Action.Submit", "title": {{Encode(Resources.timedate_custom_clock_save)}}, "data": { "titleFormat": "titleFormat", "subtitleFormat": "subtitleFormat", "copyFormat": "copyFormat" } } ]
 }
