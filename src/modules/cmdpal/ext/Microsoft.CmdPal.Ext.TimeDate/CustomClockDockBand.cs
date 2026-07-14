@@ -17,9 +17,19 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly Func<DateTime> _utcNow;
     private readonly CompiledClockFormat _titleFormat;
     private readonly CompiledClockFormat _subtitleFormat;
+    private readonly CompiledClockFormat? _copyFormat;
     private readonly TimeZoneInfo? _explicitTimeZone;
+    private readonly CopyTextCommand _copyTitleCommand;
+    private readonly CopyTextCommand _copySubtitleCommand;
+    private readonly CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
 
     internal Guid ClockId => _clockDefinition.Id;
+
+    internal CopyTextCommand CopyTitleCommand => _copyTitleCommand;
+
+    internal CopyTextCommand CopySubtitleCommand => _copySubtitleCommand;
+
+    internal CopyCurrentClockFormatCommand? CopyCustomFormatCommand => _copyCustomFormatCommand;
 
     internal CustomClockDockBand(CustomClock clockDefinition, CustomClockManager clockManager, ISettingsInterface settings, ClockUpdateService clockUpdateService, Func<DateTime>? utcNow = null)
     {
@@ -29,9 +39,27 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
         _titleFormat = CustomClockDisplay.CompileFormat(clockDefinition.TitleFormat);
         _subtitleFormat = CustomClockDisplay.CompileFormat(clockDefinition.SubtitleFormat);
+        _copyFormat = string.IsNullOrEmpty(clockDefinition.CopyFormat) ? null : CustomClockDisplay.CompileFormat(clockDefinition.CopyFormat);
         _explicitTimeZone = CustomClockDisplay.ResolveExplicitTimeZone(clockDefinition);
+        _copyTitleCommand = new CopyTextCommand(string.Empty)
+        {
+            Name = CustomClockFormatOptions.GetCopyCommandName(settings, clockDefinition.TitleFormat),
+        };
+        _copySubtitleCommand = new CopyTextCommand(string.Empty)
+        {
+            Name = CustomClockFormatOptions.GetCopyCommandName(settings, clockDefinition.SubtitleFormat),
+        };
+        _copyCustomFormatCommand = _copyFormat is null
+            ? null
+            : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, clockDefinition.CopyFormat), GetCustomCopyText);
         _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
-        MoreCommands = [new CommandContextItem(new EditCustomClockPage(clockManager, settings, clockDefinition, customizeDock: true))];
+        MoreCommands =
+        [
+            new CommandContextItem(_copyTitleCommand),
+            new CommandContextItem(_copySubtitleCommand),
+            .. _copyCustomFormatCommand is null ? [] : new CommandContextItem[] { new(_copyCustomFormatCommand) },
+            new CommandContextItem(new EditCustomClockPage(clockManager, settings, clockDefinition, customizeDock: true)),
+        ];
         UpdateText();
     }
 
@@ -49,6 +77,20 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
         Title = title;
         Subtitle = subtitle;
+        _copyTitleCommand.Text = title;
+        _copySubtitleCommand.Text = subtitle;
+    }
+
+    private string GetCustomCopyText()
+    {
+        var format = _copyFormat;
+        if (format is null)
+        {
+            return string.Empty;
+        }
+
+        var now = CustomClockDisplay.GetCurrentTime(_explicitTimeZone ?? TimeZoneInfo.Local, new DateTimeOffset(DateTime.SpecifyKind(_utcNow(), DateTimeKind.Utc)));
+        return CustomClockDisplay.Format(now, format, _settings);
     }
 
     public void Dispose()

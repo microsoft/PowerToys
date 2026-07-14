@@ -24,17 +24,19 @@ public class SettingsManagerTests
         {
             var settings = new SettingsManager(filePath);
             settings.Settings.Update("""{"timeDate.TimeWithSecond":"true"}""");
-            settings.SetDockClockFormats("T", "REL");
+            settings.SetDockClockFormats("T", "REL", "s");
 
             var savedSettings = JsonNode.Parse(File.ReadAllText(filePath))!.AsObject();
             Assert.AreEqual("true", savedSettings["timeDate.TimeWithSecond"]!.GetValue<string>());
             Assert.AreEqual("T", savedSettings["timeDate.DockClockTitleFormat"]!.GetValue<string>());
             Assert.AreEqual("REL", savedSettings["timeDate.DockClockSubtitleFormat"]!.GetValue<string>());
+            Assert.AreEqual("s", savedSettings["timeDate.DockClockCopyFormat"]!.GetValue<string>());
 
             var reloadedSettings = new SettingsManager(filePath);
             Assert.IsTrue(reloadedSettings.TimeWithSecond);
             Assert.AreEqual("T", reloadedSettings.DockClockTitleFormat);
             Assert.AreEqual("REL", reloadedSettings.DockClockSubtitleFormat);
+            Assert.AreEqual("s", reloadedSettings.DockClockCopyFormat);
         }
         finally
         {
@@ -50,18 +52,20 @@ public class SettingsManagerTests
         try
         {
             var settings = new SettingsManager(filePath);
-            settings.SetDockClockFormats("T", "REL");
+            settings.SetDockClockFormats("T", "REL", "s");
             var formatsChanged = false;
             settings.DockClockFormatsChanged += (_, _) => formatsChanged = true;
 
-            Assert.ThrowsException<ArgumentException>(() => settings.SetDockClockFormats("UTC:%", "d"));
+            Assert.ThrowsException<ArgumentException>(() => settings.SetDockClockFormats("UTC:%", "d", string.Empty));
             Assert.AreEqual("T", settings.DockClockTitleFormat);
             Assert.AreEqual("REL", settings.DockClockSubtitleFormat);
+            Assert.AreEqual("s", settings.DockClockCopyFormat);
             Assert.IsFalse(formatsChanged);
 
             var savedSettings = JsonNode.Parse(File.ReadAllText(filePath))!.AsObject();
             Assert.AreEqual("T", savedSettings["timeDate.DockClockTitleFormat"]!.GetValue<string>());
             Assert.AreEqual("REL", savedSettings["timeDate.DockClockSubtitleFormat"]!.GetValue<string>());
+            Assert.AreEqual("s", savedSettings["timeDate.DockClockCopyFormat"]!.GetValue<string>());
         }
         finally
         {
@@ -73,7 +77,7 @@ public class SettingsManagerTests
     public void LoadSettings_InvalidDockFormatFallsBackWithoutDiscardingValidFormat()
     {
         var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
-        File.WriteAllText(filePath, """{"timeDate.DockClockTitleFormat":"UTC:%","timeDate.DockClockSubtitleFormat":"REL"}""");
+        File.WriteAllText(filePath, """{"timeDate.DockClockTitleFormat":"UTC:%","timeDate.DockClockSubtitleFormat":"REL","timeDate.DockClockCopyFormat":"UTC:%"}""");
 
         try
         {
@@ -81,6 +85,7 @@ public class SettingsManagerTests
 
             Assert.AreEqual("t", settings.DockClockTitleFormat);
             Assert.AreEqual("REL", settings.DockClockSubtitleFormat);
+            Assert.AreEqual(string.Empty, settings.DockClockCopyFormat);
         }
         finally
         {
@@ -106,6 +111,27 @@ public class SettingsManagerTests
             Assert.AreEqual("t", settings.DockClockTitleFormat);
             Assert.AreEqual("d", settings.DockClockSubtitleFormat);
             Assert.IsFalse(File.Exists(filePath));
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [TestMethod]
+    public void EditDefaultDockClockForm_ValidSubmissionSavesOptionalCopyFormat()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"time-date-settings-{Guid.NewGuid()}.json");
+
+        try
+        {
+            var settings = new SettingsManager(filePath);
+            var form = new EditDefaultDockClockForm(settings);
+
+            var result = form.SubmitForm("""{"titleFormat":"T","subtitleFormat":"REL","copyFormat":"s"}""");
+
+            Assert.AreEqual(CommandResultKind.GoBack, result.Kind);
+            Assert.AreEqual("s", settings.DockClockCopyFormat);
         }
         finally
         {

@@ -23,6 +23,7 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     private string _dockClockTitleFormat = "t";
     private string _dockClockSubtitleFormat = "d";
+    private string _dockClockCopyFormat = string.Empty;
 
     internal event EventHandler? DockClockFormatsChanged;
 
@@ -158,19 +159,23 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
 
     public string DockClockSubtitleFormat => _dockClockSubtitleFormat;
 
+    public string DockClockCopyFormat => _dockClockCopyFormat;
+
     public string DockClockClickAction => _dockClockClickAction.Value ?? "default";
 
     public bool DateWithWeekday => _dateWithWeekday.Value;
 
     public List<string> CustomFormats => (_customFormats.Value ?? string.Empty).Split(TEXTBOXNEWLINE).ToList();
 
-    public void SetDockClockFormats(string titleFormat, string subtitleFormat)
+    public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
     {
         ValidateDockClockFormat(titleFormat, nameof(titleFormat));
         ValidateDockClockFormat(subtitleFormat, nameof(subtitleFormat));
+        ValidateDockClockFormat(copyFormat, nameof(copyFormat));
 
         _dockClockTitleFormat = titleFormat;
         _dockClockSubtitleFormat = subtitleFormat;
+        _dockClockCopyFormat = copyFormat;
         SaveSettings();
         DockClockFormatsChanged?.Invoke(this, EventArgs.Empty);
     }
@@ -179,12 +184,14 @@ public class SettingsManager : JsonSettingsManager, IDockClockSettings
     {
         _dockClockTitleFormat = LoadDockClockFormat(settings, nameof(DockClockTitleFormat), "t");
         _dockClockSubtitleFormat = LoadDockClockFormat(settings, nameof(DockClockSubtitleFormat), "d");
+        _dockClockCopyFormat = LoadDockClockFormat(settings, nameof(DockClockCopyFormat), string.Empty);
     }
 
     protected override void SaveAdditionalSettings(JsonObject settings)
     {
         settings[Namespaced(nameof(DockClockTitleFormat))] = _dockClockTitleFormat;
         settings[Namespaced(nameof(DockClockSubtitleFormat))] = _dockClockSubtitleFormat;
+        settings[Namespaced(nameof(DockClockCopyFormat))] = _dockClockCopyFormat;
     }
 
     private static string LoadDockClockFormat(JsonObject settings, string propertyName, string defaultFormat)
