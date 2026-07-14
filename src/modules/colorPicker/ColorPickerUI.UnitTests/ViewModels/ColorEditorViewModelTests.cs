@@ -4,10 +4,13 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ColorPicker.Common;
 using ColorPicker.Helpers;
+using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModels;
 using CommunityToolkit.Mvvm.Input;
@@ -145,6 +148,41 @@ namespace ColorPicker.UnitTests.ViewModels
             Assert.IsTrue(_vm!.RemoveColorsCommand.CanExecute(list));
         }
 
+        [TestMethod]
+        public void RemoveColorsCommand_Execute_MiddleColor_RemovesAndSelectsNext()
+        {
+            var first = new Color { A = 255, R = 10, G = 20, B = 30 };
+            var middle = new Color { A = 255, R = 40, G = 50, B = 60 };
+            var last = new Color { A = 255, R = 70, G = 80, B = 90 };
+            _vm!.ColorsHistory.Add(first);
+            _vm.ColorsHistory.Add(middle);
+            _vm.ColorsHistory.Add(last);
+            _vm.SelectedColorIndex = 1;
+            SessionEventHelper.Event.EditorHistoryColorRemoved = false;
+
+            _vm.RemoveColorsCommand.Execute(new List<Color> { middle });
+
+            CollectionAssert.AreEqual(new[] { first, last }, _vm.ColorsHistory.ToArray());
+            Assert.AreEqual(1, _vm.SelectedColorIndex);
+            Assert.AreEqual(last, _vm.SelectedColor);
+            Assert.IsTrue(SessionEventHelper.Event.EditorHistoryColorRemoved);
+        }
+
+        [TestMethod]
+        public void RemoveColorsCommand_Execute_AllColors_ClearsSelection()
+        {
+            var first = new Color { A = 255, R = 10, G = 20, B = 30 };
+            var second = new Color { A = 255, R = 40, G = 50, B = 60 };
+            _vm!.ColorsHistory.Add(first);
+            _vm.ColorsHistory.Add(second);
+            _vm.SelectedColorIndex = 1;
+
+            _vm.RemoveColorsCommand.Execute(new List<Color> { first, second });
+
+            Assert.AreEqual(0, _vm.ColorsHistory.Count);
+            Assert.AreEqual(-1, _vm.SelectedColorIndex);
+        }
+
         // ─── ExportColorsGroupedByColorCommand – CanExecute guard ────
         [TestMethod]
         [Description("CanExecute(null) on ExportByColor must return false.")]
@@ -195,6 +233,22 @@ namespace ColorPicker.UnitTests.ViewModels
         public void RemoveColorsCommand_CanExecute_NonEmptyStringList_ReturnsFalse()
         {
             Assert.IsFalse(_vm!.RemoveColorsCommand.CanExecute(new List<string> { "color" }));
+        }
+
+        [TestMethod]
+        public void SelectedColorChangedCommand_Execute_ExistingColorMovesToFrontWithoutDuplicate()
+        {
+            var first = new Color { A = 255, R = 10, G = 20, B = 30 };
+            var selected = new Color { A = 255, R = 40, G = 50, B = 60 };
+            var last = new Color { A = 255, R = 70, G = 80, B = 90 };
+            _vm!.ColorsHistory.Add(first);
+            _vm.ColorsHistory.Add(selected);
+            _vm.ColorsHistory.Add(last);
+
+            _vm.SelectedColorChangedCommand.Execute(selected);
+
+            CollectionAssert.AreEqual(new[] { selected, first, last }, _vm.ColorsHistory.ToArray());
+            Assert.AreEqual(0, _vm.SelectedColorIndex);
         }
 
         [TestMethod]
@@ -313,6 +367,22 @@ namespace ColorPicker.UnitTests.ViewModels
             Assert.AreEqual(AnyColor, _vm.ColorsHistory[0]);
             Assert.AreEqual(indexBefore, _vm.SelectedColorIndex);
             Assert.IsFalse(SessionEventHelper.Event.EditorHistoryColorRemoved);
+        }
+
+        [TestMethod]
+        public void SelectedColor_Set_UpdatesEveryColorRepresentation()
+        {
+            var format = new ColorFormatModel
+            {
+                FormatName = "Red",
+                Convert = color => color.R.ToString(CultureInfo.InvariantCulture),
+            };
+            _vm!.ColorRepresentations.Add(format);
+
+            _vm.SelectedColor = AnyColor;
+
+            Assert.AreEqual("100", format.ColorText);
+            Assert.AreEqual("Red 100", format.CopyHelperText);
         }
 
         // ─── ExportColorsGroupedByColorCommand – Execute guards ──────────────────────
