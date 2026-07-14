@@ -29,6 +29,8 @@ public class CustomClockIdTests
         Assert.AreNotEqual(CustomClockIds.GetDetailPage(clockId), CustomClockIds.GetDockBand(clockId));
         Assert.AreNotEqual(CustomClockIds.LocalDetailPage, CustomClockIds.GetDetailPage(clockId));
         Assert.AreNotEqual(CustomClockIds.LocalDetailPage, CustomClockIds.GetDockBand(clockId));
+        Assert.AreEqual(CustomClockIds.LocalDetailPage, CustomClockIds.GetDetailPage(Guid.Empty));
+        Assert.AreEqual(CustomClockIds.LocalDockBand, CustomClockIds.GetDockBand(Guid.Empty));
     }
 
     [TestMethod]
@@ -99,6 +101,19 @@ public class CustomClockIdTests
 
         Assert.AreNotEqual("stale", item.Title);
         item.StopUpdating();
+    }
+
+    [TestMethod]
+    public void CustomClockOverviewItem_UsesSeparateDockCommandId()
+    {
+        var clock = new CustomClock { Id = Guid.NewGuid() };
+        using var updateService = new ClockUpdateService();
+        var item = new CustomClockOverviewItem(clock, new Settings(), updateService);
+
+        Assert.AreEqual(CustomClockIds.GetDetailPage(clock.Id), item.Command!.Id);
+        Assert.AreEqual(
+            CustomClockIds.GetDockBand(clock.Id),
+            item.GetProperties()[WellKnownExtensionAttributes.DockCommandId]);
     }
 
     [TestMethod]

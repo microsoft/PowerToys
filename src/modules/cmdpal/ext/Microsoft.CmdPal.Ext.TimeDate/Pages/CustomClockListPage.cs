@@ -220,6 +220,7 @@ internal sealed partial class CustomClockOverviewItem : ListItem
             : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, clock.CopyFormat), GetCustomCopyText);
         Icon = Icons.TimeIcon;
         Command = new CustomClockDetailPage(settings, clock);
+        GetProperties()[WellKnownExtensionAttributes.DockCommandId] = CustomClockIds.GetDockBand(clock.Id);
         MoreCommands =
         [
             new CommandContextItem(_copyTitleCommand),

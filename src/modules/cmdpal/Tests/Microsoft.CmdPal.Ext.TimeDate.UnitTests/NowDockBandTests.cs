@@ -179,6 +179,34 @@ public class NowDockBandTests
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
     }
 
+    [TestMethod]
+    public void UpdateSettings_WeekRulesRefreshFormattedTitleSubtitleAndCopyText()
+    {
+        var time = new DateTime(2012, 12, 31, 14, 5, 32);
+        var settings = new TestDockClockSettings("WOY", "IWYR-\\WIWOY-IDOW", "\\WWOY")
+        {
+            FirstWeekOfYear = 0,
+            FirstDayOfWeek = 0,
+        };
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, () => time);
+
+        Assert.AreEqual("53", _band.Title);
+        Assert.AreEqual("2013-W01-1", _band.Subtitle);
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+        Assert.AreEqual("W53", _band.CopyCustomFormatCommand.GetCurrentText());
+
+        settings.FirstWeekOfYear = 2;
+        settings.FirstDayOfWeek = 1;
+        _band.UpdateSettings(settings);
+
+        Assert.AreEqual("1", _band.Title);
+        Assert.AreEqual("2013-W01-1", _band.Subtitle);
+        Assert.AreEqual(_band.Title, _band.CopyTitleCommand.Text);
+        Assert.AreEqual(_band.Subtitle, _band.CopySubtitleCommand.Text);
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+        Assert.AreEqual("W1", _band.CopyCustomFormatCommand.GetCurrentText());
+    }
+
     private NowDockBand CreateBand(string titleFormat = "t", string copyFormat = "", Func<DateTime>? clock = null)
     {
         var settings = new TestDockClockSettings(titleFormat, copyFormat: copyFormat);

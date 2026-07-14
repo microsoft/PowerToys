@@ -20,7 +20,7 @@ internal sealed partial class CustomClockDetailPage : DynamicListPage
         _settings = settings;
         _clock = clock;
         _explicitTimeZone = CustomClockDisplay.ResolveExplicitTimeZone(clock);
-        Id = clock.Id == Guid.Empty ? CustomClockIds.LocalDetailPage : CustomClockIds.GetDetailPage(clock.Id);
+        Id = CustomClockIds.GetDetailPage(clock.Id);
         var timeZone = _explicitTimeZone ?? TimeZoneInfo.Local;
         Title = CustomClockDisplay.GetName(clock, timeZone, CustomClockDisplay.GetCurrentTime(timeZone));
         Name = Resources.timedate_custom_clock_show;
