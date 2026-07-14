@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var menuItem = sender as MenuFlyoutItem;
             if (menuItem?.Tag is PowerDisplayProfile profile)
             {
-                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name);
+                var dialog = new ProfileEditorDialog(ViewModel.Monitors, profile.Name, profile.Id);
                 dialog.XamlRoot = this.XamlRoot;
 
                 // Pre-fill with existing profile settings

@@ -24,10 +24,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerDisplayProfile? ResultProfile { get; private set; }
 
-        public ProfileEditorDialog(ObservableCollection<MonitorInfo> availableMonitors, string defaultName = "")
+        public ProfileEditorDialog(
+            ObservableCollection<MonitorInfo> availableMonitors,
+            string defaultName = "",
+            int profileId = 0)
         {
             this.InitializeComponent();
-            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName);
+            ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName, profileId);
 
             // Set localized strings for ContentDialog
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -61,9 +64,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Set profile name
             ViewModel.ProfileName = profile.Name;
-
-            // Carry the edited profile's stable id so saving replaces it in place (a rename keeps the id).
-            ViewModel.EditingId = profile.Id;
 
             // Pre-fill monitor settings from existing profile
             foreach (var monitorSetting in profile.MonitorSettings)
