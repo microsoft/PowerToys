@@ -27,6 +27,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return enabled && profileId >= 1 ? profileId : null;
         }
 
+        public static bool SetProfileId(
+            IntProperty idProperty,
+            StringProperty legacyNameProperty,
+            int profileId)
+        {
+            ArgumentNullException.ThrowIfNull(idProperty);
+            ArgumentNullException.ThrowIfNull(legacyNameProperty);
+
+            ArgumentOutOfRangeException.ThrowIfNegative(profileId);
+
+            if (idProperty.Value == profileId
+                && string.IsNullOrEmpty(legacyNameProperty.Value))
+            {
+                return false;
+            }
+
+            idProperty.Value = profileId;
+            legacyNameProperty.Value = string.Empty;
+            return true;
+        }
+
         public static bool ReconcileReferences(
             LightSwitchProperties properties,
             PowerDisplayProfiles profiles)

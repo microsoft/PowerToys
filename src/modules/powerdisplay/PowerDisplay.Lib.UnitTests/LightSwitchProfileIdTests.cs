@@ -45,4 +45,23 @@ public class LightSwitchProfileIdTests
         Assert.AreEqual("Night", clone.Properties.DarkModeProfile.Value);
         Assert.AreEqual("Day", clone.Properties.LightModeProfile.Value);
     }
+
+    [TestMethod]
+    public void LightSwitchProperties_LegacyProfileNames_RemainDeserializable()
+    {
+        const string json = """
+            {
+              "darkModeProfile": { "value": "Night" },
+              "lightModeProfile": { "value": "Day" }
+            }
+            """;
+
+        var properties = JsonSerializer.Deserialize<LightSwitchProperties>(json);
+
+        Assert.IsNotNull(properties);
+        Assert.AreEqual("Night", properties!.DarkModeProfile.Value);
+        Assert.AreEqual("Day", properties.LightModeProfile.Value);
+        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(0, properties.LightModeProfileId.Value);
+    }
 }

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -99,6 +100,42 @@ public class LightSwitchProfileReferenceHelperTests
         var properties = new LightSwitchProperties();
 
         Assert.IsFalse(LightSwitchProfileReferenceHelper.ReconcileReferences(properties, Profiles()));
+    }
+
+    [TestMethod]
+    public void SetProfileId_StoresIdAndClearsLegacyName()
+    {
+        var idProperty = new IntProperty(3);
+        var legacyNameProperty = new StringProperty("Old Name");
+
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.SetProfileId(
+            idProperty,
+            legacyNameProperty,
+            7));
+        Assert.AreEqual(7, idProperty.Value);
+        Assert.AreEqual(string.Empty, legacyNameProperty.Value);
+    }
+
+    [TestMethod]
+    public void SetProfileId_UnchangedIdAndEmptyLegacyName_ReturnsFalse()
+    {
+        var idProperty = new IntProperty(7);
+        var legacyNameProperty = new StringProperty(string.Empty);
+
+        Assert.IsFalse(LightSwitchProfileReferenceHelper.SetProfileId(
+            idProperty,
+            legacyNameProperty,
+            7));
+    }
+
+    [TestMethod]
+    public void SetProfileId_NegativeId_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+            LightSwitchProfileReferenceHelper.SetProfileId(
+                new IntProperty(0),
+                new StringProperty(string.Empty),
+                -1));
     }
 
     private static PowerDisplayProfiles Profiles(params (string Name, int Id)[] items)

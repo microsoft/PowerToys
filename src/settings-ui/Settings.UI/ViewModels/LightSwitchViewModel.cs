@@ -674,9 +674,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Backing setter for the two theme profile selections: stores the object, syncs both the
-        /// canonical id and the display/fallback name into settings (saving only on change), and
-        /// raises the change notification for <paramref name="propertyName"/>.
+        /// Backing setter for the two theme profile selections: stores the object, persists the
+        /// canonical id while clearing any legacy name (saving only on change), and raises the
+        /// change notification for <paramref name="propertyName"/>.
         /// </summary>
         private void SetSelectedProfile(ref PowerDisplayProfile? field, PowerDisplayProfile? value, bool isDarkMode, string propertyName)
         {
@@ -694,13 +694,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             var newId = value?.Id ?? 0;
-            var newName = value?.Name ?? string.Empty;
-            var idProp = isDarkMode ? ModuleSettings.Properties.DarkModeProfileId : ModuleSettings.Properties.LightModeProfileId;
-            var nameProp = isDarkMode ? ModuleSettings.Properties.DarkModeProfile : ModuleSettings.Properties.LightModeProfile;
-            if (idProp.Value != newId || nameProp.Value != newName)
+            var idProperty = isDarkMode
+                ? ModuleSettings.Properties.DarkModeProfileId
+                : ModuleSettings.Properties.LightModeProfileId;
+            var legacyNameProperty = isDarkMode
+                ? ModuleSettings.Properties.DarkModeProfile
+                : ModuleSettings.Properties.LightModeProfile;
+
+            if (LightSwitchProfileReferenceHelper.SetProfileId(
+                idProperty,
+                legacyNameProperty,
+                newId))
             {
-                idProp.Value = newId;
-                nameProp.Value = newName;
                 SaveSettings();
             }
 
@@ -757,26 +762,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Selects the profile object for the given theme from settings, preferring the stable id and
-        /// falling back to the stored name only when no id is set. A stored id that no longer matches
-        /// any profile clears the selection (it does NOT fall back to the name). The id-first decision
-        /// is shared with the PowerDisplay app via <see cref="LightSwitchProfileResolver"/>.
+        /// Selects the profile object for the given theme from settings by stored profile id. Zero
+        /// or a missing id produces no selection.
         /// </summary>
         private void SelectByStoredReference(bool isDarkMode)
         {
             var storedId = isDarkMode
                 ? ModuleSettings.Properties.DarkModeProfileId.Value
                 : ModuleSettings.Properties.LightModeProfileId.Value;
-            var storedName = isDarkMode
-                ? ModuleSettings.Properties.DarkModeProfile.Value
-                : ModuleSettings.Properties.LightModeProfile.Value;
-
-            var resolvedId = LightSwitchProfileResolver.Resolve(
-                storedId,
-                storedName,
-                new PowerDisplayProfiles { Profiles = AvailableProfiles.ToList() });
-            var match = resolvedId is int id
-                ? AvailableProfiles.FirstOrDefault(p => p.Id == id)
+            var match = storedId >= 1
+                ? AvailableProfiles.FirstOrDefault(profile => profile.Id == storedId)
                 : null;
 
             if (isDarkMode)
