@@ -816,11 +816,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _suppressProfileSelectionPersistence = true;
             try
             {
-                var (loaded, lightSwitch) = await LoadProfilesCoreAsync(cancellationToken);
-                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                    lightSwitch,
-                    loaded,
-                    SendConfigMSG);
+                var loaded = await LoadProfilesCoreAsync(cancellationToken);
                 ReplaceProfiles(loaded);
             }
             catch (Exception ex)
@@ -836,22 +832,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private async Task<(PowerDisplayProfiles Profiles, LightSwitchSettings LightSwitch)> LoadProfilesCoreAsync(
+        private static Task<PowerDisplayProfiles> LoadProfilesCoreAsync(
             CancellationToken cancellationToken)
         {
-            var profiles = await ProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken)
-                .ConfigureAwait(false);
-            var lightSwitch = await Task.Run(
-                () => SettingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
-                    LightSwitchSettings.ModuleName),
-                cancellationToken).ConfigureAwait(false);
-            return (profiles, lightSwitch);
+            return ProfileHelper.LoadProfilesAsync(cancellationToken);
         }
 
         private void ReplaceProfiles(PowerDisplayProfiles profilesData)
         {
             Profiles.Clear();
-            foreach (var profile in profilesData.Profiles)
+            foreach (var profile in profilesData.GetAssignedProfiles())
             {
                 Profiles.Add(profile);
             }
@@ -922,11 +912,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             try
             {
                 await ProfileHelper.AddOrUpdateProfileAsync(profile);
-                var (profiles, lightSwitch) = await LoadProfilesCoreAsync(CancellationToken.None);
-                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                    lightSwitch,
-                    profiles,
-                    SendConfigMSG);
+                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
                 ReplaceProfiles(profiles);
                 SignalSettingsUpdated();
             }
@@ -963,13 +949,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                var (profiles, lightSwitch) = await LoadProfilesCoreAsync(CancellationToken.None);
-                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                    lightSwitch,
-                    profiles,
-                    SendConfigMSG);
+                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
                 ReplaceProfiles(profiles);
                 SignalSettingsUpdated();
+                await ClearDeletedProfileReferencesAsync(id);
             }
             catch (Exception ex)
             {
@@ -979,6 +962,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             finally
             {
                 IsProfilesLoading = false;
+            }
+        }
+
+        private async Task ClearDeletedProfileReferencesAsync(int deletedProfileId)
+        {
+            try
+            {
+                var lightSwitch = await Task.Run(
+                    () => SettingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
+                        LightSwitchSettings.ModuleName));
+                LightSwitchProfileSettingsUpdater.ClearDeletedProfileAndSend(
+                    lightSwitch,
+                    deletedProfileId,
+                    SendConfigMSG);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to clear LightSwitch references for deleted profile id {deletedProfileId}: {ex.Message}");
             }
         }
 

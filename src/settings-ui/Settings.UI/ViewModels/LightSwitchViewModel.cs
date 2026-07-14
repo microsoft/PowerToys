@@ -687,7 +687,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             field = value;
 
-            if (_suppressProfileSelectionPersistence || IsProfilesLoading)
+            if (_suppressProfileSelectionPersistence)
             {
                 NotifyPropertyChanged(propertyName);
                 return;
@@ -723,14 +723,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _suppressProfileSelectionPersistence = true;
             try
             {
-                var profilesData = await ProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken);
-                LightSwitchProfileSettingsUpdater.ReconcileAndSend(
-                    ModuleSettings,
-                    profilesData,
-                    SendConfigMSG);
+                var profilesData = await ProfileHelper.LoadProfilesAsync(cancellationToken);
 
                 AvailableProfiles.Clear();
-                foreach (var profile in profilesData.Profiles)
+                foreach (var profile in profilesData.GetAssignedProfiles())
                 {
                     AvailableProfiles.Add(profile);
                 }
