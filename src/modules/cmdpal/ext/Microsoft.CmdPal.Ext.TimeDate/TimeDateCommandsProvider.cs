@@ -75,7 +75,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
         _bandItem = new WrappedDockItem(
             [_nowDockBand],
-            "com.microsoft.cmdpal.timedate.dockBand",
+            CustomClockIds.LocalDockBand,
             Resources.Microsoft_plugin_timedate_dock_band_title)
         {
             Icon = Icons.TimeDateExtIcon,
@@ -124,23 +124,21 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
         if (id == CustomClockIds.LocalDetailPage && _nowDockBand is not null)
         {
-            return CreateClockDockItem(_nowDockBand, id, Resources.Microsoft_plugin_timedate_dock_band_title);
+            return CreateClockDetailItem(new CustomClock
+            {
+                Id = Guid.Empty,
+                Title = Resources.timedate_custom_clock_local,
+                TimeZoneId = CustomClock.CurrentTimeZoneId,
+                TitleFormat = "t",
+                SubtitleFormat = "d",
+            });
         }
 
         foreach (var clock in _customClockManager.Clocks)
         {
             if (id == CustomClockIds.GetDetailPage(clock.Id))
             {
-                lock (_customClockBandsLock)
-                {
-                    var band = _customClockBands.Find(candidate => candidate.ClockId == clock.Id);
-                    if (band is not null)
-                    {
-                        return CreateClockDockItem(band, id, CustomClockDisplay.GetName(clock));
-                    }
-                }
-
-                break;
+                return CreateClockDetailItem(clock);
             }
         }
 
@@ -188,10 +186,16 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         }
     }
 
-    private static WrappedDockItem CreateClockDockItem(IListItem clockBand, string id, string title) => new([clockBand], id, title)
+    private ListItem CreateClockDetailItem(CustomClock clock)
     {
-        Icon = Icons.TimeDateExtIcon,
-    };
+        var item = new ListItem(new CustomClockDetailPage(_settingsManager, clock))
+        {
+            Icon = Icons.TimeIcon,
+            Title = CustomClockDisplay.GetName(clock),
+        };
+        item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = CustomClockIds.GetDockBand(clock.Id);
+        return item;
+    }
 
     public override void Dispose()
     {

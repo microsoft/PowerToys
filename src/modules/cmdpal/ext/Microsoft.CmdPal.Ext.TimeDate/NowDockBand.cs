@@ -69,7 +69,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
             ? _allClocksPage
             : new OpenUrlCommand("ms-actioncenter:")
             {
-                Id = "com.microsoft.cmdpal.timedate.dockBand",
+                Id = CustomClockIds.LocalDockBand,
                 Name = Resources.timedate_show_notification_center_command_name,
                 Result = CommandResult.Dismiss(),
             };

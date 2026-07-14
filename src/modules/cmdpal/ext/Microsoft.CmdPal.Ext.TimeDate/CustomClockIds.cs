@@ -12,7 +12,13 @@ internal static class CustomClockIds
 
     internal const string LocalDetailPage = Prefix + ".local.page";
 
-    internal static string GetDetailPage(Guid clockId) => $"{Prefix}.{clockId}.page";
+    internal const string LocalDockBand = "com.microsoft.cmdpal.timedate.dockBand";
 
-    internal static string GetDockBand(Guid clockId) => $"{Prefix}.{clockId}.dock";
+    internal static string GetDetailPage(Guid clockId) => clockId == Guid.Empty
+        ? LocalDetailPage
+        : $"{Prefix}.{clockId}.page";
+
+    internal static string GetDockBand(Guid clockId) => clockId == Guid.Empty
+        ? LocalDockBand
+        : $"{Prefix}.{clockId}.dock";
 }

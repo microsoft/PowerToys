@@ -5,6 +5,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -52,6 +53,34 @@ public class CommandItemViewModelTests
         Assert.AreSame(allCommands, viewModel.AllCommands);
         Assert.AreEqual(1, moreCommands.Count);
         Assert.AreEqual(2, allCommands.Count);
+    }
+
+    [TestMethod]
+    public void InitializeProperties_CachesDockCommandId()
+    {
+        var pageContext = new TestPageContext();
+        var item = new ListItem(new NoOpCommand { Name = "Primary" });
+        item.GetProperties()[WellKnownExtensionAttributes.DockCommandId] = "provider.item.dock";
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.InitializeProperties();
+
+        Assert.AreEqual("provider.item.dock", viewModel.DockCommandId);
+    }
+
+    [TestMethod]
+    public void DockBandItems_UsesWrappedListItems()
+    {
+        var pageContext = new TestPageContext();
+        var child = new ListItem(new NoOpCommand()) { Title = "Child" };
+        var band = new WrappedDockItem([child], "provider.band", "Band");
+        var viewModel = new CommandItemViewModel(new(band), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.InitializeProperties();
+
+        var items = DockBandViewModel.GetItemsForDisplay(viewModel);
+
+        Assert.AreEqual(1, items.Length);
+        Assert.AreSame(child, items[0]);
     }
 
     [TestMethod]

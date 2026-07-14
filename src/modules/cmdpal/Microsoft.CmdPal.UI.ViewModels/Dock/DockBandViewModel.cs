@@ -228,9 +228,19 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         _showSubtitles = settings.ResolveShowSubtitles(dockSettings.ShowLabels);
     }
 
-    private void InitializeFromList(IListPage list)
+    public static ICommandItem[] GetItemsForDisplay(CommandItemViewModel rootItem)
     {
-        var items = list.GetItems();
+        if (rootItem.Command.Model.Unsafe is IListPage list)
+        {
+            return list.GetItems();
+        }
+
+        return rootItem.Model.Unsafe is ICommandItem item ? [item] : [];
+    }
+
+    private void InitializeFromList()
+    {
+        var items = GetItemsForDisplay(_rootItem);
         var newViewModels = new List<DockItemViewModel>();
         foreach (var item in items)
         {
@@ -257,7 +267,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var list = command.Model.Unsafe as IListPage;
         if (list is not null)
         {
-            InitializeFromList(list);
+            InitializeFromList();
             list.ItemsChanged += HandleItemsChanged;
         }
         else
@@ -273,9 +283,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     private void HandleItemsChanged(object sender, IItemsChangedEventArgs args)
     {
-        if (_rootItem.Command.Model.Unsafe is IListPage p)
+        if (_rootItem.Command.Model.Unsafe is IListPage)
         {
-            InitializeFromList(p);
+            InitializeFromList();
         }
     }
 
