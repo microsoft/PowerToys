@@ -13,6 +13,8 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public class PowerDisplayProfilesTests
 {
+    private static readonly string[] ExpectedAssignedProfileNames = { "Assigned" };
+
     private static PowerDisplayProfile MakeProfile(string name, int id = 0)
     {
         var p = new PowerDisplayProfile(name, new List<ProfileMonitorSetting>
@@ -53,6 +55,19 @@ public class PowerDisplayProfilesTests
         Assert.AreSame(b, profiles.GetById(2));
         Assert.IsNull(profiles.GetById(0));
         Assert.IsNull(profiles.GetById(99));
+    }
+
+    [TestMethod]
+    public void GetAssignedProfiles_ExcludesNonPositiveIds()
+    {
+        var profiles = new PowerDisplayProfiles();
+        profiles.Profiles.Add(MakeProfile("Negative", id: -1));
+        profiles.Profiles.Add(MakeProfile("Legacy", id: 0));
+        profiles.Profiles.Add(MakeProfile("Assigned", id: 4));
+
+        var assigned = profiles.GetAssignedProfiles().Select(profile => profile.Name).ToArray();
+
+        CollectionAssert.AreEqual(ExpectedAssignedProfileNames, assigned);
     }
 
     [TestMethod]

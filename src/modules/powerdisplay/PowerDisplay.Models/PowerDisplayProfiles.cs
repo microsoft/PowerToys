@@ -48,6 +48,15 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
+        /// Returns profiles that have a usable stable id.
+        /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
+        /// </summary>
+        public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
+        {
+            return Profiles.Where(profile => profile is not null && profile.Id >= 1);
+        }
+
+        /// <summary>
         /// Adds or updates a profile, keyed by its stable id. When the incoming profile has no id
         /// (Id == 0) a new one is assigned from the monotonic NextId counter. Names are not required
         /// to be unique.
