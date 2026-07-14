@@ -5599,12 +5599,6 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>
-  <data name="PowerDisplay_ProfilesLoadingText.Text" xml:space="preserve">
-    <value>Loading profiles...</value>
-  </data>
-  <data name="PowerDisplay_ProfilesLoadingIndicator.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Loading profiles</value>
-  </data>
   <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>
