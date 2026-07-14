@@ -50,6 +50,11 @@ public static class ProfileMigration
                         legacy.Contrast,
                         legacy.Volume));
                 }
+                else if (newId != null)
+                {
+                    Logger.LogInfo(
+                        $"[LegacyMigration] Skipped duplicate profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': '{newId}' already exists.");
+                }
                 else if (newId == null)
                 {
                     Logger.LogWarning(

@@ -48,6 +48,28 @@ public class ProfileMigrationTests
         Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
     }
 
+    [TestMethod]
+    public void Migrate_DiscoveredMonitor_DeduplicatesWhenNewSettingAlreadyExists()
+    {
+        var profile = new PowerDisplayProfile(
+            "Legacy",
+            new List<ProfileMonitorSetting>
+            {
+                new ProfileMonitorSetting("DDC_DELD1A8_1", 50, null, null, null),
+                new ProfileMonitorSetting(NewMonitorId, 50, null, null, null),
+            });
+        var profiles = new PowerDisplayProfiles();
+        profiles.Profiles.Add(profile);
+
+        var changed = ProfileMigration.Migrate(
+            profiles,
+            new[] { (NewMonitorId, 1) });
+
+        Assert.IsTrue(changed);
+        Assert.AreEqual(1, profile.MonitorSettings.Count);
+        Assert.AreEqual(NewMonitorId, profile.MonitorSettings[0].MonitorId);
+    }
+
     private static PowerDisplayProfile MakeProfile(string name, string monitorId)
     {
         return new PowerDisplayProfile(
