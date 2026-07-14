@@ -1,0 +1,1 @@
+{"version":3,"file":"activate.d.ts","sourceRoot":"","sources":["../../src/runtime/activate.ts"],"names":[],"mappings":"AAIA,OAAO,KAAK,EAAE,gBAAgB,EAAE,iBAAiB,EAAE,MAAM,UAAU,CAAC;AAGpE;;;;;;;;;;;;;;;;;;;GAmBG;AACH,wBAAgB,QAAQ,CACtB,OAAO,EAAE,iBAAiB,EAC1B,eAAe,EAAE,MAAM,gBAAgB,GAAG,OAAO,CAAC,gBAAgB,CAAC,GAClE,gBAAgB,GAAG,OAAO,CAAC,gBAAgB,CAAC,CAI9C"}

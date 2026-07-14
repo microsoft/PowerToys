@@ -1,0 +1,35 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+import type { ICommandProvider, ActivationContext } from '../types';
+import { ExtensionHost } from './ExtensionHost';
+
+/**
+ * Helper function for extension activation.
+ * Wraps a provider factory with automatic ExtensionHost initialization.
+ *
+ * @example
+ * ```typescript
+ * // In your extension's index.ts:
+ * import { activate as sdkActivate, CommandProviderBase } from '@microsoft/cmdpal-sdk';
+ *
+ * class MyProvider extends CommandProviderBase {
+ *   id = 'my-ext';
+ *   displayName = 'My Extension';
+ *   topLevelCommands() { return []; }
+ * }
+ *
+ * export function activate(context: ActivationContext) {
+ *   return sdkActivate(context, () => new MyProvider());
+ * }
+ * ```
+ */
+export function activate(
+  context: ActivationContext,
+  providerFactory: () => ICommandProvider | Promise<ICommandProvider>
+): ICommandProvider | Promise<ICommandProvider> {
+  // The host will be initialized by the Node host process when it calls
+  // initializeWithHost on the provider. This is a convenience wrapper.
+  return providerFactory();
+}

@@ -36,6 +36,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     private const string SourceTypeWinGet = "winget";
     private const string SourceTypeStore = "msstore";
+    private const string SourceTypeNpm = "npm";
     private const string SourceTypeUrl = "url";
     private const string SourceTypeGitHub = "github";
     private const string SourceTypeWebsite = "website";
@@ -105,13 +106,6 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
-    // Validated, browser-openable homepage uri. Null when the entry has no
-    // homepage or it is not a web uri. NavigateUri bindings must use this
-    // (a Uri) rather than the raw Homepage string: x:Bind evaluates bindings
-    // regardless of element visibility, and converting a null/invalid string
-    // to Uri throws and crashes the page.
-    public Uri? HomepageUri => _homepageHttpUri;
-
     public Uri IconUri { get; }
 
     public ImageSource IconSource
@@ -135,6 +129,10 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     public bool HasWinGetSource => HasSource(SourceTypeWinGet);
 
     public bool HasStoreSource => HasSource(SourceTypeStore);
+
+    public bool HasNpmSource => HasSource(SourceTypeNpm);
+
+    public string? NpmPackageId => GetSource(SourceTypeNpm)?.Id;
 
     public bool HasUrlSource => _installSourcesByType.ContainsKey(SourceTypeUrl) && InstallUrl is not null;
 
@@ -173,7 +171,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool ShowUnknownSourceIndicator => HasUnknownSource || !HasKnownSourceIndicator;
 
-    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasHomepage || HasUrlSource;
+    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasNpmSource || HasHomepage || HasUrlSource;
 
     public bool ShowNoSourceDetails => !HasActionableSourceDetails;
 
