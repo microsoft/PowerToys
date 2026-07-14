@@ -138,6 +138,31 @@ public class LightSwitchProfileReferenceHelperTests
                 -1));
     }
 
+    [TestMethod]
+    public void ClearProfileIdReferences_ClearsOnlyMatchingIds()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfileId.Value = 7;
+        properties.LightModeProfileId.Value = 4;
+        properties.DarkModeProfile.Value = "Legacy dark";
+        properties.LightModeProfile.Value = "Legacy light";
+
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, 7));
+        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(4, properties.LightModeProfileId.Value);
+        Assert.AreEqual("Legacy dark", properties.DarkModeProfile.Value);
+        Assert.AreEqual("Legacy light", properties.LightModeProfile.Value);
+    }
+
+    [TestMethod]
+    public void ClearProfileIdReferences_NonPositiveId_Throws()
+    {
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+            LightSwitchProfileReferenceHelper.ClearProfileIdReferences(
+                new LightSwitchProperties(),
+                0));
+    }
+
     private static PowerDisplayProfiles Profiles(params (string Name, int Id)[] items)
     {
         var profiles = new PowerDisplayProfiles();

@@ -48,6 +48,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return true;
         }
 
+        public static bool ClearProfileIdReferences(
+            LightSwitchProperties properties,
+            int profileId)
+        {
+            ArgumentNullException.ThrowIfNull(properties);
+
+            ArgumentOutOfRangeException.ThrowIfLessThan(profileId, 1);
+
+            var changed = false;
+            if (properties.LightModeProfileId.Value == profileId)
+            {
+                properties.LightModeProfileId.Value = 0;
+                changed = true;
+            }
+
+            if (properties.DarkModeProfileId.Value == profileId)
+            {
+                properties.DarkModeProfileId.Value = 0;
+                changed = true;
+            }
+
+            return changed;
+        }
+
         public static bool ReconcileReferences(
             LightSwitchProperties properties,
             PowerDisplayProfiles profiles)

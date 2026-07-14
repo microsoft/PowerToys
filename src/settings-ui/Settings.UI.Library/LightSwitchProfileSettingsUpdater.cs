@@ -28,5 +28,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             sendConfigMessage(outgoing.ToJsonString());
             return true;
         }
+
+        public static bool ClearDeletedProfileAndSend(
+            LightSwitchSettings settings,
+            int deletedProfileId,
+            Func<string, int> sendConfigMessage)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            ArgumentNullException.ThrowIfNull(sendConfigMessage);
+
+            if (!LightSwitchProfileReferenceHelper.ClearProfileIdReferences(
+                settings.Properties,
+                deletedProfileId))
+            {
+                return false;
+            }
+
+            var outgoing = new SndModuleSettings<SndLightSwitchSettings>(
+                new SndLightSwitchSettings(settings));
+            sendConfigMessage(outgoing.ToJsonString());
+            return true;
+        }
     }
 }
