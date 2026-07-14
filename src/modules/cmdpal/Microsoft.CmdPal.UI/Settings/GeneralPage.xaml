@@ -118,6 +118,28 @@
                             <ComboBoxItem x:Uid="Run_Radio_Position_LastPosition" />
                         </ComboBox>
                     </controls:SettingsCard>
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ToastPosition_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">
+                        <controls:SettingsCard.Description>
+                            <StackPanel>
+                                <TextBlock x:Uid="Settings_GeneralPage_ToastPosition_Description" TextWrapping="Wrap" />
+                                <HyperlinkButton
+                                    x:Uid="Settings_GeneralPage_ToastPosition_OpenSystemSettings_Hyperlink"
+                                    Padding="0"
+                                    AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition_OpenSystemSettings"
+                                    Click="OpenSystemSettings_Click"
+                                    Visibility="{x:Bind viewModel.IsToastPositionFromSystemSettings, Mode=OneWay}" />
+                            </StackPanel>
+                        </controls:SettingsCard.Description>
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_ToastPosition"
+                            SelectedIndex="{x:Bind viewModel.ToastPositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_UseSystemSettings" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_BottomCenter" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopLeft" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_ToastPosition_Item_TopCenter" />
+                        </ComboBox>
+                    </controls:SettingsCard>
 
                     <controls:SettingsExpander x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind viewModel.CompactMode, Mode=TwoWay}" />

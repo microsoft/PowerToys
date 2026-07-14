@@ -4,10 +4,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Appium;
@@ -43,14 +41,17 @@ namespace Microsoft.PowerToys.UITest
         /// </summary>
         private bool UseInstallerForTest { get; }
 
-        [UnconditionalSuppressMessage("SingleFile", "IL3000:Avoid accessing Assembly file path when publishing as a single file", Justification = "<Pending>")]
         public SessionHelper(PowerToysModule scope, string[]? commandLineArgs = null)
         {
             this.scope = scope;
             this.commandLineArgs = commandLineArgs;
             this.sessionPath = ModuleConfigData.Instance.GetModulePath(scope);
             UseInstallerForTest = EnvironmentConfig.UseInstallerForTest;
-            this.locationPath = UseInstallerForTest ? string.Empty : Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            // GetModulePath now returns an ABSOLUTE path (adaptive dev-build walk-up or the installed
+            // path), so no per-assembly prefix is needed; locationPath stays empty and the launch-path
+            // concatenations below resolve to that absolute path.
+            this.locationPath = string.Empty;
 
             CheckWinAppDriverAndRoot();
         }

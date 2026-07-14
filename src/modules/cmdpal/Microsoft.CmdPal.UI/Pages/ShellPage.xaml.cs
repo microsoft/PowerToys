@@ -320,7 +320,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _toast.ShowToast(message.Message);
+            _toast.ShowToast(message);
         });
     }
 

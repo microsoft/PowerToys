@@ -60,6 +60,39 @@ public static class SettingsConfigHelper
     }
 
     /// <summary>
+    /// Suppress the first-run "Welcome to PowerToys" (OOBE) and "What's new" (SCOOBE) windows. On a
+    /// fresh profile (e.g. a CI agent) the runner opens one of these centered, topmost windows, which
+    /// steals centre-screen mouse gestures (a coordinate measurement at screen-centre lands on the
+    /// Welcome window instead of the module overlay → empty result). Mirrors the runner's own gating:
+    /// marks OOBE as already opened (<c>oobe_settings.json</c> → <c>openedAtFirstLaunch=true</c>) and
+    /// disables the what's-new-after-updates setting (<c>settings.json</c> →
+    /// <c>show_whats_new_after_updates=false</c>, which the runner honours regardless of version).
+    /// Best-effort — never blocks a test from launching.
+    /// </summary>
+    public static void SuppressFirstRunExperience()
+    {
+        try
+        {
+            Directory.CreateDirectory(PowerToysSettingsRoot);
+
+            // OOBE: mark as already opened so the runner skips the Welcome window.
+            var oobe = new JsonObject { ["openedAtFirstLaunch"] = true };
+            File.WriteAllText(Path.Combine(PowerToysSettingsRoot, "oobe_settings.json"), oobe.ToJsonString(Indented));
+
+            // SCOOBE: disable "what's new after updates" (version-independent) in the general settings.
+            var root = File.Exists(GlobalSettingsPath)
+                ? (JsonNode.Parse(File.ReadAllText(GlobalSettingsPath)) as JsonObject) ?? new JsonObject()
+                : new JsonObject();
+            root["show_whats_new_after_updates"] = false;
+            File.WriteAllText(GlobalSettingsPath, root.ToJsonString(Indented));
+        }
+        catch
+        {
+            // Best-effort — a fresh-run window is a nuisance, not a reason to fail the test setup.
+        }
+    }
+
+    /// <summary>
     /// Update a module's <c>settings.json</c>
     /// (<c>%LocalAppData%\Microsoft\PowerToys\&lt;module&gt;\settings.json</c>). Seeds the file from
     /// <paramref name="defaultSettingsContent"/> when it doesn't exist, then applies

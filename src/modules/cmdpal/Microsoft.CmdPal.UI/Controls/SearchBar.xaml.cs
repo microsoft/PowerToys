@@ -9,6 +9,7 @@ using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.Helpers;
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -20,6 +21,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -56,6 +58,10 @@ public sealed partial class SearchBar : UserControl,
     private string? _textToSuggest;
 
     private bool _tokenSearchEnabled;
+
+    private AppBarSeparator? _menuSeparator;
+    private AppBarButton? _settingsMenuItem;
+    private AppBarButton? _helpMenuItem;
 
     private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
@@ -373,6 +379,53 @@ public sealed partial class SearchBar : UserControl,
             // Logger.LogInfo("leaving suggestion");
             _inSuggestion = false;
             _lastText = null;
+        }
+    }
+
+    // TextCommandBarFlyout rebuilds its commands on every open, so re-append ours each time.
+    private void FilterBoxContextFlyout_Opening(object sender, object e)
+    {
+        if (sender is not TextCommandBarFlyout flyout)
+        {
+            return;
+        }
+
+        if (_settingsMenuItem is null || _helpMenuItem is null)
+        {
+            _menuSeparator = new AppBarSeparator();
+
+            _settingsMenuItem = new AppBarButton
+            {
+                Label = RS_.GetString("SearchBoxContextMenu_Settings"),
+                Icon = new FontIcon { Glyph = "\uE713" },
+                KeyboardAcceleratorTextOverride = RS_.GetString("SearchBoxContextMenu_Settings_Shortcut"),
+            };
+            _settingsMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+
+            _helpMenuItem = new AppBarButton
+            {
+                Label = RS_.GetString("SearchBoxContextMenu_Help"),
+                Icon = new FontIcon { Glyph = "\uE897" },
+            };
+            _helpMenuItem.Click += (_, _) => WeakReferenceMessenger.Default.Send(new LaunchUriMessage(new Uri("https://aka.ms/PowerToysOverview_CmdPal")));
+        }
+
+        // Only add the separator when the flyout populated built-in secondary commands above us.
+        if (_menuSeparator is not null &&
+            flyout.SecondaryCommands.Count > 0 &&
+            !flyout.SecondaryCommands.Contains(_menuSeparator))
+        {
+            flyout.SecondaryCommands.Add(_menuSeparator);
+        }
+
+        if (!flyout.SecondaryCommands.Contains(_settingsMenuItem))
+        {
+            flyout.SecondaryCommands.Add(_settingsMenuItem);
+        }
+
+        if (!flyout.SecondaryCommands.Contains(_helpMenuItem))
+        {
+            flyout.SecondaryCommands.Add(_helpMenuItem);
         }
     }
 
