@@ -24,9 +24,8 @@ namespace ColorPicker
 
         public static Window Window { get; private set; }
 
-        // ETW diagnostic trace session (matches the WPF original and the WinUI 3 sibling modules,
-        // e.g. EnvironmentVariables/AdvancedPaste). Constructed once; the session is torn down on
-        // process exit, so no explicit Dispose is required (siblings follow the same pattern).
+        // ETW diagnostic trace session. Dispose it during process cleanup so buffered
+        // diagnostic events are flushed before the process exits.
         public ETWTrace EtwTrace { get; } = new ETWTrace();
 
         public App(string[] args)
@@ -117,7 +116,7 @@ namespace ColorPicker
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            Logger.LogError("Unhandled exception", e.Exception);
+            Program.HandleFatalException(e.Exception);
         }
 
         private void OnProcessExit(object sender, EventArgs e)
@@ -137,6 +136,7 @@ namespace ColorPicker
 
             if (disposing)
             {
+                EtwTrace.Dispose();
                 _instanceMutex?.Dispose();
                 _instanceMutex = null;
             }

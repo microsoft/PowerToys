@@ -13,6 +13,9 @@ namespace ColorPicker
 {
     public static class Program
     {
+        private static readonly Foundation.FatalExceptionHandler _fatalExceptionHandler =
+            new(ex => Logger.LogError("Unhandled exception", ex), Mouse.CursorManager.RestoreOriginalCursors);
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -25,6 +28,8 @@ namespace ColorPicker
                 return;
             }
 
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
             WinRT.ComWrappersSupport.InitializeComWrappers();
             Application.Start((p) =>
             {
@@ -33,6 +38,18 @@ namespace ColorPicker
                 SynchronizationContext.SetSynchronizationContext(context);
                 _ = new App(args);
             });
+        }
+
+        internal static void HandleFatalException(Exception exception)
+        {
+            _fatalExceptionHandler.Handle(exception);
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
+        {
+            var exception = e.ExceptionObject as Exception ??
+                new InvalidOperationException("The process terminated with a non-Exception object.");
+            HandleFatalException(exception);
         }
     }
 }
