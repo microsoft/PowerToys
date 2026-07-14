@@ -66,6 +66,12 @@ void State::ClearAloneKeyState(const DWORD key)
     aloneCombinationKeys.erase(key);
 }
 
+void State::ClearAllAloneKeyState()
+{
+    alonePendingKeys.clear();
+    aloneCombinationKeys.clear();
+}
+
 std::vector<DWORD> State::GetPendingAloneKeys() const
 {
     return std::vector<DWORD>(alonePendingKeys.begin(), alonePendingKeys.end());

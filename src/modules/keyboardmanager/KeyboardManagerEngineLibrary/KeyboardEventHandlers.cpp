@@ -189,8 +189,12 @@ namespace KeyboardEventHandlers
                         // A disabled alone target means "tapping alone does nothing".
                         if (targetKey != CommonSharedConstants::VK_DISABLED)
                         {
-                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            // Filter artificial KBM key codes (e.g. VK_WIN_BOTH -> VK_LWIN) before
+                            // injecting, mirroring HandleSingleKeyRemapEvent; otherwise a "Win (Both)"
+                            // alone target would inject the invalid virtual key 0x104 and do nothing.
+                            const DWORD filteredTargetKey = Helpers::FilterArtificialKeys(targetKey);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredTargetKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         }
                     }
                     else if (target.index() == 1)
@@ -199,9 +203,12 @@ namespace KeyboardEventHandlers
                         // press-and-release (modifiers down, action-key down, then released in
                         // reverse). Mirrors the key-to-shortcut injection in HandleSingleKeyRemapEvent.
                         const Shortcut targetShortcut = std::get<Shortcut>(target);
+                        // Filter the action key too (e.g. VK_WIN_BOTH -> VK_LWIN), mirroring the
+                        // key-to-shortcut path in HandleSingleKeyRemapEvent.
+                        const DWORD filteredActionKey = Helpers::FilterArtificialKeys(targetShortcut.GetActionKey());
                         Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filteredActionKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                         Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
                     }
                     // NOTE: text-valued alone targets are a later phase (no producer yet).

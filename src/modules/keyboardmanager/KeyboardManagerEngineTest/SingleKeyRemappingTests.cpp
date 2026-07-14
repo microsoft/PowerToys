@@ -794,6 +794,31 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
         }
 
+        // A single-key alone target of "Win (Both)" (VK_WIN_BOTH) is an artificial KBM key code. On tap
+        // it must be filtered to a real virtual key (VK_LWIN) before injection; otherwise SendInput
+        // receives the invalid key 0x104 and the tap silently does nothing.
+        TEST_METHOD (AloneRemap_WinBothTarget_ShouldInjectLeftWin_OnTap)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)CommonSharedConstants::VK_WIN_BOTH);
+
+            // Count injections of the filtered real key (Left Win). The artificial 0x104 must never appear.
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                Assert::AreNotEqual((DWORD)CommonSharedConstants::VK_WIN_BOTH, (DWORD)data->lParam->vkCode);
+                return data->lParam->vkCode == VK_LWIN;
+            });
+
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            // Lazy: nothing injected on the way down.
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+
+            // On tap, Left Win is injected as down + up = 2 events.
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
         // Two alone-mapped keys: pressing the second while the first is still held is a combination,
         // not a solo tap. The second key must be promoted to a real key and must NOT fire its alone
         // action on release.

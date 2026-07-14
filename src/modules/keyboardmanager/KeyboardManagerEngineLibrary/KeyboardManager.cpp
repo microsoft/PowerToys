@@ -95,6 +95,11 @@ void KeyboardManager::LoadSettings()
         // retry once
         state.LoadSettings();
     }
+
+    // The reload above rebuilt the alone remap table; discard any leftover alone runtime state so a key
+    // that was physically held across the reload can't leave a stale pending/combination entry (which a
+    // later event would promote, injecting an unmatched original key-down). No-op on the initial load.
+    state.ClearAllAloneKeyState();
     try
     {
         // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.

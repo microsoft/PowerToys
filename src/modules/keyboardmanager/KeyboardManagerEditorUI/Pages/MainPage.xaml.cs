@@ -799,7 +799,9 @@ namespace KeyboardManagerEditorUI.Pages
                 }
                 else
                 {
-                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false);
+                    // Preserve the dual-key condition (e.g. "alone") when re-enabling; otherwise the
+                    // toggle would silently recreate the mapping as an unconditional (Always) remap.
+                    RemappingHelper.SaveMapping(_mappingService!, remapping.Shortcut, remapping.RemappedKeys, !remapping.IsAllApps, remapping.AppName, false, remapping.Condition);
                 }
 
                 shortcut.IsActive = true;
@@ -855,7 +857,16 @@ namespace KeyboardManagerEditorUI.Pages
                 int originalKey = _mappingService!.GetKeyCodeFromName(remapping.Shortcut[0]);
                 if (originalKey != 0)
                 {
-                    _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                    // Preserve an "alone" condition when re-enabling a disabled single-key mapping;
+                    // otherwise it would be recreated in the regular (unconditional) remap table.
+                    if (remapping.Condition == SingleKeyRemapCondition.Alone)
+                    {
+                        _mappingService.AddSingleKeyAloneMapping(originalKey, VkDisabled);
+                    }
+                    else
+                    {
+                        _mappingService.AddSingleKeyMapping(originalKey, VkDisabled);
+                    }
                 }
             }
             else

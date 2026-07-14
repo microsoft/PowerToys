@@ -137,7 +137,7 @@ namespace KeyboardManagerEditorUI.Settings
                 return;
             }
 
-            // Repair any pre-existing duplicate entries first so the store converges on load.
+            // Repair any preexisting duplicate entries first so the store converges on load.
             bool shortcutSettingsChanged = RemoveDuplicateMappings();
 
             // Process all shortcut mappings
