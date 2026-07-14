@@ -3,10 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
+using ManagedCommon;
 using Microsoft.Graphics.Canvas;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
@@ -125,9 +127,16 @@ namespace ColorPicker.Helpers
                     _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
                     _capturedBitmap = BitmapToCanvasBitmap(_bmp);
                 }
-                catch (Exception)
+                catch (Win32Exception ex)
                 {
                     // CopyFromScreen can fail (invalid screen DC) on a non-interactive session.
+                    Logger.LogError("Failed to capture the zoom image", ex);
+                    _capturedBitmap = null;
+                }
+                catch (ExternalException ex)
+                {
+                    // BitmapToCanvasBitmap can fail when the GPU device is lost or unavailable.
+                    Logger.LogError("Failed to create the zoom image", ex);
                     _capturedBitmap = null;
                 }
                 finally

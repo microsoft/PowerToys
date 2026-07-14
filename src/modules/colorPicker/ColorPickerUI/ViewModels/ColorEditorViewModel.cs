@@ -220,10 +220,14 @@ namespace ColorPicker.ViewModels
             var picker = new FileSavePicker
             {
                 SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
-                SuggestedFileName = "colors",
+                SuggestedFileName = ResourceLoaderInstance.GetString("Export_SuggestedFileName"),
             };
-            picker.FileTypeChoices.Add("Text Files", new List<string> { ".txt" });
-            picker.FileTypeChoices.Add("Json Files", new List<string> { ".json" });
+            picker.FileTypeChoices.Add(
+                ResourceLoaderInstance.GetString("Export_TextFileType"),
+                new List<string> { ".txt" });
+            picker.FileTypeChoices.Add(
+                ResourceLoaderInstance.GetString("Export_JsonFileType"),
+                new List<string> { ".json" });
             WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHandle);
 
             var file = await picker.PickSaveFileAsync();

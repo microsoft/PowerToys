@@ -142,6 +142,18 @@
     <value>Grouped by format</value>
     <comment>Tooltip that shows the user can export the selected items grouped by format to a file</comment>
   </data>
+  <data name="Export_SuggestedFileName" xml:space="preserve">
+    <value>colors</value>
+    <comment>Default file name suggested when exporting colors</comment>
+  </data>
+  <data name="Export_TextFileType" xml:space="preserve">
+    <value>Text files</value>
+    <comment>File type label for text files in the export file picker</comment>
+  </data>
+  <data name="Export_JsonFileType" xml:space="preserve">
+    <value>JSON files</value>
+    <comment>File type label for JSON files in the export file picker</comment>
+  </data>
   <data name="Saturation_slider.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Saturation slider</value>
     <comment>Accessible name for the slider that represents the color saturation (from HSV)</comment>
