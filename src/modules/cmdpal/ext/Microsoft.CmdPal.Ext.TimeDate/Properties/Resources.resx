@@ -499,9 +499,6 @@
   <data name="timedate_custom_clock_subtitle_format" xml:space="preserve">
     <value>Subtitle format</value>
   </data>
-  <data name="timedate_custom_clock_relative_hint" xml:space="preserve">
-    <value>Use REL for Today, Yesterday, or Tomorrow. It is useful alongside clocks in other time zones.</value>
-  </data>
   <data name="timedate_custom_clock_save" xml:space="preserve">
     <value>Save</value>
   </data>
@@ -554,7 +551,7 @@
     <value>ISO date (2026-07-12)</value>
   </data>
   <data name="timedate_custom_clock_format_relative" xml:space="preserve">
-    <value>Relative day (REL: Today / Yesterday / Tomorrow)</value>
+    <value>Relative day (Today / Yesterday / Tomorrow)</value>
   </data>
   <data name="timedate_custom_clock_format_weekday_relative" xml:space="preserve">
     <value>Weekday · Today</value>

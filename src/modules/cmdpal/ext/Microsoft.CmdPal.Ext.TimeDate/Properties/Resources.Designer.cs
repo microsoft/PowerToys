@@ -1069,7 +1069,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Relative day (REL: Today / Yesterday / Tomorrow).
+        ///   Looks up a localized string similar to Relative day (Today / Yesterday / Tomorrow).
         /// </summary>
         public static string timedate_custom_clock_format_relative {
             get {
@@ -1146,15 +1146,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_custom_clock_name_placeholder {
             get {
                 return ResourceManager.GetString("timedate_custom_clock_name_placeholder", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Use REL for Today, Yesterday, or Tomorrow. It is useful alongside clocks in other time zones..
-        /// </summary>
-        public static string timedate_custom_clock_relative_hint {
-            get {
-                return ResourceManager.GetString("timedate_custom_clock_relative_hint", resourceCulture);
             }
         }
         
