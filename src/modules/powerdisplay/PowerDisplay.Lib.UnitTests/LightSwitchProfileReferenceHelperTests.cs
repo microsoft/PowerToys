@@ -155,6 +155,22 @@ public class LightSwitchProfileReferenceHelperTests
     }
 
     [TestMethod]
+    public void ClearProfileIdReferences_BothMatchingIds_ClearsBothAndKeepsLegacyNames()
+    {
+        var properties = new LightSwitchProperties();
+        properties.DarkModeProfileId.Value = 7;
+        properties.LightModeProfileId.Value = 7;
+        properties.DarkModeProfile.Value = "Legacy dark";
+        properties.LightModeProfile.Value = "Legacy light";
+
+        Assert.IsTrue(LightSwitchProfileReferenceHelper.ClearProfileIdReferences(properties, 7));
+        Assert.AreEqual(0, properties.DarkModeProfileId.Value);
+        Assert.AreEqual(0, properties.LightModeProfileId.Value);
+        Assert.AreEqual("Legacy dark", properties.DarkModeProfile.Value);
+        Assert.AreEqual("Legacy light", properties.LightModeProfile.Value);
+    }
+
+    [TestMethod]
     public void ClearProfileIdReferences_NonPositiveId_Throws()
     {
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
