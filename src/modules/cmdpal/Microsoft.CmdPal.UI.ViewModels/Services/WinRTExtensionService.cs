@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using ManagedCommon;
@@ -28,6 +29,13 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     private readonly SemaphoreSlim _getInstalledExtensionsLock = new(1, 1);
     private readonly TaskScheduler _taskScheduler;
     private readonly ICommandProviderCache _commandProviderCache;
+
+    // Per-package circuit breakers. An extension whose out-of-process COM activation
+    // keeps failing (e.g. a broken/half-serviced package returning an APPX deployment
+    // error) is temporarily blocked from further activation attempts. Without this,
+    // package-servicing events can drive an unbounded retry loop that pegs the AppX
+    // service. Keyed by PackageFullName; static so the state survives service churn.
+    private static readonly ConcurrentDictionary<string, ExtensionActivationBreaker> _activationBreakers = new(StringComparer.Ordinal);
 
     private bool _disposedValue;
 
@@ -101,12 +109,33 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
 
     private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension, CancellationToken ct)
     {
+        var breaker = _activationBreakers.GetOrAdd(extension.PackageFullName, static _ => new ExtensionActivationBreaker());
+
+        if (breaker.IsBlocked(out var remaining))
+        {
+            // Don't even call CoCreateInstance: repeatedly activating a broken package is
+            // what provokes the AppX service into a CPU/memory spin. Back off instead.
+            Logger.LogWarning($"Skipping start of {extension.PackageFullName}: previous activation attempts failed, not retrying for another {remaining.TotalSeconds:F0}s");
+            return ExtensionStartResult.Failed(extension);
+        }
+
         Logger.LogDebug($"Starting {extension.PackageFullName}");
         var sw = Stopwatch.StartNew();
         var startTask = extension.StartExtensionAsync();
         try
         {
             await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
+
+            // StartExtensionAsync swallows activation failures, so a completed task does
+            // not mean success. Confirm we actually got a live extension object.
+            if (!extension.IsRunning())
+            {
+                breaker.RecordFailure();
+                Logger.LogWarning($"Extension {extension.PackageFullName} failed to activate after {sw.ElapsedMilliseconds} ms; backing off before any retry");
+                return ExtensionStartResult.Failed(extension);
+            }
+
+            breaker.RecordSuccess();
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
         }
@@ -122,6 +151,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         }
         catch (Exception ex)
         {
+            breaker.RecordFailure();
             Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
             return ExtensionStartResult.Failed(extension);
         }
@@ -133,9 +163,20 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         Stopwatch sw,
         CancellationToken ct)
     {
+        var breaker = _activationBreakers.GetOrAdd(extension.PackageFullName, static _ => new ExtensionActivationBreaker());
+
         try
         {
             await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
+
+            if (!extension.IsRunning())
+            {
+                breaker.RecordFailure();
+                Logger.LogWarning($"Late start of extension {extension.PackageFullName} failed to activate after {sw.ElapsedMilliseconds} ms; backing off before any retry");
+                return;
+            }
+
+            breaker.RecordSuccess();
 
             var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
             Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
@@ -148,6 +189,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         }
         catch (Exception ex)
         {
+            breaker.RecordFailure();
             Logger.LogError($"Background start of extension {extension.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
         }
     }
@@ -528,6 +570,77 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     }
 
     private static string? GetProperty(IPropertySet propSet, string name) => propSet[name] as string;
+
+    /// <summary>
+    /// Tracks consecutive activation failures for a single package and, once a threshold
+    /// is crossed, blocks further activation attempts for an (exponentially growing)
+    /// cooldown window. This breaks the feedback loop where a broken package's failed
+    /// COM activation provokes AppX servicing events that trigger yet another activation.
+    /// </summary>
+    private sealed class ExtensionActivationBreaker
+    {
+        // Allow a few genuine transient failures (races during install/update) before
+        // we start throttling.
+        private const int FailuresBeforeBlocking = 3;
+
+        private static readonly TimeSpan BaseCooldown = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan MaxCooldown = TimeSpan.FromMinutes(10);
+
+        private readonly Lock _lock = new();
+        private int _consecutiveFailures;
+        private DateTime _blockedUntilUtc = DateTime.MinValue;
+
+        public bool IsBlocked(out TimeSpan remaining)
+        {
+            lock (_lock)
+            {
+                var now = DateTime.UtcNow;
+                if (now < _blockedUntilUtc)
+                {
+                    remaining = _blockedUntilUtc - now;
+                    return true;
+                }
+
+                remaining = TimeSpan.Zero;
+                return false;
+            }
+        }
+
+        public void RecordSuccess()
+        {
+            lock (_lock)
+            {
+                _consecutiveFailures = 0;
+                _blockedUntilUtc = DateTime.MinValue;
+            }
+        }
+
+        public void RecordFailure()
+        {
+            lock (_lock)
+            {
+                _consecutiveFailures++;
+                if (_consecutiveFailures < FailuresBeforeBlocking)
+                {
+                    return;
+                }
+
+                // Exponential backoff: 30s, 60s, 120s, ... capped at MaxCooldown.
+                var exponent = _consecutiveFailures - FailuresBeforeBlocking;
+                var cooldown = MaxCooldown;
+                if (exponent < 30)
+                {
+                    var scaledTicks = BaseCooldown.Ticks * (1L << exponent);
+                    if (scaledTicks > 0 && scaledTicks < MaxCooldown.Ticks)
+                    {
+                        cooldown = TimeSpan.FromTicks(scaledTicks);
+                    }
+                }
+
+                _blockedUntilUtc = DateTime.UtcNow + cooldown;
+            }
+        }
+    }
 
     public void Dispose()
     {

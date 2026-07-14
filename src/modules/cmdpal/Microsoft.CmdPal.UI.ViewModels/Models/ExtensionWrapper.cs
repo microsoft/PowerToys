@@ -31,6 +31,11 @@ public class ExtensionWrapper : IExtensionWrapper
 
     private IExtension? _extensionObject;
 
+    // The HRESULT from the most recent CoCreateInstance activation attempt.
+    // 0 (S_OK) means the last attempt succeeded; any other value records why it
+    // failed so callers can decide whether it's worth retrying.
+    private int _lastActivationHResult;
+
     public ExtensionWrapper(AppExtension appExtension, string classId)
     {
         PackageDisplayName = appExtension.Package.DisplayName;
@@ -71,6 +76,14 @@ public class ExtensionWrapper : IExtensionWrapper
     /// </list>
     /// </summary>
     public string ExtensionUniqueId => _appUserModelId + "!" + _extensionId;
+
+    /// <summary>
+    /// Gets the HRESULT from the most recent activation attempt. 0 (S_OK) indicates
+    /// the last attempt succeeded; any other value is the failure code from
+    /// CoCreateInstance (e.g. an APPX deployment error), which callers can use to
+    /// decide whether retrying is worthwhile.
+    /// </summary>
+    public int LastActivationHResult => _lastActivationHResult;
 
     public bool IsRunning()
     {
@@ -118,6 +131,8 @@ public class ExtensionWrapper : IExtensionWrapper
 
                             var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
 
+                            _lastActivationHResult = hr.Value;
+
                             if (hr.Value == -2147024893)
                             {
                                 Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
@@ -128,7 +143,14 @@ public class ExtensionWrapper : IExtensionWrapper
                             }
                             else if (hr.Value != 0)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value}");
+                                // Any other failure (E_NOINTERFACE, APPX deployment errors
+                                // like 0x80073Cxx, etc.). Do NOT fall through to FromAbi with a
+                                // null pointer: that only throws and gets swallowed below, and
+                                // it leaves us re-attempting an out-of-process COM activation on
+                                // every reload, which hammers the AppX service (pegged CPU and
+                                // ballooning memory). Bail out and let the caller back off.
+                                Logger.LogError($"Failed to activate {ExtensionDisplayName}: 0x{hr.Value:X8}");
+                                return;
                             }
 
                             // Marshal.ThrowExceptionForHR(hr);
