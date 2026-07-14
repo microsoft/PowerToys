@@ -121,6 +121,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public bool ExpandedMode { get; set; }
 
+    // Item keybindings act on the selected item, which is hidden while collapsed — only honor them when expanded.
+    private bool ItemActionsAllowed => !_compactMode || ExpandedMode;
+
     public ShellPage()
     {
         _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
@@ -262,7 +265,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            _toast.ShowToast(message.Message);
+            _toast.ShowToast(message);
         });
     }
 
@@ -950,44 +953,71 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 ((ShellPage)sender).ToggleFilterFocus();
                 e.Handled = true;
                 break;
+            case VirtualKey.Down when modifiers.None:
+            case VirtualKey.Tab when modifiers.None:
+                // In a collapsed compact palette, Down/Tab reveals the top-level items so the
+                // user can browse and discover them. Only swallow the key when we actually
+                // expand; otherwise let it fall through to normal list navigation / focus move.
+                if (((ShellPage)sender).TryExpandCollapsedCompact())
+                {
+                    e.Handled = true;
+                }
+
+                break;
             default:
                 {
-                    // The CommandBar is responsible for handling all the item keybindings,
-                    // since the bound context item may need to then show another
-                    // context menu
-                    TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
-                    WeakReferenceMessenger.Default.Send(msg);
-                    e.Handled = msg.Handled;
+                    // The CommandBar handles item keybindings; skip them while collapsed so a chord can't hit the hidden selection.
+                    if (((ShellPage)sender).ItemActionsAllowed)
+                    {
+                        TryCommandKeybindingMessage msg = new(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
+                        WeakReferenceMessenger.Default.Send(msg);
+                        e.Handled = msg.Handled;
+                    }
+
                     break;
                 }
         }
     }
 
-    private static void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
+    private void ShellPage_OnKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var mods = KeyModifiers.GetCurrent();
-        if (mods.Ctrl && e.Key == VirtualKey.Enter)
+        if (ItemActionsAllowed && TryHandleItemAction(e))
         {
-            // ctrl+enter
-            WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
-            e.Handled = true;
+            return;
         }
-        else if (e.Key == VirtualKey.Enter)
-        {
-            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-            e.Handled = true;
-        }
-        else if (mods.Ctrl && e.Key == VirtualKey.K)
-        {
-            // ctrl+k
-            WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new OpenContextMenuMessage(null, null, null, ContextMenuFilterLocation.Bottom));
-            e.Handled = true;
-        }
-        else if (e.Key == VirtualKey.Escape)
+
+        if (e.Key == VirtualKey.Escape)
         {
             WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
             e.Handled = true;
         }
+    }
+
+    private static bool TryHandleItemAction(KeyRoutedEventArgs e)
+    {
+        var mods = KeyModifiers.GetCurrent();
+        switch (e.Key)
+        {
+            // Ctrl+Enter
+            case VirtualKey.Enter when mods.OnlyCtrl:
+                WeakReferenceMessenger.Default.Send<ActivateSecondaryCommandMessage>();
+                break;
+
+            // Enter
+            case VirtualKey.Enter when mods.None:
+                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                break;
+
+            // Ctrl+K
+            case VirtualKey.K when mods.OnlyCtrl:
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(new(null, null, null, ContextMenuFilterLocation.Bottom));
+                break;
+            default:
+                return false;
+        }
+
+        e.Handled = true;
+        return true;
     }
 
     private void ShellPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -1053,6 +1083,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         this.ExpandedMode = newExpanded;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+    }
+
+    /// <summary>
+    /// Expands a collapsed compact palette on demand (via Down/Tab) so the user can browse the
+    /// top-level items. Returns <see langword="false"/> and does nothing unless compact mode is
+    /// on and the palette is currently collapsed, letting the caller keep the key's normal
+    /// meaning (list navigation / focus traversal) in every other case.
+    /// </summary>
+    private bool TryExpandCollapsedCompact()
+    {
+        if (!_compactMode || ExpandedMode)
+        {
+            return false;
+        }
+
+        HandleExpandCompactOnUiThread(true);
+        return true;
     }
 
     /// <summary>

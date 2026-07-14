@@ -30,6 +30,17 @@ public sealed partial class SettingsWindow : WindowEx,
     IRecipient<OpenExtensionGalleryScreenshotViewerMessage>,
     IRecipient<QuitMessage>
 {
+    // Navigation tags; must match the Tag values of NavigationViewItems in SettingsWindow.xaml
+    private static class PageTags
+    {
+        public const string General = "General";
+        public const string Appearance = "Appearance";
+        public const string Extensions = "Extensions";
+        public const string Gallery = "Gallery";
+        public const string Dock = "Dock";
+        public const string Internal = "Internal";
+    }
+
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
@@ -77,7 +88,7 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 Content = "Internal Tools",
                 Icon = new FontIcon { Glyph = "\uEC7A" },
-                Tag = "Internal",
+                Tag = PageTags.Internal,
             };
             NavView.FooterMenuItems.Add(_internalNavItem);
         }
@@ -86,7 +97,7 @@ public sealed partial class SettingsWindow : WindowEx,
             _internalNavItem = null;
         }
 
-        Navigate("General");
+        Navigate(PageTags.General);
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
@@ -131,22 +142,22 @@ public sealed partial class SettingsWindow : WindowEx,
         Type? pageType;
         switch (page)
         {
-            case "General":
+            case PageTags.General:
                 pageType = typeof(GeneralPage);
                 break;
-            case "Appearance":
+            case PageTags.Appearance:
                 pageType = typeof(AppearancePage);
                 break;
-            case "Extensions":
+            case PageTags.Extensions:
                 pageType = typeof(ExtensionsPage);
                 break;
-            case "Gallery":
+            case PageTags.Gallery:
                 pageType = typeof(ExtensionGalleryPage);
                 break;
-            case "Dock":
+            case PageTags.Dock:
                 pageType = typeof(DockSettingsPage);
                 break;
-            case "Internal":
+            case PageTags.Internal:
                 pageType = typeof(InternalPage);
                 break;
             case "":
@@ -391,54 +402,46 @@ public sealed partial class SettingsWindow : WindowEx,
         if (e.SourcePageType == typeof(GeneralPage))
         {
             NavView.SelectedItem = GeneralPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), PageTags.General));
         }
         else if (e.SourcePageType == typeof(AppearancePage))
         {
             NavView.SelectedItem = AppearancePageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_AppearancePage"), PageTags.Appearance));
         }
         else if (e.SourcePageType == typeof(ExtensionsPage))
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
         }
         else if (e.SourcePageType == typeof(ExtensionGalleryPage))
         {
             NavView.SelectedItem = GalleryPageNavItem;
             HideBreadcrumb();
-            var pageType = RS_.GetString("Settings_PageTitles_GalleryPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
         }
         else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
         {
             NavView.SelectedItem = GalleryPageNavItem;
             HideBreadcrumb();
-            var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
-            BreadCrumbs.Add(new(galleryPageType, "Gallery"));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), PageTags.Gallery));
             BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {
             NavView.SelectedItem = DockSettingsPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), PageTags.Dock));
         }
         else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), PageTags.Extensions));
             BreadCrumbs.Add(new(vm.DisplayName, vm));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
             NavView.SelectedItem = _internalNavItem;
-            var pageType = "Internal";
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(PageTags.Internal, PageTags.Internal));
         }
         else
         {

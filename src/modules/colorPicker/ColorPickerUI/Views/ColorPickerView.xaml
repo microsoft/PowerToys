@@ -16,6 +16,19 @@
             <Grid.Shadow>
                 <ThemeShadow />
             </Grid.Shadow>
+            <!--
+                UIA test hook. Mirrors the displayed HEX value (ColorText) into a
+                transparent TextBlock with a stable AutomationId so automated UI tests
+                can read the picker's current color without depending on the visible
+                TextBlock, whose accessible name is optimized for screen-reader UX.
+            -->
+            <TextBlock
+                x:Name="ColorHexAutomationPeer"
+                AutomationProperties.AccessibilityView="Raw"
+                AutomationProperties.AutomationId="ColorHexAutomationPeer"
+                IsHitTestVisible="False"
+                Opacity="0"
+                Text="{Binding ColorText}" />
             <SystemBackdropElement CornerRadius="{StaticResource OverlayCornerRadius}">
                 <SystemBackdropElement.SystemBackdrop>
                     <backdrops:AlwaysActiveDesktopAcrylicBackdrop Kind="Default" />
