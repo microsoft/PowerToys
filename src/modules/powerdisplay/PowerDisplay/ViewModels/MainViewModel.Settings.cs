@@ -100,7 +100,7 @@ public partial class MainViewModel
         {
             // Rebuild monitor list with updated hidden monitor settings
             // UpdateMonitorList already handles filtering hidden monitors
-            UpdateMonitorList(_monitorManager.Monitors, isInitialLoad: false);
+            UpdateMonitorList(_monitorManager.Monitors);
 
             // Reload UI display settings first (includes custom VCP mappings)
             // Must be loaded before ApplyUIConfiguration so names are available for UI refresh
@@ -585,108 +585,61 @@ public partial class MainViewModel
     /// Invoked from the first successful discovery; on subsequent runs every entry is
     /// already in new-format and the filters short-circuit.
     /// </summary>
-    private async Task MigrateLegacyMonitorIdsInSideFilesAsync(
+    private async Task MigrateLegacySideFilesAsync(
         List<(string Id, int MonitorNumber)> discovered,
         CancellationToken cancellationToken)
     {
+        PowerDisplayProfiles? migratedProfiles = null;
+        var profilesChanged = false;
+
         try
         {
-            var anyChanged = false;
             await RunProfileOperationAsync(
                 async token =>
                 {
-                    anyChanged = await ProfileService.UpdateProfilesAsync(
-                        profiles => MigrateLegacyMonitorIds(profiles, discovered),
+                    profilesChanged = await ProfileService.UpdateProfilesAsync(
+                        profiles => ProfileMigration.Migrate(profiles, discovered),
                         token);
-                    if (anyChanged)
-                    {
-                        var profilesData = await ProfileService.LoadProfilesAsync(token);
-                        Profiles.Clear();
-                        foreach (var profile in profilesData.Profiles)
-                        {
-                            Profiles.Add(profile);
-                        }
-
-                        OnPropertyChanged(nameof(HasProfiles));
-                        OnPropertyChanged(nameof(ShowProfileSwitcherButton));
-                    }
+                    var loaded = await ProfileService.LoadProfilesAsync(token);
+                    migratedProfiles = loaded;
+                    ReplaceProfiles(loaded);
                 },
                 cancellationToken);
 
-            if (anyChanged)
+            if (profilesChanged)
             {
-                Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
+                Logger.LogInfo("[LegacyMigration] profiles.json updated with stable profile and monitor ids.");
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            return;
         }
         catch (Exception ex)
         {
             Logger.LogError($"[LegacyMigration] Failed to migrate profiles.json: {ex.Message}");
         }
 
+        if (migratedProfiles is not null)
+        {
+            LightSwitchService.MigrateLegacyProfileReferences(migratedProfiles);
+        }
+
+        if (discovered.Count == 0)
+        {
+            return;
+        }
+
         try
         {
-            await Task.Run(() => _stateManager.MigrateLegacyKeys(discovered), CancellationToken.None);
+            await Task.Run(
+                () => _stateManager.MigrateLegacyKeys(discovered),
+                CancellationToken.None);
         }
         catch (Exception ex)
         {
             Logger.LogError($"[LegacyMigration] Failed to migrate monitor_state.json: {ex.Message}");
         }
-    }
-
-    private static bool MigrateLegacyMonitorIds(
-        PowerDisplayProfiles profiles,
-        List<(string Id, int MonitorNumber)> discovered)
-    {
-        if (profiles.Profiles is null || profiles.Profiles.Count == 0)
-        {
-            return false;
-        }
-
-        var changedProfiles = false;
-        foreach (var profile in profiles.Profiles)
-        {
-            if (profile?.MonitorSettings is null)
-            {
-                continue;
-            }
-
-            var changed = false;
-            foreach (var legacy in profile.MonitorSettings
-                .Where(setting => MonitorIdentity.IsLegacyId(setting?.MonitorId))
-                .ToList())
-            {
-                var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
-                if (newId != null &&
-                    profile.MonitorSettings.All(setting => !MonitorIdComparer.Equal(setting.MonitorId, newId)))
-                {
-                    profile.MonitorSettings.Add(new ProfileMonitorSetting(
-                        newId,
-                        legacy.Brightness,
-                        legacy.ColorTemperatureVcp,
-                        legacy.Contrast,
-                        legacy.Volume));
-                }
-                else if (newId == null)
-                {
-                    Logger.LogWarning(
-                        $"[LegacyMigration] Dropping profile setting for '{legacy.MonitorId}' in profile '{profile.Name}': no current monitor with matching EdidId+MonitorNumber.");
-                }
-
-                profile.MonitorSettings.Remove(legacy);
-                changed = true;
-            }
-
-            if (changed)
-            {
-                profile.Touch();
-                changedProfiles = true;
-            }
-        }
-
-        return changedProfiles;
     }
 
     /// <summary>

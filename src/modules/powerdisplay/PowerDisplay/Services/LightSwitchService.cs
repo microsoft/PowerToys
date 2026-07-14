@@ -5,7 +5,7 @@
 using System;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using PowerDisplay.Common.Services;
+using PowerDisplay.Models;
 using Settings.UI.Library;
 
 namespace PowerDisplay.Services
@@ -14,11 +14,12 @@ namespace PowerDisplay.Services
     {
         private const string LogPrefix = "[LightSwitch]";
 
-        public static void MigrateLegacyProfileReferences()
+        public static void MigrateLegacyProfileReferences(PowerDisplayProfiles profiles)
         {
+            ArgumentNullException.ThrowIfNull(profiles);
+
             try
             {
-                var profiles = ProfileService.LoadProfilesEnsuringIds();
                 var settings = SettingsUtils.Default.GetSettingsOrDefault<LightSwitchSettings>(
                     LightSwitchSettings.ModuleName);
 

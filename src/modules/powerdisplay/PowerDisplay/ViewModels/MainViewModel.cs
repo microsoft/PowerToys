@@ -468,15 +468,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             await RunProfileOperationAsync(
                 async token =>
                 {
-                    var profilesData = await ProfileService.LoadProfilesEnsuringIdsAsync(token);
-                    Profiles.Clear();
-                    foreach (var profile in profilesData.Profiles)
-                    {
-                        Profiles.Add(profile);
-                    }
-
-                    OnPropertyChanged(nameof(HasProfiles));
-                    OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+                    var profilesData = await ProfileService.LoadProfilesAsync(token);
+                    ReplaceProfiles(profilesData);
                 },
                 cancellationToken);
         }
@@ -490,6 +483,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(ShowProfileSwitcherButton));
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
         }
+    }
+
+    private void ReplaceProfiles(PowerDisplayProfiles profilesData)
+    {
+        Profiles.Clear();
+        foreach (var profile in profilesData.GetAssignedProfiles())
+        {
+            Profiles.Add(profile);
+        }
+
+        OnPropertyChanged(nameof(HasProfiles));
+        OnPropertyChanged(nameof(ShowProfileSwitcherButton));
     }
 
     private async Task RunProfileOperationAsync(

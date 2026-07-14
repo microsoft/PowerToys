@@ -16,7 +16,6 @@ using PowerDisplay.Common;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
-using PowerDisplay.Services;
 using PowerToys.Interop;
 
 namespace PowerDisplay
@@ -134,8 +133,6 @@ namespace PowerDisplay
                     Constants.RescanPowerDisplayMonitorsEvent(),
                     vm => _ = vm.RefreshMonitorsAsync(),
                     "RescanMonitors");
-
-                LightSwitchService.MigrateLegacyProfileReferences();
 
                 // LightSwitch integration - apply profiles when theme changes
                 RegisterViewModelEvent(PathConstants.LightSwitchLightThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: true), "LightSwitch-Light");
