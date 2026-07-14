@@ -349,23 +349,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
             Logger.LogDebug($"Looking for pinned dock band command {commandId} for provider {providerId}");
 
-            // First, try to lookup the command as one of this provider's
-            // top-level commands. If it's there, then we can skip a lot of
-            // work and just clone it as a band.
-            if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
-            {
-                Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
-                var bandModel = topLevelCommand.ToPinnedDockBandItem();
-                var bandVm = make(bandModel, TopLevelType.DockBand);
-                bands.Add(bandVm);
-                continue;
-            }
-
-            // If we didn't find it as a top-level command, then we need to
-            // try to get it directly from the provider and hope it supports
-            // being a dock band. This is the fallback for providers that
-            // don't explicitly support dock bands through GetDockBands, but
-            // do support pinning commands (ICommandProvider4)
+            // Give providers a chance to supply a dock-specific representation.
+            // This also lets a top-level page use concise command text while its
+            // corresponding dock band has a more suitable title and contents.
             if (four is not null)
             {
                 try
@@ -376,10 +362,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                         Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API");
                         var bandVm = make(commandItem, TopLevelType.DockBand);
                         bands.Add(bandVm);
-                    }
-                    else
-                    {
-                        Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} through ICommandProvider4 API. This command won't be shown as a dock band.");
+                        continue;
                     }
                 }
                 catch (Exception e)
@@ -387,10 +370,19 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                     Logger.LogError($"Failed to load pinned dock band command {commandId} for provider {providerId}: {e.Message}");
                 }
             }
-            else
+
+            // Fall back to wrapping the top-level command when the provider
+            // does not supply a dedicated dock item.
+            if (LookupTopLevelCommand(commandId) is TopLevelViewModel topLevelCommand)
             {
-                Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId} as a top-level command, and provider doesn't support ICommandProvider4 API to get it directly. This command won't be shown as a dock band.");
+                Logger.LogDebug($"Found pinned dock band command {commandId} for provider {providerId} as a top-level command");
+                var bandModel = topLevelCommand.ToPinnedDockBandItem();
+                var bandVm = make(bandModel, TopLevelType.DockBand);
+                bands.Add(bandVm);
+                continue;
             }
+
+            Logger.LogWarning($"Couldn't find pinned dock band command {commandId} for provider {providerId}. This command won't be shown as a dock band.");
         }
 
         DockBandItems = bands.ToArray();

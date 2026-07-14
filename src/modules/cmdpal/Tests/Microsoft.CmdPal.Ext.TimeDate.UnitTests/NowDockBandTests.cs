@@ -5,6 +5,8 @@
 using System;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
@@ -17,6 +19,7 @@ public class NowDockBandTests
 
     private CultureInfo _originalCulture = null!;
     private CultureInfo _originalUiCulture = null!;
+    private ClockUpdateService _clockUpdateService = null!;
     private NowDockBand? _band;
 
     [TestInitialize]
@@ -26,6 +29,7 @@ public class NowDockBandTests
         _originalUiCulture = CultureInfo.CurrentUICulture;
         CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
         CultureInfo.CurrentUICulture = new CultureInfo("en-US", false);
+        _clockUpdateService = new ClockUpdateService(() => FixedTime, enableTimer: false);
     }
 
     [TestCleanup]
@@ -33,6 +37,7 @@ public class NowDockBandTests
     {
         _band?.Dispose();
         _band = null;
+        _clockUpdateService.Dispose();
         CultureInfo.CurrentCulture = _originalCulture;
         CultureInfo.CurrentUICulture = _originalUiCulture;
     }
@@ -40,7 +45,7 @@ public class NowDockBandTests
     [TestMethod]
     public void Constructor_TitleIsSetImmediately()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         Assert.AreEqual("2:05 PM", _band.Title);
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle));
@@ -49,7 +54,7 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateText_LongTimeFormat_TitleContainsSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
+        _band = CreateBand(titleFormat: "T");
 
         _band.UpdateText();
 
@@ -59,7 +64,7 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateText_ShortDateFormat_SubtitleIsShortDate()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         _band.UpdateText();
 
@@ -67,42 +72,67 @@ public class NowDockBandTests
     }
 
     [TestMethod]
-    public void UpdateText_FiresOnUpdatedCallback()
-    {
-        var callbackFired = false;
-        _band = new NowDockBand(onUpdated: () => callbackFired = true, clock: () => FixedTime);
-
-        callbackFired = false; // reset — constructor already fired it once during synchronous UpdateText()
-
-        _band.UpdateText();
-
-        Assert.IsTrue(callbackFired);
-    }
-
-    [TestMethod]
-    public void UpdateText_CallbackFiredAfterAssignments()
-    {
-        var titleAtCallback = string.Empty;
-        _band = new NowDockBand(
-            onUpdated: () => titleAtCallback = _band?.Title ?? string.Empty,
-            clock: () => FixedTime);
-
-        titleAtCallback = string.Empty; // reset after construction callback
-
-        _band.UpdateText();
-
-        Assert.IsFalse(string.IsNullOrEmpty(titleAtCallback), "Title should be assigned before callback fires");
-    }
-
-    [TestMethod]
     public void UpdateText_CopyCommandsUpdated()
     {
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         _band.UpdateText();
 
-        Assert.AreEqual(_band.Title, _band.CopyTimeCommand.Text);
-        Assert.AreEqual(_band.Subtitle, _band.CopyDateCommand.Text);
+        Assert.AreEqual(_band.Title, _band.CopyTitleCommand.Text);
+        Assert.AreEqual(_band.Subtitle, _band.CopySubtitleCommand.Text);
+        StringAssert.StartsWith(_band.CopyTitleCommand.Name, "Copy time (");
+        StringAssert.StartsWith(_band.CopySubtitleCommand.Name, "Copy date (");
+    }
+
+    [TestMethod]
+    public void Constructor_OptionalCopyFormatAddsCurrentFormattedCopyCommand()
+    {
+        _band = CreateBand(copyFormat: "s");
+
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+        Assert.AreEqual("2025-07-01T14:05:32", _band.CopyCustomFormatCommand.GetCurrentText());
+        StringAssert.StartsWith(_band.CopyCustomFormatCommand.Name, "Copy ISO 8601");
+    }
+
+    [TestMethod]
+    public void Constructor_NoCopyFormatOmitsCustomCopyCommand()
+    {
+        _band = CreateBand();
+
+        Assert.IsNull(_band.CopyCustomFormatCommand);
+    }
+
+    [TestMethod]
+    public void UpdateSettings_AddsAndRemovesOptionalCopyCommand()
+    {
+        var settings = new TestDockClockSettings();
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, () => FixedTime);
+
+        settings.SetDockClockFormats("t", "d", "s");
+        _band.UpdateSettings(settings);
+        Assert.IsNotNull(_band.CopyCustomFormatCommand);
+
+        settings.SetDockClockFormats("t", "d", string.Empty);
+        _band.UpdateSettings(settings);
+        Assert.IsNull(_band.CopyCustomFormatCommand);
+    }
+
+    [TestMethod]
+    public void Tick_ReadsClockOnce()
+    {
+        var clockReads = 0;
+        _band = CreateBand(
+            titleFormat: "T",
+            clock: () =>
+            {
+                clockReads++;
+                return FixedTime;
+            });
+        var readsAfterConstruction = clockReads;
+
+        _clockUpdateService.DispatchTick(FixedTime.AddSeconds(1));
+
+        Assert.AreEqual(readsAfterConstruction + 1, clockReads);
     }
 
     [DataTestMethod]
@@ -115,7 +145,7 @@ public class NowDockBandTests
         CultureInfo.CurrentCulture = new CultureInfo(cultureName, false);
         CultureInfo.CurrentUICulture = new CultureInfo(cultureName, false);
 
-        _band = new NowDockBand(clock: () => FixedTime);
+        _band = CreateBand();
 
         Assert.IsFalse(string.IsNullOrEmpty(_band.Title), $"Title should be non-empty for culture '{cultureName}'");
         Assert.IsFalse(string.IsNullOrEmpty(_band.Subtitle), $"Subtitle should be non-empty for culture '{cultureName}'");
@@ -124,11 +154,13 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateSettings_EnablingSeconds_TitleIncludesSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: false, clock: () => FixedTime);
+        var settings = new TestDockClockSettings();
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock: () => FixedTime);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Precondition: seconds hidden by default");
 
-        _band.UpdateSettings(timeWithSeconds: true);
+        settings.SetDockClockFormats("T", "d", string.Empty);
+        _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Title should update live to include seconds");
     }
@@ -136,25 +168,38 @@ public class NowDockBandTests
     [TestMethod]
     public void UpdateSettings_DisablingSeconds_TitleDropsSeconds()
     {
-        _band = new NowDockBand(timeWithSeconds: true, clock: () => FixedTime);
+        var settings = new TestDockClockSettings(titleFormat: "T");
+        _band = new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock: () => FixedTime);
 
         Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: seconds shown");
 
-        _band.UpdateSettings(timeWithSeconds: false);
+        settings.SetDockClockFormats("t", "d", string.Empty);
+        _band.UpdateSettings(settings);
 
         Assert.AreEqual("2:05 PM", _band.Title, "Title should update live to drop seconds");
     }
 
-    [TestMethod]
-    public void UpdateSettings_NoChange_FiresNoCallback()
+    private NowDockBand CreateBand(string titleFormat = "t", string copyFormat = "", Func<DateTime>? clock = null)
     {
-        var callbackCount = 0;
-        _band = new NowDockBand(timeWithSeconds: false, onUpdated: () => callbackCount++, clock: () => FixedTime);
+        var settings = new TestDockClockSettings(titleFormat, copyFormat: copyFormat);
+        return new NowDockBand(settings, new NoOpCommand(), _clockUpdateService, clock ?? (() => FixedTime));
+    }
 
-        callbackCount = 0; // reset after construction callback
+    private sealed class TestDockClockSettings(string titleFormat = "t", string subtitleFormat = "d", string copyFormat = "") : Settings, IDockClockSettings
+    {
+        public string DockClockTitleFormat { get; private set; } = titleFormat;
 
-        _band.UpdateSettings(timeWithSeconds: false);
+        public string DockClockSubtitleFormat { get; private set; } = subtitleFormat;
 
-        Assert.AreEqual(0, callbackCount, "A no-op settings change should not refresh the band");
+        public string DockClockCopyFormat { get; private set; } = copyFormat;
+
+        public string DockClockClickAction => "default";
+
+        public void SetDockClockFormats(string titleFormat, string subtitleFormat, string copyFormat)
+        {
+            DockClockTitleFormat = titleFormat;
+            DockClockSubtitleFormat = subtitleFormat;
+            DockClockCopyFormat = copyFormat;
+        }
     }
 }

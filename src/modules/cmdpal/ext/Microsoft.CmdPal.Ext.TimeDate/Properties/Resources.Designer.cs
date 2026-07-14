@@ -682,24 +682,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable fallback items for TimeDate (week, year, now, time, date).
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Show time and date results when typing keywords like &quot;week&quot;, &quot;year&quot;, &quot;now&quot;, &quot;time&quot;, or &quot;date&quot;.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingEnableFallbackItems_Description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingEnableFallbackItems_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to First day of the week.
         /// </summary>
         public static string Microsoft_plugin_timedate_SettingFirstDayOfWeek {
@@ -835,24 +817,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show seconds on the dock clock.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to This setting applies to the clock shown on the Command Palette dock..
-        /// </summary>
-        public static string Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Select for more details..
         /// </summary>
         public static string Microsoft_plugin_timedate_show_details {
@@ -961,29 +925,353 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy date.
+        ///   Looks up a localized string similar to All clocks.
         /// </summary>
-        public static string timedate_copy_date_command_name {
+        public static string timedate_all_clocks {
             get {
-                return ResourceManager.GetString("timedate_copy_date_command_name", resourceCulture);
+                return ResourceManager.GetString("timedate_all_clocks", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Copy time.
+        ///   Looks up a localized string similar to Copy {0}.
         /// </summary>
-        public static string timedate_copy_time_command_name {
+        public static string timedate_copy_custom_format_command_name {
             get {
-                return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
+                return ResourceManager.GetString("timedate_copy_custom_format_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add custom clock.
+        /// </summary>
+        public static string timedate_custom_clock_add {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Additional copy format.
+        /// </summary>
+        public static string timedate_custom_clock_copy_format {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_copy_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customize clock.
+        /// </summary>
+        public static string timedate_custom_clock_customize_dock {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_customize_dock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete custom clock.
+        /// </summary>
+        public static string timedate_custom_clock_delete {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete &apos;{0}&apos;?.
+        /// </summary>
+        public static string timedate_custom_clock_delete_confirmation_message {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_delete_confirmation_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete custom clock?.
+        /// </summary>
+        public static string timedate_custom_clock_delete_confirmation_title {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_delete_confirmation_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Edit custom clock.
+        /// </summary>
+        public static string timedate_custom_clock_edit {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 24-hour time (09:41).
+        /// </summary>
+        public static string timedate_custom_clock_format_24_hour {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_24_hour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 24-hour time with seconds (09:41:23).
+        /// </summary>
+        public static string timedate_custom_clock_format_24_hour_seconds {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_24_hour_seconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO date (2026-07-12).
+        /// </summary>
+        public static string timedate_custom_clock_format_iso_date {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_iso_date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ISO date · Today.
+        /// </summary>
+        public static string timedate_custom_clock_format_iso_relative {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_iso_relative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Long date.
+        /// </summary>
+        public static string timedate_custom_clock_format_long_date {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_long_date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Month and day · Today.
+        /// </summary>
+        public static string timedate_custom_clock_format_month_relative {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_month_relative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No text.
+        /// </summary>
+        public static string timedate_custom_clock_format_none {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_none", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relative day (Today / Yesterday / Tomorrow).
+        /// </summary>
+        public static string timedate_custom_clock_format_relative {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_relative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use system date format.
+        /// </summary>
+        public static string timedate_custom_clock_format_system_date {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_system_date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use system time format.
+        /// </summary>
+        public static string timedate_custom_clock_format_system_time {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_system_time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time with seconds.
+        /// </summary>
+        public static string timedate_custom_clock_format_system_time_seconds {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_system_time_seconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weekday, month and day.
+        /// </summary>
+        public static string timedate_custom_clock_format_weekday {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_weekday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weekday · Today.
+        /// </summary>
+        public static string timedate_custom_clock_format_weekday_relative {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_format_weekday_relative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local time.
+        /// </summary>
+        public static string timedate_custom_clock_local {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_local", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clock name (optional).
+        /// </summary>
+        public static string timedate_custom_clock_name {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Defaults to the time zone name.
+        /// </summary>
+        public static string timedate_custom_clock_name_placeholder {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_name_placeholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save.
+        /// </summary>
+        public static string timedate_custom_clock_save {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show clock.
+        /// </summary>
+        public static string timedate_custom_clock_show {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_show", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subtitle format.
+        /// </summary>
+        public static string timedate_custom_clock_subtitle_format {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_subtitle_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Time zone.
+        /// </summary>
+        public static string timedate_custom_clock_timezone {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_timezone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use current time zone.
+        /// </summary>
+        public static string timedate_custom_clock_timezone_current {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_timezone_current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Title format.
+        /// </summary>
+        public static string timedate_custom_clock_title_format {
+            get {
+                return ResourceManager.GetString("timedate_custom_clock_title_format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom clocks.
+        /// </summary>
+        public static string timedate_custom_clocks {
+            get {
+                return ResourceManager.GetString("timedate_custom_clocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage custom clocks.
+        /// </summary>
+        public static string timedate_custom_clocks_manage {
+            get {
+                return ResourceManager.GetString("timedate_custom_clocks_manage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search custom clocks....
+        /// </summary>
+        public static string timedate_custom_clocks_search {
+            get {
+                return ResourceManager.GetString("timedate_custom_clocks_search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dock clock click action.
+        /// </summary>
+        public static string timedate_dock_clock_click_action {
+            get {
+                return ResourceManager.GetString("timedate_dock_clock_click_action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open All clocks.
+        /// </summary>
+        public static string timedate_dock_clock_click_action_all_clocks {
+            get {
+                return ResourceManager.GetString("timedate_dock_clock_click_action_all_clocks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default (Open notification center).
+        /// </summary>
+        public static string timedate_dock_clock_click_action_default {
+            get {
+                return ResourceManager.GetString("timedate_dock_clock_click_action_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose what happens when you click the dock clock..
+        /// </summary>
+        public static string timedate_dock_clock_click_action_description {
+            get {
+                return ResourceManager.GetString("timedate_dock_clock_click_action_description", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Open notification center.
         /// </summary>
-        public static string timedate_show_notification_center_command_name {
+        public static string timedate_dock_clock_click_action_notification_center {
             get {
-                return ResourceManager.GetString("timedate_show_notification_center_command_name", resourceCulture);
+                return ResourceManager.GetString("timedate_dock_clock_click_action_notification_center", resourceCulture);
             }
         }
         
@@ -993,6 +1281,42 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_notification_center_band_title {
             get {
                 return ResourceManager.GetString("timedate_notification_center_band_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Today.
+        /// </summary>
+        public static string timedate_relative_today {
+            get {
+                return ResourceManager.GetString("timedate_relative_today", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tomorrow.
+        /// </summary>
+        public static string timedate_relative_tomorrow {
+            get {
+                return ResourceManager.GetString("timedate_relative_tomorrow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yesterday.
+        /// </summary>
+        public static string timedate_relative_yesterday {
+            get {
+                return ResourceManager.GetString("timedate_relative_yesterday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open notification center.
+        /// </summary>
+        public static string timedate_show_notification_center_command_name {
+            get {
+                return ResourceManager.GetString("timedate_show_notification_center_command_name", resourceCulture);
             }
         }
     }

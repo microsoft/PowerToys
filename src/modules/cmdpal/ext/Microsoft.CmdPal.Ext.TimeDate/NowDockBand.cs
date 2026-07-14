@@ -3,107 +3,79 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal sealed partial class NowDockBand : ListItem, IDisposable
 {
-    private static readonly TimeSpan PerSecondUpdateInterval = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan PerMinuteUpdateInterval = TimeSpan.FromMinutes(1);
-
-    private readonly System.Timers.Timer _timer;
-    private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
-    private bool _timeWithSeconds;
+    private readonly ClockUpdateService _clockUpdateService;
+    private readonly ICommand _allClocksPage;
+    private readonly CopyTextCommand _copyTitleCommand;
+    private readonly CopyTextCommand _copySubtitleCommand;
+    private IDockClockSettings _settings;
+    private CompiledClockFormat _titleFormat;
+    private CompiledClockFormat _subtitleFormat;
+    private CompiledClockFormat? _copyFormat;
+    private CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
 
-    private CopyTextCommand _copyTimeCommand;
-    private CopyTextCommand _copyDateCommand;
+    internal CopyTextCommand CopyTitleCommand => _copyTitleCommand;
 
-    internal CopyTextCommand CopyTimeCommand => _copyTimeCommand;
+    internal CopyTextCommand CopySubtitleCommand => _copySubtitleCommand;
 
-    internal CopyTextCommand CopyDateCommand => _copyDateCommand;
+    internal CopyCurrentClockFormatCommand? CopyCustomFormatCommand => _copyCustomFormatCommand;
 
-    internal NowDockBand(bool timeWithSeconds = false, Action? onUpdated = null, Func<DateTime>? clock = null)
+    internal NowDockBand(IDockClockSettings settings, ICommand allClocksPage, ClockUpdateService clockUpdateService, Func<DateTime>? clock = null)
     {
-        _timeWithSeconds = timeWithSeconds;
-        _onUpdated = onUpdated;
+        _settings = settings;
+        _allClocksPage = allClocksPage;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
+        _copyFormat = CompileOptionalFormat(settings.DockClockCopyFormat);
         _clock = clock ?? (() => DateTime.Now);
+        _clockUpdateService = clockUpdateService;
+        _copyTitleCommand = new CopyTextCommand(string.Empty);
+        _copySubtitleCommand = new CopyTextCommand(string.Empty);
 
-        Command = new OpenUrlCommand("ms-actioncenter:")
-        {
-            Id = "com.microsoft.cmdpal.timedate.dockBand",
-            Name = Resources.timedate_show_notification_center_command_name,
-            Result = CommandResult.Dismiss(),
-        };
-        _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
-        _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
-        MoreCommands =
-        [
-            new CommandContextItem(_copyTimeCommand),
-            new CommandContextItem(_copyDateCommand),
-        ];
-
+        UpdateCommand(settings);
+        UpdateCopyCommandNames(settings);
+        UpdateMoreCommands(settings);
         UpdateText();
-
-        _timer = new System.Timers.Timer() { AutoReset = true };
-        ConfigureTimer();
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
     }
 
-    // Reads the current "show seconds" preference and, if it changed, reconfigures
-    // the timer cadence and refreshes the displayed text. Safe to call at any time
-    // (e.g. from a settings-changed handler) so the dock clock stays in sync without
-    // requiring the app to restart.
-    internal void UpdateSettings(bool timeWithSeconds)
+    internal void UpdateSettings(IDockClockSettings settings)
     {
-        if (_timeWithSeconds == timeWithSeconds)
-        {
-            return;
-        }
-
-        _timeWithSeconds = timeWithSeconds;
-        ConfigureTimer();
+        _settings = settings;
+        _titleFormat = CustomClockDisplay.CompileFormat(settings.DockClockTitleFormat);
+        _subtitleFormat = CustomClockDisplay.CompileFormat(settings.DockClockSubtitleFormat);
+        _copyFormat = CompileOptionalFormat(settings.DockClockCopyFormat);
+        UpdateCommand(settings);
+        UpdateCopyCommandNames(settings);
+        UpdateMoreCommands(settings);
+        _clockUpdateService.SetRequiresSecondUpdates(this, RequiresSecondUpdates);
         UpdateText();
     }
 
-    private void ConfigureTimer()
+    private bool RequiresSecondUpdates => _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates;
+
+    private void UpdateCommand(IDockClockSettings settings)
     {
-        _timer.Stop();
-        _timer.Elapsed -= Timer_Elapsed;
-        _timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-
-        if (_timeWithSeconds)
-        {
-            _timer.Interval = PerSecondUpdateInterval.TotalMilliseconds;
-            _timer.Elapsed += Timer_Elapsed;
-        }
-        else
-        {
-            // Align the first tick to the next minute boundary so the clock flips
-            // exactly when the system clock does, then fall back to a per-minute cadence.
-            var now = _clock();
-            _timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds - ((now.Second * 1000) + now.Millisecond);
-            _timer.Elapsed += Timer_ElapsedFirstMinuteTick;
-        }
-
-        _timer.Start();
+        Command = settings.DockClockClickAction == "allClocks"
+            ? _allClocksPage
+            : new OpenUrlCommand("ms-actioncenter:")
+            {
+                Id = CustomClockIds.LocalDockBand,
+                Name = Resources.timedate_show_notification_center_command_name,
+                Result = CommandResult.Dismiss(),
+            };
     }
 
-    private void Timer_ElapsedFirstMinuteTick(object? sender, System.Timers.ElapsedEventArgs e)
-    {
-        if (sender is System.Timers.Timer timer)
-        {
-            timer.Interval = PerMinuteUpdateInterval.TotalMilliseconds;
-            timer.Elapsed -= Timer_ElapsedFirstMinuteTick;
-            timer.Elapsed += Timer_Elapsed;
-        }
-
-        Timer_Elapsed(sender, e);
-    }
-
-    private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    private void ClockUpdateService_Tick(object? sender, EventArgs e)
     {
         UpdateText();
     }
@@ -111,24 +83,53 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     internal void UpdateText()
     {
         var now = _clock();
-        var timeString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Time, _timeWithSeconds, false),
-            CultureInfo.CurrentCulture);
-        var dateString = now.ToString(
-            TimeAndDateHelper.GetStringFormat(FormatStringType.Date, false, false),
-            CultureInfo.CurrentCulture);
+        var timeString = GetTitle(now);
+        var dateString = GetSubtitle(now);
+        if (timeString == Title && dateString == Subtitle)
+        {
+            return;
+        }
 
         Title = timeString;
         Subtitle = dateString;
-        _copyTimeCommand.Text = timeString;
-        _copyDateCommand.Text = dateString;
-
-        _onUpdated?.Invoke(); // Must remain last — ViewModel reads Title/Subtitle via GetItems() on callback
+        _copyTitleCommand.Text = timeString;
+        _copySubtitleCommand.Text = dateString;
     }
+
+    private string GetTitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _titleFormat, _settings);
+
+    private string GetSubtitle(DateTime now) => CustomClockDisplay.Format(new DateTimeOffset(now), _subtitleFormat, _settings);
+
+    private string GetCustomCopyText()
+    {
+        var format = _copyFormat;
+        return format is null ? string.Empty : CustomClockDisplay.Format(new DateTimeOffset(_clock()), format, _settings);
+    }
+
+    private void UpdateMoreCommands(IDockClockSettings settings)
+    {
+        _copyCustomFormatCommand = _copyFormat is null
+            ? null
+            : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockCopyFormat), GetCustomCopyText);
+        MoreCommands =
+        [
+            new CommandContextItem(_copyTitleCommand),
+            new CommandContextItem(_copySubtitleCommand),
+            .. _copyCustomFormatCommand is null ? [] : new CommandContextItem[] { new(_copyCustomFormatCommand) },
+            new CommandContextItem(new EditDefaultDockClockPage(settings)),
+        ];
+    }
+
+    private void UpdateCopyCommandNames(IDockClockSettings settings)
+    {
+        _copyTitleCommand.Name = CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockTitleFormat);
+        _copySubtitleCommand.Name = CustomClockFormatOptions.GetCopyCommandName(settings, settings.DockClockSubtitleFormat);
+    }
+
+    private static CompiledClockFormat? CompileOptionalFormat(string format) => string.IsNullOrEmpty(format) ? null : CustomClockDisplay.CompileFormat(format);
 
     public void Dispose()
     {
-        _timer.Stop();
-        _timer.Dispose();
+        _clockUpdateService.Unsubscribe(this);
     }
 }

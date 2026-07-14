@@ -267,12 +267,6 @@
   <data name="Microsoft_plugin_timedate_SettingTimeWithSeconds_Description" xml:space="preserve">
     <value>This setting applies to the 'Time' and 'Now' result.</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds" xml:space="preserve">
-    <value>Show seconds on the dock clock</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingDockClockWithSeconds_Description" xml:space="preserve">
-    <value>This setting applies to the clock shown on the Command Palette dock.</value>
-  </data>
   <data name="Microsoft_plugin_timedate_SubTitleNote" xml:space="preserve">
     <value>Select or press Ctrl+C to copy</value>
     <comment>'Ctrl+C' is a shortcut</comment>
@@ -432,23 +426,13 @@
   <data name="Microsoft_plugin_timedate_SearchTagWeek" xml:space="preserve">
     <value>Current Week; Calendar week; Week of the year; Week</value>
   </data>
-  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems" xml:space="preserve">
-    <value>Enable fallback items for TimeDate (week, year, now, time, date)</value>
-  </data>
-  <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
-    <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
-  </data>
   <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
     <value>Clock</value>
     <comment>Title for the time and date dock band</comment>
   </data>
-  <data name="timedate_copy_time_command_name" xml:space="preserve">
-    <value>Copy time</value>
-    <comment>Name of a command to copy the current time to the clipboard</comment>
-  </data>
-  <data name="timedate_copy_date_command_name" xml:space="preserve">
-    <value>Copy date</value>
-    <comment>Name of a command to copy the current date to the clipboard</comment>
+  <data name="timedate_copy_custom_format_command_name" xml:space="preserve">
+    <value>Copy {0}</value>
+    <comment>Name of a command to copy the clock using the named format. {0} is the selected format's display name.</comment>
   </data>
   <data name="timedate_show_notification_center_command_name" xml:space="preserve">
     <value>Open notification center</value>
@@ -457,5 +441,131 @@
   <data name="timedate_notification_center_band_title" xml:space="preserve">
     <value>Notification center</value>
     <comment>Title for the notification center dock band</comment>
+  </data>
+  <data name="timedate_relative_today" xml:space="preserve">
+    <value>Today</value>
+    <comment>Relative date label for a custom clock</comment>
+  </data>
+  <data name="timedate_relative_yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+    <comment>Relative date label for a custom clock</comment>
+  </data>
+  <data name="timedate_relative_tomorrow" xml:space="preserve">
+    <value>Tomorrow</value>
+    <comment>Relative date label for a custom clock</comment>
+  </data>
+  <data name="timedate_custom_clocks" xml:space="preserve">
+    <value>Custom clocks</value>
+  </data>
+  <data name="timedate_all_clocks" xml:space="preserve">
+    <value>All clocks</value>
+  </data>
+  <data name="timedate_custom_clock_local" xml:space="preserve">
+    <value>Local time</value>
+  </data>
+  <data name="timedate_custom_clocks_search" xml:space="preserve">
+    <value>Search custom clocks...</value>
+  </data>
+  <data name="timedate_custom_clock_add" xml:space="preserve">
+    <value>Add custom clock</value>
+  </data>
+  <data name="timedate_custom_clock_edit" xml:space="preserve">
+    <value>Edit custom clock</value>
+  </data>
+  <data name="timedate_custom_clock_delete" xml:space="preserve">
+    <value>Delete custom clock</value>
+  </data>
+  <data name="timedate_custom_clock_delete_confirmation_title" xml:space="preserve">
+    <value>Delete custom clock?</value>
+  </data>
+  <data name="timedate_custom_clock_delete_confirmation_message" xml:space="preserve">
+    <value>Delete '{0}'?</value>
+  </data>
+  <data name="timedate_custom_clocks_manage" xml:space="preserve">
+    <value>Manage custom clocks</value>
+  </data>
+  <data name="timedate_custom_clock_name" xml:space="preserve">
+    <value>Clock name (optional)</value>
+  </data>
+  <data name="timedate_custom_clock_name_placeholder" xml:space="preserve">
+    <value>Defaults to the time zone name</value>
+  </data>
+  <data name="timedate_custom_clock_timezone" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="timedate_custom_clock_title_format" xml:space="preserve">
+    <value>Title format</value>
+  </data>
+  <data name="timedate_custom_clock_subtitle_format" xml:space="preserve">
+    <value>Subtitle format</value>
+  </data>
+  <data name="timedate_custom_clock_save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="timedate_dock_clock_click_action" xml:space="preserve">
+    <value>Dock clock click action</value>
+  </data>
+  <data name="timedate_dock_clock_click_action_description" xml:space="preserve">
+    <value>Choose what happens when you click the dock clock.</value>
+  </data>
+  <data name="timedate_dock_clock_click_action_default" xml:space="preserve">
+    <value>Default (Open notification center)</value>
+  </data>
+  <data name="timedate_dock_clock_click_action_notification_center" xml:space="preserve">
+    <value>Open notification center</value>
+  </data>
+  <data name="timedate_dock_clock_click_action_all_clocks" xml:space="preserve">
+    <value>Open All clocks</value>
+  </data>
+  <data name="timedate_custom_clock_show" xml:space="preserve">
+    <value>Show clock</value>
+  </data>
+  <data name="timedate_custom_clock_format_none" xml:space="preserve">
+    <value>No text</value>
+  </data>
+  <data name="timedate_custom_clock_copy_format" xml:space="preserve">
+    <value>Additional copy format</value>
+  </data>
+  <data name="timedate_custom_clock_format_system_time" xml:space="preserve">
+    <value>Use system time format</value>
+  </data>
+  <data name="timedate_custom_clock_format_24_hour" xml:space="preserve">
+    <value>24-hour time (09:41)</value>
+  </data>
+  <data name="timedate_custom_clock_format_system_time_seconds" xml:space="preserve">
+    <value>Time with seconds</value>
+  </data>
+  <data name="timedate_custom_clock_format_24_hour_seconds" xml:space="preserve">
+    <value>24-hour time with seconds (09:41:23)</value>
+  </data>
+  <data name="timedate_custom_clock_format_system_date" xml:space="preserve">
+    <value>Use system date format</value>
+  </data>
+  <data name="timedate_custom_clock_format_long_date" xml:space="preserve">
+    <value>Long date</value>
+  </data>
+  <data name="timedate_custom_clock_format_weekday" xml:space="preserve">
+    <value>Weekday, month and day</value>
+  </data>
+  <data name="timedate_custom_clock_format_iso_date" xml:space="preserve">
+    <value>ISO date (2026-07-12)</value>
+  </data>
+  <data name="timedate_custom_clock_format_relative" xml:space="preserve">
+    <value>Relative day (Today / Yesterday / Tomorrow)</value>
+  </data>
+  <data name="timedate_custom_clock_format_weekday_relative" xml:space="preserve">
+    <value>Weekday · Today</value>
+  </data>
+  <data name="timedate_custom_clock_format_month_relative" xml:space="preserve">
+    <value>Month and day · Today</value>
+  </data>
+  <data name="timedate_custom_clock_format_iso_relative" xml:space="preserve">
+    <value>ISO date · Today</value>
+  </data>
+  <data name="timedate_custom_clock_customize_dock" xml:space="preserve">
+    <value>Customize clock</value>
+  </data>
+  <data name="timedate_custom_clock_timezone_current" xml:space="preserve">
+    <value>Use current time zone</value>
   </data>
 </root>
