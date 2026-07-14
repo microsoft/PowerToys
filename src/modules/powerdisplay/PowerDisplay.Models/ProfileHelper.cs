@@ -66,20 +66,6 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Loads profiles and, atomically, back-fills a stable id for any legacy profile still missing
-        /// one (<see cref="PowerDisplayProfiles.EnsureIds"/>), persisting only when something changed.
-        /// Returns the loaded (and possibly healed) profiles. Idempotent once ids are assigned.
-        /// </summary>
-        /// <returns>The loaded profiles, with stable ids guaranteed.</returns>
-        public static PowerDisplayProfiles LoadProfilesEnsuringIds()
-        {
-            return _profileStore.Value.LoadProfilesEnsuringIds();
-        }
-
-        public static Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
-            => _profileStore.Value.LoadProfilesEnsuringIdsAsync(cancellationToken);
-
-        /// <summary>
         /// Adds or updates a profile and persists to disk atomically.
         /// </summary>
         /// <param name="profile">The profile to add or update.</param>

@@ -54,7 +54,7 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
-    public void LoadProfilesEnsuringIds_CorruptJson_DoesNotOverwriteSource()
+    public void UpdateProfiles_CorruptJson_DoesNotOverwriteSource()
     {
         const string corruptJson = "{not-json";
         File.WriteAllText(_profilesPath, corruptJson);
@@ -63,7 +63,7 @@ public class ProfileStoreTests
         Exception? exception = null;
         try
         {
-            store.LoadProfilesEnsuringIds();
+            store.UpdateProfiles(profiles => profiles.EnsureIds());
         }
         catch (Exception ex)
         {
@@ -75,7 +75,7 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
-    public void LoadProfilesEnsuringIds_SaveFails_DoesNotReturnTransientIdsOrReplaceSource()
+    public void UpdateProfiles_SaveFails_DoesNotPublishTransientIdsOrReplaceSource()
     {
         var profiles = new PowerDisplayProfiles();
         profiles.Profiles.Add(MakeProfile("Legacy"));
@@ -87,7 +87,7 @@ public class ProfileStoreTests
         Exception? exception = null;
         try
         {
-            store.LoadProfilesEnsuringIds();
+            store.UpdateProfiles(loaded => loaded.EnsureIds());
         }
         catch (Exception ex)
         {
@@ -194,7 +194,7 @@ public class ProfileStoreTests
     }
 
     [TestMethod]
-    public async Task LoadProfilesEnsuringIdsAsync_WaitsWithoutBlockingCaller()
+    public async Task UpdateProfilesAsync_WaitsWithoutBlockingCaller()
     {
         var firstStore = CreateStore();
         var secondStore = CreateStore();
@@ -211,14 +211,12 @@ public class ProfileStoreTests
 
         Assert.IsTrue(updateLoaded.Wait(TimeSpan.FromSeconds(5)));
 
-        var waitingLoad = secondStore.LoadProfilesEnsuringIdsAsync();
-        Assert.IsFalse(waitingLoad.IsCompleted);
+        var waitingUpdate = secondStore.UpdateProfilesAsync(_ => false);
+        Assert.IsFalse(waitingUpdate.IsCompleted);
 
         continueUpdate.Set();
         await holder;
-        var loaded = await waitingLoad;
-
-        Assert.IsNotNull(loaded);
+        Assert.IsFalse(await waitingUpdate);
     }
 
     [TestMethod]

@@ -32,23 +32,6 @@ namespace PowerDisplay.Models
         internal Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
             => RunAsync(LoadProfiles, cancellationToken);
 
-        internal PowerDisplayProfiles LoadProfilesEnsuringIds()
-        {
-            return ExecuteLocked(() =>
-            {
-                var profiles = LoadProfilesCore();
-                if (profiles.EnsureIds())
-                {
-                    SaveProfilesCore(profiles);
-                }
-
-                return profiles;
-            });
-        }
-
-        internal Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
-            => RunAsync(LoadProfilesEnsuringIds, cancellationToken);
-
         internal void SaveProfiles(PowerDisplayProfiles profiles)
         {
             ArgumentNullException.ThrowIfNull(profiles);

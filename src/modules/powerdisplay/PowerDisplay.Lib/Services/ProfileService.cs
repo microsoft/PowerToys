@@ -24,13 +24,6 @@ namespace PowerDisplay.Common.Services
         public static Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
             => ModelsProfileHelper.LoadProfilesAsync(cancellationToken);
 
-        /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesEnsuringIds"/>
-        public static PowerDisplayProfiles LoadProfilesEnsuringIds() => ModelsProfileHelper.LoadProfilesEnsuringIds();
-
-        /// <inheritdoc cref="ModelsProfileHelper.LoadProfilesEnsuringIdsAsync(CancellationToken)"/>
-        public static Task<PowerDisplayProfiles> LoadProfilesEnsuringIdsAsync(CancellationToken cancellationToken = default)
-            => ModelsProfileHelper.LoadProfilesEnsuringIdsAsync(cancellationToken);
-
         /// <inheritdoc cref="ModelsProfileHelper.SaveProfiles"/>
         public static bool SaveProfiles(PowerDisplayProfiles profiles) => ModelsProfileHelper.SaveProfiles(profiles);
 

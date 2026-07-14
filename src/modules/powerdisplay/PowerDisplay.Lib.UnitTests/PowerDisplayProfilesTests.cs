@@ -156,8 +156,8 @@ public class PowerDisplayProfilesTests
         profiles.Profiles.Add(MakeProfile("A")); // Id 0
         profiles.Profiles.Add(MakeProfile("B")); // Id 0
 
-        // The Settings UI now back-fills ids on load (EnsureIds) before any edit, so the edited
-        // profile carries a stable id and SetProfile replaces it in place instead of adding a copy.
+        // The scanning migration back-fills ids before legacy profiles become editable, so the
+        // edited profile carries a stable id and SetProfile replaces it in place instead of adding a copy.
         profiles.EnsureIds();
         var editedId = profiles.Profiles[0].Id;
 
