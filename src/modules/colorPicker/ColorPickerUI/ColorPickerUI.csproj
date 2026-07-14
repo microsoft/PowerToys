@@ -12,7 +12,6 @@
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
     <ApplicationManifest>App.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>

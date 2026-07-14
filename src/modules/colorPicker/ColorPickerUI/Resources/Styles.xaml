@@ -8,10 +8,6 @@
         x:Key="bool2VisibilityConverter"
         FalseValue="Collapsed"
         TrueValue="Visible" />
-    <converters:BoolToVisibilityConverter
-        x:Key="bool2InvertedVisibilityConverter"
-        FalseValue="Visible"
-        TrueValue="Collapsed" />
     <converters:DoubleToVisibilityConverter
         x:Key="numberToVisibilityConverter"
         FalseValue="Collapsed"

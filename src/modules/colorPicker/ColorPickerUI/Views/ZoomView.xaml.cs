@@ -47,11 +47,14 @@ namespace ColorPicker.Views
         /// </summary>
         public void SetZoom(CanvasBitmap bitmap, double zoomFactor)
         {
-            _zoomBitmap = bitmap;
+            if (!ReferenceEquals(_zoomBitmap, bitmap))
+            {
+                // Cache the source pixels once per capture so the brightness-adaptive grid does not
+                // read back from the GPU on every draw.
+                _zoomBitmap = bitmap;
+                _zoomPixels = bitmap?.GetPixelColors();
+            }
 
-            // Cache the source pixels once per capture so the brightness-adaptive grid does not
-            // read back from the GPU on every draw.
-            _zoomPixels = bitmap?.GetPixelColors();
             _zoomFactor = zoomFactor;
 
             var size = BaseZoomImageSize * zoomFactor;

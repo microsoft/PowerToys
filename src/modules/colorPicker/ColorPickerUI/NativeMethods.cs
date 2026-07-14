@@ -5,7 +5,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 
 // System.Windows / System.Windows.Interop removed: WinUI 3 has no WindowInteropHelper.
 // HandleRef lives in System.Runtime.InteropServices (already imported).
@@ -211,12 +210,6 @@ namespace ColorPicker
             /// </summary>
             public IntPtr AdditionalInformation;
         }
-
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetOpenClipboardWindow();
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        internal static extern int GetWindowText(int hwnd, StringBuilder text, int count);
 
         /// <summary>
         /// Sets the display affinity of a window, which controls how the window is
