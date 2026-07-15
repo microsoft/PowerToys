@@ -78,7 +78,7 @@ internal static class ControlPanelTasksHelper
         }
         catch (Exception exception)
         {
-            Logger.LogError($"Failed to enumerate Control Panel tasks: {exception.Message}");
+            Logger.LogError($"Failed to enumerate Control Panel tasks", exception);
         }
 
         return result;
