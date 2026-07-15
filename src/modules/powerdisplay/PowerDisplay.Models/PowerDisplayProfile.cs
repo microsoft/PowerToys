@@ -65,6 +65,6 @@ namespace PowerDisplay.Models
         /// Not serialized; UI display only.
         /// </summary>
         [JsonIgnore]
-        public string DisplayName => $"{Name} (#{Id})";
+        public string DisplayName => ProfileDisplayNameFormatter.Format(Name, Id);
     }
 }

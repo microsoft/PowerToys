@@ -154,6 +154,22 @@ public class PowerDisplayProfilesTests
     }
 
     [TestMethod]
+    public void ProfileDisplayNameFormatter_UsesProvidedFormatOrder()
+    {
+        Assert.AreEqual(
+            "#4: Gaming",
+            ProfileDisplayNameFormatter.Format("Gaming", 4, "#{1}: {0}"));
+    }
+
+    [TestMethod]
+    public void ProfileDisplayNameFormatter_InvalidFormat_FallsBackToNeutral()
+    {
+        Assert.AreEqual(
+            "Gaming (#4)",
+            ProfileDisplayNameFormatter.Format("Gaming", 4, "{0"));
+    }
+
+    [TestMethod]
     public void DisplayName_CombinesNameAndId()
     {
         var p = MakeProfile("Gaming", id: 4);
