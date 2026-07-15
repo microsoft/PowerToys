@@ -142,6 +142,8 @@ export interface CommandResult {
 /** An action shown in a right-click or overflow menu. */
 export interface ContextItem {
   command: ICommand;
+  /** Nested right-click / overflow menu actions shown as a sub-menu. */
+  moreCommands?: ContextItem[];
   icon?: IconInfo | null;
   title: string;
   subtitle?: string;
