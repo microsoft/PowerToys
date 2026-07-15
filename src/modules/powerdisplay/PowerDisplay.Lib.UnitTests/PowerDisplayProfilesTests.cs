@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Resources;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Models;
@@ -80,6 +82,15 @@ public class PowerDisplayProfilesTests
         profiles.Profiles.Add(second);
 
         Assert.AreSame(first, profiles.GetLegacyProfileByName("SAME"));
+    }
+
+    [TestMethod]
+    public void GetLegacyProfileByName_ReturnsNull_WhenNoCaseInsensitiveMatchExists()
+    {
+        var profiles = new PowerDisplayProfiles();
+        profiles.Profiles.Add(MakeProfile("Same", id: 1));
+
+        Assert.IsNull(profiles.GetLegacyProfileByName("Different"));
     }
 
     [TestMethod]
@@ -167,6 +178,18 @@ public class PowerDisplayProfilesTests
         Assert.AreEqual(
             "Gaming (#4)",
             ProfileDisplayNameFormatter.Format("Gaming", 4, "{0"));
+    }
+
+    [TestMethod]
+    public void ProfileDisplayNameResource_ContainsNeutralFormat()
+    {
+        var resourceManager = new ResourceManager(
+            "PowerDisplay.Models.Properties.Resources",
+            typeof(PowerDisplayProfile).Assembly);
+
+        Assert.AreEqual(
+            "{0} (#{1})",
+            resourceManager.GetString("ProfileDisplayNameFormat", CultureInfo.InvariantCulture));
     }
 
     [TestMethod]
