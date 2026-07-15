@@ -70,5 +70,39 @@ namespace ManagedCommon.UnitTests
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(
                 () => executor.InvokeAsync<int>(() => throw new InvalidOperationException("unexpected")));
         }
+
+        [TestMethod]
+        public async Task InvokeAsync_DisposeFromExecutorAction_CompletesReturnedTask()
+        {
+            using var executor = new ClipboardThreadExecutor();
+            using var unhandledExceptionSeen = new ManualResetEventSlim();
+            Exception? unhandledException = null;
+
+            void UnhandledExceptionHandler(object? sender, UnhandledExceptionEventArgs e)
+            {
+                unhandledException = e.ExceptionObject as Exception;
+                unhandledExceptionSeen.Set();
+            }
+
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+            try
+            {
+                Task<int> task = executor.InvokeAsync(() =>
+                {
+                    executor.Dispose();
+                    return 42;
+                });
+
+                int result = await task;
+
+                Assert.AreEqual(42, result);
+                Assert.IsFalse(unhandledExceptionSeen.Wait(TimeSpan.FromMilliseconds(250)));
+                Assert.IsNull(unhandledException);
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionHandler;
+            }
+        }
     }
 }

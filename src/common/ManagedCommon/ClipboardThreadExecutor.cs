@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCommon
 {
-    internal sealed partial class ClipboardThreadExecutor : IDisposable
+    internal sealed class ClipboardThreadExecutor : IDisposable
     {
         private readonly BlockingCollection<Action> _workItems = new();
         private readonly Thread _thread;
@@ -79,9 +79,15 @@ namespace ManagedCommon
 
         private void ProcessWorkItems()
         {
-            foreach (Action workItem in _workItems.GetConsumingEnumerable())
+            try
             {
-                workItem();
+                foreach (Action workItem in _workItems.GetConsumingEnumerable())
+                {
+                    workItem();
+                }
+            }
+            catch (ObjectDisposedException) when (_disposed)
+            {
             }
         }
     }
