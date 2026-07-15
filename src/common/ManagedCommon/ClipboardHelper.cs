@@ -5,10 +5,12 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Windows.Storage;
 using Windows.Storage.Streams;
 
 namespace ManagedCommon
@@ -57,6 +59,55 @@ namespace ManagedCommon
         public static Task<ClipboardReadResult<string>> TryGetRtfAsync()
         {
             return Service.Value.TryGetRtfAsync();
+        }
+
+        public static bool TrySetStorageItems(
+            IEnumerable<IStorageItem>? items,
+            bool flush = false)
+        {
+            return Service.Value.TrySetStorageItems(items, flush);
+        }
+
+        public static Task<bool> TrySetStorageItemsAsync(
+            IEnumerable<IStorageItem>? items,
+            bool flush = false)
+        {
+            return Service.Value.TrySetStorageItemsAsync(items, flush);
+        }
+
+        public static bool TrySetFilePaths(
+            IEnumerable<string>? paths,
+            bool flush = false)
+        {
+            return Service.Value.TrySetFilePaths(paths, flush);
+        }
+
+        public static Task<bool> TrySetFilePathsAsync(
+            IEnumerable<string>? paths,
+            bool flush = false)
+        {
+            return Service.Value.TrySetFilePathsAsync(paths, flush);
+        }
+
+        public static bool TryGetStorageItems(
+            out IReadOnlyList<IStorageItem>? items)
+        {
+            return Service.Value.TryGetStorageItems(out items);
+        }
+
+        public static Task<ClipboardReadResult<IReadOnlyList<IStorageItem>>> TryGetStorageItemsAsync()
+        {
+            return Service.Value.TryGetStorageItemsAsync();
+        }
+
+        public static bool TryGetFilePaths(out IReadOnlyList<string>? paths)
+        {
+            return Service.Value.TryGetFilePaths(out paths);
+        }
+
+        public static Task<ClipboardReadResult<IReadOnlyList<string>>> TryGetFilePathsAsync()
+        {
+            return Service.Value.TryGetFilePathsAsync();
         }
 
         public static bool TrySetImage(RandomAccessStreamReference? image, bool flush = false)

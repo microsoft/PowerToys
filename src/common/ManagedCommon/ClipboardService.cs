@@ -5,12 +5,15 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using Windows.Storage.Streams;
 
 namespace ManagedCommon
@@ -209,6 +212,133 @@ namespace ManagedCommon
                 });
         }
 
+        internal bool TrySetStorageItems(
+            IEnumerable<IStorageItem>? items,
+            bool flush)
+        {
+            return TrySetStorageItemsAsync(items, flush).GetAwaiter().GetResult();
+        }
+
+        internal Task<bool> TrySetStorageItemsAsync(
+            IEnumerable<IStorageItem>? items,
+            bool flush)
+        {
+            if (items is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            IStorageItem[] materializedItems = items.ToArray();
+            if (materializedItems.Length == 0 || materializedItems.Any(item => item is null))
+            {
+                return Task.FromResult(false);
+            }
+
+            return TrySetPackageAsync(
+                () =>
+                {
+                    var package = new DataPackage();
+                    package.SetStorageItems(materializedItems);
+                    return new ClipboardWritePackage(package);
+                },
+                flush);
+        }
+
+        internal bool TrySetFilePaths(IEnumerable<string>? paths, bool flush)
+        {
+            return TrySetFilePathsAsync(paths, flush).GetAwaiter().GetResult();
+        }
+
+        internal async Task<bool> TrySetFilePathsAsync(
+            IEnumerable<string>? paths,
+            bool flush)
+        {
+            if (paths is null)
+            {
+                return false;
+            }
+
+            string[] materializedPaths = paths.ToArray();
+            if (materializedPaths.Length == 0 || materializedPaths.Any(string.IsNullOrWhiteSpace))
+            {
+                return false;
+            }
+
+            var storageItems = new List<IStorageItem>(materializedPaths.Length);
+            foreach (string path in materializedPaths)
+            {
+                string fullPath = Path.GetFullPath(path);
+                System.IO.FileAttributes attributes;
+                try
+                {
+                    attributes = File.GetAttributes(fullPath);
+                }
+                catch (FileNotFoundException)
+                {
+                    throw CreateMissingPathException(fullPath);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    throw CreateMissingPathException(fullPath);
+                }
+
+                IStorageItem storageItem =
+                    (attributes & System.IO.FileAttributes.Directory) != 0
+                        ? await StorageFolder.GetFolderFromPathAsync(fullPath).AsTask().ConfigureAwait(false)
+                        : await StorageFile.GetFileFromPathAsync(fullPath).AsTask().ConfigureAwait(false);
+                storageItems.Add(storageItem);
+            }
+
+            return await TrySetStorageItemsAsync(storageItems, flush).ConfigureAwait(false);
+        }
+
+        internal bool TryGetStorageItems(
+            out IReadOnlyList<IStorageItem>? items)
+        {
+            ClipboardReadResult<IReadOnlyList<IStorageItem>> result =
+                TryGetStorageItemsAsync().GetAwaiter().GetResult();
+            items = result.Value;
+            return result.Succeeded;
+        }
+
+        internal Task<ClipboardReadResult<IReadOnlyList<IStorageItem>>> TryGetStorageItemsAsync()
+        {
+            return TryGetAsync<IReadOnlyList<IStorageItem>>(
+                StandardDataFormats.StorageItems,
+                async view => (await view.GetStorageItemsAsync().AsTask()).ToArray());
+        }
+
+        internal bool TryGetFilePaths(out IReadOnlyList<string>? paths)
+        {
+            ClipboardReadResult<IReadOnlyList<string>> result =
+                TryGetFilePathsAsync().GetAwaiter().GetResult();
+            paths = result.Value;
+            return result.Succeeded;
+        }
+
+        internal async Task<ClipboardReadResult<IReadOnlyList<string>>> TryGetFilePathsAsync()
+        {
+            ClipboardReadResult<IReadOnlyList<IStorageItem>> storageItems =
+                await TryGetStorageItemsAsync().ConfigureAwait(false);
+            if (!storageItems.Succeeded || storageItems.Value is null)
+            {
+                return ClipboardReadResult<IReadOnlyList<string>>.Failure();
+            }
+
+            var paths = new List<string>(storageItems.Value.Count);
+            foreach (IStorageItem item in storageItems.Value)
+            {
+                if (string.IsNullOrEmpty(item.Path))
+                {
+                    return ClipboardReadResult<IReadOnlyList<string>>.Failure();
+                }
+
+                paths.Add(item.Path);
+            }
+
+            return ClipboardReadResult<IReadOnlyList<string>>.Success(paths);
+        }
+
         private Task<bool> TrySetPackageAsync(
             Func<ClipboardWritePackage> packageFactory,
             bool flush)
@@ -299,6 +429,13 @@ namespace ManagedCommon
         private static bool IsTransientClipboardException(Exception exception)
         {
             return exception is COMException or UnauthorizedAccessException;
+        }
+
+        private static FileNotFoundException CreateMissingPathException(string fullPath)
+        {
+            return new FileNotFoundException(
+                $"Clipboard path does not exist: {fullPath}",
+                fullPath);
         }
 
         private static async Task<ClipboardWritePackage> CreateImagePackageAsync(byte[] bytes)
