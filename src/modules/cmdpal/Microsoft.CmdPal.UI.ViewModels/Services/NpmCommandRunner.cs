@@ -86,7 +86,9 @@ public sealed class NpmCommandRunner : INpmCommandRunner
 
             if (process.ExitCode == 0)
             {
-                return NpmCommandResult.Ok();
+                // npm installs the package under node_modules/<package>; hoist it to the
+                // extension directory root so the discovery scan can find its manifest.
+                return JsExtensionPackageLayout.Materialize(targetDirectory);
             }
 
             var error = stderrBuilder.ToString().Trim();

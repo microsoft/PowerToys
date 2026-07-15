@@ -1,0 +1,41 @@
+{
+  "name": "sample-js-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A JavaScript/TypeScript parity sample for the PowerToys Command Palette that mirrors the C# SamplePagesExtension using the @microsoft/cmdpal-sdk.",
+  "type": "module",
+  "main": "dist/index.js",
+  "cmdpal": {
+    "displayName": "Sample Pages Commands (JS)",
+    "publisher": "Microsoft Corporation",
+    "icon": "\uE82D",
+    "capabilities": [
+      "commands"
+    ]
+  },
+  "scripts": {
+    "clean": "node -e \"const{rmSync}=require('node:fs');rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "powertoys",
+    "command-palette",
+    "cmdpal",
+    "extension",
+    "sample"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@microsoft/cmdpal-sdk": "file:../../ts-sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.8.0"
+  }
+}

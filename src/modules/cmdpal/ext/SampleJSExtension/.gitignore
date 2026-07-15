@@ -1,0 +1,4 @@
+# Build output and dependencies are not checked in.
+dist/
+node_modules/
+*.tsbuildinfo
