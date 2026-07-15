@@ -727,6 +727,78 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to npm.
+        /// </summary>
+        public static string gallery_item_source_name_jsonrpc {
+            get {
+                return ResourceManager.GetString("gallery_item_source_name_jsonrpc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installing....
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_installing {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_installing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstalling....
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstalling {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstalling", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Extension installed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_installed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_installed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Extension uninstalled.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstalled {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstalled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The installation failed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_install_failed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_install_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The uninstall failed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstall_failed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstall_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall.
+        /// </summary>
+        public static string gallery_item_jsonrpc_uninstall_action {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_uninstall_action", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to WinGet.
         /// </summary>
         public static string gallery_item_source_name_winget {

@@ -11,4 +11,10 @@ public sealed class GalleryInstallSource
     public string? Id { get; set; }
 
     public string? Uri { get; set; }
+
+    /// <summary>
+    /// Gets or sets the npm metadata for a JavaScript/TypeScript ("jsonrpc") extension.
+    /// Present only when <see cref="Type"/> is "jsonrpc".
+    /// </summary>
+    public GalleryNpmPackage? Npm { get; set; }
 }

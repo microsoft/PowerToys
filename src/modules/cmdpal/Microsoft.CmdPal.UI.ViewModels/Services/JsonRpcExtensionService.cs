@@ -24,7 +24,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 /// for install/uninstall, and hot-reloads an extension (debounced) when its source
 /// <c>*.js</c> files change.
 /// </summary>
-public sealed partial class JsonRpcExtensionService : IExtensionService, IDisposable
+public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExtensionHost, IDisposable
 {
     private static readonly string ExtensionsPath = GetDefaultExtensionsPath();
 
@@ -50,6 +50,24 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderAdded;
 
     public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderRemoved;
+
+    /// <inheritdoc />
+    public string ExtensionsRootPath => ExtensionsPath;
+
+    /// <inheritdoc />
+    public void StopExtension(string extensionDirectory)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return;
+        }
+
+        var removed = RemoveExtensionByDirectory(extensionDirectory);
+        if (removed is not null)
+        {
+            OnProviderRemoved?.Invoke(this, [removed]);
+        }
+    }
 
     public async Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
     {

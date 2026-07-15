@@ -492,6 +492,31 @@
   <data name="gallery_item_source_name_website" xml:space="preserve">
     <value>Website</value>
   </data>
+  <data name="gallery_item_source_name_jsonrpc" xml:space="preserve">
+    <value>npm</value>
+    <comment>Name of the npm install source for JavaScript/TypeScript extensions. Do not translate "npm".</comment>
+  </data>
+  <data name="gallery_item_jsonrpc_action_installing" xml:space="preserve">
+    <value>Installing...</value>
+  </data>
+  <data name="gallery_item_jsonrpc_action_uninstalling" xml:space="preserve">
+    <value>Uninstalling...</value>
+  </data>
+  <data name="gallery_item_jsonrpc_action_installed" xml:space="preserve">
+    <value>Extension installed.</value>
+  </data>
+  <data name="gallery_item_jsonrpc_action_uninstalled" xml:space="preserve">
+    <value>Extension uninstalled.</value>
+  </data>
+  <data name="gallery_item_jsonrpc_action_install_failed" xml:space="preserve">
+    <value>The installation failed.</value>
+  </data>
+  <data name="gallery_item_jsonrpc_action_uninstall_failed" xml:space="preserve">
+    <value>The uninstall failed.</value>
+  </data>
+  <data name="gallery_item_jsonrpc_uninstall_action" xml:space="preserve">
+    <value>Uninstall</value>
+  </data>
   <data name="gallery_item_source_name_unknown" xml:space="preserve">
     <value>Source: {0}</value>
     <comment>{0}=unsupported source type name from the gallery feed</comment>
