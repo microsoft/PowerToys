@@ -71,7 +71,7 @@ namespace ManagedCommon
         {
             return TryGetAsync(
                 StandardDataFormats.Text,
-                view => view.GetTextAsync().AsTask().GetAwaiter().GetResult());
+                view => view.GetTextAsync().AsTask());
         }
 
         internal bool TrySetRtf(string? rtf, bool flush)
@@ -107,7 +107,7 @@ namespace ManagedCommon
         {
             return TryGetAsync(
                 StandardDataFormats.Rtf,
-                view => view.GetRtfAsync().AsTask().GetAwaiter().GetResult());
+                view => view.GetRtfAsync().AsTask());
         }
 
         private Task<bool> TrySetPackageAsync(
@@ -149,10 +149,12 @@ namespace ManagedCommon
 
         private Task<ClipboardReadResult<T>> TryGetAsync<T>(
             string format,
-            Func<DataPackageView, T> getValue)
+            Func<DataPackageView, Task<T>> getValueAsync)
             where T : class
         {
-            return _executor.InvokeAsync(() =>
+            ArgumentNullException.ThrowIfNull(getValueAsync);
+
+            return _executor.InvokeAsync(async () =>
             {
                 for (int attempt = 1; attempt <= _maxAttempts; attempt++)
                 {
@@ -164,7 +166,8 @@ namespace ManagedCommon
                             return ClipboardReadResult<T>.Failure();
                         }
 
-                        return ClipboardReadResult<T>.Success(getValue(view));
+                        T value = await getValueAsync(view);
+                        return ClipboardReadResult<T>.Success(value);
                     }
                     catch (Exception ex) when (IsTransientClipboardException(ex))
                     {

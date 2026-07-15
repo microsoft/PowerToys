@@ -28,6 +28,41 @@ namespace ManagedCommon.UnitTests
         }
 
         [TestMethod]
+        public async Task InvokeAsync_AwaitTaskYield_ResumesOnSameStaThread()
+        {
+            using var executor = new ClipboardThreadExecutor();
+
+            (
+                int BeforeThreadId,
+                int AfterThreadId,
+                ApartmentState BeforeApartment,
+                ApartmentState AfterApartment,
+                bool HadContextBefore,
+                bool HadContextAfter) result = await executor.InvokeAsync(async () =>
+                {
+                    int beforeThreadId = Environment.CurrentManagedThreadId;
+                    ApartmentState beforeApartment = Thread.CurrentThread.GetApartmentState();
+                    bool hadContextBefore = SynchronizationContext.Current is not null;
+
+                    await Task.Yield();
+
+                    return (
+                        beforeThreadId,
+                        Environment.CurrentManagedThreadId,
+                        beforeApartment,
+                        Thread.CurrentThread.GetApartmentState(),
+                        hadContextBefore,
+                        SynchronizationContext.Current is not null);
+                });
+
+            Assert.AreEqual(result.BeforeThreadId, result.AfterThreadId);
+            Assert.AreEqual(ApartmentState.STA, result.BeforeApartment);
+            Assert.AreEqual(ApartmentState.STA, result.AfterApartment);
+            Assert.IsTrue(result.HadContextBefore);
+            Assert.IsTrue(result.HadContextAfter);
+        }
+
+        [TestMethod]
         public async Task InvokeAsync_SerializesQueuedWork()
         {
             using var executor = new ClipboardThreadExecutor();
@@ -63,12 +98,47 @@ namespace ManagedCommon.UnitTests
         }
 
         [TestMethod]
+        public async Task InvokeAsync_AsyncWorkDoesNotStartNextItemWhileAwaiting()
+        {
+            using var executor = new ClipboardThreadExecutor();
+            using var firstStarted = new ManualResetEventSlim();
+            var releaseFirst = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            int secondStarted = 0;
+
+            Task<int> first = executor.InvokeAsync(async () =>
+            {
+                firstStarted.Set();
+                await releaseFirst.Task;
+                return 1;
+            });
+
+            Assert.IsTrue(firstStarted.Wait(TimeSpan.FromSeconds(1)));
+
+            Task<int> second = executor.InvokeAsync(async () =>
+            {
+                Interlocked.Exchange(ref secondStarted, 1);
+                await Task.Yield();
+                return 2;
+            });
+
+            Assert.IsFalse(SpinWait.SpinUntil(
+                () => Volatile.Read(ref secondStarted) != 0,
+                TimeSpan.FromMilliseconds(100)));
+            Assert.IsFalse(second.IsCompleted);
+
+            releaseFirst.SetResult(null);
+
+            int[] results = await Task.WhenAll(first, second);
+            CollectionAssert.AreEqual(ExpectedOrder, results);
+        }
+
+        [TestMethod]
         public async Task InvokeAsync_PropagatesUnexpectedException()
         {
             using var executor = new ClipboardThreadExecutor();
 
             await Assert.ThrowsExceptionAsync<InvalidOperationException>(
-                () => executor.InvokeAsync<int>(() => throw new InvalidOperationException("unexpected")));
+                () => executor.InvokeAsync(new Func<int>(() => throw new InvalidOperationException("unexpected"))));
         }
 
         [TestMethod]
