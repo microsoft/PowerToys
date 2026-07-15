@@ -55,6 +55,16 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
             return JsExtensionInstallResult.Fail(result.ErrorMessage ?? "The installation failed.");
         }
 
+        // npm drops the package under node_modules, so the manifest is not yet where discovery
+        // looks unless the layout has been reconciled. Only report success when the extension is
+        // actually loadable; otherwise the UI would show an installed extension that never runs.
+        if (!_host.IsExtensionDiscoverable(targetDirectory))
+        {
+            _npmCommandRunner.RemoveDirectory(targetDirectory);
+            Logger.LogError($"Installed npm package '{npmPackage}' but no loadable manifest was found for '{extensionName}'.");
+            return JsExtensionInstallResult.Fail("The package was downloaded but does not contain a usable Command Palette extension.");
+        }
+
         Logger.LogInfo($"Installed JS extension '{extensionName}' from npm package '{npmPackage}'.");
         return JsExtensionInstallResult.Ok();
     }
@@ -69,7 +79,11 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         // Terminate the Node.js process first so its file handles are released, then delete the
         // directory. The FileSystemWatcher unloads the provider once the directory is gone.
         _host.StopExtension(targetDirectory);
-        _npmCommandRunner.RemoveDirectory(targetDirectory);
+        if (!_npmCommandRunner.RemoveDirectory(targetDirectory))
+        {
+            Logger.LogError($"Uninstall of JS extension '{extensionName}' failed: could not delete {targetDirectory}.");
+            return Task.FromResult(JsExtensionInstallResult.Fail("The extension files could not be removed. Close anything using them and try again."));
+        }
 
         Logger.LogInfo($"Uninstalled JS extension '{extensionName}'.");
         return Task.FromResult(JsExtensionInstallResult.Ok());

@@ -89,6 +89,24 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         }
     }
 
+    /// <inheritdoc />
+    public bool IsExtensionDiscoverable(string extensionDirectory)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return false;
+        }
+
+        var manifestPath = Path.Combine(extensionDirectory, "package.json");
+        if (!File.Exists(manifestPath))
+        {
+            return false;
+        }
+
+        var parseResult = JSExtensionManifest.TryParseFile(manifestPath);
+        return parseResult.IsValid && parseResult.Manifest is not null;
+    }
+
     public async Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
     {
         if (ct.IsCancellationRequested)

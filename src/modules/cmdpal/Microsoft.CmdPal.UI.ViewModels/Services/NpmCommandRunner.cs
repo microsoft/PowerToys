@@ -22,6 +22,10 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     // npm on Windows is a batch shim; probe the common executable names on PATH.
     private static readonly string[] NpmExecutableNames = ["npm.cmd", "npm.exe", "npm"];
 
+    // Upper bound on a single npm install so the gallery cannot stay on "Installing..."
+    // forever when npm hangs (for example, an unreachable registry with no output).
+    private static readonly TimeSpan InstallTimeout = TimeSpan.FromMinutes(5);
+
     public bool IsNpmAvailable() => ResolveNpmExecutable() is not null;
 
     public async Task<NpmCommandResult> InstallAsync(string targetDirectory, string package, string? registry, CancellationToken cancellationToken)
@@ -82,7 +86,26 @@ public sealed class NpmCommandRunner : INpmCommandRunner
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
 
-            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            // Bound the wait so a hung npm does not leave the UI stuck. A caller-driven cancel and
+            // the timeout share one linked source; the catch below tells the two apart.
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(InstallTimeout);
+
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                TryKillProcess(process);
+                Logger.LogError($"npm install {package} timed out after {InstallTimeout.TotalMinutes:0} minutes.");
+                return NpmCommandResult.Fail($"npm install timed out after {InstallTimeout.TotalMinutes:0} minutes.");
+            }
+            catch (OperationCanceledException)
+            {
+                TryKillProcess(process);
+                throw;
+            }
 
             if (process.ExitCode == 0)
             {
@@ -106,20 +129,37 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         }
     }
 
-    public void RemoveDirectory(string targetDirectory)
+    public bool RemoveDirectory(string targetDirectory)
     {
         if (string.IsNullOrEmpty(targetDirectory) || !Directory.Exists(targetDirectory))
         {
-            return;
+            return true;
         }
 
         try
         {
             Directory.Delete(targetDirectory, recursive: true);
+            return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             Logger.LogError($"Failed to delete JS extension directory {targetDirectory}: {ex.Message}");
+            return false;
+        }
+    }
+
+    private static void TryKillProcess(Process process)
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception or NotSupportedException)
+        {
+            Logger.LogError($"Failed to terminate npm process: {ex.Message}");
         }
     }
 
