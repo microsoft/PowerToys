@@ -155,7 +155,9 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         Size iconSize,
         double scale)
     {
-        var scaledSize = new Size(iconSize.Width * scale, iconSize.Height * scale);
+        var scaledSize = iconSize.IsEmpty
+            ? Size.Empty
+            : new Size(iconSize.Width * scale, iconSize.Height * scale);
 
         if (!string.IsNullOrEmpty(iconString))
         {
