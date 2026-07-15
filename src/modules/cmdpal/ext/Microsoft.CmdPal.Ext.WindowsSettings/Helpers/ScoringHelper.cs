@@ -13,6 +13,10 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 
 internal static class ScoringHelper
 {
+    private const int ExactNameScore = 10;
+    private const int NameContainsScore = 5;
+    private const string WindowsSettingsUriPrefix = "ms-settings:";
+
     // Rank settings by how they matched the search query. Order is:
     // 1. Exact Name (10 points)
     // 2. Name Starts With (8 points)
@@ -30,7 +34,7 @@ internal static class ScoringHelper
 
         if (string.Equals(setting.Name, query, StringComparison.OrdinalIgnoreCase))
         {
-            return (setting, 10);
+            return (setting, ExactNameScore);
         }
 
         if (setting.Name.StartsWith(query, StringComparison.CurrentCultureIgnoreCase))
@@ -80,5 +84,21 @@ internal static class ScoringHelper
         }
 
         return (setting, 0);
+    }
+
+    internal static bool IsPreferredNameMatch((WindowsSetting Setting, int Score) scoredSetting)
+    {
+        return scoredSetting.Score >= NameContainsScore && scoredSetting.Setting.IsPreferredForNameSearch;
+    }
+
+    internal static bool IsExactNameMatch((WindowsSetting Setting, int Score) scoredSetting)
+    {
+        return scoredSetting.Score == ExactNameScore;
+    }
+
+    internal static bool IsWindowsSettingsExactMatch((WindowsSetting Setting, int Score) scoredSetting)
+    {
+        return IsExactNameMatch(scoredSetting) &&
+               scoredSetting.Setting.Command.StartsWith(WindowsSettingsUriPrefix, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -52,6 +52,8 @@ internal sealed partial class WindowsSettingsListPage : DynamicListPage
                 .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
                 .Where(scoredSetting => scoredSetting.Score > 0)
                 .OrderByDescending(scoredSetting => scoredSetting.Score)
+                .ThenByDescending(ScoringHelper.IsWindowsSettingsExactMatch)
+                .ThenByDescending(ScoringHelper.IsPreferredNameMatch)
                 .Select(scoredSetting => scoredSetting.Setting);
         }
         else
