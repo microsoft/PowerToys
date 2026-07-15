@@ -55,6 +55,8 @@ void LightSwitchStateManager::OnManualOverride()
                   (_state.isSystemLightActive ? L"light" : L"dark"),
                   (_state.isAppsLightActive ? L"light" : L"dark"));
 
+    NotifyPowerDisplayThemeChanged(_state.isSystemLightActive);
+
     EvaluateAndApplyIfNeeded();
 }
 

@@ -67,7 +67,6 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
-
 };
 
 class LightSwitchSettings
