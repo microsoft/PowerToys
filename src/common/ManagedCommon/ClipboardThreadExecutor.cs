@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ManagedCommon
 {
-    internal sealed class ClipboardThreadExecutor : IDisposable
+    internal sealed partial class ClipboardThreadExecutor : IDisposable
     {
         private readonly BlockingCollection<Action> _workItems = new();
         private readonly Thread _thread;
