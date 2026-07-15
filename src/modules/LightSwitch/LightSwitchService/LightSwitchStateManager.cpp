@@ -55,7 +55,15 @@ void LightSwitchStateManager::OnManualOverride()
                   (_state.isSystemLightActive ? L"light" : L"dark"),
                   (_state.isAppsLightActive ? L"light" : L"dark"));
 
-    NotifyPowerDisplayThemeChanged(_state.isSystemLightActive);
+    const auto& settings = LightSwitchSettings::settings();
+    if (settings.changeSystem)
+    {
+        NotifyPowerDisplayThemeChanged(_state.isSystemLightActive);
+    }
+    else if (settings.changeApps)
+    {
+        NotifyPowerDisplayThemeChanged(_state.isAppsLightActive);
+    }
 
     EvaluateAndApplyIfNeeded();
 }
