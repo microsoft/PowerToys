@@ -366,6 +366,32 @@ public partial class JsonRpcConnectionTests
         await Assert.ThrowsExceptionAsync<JsonRpcException>(async () => await requestTask.WaitAsync(cts.Token));
     }
 
+    [TestMethod]
+    public async Task Inbound_OversizedContentLength_RaisesErrorWithoutAllocating()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+        try
+        {
+            var errorRaised = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+            harness.Host.Error += (_, e) => errorRaised.TrySetResult(e.Exception);
+
+            // A Content-Length far larger than the allowed maximum must be rejected up front
+            // rather than triggering a huge buffer allocation. No body is written on purpose.
+            var header = Encoding.ASCII.GetBytes("Content-Length: 2000000000\r\n\r\n");
+            await harness.ExtensionWrites.WriteAsync(header, cts.Token);
+            await harness.ExtensionWrites.FlushAsync(cts.Token);
+
+            var exception = await errorRaised.Task.WaitAsync(cts.Token);
+            Assert.IsInstanceOfType(exception, typeof(InvalidDataException));
+            StringAssert.Contains(exception.Message, "maximum");
+        }
+        finally
+        {
+            harness.Host.Dispose();
+        }
+    }
+
     private static Harness CreateHarness(TimeSpan? requestTimeout = null)
     {
         var toHost = new Pipe();

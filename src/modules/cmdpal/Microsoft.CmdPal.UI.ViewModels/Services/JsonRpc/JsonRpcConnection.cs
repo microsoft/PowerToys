@@ -24,6 +24,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 public sealed partial class JsonRpcConnection : IDisposable
 {
     private const int MaxHeaderBytes = 16 * 1024;
+    private const int MaxMessageBytes = 32 * 1024 * 1024;
 
     private readonly Stream _input;
     private readonly Stream _output;
@@ -369,12 +370,17 @@ public sealed partial class JsonRpcConnection : IDisposable
             if (name.Equals("Content-Length", StringComparison.OrdinalIgnoreCase))
             {
                 var value = line.AsSpan(separator + 1).Trim();
-                if (int.TryParse(value, out var length) && length >= 0)
+                if (!int.TryParse(value, out var length) || length < 0)
                 {
-                    return length;
+                    throw new InvalidDataException("The JSON-RPC Content-Length header value was invalid.");
                 }
 
-                throw new InvalidDataException("The JSON-RPC Content-Length header value was invalid.");
+                if (length > MaxMessageBytes)
+                {
+                    throw new InvalidDataException($"The JSON-RPC Content-Length {length} exceeds the maximum allowed message size of {MaxMessageBytes} bytes.");
+                }
+
+                return length;
             }
         }
 

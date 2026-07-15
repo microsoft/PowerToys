@@ -160,8 +160,13 @@ public sealed record JSExtensionManifest
             return JSExtensionManifestParseResult.Failure("Neither 'cmdpal.main' nor the top-level 'main' entry point was specified.");
         }
 
-        var resolvedEntryPoint = ResolveEntryPoint(extensionDirectory, entryPoint);
-        if (resolvedEntryPoint is null || !File.Exists(resolvedEntryPoint))
+        var resolvedEntryPoint = ResolveEntryPoint(extensionDirectory, entryPoint!, out var resolutionError);
+        if (resolvedEntryPoint is null)
+        {
+            return JSExtensionManifestParseResult.Failure(resolutionError!);
+        }
+
+        if (!File.Exists(resolvedEntryPoint))
         {
             return JSExtensionManifestParseResult.Failure($"The entry point '{entryPoint}' does not resolve to an existing file.");
         }
@@ -185,17 +190,48 @@ public sealed record JSExtensionManifest
         return JSExtensionManifestParseResult.Success(manifest);
     }
 
-    private static string? ResolveEntryPoint(string extensionDirectory, string entryPoint)
+    private static string? ResolveEntryPoint(string extensionDirectory, string entryPoint, out string? error)
     {
+        error = null;
+
+        // The spec requires the entry point to be a relative path within the extension
+        // directory. Reject absolute/rooted paths so a manifest cannot point outside its package.
+        if (Path.IsPathRooted(entryPoint))
+        {
+            error = $"The entry point '{entryPoint}' must be a relative path within the extension directory.";
+            return null;
+        }
+
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            error = "An extension directory is required to resolve the entry point.";
+            return null;
+        }
+
+        string baseDirectory;
+        string resolved;
         try
         {
-            return string.IsNullOrEmpty(extensionDirectory)
-                ? Path.GetFullPath(entryPoint)
-                : Path.GetFullPath(Path.Combine(extensionDirectory, entryPoint));
+            baseDirectory = Path.GetFullPath(extensionDirectory);
+            resolved = Path.GetFullPath(Path.Combine(baseDirectory, entryPoint));
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
         {
+            error = $"The entry point '{entryPoint}' is not a valid path.";
             return null;
         }
+
+        // Guard against traversal via "..": the resolved path must stay inside the extension directory.
+        var prefix = baseDirectory.EndsWith(Path.DirectorySeparatorChar)
+            ? baseDirectory
+            : baseDirectory + Path.DirectorySeparatorChar;
+
+        if (!resolved.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            error = $"The entry point '{entryPoint}' must not escape the extension directory.";
+            return null;
+        }
+
+        return resolved;
     }
 }
