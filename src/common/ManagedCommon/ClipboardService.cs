@@ -5,11 +5,13 @@
 #nullable enable
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage.Streams;
 
 namespace ManagedCommon
 {
@@ -110,15 +112,125 @@ namespace ManagedCommon
                 view => view.GetRtfAsync().AsTask());
         }
 
+        internal bool TrySetImage(RandomAccessStreamReference? image, bool flush)
+        {
+            return TrySetImageAsync(image, flush).GetAwaiter().GetResult();
+        }
+
+        internal Task<bool> TrySetImageAsync(RandomAccessStreamReference? image, bool flush)
+        {
+            if (image is null)
+            {
+                return Task.FromResult(false);
+            }
+
+            return TrySetPackageAsync(
+                () =>
+                {
+                    var package = new DataPackage();
+                    package.SetBitmap(image);
+                    return new ClipboardWritePackage(package);
+                },
+                flush);
+        }
+
+        internal bool TrySetImage(Stream? encodedImage, bool flush)
+        {
+            return TrySetImageAsync(encodedImage, flush).GetAwaiter().GetResult();
+        }
+
+        internal async Task<bool> TrySetImageAsync(Stream? encodedImage, bool flush)
+        {
+            if (encodedImage is null)
+            {
+                return false;
+            }
+
+            byte[] bytes;
+            using (var copy = new MemoryStream())
+            {
+                await encodedImage.CopyToAsync(copy);
+                if (copy.Length == 0)
+                {
+                    return false;
+                }
+
+                bytes = copy.ToArray();
+            }
+
+            return await TrySetPackageAsync(() => CreateImagePackageAsync(bytes), flush);
+        }
+
+        internal bool TryGetImage(out RandomAccessStreamReference? image)
+        {
+            ClipboardReadResult<RandomAccessStreamReference> result =
+                TryGetImageAsync().GetAwaiter().GetResult();
+            image = result.Value;
+            return result.Succeeded;
+        }
+
+        internal Task<ClipboardReadResult<RandomAccessStreamReference>> TryGetImageAsync()
+        {
+            return TryGetAsync(
+                StandardDataFormats.Bitmap,
+                view => view.GetBitmapAsync().AsTask());
+        }
+
+        internal bool TryGetImageStream(out Stream? encodedImage)
+        {
+            ClipboardReadResult<Stream> result =
+                TryGetImageStreamAsync().GetAwaiter().GetResult();
+            encodedImage = result.Value;
+            return result.Succeeded;
+        }
+
+        internal Task<ClipboardReadResult<Stream>> TryGetImageStreamAsync()
+        {
+            return TryGetAsync<Stream>(
+                StandardDataFormats.Bitmap,
+                async view =>
+                {
+                    RandomAccessStreamReference reference = await view.GetBitmapAsync().AsTask();
+                    using IRandomAccessStreamWithContentType source = await reference.OpenReadAsync().AsTask();
+                    using Stream sourceStream = source.AsStreamForRead();
+                    var output = new MemoryStream();
+
+                    try
+                    {
+                        await sourceStream.CopyToAsync(output);
+                        output.Position = 0;
+                        return output;
+                    }
+                    catch
+                    {
+                        output.Dispose();
+                        throw;
+                    }
+                });
+        }
+
         private Task<bool> TrySetPackageAsync(
             Func<ClipboardWritePackage> packageFactory,
             bool flush)
         {
-            return _executor.InvokeAsync(() =>
+            ArgumentNullException.ThrowIfNull(packageFactory);
+
+            return TrySetPackageAsync(
+                () => Task.FromResult(packageFactory()),
+                flush);
+        }
+
+        private Task<bool> TrySetPackageAsync(
+            Func<Task<ClipboardWritePackage>> packageFactoryAsync,
+            bool flush)
+        {
+            ArgumentNullException.ThrowIfNull(packageFactoryAsync);
+
+            return _executor.InvokeAsync(async () =>
             {
                 for (int attempt = 1; attempt <= _maxAttempts; attempt++)
                 {
-                    using ClipboardWritePackage package = packageFactory();
+                    using ClipboardWritePackage package = await packageFactoryAsync();
 
                     try
                     {
@@ -187,6 +299,31 @@ namespace ManagedCommon
         private static bool IsTransientClipboardException(Exception exception)
         {
             return exception is COMException or UnauthorizedAccessException;
+        }
+
+        private static async Task<ClipboardWritePackage> CreateImagePackageAsync(byte[] bytes)
+        {
+            var stream = new InMemoryRandomAccessStream();
+
+            try
+            {
+                using (var writer = new DataWriter(stream))
+                {
+                    writer.WriteBytes(bytes);
+                    await writer.StoreAsync().AsTask();
+                    _ = writer.DetachStream();
+                }
+
+                stream.Seek(0);
+                var package = new DataPackage();
+                package.SetBitmap(RandomAccessStreamReference.CreateFromStream(stream));
+                return new ClipboardWritePackage(package, stream);
+            }
+            catch
+            {
+                stream.Dispose();
+                throw;
+            }
         }
     }
 }

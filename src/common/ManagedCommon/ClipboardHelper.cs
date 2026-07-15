@@ -5,8 +5,11 @@
 #nullable enable
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Windows.Storage.Streams;
 
 namespace ManagedCommon
 {
@@ -54,6 +57,48 @@ namespace ManagedCommon
         public static Task<ClipboardReadResult<string>> TryGetRtfAsync()
         {
             return Service.Value.TryGetRtfAsync();
+        }
+
+        public static bool TrySetImage(RandomAccessStreamReference? image, bool flush = false)
+        {
+            return Service.Value.TrySetImage(image, flush);
+        }
+
+        public static Task<bool> TrySetImageAsync(
+            RandomAccessStreamReference? image,
+            bool flush = false)
+        {
+            return Service.Value.TrySetImageAsync(image, flush);
+        }
+
+        public static bool TrySetImage(Stream? encodedImage, bool flush = false)
+        {
+            return Service.Value.TrySetImage(encodedImage, flush);
+        }
+
+        public static Task<bool> TrySetImageAsync(Stream? encodedImage, bool flush = false)
+        {
+            return Service.Value.TrySetImageAsync(encodedImage, flush);
+        }
+
+        public static bool TryGetImage(out RandomAccessStreamReference? image)
+        {
+            return Service.Value.TryGetImage(out image);
+        }
+
+        public static Task<ClipboardReadResult<RandomAccessStreamReference>> TryGetImageAsync()
+        {
+            return Service.Value.TryGetImageAsync();
+        }
+
+        public static bool TryGetImageStream(out Stream? encodedImage)
+        {
+            return Service.Value.TryGetImageStream(out encodedImage);
+        }
+
+        public static Task<ClipboardReadResult<Stream>> TryGetImageStreamAsync()
+        {
+            return Service.Value.TryGetImageStreamAsync();
         }
     }
 }
