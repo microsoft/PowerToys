@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.ComponentModel;
 
 using ColorPicker.ViewModelContracts;
@@ -19,6 +20,8 @@ namespace ColorPicker.Views
     {
         private INotifyPropertyChanged _subscribedViewModel;
 
+        internal event EventHandler DesiredSizeInvalidated;
+
         public ColorPickerView()
         {
             InitializeComponent();
@@ -31,6 +34,7 @@ namespace ColorPicker.Views
         {
             Subscribe(DataContext);
             UpdateAccessibleName();
+            DesiredSizeInvalidated?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -86,7 +90,15 @@ namespace ColorPicker.Views
                 // Keep accessible names current when the setting changes; do not announce.
                 UpdateAccessibleName();
             }
+
+            if (InvalidatesDesiredSize(e.PropertyName))
+            {
+                DesiredSizeInvalidated?.Invoke(this, EventArgs.Empty);
+            }
         }
+
+        internal static bool InvalidatesDesiredSize(string propertyName)
+            => propertyName is nameof(IMainViewModel.ColorName) or nameof(IMainViewModel.ShowColorName);
 
         // Updates the live-region name without raising LiveRegionChanged, so screen readers are
         // not triggered by silent initialization or settings changes.
