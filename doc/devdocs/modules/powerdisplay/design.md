@@ -1085,7 +1085,7 @@ flowchart TB
         StateManager["LightSwitchStateManager"]
         ThemeEval["Theme Evaluation<br/>(Time/System)"]
         LightSwitchSettings["LightSwitchSettings"]
-        NotifyPD["NotifyPowerDisplay(isLight)"]
+        NotifyPD["NotifyPowerDisplayThemeChanged(isLight)"]
     end
 
     subgraph PowerDisplayModule["PowerDisplay Module (C#)"]
@@ -1119,8 +1119,8 @@ flowchart TB
     ThemeEval -->|"Time boundary<br/>or manual"| StateManager
     StateManager --> LightSwitchSettings
     StateManager --> NotifyPD
-    NotifyPD -->|"isLight=true"| LightEvent
-    NotifyPD -->|"isLight=false"| DarkEvent
+    NotifyPD -->|"pure light/dark theme event"| LightEvent
+    NotifyPD -->|"pure light/dark theme event"| DarkEvent
 
     %% PowerDisplay flow - theme determined from event
     LightEvent -->|"Event signaled"| EventWaiter
@@ -1141,6 +1141,8 @@ flowchart TB
     style WindowsEvents fill:#e3f2fd
     style FileSystem fill:#fffde7
 ```
+
+Native LightSwitch does not parse PowerDisplay profile references. It only publishes the light/dark named event, and PowerDisplay remains responsible for reading the typed settings and validating the selected profile.
 
 ### LightSwitch Settings JSON Structure
 
@@ -1424,8 +1426,8 @@ sequenceDiagram
     LightSwitch->>LightSwitch: EvaluateAndApplyIfNeeded()
     LightSwitch->>LightSwitch: ApplyTheme(isLight)
 
-    LightSwitch->>LightSwitch: NotifyPowerDisplay(isLight)
-    Note over LightSwitch: Check if profile enabled
+    LightSwitch->>LightSwitch: NotifyPowerDisplayThemeChanged(isLight)
+    Note over LightSwitch: Publish the resulting theme only;<br/>PowerDisplay owns profile validation
 
     alt isLight == true
         LightSwitch->>WinEvent: SetEvent("Local\\PowerToys_LightSwitch_LightTheme")
