@@ -269,6 +269,68 @@ public class JSAdapterProxyTests
         Assert.IsNotNull(settings!.SettingsPage);
     }
 
+    [TestMethod]
+    public void ListPage_ExposesFiltersWithSeparatorAndGridType()
+    {
+        using var fake = new JSFakeExtension();
+        var commandJson =
+            """
+            {
+              "id": "list-fg",
+              "pageType": "listPage",
+              "name": "Filtered",
+              "gridProperties": { "type": "medium", "showTitle": true },
+              "filters": {
+                "currentFilterId": "all",
+                "filters": [
+                  { "id": "all", "name": "All" },
+                  { "separator": true },
+                  { "id": "recent", "name": "Recent" }
+                ]
+              }
+            }
+            """;
+        fake.OnResult("provider/getCommand", commandJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list-fg")!;
+
+        Assert.IsInstanceOfType(page.GridProperties, typeof(IMediumGridLayout));
+
+        Assert.IsNotNull(page.Filters);
+        var filters = page.Filters!.GetFilters();
+        Assert.AreEqual(3, filters.Length);
+        Assert.IsInstanceOfType(filters[0], typeof(IFilter));
+        Assert.AreEqual("all", ((IFilter)filters[0]).Id);
+        Assert.IsInstanceOfType(filters[1], typeof(ISeparatorFilterItem));
+        Assert.IsInstanceOfType(filters[2], typeof(IFilter));
+        Assert.AreEqual("recent", ((IFilter)filters[2]).Id);
+    }
+
+    [TestMethod]
+    public async Task FallbackHandler_SendsUpdateQueryAsRequest()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult(
+            "provider/getFallbackCommands",
+            """[ { "id": "fb-req", "displayTitle": "Initial", "title": "T" } ]""");
+
+        var received = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        fake.OnRequest("fallback/updateQuery", element =>
+        {
+            received.TrySetResult(element.GetProperty("query").GetString() ?? string.Empty);
+            return null;
+        });
+
+        var provider = CreateProvider(fake);
+        var fallback = provider.FallbackCommands()![0];
+
+        await Task.Run(() => fallback.FallbackHandler.UpdateQuery("typed"));
+
+        var query = await received.Task.WaitAsync(Timeout);
+        Assert.AreEqual("typed", query);
+    }
+
     private static void AssertKind(JSFakeExtension fake, IInvokableCommand invokable, string resultJson, CommandResultKind expected)
     {
         fake.OnResult("command/invoke", resultJson);
