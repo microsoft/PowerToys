@@ -127,24 +127,39 @@ namespace ColorPicker.ViewModels
 
         public void Initialize()
         {
-            _initializing = true;
-
-            ColorsHistory.Clear();
-
-            foreach (var item in _userSettings.ColorHistory)
+            var savedColors = _userSettings.ColorHistory.Select(item =>
             {
                 var parts = item.Split('|');
-                ColorsHistory.Add(new Color()
+                return new Color()
                 {
                     A = byte.Parse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     R = byte.Parse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     G = byte.Parse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture),
                     B = byte.Parse(parts[3], NumberStyles.Integer, CultureInfo.InvariantCulture),
-                });
-                SelectedColorIndex = 0;
+                };
+            }).ToList();
+
+            if (!ColorsHistory.SequenceEqual(savedColors))
+            {
+                _initializing = true;
+                try
+                {
+                    ColorsHistory.Clear();
+                    foreach (var color in savedColors)
+                    {
+                        ColorsHistory.Add(color);
+                    }
+                }
+                finally
+                {
+                    _initializing = false;
+                }
             }
 
-            _initializing = false;
+            if (ColorsHistory.Count > 0)
+            {
+                SelectedColorIndex = 0;
+            }
         }
 
         private void ColorsHistory_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

@@ -73,6 +73,82 @@ namespace ColorPicker.UnitTests.ViewModels
             SessionEventHelper.Start(ColorPickerActivationAction.OpenEditor);
         }
 
+        [TestMethod]
+        public void Initialize_UnchangedHistory_DoesNotRaiseCollectionChanged()
+        {
+            var settings = new StubUserSettings();
+            settings.ColorHistory.Add("255|10|20|30");
+            settings.ColorHistory.Add("255|40|50|60");
+            var viewModel = new ColorEditorViewModel(settings);
+            viewModel.Initialize();
+            int collectionChangedCount = 0;
+            viewModel.ColorsHistory.CollectionChanged += (sender, args) => collectionChangedCount++;
+
+            viewModel.Initialize();
+
+            Assert.AreEqual(0, collectionChangedCount);
+        }
+
+        [TestMethod]
+        public void Initialize_PopulatesHistoryInSavedOrder()
+        {
+            var settings = new StubUserSettings();
+            settings.ColorHistory.Add("255|10|20|30");
+            settings.ColorHistory.Add("255|40|50|60");
+            var viewModel = new ColorEditorViewModel(settings);
+
+            viewModel.Initialize();
+
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    new Color { A = 255, R = 10, G = 20, B = 30 },
+                    new Color { A = 255, R = 40, G = 50, B = 60 },
+                },
+                viewModel.ColorsHistory.ToArray());
+            Assert.AreEqual(0, viewModel.SelectedColorIndex);
+        }
+
+        [TestMethod]
+        public void Initialize_ReorderedHistoryRefreshesCollection()
+        {
+            var settings = new StubUserSettings();
+            settings.ColorHistory.Add("255|10|20|30");
+            settings.ColorHistory.Add("255|40|50|60");
+            var viewModel = new ColorEditorViewModel(settings);
+            viewModel.Initialize();
+            settings.ColorHistory.Clear();
+            settings.ColorHistory.Add("255|40|50|60");
+            settings.ColorHistory.Add("255|10|20|30");
+            int collectionChangedCount = 0;
+            viewModel.ColorsHistory.CollectionChanged += (sender, args) => collectionChangedCount++;
+
+            viewModel.Initialize();
+
+            CollectionAssert.AreEqual(
+                new[]
+                {
+                    new Color { A = 255, R = 40, G = 50, B = 60 },
+                    new Color { A = 255, R = 10, G = 20, B = 30 },
+                },
+                viewModel.ColorsHistory.ToArray());
+            Assert.IsTrue(collectionChangedCount > 0);
+        }
+
+        [TestMethod]
+        public void Initialize_EmptySavedHistoryClearsCollection()
+        {
+            var settings = new StubUserSettings();
+            settings.ColorHistory.Add("255|10|20|30");
+            var viewModel = new ColorEditorViewModel(settings);
+            viewModel.Initialize();
+            settings.ColorHistory.Clear();
+
+            viewModel.Initialize();
+
+            Assert.AreEqual(0, viewModel.ColorsHistory.Count);
+        }
+
         // ─── RemoveColorsCommand – null input ────────────────────────
         [TestMethod]
         [Description("Execute(null) must not throw – CanExecute guard or defensive return prevents it.")]
