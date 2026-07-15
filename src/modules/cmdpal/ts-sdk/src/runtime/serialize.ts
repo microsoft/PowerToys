@@ -149,6 +149,9 @@ export class WireSerializer {
       assign(result, 'icon', item.icon ?? undefined);
       assign(result, 'isCritical', item.isCritical);
       assign(result, 'requestedShortcut', item.requestedShortcut);
+      if (item.moreCommands && item.moreCommands.length > 0) {
+        result.moreCommands = this.contextItems(item.moreCommands);
+      }
       return result;
     });
   }
