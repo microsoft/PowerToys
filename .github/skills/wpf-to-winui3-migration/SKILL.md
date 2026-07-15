@@ -67,6 +67,7 @@ These rules capture human judgment and must be applied consistently across every
 - **Do NOT use `clr-namespace:`** — Replace with `using:` in all xmlns declarations.
 - **Do NOT use `Style.Triggers` / `DataTrigger` / `EventTrigger`** — Replace with `VisualStateManager`.
 - **Do NOT use `MultiBinding`** — Replace with `x:Bind` function binding or computed ViewModel property.
+- **Do NOT mechanically port WPF `IValueConverter` classes** — Prefer control `VisualState`s, direct `{x:Bind}` Boolean-to-`Visibility` conversion, resources supplied by `XamlControlsResources`, or `CommunityToolkit.WinUI.Converters`. Reuse converter instances and invert them with `ConverterParameter=True` when supported; write a custom converter only for app-specific conversion logic. See [Value Converter Decision Guide](./references/xaml-migration.md#value-converter-decision-guide).
 - **Do NOT use `Visibility="Hidden"`** — WinUI only has `Visible` and `Collapsed`. Use `Opacity="0"` if layout must be preserved.
 - **Do NOT use `IsDefault` / `IsCancel`** — Use `AccentButtonStyle` for primary button; handle Enter/Escape in code-behind.
 - **Do NOT omit `BasedOn` when overriding default styles** — Without it, your style replaces the entire default. Always use `BasedOn="{StaticResource DefaultButtonStyle}"` etc.
