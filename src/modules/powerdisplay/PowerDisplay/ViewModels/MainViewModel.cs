@@ -507,8 +507,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         finally
         {
-            IsProfilesLoading = false;
-            _profileOperationGate.Release();
+            try
+            {
+                IsProfilesLoading = false;
+            }
+            finally
+            {
+                _profileOperationGate.Release();
+            }
         }
     }
 
