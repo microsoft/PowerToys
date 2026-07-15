@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -26,7 +27,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
     private readonly JSExtensionManifest _manifest;
     private readonly IconInfo _icon;
     private readonly Dictionary<(string Message, int State), StatusMessage> _shownStatusMessages = new();
-    private readonly Dictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
+    private readonly ConcurrentDictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;
     private bool _settingsQueried;
