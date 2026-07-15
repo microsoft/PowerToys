@@ -249,7 +249,7 @@ public class ColorPickerEndToEndTests : UITestBase
 
             // Cross-check: the clipboard value should be the same HEX the overlay was showing.
             // Both come from `ColorText` in MainViewModel, just routed differently (overlay
-            // binding vs. ClipboardHelper.CopyToClipboard in HandleMouseClickAction).
+            // binding vs. ManagedCommon.ClipboardHelper.TrySetText in HandleMouseClickAction).
             Assert.IsTrue(
                 ContainsIgnoringHash(capturedColor, overlayHex) || ContainsIgnoringHash(overlayHex, capturedColor),
                 $"Overlay HEX '{overlayHex}' and clipboard '{capturedColor}' don't match.");

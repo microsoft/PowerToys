@@ -184,7 +184,8 @@ namespace ColorPicker.ViewModels
         {
             ArgumentNullException.ThrowIfNull(colorFormat);
 
-            if (!ManagedCommon.ClipboardHelper.TrySetText(colorFormat.ColorText, flush: true))
+            if (!string.IsNullOrEmpty(colorFormat.ColorText) &&
+                !ManagedCommon.ClipboardHelper.TrySetText(colorFormat.ColorText, flush: true))
             {
                 Logger.LogError("Failed to set text into clipboard");
             }

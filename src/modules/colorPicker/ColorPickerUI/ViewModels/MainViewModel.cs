@@ -193,6 +193,11 @@ namespace ColorPicker.ViewModels
 
         private static void CopyToClipboard(string colorText)
         {
+            if (string.IsNullOrEmpty(colorText))
+            {
+                return;
+            }
+
             if (!ManagedCommon.ClipboardHelper.TrySetText(colorText, flush: true))
             {
                 Logger.LogError("Failed to set text into clipboard");
