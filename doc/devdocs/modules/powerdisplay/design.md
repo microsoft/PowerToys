@@ -1147,14 +1147,17 @@ flowchart TB
 ```json
 {
   "properties": {
-    "apply_monitor_settings": { "value": true },
-    "enable_light_mode_profile": { "value": true },
-    "light_mode_profile": { "value": "Productivity" },
-    "enable_dark_mode_profile": { "value": true },
-    "dark_mode_profile": { "value": "Night Mode" }
+    "enableLightModeProfile": { "value": true },
+    "lightModeProfile": { "value": "" },
+    "lightModeProfileId": { "value": 3 },
+    "enableDarkModeProfile": { "value": true },
+    "darkModeProfile": { "value": "" },
+    "darkModeProfileId": { "value": 7 }
   }
 }
 ```
+
+The name fields are retained only for migration from pre-ID settings; current code persists and resolves the positive ID fields.
 
 ---
 
@@ -1377,18 +1380,18 @@ sequenceDiagram
     User->>ProfileDialog: Clicks "Save"
 
     ProfileDialog->>ProfileDialog: Validate inputs
-    Note over ProfileDialog: Check name unique,<br/>at least one monitor selected
+    Note over ProfileDialog: Check non-empty name,<br/>at least one monitor selected
 
     ProfileDialog-->>ViewModel: ResultProfile (PowerDisplayProfile)
 
-    ViewModel->>ProfileHelper: AddOrUpdateProfileAsync(profile)
+    ViewModel->>ProfileHelper: ProfileHelper.AddOrUpdateProfileAsync(profile)
     ProfileHelper->>ProfileStore: AddOrUpdateProfileAsync(profile)
 
     ProfileStore->>ProfileStore: Acquire process lock and named mutex
     ProfileStore->>FileSystem: Read profiles.json
     FileSystem-->>ProfileStore: Existing profiles
     ProfileStore->>ProfileStore: Assign id and update profile
-    ProfileStore->>FileSystem: Write profiles.json
+    ProfileStore->>FileSystem: Write temp file and atomically replace profiles.json
     FileSystem-->>ProfileStore: Success
     ProfileStore-->>ProfileHelper: Completed
     ProfileHelper-->>ViewModel: Completed
