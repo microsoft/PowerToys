@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -36,6 +39,55 @@ namespace ManagedCommon.UnitTests
             RandomAccessStreamReference reference = await backend.Content.GetView().GetBitmapAsync();
             CollectionAssert.AreEqual(PngBytes, await ReadBytesAsync(reference));
             Assert.AreEqual(1, backend.FlushCallCount);
+        }
+
+        [TestMethod]
+        public async Task TrySetImage_SyncOverAsync_DoesNotCaptureCallerSynchronizationContext()
+        {
+            var backend = new TestClipboardBackend();
+            using var executor = new ClipboardThreadExecutor();
+            var service = CreateService(backend, executor);
+            using var stream = new DeferredAsyncReadStream(PngBytes);
+            var callerContext = new QueuedSynchronizationContext();
+            using var started = new ManualResetEventSlim();
+            var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var thread = new Thread(() =>
+            {
+                SynchronizationContext? previous = SynchronizationContext.Current;
+                SynchronizationContext.SetSynchronizationContext(callerContext);
+                try
+                {
+                    started.Set();
+                    completion.SetResult(service.TrySetImage(stream, flush: false));
+                }
+                catch (Exception ex)
+                {
+                    completion.SetException(ex);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(previous);
+                }
+            })
+            {
+                IsBackground = true,
+            };
+
+            thread.Start();
+            Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(1)));
+
+            if (!completion.Task.Wait(TimeSpan.FromMilliseconds(500)))
+            {
+                callerContext.DrainPostedCallbacks();
+            }
+
+            Assert.IsTrue(completion.Task.Wait(TimeSpan.FromSeconds(2)));
+            Assert.IsTrue(completion.Task.Result);
+            Assert.AreEqual(0, callerContext.PostCount);
+            Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(2)));
+
+            RandomAccessStreamReference reference = await backend.Content.GetView().GetBitmapAsync();
+            CollectionAssert.AreEqual(PngBytes, await ReadBytesAsync(reference));
         }
 
         [TestMethod]
@@ -111,6 +163,142 @@ namespace ManagedCommon.UnitTests
             using var output = new MemoryStream();
             await sourceStream.CopyToAsync(output);
             return output.ToArray();
+        }
+
+        private sealed class DeferredAsyncReadStream : Stream
+        {
+            private readonly byte[] _bytes;
+            private int _position;
+
+            public DeferredAsyncReadStream(byte[] bytes)
+            {
+                _bytes = bytes;
+            }
+
+            public override bool CanRead => true;
+
+            public override bool CanSeek => false;
+
+            public override bool CanWrite => false;
+
+            public override long Length => throw new NotSupportedException();
+
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            public override void Flush()
+            {
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int remaining = _bytes.Length - _position;
+                int toCopy = Math.Min(remaining, count);
+                if (toCopy <= 0)
+                {
+                    return 0;
+                }
+
+                Array.Copy(_bytes, _position, buffer, offset, toCopy);
+                _position += toCopy;
+                return toCopy;
+            }
+
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                var completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                ThreadPool.QueueUserWorkItem(
+                    _ =>
+                    {
+                        try
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                completion.TrySetCanceled(cancellationToken);
+                                return;
+                            }
+
+                            completion.TrySetResult(Read(buffer.Span));
+                        }
+                        catch (Exception ex)
+                        {
+                            completion.TrySetException(ex);
+                        }
+                    });
+                return new ValueTask<int>(completion.Task);
+            }
+
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new NotSupportedException();
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new NotSupportedException();
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        private sealed class QueuedSynchronizationContext : SynchronizationContext
+        {
+            private readonly ConcurrentQueue<(SendOrPostCallback Callback, object? State)> _callbacks = new();
+            private int _postCount;
+
+            public int PostCount => Volatile.Read(ref _postCount);
+
+            public override void Post(SendOrPostCallback d, object? state)
+            {
+                Interlocked.Increment(ref _postCount);
+                _callbacks.Enqueue((d, state));
+            }
+
+            public void DrainPostedCallbacks()
+            {
+                while (_callbacks.TryDequeue(out (SendOrPostCallback Callback, object? State) callback))
+                {
+                    using var finished = new ManualResetEventSlim();
+                    Exception? callbackException = null;
+
+                    ThreadPool.QueueUserWorkItem(
+                        _ =>
+                        {
+                            SynchronizationContext? previous = Current;
+                            try
+                            {
+                                SetSynchronizationContext(this);
+                                callback.Callback(callback.State);
+                            }
+                            catch (Exception ex)
+                            {
+                                callbackException = ex;
+                            }
+                            finally
+                            {
+                                SetSynchronizationContext(previous);
+                                finished.Set();
+                            }
+                        });
+
+                    Assert.IsTrue(finished.Wait(TimeSpan.FromSeconds(2)));
+                    if (callbackException is not null)
+                    {
+                        ExceptionDispatchInfo.Capture(callbackException).Throw();
+                    }
+                }
+            }
         }
     }
 }

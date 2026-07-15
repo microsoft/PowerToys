@@ -149,7 +149,7 @@ namespace ManagedCommon
             byte[] bytes;
             using (var copy = new MemoryStream())
             {
-                await encodedImage.CopyToAsync(copy);
+                await encodedImage.CopyToAsync(copy).ConfigureAwait(false);
                 if (copy.Length == 0)
                 {
                     return false;
@@ -158,7 +158,7 @@ namespace ManagedCommon
                 bytes = copy.ToArray();
             }
 
-            return await TrySetPackageAsync(() => CreateImagePackageAsync(bytes), flush);
+            return await TrySetPackageAsync(() => CreateImagePackageAsync(bytes), flush).ConfigureAwait(false);
         }
 
         internal bool TryGetImage(out RandomAccessStreamReference? image)
