@@ -281,6 +281,15 @@ internal static class JSModelMapper
             item.Subtitle = subtitle;
         }
 
+        // Context items can carry their own nested context menu via "moreCommands".
+        // The wire omits the field entirely when empty, so only assign when the
+        // recursive parse yields children and otherwise leave the default.
+        var moreCommands = ParseContextItems(element, "moreCommands", "MoreCommands", connection);
+        if (moreCommands.Length > 0)
+        {
+            item.MoreCommands = moreCommands;
+        }
+
         return item;
     }
 

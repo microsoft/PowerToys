@@ -304,6 +304,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
             {
                 Message = message,
                 State = (MessageState)state,
+                Progress = ReadProgress(paramsElement),
             };
 
             _shownStatusMessages[(message, state)] = statusMessage;
@@ -356,14 +357,38 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private static int ReadState(JsonElement paramsElement)
     {
-        if (paramsElement.ValueKind == JsonValueKind.Object &&
-            paramsElement.TryGetProperty("state", out var stateProp) &&
+        if (JSModelMapper.TryGetAnyCase(paramsElement, "state", "State", out var stateProp) &&
             stateProp.ValueKind == JsonValueKind.Number)
         {
             return stateProp.GetInt32();
         }
 
         return 0;
+    }
+
+    private static IProgressState? ReadProgress(JsonElement paramsElement)
+    {
+        if (!JSModelMapper.TryGetAnyCase(paramsElement, "progress", "Progress", out var progressProp) ||
+            progressProp.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var isIndeterminate =
+            JSModelMapper.TryGetAnyCase(progressProp, "isIndeterminate", "IsIndeterminate", out var indeterminateProp) &&
+            indeterminateProp.ValueKind == JsonValueKind.True;
+
+        var progress = new ProgressState { IsIndeterminate = isIndeterminate };
+
+        if (JSModelMapper.TryGetAnyCase(progressProp, "progressPercent", "ProgressPercent", out var percentProp) &&
+            percentProp.ValueKind == JsonValueKind.Number &&
+            percentProp.TryGetDouble(out var percent) &&
+            percent >= 0)
+        {
+            progress.ProgressPercent = percent >= uint.MaxValue ? uint.MaxValue : (uint)percent;
+        }
+
+        return progress;
     }
 
     private static (string Message, int State) ReadStatusMessage(JsonElement paramsElement)

@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Text.Json;
+using System.Threading;
 using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -14,18 +16,28 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// command is resolved lazily; tags, details and context items are materialized
 /// through <see cref="JSModelMapper"/>.
 /// </summary>
+/// <remarks>
+/// The backing payload can be refreshed in place through <see cref="UpdateData"/>
+/// when a dynamic page rebuilds its items. Reusing the same adapter instance lets
+/// the host keep the same view model (and therefore the current selection) while
+/// the item's content updates. The payload is held behind a boxed reference so the
+/// background fetch thread can swap it without a UI-thread reader seeing a torn
+/// <see cref="JsonElement"/> struct.
+/// </remarks>
 internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
 {
-    private readonly JsonElement _data;
     private readonly JsonRpcConnection _connection;
+    private DataBox _dataBox;
     private ICommand? _command;
     private bool _commandResolved;
 
     public JSListItemAdapter(JsonElement data, JsonRpcConnection connection)
     {
-        _data = data;
+        _dataBox = new DataBox(data);
         _connection = connection;
     }
+
+    private JsonElement Data => Volatile.Read(ref _dataBox).Element;
 
     public ICommand? Command
     {
@@ -35,7 +47,7 @@ internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
             {
                 _commandResolved = true;
 
-                if (JSModelMapper.TryGetAnyCase(_data, "command", "Command", out var commandElement) &&
+                if (JSModelMapper.TryGetAnyCase(Data, "command", "Command", out var commandElement) &&
                     commandElement.ValueKind == JsonValueKind.Object)
                 {
                     _command = JSCommandFactory.CreateCommandFromJson(commandElement, _connection);
@@ -46,19 +58,63 @@ internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
         }
     }
 
-    public IContextItem[] MoreCommands => JSModelMapper.ParseContextItems(_data, "moreCommands", "MoreCommands", _connection);
+    public IContextItem[] MoreCommands => JSModelMapper.ParseContextItems(Data, "moreCommands", "MoreCommands", _connection);
 
-    public IIconInfo Icon => JSModelMapper.GetIcon(_data, "icon", "Icon");
+    public IIconInfo Icon => JSModelMapper.GetIcon(Data, "icon", "Icon");
 
-    public string Title => JSModelMapper.GetString(_data, "displayName") ?? JSModelMapper.GetString(_data, "title") ?? string.Empty;
+    public string Title => JSModelMapper.GetString(Data, "displayName") ?? JSModelMapper.GetString(Data, "title") ?? string.Empty;
 
-    public string Subtitle => JSModelMapper.GetString(_data, "description") ?? JSModelMapper.GetString(_data, "subtitle") ?? string.Empty;
+    public string Subtitle => JSModelMapper.GetString(Data, "description") ?? JSModelMapper.GetString(Data, "subtitle") ?? string.Empty;
 
-    public ITag[] Tags => JSModelMapper.ParseTags(_data);
+    public ITag[] Tags => JSModelMapper.ParseTags(Data);
 
-    public IDetails? Details => JSModelMapper.ParseDetails(_data, _connection);
+    public IDetails? Details => JSModelMapper.ParseDetails(Data, _connection);
 
-    public string Section => JSModelMapper.GetString(_data, "section") ?? string.Empty;
+    public string Section => JSModelMapper.GetString(Data, "section") ?? string.Empty;
 
-    public string TextToSuggest => JSModelMapper.GetString(_data, "textToSuggest") ?? string.Empty;
+    public string TextToSuggest => JSModelMapper.GetString(Data, "textToSuggest") ?? string.Empty;
+
+    /// <summary>
+    /// Derives a stable identity for a list item payload so adapters can be
+    /// reused across refreshes. Mirrors the <see cref="Title"/> resolution.
+    /// </summary>
+    internal static string ComputeKey(JsonElement data)
+        => JSModelMapper.GetString(data, "displayName") ?? JSModelMapper.GetString(data, "title") ?? string.Empty;
+
+    /// <summary>
+    /// Refreshes the backing payload in place. When the content actually changes
+    /// this raises <c>PropChanged</c> for the affected properties so the bound
+    /// view model updates without being replaced, preserving the current
+    /// selection on a live-updating list.
+    /// </summary>
+    internal void UpdateData(JsonElement data)
+    {
+        var current = Volatile.Read(ref _dataBox).Element;
+        if (current.ValueKind != JsonValueKind.Undefined &&
+            string.Equals(current.GetRawText(), data.GetRawText(), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Volatile.Write(ref _dataBox, new DataBox(data));
+        _commandResolved = false;
+        _command = null;
+
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(Subtitle));
+        OnPropertyChanged(nameof(Icon));
+        OnPropertyChanged(nameof(Tags));
+        OnPropertyChanged(nameof(Details));
+        OnPropertyChanged(nameof(Section));
+        OnPropertyChanged(nameof(TextToSuggest));
+        OnPropertyChanged(nameof(MoreCommands));
+        OnPropertyChanged(nameof(Command));
+    }
+
+    private sealed class DataBox
+    {
+        internal DataBox(JsonElement element) => Element = element;
+
+        internal JsonElement Element { get; }
+    }
 }
