@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type {
   CommandResult,
   ICommandProvider,
@@ -291,5 +291,60 @@ describe('ExtensionRuntime settings integration', () => {
     });
     expect(responseFor(sent, 3)?.result).toEqual({ Kind: 6, Args: { Message: 'Settings saved' } });
     expect(settings.getSetting<ToggleSetting>('dark')?.value).toBe(true);
+  });
+});
+
+describe('ExtensionRuntime cache priming', () => {
+  it('does not call provider factories during setProvider', async () => {
+    const topLevel = vi.fn(() => []);
+    const fallback = vi.fn(() => []);
+    const lazyProvider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: topLevel,
+      fallbackCommands: fallback,
+    };
+    const { runtime } = createHarness();
+
+    await runtime.setProvider(lazyProvider);
+
+    expect(topLevel).not.toHaveBeenCalled();
+    expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it('calls each factory once across the normal startup requests', async () => {
+    const invoke = vi.fn((): CommandResult => ({ kind: 'dismiss' }));
+    const command: IInvokableCommand = { id: 'run', name: 'Run', invoke };
+    const topLevel = vi.fn(() => [{ command, title: 'Run' }]);
+    const fallback = vi.fn(() => []);
+    const countingProvider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: topLevel,
+      fallbackCommands: fallback,
+    };
+    const { runtime } = createHarness();
+    await runtime.setProvider(countingProvider);
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'provider/getTopLevelCommands',
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 2,
+      method: 'provider/getFallbackCommands',
+    });
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 3,
+      method: 'command/invoke',
+      params: { commandId: 'run' },
+    });
+
+    expect(topLevel).toHaveBeenCalledTimes(1);
+    expect(fallback).toHaveBeenCalledTimes(1);
+    expect(invoke).toHaveBeenCalledTimes(1);
   });
 });

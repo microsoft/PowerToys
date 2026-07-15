@@ -4,6 +4,7 @@
 
 import type { CommandResult, IInvokableCommand, IconInfo } from '../types.js';
 import { ExtensionHost } from '../runtime/ExtensionHost.js';
+import { openUrlInDefaultBrowser, type UrlOpener } from '../runtime/openUrl.js';
 
 /** A command that performs no action and keeps the palette open. */
 export class NoOpCommand implements IInvokableCommand {
@@ -28,14 +29,18 @@ export class OpenUrlCommand implements IInvokableCommand {
   icon?: IconInfo | null;
   readonly url: string;
 
-  constructor(url: string, name?: string) {
+  private readonly opener: UrlOpener;
+
+  constructor(url: string, name?: string, opener: UrlOpener = openUrlInDefaultBrowser) {
     this.id = `open-url:${url}`;
     this.name = name ?? url;
     this.url = url;
+    this.opener = opener;
   }
 
   invoke(): CommandResult {
-    return { kind: 'dismiss', args: { url: this.url } };
+    this.opener(this.url);
+    return { kind: 'dismiss' };
   }
 }
 
