@@ -56,7 +56,7 @@ public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
             }
             catch (Exception exception)
             {
-                Logger.LogError($"Failed to merge Control Panel tasks into settings search: {exception.Message}");
+                Logger.LogError($"Failed to merge Control Panel tasks into settings search", exception);
             }
         });
     }
