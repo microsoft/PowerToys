@@ -53,7 +53,7 @@ namespace PowerDisplay.Services
 
                 if (profileId is null)
                 {
-                    Logger.LogInfo(
+                    Logger.LogTrace(
                         $"{LogPrefix} No enabled profile id configured for {(isLightMode ? "light" : "dark")} mode");
                     return null;
                 }
