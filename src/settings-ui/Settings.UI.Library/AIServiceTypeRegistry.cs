@@ -118,6 +118,14 @@ public static class AIServiceTypeRegistry
             PrivacyLabel = "AdvancedPaste_OpenAI_PrivacyLabel",
             PrivacyUri = new Uri("https://openai.com/privacy"),
         },
+        [AIServiceType.OpenAICompatible] = new AIServiceTypeMetadata
+        {
+            ServiceType = AIServiceType.OpenAICompatible,
+            DisplayName = "OpenAI Compatible",
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/OpenAI.light.svg",
+            IsOnlineService = true,
+            LegalDescription = "AdvancedPaste_OpenAICompatible_LegalDescription",
+        },
         [AIServiceType.Unknown] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Unknown,

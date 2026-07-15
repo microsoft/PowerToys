@@ -866,7 +866,8 @@ namespace AdvancedPaste.ViewModels
         private static bool SupportsAdvancedAI(AIServiceType serviceType)
         {
             return serviceType is AIServiceType.OpenAI
-                or AIServiceType.AzureOpenAI;
+                or AIServiceType.AzureOpenAI
+                or AIServiceType.OpenAICompatible;
         }
 
         private bool UpdateOpenAIKey()

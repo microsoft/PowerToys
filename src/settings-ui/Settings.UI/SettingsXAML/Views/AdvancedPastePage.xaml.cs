@@ -321,7 +321,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool isFoundryLocal = serviceKind == AIServiceType.FoundryLocal;
             bool requiresApiKey = RequiresApiKeyForService(selectedType);
             bool showModerationToggle = serviceKind == AIServiceType.OpenAI;
-            bool showAdvancedAI = serviceKind == AIServiceType.OpenAI || serviceKind == AIServiceType.AzureOpenAI;
+            bool showAdvancedAI = serviceKind is AIServiceType.OpenAI or AIServiceType.AzureOpenAI or AIServiceType.OpenAICompatible;
 
             if (string.IsNullOrWhiteSpace(draft.EndpointUrl))
             {
@@ -345,6 +345,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PasteAIEnableAdvancedAICheckBox.Visibility = showAdvancedAI ? Visibility.Visible : Visibility.Collapsed;
             PasteAIApiKeyPasswordBox.Visibility = requiresApiKey ? Visibility.Visible : Visibility.Collapsed;
             PasteAIModelNameTextBox.Visibility = isFoundryLocal ? Visibility.Collapsed : Visibility.Visible;
+            PasteAIValidationErrorTextBlock.Visibility = Visibility.Collapsed;
 
             if (requiresApiKey)
             {
@@ -774,6 +775,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void PasteAIProviderConfigurationDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
+            PasteAIValidationErrorTextBlock.Visibility = Visibility.Collapsed;
+
             var draft = ViewModel?.PasteAIProviderDraft;
             if (draft is null)
             {
@@ -788,6 +791,26 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var serviceKind = draft.ServiceTypeKind;
             bool requiresEndpoint = RequiresEndpointForService(serviceKind);
             string endpoint = (draft.EndpointUrl ?? string.Empty).Trim();
+
+            if (serviceKind == AIServiceType.OpenAICompatible)
+            {
+                string modelName = (draft.ModelName ?? string.Empty).Trim();
+                if (!PasteAIProviderValidation.IsValidOpenAICompatibleModelName(modelName))
+                {
+                    args.Cancel = true;
+                    ShowPasteAIValidationError("AdvancedPaste_OpenAICompatible_ModelRequired", PasteAIModelNameTextBox);
+                    return;
+                }
+
+                if (!PasteAIProviderValidation.TryGetOpenAICompatibleEndpoint(endpoint, out _))
+                {
+                    args.Cancel = true;
+                    ShowPasteAIValidationError("AdvancedPaste_OpenAICompatible_EndpointInvalid", PasteAIEndpointUrlTextBox);
+                    return;
+                }
+
+                draft.ModelName = modelName;
+            }
 
             // Never persist placeholder text or stale values for services that don't use an endpoint.
             if (!requiresEndpoint)
@@ -804,6 +827,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
             {
                 args.Cancel = true;
+                ShowPasteAIValidationError("AdvancedPaste_OpenAICompatible_TokenRequired", PasteAIApiKeyPasswordBox);
                 return;
             }
 
@@ -812,6 +836,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // Show success message
             ShowApiKeySavedMessage("Paste AI");
+        }
+
+        private void ShowPasteAIValidationError(string resourceKey, Control control)
+        {
+            PasteAIValidationErrorTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
+            PasteAIValidationErrorTextBlock.Visibility = Visibility.Visible;
+            control?.Focus(FocusState.Programmatic);
         }
 
         private void PasteAIEnableAdvancedAICheckBox_Toggled(object sender, RoutedEventArgs e)
@@ -845,7 +876,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return serviceKind is AIServiceType.AzureOpenAI
                 or AIServiceType.AzureAIInference
                 or AIServiceType.Mistral
-                or AIServiceType.Ollama;
+                or AIServiceType.Ollama
+                or AIServiceType.OpenAICompatible;
         }
 
         private static string GetEndpointPlaceholder(AIServiceType serviceKind)

@@ -22,15 +22,21 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
     private readonly IReadOnlyList<AdvancedPasteCustomAction> _customActions;
     private readonly IReadOnlyList<PasteFormats> _additionalActions;
 
-    public IntegrationTestUserSettings()
+    public IntegrationTestUserSettings(
+        AIServiceType serviceType = AIServiceType.OpenAI,
+        string modelName = "gpt-4o",
+        string endpointUrl = "",
+        bool moderationEnabled = true,
+        string providerId = "integration-openai")
     {
         var provider = new PasteAIProviderDefinition
         {
-            Id = "integration-openai",
+            Id = providerId,
             EnableAdvancedAI = true,
-            ServiceTypeKind = AIServiceType.OpenAI,
-            ModelName = "gpt-4o",
-            ModerationEnabled = true,
+            ServiceTypeKind = serviceType,
+            ModelName = modelName,
+            EndpointUrl = endpointUrl,
+            ModerationEnabled = moderationEnabled,
         };
 
         _configuration = new PasteAIConfiguration
