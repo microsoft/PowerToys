@@ -130,7 +130,7 @@
                                             DataContext="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
                                             Fill="Transparent"
                                             StrokeThickness="2"
-                                            Visibility="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource bool2VisibilityConverter}}">
+                                            Visibility="Collapsed">
                                             <Ellipse.Stroke>
                                                 <SolidColorBrush Color="{Binding}" />
                                             </Ellipse.Stroke>
@@ -149,13 +149,22 @@
                                                         <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="Selected" />
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
                                                 <VisualState x:Name="PointerOverSelected">
                                                     <VisualState.Setters>
                                                         <Setter Target="RootGrid.Opacity" Value="0.8" />
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
                                                     </VisualState.Setters>
                                                 </VisualState>
-                                                <VisualState x:Name="PressedSelected" />
+                                                <VisualState x:Name="PressedSelected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
                                             </VisualStateGroup>
                                         </VisualStateManager.VisualStateGroups>
                                     </Grid>
@@ -255,7 +264,7 @@
             Margin="0,-12,0,0"
             VerticalAlignment="Center"
             Orientation="Vertical"
-            Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
+            Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}, ConverterParameter=True}">
             <FontIcon
                 HorizontalAlignment="Center"
                 FontSize="36"

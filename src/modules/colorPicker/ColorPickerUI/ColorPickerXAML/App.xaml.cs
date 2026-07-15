@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
 using System.Threading;
 
 using ManagedCommon;
@@ -32,19 +31,7 @@ namespace ColorPicker
         {
             _args = args ?? Array.Empty<string>();
 
-            try
-            {
-                string appLanguage = LanguageHelper.LoadLanguage();
-                if (!string.IsNullOrEmpty(appLanguage))
-                {
-                    Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Language initialization error: " + ex.Message);
-            }
+            InitializeLanguage();
 
             _serviceProvider = ConfigureServices();
 
@@ -109,6 +96,22 @@ namespace ColorPicker
             // Make the overlay size to the tooltip and follow the cursor while shown (the
             // IMouseInfoProvider singleton is the same one the MainViewModel reads).
             overlay.InitializeCursorFollow(GetService<ColorPicker.Mouse.IMouseInfoProvider>());
+        }
+
+        private static void InitializeLanguage()
+        {
+            try
+            {
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                Logger.LogError("Language initialization error", ex);
+            }
         }
 
         private static IServiceProvider ConfigureServices()

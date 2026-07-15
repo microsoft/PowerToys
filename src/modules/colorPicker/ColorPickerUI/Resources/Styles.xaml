@@ -4,20 +4,9 @@
     xmlns:converters="using:CommunityToolkit.WinUI.Converters">
 
     <!--  CONVERTERS  -->
-    <converters:BoolToVisibilityConverter
-        x:Key="bool2VisibilityConverter"
-        FalseValue="Collapsed"
-        TrueValue="Visible" />
     <converters:DoubleToVisibilityConverter
         x:Key="numberToVisibilityConverter"
-        FalseValue="Collapsed"
-        GreaterThan="0"
-        TrueValue="Visible" />
-    <converters:DoubleToVisibilityConverter
-        x:Key="numberToInvertedVisibilityConverter"
-        FalseValue="Visible"
-        GreaterThan="0"
-        TrueValue="Collapsed" />
+        GreaterThan="0" />
 
     <!--
         Color-shade swatch button: a thin colored bar whose content (a glyph/label) is
