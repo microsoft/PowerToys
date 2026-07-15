@@ -74,6 +74,7 @@ export class ExtensionRuntime {
   private readonly send: MessageSender;
   private readonly onDispose?: () => void;
   private disposed = false;
+  private primed = false;
 
   constructor(options: ExtensionRuntimeOptions) {
     this.send = options.send;
@@ -85,10 +86,14 @@ export class ExtensionRuntime {
     return this.disposed;
   }
 
-  /** Installs the provider and eagerly caches its top-level commands. */
-  async setProvider(provider: ICommandProvider): Promise<void> {
+  /**
+   * Installs the provider. Commands are cached lazily as the host requests
+   * them (via `provider/getTopLevelCommands`, `provider/getFallbackCommands`,
+   * and page methods), so the provider's command factories are not called here.
+   */
+  setProvider(provider: ICommandProvider): void {
     this.provider = provider;
-    await this.primeCaches();
+    this.primed = false;
   }
 
   /** Handles a single incoming request, always emitting one response. */
@@ -320,7 +325,11 @@ export class ExtensionRuntime {
   }
 
   private async applyFallbackQuery(commandId: string, query: string): Promise<void> {
-    const item = this.fallbacks.get(commandId);
+    let item = this.fallbacks.get(commandId);
+    if (!item && !this.primed) {
+      await this.primeCaches();
+      item = this.fallbacks.get(commandId);
+    }
     if (!item?.fallbackHandler) {
       return;
     }
@@ -332,6 +341,10 @@ export class ExtensionRuntime {
   }
 
   private async primeCaches(): Promise<void> {
+    if (this.primed) {
+      return;
+    }
+    this.primed = true;
     const provider = this.provider;
     if (!provider) {
       return;
@@ -364,8 +377,13 @@ export class ExtensionRuntime {
     const command = (await this.provider?.getCommand?.(commandId)) ?? null;
     if (command) {
       this.cacheCommand(command);
+      return command;
     }
-    return command;
+    if (!this.primed) {
+      await this.primeCaches();
+      return this.commands.get(commandId) ?? null;
+    }
+    return null;
   }
 
   private respond(id: number | string, result: unknown): void {
