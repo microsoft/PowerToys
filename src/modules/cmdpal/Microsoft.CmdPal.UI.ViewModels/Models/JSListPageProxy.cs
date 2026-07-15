@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -24,7 +25,10 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// </summary>
 internal sealed partial class JSListPageProxy : BaseObservable, IListPage
 {
-    private static readonly ConcurrentDictionary<string, JSListPageProxy> ProxyRegistry = new();
+    // Routing is scoped per connection so that identical page ids from different
+    // extensions never collide. Proxies are held weakly so they can be collected
+    // without the registry keeping them alive.
+    private static readonly ConditionalWeakTable<JsonRpcConnection, PageRegistry> Registries = new();
 
     private readonly string _pageId;
     private readonly JsonRpcConnection _connection;
@@ -36,8 +40,14 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _pageData = pageData;
 
-        ProxyRegistry[_pageId] = this;
-        _connection.RegisterNotificationHandler("listPage/itemsChanged", DispatchItemsChanged);
+        var registry = Registries.GetValue(_connection, static conn =>
+        {
+            var created = new PageRegistry();
+            conn.RegisterNotificationHandler("listPage/itemsChanged", paramsElement => DispatchItemsChanged(created, paramsElement));
+            return created;
+        });
+
+        registry.Pages[_pageId] = new WeakReference<JSListPageProxy>(this);
     }
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
@@ -131,7 +141,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
         }
     }
 
-    private static void DispatchItemsChanged(JsonElement paramsElement)
+    private static void DispatchItemsChanged(PageRegistry registry, JsonElement paramsElement)
     {
         try
         {
@@ -142,8 +152,15 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
             }
 
             var pageId = pageProp.GetString();
-            if (pageId == null || !ProxyRegistry.TryGetValue(pageId, out var proxy))
+            if (pageId == null || !registry.Pages.TryGetValue(pageId, out var weakProxy))
             {
+                return;
+            }
+
+            if (!weakProxy.TryGetTarget(out var proxy))
+            {
+                // The proxy has been collected; drop the stale entry.
+                registry.Pages.TryRemove(pageId, out _);
                 return;
             }
 
@@ -201,5 +218,10 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
         }
 
         return items.ToArray();
+    }
+
+    private sealed class PageRegistry
+    {
+        public ConcurrentDictionary<string, WeakReference<JSListPageProxy>> Pages { get; } = new();
     }
 }

@@ -291,7 +291,7 @@ internal static class JSModelMapper
             return null;
         }
 
-        var layout = GetString(gridProp, "layout") ?? string.Empty;
+        var layout = GetString(gridProp, "type") ?? string.Empty;
         var showTitle = GetBool(gridProp, "showTitle", true);
         var showSubtitle = GetBool(gridProp, "showSubtitle", true);
 
@@ -316,7 +316,7 @@ internal static class JSModelMapper
         var filters = new List<IFilterItem>();
         foreach (var element in filtersProp.EnumerateArray())
         {
-            if (GetBool(element, "_isSeparator", false))
+            if (GetBool(element, "separator", false))
             {
                 filters.Add(new Separator(GetString(element, "title") ?? string.Empty));
                 continue;

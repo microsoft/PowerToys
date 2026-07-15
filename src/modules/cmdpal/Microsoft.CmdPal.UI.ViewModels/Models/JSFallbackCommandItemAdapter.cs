@@ -98,7 +98,7 @@ internal sealed partial class JSFallbackCommandItemAdapter : BaseObservable, IFa
         {
             try
             {
-                _connection.SendNotificationAsync(
+                _connection.SendRequestAsync(
                     "fallback/updateQuery",
                     new JsonObject { ["commandId"] = _commandId, ["query"] = query },
                     CancellationToken.None).GetAwaiter().GetResult();
