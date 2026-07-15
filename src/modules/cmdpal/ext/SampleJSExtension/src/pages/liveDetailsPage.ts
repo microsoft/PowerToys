@@ -5,6 +5,7 @@
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
 import { icon } from '../util.js';
+import { LiveRefresh } from '../liveRefresh.js';
 
 /**
  * A list page whose details pane updates once per second. Mirrors the intent of
@@ -16,6 +17,9 @@ import { icon } from '../util.js';
  * `notifyItemsChanged()` on a timer, which asks the host to re-fetch the items
  * (and their rebuilt details). The details therefore refresh live, though
  * through a full item refresh rather than a targeted property change.
+ *
+ * The refresh timer is driven by {@link LiveRefresh} so it only runs while the
+ * page is being viewed and stops itself once the host stops re-fetching.
  */
 export class SampleLiveDetailsPage extends DynamicListPageBase {
   readonly id = 'sample-live-details-page';
@@ -25,19 +29,18 @@ export class SampleLiveDetailsPage extends DynamicListPageBase {
   override icon = icon('\uE916');
   override showDetails = true;
 
-  private timer: NodeJS.Timeout | undefined;
   private counter = 0;
+  private readonly refresh = new LiveRefresh(1000, () => {
+    this.counter += 1;
+    this.notifyItemsChanged();
+  });
 
   override setSearchText(): void {
     // The live details demo does not filter on search text.
   }
 
   override getItems(): IListItem[] {
-    this.timer ??= setInterval(() => {
-      this.counter += 1;
-      this.notifyItemsChanged();
-    }, 1000);
-    this.timer.unref?.();
+    this.refresh.observe();
 
     const now = new Date().toLocaleTimeString();
     const seconds = this.counter === 1 ? 'second' : 'seconds';

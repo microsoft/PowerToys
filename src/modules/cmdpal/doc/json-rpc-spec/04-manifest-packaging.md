@@ -240,7 +240,7 @@ Extensions are distributed as standard npm packages. The recommended `package.js
     "icon.png"
   ],
   "dependencies": {
-    "@microsoft/cmdpal-sdk": "0.1.0"
+    "@microsoft/cmdpal-sdk": "file:../../ts-sdk"
   },
   "devDependencies": {
     "typescript": "^5.8.0"
@@ -251,6 +251,12 @@ Extensions are distributed as standard npm packages. The recommended `package.js
   }
 }
 ```
+
+The `@microsoft/cmdpal-sdk` package is not yet published to a public npm
+registry, so extensions reference it through a relative `file:` dependency that
+points at the SDK inside this repository (adjust the path to match where your
+extension lives). Once the SDK is published, replace that reference with a
+semantic version range such as `^0.1.0`.
 
 ### Naming Convention
 

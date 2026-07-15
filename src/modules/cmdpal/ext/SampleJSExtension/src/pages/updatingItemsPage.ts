@@ -5,6 +5,7 @@
 import { DynamicListPageBase, ListItemBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { IListItem } from '@microsoft/cmdpal-sdk';
 import { icon } from '../util.js';
+import { LiveRefresh } from '../liveRefresh.js';
 
 /**
  * A page whose three items retitle themselves every half second with the
@@ -13,6 +14,9 @@ import { icon } from '../util.js';
  * Approximation: like the live-details sample, the JS protocol has no targeted
  * item property push, so this extends `DynamicListPageBase` and refreshes via
  * `notifyItemsChanged()` on a timer.
+ *
+ * The refresh timer is driven by {@link LiveRefresh} so it only runs while the
+ * page is being viewed and stops itself once the host stops re-fetching.
  */
 export class SampleUpdatingItemsPage extends DynamicListPageBase {
   readonly id = 'sample-updating-items-page';
@@ -21,17 +25,14 @@ export class SampleUpdatingItemsPage extends DynamicListPageBase {
 
   override icon = icon('\uE72C');
 
-  private timer: NodeJS.Timeout | undefined;
+  private readonly refresh = new LiveRefresh(500, () => this.notifyItemsChanged());
 
   override setSearchText(): void {
     // This page updates on a timer rather than on search input.
   }
 
   override getItems(): IListItem[] {
-    this.timer ??= setInterval(() => {
-      this.notifyItemsChanged();
-    }, 500);
-    this.timer.unref?.();
+    this.refresh.observe();
 
     const now = new Date();
     return [

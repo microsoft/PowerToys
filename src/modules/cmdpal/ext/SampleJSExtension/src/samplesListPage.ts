@@ -50,6 +50,12 @@ export class SamplesListPage extends ListPageBase {
 
   override icon = icon('\ue946');
 
+  // These two pages own periodic refresh timers, so they are built once and
+  // reused. Constructing a new instance on every navigation would let a fresh
+  // timer be armed each time the page is opened.
+  private readonly liveDetailsPage = new SampleLiveDetailsPage();
+  private readonly updatingItemsPage = new SampleUpdatingItemsPage();
+
   override getItems(): IListItem[] {
     return [
       new ListItemBase({
@@ -68,7 +74,7 @@ export class SamplesListPage extends ListPageBase {
         subtitle: 'A list of items, each with additional details to display',
       }),
       new ListItemBase({
-        command: new SampleLiveDetailsPage(),
+        command: this.liveDetailsPage,
         title: 'Live Updating Details',
         subtitle: 'Details pane updates in real time without reselecting',
       }),
@@ -78,7 +84,7 @@ export class SamplesListPage extends ListPageBase {
         subtitle: 'A list of items, with sections header',
       }),
       new ListItemBase({
-        command: new SampleUpdatingItemsPage(),
+        command: this.updatingItemsPage,
         title: 'List page with items that change',
         subtitle: 'The items on the list update themselves in real time',
       }),
