@@ -1119,8 +1119,8 @@ flowchart TB
     ThemeEval -->|"Time boundary<br/>or manual"| StateManager
     StateManager --> LightSwitchSettings
     StateManager --> NotifyPD
-    NotifyPD -->|"pure light/dark theme event"| LightEvent
-    NotifyPD -->|"pure light/dark theme event"| DarkEvent
+    NotifyPD -->|"pure light theme event"| LightEvent
+    NotifyPD -->|"pure dark theme event"| DarkEvent
 
     %% PowerDisplay flow - theme determined from event
     LightEvent -->|"Event signaled"| EventWaiter
@@ -1142,7 +1142,7 @@ flowchart TB
     style FileSystem fill:#fffde7
 ```
 
-Native LightSwitch does not parse PowerDisplay profile references. It only publishes the light/dark named event, and PowerDisplay remains responsible for reading the typed settings and validating the selected profile.
+Native LightSwitch treats these named events as pure theme-change notifications and does not parse PowerDisplay profile enablement, names, or IDs. PowerDisplay reads the typed LightSwitch settings after receiving the event and is the sole authority that validates and applies the configured profile.
 
 ### LightSwitch Settings JSON Structure
 
