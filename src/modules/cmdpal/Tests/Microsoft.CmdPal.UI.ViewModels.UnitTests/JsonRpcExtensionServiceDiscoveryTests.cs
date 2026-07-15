@@ -86,6 +86,53 @@ public class JsonRpcExtensionServiceDiscoveryTests
         Assert.AreEqual(0, results.Count);
     }
 
+    [TestMethod]
+    public void DecideCrashAction_AtOrBelowLimit_Restarts()
+    {
+        Assert.AreEqual(JsonRpcExtensionService.CrashAction.Restart, JsonRpcExtensionService.DecideCrashAction(1, 3));
+        Assert.AreEqual(JsonRpcExtensionService.CrashAction.Restart, JsonRpcExtensionService.DecideCrashAction(2, 3));
+        Assert.AreEqual(JsonRpcExtensionService.CrashAction.Restart, JsonRpcExtensionService.DecideCrashAction(3, 3));
+    }
+
+    [TestMethod]
+    public void DecideCrashAction_AboveLimit_Disables()
+    {
+        Assert.AreEqual(JsonRpcExtensionService.CrashAction.Disable, JsonRpcExtensionService.DecideCrashAction(4, 3));
+        Assert.AreEqual(JsonRpcExtensionService.CrashAction.Disable, JsonRpcExtensionService.DecideCrashAction(10, 3));
+    }
+
+    [TestMethod]
+    public void IsUnderDirectory_SamePath_IsTrue()
+    {
+        var dir = Path.Combine(_root, "foo");
+        Assert.IsTrue(JsonRpcExtensionService.IsUnderDirectory(dir, dir));
+        Assert.IsTrue(JsonRpcExtensionService.IsUnderDirectory(dir + Path.DirectorySeparatorChar, dir));
+    }
+
+    [TestMethod]
+    public void IsUnderDirectory_Descendant_IsTrue()
+    {
+        var dir = Path.Combine(_root, "foo");
+        var file = Path.Combine(dir, "src", "index.js");
+        Assert.IsTrue(JsonRpcExtensionService.IsUnderDirectory(file, dir));
+    }
+
+    [TestMethod]
+    public void IsUnderDirectory_SiblingWithSharedPrefix_IsFalse()
+    {
+        // "foo-bar" must not be considered a child of "foo".
+        var dir = Path.Combine(_root, "foo");
+        var sibling = Path.Combine(_root, "foo-bar", "index.js");
+        Assert.IsFalse(JsonRpcExtensionService.IsUnderDirectory(sibling, dir));
+    }
+
+    [TestMethod]
+    public void IsUnderDirectory_EmptyArguments_IsFalse()
+    {
+        Assert.IsFalse(JsonRpcExtensionService.IsUnderDirectory(string.Empty, _root));
+        Assert.IsFalse(JsonRpcExtensionService.IsUnderDirectory(_root, string.Empty));
+    }
+
     private void CreateExtension(string dirName, string packageJson, string? entryPointRelativePath)
     {
         var dir = Path.Combine(_root, dirName);
