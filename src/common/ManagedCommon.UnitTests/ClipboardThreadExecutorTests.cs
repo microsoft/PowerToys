@@ -174,5 +174,61 @@ namespace ManagedCommon.UnitTests
                 AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionHandler;
             }
         }
+
+        [TestMethod]
+        public async Task InvokeAsync_DisposeFromExternalThread_WaitsForActiveAsyncWorkAndRejectsNewInvocations()
+        {
+            using var executor = new ClipboardThreadExecutor();
+            using var activeStarted = new ManualResetEventSlim();
+            using var disposeStarted = new ManualResetEventSlim();
+            using var unhandledExceptionSeen = new ManualResetEventSlim();
+            var releaseActive = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Exception? unhandledException = null;
+
+            void UnhandledExceptionHandler(object? sender, UnhandledExceptionEventArgs e)
+            {
+                unhandledException = e.ExceptionObject as Exception;
+                unhandledExceptionSeen.Set();
+            }
+
+            AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionHandler;
+            try
+            {
+                Task<int> activeTask = executor.InvokeAsync(async () =>
+                {
+                    activeStarted.Set();
+                    await releaseActive.Task;
+                    return 7;
+                });
+
+                Assert.IsTrue(activeStarted.Wait(TimeSpan.FromSeconds(1)));
+                Assert.IsFalse(activeTask.IsCompleted);
+
+                Task disposeTask = Task.Run(() =>
+                {
+                    disposeStarted.Set();
+                    executor.Dispose();
+                });
+
+                Assert.IsTrue(disposeStarted.Wait(TimeSpan.FromSeconds(1)));
+                Assert.IsFalse(disposeTask.Wait(TimeSpan.FromMilliseconds(100)));
+
+                releaseActive.SetResult(null);
+
+                int result = await activeTask;
+                Assert.AreEqual(7, result);
+
+                await disposeTask;
+
+                Assert.IsFalse(unhandledExceptionSeen.Wait(TimeSpan.FromMilliseconds(250)));
+                Assert.IsNull(unhandledException);
+
+                Assert.ThrowsException<ObjectDisposedException>(() => executor.InvokeAsync(() => 0));
+            }
+            finally
+            {
+                AppDomain.CurrentDomain.UnhandledException -= UnhandledExceptionHandler;
+            }
+        }
     }
 }
