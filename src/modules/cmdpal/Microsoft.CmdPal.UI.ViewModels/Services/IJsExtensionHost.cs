@@ -25,4 +25,14 @@ public interface IJsExtensionHost
     /// </summary>
     /// <param name="extensionDirectory">The extension's directory under the JSExtensions root.</param>
     void StopExtension(string extensionDirectory);
+
+    /// <summary>
+    /// Determines whether <paramref name="extensionDirectory"/> contains a valid CmdPal manifest
+    /// that the Phase 4 discovery scan can load (a package.json with a cmdpal section at the
+    /// directory root). Used after an install so success is only reported when the extension is
+    /// actually loadable.
+    /// </summary>
+    /// <param name="extensionDirectory">The extension's directory under the JSExtensions root.</param>
+    /// <returns><see langword="true"/> when a loadable manifest is present; otherwise, <see langword="false"/>.</returns>
+    bool IsExtensionDiscoverable(string extensionDirectory);
 }

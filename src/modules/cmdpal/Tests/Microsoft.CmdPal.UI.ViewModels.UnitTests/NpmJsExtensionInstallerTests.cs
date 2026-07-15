@@ -41,6 +41,27 @@ public class NpmJsExtensionInstallerTests
     }
 
     [TestMethod]
+    public async Task InstallAsync_Fails_AndCleansUp_WhenManifestNotDiscoverable()
+    {
+        var host = CreateHost();
+        host.Setup(x => x.IsExtensionDiscoverable(It.IsAny<string>())).Returns(false);
+        var runner = new Mock<INpmCommandRunner>();
+        runner.Setup(x => x.IsNpmAvailable()).Returns(true);
+        runner
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(NpmCommandResult.Ok());
+
+        var installer = new NpmJsExtensionInstaller(host.Object, runner.Object);
+
+        var result = await installer.InstallAsync("sample-ext", "@contoso/sample", null, CancellationToken.None);
+
+        var expectedDirectory = Path.Combine(Root, "sample-ext");
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.ErrorMessage);
+        runner.Verify(x => x.RemoveDirectory(expectedDirectory), Times.Once);
+    }
+
+    [TestMethod]
     public async Task InstallAsync_Fails_WhenNpmNotAvailable()
     {
         var host = CreateHost();
@@ -103,7 +124,8 @@ public class NpmJsExtensionInstallerTests
         var runner = new Mock<INpmCommandRunner>();
         runner
             .Setup(x => x.RemoveDirectory(It.IsAny<string>()))
-            .Callback(() => order.Add("remove"));
+            .Callback(() => order.Add("remove"))
+            .Returns(true);
 
         var installer = new NpmJsExtensionInstaller(host.Object, runner.Object);
 
@@ -116,10 +138,29 @@ public class NpmJsExtensionInstallerTests
         runner.Verify(x => x.RemoveDirectory(expectedDirectory), Times.Once);
     }
 
+    [TestMethod]
+    public async Task UninstallAsync_Fails_WhenDirectoryDeletionFails()
+    {
+        var host = CreateHost();
+        var runner = new Mock<INpmCommandRunner>();
+        runner.Setup(x => x.RemoveDirectory(It.IsAny<string>())).Returns(false);
+
+        var installer = new NpmJsExtensionInstaller(host.Object, runner.Object);
+
+        var result = await installer.UninstallAsync("sample-ext", CancellationToken.None);
+
+        var expectedDirectory = Path.Combine(Root, "sample-ext");
+        Assert.IsFalse(result.Succeeded);
+        Assert.IsNotNull(result.ErrorMessage);
+        host.Verify(x => x.StopExtension(expectedDirectory), Times.Once);
+        runner.Verify(x => x.RemoveDirectory(expectedDirectory), Times.Once);
+    }
+
     private static Mock<IJsExtensionHost> CreateHost()
     {
         var host = new Mock<IJsExtensionHost>();
         host.SetupGet(x => x.ExtensionsRootPath).Returns(Root);
+        host.Setup(x => x.IsExtensionDiscoverable(It.IsAny<string>())).Returns(true);
         return host;
     }
 }

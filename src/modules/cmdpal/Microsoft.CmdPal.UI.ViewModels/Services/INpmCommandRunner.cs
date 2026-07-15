@@ -36,7 +36,12 @@ public interface INpmCommandRunner
     /// directory does not exist.
     /// </summary>
     /// <param name="targetDirectory">The extension directory to remove.</param>
-    void RemoveDirectory(string targetDirectory);
+    /// <returns>
+    /// <see langword="true"/> when the directory no longer exists after the call (either it was
+    /// deleted or it never existed); <see langword="false"/> when deletion failed and the
+    /// directory remains on disk.
+    /// </returns>
+    bool RemoveDirectory(string targetDirectory);
 }
 
 /// <summary>

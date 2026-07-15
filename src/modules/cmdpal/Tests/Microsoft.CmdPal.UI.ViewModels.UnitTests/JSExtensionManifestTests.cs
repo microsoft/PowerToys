@@ -260,6 +260,63 @@ public class JSExtensionManifestTests
         StringAssert.Contains(result.FailureReason, "package.json");
     }
 
+    [TestMethod]
+    public void TryParse_AbsoluteEntryPoint_IsInvalid()
+    {
+        // Create a real file at an absolute path outside the extension directory so the
+        // rejection is due to the rooted-path rule, not a missing file.
+        var outsidePath = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestAbsolute_{Guid.NewGuid():N}.js");
+        File.WriteAllText(outsidePath, "// entry point");
+        try
+        {
+            var json = $$"""
+            {
+                "name": "absolute-entry",
+                "main": {{System.Text.Json.JsonSerializer.Serialize(outsidePath)}},
+                "cmdpal": {}
+            }
+            """;
+
+            var result = JSExtensionManifest.TryParse(json, _testDirectory);
+
+            Assert.IsFalse(result.IsValid);
+            StringAssert.Contains(result.FailureReason, "relative path");
+        }
+        finally
+        {
+            File.Delete(outsidePath);
+        }
+    }
+
+    [TestMethod]
+    public void TryParse_EntryPointEscapingDirectory_IsInvalid()
+    {
+        // Create a real file one level above the extension directory and try to reach it via "..".
+        var parent = Path.GetDirectoryName(_testDirectory)!;
+        var escapeTarget = Path.Combine(parent, $"JSExtensionManifestEscape_{Guid.NewGuid():N}.js");
+        File.WriteAllText(escapeTarget, "// entry point");
+        try
+        {
+            var relative = "../" + Path.GetFileName(escapeTarget);
+            var json = $$"""
+            {
+                "name": "escaping-entry",
+                "main": {{System.Text.Json.JsonSerializer.Serialize(relative)}},
+                "cmdpal": {}
+            }
+            """;
+
+            var result = JSExtensionManifest.TryParse(json, _testDirectory);
+
+            Assert.IsFalse(result.IsValid);
+            StringAssert.Contains(result.FailureReason, "escape");
+        }
+        finally
+        {
+            File.Delete(escapeTarget);
+        }
+    }
+
     private void CreateEntryPoint(string relativePath)
     {
         var fullPath = Path.Combine(_testDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));

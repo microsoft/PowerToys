@@ -76,6 +76,14 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         }
     }
 
+    /// <summary>
+    /// Raised when the underlying Node.js process exits unexpectedly (a crash), after the
+    /// wrapper has torn down its process and connection handles. It is not raised for an
+    /// intentional stop via <see cref="SignalDispose"/>. The service uses this to remove the
+    /// now-dead provider and decide whether to restart or disable the extension.
+    /// </summary>
+    public event EventHandler? ProcessExited;
+
     public string PackageDisplayName => _manifest.EffectiveDisplayName;
 
     public string ExtensionDisplayName => _manifest.EffectiveDisplayName;
@@ -420,6 +428,9 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
 
     private void OnConnectionDisconnected(object? sender, EventArgs e)
     {
+        Process? process;
+        JsonRpcConnection? connection;
+
         lock (_lock)
         {
             // Ignore disconnections that we triggered while stopping or disposing.
@@ -437,10 +448,21 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
                 Logger.LogError($"JS extension {_manifest.Name} marked unhealthy after {_consecutiveCrashCount} consecutive crashes");
             }
 
+            process = _nodeProcess;
+            connection = _connection;
             _nodeProcess = null;
             _connection = null;
             _commandProviderProxy = null;
         }
+
+        // This runs on the connection's read-loop thread, and JsonRpcConnection.Dispose()
+        // joins that thread. Tear the handles down and notify the service on a background
+        // thread to avoid a self-join and to keep the read loop from blocking on itself.
+        _ = Task.Run(() =>
+        {
+            TearDown(process, connection);
+            ProcessExited?.Invoke(this, EventArgs.Empty);
+        });
     }
 
     private void TearDown(Process? process, JsonRpcConnection? connection)
