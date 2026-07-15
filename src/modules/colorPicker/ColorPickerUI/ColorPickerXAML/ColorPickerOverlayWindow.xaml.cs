@@ -53,6 +53,7 @@ namespace ColorPicker
         private const uint SwpNoActivate = 0x0010;
 
         private readonly nint _hwnd;
+        private readonly CoalescedAction _resizeRequest;
 
         private IMouseInfoProvider _mouseInfoProvider;
         private Storyboard _appearStoryboard;
@@ -64,6 +65,9 @@ namespace ColorPicker
         public ColorPickerOverlayWindow()
         {
             InitializeComponent();
+            _resizeRequest = new CoalescedAction(
+                callback => DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => callback()),
+                ResizeToContent);
             _hwnd = this.GetWindowHandle();
         }
 
@@ -84,10 +88,7 @@ namespace ColorPicker
             // The tooltip resizes only when its content changes (e.g. a longer color string or the
             // color-name line). Re-cache the size then and re-apply it; the per-tick path stays a
             // pure move so following is not throttled by a layout pass every cursor tick.
-            if (Content is FrameworkElement card)
-            {
-                card.SizeChanged += (s, e) => MoveToCursor(_lastCursor, resize: true);
-            }
+            ColorPickerViewControl.DesiredSizeInvalidated += ColorPickerViewControl_DesiredSizeInvalidated;
         }
 
         /// <summary>
@@ -109,13 +110,7 @@ namespace ColorPicker
             DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
             {
                 PlayAppearAnimation();
-
-                if (_mouseInfoProvider != null)
-                {
-                    // The DisplayArea and DPI under the cursor are resolved per move inside
-                    // MoveToCursor, so a tooltip crossing into a different-DPI monitor re-sizes.
-                    MoveToCursor(_mouseInfoProvider.CurrentPosition, resize: true);
-                }
+                _resizeRequest.Request();
             });
         }
 
@@ -148,6 +143,21 @@ namespace ColorPicker
             _appearStoryboard.Begin();
         }
 
+        private void ColorPickerViewControl_DesiredSizeInvalidated(object sender, EventArgs e)
+        {
+            _resizeRequest.Request();
+        }
+
+        private void ResizeToContent()
+        {
+            if (_mouseInfoProvider != null)
+            {
+                // The DisplayArea and DPI under the cursor are resolved per move inside
+                // MoveToCursor, so a tooltip crossing into a different-DPI monitor re-sizes.
+                MoveToCursor(_mouseInfoProvider.CurrentPosition, resize: true);
+            }
+        }
+
         private void MoveToCursor(Point cursorPhysical, bool resize)
         {
             _lastCursor = cursorPhysical;
@@ -177,14 +187,9 @@ namespace ColorPicker
             // resize is requested (first show / content change), so the cursor tick stays a move.
             if (resize || _width <= 0 || _height <= 0)
             {
-                if (Content is not FrameworkElement card)
-                {
-                    return;
-                }
-
-                card.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                int width = (int)Math.Ceiling(card.DesiredSize.Width * _scale);
-                int height = (int)Math.Ceiling(card.DesiredSize.Height * _scale);
+                ColorPickerViewControl.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                int width = (int)Math.Ceiling(ColorPickerViewControl.DesiredSize.Width * _scale);
+                int height = (int)Math.Ceiling(ColorPickerViewControl.DesiredSize.Height * _scale);
                 if (width <= 0 || height <= 0)
                 {
                     // Card still collapsed/unmeasured (fired before the show completes); a later
