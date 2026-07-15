@@ -9,9 +9,12 @@ import { icon } from '../util.js';
 let sectionPageCounter = 0;
 
 /**
- * A list (or grid) page that groups items using the `section` field and a
- * `Separator`. Mirrors the C# `SampleListPageWithSections`, whose `Section`
- * objects map onto the JS `IListItem.section` string.
+ * A list (or grid) page that groups items under headings. The host only shows a
+ * heading for a `Separator` that carries a title, so each group is introduced by
+ * a titled `Separator` rather than by tagging command items with a `section`
+ * field (the host ignores `section` on command-bearing items). Mirrors the C#
+ * `SampleListPageWithSections`, whose `Section` objects become titled separators
+ * here.
  */
 export class SampleListPageWithSections extends ListPageBase {
   readonly id: string;
@@ -28,29 +31,27 @@ export class SampleListPageWithSections extends ListPageBase {
 
   override getItems(): IListItem[] {
     return [
+      new Separator('This is a section list'),
       new ListItemBase({
         command: new NoOpCommand('sec1-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
-        section: 'This is a section list',
       }),
+      new Separator('This is another section list'),
       new ListItemBase({
         command: new NoOpCommand('sec2-a'),
         title: 'Another Title',
         subtitle: "I don't do anything",
-        section: 'This is another section list',
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-b'),
         title: 'More Titles',
         subtitle: "I don't do anything",
-        section: 'This is another section list',
       }),
       new ListItemBase({
         command: new NoOpCommand('sec2-c'),
         title: 'Stop With The Titles',
         subtitle: "I don't do anything",
-        section: 'This is another section list',
       }),
       new Separator(),
       new ListItemBase({
@@ -58,23 +59,21 @@ export class SampleListPageWithSections extends ListPageBase {
         title: 'Separators also work',
         subtitle: "But I still don't do anything",
       }),
+      new Separator("There's another"),
       new ListItemBase({
         command: new NoOpCommand('sec3-a'),
         title: 'Sample Title',
         subtitle: "I don't do anything",
-        section: "There's another",
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-b'),
         title: 'Another Title',
         subtitle: "I don't do anything",
-        section: "There's another",
       }),
       new ListItemBase({
         command: new NoOpCommand('sec3-c'),
         title: 'More Titles',
         subtitle: "I don't do anything",
-        section: "There's another",
       }),
     ];
   }

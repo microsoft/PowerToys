@@ -4,9 +4,20 @@
 
 import { ListItemBase, ListPageBase, NoOpCommand } from '@microsoft/cmdpal-sdk';
 import type { DetailsElement, IListItem } from '@microsoft/cmdpal-sdk';
+import { fileURLToPath } from 'node:url';
 import { icon, randomColor, rgb, tag } from '../util.js';
 import { sampleMarkdownText } from '../markdownText.js';
-import { StatusMessageCommand } from '../commands/statusCommands.js';
+import { ProgressStatusCommand, StatusMessageCommand } from '../commands/statusCommands.js';
+
+/**
+ * Absolute path to the hero image that ships with the sample. The build copies
+ * `assets/` into `dist/assets/`, so this file sits next to the compiled output
+ * at `dist/assets/hero.png`. Resolving it from `import.meta.url` keeps the path
+ * relative to wherever the extension is installed, and the host's icon loader
+ * resolves an absolute file path the same way it resolves a glyph or URL. This
+ * avoids depending on a network fetch to render the hero image.
+ */
+const heroImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 
 /**
  * Builds the shared "metadata" rows demonstrated in both the details page and
@@ -28,7 +39,7 @@ export function sampleMetadata(): DetailsElement[] {
       data: { type: 'link', link: 'https://github.com/microsoft/PowerToys', text: '' },
     },
     { key: 'Above a separator', data: { type: 'link', link: '', text: 'Below me is a separator' } },
-    { key: 'A separator', data: { type: 'separator' } },
+    { key: '', data: { type: 'separator' } },
     { key: 'Below a separator', data: { type: 'link', link: '', text: 'Above me is a separator' } },
     {
       key: 'Add Tags too',
@@ -56,15 +67,27 @@ export function sampleMetadata(): DetailsElement[] {
       data: {
         type: 'commands',
         commands: [
-          buildToast('metadata-yes', 'Do something amazing', 'Hey! You clicked it!', 'success', '\uE945'),
-          buildToast('metadata-no', "Don't click me", 'I warned you!', 'error', '\uEA39'),
+          buildProgressButton(
+            'metadata-yes',
+            'Do something amazing',
+            'Doing something amazing...',
+            'You clicked it! The details command button works.',
+            '\uE945',
+          ),
+          buildStatusButton(
+            'metadata-no',
+            "Don't click me",
+            'I warned you! The status banner is visible.',
+            'error',
+            '\uEA39',
+          ),
         ],
       },
     },
   ];
 }
 
-function buildToast(
+function buildStatusButton(
   id: string,
   name: string,
   message: string,
@@ -77,9 +100,23 @@ function buildToast(
   return command;
 }
 
+function buildProgressButton(
+  id: string,
+  name: string,
+  workingMessage: string,
+  doneMessage: string,
+  glyph: string,
+): ProgressStatusCommand {
+  const command = new ProgressStatusCommand(name, workingMessage, doneMessage, id);
+  command.icon = icon(glyph);
+  return command;
+}
+
 /**
  * A list page whose items each show a details pane with markdown, tags, links,
  * a hero image, and command metadata. Mirrors the C# `SampleListPageWithDetails`.
+ * The hero image is a local asset that ships with the sample, so it renders
+ * without a network connection.
  *
  * Not-yet-supported: the JS `Details` type has no `Size` (Small/Medium/Large),
  * so the C# size variants collapse into the single default size here.
@@ -120,9 +157,7 @@ export class SampleListPageWithDetails extends ListPageBase {
         title: 'This one has a hero image',
         details: {
           title: 'Hero Image Example',
-          heroImage: icon(
-            'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/Logo.png',
-          ),
+          heroImage: icon(heroImagePath),
           body: 'It is literally an image of a hero',
         },
       }),

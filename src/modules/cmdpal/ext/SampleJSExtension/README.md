@@ -14,11 +14,11 @@ JSON-RPC 2.0 on stdio. See the spec under
 Each sample mirrors the matching C# page. Titles, subtitles, section names,
 tags, and command behavior match the C# sample as closely as the JS SDK allows:
 
-- List page with tags, links, context menus, confirmation dialogs, and status
-  messages.
+- List page with tags, links, a nested (multi-level) context menu, confirmation
+  dialogs, and status messages.
 - Toast notification samples (`showToast` results, including a custom message).
-- List page with details (markdown body, tags, links, hero image, and command
-  metadata).
+- List page with details (markdown body, tags, links, a local hero image, and
+  command metadata).
 - Live updating details.
 - List pages with sections (list and grid variants).
 - List page with items that change on a timer.
@@ -52,8 +52,6 @@ inventing protocol methods:
   variants collapse to the default.
 - Live-updating details through targeted property change. Approximated with a
   dynamic page that refreshes items on a timer.
-- Deeply nested context menus. `ContextItem` has no `moreCommands`, so nested
-  menus are flattened to a single level.
 - Win32 foreground-window and other in-process host tricks.
 - Evil samples and issue-specific host-ABI repros.
 
@@ -78,8 +76,9 @@ must be built first.
    npm run build
    ```
 
-`npm run build` compiles `src\*.ts` to `dist\`. Only source is committed;
-`dist\` and `node_modules\` are git-ignored.
+`npm run build` compiles `src\*.ts` to `dist\` and copies the `assets\` folder
+(which holds the details hero image) to `dist\assets\`. Only source is
+committed; `dist\` and `node_modules\` are git-ignored.
 
 ## Sideload for manual validation
 

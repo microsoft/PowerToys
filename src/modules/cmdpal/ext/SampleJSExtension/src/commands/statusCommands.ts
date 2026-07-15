@@ -122,3 +122,40 @@ export class IndeterminateProgressMessageCommand extends InvokableCommandBase {
     return { kind: 'keepOpen' };
   }
 }
+
+/**
+ * Shows an indeterminate progress status and then resolves it to a success
+ * message after a short delay. Used by the details command buttons to make the
+ * status banner and its spinner obviously visible when the button is invoked.
+ */
+export class ProgressStatusCommand extends InvokableCommandBase {
+  readonly id: string;
+  name: string;
+
+  private readonly workingMessage: string;
+  private readonly doneMessage: string;
+  private running = false;
+
+  constructor(name: string, workingMessage: string, doneMessage: string, id: string) {
+    super();
+    this.id = id;
+    this.name = name;
+    this.workingMessage = workingMessage;
+    this.doneMessage = doneMessage;
+  }
+
+  override invoke(): CommandResult {
+    if (!this.running) {
+      this.running = true;
+      ExtensionHost.showStatus(this.workingMessage, 'info', { isIndeterminate: true });
+      setTimeout(() => {
+        ExtensionHost.showStatus(this.doneMessage, 'success');
+        setTimeout(() => {
+          ExtensionHost.hideStatus(this.doneMessage);
+          this.running = false;
+        }, 3000);
+      }, 2000);
+    }
+    return { kind: 'keepOpen' };
+  }
+}

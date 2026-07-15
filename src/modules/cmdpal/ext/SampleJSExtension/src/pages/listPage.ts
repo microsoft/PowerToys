@@ -29,12 +29,10 @@ function keyChord(modifiers: number, vkey: number): KeyChord {
 
 /**
  * A basic list page that demonstrates navigation, links, tags, status
- * messages, confirmation dialogs, and a context menu. Mirrors the C#
+ * messages, confirmation dialogs, and a nested context menu. Mirrors the C#
  * `SampleListPage`.
  *
  * Not-yet-supported in the JS protocol and therefore omitted here:
- *  - Deeply nested context menus. `ContextItem` has no `moreCommands`, so the
- *    C# multi-level "We can go deeper" menu is flattened to a single level.
  *  - `IExtendedAttributesProvider` command properties (the C# "I have
  *    properties" items).
  *  - The Win32 foreground-window command (no P/Invoke from an isolated Node
@@ -60,6 +58,22 @@ export class SampleListPage extends ListPageBase {
     thirdCommand.name = 'Do 3';
     thirdCommand.icon = icon('\uF148');
 
+    const deeperCommand = new StatusMessageCommand(
+      'Second-level command invoked',
+      'info',
+      'ctx-deeper',
+    );
+    deeperCommand.name = 'A command one level down';
+    deeperCommand.icon = icon('\uF149');
+
+    const deepestCommand = new StatusMessageCommand(
+      'You reached the deepest command',
+      'success',
+      'ctx-deepest',
+    );
+    deepestCommand.name = 'The deepest command';
+    deepestCommand.icon = icon('\uF14A');
+
     const primaryContext = new StatusMessageCommand(
       'Primary command invoked',
       'info',
@@ -68,6 +82,9 @@ export class SampleListPage extends ListPageBase {
     primaryContext.name = 'Primary command';
     primaryContext.icon = icon('\uF146');
 
+    // `moreCommands` on a context item nests a sub-menu, and each nested item
+    // can nest again. Here "We can go deeper..." opens a second level, which in
+    // turn opens a third, demonstrating recursive context menus end to end.
     const moreCommands: ContextItem[] = [
       {
         command: secondCommand,
@@ -79,6 +96,20 @@ export class SampleListPage extends ListPageBase {
         title: 'We can go deeper...',
         icon: icon('\uF148'),
         requestedShortcut: keyChord(CTRL, 0x32),
+        moreCommands: [
+          {
+            command: deeperCommand,
+            title: 'Another level down',
+            icon: icon('\uF149'),
+            moreCommands: [
+              {
+                command: deepestCommand,
+                title: 'The deepest level',
+                icon: icon('\uF14A'),
+              },
+            ],
+          },
+        ],
       },
     ];
 
