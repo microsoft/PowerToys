@@ -140,6 +140,55 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public void ContextItems_ParseNestedMoreCommandsRecursively()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "nested-list", "pageType": "listPage", "name": "Nested" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                {
+                  "title": "Root Item",
+                  "moreCommands": [
+                    {
+                      "command": { "id": "level1", "name": "Level 1" },
+                      "title": "Level 1",
+                      "moreCommands": [
+                        { "command": { "id": "level2", "name": "Level 2" }, "title": "Level 2" }
+                      ]
+                    }
+                  ]
+                },
+                { "title": "Leaf Item" }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("nested-list")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual(2, items.Length);
+
+        // The root item carries a first-level nested command.
+        var firstLevel = items[0].MoreCommands;
+        Assert.AreEqual(1, firstLevel.Length);
+        var firstLevelCommand = (ICommandContextItem)firstLevel[0];
+        Assert.AreEqual("Level 1", firstLevelCommand.Title);
+
+        // That first-level command carries its own second-level nested command.
+        Assert.AreEqual(1, firstLevelCommand.MoreCommands.Length);
+        var secondLevelCommand = (ICommandContextItem)firstLevelCommand.MoreCommands[0];
+        Assert.AreEqual("Level 2", secondLevelCommand.Title);
+        Assert.AreEqual(0, secondLevelCommand.MoreCommands.Length);
+
+        // The leaf item with no moreCommands yields no children.
+        Assert.AreEqual(0, items[1].MoreCommands.Length);
+    }
+
+    [TestMethod]
     public async Task DynamicListPage_ForwardsSearchTextAndRaisesItemsChanged()
     {
         using var fake = new JSFakeExtension();
