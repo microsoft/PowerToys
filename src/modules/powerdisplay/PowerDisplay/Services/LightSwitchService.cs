@@ -10,7 +10,7 @@ using Settings.UI.Library;
 
 namespace PowerDisplay.Services
 {
-    public static class LightSwitchService
+    internal static class LightSwitchService
     {
         private const string LogPrefix = "[LightSwitch]";
 
@@ -41,7 +41,7 @@ namespace PowerDisplay.Services
             }
         }
 
-        public static int? GetProfileForTheme(bool isLightMode)
+        public static int? GetProfileIdForTheme(bool isLightMode)
         {
             try
             {

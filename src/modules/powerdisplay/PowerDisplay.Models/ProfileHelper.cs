@@ -35,35 +35,8 @@ namespace PowerDisplay.Models
         /// </summary>
         public static string ProfilesFilePath => _profilesFilePath.Value;
 
-        /// <summary>
-        /// Loads PowerDisplay profiles from disk.
-        /// Thread-safe operation.
-        /// </summary>
-        /// <returns>A new empty collection when the file does not exist; otherwise the deserialized profiles.</returns>
-        public static PowerDisplayProfiles LoadProfiles()
-        {
-            return _profileStore.Value.LoadProfiles();
-        }
-
         public static Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
             => _profileStore.Value.LoadProfilesAsync(cancellationToken);
-
-        /// <summary>
-        /// Saves PowerDisplay profiles to disk.
-        /// Thread-safe operation with automatic timestamp update.
-        /// </summary>
-        /// <param name="profiles">The profiles collection to save.</param>
-        /// <returns>True if save was successful, false otherwise.</returns>
-        public static bool SaveProfiles(PowerDisplayProfiles profiles)
-        {
-            if (profiles == null)
-            {
-                return false;
-            }
-
-            _profileStore.Value.SaveProfiles(profiles);
-            return true;
-        }
 
         /// <summary>
         /// Adds or updates a profile and persists to disk atomically.
@@ -96,16 +69,6 @@ namespace PowerDisplay.Models
 
         public static Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
             => _profileStore.Value.RemoveProfileByIdAsync(id, cancellationToken);
-
-        /// <summary>
-        /// Loads, conditionally updates, and saves profiles under one cross-process lock.
-        /// </summary>
-        /// <param name="update">Returns true when the profiles changed and must be saved.</param>
-        /// <returns>True when the profiles changed and were saved; otherwise false.</returns>
-        public static bool UpdateProfiles(Func<PowerDisplayProfiles, bool> update)
-        {
-            return _profileStore.Value.UpdateProfiles(update);
-        }
 
         public static Task<bool> UpdateProfilesAsync(
             Func<PowerDisplayProfiles, bool> update,

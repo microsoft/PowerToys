@@ -117,7 +117,7 @@ public partial class MainViewModel
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
             // Reload profiles in case they were added/updated/deleted in Settings UI.
-            _ = InitializeProfilesAsync(_cancellationTokenSource.Token);
+            _ = ReloadProfilesAsync(_cancellationTokenSource.Token);
 
             // Notify MonitorViewModels to refresh their custom VCP name displays
             foreach (var monitor in Monitors)
@@ -163,7 +163,7 @@ public partial class MainViewModel
         string logPrefix,
         CancellationToken cancellationToken = default)
     {
-        var profile = (await ProfileService.LoadProfilesAsync(cancellationToken)).GetById(profileId);
+        var profile = (await ProfileHelper.LoadProfilesAsync(cancellationToken)).GetById(profileId);
         if (profile == null || !profile.IsValid())
         {
             Logger.LogWarning($"{logPrefix} Profile id {profileId} not found or invalid");
@@ -213,7 +213,7 @@ public partial class MainViewModel
         {
             try
             {
-                var profileId = LightSwitchService.GetProfileForTheme(isLightMode);
+                var profileId = LightSwitchService.GetProfileIdForTheme(isLightMode);
                 if (profileId is null)
                 {
                     return;
@@ -597,12 +597,24 @@ public partial class MainViewModel
             await RunProfileOperationAsync(
                 async token =>
                 {
-                    profilesChanged = await ProfileService.UpdateProfilesAsync(
-                        profiles => ProfileMigration.Migrate(profiles, discovered),
+                    PowerDisplayProfiles? loadedProfiles = null;
+                    profilesChanged = await ProfileHelper.UpdateProfilesAsync(
+                        profiles =>
+                        {
+                            var changed = ProfileMigration.Migrate(profiles, discovered);
+                            loadedProfiles = profiles;
+                            return changed;
+                        },
                         token);
-                    var loaded = await ProfileService.LoadProfilesAsync(token);
-                    migratedProfiles = loaded;
-                    ReplaceProfiles(loaded);
+                    token.ThrowIfCancellationRequested();
+
+                    if (loadedProfiles is null)
+                    {
+                        throw new InvalidOperationException("Profile update completed without loaded profiles.");
+                    }
+
+                    migratedProfiles = loadedProfiles;
+                    ReplaceProfiles(loadedProfiles);
                 },
                 cancellationToken);
 
@@ -618,6 +630,11 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             Logger.LogError($"[LegacyMigration] Failed to migrate profiles.json: {ex.Message}");
+            await ReloadProfilesAsync(cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
         }
 
         if (migratedProfiles is not null)

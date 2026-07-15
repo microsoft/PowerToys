@@ -95,7 +95,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         Monitors = new ObservableCollection<MonitorViewModel>();
         Profiles = new ObservableCollection<PowerDisplayProfile>();
-        IsScanning = true;
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
         MouseWheelIncrement = 5;
@@ -106,8 +105,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
-
-        _ = InitializeProfilesAsync(_cancellationTokenSource.Token);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -459,16 +456,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Loads profiles from disk for the quick-apply feature without blocking the UI thread.
+    /// Reloads profiles from disk for the quick-apply feature without blocking the UI thread.
     /// </summary>
-    private async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
+    private async Task ReloadProfilesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             await RunProfileOperationAsync(
                 async token =>
                 {
-                    var profilesData = await ProfileService.LoadProfilesAsync(token);
+                    var profilesData = await ProfileHelper.LoadProfilesAsync(token);
                     ReplaceProfiles(profilesData);
                 },
                 cancellationToken);
