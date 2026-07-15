@@ -71,6 +71,18 @@ public class PowerDisplayProfilesTests
     }
 
     [TestMethod]
+    public void GetLegacyProfileByName_ReturnsFirstCaseInsensitiveMatch()
+    {
+        var profiles = new PowerDisplayProfiles();
+        var first = MakeProfile("Same", id: 1);
+        var second = MakeProfile("same", id: 2);
+        profiles.Profiles.Add(first);
+        profiles.Profiles.Add(second);
+
+        Assert.AreSame(first, profiles.GetLegacyProfileByName("SAME"));
+    }
+
+    [TestMethod]
     public void RemoveProfileById_RemovesWhenPresent()
     {
         var profiles = new PowerDisplayProfiles();

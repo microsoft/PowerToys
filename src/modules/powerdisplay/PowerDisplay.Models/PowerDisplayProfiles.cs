@@ -32,11 +32,13 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Gets the profile by name
+        /// Gets the first profile whose name matches a pre-ID persisted reference.
+        /// This lookup is only for legacy migration because profile names are not unique.
         /// </summary>
-        public PowerDisplayProfile? GetProfile(string name)
+        public PowerDisplayProfile? GetLegacyProfileByName(string name)
         {
-            return Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            return Profiles.FirstOrDefault(
+                profile => profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

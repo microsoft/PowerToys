@@ -38,34 +38,10 @@ namespace PowerDisplay.Models
         public static Task<PowerDisplayProfiles> LoadProfilesAsync(CancellationToken cancellationToken = default)
             => _profileStore.Value.LoadProfilesAsync(cancellationToken);
 
-        /// <summary>
-        /// Adds or updates a profile and persists to disk atomically.
-        /// </summary>
-        /// <param name="profile">The profile to add or update.</param>
-        /// <returns>True if the operation was successful, false otherwise.</returns>
-        public static bool AddOrUpdateProfile(PowerDisplayProfile profile)
-        {
-            if (profile == null || !profile.IsValid())
-            {
-                return false;
-            }
-
-            _profileStore.Value.AddOrUpdateProfile(profile);
-            return true;
-        }
-
         public static Task AddOrUpdateProfileAsync(
             PowerDisplayProfile profile,
             CancellationToken cancellationToken = default)
             => _profileStore.Value.AddOrUpdateProfileAsync(profile, cancellationToken);
-
-        /// <summary>
-        /// Removes a profile by its stable id and persists to disk atomically.
-        /// </summary>
-        public static bool RemoveProfileById(int id)
-        {
-            return _profileStore.Value.RemoveProfileById(id);
-        }
 
         public static Task<bool> RemoveProfileByIdAsync(int id, CancellationToken cancellationToken = default)
             => _profileStore.Value.RemoveProfileByIdAsync(id, cancellationToken);

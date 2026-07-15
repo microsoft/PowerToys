@@ -108,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else if (!string.IsNullOrEmpty(originalName) && originalName != NoneSentinel)
             {
-                var profile = profiles.GetProfile(originalName);
+                var profile = profiles.GetLegacyProfileByName(originalName);
                 if (profile is not null && profile.Id >= 1)
                 {
                     idProperty.Value = profile.Id;
