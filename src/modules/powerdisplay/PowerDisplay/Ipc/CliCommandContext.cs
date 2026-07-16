@@ -27,7 +27,7 @@ internal sealed class CliCommandContext
     /// <param name="customMappings">User-defined VCP value name mappings.</param>
     /// <param name="manager">The live <see cref="IMonitorManager"/> for hardware writes.</param>
     /// <param name="defaultStep">The default relative-adjust step (mouse-wheel increment).</param>
-    /// <param name="loadProfiles">Lazy profile loader, invoked only by the <c>profiles</c> command.</param>
+    /// <param name="loadProfilesAsync">Lazy profile loader, invoked only by profile commands.</param>
     /// <param name="applyProfileAsync">Applies a profile by id; <c>false</c> result means "not found".</param>
     public CliCommandContext(
         CliRequestEnvelope envelope,
@@ -36,7 +36,7 @@ internal sealed class CliCommandContext
         IReadOnlyList<CustomVcpValueMapping> customMappings,
         IMonitorManager manager,
         int defaultStep,
-        Func<PowerDisplayProfiles> loadProfiles,
+        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
         Func<int, CancellationToken, Task<bool>> applyProfileAsync)
     {
         Envelope = envelope;
@@ -45,7 +45,7 @@ internal sealed class CliCommandContext
         CustomMappings = customMappings;
         Manager = manager;
         DefaultStep = defaultStep;
-        LoadProfiles = loadProfiles;
+        LoadProfilesAsync = loadProfilesAsync;
         ApplyProfileAsync = applyProfileAsync;
     }
 
@@ -67,8 +67,8 @@ internal sealed class CliCommandContext
     /// <summary>The default relative-adjust step (mouse-wheel increment).</summary>
     public int DefaultStep { get; }
 
-    /// <summary>Lazy profile loader, invoked only by the <c>profiles</c> command.</summary>
-    public Func<PowerDisplayProfiles> LoadProfiles { get; }
+    /// <summary>Lazy asynchronous profile loader, invoked only by profile commands.</summary>
+    public Func<CancellationToken, Task<PowerDisplayProfiles>> LoadProfilesAsync { get; }
 
     /// <summary>Applies a profile by id (best-effort); returns <c>false</c> when the profile is not found.</summary>
     public Func<int, CancellationToken, Task<bool>> ApplyProfileAsync { get; }

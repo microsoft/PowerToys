@@ -68,7 +68,7 @@ public class CliRequestHandlerTests
             Array.Empty<CustomVcpValueMapping>(),
             new NoOpManager(),
             defaultStep,
-            () => profiles ?? EmptyProfiles,
+            _ => Task.FromResult(profiles ?? EmptyProfiles),
             applyProfile ?? ((_, _) => Task.FromResult(true)),
             ct);
     }
@@ -264,7 +264,7 @@ public class CliRequestHandlerTests
         {
             Profiles = new List<PowerDisplayProfile>
             {
-                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>() },
+                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 1 },
             },
         };
         var envelope = MakeEnvelope(CliCommandNames.Profiles);
@@ -276,6 +276,26 @@ public class CliRequestHandlerTests
         Assert.AreEqual("profiles", result.Command);
         Assert.AreEqual(1, result.Profiles.Count);
         Assert.AreEqual("Night", result.Profiles[0].Name);
+    }
+
+    [TestMethod]
+    public async Task Profiles_HidesProfilesWithoutAssignedId()
+    {
+        var profiles = new PowerDisplayProfiles
+        {
+            Profiles = new List<PowerDisplayProfile>
+            {
+                new PowerDisplayProfile { Name = "Legacy", MonitorSettings = new List<ProfileMonitorSetting>() },
+                new PowerDisplayProfile { Name = "Assigned", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 2 },
+            },
+        };
+
+        var json = await Dispatch(MakeEnvelope(CliCommandNames.Profiles), profiles: profiles);
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result.Profiles.Count);
+        Assert.AreEqual(2, result.Profiles[0].Id);
     }
 
     // ─── apply-profile command ────────────────────────────────────────────────

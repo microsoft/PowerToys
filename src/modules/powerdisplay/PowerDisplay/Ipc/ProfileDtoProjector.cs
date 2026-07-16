@@ -36,13 +36,8 @@ public static class ProfileDtoProjector
         ArgumentNullException.ThrowIfNull(profiles);
 
         var infos = new List<CliProfileInfo>(profiles.Profiles.Count);
-        foreach (var profile in profiles.Profiles)
+        foreach (var profile in profiles.GetAssignedProfiles())
         {
-            if (profile is null)
-            {
-                continue;
-            }
-
             infos.Add(new CliProfileInfo
             {
                 Id = profile.Id,

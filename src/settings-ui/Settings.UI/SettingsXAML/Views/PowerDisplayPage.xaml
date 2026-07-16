@@ -152,7 +152,7 @@
                             </tkcontrols:SettingsExpander>
                         </controls:SettingsGroup>
 
-                        <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.CanUseProfiles, Mode=OneWay}">
                             <tkcontrols:SettingsExpander
                                 x:Uid="PowerDisplay_QuickProfiles"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"

@@ -131,10 +131,11 @@ internal static class CliCommandHandlers
     // ─── profiles ───────────────────────────────────────────────────────────────
     private sealed class ProfilesCommandHandler : ICliCommandHandler
     {
-        public Task<string> ExecuteAsync(CliCommandContext context, CancellationToken ct)
+        public async Task<string> ExecuteAsync(CliCommandContext context, CancellationToken ct)
         {
-            var result = ProfileDtoProjector.BuildProfileListResult(context.LoadProfiles());
-            return Task.FromResult(CliResponse.Serialize(result, ContractsJsonContext.Default.CliProfileListResult));
+            var profiles = await context.LoadProfilesAsync(ct).ConfigureAwait(false);
+            var result = ProfileDtoProjector.BuildProfileListResult(profiles);
+            return CliResponse.Serialize(result, ContractsJsonContext.Default.CliProfileListResult);
         }
     }
 
@@ -161,7 +162,8 @@ internal static class CliCommandHandlers
                         value: profileId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             }
 
-            var name = context.LoadProfiles().GetById(profileId)?.Name ?? string.Empty;
+            var profiles = await context.LoadProfilesAsync(ct).ConfigureAwait(false);
+            var name = profiles.GetById(profileId)?.Name ?? string.Empty;
             var applyResult = new CliApplyProfileResult { ProfileId = profileId, Profile = name };
             return CliResponse.Serialize(applyResult, ContractsJsonContext.Default.CliApplyProfileResult);
         }

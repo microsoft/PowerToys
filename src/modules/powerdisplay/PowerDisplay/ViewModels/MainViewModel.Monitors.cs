@@ -41,7 +41,7 @@ public partial class MainViewModel
             {
                 try
                 {
-                    UpdateMonitorList(monitors, isInitialLoad: true);
+                    UpdateMonitorList(monitors);
 
                     // Complete initialization asynchronously (restore settings if enabled)
                     // IsScanning remains true until restore completes
@@ -72,6 +72,13 @@ public partial class MainViewModel
     {
         try
         {
+            var discovered = Monitors
+                .Where(monitor => !string.IsNullOrEmpty(monitor.Id))
+                .Select(monitor => (monitor.Id, monitor.MonitorNumber))
+                .ToList();
+
+            await MigrateLegacySideFilesAsync(discovered, _cancellationTokenSource.Token);
+
             // Check if we should restore settings on startup
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             if (settings.Properties.RestoreSettingsOnStartup)
@@ -120,7 +127,7 @@ public partial class MainViewModel
 
             _dispatcherQueue.TryEnqueue(() =>
             {
-                UpdateMonitorList(monitors, isInitialLoad: false);
+                UpdateMonitorList(monitors);
                 IsScanning = false;
             });
         }
@@ -134,7 +141,7 @@ public partial class MainViewModel
         }
     }
 
-    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
+    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
     {
         CancelPendingLinkedBrightnessCommit();
 
@@ -170,14 +177,6 @@ public partial class MainViewModel
 
         // Save monitor information to settings
         SaveMonitorsToSettings();
-
-        // First successful discovery after process start is the natural place to clean up
-        // any legacy "{Source}_{EdidId}_{N}" Ids still lingering in the side files that
-        // SaveMonitorsToSettings doesn't touch (profiles.json + monitor_state.json).
-        if (isInitialLoad)
-        {
-            MigrateLegacyMonitorIdsInSideFiles();
-        }
 
         // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
         // to ensure scanning state is maintained until restore completes

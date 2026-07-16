@@ -81,9 +81,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enableLightModeProfile")]
         public BoolProperty EnableLightModeProfile { get; set; }
 
+        /// <summary>
+        /// Legacy profile name retained only to migrate settings written before profile IDs.
+        /// New code must persist <see cref="DarkModeProfileId"/> instead.
+        /// </summary>
         [JsonPropertyName("darkModeProfile")]
         public StringProperty DarkModeProfile { get; set; }
 
+        /// <summary>
+        /// Legacy profile name retained only to migrate settings written before profile IDs.
+        /// New code must persist <see cref="LightModeProfileId"/> instead.
+        /// </summary>
         [JsonPropertyName("lightModeProfile")]
         public StringProperty LightModeProfile { get; set; }
 

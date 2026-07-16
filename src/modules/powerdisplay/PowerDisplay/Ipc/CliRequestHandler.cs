@@ -99,9 +99,9 @@ public sealed class CliRequestHandler
     /// <param name="snapshot">Pre-fetched monitor list from <c>MainViewModel.SnapshotMonitors()</c>.</param>
     /// <param name="hiddenIds">Pre-fetched hidden-ID set from <c>MainViewModel.GetHiddenMonitorIds()</c>.</param>
     /// <param name="manager">The live <see cref="IMonitorManager"/> for hardware writes.</param>
-    /// <param name="loadProfiles">
+    /// <param name="loadProfilesAsync">
     /// Lazy profile loader, invoked only by the <c>profiles</c> command so the read commands do not
-    /// pay for synchronous disk I/O they never use. Maps to <c>ProfileService.LoadProfiles</c>.
+    /// pay for disk I/O they never use. Maps to <c>ProfileHelper.LoadProfilesAsync</c>.
     /// </param>
     /// <param name="applyProfileAsync">
     /// Delegate that applies a profile by id (best-effort) and returns <c>true</c> when the
@@ -118,7 +118,7 @@ public sealed class CliRequestHandler
         IReadOnlyList<CustomVcpValueMapping> customMappings,
         IMonitorManager manager,
         int defaultStep,
-        Func<PowerDisplayProfiles> loadProfiles,
+        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
         Func<int, CancellationToken, Task<bool>> applyProfileAsync,
         CancellationToken ct)
     {
@@ -133,7 +133,7 @@ public sealed class CliRequestHandler
                     customMappings,
                     manager,
                     defaultStep,
-                    loadProfiles,
+                    loadProfilesAsync,
                     applyProfileAsync);
 
                 return await handler.ExecuteAsync(context, ct).ConfigureAwait(false);
@@ -193,7 +193,7 @@ public sealed class CliRequestHandler
                 customMappings,
                 manager,
                 _vm.MouseWheelIncrement,
-                ProfileService.LoadProfiles,
+                ProfileHelper.LoadProfilesAsync,
                 (id, token) => _vm.ApplyProfileForCliAsync(id, token),
                 ct).ConfigureAwait(false);
         }).ConfigureAwait(false);

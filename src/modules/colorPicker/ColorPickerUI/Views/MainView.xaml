@@ -26,6 +26,20 @@
             </Border.Effect>-->
 
             <Grid>
+                <!--
+                    UIA test hook. Mirrors the displayed HEX value (ColorText) into a
+                    transparent TextBlock with a stable AutomationId so automated UI tests
+                    can read the picker's current color without depending on the visible
+                    TextBlock, whose AutomationProperties.Name is bound to ColorName (the
+                    friendly name) for screen-reader UX and therefore masks the HEX from UIA.
+                -->
+                <TextBlock
+                    x:Name="ColorHexAutomationPeer"
+                    AutomationProperties.AutomationId="ColorHexAutomationPeer"
+                    IsHitTestVisible="False"
+                    Opacity="0"
+                    Text="{Binding ColorText}" />
+
                 <!--  only color format - one line  -->
                 <Grid Margin="2" Visibility="{Binding ShowColorName, Converter={StaticResource bool2InvertedVisibilityConverter}}">
                     <Grid.ColumnDefinitions>

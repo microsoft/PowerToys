@@ -119,6 +119,7 @@ Badmode
 Badparam
 bbwe
 BCIE
+Belarusian
 BESTEFFORT
 bezelled
 bhid
@@ -841,6 +842,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -2092,6 +2094,8 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED

@@ -32,11 +32,13 @@ namespace PowerDisplay.Models
         }
 
         /// <summary>
-        /// Gets the profile by name
+        /// Gets the first profile whose name matches a pre-ID persisted reference.
+        /// This lookup is only for legacy migration because profile names are not unique.
         /// </summary>
-        public PowerDisplayProfile? GetProfile(string name)
+        public PowerDisplayProfile? GetLegacyProfileByName(string name)
         {
-            return Profiles.FirstOrDefault(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            return Profiles.FirstOrDefault(
+                profile => profile.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>
@@ -45,6 +47,15 @@ namespace PowerDisplay.Models
         public PowerDisplayProfile? GetById(int id)
         {
             return id <= 0 ? null : Profiles.FirstOrDefault(p => p.Id == id);
+        }
+
+        /// <summary>
+        /// Returns profiles that have a usable stable id.
+        /// Legacy or corrupt profiles with non-positive ids remain hidden until migration.
+        /// </summary>
+        public IEnumerable<PowerDisplayProfile> GetAssignedProfiles()
+        {
+            return Profiles.Where(profile => profile is not null && profile.Id >= 1);
         }
 
         /// <summary>
@@ -61,12 +72,13 @@ namespace PowerDisplay.Models
 
             if (profile.Id == 0)
             {
-                if (NextId < 1)
-                {
-                    NextId = 1;
-                }
-
-                profile.Id = NextId++;
+                // Assign the next id, self-healing a corrupt/legacy NextId that isn't already past
+                // the highest id in use (mirrors EnsureIds). This guarantees a new profile never
+                // collides with an existing one even when SetProfile runs before EnsureIds.
+                var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+                var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
+                profile.Id = next;
+                NextId = next + 1;
             }
             else
             {
@@ -85,22 +97,6 @@ namespace PowerDisplay.Models
             profile.Touch();
             Profiles.Add(profile);
             LastUpdated = DateTime.UtcNow;
-        }
-
-        /// <summary>
-        /// Removes a profile by name
-        /// </summary>
-        public bool RemoveProfile(string name)
-        {
-            var profile = GetProfile(name);
-            if (profile != null)
-            {
-                Profiles.Remove(profile);
-                LastUpdated = DateTime.UtcNow;
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -128,25 +124,8 @@ namespace PowerDisplay.Models
         {
             var changed = false;
 
-            var maxId = 0;
-            foreach (var p in Profiles)
-            {
-                if (p is not null && p.Id > maxId)
-                {
-                    maxId = p.Id;
-                }
-            }
-
-            var next = NextId;
-            if (next < 1)
-            {
-                next = 1;
-            }
-
-            if (next <= maxId)
-            {
-                next = maxId + 1;
-            }
+            var maxId = Profiles.Count == 0 ? 0 : Profiles.Max(p => p?.Id ?? 0);
+            var next = Math.Max(Math.Max(NextId, 1), maxId + 1);
 
             foreach (var p in Profiles)
             {

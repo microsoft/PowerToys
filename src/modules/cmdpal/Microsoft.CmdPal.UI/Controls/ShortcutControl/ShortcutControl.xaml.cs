@@ -4,6 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Library;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -27,6 +28,9 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     private HotkeySettingsControlHook? hook;
     private bool _isActive;
     private bool disposedValue;
+
+    [ThreadStatic]
+    private static bool _isDialogOpen;
 
     public string Header { get; set; } = string.Empty;
 
@@ -404,16 +408,33 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
     {
-        // c.Keys = null;
-        c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
+        if (_isDialogOpen)
+        {
+            return;
+        }
 
-        // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
-        // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
-        c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
+        _isDialogOpen = true;
+        try
+        {
+            // c.Keys = null;
+            c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
 
-        shortcutDialog.XamlRoot = this.XamlRoot;
-        shortcutDialog.RequestedTheme = this.ActualTheme;
-        await shortcutDialog.ShowAsync();
+            // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
+            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
+            c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
+
+            shortcutDialog.XamlRoot = this.XamlRoot;
+            shortcutDialog.RequestedTheme = this.ActualTheme;
+            await shortcutDialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to open shortcut dialog", ex);
+        }
+        finally
+        {
+            _isDialogOpen = false;
+        }
     }
 
     private void ShortcutDialog_Reset(ContentDialog sender, ContentDialogButtonClickEventArgs args)

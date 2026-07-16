@@ -34,6 +34,7 @@ public class ProfileDtoProjectorTests
 
         var profile = new PowerDisplayProfile
         {
+            Id = 1,
             Name = "Night",
             MonitorSettings = new List<ProfileMonitorSetting>
             {
