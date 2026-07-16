@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -190,4 +191,33 @@ public partial class MainViewModel
                 .Where(m => m.IsHidden)
                 .Select(m => m.Id),
             MonitorIdComparer.Instance);
+
+    /// <summary>
+    /// Returns the set of monitor IDs that are currently hidden in persisted settings.
+    /// Uses a case-insensitive comparer consistent with the rest of the settings layer.
+    /// Intended for IPC reads; does NOT trigger monitor hardware discovery.
+    /// </summary>
+    public IReadOnlySet<string> GetHiddenMonitorIds()
+    {
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        return GetHiddenMonitorIds(settings);
+    }
+
+    /// <summary>
+    /// Returns a point-in-time copy of the app's already-discovered monitor list for IPC reads.
+    /// Does NOT trigger hardware discovery. Hidden-monitor filtering is applied by the caller.
+    /// A materialized copy (rather than the live <c>_monitorManager.Monitors</c> view) is returned so
+    /// callers can iterate it safely even if a concurrent discovery rebuilds the underlying list.
+    /// </summary>
+    public IReadOnlyList<Monitor> SnapshotMonitors()
+        => _monitorManager.Monitors.ToList();
+
+    /// <summary>
+    /// The app's live monitor manager exposed through the <see cref="IMonitorManager"/> hardware-write
+    /// abstraction — used by the IPC set/apply-profile executors to perform hardware writes
+    /// (SetBrightnessAsync, SetContrastAsync, etc.) on the single hardware-owning instance. Returning
+    /// the interface (not the concrete <c>MonitorManager</c>) keeps the IPC path decoupled and fakeable,
+    /// which is the reason the interface exists.
+    /// </summary>
+    public IMonitorManager MonitorManager => _monitorManager;
 }

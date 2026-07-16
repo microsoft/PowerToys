@@ -13,6 +13,8 @@ using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Contracts;
+using PowerDisplay.Ipc;
 using PowerDisplay.Models;
 using PowerDisplay.Serialization;
 using PowerDisplay.Services;
@@ -203,6 +205,46 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Applies a saved profile by id for the CLI/IPC path (best-effort). Loads the profile and,
+    /// when found, awaits the shared GUI <see cref="ApplyProfileAsync"/> path. Per-setting hardware
+    /// outcomes are not surfaced: profile application remains best-effort, and the returned name
+    /// only confirms that the profile was resolved and processed. It is returned so the IPC handler
+    /// can report it directly, without a second <c>LoadProfiles</c> call that would re-read the file
+    /// and could observe a renamed/deleted/different profile than the one just applied.
+    /// </summary>
+    /// <param name="profileId">The id of the profile to apply.</param>
+    /// <param name="ct">Cancellation token; observed before the writes begin.</param>
+    /// <returns>
+    /// The resolved profile's name after best-effort processing; <see langword="null"/> when the
+    /// profile id is unknown or invalid. This does not attest that any hardware write succeeded.
+    /// The IPC handler maps <see langword="null"/> to ARGUMENT_ERROR / exit code 7.
+    /// </returns>
+    public async Task<string?> ApplyProfileForCliAsync(int profileId, CancellationToken ct = default)
+    {
+        try
+        {
+            Logger.LogInfo($"[Profile] Applying profile for CLI: id {profileId}");
+
+            var profile = await LoadValidProfileByIdAsync(profileId, "[Profile] CLI", ct);
+            if (profile == null)
+            {
+                return null;
+            }
+
+            ct.ThrowIfCancellationRequested();
+
+            await ApplyProfileAsync(profile.MonitorSettings);
+            Logger.LogInfo($"[Profile] Completed applying profile for CLI: id {profileId}");
+            return profile.Name;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[Profile] Failed to apply profile for CLI id {profileId}: {ex.Message}");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Handle theme change from LightSwitch by applying the appropriate profile.
     /// Called from App.xaml.cs when LightSwitch theme events are received.
     /// </summary>
@@ -271,6 +313,12 @@ public partial class MainViewModel
     /// <summary>
     /// Apply profile settings to monitors. Profiles are per-monitor snapshots, so applying one
     /// turns off linked brightness before writing individual monitor values.
+    /// <para>
+    /// This method is the GUI code path. It is preserved exactly as-is: settings are dispatched
+    /// in parallel via <c>Task.WhenAll</c> and no per-setting outcome is captured. All existing
+    /// callers (<see cref="ApplyProfileByIdAsync"/>, <see cref="ApplyProfileAndCompleteAsync"/>)
+    /// continue to call this overload.
+    /// </para>
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
