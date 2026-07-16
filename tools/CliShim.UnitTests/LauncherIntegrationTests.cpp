@@ -27,6 +27,7 @@ namespace
         const wchar_t* relativeTarget;
     };
 
+    // Keep this list in sync with CliShimManifest.props.
     constexpr ShimMapping ExpectedMappings[] = {
         { L"fancyzones", L"..\\FancyZonesCLI.exe" },
         { L"imageresizer", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
@@ -138,6 +139,12 @@ namespace
         }
 
         const DWORD waitResult = WaitForSingleObject(processInfo.hProcess, 30'000);
+        if (waitResult != WAIT_OBJECT_0)
+        {
+            TerminateProcess(processInfo.hProcess, ExitLaunchFailed);
+            WaitForSingleObject(processInfo.hProcess, 5'000);
+        }
+
         DWORD exitCode = 0;
         const BOOL gotExitCode = GetExitCodeProcess(processInfo.hProcess, &exitCode);
 

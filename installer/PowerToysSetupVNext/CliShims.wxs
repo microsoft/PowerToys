@@ -38,7 +38,7 @@
         Append the cli folder to PATH (per-user vs per-machine, mirroring Core.wxs).
         MSI broadcasts WM_SETTINGCHANGE on commit, so Explorer and newly-opened terminals
         pick up the new PATH; terminals already open at install time must be reopened before
-        the short command names (fancyzones / imageresizer / filelocksmith) resolve.
+        the short command names resolve.
       -->
       <?if $(var.PerUser) = "true" ?>
       <Component Id="cli_env_path_user" Guid="87AA86E8-81E8-44CB-9519-FC70CF7BEA56" Bitness="always64">
