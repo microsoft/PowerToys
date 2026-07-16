@@ -1549,15 +1549,22 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
             var stats = _dataManager.GetTemperatureStats();
 
-            if (!stats.IsAvailable || stats.CpuTemperatureCelsius < 0)
+            if (!stats.IsAvailable)
             {
                 ContentData["cpuTemperature"] = Resources.GetResource("Temperature_Usage_Unknown");
                 ContentData["temperatureSource"] = Resources.GetResource("Temperature_Usage_Unavailable");
                 return;
             }
 
-            ContentData["cpuTemperature"] = $"{stats.CpuTemperatureCelsius:F1} °C";
             ContentData["temperatureSource"] = Resources.GetResource("Temperature_Source_Acpi");
+
+            if (stats.CpuTemperatureCelsius < 0)
+            {
+                ContentData["cpuTemperature"] = Resources.GetResource("Temperature_Usage_Unknown");
+                return;
+            }
+
+            ContentData["cpuTemperature"] = $"{stats.CpuTemperatureCelsius:F1} \u00b0C";
         }
         catch (Exception e)
         {
