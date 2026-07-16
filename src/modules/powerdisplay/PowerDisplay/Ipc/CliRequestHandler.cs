@@ -3,18 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
 using PowerDisplay.Models;
 using PowerDisplay.ViewModels;
-using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc;
 
@@ -38,7 +34,7 @@ namespace PowerDisplay.Ipc;
 /// <see cref="CliErrorCodes.InternalError"/> / exit 9.
 /// </para>
 /// </summary>
-public sealed class CliRequestHandler
+public sealed class CliRequestHandler : ICliRequestProcessor
 {
     private readonly MainViewModel _vm;
     private readonly DispatcherQueue _dispatcherQueue;
@@ -64,97 +60,28 @@ public sealed class CliRequestHandler
     /// <see cref="ICliCommandHandler"/> on the UI thread, and returns the serialized response JSON.
     /// </summary>
     /// <param name="requestJson">One-line JSON request from the pipe client.</param>
-    /// <param name="ct">Cancellation token observed by the server-lifetime operation.</param>
+    /// <param name="cancellationToken">Cancellation token observed by the server-lifetime operation.</param>
     /// <returns>
     /// A one-line JSON string. Always a valid response — never throws. Cancellation maps to
     /// <see cref="CliErrorCodes.Timeout"/>; any other unexpected exception maps to
     /// <see cref="CliErrorCodes.InternalError"/>.
     /// </returns>
-    public async Task<string> HandleAsync(string requestJson, CancellationToken ct)
+    public async Task<string> HandleAsync(string requestJson, CancellationToken cancellationToken)
     {
         try
         {
-            return await HandleCoreAsync(requestJson, ct).ConfigureAwait(false);
+            return await HandleCoreAsync(requestJson, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
             // Cancellation while marshalling onto the UI thread (before the command ran). Mirror the
             // command-execution timeout contract: report TIMEOUT (exit 8), not INTERNAL_ERROR.
-            return CliResponse.SerializeError(
-                CliResponse.MakeError("unknown", CliErrorCodes.Timeout, "request timed out or was cancelled"));
+            return CliRequestDispatcher.CreateTimeoutResponse();
         }
         catch (Exception ex)
         {
             Logger.LogError($"[CliRequestHandler] Unexpected exception in HandleAsync: {ex.GetType().Name}: {ex.Message}");
-            return CliResponse.SerializeError(
-                CliResponse.MakeCodedError("unknown", CliErrorCodes.InternalError, CliMessageIds.InternalError, detail: ex.Message));
-        }
-    }
-
-    // ─── Internal testable core ───────────────────────────────────────────────
-
-    /// <summary>
-    /// Testable dispatch core. Takes pre-fetched VM state instead of accessing the ViewModel
-    /// directly, so unit tests can drive it without a WinUI DispatcherQueue.
-    /// </summary>
-    /// <param name="envelope">The parsed request envelope.</param>
-    /// <param name="snapshot">Pre-fetched monitor list from <c>MainViewModel.SnapshotMonitors()</c>.</param>
-    /// <param name="hiddenIds">Pre-fetched hidden-ID set from <c>MainViewModel.GetHiddenMonitorIds()</c>.</param>
-    /// <param name="manager">The live <see cref="IMonitorManager"/> for hardware writes.</param>
-    /// <param name="loadProfilesAsync">
-    /// Lazy profile loader, invoked only by the <c>profiles</c> command so the read commands do not
-    /// pay for disk I/O they never use. Maps to <c>ProfileHelper.LoadProfilesAsync</c>.
-    /// </param>
-    /// <param name="applyProfileAsync">
-    /// Delegate that applies a profile by id (best-effort) and returns the resolved profile's name,
-    /// or <see langword="null"/> when it does not exist. Receives the profile id and a
-    /// <see cref="CancellationToken"/>. Maps to <c>MainViewModel.ApplyProfileForCliAsync</c> in
-    /// production; its returned name is used as-is by the apply-profile handler, which must not call
-    /// <paramref name="loadProfilesAsync"/> again to recover it.
-    /// </param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>One-line JSON response string.</returns>
-    internal static async Task<string> BuildResponseAsync(
-        CliRequestEnvelope envelope,
-        IReadOnlyList<Monitor> snapshot,
-        IReadOnlySet<string> hiddenIds,
-        IReadOnlyList<CustomVcpValueMapping> customMappings,
-        IMonitorManager manager,
-        int defaultStep,
-        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
-        Func<int, CancellationToken, Task<string?>> applyProfileAsync,
-        CancellationToken ct)
-    {
-        try
-        {
-            if (CliCommandHandlers.TryGet(envelope.Command, out var handler))
-            {
-                var context = new CliCommandContext(
-                    envelope,
-                    snapshot,
-                    hiddenIds,
-                    customMappings,
-                    manager,
-                    defaultStep,
-                    loadProfilesAsync,
-                    applyProfileAsync);
-
-                return await handler.ExecuteAsync(context, ct).ConfigureAwait(false);
-            }
-
-            // A command name the app does not recognize is a bad argument (e.g. a newer CLI talking
-            // to an older app), not an internal app fault — map it to ARGUMENT_ERROR (exit 7), like
-            // the apply-profile not-found path, not INTERNAL_ERROR (exit 9).
-            return CliResponse.SerializeError(
-                CliResponse.MakeCodedError(envelope.Command, CliErrorCodes.ArgumentError, CliMessageIds.UnknownCommand, value: envelope.Command));
-        }
-        catch (OperationCanceledException)
-        {
-            // A token-aware command can observe server-lifetime cancellation before or after a
-            // non-interruptible write. Partial writes cannot be rolled back, so report TIMEOUT
-            // (exit 8) rather than a false success.
-            return CliResponse.SerializeError(
-                CliResponse.MakeError(envelope.Command, CliErrorCodes.Timeout, "operation timed out or was cancelled"));
+            return CliRequestDispatcher.CreateInternalErrorResponse(ex.Message);
         }
     }
 
@@ -173,8 +100,7 @@ public sealed class CliRequestHandler
 
         if (envelope is null || string.IsNullOrEmpty(envelope.Command))
         {
-            return CliResponse.SerializeError(
-                CliResponse.MakeCodedError("unknown", CliErrorCodes.InternalError, CliMessageIds.InternalError, detail: "could not parse request envelope"));
+            return CliRequestDispatcher.CreateInvalidEnvelopeResponse();
         }
 
         // Marshal all ViewModel/MonitorManager access onto the UI thread.
@@ -189,7 +115,7 @@ public sealed class CliRequestHandler
             var customMappings = _vm.CustomVcpMappings;
             var manager = _vm.MonitorManager;
 
-            return await BuildResponseAsync(
+            return await CliRequestDispatcher.BuildResponseAsync(
                 envelope,
                 snapshot,
                 hiddenIds,

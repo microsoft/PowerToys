@@ -12,7 +12,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 
 /// <summary>
 /// Invariant guards for the <see cref="CliCommandHandlers"/> registry that replaced the dispatcher's
-/// per-command switch. End-to-end command behavior is covered by <see cref="CliRequestHandlerTests"/>;
+/// per-command switch. End-to-end command behavior is covered by <see cref="CliRequestDispatcherTests"/>;
 /// these pin the registry's shape so a new command cannot be added without a handler, and unknown
 /// names cannot silently resolve.
 /// </summary>

@@ -16,7 +16,7 @@ namespace PowerDisplay.Cli.Ipc;
 /// line, reads one response line, and returns <see langword="null"/> on connect failure or timeout.
 /// <para>
 /// <b>Protocol:</b> BOM-less UTF-16 LE encoding, <c>'\n'</c>-delimited lines, one request → one response.
-/// Mirrors the app-side <c>CliPipeServer</c> in <c>PowerDisplay/Ipc/CliPipeServer.cs</c>.
+/// Mirrors the app-side <c>CliPipeServer</c> in <c>PowerDisplay.Ipc/CliPipeServer.cs</c>.
 /// </para>
 /// </summary>
 public sealed class CliPipeClient

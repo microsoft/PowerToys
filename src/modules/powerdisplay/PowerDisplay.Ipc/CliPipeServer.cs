@@ -10,17 +10,16 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ManagedCommon;
 using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Ipc;
 
 /// <summary>
 /// App-side named-pipe server that accepts CLI connections and dispatches each request through
-/// <see cref="CliRequestHandler"/>.
+/// <see cref="ICliRequestProcessor"/>.
 /// <para>
 /// <b>Protocol:</b> One connection = one request/response exchange. The server reads one
-/// <c>'\n'</c>-delimited JSON line, calls <see cref="CliRequestHandler.HandleAsync"/>, writes one
+/// <c>'\n'</c>-delimited JSON line, calls <see cref="ICliRequestProcessor.HandleAsync"/>, writes one
 /// JSON line back, then closes the connection. Unicode encoding mirrors
 /// <c>PowerDisplay/Helpers/NamedPipeProcessor.cs</c>.
 /// </para>
@@ -48,7 +47,7 @@ namespace PowerDisplay.Ipc;
 /// </para>
 /// <para>
 /// <b>Limitation:</b> because the loop is single-instance, one in-flight request holds the sole
-/// pipe instance until <see cref="CliRequestHandler.HandleAsync"/> returns. A blocking DDC/CI
+/// pipe instance until <see cref="ICliRequestProcessor.HandleAsync"/> returns. A blocking DDC/CI
 /// hardware write cannot be cancelled mid-call (the underlying Win32 <c>SetVCPFeature</c> I2C
 /// transaction is synchronous), so a slow or hung monitor serializes every subsequent CLI request
 /// behind it until the OS DDC/CI layer times out. This is an accepted trade-off for the one-shot
@@ -58,14 +57,19 @@ namespace PowerDisplay.Ipc;
 /// </summary>
 public sealed class CliPipeServer
 {
-    private readonly CliRequestHandler _handler;
+    private readonly ICliRequestProcessor _processor;
+    private readonly ICliLogger _logger;
 
     /// <summary>
     /// Initialises the server with the request handler that will be called for each connection.
     /// </summary>
-    /// <param name="handler">The handler that processes each request. Must not be null.</param>
-    public CliPipeServer(CliRequestHandler handler)
-        => _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+    /// <param name="processor">The processor that handles each request. Must not be null.</param>
+    /// <param name="logger">Optional host logger. When omitted, logging is disabled.</param>
+    public CliPipeServer(ICliRequestProcessor processor, ICliLogger? logger = null)
+    {
+        _processor = processor ?? throw new ArgumentNullException(nameof(processor));
+        _logger = logger ?? NullCliLogger.Instance;
+    }
 
     /// <summary>
     /// Starts the background accept loop. Fire-and-forget: returns immediately; the loop runs
@@ -96,7 +100,7 @@ public sealed class CliPipeServer
             PipeAccessRights.ReadWrite | PipeAccessRights.CreateNewInstance,
             AccessControlType.Allow));
 
-        Logger.LogInfo($"[PowerDisplay CLI IPC] Server starting on pipe '{pipeName}'");
+        _logger.LogInfo($"[PowerDisplay CLI IPC] Server starting on pipe '{pipeName}'");
 
         // Keep one instance of the well-known pipe name alive at all times so it is never left
         // unowned between requests. Only the FIRST instance uses PipeOptions.FirstPipeInstance, which
@@ -150,7 +154,7 @@ public sealed class CliPipeServer
                         }
                         catch (Exception ex) when (IsRecoverableCreationException(ex))
                         {
-                            Logger.LogWarning($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance before serving; will retry after serving the current request: {ex.GetType().Name}: {ex.Message}");
+                            _logger.LogWarning($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance before serving; will retry after serving the current request: {ex.GetType().Name}: {ex.Message}");
                         }
 
                         try
@@ -163,7 +167,7 @@ public sealed class CliPipeServer
                             // client) must not be conflated with a listener/replacement failure: it is
                             // logged and swallowed here so a replacement already created above (or
                             // retried below) is still kept for the next iteration.
-                            Logger.LogError($"[PowerDisplay CLI IPC] Error while serving a request: {ex.GetType().Name}: {ex.Message}");
+                            _logger.LogError($"[PowerDisplay CLI IPC] Error while serving a request: {ex.GetType().Name}: {ex.Message}");
                         }
 
                         if (listener is null)
@@ -175,7 +179,8 @@ public sealed class CliPipeServer
                             listener = await CreateReplacementWithRetryAsync(
                                 () => CreateServerStream(pipeName, security, firstInstance: false),
                                 RetryDelayAsync,
-                                ct).ConfigureAwait(false);
+                                ct,
+                                _logger).ConfigureAwait(false);
                         }
                     }
                     finally
@@ -189,7 +194,7 @@ public sealed class CliPipeServer
                 }
                 catch (Exception ex) when (IsRecoverableCreationException(ex))
                 {
-                    Logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
+                    _logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
 
                     // Drop the (possibly broken) current instance and back off before retrying, so a
                     // persistent create failure — e.g. another process holding the name, which
@@ -214,7 +219,7 @@ public sealed class CliPipeServer
             listener?.Dispose();
         }
 
-        Logger.LogInfo("[PowerDisplay CLI IPC] Server stopped.");
+        _logger.LogInfo("[PowerDisplay CLI IPC] Server stopped.");
     }
 
     /// <summary>Bounded delay between replacement-creation retry attempts (also used by the
@@ -250,11 +255,15 @@ public sealed class CliPipeServer
     /// <param name="delayAsync">Awaited before every attempt; production passes a bounded
     /// <see cref="Task.Delay(int, CancellationToken)"/>, tests can pass a no-op.</param>
     /// <param name="ct">Cancellation token; observed by <paramref name="delayAsync"/>.</param>
+    /// <param name="logger">Optional host logger. When omitted, logging is disabled.</param>
     internal static async Task<NamedPipeServerStream> CreateReplacementWithRetryAsync(
         Func<NamedPipeServerStream> createReplacement,
         Func<CancellationToken, Task> delayAsync,
-        CancellationToken ct)
+        CancellationToken ct,
+        ICliLogger? logger = null)
     {
+        logger ??= NullCliLogger.Instance;
+
         while (true)
         {
             await delayAsync(ct).ConfigureAwait(false);
@@ -265,7 +274,7 @@ public sealed class CliPipeServer
             }
             catch (Exception ex) when (IsRecoverableCreationException(ex))
             {
-                Logger.LogError($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance; retrying: {ex.GetType().Name}: {ex.Message}");
+                logger.LogError($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance; retrying: {ex.GetType().Name}: {ex.Message}");
             }
         }
     }
@@ -316,23 +325,23 @@ public sealed class CliPipeServer
         }
         catch (InvalidDataException)
         {
-            Logger.LogWarning($"[PowerDisplay CLI IPC] Request exceeded {CliPipeProtocol.MaxRequestChars} chars; closing connection.");
+            _logger.LogWarning($"[PowerDisplay CLI IPC] Request exceeded {CliPipeProtocol.MaxRequestChars} chars; closing connection.");
             return;
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
             // Read timeout (not app shutdown — that propagates to break the accept loop).
-            Logger.LogWarning("[PowerDisplay CLI IPC] Request read timed out; closing connection.");
+            _logger.LogWarning("[PowerDisplay CLI IPC] Request read timed out; closing connection.");
             return;
         }
 
         if (string.IsNullOrEmpty(requestJson))
         {
-            Logger.LogWarning("[PowerDisplay CLI IPC] Received empty/null request line; closing connection.");
+            _logger.LogWarning("[PowerDisplay CLI IPC] Received empty/null request line; closing connection.");
             return;
         }
 
-        var responseJson = await _handler.HandleAsync(requestJson, ct).ConfigureAwait(false);
+        var responseJson = await _processor.HandleAsync(requestJson, ct).ConfigureAwait(false);
 
         // Bound the write + drain the same way the read is bounded above. The pipe uses a 0-byte
         // output buffer, so both WriteLineAsync and WaitForPipeDrain block until the client reads;
@@ -370,7 +379,7 @@ public sealed class CliPipeServer
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
             // Write/drain timeout (not app shutdown — that propagates to break the accept loop).
-            Logger.LogWarning("[PowerDisplay CLI IPC] Response write/drain timed out; closing connection.");
+            _logger.LogWarning("[PowerDisplay CLI IPC] Response write/drain timed out; closing connection.");
         }
         catch (IOException)
         {

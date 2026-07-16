@@ -12,18 +12,16 @@ using PowerDisplay.Common.Models;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
 using PowerDisplay.Models;
-using PowerDisplay.ViewModels;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc.UnitTests;
 
 /// <summary>
-/// Unit tests for the testable core of <see cref="CliRequestHandler.BuildResponseAsync"/>.
-/// Tests drive the internal static <c>BuildResponseAsync</c> directly so that no WinUI
-/// <c>DispatcherQueue</c> or real <see cref="MainViewModel"/> is required.
+/// Unit tests for <see cref="CliRequestDispatcher.BuildResponseAsync"/>.
+/// Tests drive the dispatcher directly, without the WinUI host adapter.
 /// </summary>
 [TestClass]
-public class CliRequestHandlerTests
+public class CliRequestDispatcherTests
 {
     // ─── Shared fixtures ──────────────────────────────────────────────────────
     private static readonly IReadOnlySet<string> NoHidden =
@@ -64,7 +62,7 @@ public class CliRequestHandlerTests
         Func<CancellationToken, Task<PowerDisplayProfiles>>? loadProfilesAsync = null,
         CancellationToken ct = default)
     {
-        return CliRequestHandler.BuildResponseAsync(
+        return CliRequestDispatcher.BuildResponseAsync(
             envelope,
             monitors ?? new[] { MakeMon() },
             NoHidden,

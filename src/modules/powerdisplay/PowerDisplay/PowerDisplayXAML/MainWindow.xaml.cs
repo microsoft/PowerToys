@@ -129,7 +129,7 @@ namespace PowerDisplay
             {
                 _cliServerCts = new CancellationTokenSource();
                 var handler = new PowerDisplay.Ipc.CliRequestHandler(ViewModel, this.DispatcherQueue);
-                new PowerDisplay.Ipc.CliPipeServer(handler).Start(_cliServerCts.Token);
+                new PowerDisplay.Ipc.CliPipeServer(handler, new PowerDisplay.Ipc.ManagedCliLogger()).Start(_cliServerCts.Token);
                 Logger.LogInfo("MainWindow: CLI pipe server started");
             }
 
