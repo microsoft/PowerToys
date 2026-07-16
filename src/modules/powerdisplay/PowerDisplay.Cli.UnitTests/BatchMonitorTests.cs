@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -239,6 +240,57 @@ public class BatchMonitorTests
         var expected = new int?[] { 1 };
         Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
         CollectionAssert.AreEqual(expected, seen, "must abort after the first PROVIDER_UNAVAILABLE");
+    }
+
+    // ── WarnIfMonitorNumberIgnored: complete ignored list, formatted invariantly ──────────────
+    [TestMethod]
+    public void WarnIfMonitorNumberIgnored_MultipleNumbers_WarningIncludesCompleteList()
+    {
+        var output = new RecordingCliOutput();
+        int[] monitorNumbers = { 1, 2, 3 };
+        Program.WarnIfMonitorNumberIgnored(output, monitorNumbers, "MON-X");
+
+        Assert.AreEqual(1, output.StderrLines.Count);
+        StringAssert.Contains(output.StderrLines[0], "1,2,3");
+
+        // Regression guard: the old single-number message must not appear on its own.
+        Assert.IsFalse(output.StderrLines[0].EndsWith(" 1 ignored because --monitor-id was also provided", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void WarnIfMonitorNumberIgnored_NoMonitorId_NoWarningEmitted()
+    {
+        var output = new RecordingCliOutput();
+        int[] monitorNumbers = { 1, 2, 3 };
+        Program.WarnIfMonitorNumberIgnored(output, monitorNumbers, null);
+        Assert.AreEqual(0, output.StderrLines.Count);
+    }
+
+    [TestMethod]
+    public void WarnIfMonitorNumberIgnored_EmptyList_NoWarningEmitted()
+    {
+        var output = new RecordingCliOutput();
+        Program.WarnIfMonitorNumberIgnored(output, Array.Empty<int>(), "MON-X");
+        Assert.AreEqual(0, output.StderrLines.Count);
+    }
+
+    [TestMethod]
+    public async Task Set_MonitorIdWinsOverBatch_WarningIncludesAllIgnoredNumbers()
+    {
+        var root = new PowerDisplayRootCommand();
+        var args = new[] { "set", "-n", "1,2,3", "-i", "MON-X", "--brightness", "50" };
+        var parseResult = new Parser(root).Parse(args);
+        var output = new RecordingCliOutput();
+
+        // The send delegate is irrelevant here (a null response renders PROVIDER_UNAVAILABLE); the
+        // warning is emitted synchronously before the dispatch itself.
+        var dispatcher = new IpcDispatcher((_, _, _) => Task.FromResult<string?>(null), output, TimeSpan.FromSeconds(1));
+
+        await Program.DispatchAsync(root, args, parseResult, dispatcher, output, CancellationToken.None);
+
+        var warnings = output.StderrLines.Where(l => l.StartsWith("warn:", StringComparison.Ordinal)).ToList();
+        Assert.AreEqual(1, warnings.Count);
+        StringAssert.Contains(warnings[0], "1,2,3");
     }
 
     // ── get/capabilities reject a comma-separated batch ───────────────────────

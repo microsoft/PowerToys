@@ -70,26 +70,6 @@
     <value>(unknown)</value>
     <comment>Text-mode marker for a supported setting whose value was not read.</comment>
   </data>
-  <data name="Text_Failed" xml:space="preserve">
-    <value>FAILED</value>
-    <comment>Text-mode marker that an apply-profile setting failed at the hardware.</comment>
-  </data>
-  <data name="Text_NotConnectedSkipped" xml:space="preserve">
-    <value>not connected, skipped</value>
-    <comment>apply-profile: a monitor named by the profile is not currently connected.</comment>
-  </data>
-  <data name="Text_NoSettingsInProfile" xml:space="preserve">
-    <value>no settings in profile</value>
-    <comment>apply-profile: the profile entry for a connected monitor had no values.</comment>
-  </data>
-  <data name="Text_OutOfRangeSkipped" xml:space="preserve">
-    <value>(out of range, skipped)</value>
-    <comment>apply-profile: a profile value was outside the valid range and was not written.</comment>
-  </data>
-  <data name="Text_InvalidValueSkipped" xml:space="preserve">
-    <value>(not a supported value, skipped)</value>
-    <comment>apply-profile: a discrete profile value was not in the monitor's advertised set and was not written.</comment>
-  </data>
   <data name="Text_NoProfilesSaved" xml:space="preserve">
     <value>No profiles saved.</value>
     <comment>profiles command: no saved profiles exist.</comment>
@@ -101,13 +81,13 @@
     <value>(no values reported)</value>
     <comment>capabilities: a discrete VCP code advertised no enumerated values.</comment>
   </data>
-  <data name="Text_AppliedProfile" xml:space="preserve">
-    <value>Applied profile '{0}':</value>
-    <comment>{0} = profile name.</comment>
+  <data name="Text_ProfileProcessedBestEffort" xml:space="preserve">
+    <value>Processed profile '{0}' (best effort).</value>
+    <comment>{0} = profile name. apply-profile is best-effort and must not claim hardware success; per-setting outcomes are not reported.</comment>
   </data>
   <data name="Warn_MonitorNumberIgnored" xml:space="preserve">
     <value>warning: --monitor-number {0} ignored because --monitor-id was also provided</value>
-    <comment>{0} = monitor number. Flag names are CLI syntax and must not be translated.</comment>
+    <comment>{0} = the complete comma-separated list of ignored monitor numbers. Flag names are CLI syntax and must not be translated.</comment>
   </data>
   <data name="Error_NoSettingSpecified" xml:space="preserve">
     <value>no setting specified; pass one of --brightness/--contrast/--volume/--color-temperature/--input-source/--power-state/--orientation</value>

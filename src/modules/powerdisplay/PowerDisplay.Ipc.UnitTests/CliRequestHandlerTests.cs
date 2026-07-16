@@ -52,13 +52,16 @@ public class CliRequestHandlerTests
 
     /// <summary>
     /// Calls <c>BuildResponseAsync</c> with the int-based apply-profile delegate signature.
+    /// The delegate returns the resolved profile's name (<see langword="null"/> means "not found"),
+    /// so the apply-profile handler never needs to fall back to <c>LoadProfiles</c>.
     /// </summary>
     private static Task<string> Dispatch(
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
-        Func<int, CancellationToken, Task<bool>>? applyProfile = null,
+        Func<int, CancellationToken, Task<string?>>? applyProfile = null,
         int defaultStep = 5,
+        Func<CancellationToken, Task<PowerDisplayProfiles>>? loadProfilesAsync = null,
         CancellationToken ct = default)
     {
         return CliRequestHandler.BuildResponseAsync(
@@ -68,8 +71,8 @@ public class CliRequestHandlerTests
             Array.Empty<CustomVcpValueMapping>(),
             new NoOpManager(),
             defaultStep,
-            _ => Task.FromResult(profiles ?? EmptyProfiles),
-            applyProfile ?? ((_, _) => Task.FromResult(true)),
+            loadProfilesAsync ?? (_ => Task.FromResult(profiles ?? EmptyProfiles)),
+            applyProfile ?? ((_, _) => Task.FromResult<string?>("Default")),
             ct);
     }
 
@@ -168,11 +171,10 @@ public class CliRequestHandlerTests
     }
 
     [TestMethod]
-    public async Task Set_Cancelled_ReturnsTimeoutError()
+    public async Task Set_ServerTokenCancelled_ReturnsTimeoutError()
     {
-        // A write that overruns the CLI timeout (or Ctrl+C) cancels the token after the hardware call;
-        // SetCommandExecutor surfaces it as OperationCanceledException, which must be reported as
-        // TIMEOUT (exit 8) — not INTERNAL_ERROR (exit 9).
+        // This test injects a cancelled server-side token directly into BuildResponseAsync so the
+        // handler observes server-lifetime cancellation and maps it to TIMEOUT (exit 8).
         var envelope = new CliRequestEnvelope
         {
             Command = CliCommandNames.Set,
@@ -302,15 +304,8 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_FoundProfile_ReturnsCliApplyProfileResult()
     {
-        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
-
-        var profiles = new PowerDisplayProfiles
-        {
-            Profiles = new List<PowerDisplayProfile>
-            {
-                new PowerDisplayProfile { Name = "Night", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 1 },
-            },
-        };
+        // The apply delegate returns the resolved name directly; the handler must use it as-is.
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
 
         var envelope = new CliRequestEnvelope
         {
@@ -318,7 +313,7 @@ public class CliRequestHandlerTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
         };
 
-        var json = await Dispatch(envelope, profiles: profiles, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
@@ -328,10 +323,40 @@ public class CliRequestHandlerTests
     }
 
     [TestMethod]
+    public async Task ApplyProfile_FoundProfile_NeverCallsLoadProfiles()
+    {
+        // Regression test for the duplicate-load bug: once the apply delegate has resolved and
+        // applied the profile, the handler must use the returned name directly and must never call
+        // LoadProfilesAsync again to "recover" the name (extra disk I/O, and can report a
+        // stale/renamed/deleted name if the profile changed between the two loads).
+        var loadProfilesCallCount = 0;
+        Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = _ =>
+        {
+            loadProfilesCallCount++;
+            throw new InvalidOperationException("LoadProfilesAsync must not be called by apply-profile");
+        };
+
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Night");
+
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.ApplyProfile,
+            ApplyProfile = new ApplyProfileRequest { ProfileId = 1 },
+        };
+
+        var json = await Dispatch(envelope, applyProfile: applyFn, loadProfilesAsync: loadProfilesAsync);
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
+        Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
+        Assert.AreEqual("Night", result.Profile);
+        Assert.AreEqual(0, loadProfilesCallCount, "apply-profile must not call LoadProfilesAsync");
+    }
+
+    [TestMethod]
     public async Task ApplyProfile_ProfileNotFound_ReturnsArgumentError()
     {
-        // false = profile not found
-        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(false);
+        // null = profile not found (unknown/invalid id)
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
 
         var envelope = new CliRequestEnvelope
         {
@@ -370,7 +395,7 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_UnknownId_ReturnsArgumentError()
     {
-        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(false);
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>(null);
 
         var envelope = new CliRequestEnvelope
         {
@@ -390,7 +415,7 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_NonPositiveId_ReturnsArgumentError()
     {
-        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Should not be called");
 
         var envelope = new CliRequestEnvelope
         {
@@ -408,15 +433,7 @@ public class CliRequestHandlerTests
     [TestMethod]
     public async Task ApplyProfile_FoundId_ReturnsSuccessWithId()
     {
-        Func<int, CancellationToken, Task<bool>> applyFn = (id, ct) => Task.FromResult(true);
-
-        var profiles = new PowerDisplayProfiles
-        {
-            Profiles = new List<PowerDisplayProfile>
-            {
-                new PowerDisplayProfile { Name = "Gaming", MonitorSettings = new List<ProfileMonitorSetting>(), Id = 3 },
-            },
-        };
+        Func<int, CancellationToken, Task<string?>> applyFn = (id, ct) => Task.FromResult<string?>("Gaming");
 
         var envelope = new CliRequestEnvelope
         {
@@ -424,7 +441,7 @@ public class CliRequestHandlerTests
             ApplyProfile = new ApplyProfileRequest { ProfileId = 3 },
         };
 
-        var json = await Dispatch(envelope, profiles: profiles, applyProfile: applyFn);
+        var json = await Dispatch(envelope, applyProfile: applyFn);
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");

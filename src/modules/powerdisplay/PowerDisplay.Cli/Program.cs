@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -272,7 +273,7 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumber.HasValue ? new[] { monitorNumber.Value } : System.Array.Empty<int>(), monitorId);
 
                 return await dispatcher.SendGetAsync(
                     CliRequestBuilder.BuildGet(monitorNumber, monitorId, settingFilter),
@@ -314,7 +315,7 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, monitorNumbers.Length > 0 ? monitorNumbers[0] : (int?)null, monitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumbers, monitorId);
 
                 return await DispatchWriteTargetsAsync(
                     monitorNumbers,
@@ -354,7 +355,7 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, monitorNumbers.Length > 0 ? monitorNumbers[0] : (int?)null, monitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumbers, monitorId);
 
                 return await DispatchWriteTargetsAsync(
                     monitorNumbers,
@@ -373,7 +374,7 @@ public static class Program
                     return CliExitCodes.ArgumentError;
                 }
 
-                WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
+                WarnIfMonitorNumberIgnored(output, monitorNumber.HasValue ? new[] { monitorNumber.Value } : System.Array.Empty<int>(), monitorId);
 
                 // An out-of-range --setting (not one of the 3 discrete settings) is validated app-side
                 // and comes back as a single ARGUMENT_ERROR envelope.
@@ -401,12 +402,14 @@ public static class Program
     }
 
     // Carry-forward: the app discards -n when -i is also supplied; surface that warning
-    // CLI-side without a round-trip. Shared by the get/set/capabilities branches.
-    private static void WarnIfMonitorNumberIgnored(ICliOutput output, int? monitorNumber, string? monitorId)
+    // CLI-side without a round-trip. Shared by the get/set/up/down/capabilities branches. Internal
+    // (rather than private) so the complete-ignored-list formatting is directly unit-testable.
+    internal static void WarnIfMonitorNumberIgnored(ICliOutput output, IReadOnlyList<int> monitorNumbers, string? monitorId)
     {
-        if (monitorNumber.HasValue && !string.IsNullOrEmpty(monitorId))
+        if (monitorNumbers.Count > 0 && !string.IsNullOrEmpty(monitorId))
         {
-            output.WriteWarning(Resources.Warn_MonitorNumberIgnored(monitorNumber.GetValueOrDefault()));
+            var ignored = string.Join(",", monitorNumbers.Select(n => n.ToString(CultureInfo.InvariantCulture)));
+            output.WriteWarning(Resources.Warn_MonitorNumberIgnored(ignored));
         }
     }
 

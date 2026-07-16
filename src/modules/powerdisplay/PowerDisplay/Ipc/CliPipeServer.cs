@@ -39,9 +39,12 @@ namespace PowerDisplay.Ipc;
 /// <b>Concurrency:</b> the accept loop serves one request at a time — it waits for a connection,
 /// runs it to completion, then accepts the next. This is sufficient for the one-shot CLI client.
 /// To keep the well-known pipe name owned continuously (see <see cref="CreateServerStream"/>), the
-/// replacement instance is created before the just-served one is disposed, so up to two instances
-/// exist briefly; <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed to allow
-/// that overlap, not to serve requests concurrently.
+/// loop always creates the replacement instance before disposing the just-served one: it tries
+/// right after the connection is accepted (fast path, before serving, so up to two instances exist
+/// briefly), and if that attempt fails it serves the current request anyway and retries replacement
+/// creation (bounded delay between attempts) until one succeeds or the app is shutting down.
+/// <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed to allow the brief
+/// overlap, not to serve requests concurrently.
 /// </para>
 /// <para>
 /// <b>Limitation:</b> because the loop is single-instance, one in-flight request holds the sole
@@ -98,13 +101,14 @@ public sealed class CliPipeServer
         // Keep one instance of the well-known pipe name alive at all times so it is never left
         // unowned between requests. Only the FIRST instance uses PipeOptions.FirstPipeInstance, which
         // fails loudly if another (possibly malicious) process already owns the predictable,
-        // session-scoped name at startup. Every later instance is stood up BEFORE the just-served one
-        // is disposed, so at least one instance always holds the name — closing the gap a per-request
-        // create/dispose would otherwise reopen after every request. Without this, a same- or
-        // cross-user process could win that gap with CreateNamedPipe, take the name under its own ACL,
-        // and thereafter both deny the real server (its FirstPipeInstance create would fail forever)
-        // and intercept/spoof CLI traffic (the client connects by name only, it does not verify the
-        // server).
+        // session-scoped name at startup. Every later instance is guaranteed to be created BEFORE the
+        // just-served one is disposed, so at least one instance always holds the name — closing the
+        // gap a per-request create/dispose would otherwise reopen after every request. Without this, a
+        // same- or cross-user process could win that gap with CreateNamedPipe and take the name under
+        // its own ACL, denying the real server (its FirstPipeInstance create would fail forever)
+        // afterwards. The CLI client independently verifies the server's process identity
+        // (<c>PipeServerIdentity.IsTrustedServer</c>) before trusting a response, so this loop's job is
+        // ownership continuity, not authenticating the connection.
         NamedPipeServerStream? listener = null;
         try
         {
@@ -118,15 +122,61 @@ public sealed class CliPipeServer
 
                     await listener.WaitForConnectionAsync(ct).ConfigureAwait(false);
 
-                    // A client is connected to `listener`. Stand up the replacement instance now, while
-                    // the connected one still holds the name, so ownership is continuous; then serve
-                    // and dispose the connected instance.
+                    // A client is connected to `listener`. Fast path: try to stand up the replacement
+                    // instance right now, while the connected one still holds the name, so the common
+                    // case never drops ownership. If that first attempt throws, do NOT drop this
+                    // request and do NOT dispose `connected` yet — serve it first, then keep retrying
+                    // replacement creation (bounded delay before every attempt) until it succeeds or the
+                    // app is shutting down. `connected` is only disposed once a replacement exists, or
+                    // when shutdown makes continued ownership irrelevant.
                     var connected = listener;
-                    listener = CreateServerStream(pipeName, security, firstInstance: false);
+                    listener = null;
 
+                    // Everything from here on runs under one try/finally so `connected` is disposed no
+                    // matter which step throws (fast-path create, serving, or the post-serving retry) —
+                    // including an app-shutdown OperationCanceledException, which must still unwind
+                    // through this finally before reaching the accept loop's own break/dispose logic.
                     try
                     {
-                        await ServeOneAsync(connected, ct).ConfigureAwait(false);
+                        // A successful fast-path replacement is assigned straight into `listener`
+                        // (rather than a separate local) so that if serving below is cancelled by app
+                        // shutdown, the exception unwinds past this point with `listener` already
+                        // owning the new instance. The accept loop's outer `finally { listener?.Dispose();
+                        // }` then disposes it — otherwise a successfully created replacement would be
+                        // stranded in a local variable that nothing ever disposes.
+                        try
+                        {
+                            listener = CreateServerStream(pipeName, security, firstInstance: false);
+                        }
+                        catch (Exception ex) when (IsRecoverableCreationException(ex))
+                        {
+                            Logger.LogWarning($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance before serving; will retry after serving the current request: {ex.GetType().Name}: {ex.Message}");
+                        }
+
+                        try
+                        {
+                            await ServeOneAsync(connected, ct).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        {
+                            // A per-request failure (e.g. an unexpected exception while serving this
+                            // client) must not be conflated with a listener/replacement failure: it is
+                            // logged and swallowed here so a replacement already created above (or
+                            // retried below) is still kept for the next iteration.
+                            Logger.LogError($"[PowerDisplay CLI IPC] Error while serving a request: {ex.GetType().Name}: {ex.Message}");
+                        }
+
+                        if (listener is null)
+                        {
+                            // The fast-path attempt above failed (or threw a non-recoverable exception
+                            // that already propagated out of this method), so this is itself a retry —
+                            // the bounded delay is awaited before every attempt inside the helper,
+                            // including this first post-serving one.
+                            listener = await CreateReplacementWithRetryAsync(
+                                () => CreateServerStream(pipeName, security, firstInstance: false),
+                                RetryDelayAsync,
+                                ct).ConfigureAwait(false);
+                        }
                     }
                     finally
                     {
@@ -137,7 +187,7 @@ public sealed class CliPipeServer
                 {
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (IsRecoverableCreationException(ex))
                 {
                     Logger.LogError($"[PowerDisplay CLI IPC] server loop error: {ex.GetType().Name}: {ex.Message}");
 
@@ -150,7 +200,7 @@ public sealed class CliPipeServer
 
                     try
                     {
-                        await Task.Delay(500, ct).ConfigureAwait(false);
+                        await Task.Delay(RetryDelayMilliseconds, ct).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {
@@ -165,6 +215,59 @@ public sealed class CliPipeServer
         }
 
         Logger.LogInfo("[PowerDisplay CLI IPC] Server stopped.");
+    }
+
+    /// <summary>Bounded delay between replacement-creation retry attempts (also used by the
+    /// listener-recovery back-off above), so a persistent failure does not spin the loop.</summary>
+    private const int RetryDelayMilliseconds = 500;
+
+    private static Task RetryDelayAsync(CancellationToken ct) => Task.Delay(RetryDelayMilliseconds, ct);
+
+    /// <summary>
+    /// Whether <paramref name="ex"/> represents a recoverable pipe-creation failure (e.g. another
+    /// process transiently holding the name, or an ACL/permissions hiccup) that is worth retrying.
+    /// Anything else is treated as a non-recoverable / programming error and must propagate instead
+    /// of being silently retried forever. Shared by every <see cref="CreateServerStream"/> call site
+    /// that retries on failure, so all of them apply the same recoverable/non-recoverable boundary.
+    /// </summary>
+    private static bool IsRecoverableCreationException(Exception ex) => ex is IOException or UnauthorizedAccessException;
+
+    /// <summary>
+    /// Repeatedly invokes <paramref name="createReplacement"/>, waiting <paramref name="delayAsync"/>
+    /// before every attempt — including the first — until it returns successfully. This is called
+    /// only after the fast-path replacement create (attempted right after a connection is accepted,
+    /// before serving it) has already failed once and the current request has since been served, so
+    /// the very first attempt made here is itself a retry and must be preceded by the same bounded
+    /// backoff as every subsequent one; it is awaited (not run in the background) as part of the
+    /// caller's control flow before moving on to the next accept iteration. Only
+    /// <see cref="IsRecoverableCreationException"/> failures are retried — any other exception (a
+    /// programming/non-recoverable error) propagates immediately without retrying or delaying
+    /// further. Propagates <see cref="OperationCanceledException"/> from <paramref name="delayAsync"/>
+    /// without retrying further, so app shutdown stops the retry instead of spinning. Internal so the
+    /// retry mechanic can be unit-tested with a fake factory and a no-op delay.
+    /// </summary>
+    /// <param name="createReplacement">Creates one replacement pipe instance; may throw.</param>
+    /// <param name="delayAsync">Awaited before every attempt; production passes a bounded
+    /// <see cref="Task.Delay(int, CancellationToken)"/>, tests can pass a no-op.</param>
+    /// <param name="ct">Cancellation token; observed by <paramref name="delayAsync"/>.</param>
+    internal static async Task<NamedPipeServerStream> CreateReplacementWithRetryAsync(
+        Func<NamedPipeServerStream> createReplacement,
+        Func<CancellationToken, Task> delayAsync,
+        CancellationToken ct)
+    {
+        while (true)
+        {
+            await delayAsync(ct).ConfigureAwait(false);
+
+            try
+            {
+                return createReplacement();
+            }
+            catch (Exception ex) when (IsRecoverableCreationException(ex))
+            {
+                Logger.LogError($"[PowerDisplay CLI IPC] Failed to create replacement pipe instance; retrying: {ex.GetType().Name}: {ex.Message}");
+            }
+        }
     }
 
     /// <summary>

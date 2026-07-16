@@ -31,9 +31,11 @@ namespace PowerDisplay.Ipc;
 /// resulting DTO happens on the background thread.
 /// </para>
 /// <para>
-/// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Cancellation (Ctrl+C / overrun
-/// of the CLI timeout) is reported as <see cref="CliErrorCodes.Timeout"/> / exit 8; any other
-/// unexpected exception is reported as <see cref="CliErrorCodes.InternalError"/> / exit 9.
+/// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Client cancellation or deadline
+/// expiry is not propagated to the handler; it only closes the client pipe. Cancellation of the
+/// server-lifetime token (or any token-aware server operation that observes it) maps to
+/// <see cref="CliErrorCodes.Timeout"/> / exit 8. Any other unexpected exception is reported as
+/// <see cref="CliErrorCodes.InternalError"/> / exit 9.
 /// </para>
 /// </summary>
 public sealed class CliRequestHandler
@@ -62,7 +64,7 @@ public sealed class CliRequestHandler
     /// <see cref="ICliCommandHandler"/> on the UI thread, and returns the serialized response JSON.
     /// </summary>
     /// <param name="requestJson">One-line JSON request from the pipe client.</param>
-    /// <param name="ct">Cancellation token (Ctrl-C / server timeout).</param>
+    /// <param name="ct">Cancellation token observed by the server-lifetime operation.</param>
     /// <returns>
     /// A one-line JSON string. Always a valid response — never throws. Cancellation maps to
     /// <see cref="CliErrorCodes.Timeout"/>; any other unexpected exception maps to
@@ -104,10 +106,11 @@ public sealed class CliRequestHandler
     /// pay for disk I/O they never use. Maps to <c>ProfileHelper.LoadProfilesAsync</c>.
     /// </param>
     /// <param name="applyProfileAsync">
-    /// Delegate that applies a profile by id (best-effort) and returns <c>true</c> when the
-    /// profile was found and applied, or <c>false</c> when it does not exist. Receives the profile
-    /// id and a <see cref="CancellationToken"/>. Maps to
-    /// <c>MainViewModel.ApplyProfileForCliAsync</c> in production.
+    /// Delegate that applies a profile by id (best-effort) and returns the resolved profile's name,
+    /// or <see langword="null"/> when it does not exist. Receives the profile id and a
+    /// <see cref="CancellationToken"/>. Maps to <c>MainViewModel.ApplyProfileForCliAsync</c> in
+    /// production; its returned name is used as-is by the apply-profile handler, which must not call
+    /// <paramref name="loadProfilesAsync"/> again to recover it.
     /// </param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>One-line JSON response string.</returns>
@@ -119,7 +122,7 @@ public sealed class CliRequestHandler
         IMonitorManager manager,
         int defaultStep,
         Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
-        Func<int, CancellationToken, Task<bool>> applyProfileAsync,
+        Func<int, CancellationToken, Task<string?>> applyProfileAsync,
         CancellationToken ct)
     {
         try
@@ -147,9 +150,9 @@ public sealed class CliRequestHandler
         }
         catch (OperationCanceledException)
         {
-            // A blocking hardware write (set / apply-profile) overran the CLI timeout or was cancelled
-            // (Ctrl+C). The partial write cannot be rolled back, so report TIMEOUT (exit 8) rather
-            // than a false success — this honours the contract documented in SetCommandExecutor.
+            // A token-aware command can observe server-lifetime cancellation before or after a
+            // non-interruptible write. Partial writes cannot be rolled back, so report TIMEOUT
+            // (exit 8) rather than a false success.
             return CliResponse.SerializeError(
                 CliResponse.MakeError(envelope.Command, CliErrorCodes.Timeout, "operation timed out or was cancelled"));
         }

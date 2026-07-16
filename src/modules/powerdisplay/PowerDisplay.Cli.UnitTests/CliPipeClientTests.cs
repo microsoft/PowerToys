@@ -23,10 +23,10 @@ public class CliPipeClientTests
 
     private static readonly TimeSpan ShortTimeout = TimeSpan.FromMilliseconds(200);
 
-    // ── Happy-path: in-proc fake server ──────────────────────────────────────
+    // ── Happy-path: in-proc fake server, trusted verifier ─────────────────────
     [TestMethod]
     [Timeout(10_000)]
-    public async Task SendAsync_WithFakeServer_ReturnsCannedResponse()
+    public async Task SendAsync_WithFakeServerAndTrustedVerifier_ReturnsCannedResponse()
     {
         const string RequestJson = @"{""command"":""list""}";
         const string ResponseJson = @"{""monitors"":[]}";
@@ -59,12 +59,54 @@ public class CliPipeClientTests
         // Wait until the server is listening before connecting
         await serverReady.WaitAsync(TimeSpan.FromSeconds(5));
 
-        var client = new CliPipeClient();
+        // The in-proc fake server is not the real sibling PowerToys.PowerDisplay.exe, so the
+        // real production verifier would reject it. Inject a trusted stub via the internal
+        // constructor to exercise the round trip without production bypasses.
+        var client = new CliPipeClient(static _ => true);
         var result = await client.SendAsync(RequestJson, ConnectTimeout, CancellationToken.None);
 
         await serverTask; // ensure the server task completes cleanly
 
         Assert.AreEqual(ResponseJson, result);
+    }
+
+    // ── Untrusted server: verifier rejects, no request body is ever sent ─────
+    [TestMethod]
+    [Timeout(10_000)]
+    public async Task SendAsync_WithUntrustedVerifier_ReturnsNullAndSendsNoRequestBody()
+    {
+        const string RequestJson = @"{""command"":""list""}";
+
+        using var serverReady = new SemaphoreSlim(0, 1);
+        string? receivedLine = "not-read-yet";
+        var serverTask = Task.Run(async () =>
+        {
+            using var server = new NamedPipeServerStream(
+                PipeNames.CliServer(),
+                PipeDirection.InOut,
+                1,
+                PipeTransmissionMode.Byte,
+                PipeOptions.Asynchronous);
+
+            serverReady.Release();
+            await server.WaitForConnectionAsync();
+
+            using var reader = new StreamReader(server, CliPipeProtocol.PipeEncoding, false, CliPipeProtocol.BufferSize, leaveOpen: true);
+
+            // The client must close the connection right after a failed verification and before
+            // writing anything, so the read reaches end-of-stream (null) instead of returning a line.
+            receivedLine = await reader.ReadLineAsync();
+        });
+
+        await serverReady.WaitAsync(TimeSpan.FromSeconds(5));
+
+        var client = new CliPipeClient(static _ => false);
+        var result = await client.SendAsync(RequestJson, ConnectTimeout, CancellationToken.None);
+
+        await serverTask;
+
+        Assert.IsNull(result, "Expected null when the connected server fails identity verification");
+        Assert.IsNull(receivedLine, "Expected no request body to reach an untrusted server");
     }
 
     // ── No-server path: returns null within short timeout ────────────────────
@@ -102,5 +144,79 @@ public class CliPipeClientTests
         {
             // expected (TaskCanceledException derives from OperationCanceledException)
         }
+    }
+
+    // ── PipeServerIdentity: exact sibling-path comparison ─────────────────────
+    [TestMethod]
+    public void PathsMatch_ExactPathDifferentCasing_ReturnsTrue()
+    {
+        const string Expected = @"C:\Program Files\PowerToys\PowerToys.PowerDisplay.exe";
+        const string Actual = @"c:\program files\powertoys\POWERTOYS.POWERDISPLAY.EXE";
+
+        Assert.IsTrue(PipeServerIdentity.PathsMatch(Actual, Expected));
+    }
+
+    [TestMethod]
+    public void PathsMatch_EquivalentFullPathsContainingDotSegments_ReturnsTrue()
+    {
+        const string Expected = @"C:\Program Files\PowerToys\PowerToys.PowerDisplay.exe";
+        const string Actual = @"C:\Program Files\PowerToys\.\Subfolder\..\PowerToys.PowerDisplay.exe";
+
+        Assert.IsTrue(PipeServerIdentity.PathsMatch(Actual, Expected));
+    }
+
+    [TestMethod]
+    public void PathsMatch_DifferentDirectory_ReturnsFalse()
+    {
+        const string Expected = @"C:\Program Files\PowerToys\PowerToys.PowerDisplay.exe";
+        const string Actual = @"C:\Some\Other\Place\PowerToys.PowerDisplay.exe";
+
+        Assert.IsFalse(PipeServerIdentity.PathsMatch(Actual, Expected));
+    }
+
+    [TestMethod]
+    public void PathsMatch_DifferentFileName_ReturnsFalse()
+    {
+        const string Expected = @"C:\Program Files\PowerToys\PowerToys.PowerDisplay.exe";
+        const string Actual = @"C:\Program Files\PowerToys\PowerToys.NotPowerDisplay.exe";
+
+        Assert.IsFalse(PipeServerIdentity.PathsMatch(Actual, Expected));
+    }
+
+    // ── PipeServerIdentity: real GetNamedPipeServerProcessId + QueryFullProcessImageNameW round trip ──
+    [TestMethod]
+    [Timeout(10_000)]
+    public async Task IsTrustedServer_SelfConnectedPipeWithMatchingExpectedPath_ReturnsTrue()
+    {
+        string selfPipeName = $"PowerDisplay_Cli_UnitTests_{Guid.NewGuid():N}";
+        string currentProcessPath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Environment.ProcessPath is unexpectedly null for the current test host process.");
+
+        using var server = new NamedPipeServerStream(selfPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        using var client = new NamedPipeClientStream(".", selfPipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+
+        var acceptTask = server.WaitForConnectionAsync();
+        await client.ConnectAsync((int)ConnectTimeout.TotalMilliseconds, CancellationToken.None);
+        await acceptTask;
+
+        // The pipe server here is the current test-host process itself, so the expected path is
+        // this process's own image path when verifying the client-side connected stream.
+        Assert.IsTrue(PipeServerIdentity.IsTrustedServer(client, currentProcessPath));
+    }
+
+    [TestMethod]
+    [Timeout(10_000)]
+    public async Task IsTrustedServer_SelfConnectedPipeWithMismatchedExpectedPath_ReturnsFalse()
+    {
+        string selfPipeName = $"PowerDisplay_Cli_UnitTests_{Guid.NewGuid():N}";
+
+        using var server = new NamedPipeServerStream(selfPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+        using var client = new NamedPipeClientStream(".", selfPipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
+
+        var acceptTask = server.WaitForConnectionAsync();
+        await client.ConnectAsync((int)ConnectTimeout.TotalMilliseconds, CancellationToken.None);
+        await acceptTask;
+
+        Assert.IsFalse(PipeServerIdentity.IsTrustedServer(client, @"C:\definitely\not\the\real\process.exe"));
     }
 }

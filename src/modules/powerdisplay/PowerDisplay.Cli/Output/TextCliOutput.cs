@@ -40,11 +40,10 @@ public sealed class TextCliOutput : ICliOutput
             return;
         }
 
-        _stdout.WriteLine($"{"#",-3} {"Name",-22} {"Method",-7} {"Monitor ID"}");
+        _stdout.WriteLine("# | Name | Method | Monitor ID");
         foreach (var m in result.Monitors)
         {
-            var name = Truncate(m.Name, 22);
-            _stdout.WriteLine($"{m.Number,-3} {name,-22} {m.Method,-7} {m.Id}");
+            _stdout.WriteLine($"{m.Number} | {m.Name} | {m.Method} | {m.Id}");
         }
     }
 
@@ -139,19 +138,19 @@ public sealed class TextCliOutput : ICliOutput
             return;
         }
 
-        _stdout.WriteLine($"{"Id",-4} {"Name",-24} {"Monitors",-9} {"Last modified"}");
+        _stdout.WriteLine("Id | Name | Monitors | Last modified");
         foreach (var p in result.Profiles)
         {
-            var name = Truncate(p.Name, 24);
-            _stdout.WriteLine($"{p.Id,-4} {name,-24} {p.MonitorCount,-9} {p.LastModified}");
+            _stdout.WriteLine($"{p.Id} | {p.Name} | {p.MonitorCount} | {p.LastModified}");
         }
     }
 
     public void WriteApplyProfileResult(CliApplyProfileResult result)
     {
-        // apply-profile is best-effort: print a single confirmation line. Per-setting outcomes are
-        // intentionally not reported (see CliApplyProfileResult / ApplyProfileForCliAsync).
-        _stdout.WriteLine(Resources.Text_AppliedProfile(result.Profile));
+        // apply-profile is best-effort: print a single confirmation line that never claims hardware
+        // success. Per-setting outcomes are intentionally not reported (see CliApplyProfileResult /
+        // ApplyProfileForCliAsync).
+        _stdout.WriteLine(Resources.Text_ProfileProcessedBestEffort(result.Profile));
     }
 
     public void WriteError(CliErrorResult result)
@@ -196,14 +195,4 @@ public sealed class TextCliOutput : ICliOutput
     }
 
     private static string MonitorLabel(CliMonitorRef m) => $"Monitor {m.Number} ({m.Name})";
-
-    private static string Truncate(string s, int max)
-    {
-        if (string.IsNullOrEmpty(s) || s.Length <= max)
-        {
-            return s ?? string.Empty;
-        }
-
-        return s[..(max - 1)] + "…";
-    }
 }

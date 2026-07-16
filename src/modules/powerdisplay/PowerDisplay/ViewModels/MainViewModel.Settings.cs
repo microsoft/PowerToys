@@ -206,17 +206,20 @@ public partial class MainViewModel
 
     /// <summary>
     /// Applies a saved profile by id for the CLI/IPC path (best-effort). Loads the profile and,
-    /// when found, applies it through the shared fire-and-forget <see cref="ApplyProfileAsync"/>
-    /// path (identical to the GUI). Per-setting hardware failures are not surfaced: apply-profile is
-    /// a best-effort convenience command that reports success once the id profile exists.
+    /// when found, awaits the shared GUI <see cref="ApplyProfileAsync"/> path. Per-setting hardware
+    /// outcomes are not surfaced: profile application remains best-effort, and the returned name
+    /// only confirms that the profile was resolved and processed. It is returned so the IPC handler
+    /// can report it directly, without a second <c>LoadProfiles</c> call that would re-read the file
+    /// and could observe a renamed/deleted/different profile than the one just applied.
     /// </summary>
     /// <param name="profileId">The id of the profile to apply.</param>
     /// <param name="ct">Cancellation token; observed before the writes begin.</param>
     /// <returns>
-    /// <c>true</c> when the profile was found and applied; <c>false</c> when the profile id is
-    /// unknown. The IPC handler maps <c>false</c> to ARGUMENT_ERROR / exit code 7.
+    /// The resolved profile's name after best-effort processing; <see langword="null"/> when the
+    /// profile id is unknown or invalid. This does not attest that any hardware write succeeded.
+    /// The IPC handler maps <see langword="null"/> to ARGUMENT_ERROR / exit code 7.
     /// </returns>
-    public async Task<bool> ApplyProfileForCliAsync(int profileId, CancellationToken ct = default)
+    public async Task<string?> ApplyProfileForCliAsync(int profileId, CancellationToken ct = default)
     {
         try
         {
@@ -225,14 +228,14 @@ public partial class MainViewModel
             var profile = await LoadValidProfileByIdAsync(profileId, "[Profile] CLI", ct);
             if (profile == null)
             {
-                return false;
+                return null;
             }
 
             ct.ThrowIfCancellationRequested();
 
             await ApplyProfileAsync(profile.MonitorSettings);
             Logger.LogInfo($"[Profile] Completed applying profile for CLI: id {profileId}");
-            return true;
+            return profile.Name;
         }
         catch (Exception ex)
         {

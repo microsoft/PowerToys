@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerDisplay.Common.Services;
@@ -83,6 +84,24 @@ public static class AdjustCommandExecutor
             return (null, CliErrorFactory.Unsupported(commandName, monitorRef, setting, descriptor.UnsupportedReason));
         }
 
+        var step = req.Step ?? defaultStep;
+        if (step < 0)
+        {
+            return (null, new CliErrorResult
+            {
+                Command = commandName,
+                Monitor = monitorRef,
+                Error = new CliError
+                {
+                    Code = CliErrorCodes.ArgumentError,
+                    MessageId = CliMessageIds.OutOfRange,
+                    Setting = "step",
+                    Value = step.ToString(CultureInfo.InvariantCulture),
+                    ExpectedRange = "[0, 2147483647]",
+                },
+            });
+        }
+
         var beforeKnown = monitor!.ReadValues.HasFlag(descriptor.ReadFlag);
 
         // Relative adjust is meaningless without a trustworthy starting value. If discovery never
@@ -106,7 +125,6 @@ public static class AdjustCommandExecutor
         }
 
         var current = descriptor.Current(monitor!);
-        var step = req.Step ?? defaultStep;
         var delta = isUp ? step : -step;
 
         // Compute in long so a pathologically large --step cannot overflow int: `current + delta`
@@ -116,8 +134,10 @@ public static class AdjustCommandExecutor
 
         var op = await descriptor.Apply(manager, monitor.Id, newValue, ct);
 
-        // A blocking write that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
-        // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
+        // The server receives its own app-lifetime token; a client Ctrl+C/deadline only closes the
+        // pipe and is not propagated here. If this long write is interrupted by server shutdown
+        // before or after the non-interruptible hardware call, surface the cancellation as TIMEOUT
+        // when a response can still be returned.
         ct.ThrowIfCancellationRequested();
 
         if (!op.IsSuccess)

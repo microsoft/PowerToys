@@ -28,7 +28,10 @@ internal sealed class CliCommandContext
     /// <param name="manager">The live <see cref="IMonitorManager"/> for hardware writes.</param>
     /// <param name="defaultStep">The default relative-adjust step (mouse-wheel increment).</param>
     /// <param name="loadProfilesAsync">Lazy profile loader, invoked only by profile commands.</param>
-    /// <param name="applyProfileAsync">Applies a profile by id; <c>false</c> result means "not found".</param>
+    /// <param name="applyProfileAsync">
+    /// Applies a profile by id and returns its resolved name; <see langword="null"/> result means
+    /// "not found".
+    /// </param>
     public CliCommandContext(
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor> snapshot,
@@ -37,7 +40,7 @@ internal sealed class CliCommandContext
         IMonitorManager manager,
         int defaultStep,
         Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync,
-        Func<int, CancellationToken, Task<bool>> applyProfileAsync)
+        Func<int, CancellationToken, Task<string?>> applyProfileAsync)
     {
         Envelope = envelope;
         Snapshot = snapshot;
@@ -70,6 +73,10 @@ internal sealed class CliCommandContext
     /// <summary>Lazy asynchronous profile loader, invoked only by profile commands.</summary>
     public Func<CancellationToken, Task<PowerDisplayProfiles>> LoadProfilesAsync { get; }
 
-    /// <summary>Applies a profile by id (best-effort); returns <c>false</c> when the profile is not found.</summary>
-    public Func<int, CancellationToken, Task<bool>> ApplyProfileAsync { get; }
+    /// <summary>
+    /// Applies a profile by id (best-effort) and returns the resolved profile's name;
+    /// <see langword="null"/> when the profile is not found. The apply-profile handler uses the
+    /// returned name directly and must not call <see cref="LoadProfilesAsync"/> to recover it.
+    /// </summary>
+    public Func<int, CancellationToken, Task<string?>> ApplyProfileAsync { get; }
 }

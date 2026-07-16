@@ -151,8 +151,8 @@ internal static class CliCommandHandlers
                     CliResponse.MakeError(CliCommandNames.ApplyProfile, CliErrorCodes.ArgumentError, "profile id must be positive"));
             }
 
-            var applied = await context.ApplyProfileAsync(profileId, ct).ConfigureAwait(false);
-            if (!applied)
+            var name = await context.ApplyProfileAsync(profileId, ct).ConfigureAwait(false);
+            if (name is null)
             {
                 return CliResponse.SerializeError(
                     CliResponse.MakeCodedError(
@@ -162,8 +162,6 @@ internal static class CliCommandHandlers
                         value: profileId.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             }
 
-            var profiles = await context.LoadProfilesAsync(ct).ConfigureAwait(false);
-            var name = profiles.GetById(profileId)?.Name ?? string.Empty;
             var applyResult = new CliApplyProfileResult { ProfileId = profileId, Profile = name };
             return CliResponse.Serialize(applyResult, ContractsJsonContext.Default.CliApplyProfileResult);
         }

@@ -158,8 +158,10 @@ internal abstract class CliVcpSetting
 
         var op = await Apply(manager, monitor.Id, value!.Value, ct);
 
-        // A blocking write that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
-        // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
+        // The server receives its own app-lifetime token; a client Ctrl+C/deadline only closes the
+        // pipe and is not propagated here. If server shutdown is observed before or after the
+        // non-interruptible hardware call, surface the cancellation as TIMEOUT when a response can
+        // still be returned.
         ct.ThrowIfCancellationRequested();
 
         if (!op.IsSuccess)

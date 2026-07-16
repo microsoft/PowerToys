@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Security.AccessControl;
@@ -105,6 +106,8 @@ public class CliPipeServerTests
 
     private static string UniquePipeName() => $"PowerDisplay_Cli_Test_{Guid.NewGuid():N}";
 
+    private static readonly string[] DelayThenCreateOrder = { "delay", "create" };
+
     [TestMethod]
     public void CreateServerStream_FirstInstance_Succeeds()
     {
@@ -149,5 +152,167 @@ public class CliPipeServerTests
         {
             second?.Dispose();
         }
+    }
+
+    // ─── CreateReplacementWithRetryAsync ───────────────────────────────────────
+    // The accept loop must not drop the in-flight request or dispose the connected instance just
+    // because the FIRST replacement-creation attempt (the fast path, tried before serving) throws.
+    // It must instead retry, with a bounded delay awaited before EVERY attempt (including the first
+    // one made inside this helper — the fast path already consumed attempt #1), until a replacement
+    // is created or the caller's token is cancelled (app shutdown) — never spinning without delaying,
+    // and never delaying-then-attempting out of order.
+    [TestMethod]
+    public async Task CreateReplacementWithRetryAsync_FirstAttemptThrows_RetriesAndReturnsReplacement()
+    {
+        var attempts = 0;
+        NamedPipeServerStream? created = null;
+        var name = UniquePipeName();
+        var security = CurrentUserPipeSecurity();
+
+        NamedPipeServerStream Factory()
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                throw new IOException("simulated first-attempt replacement-creation failure");
+            }
+
+            created = CliPipeServer.CreateServerStream(name, security, firstInstance: true);
+            return created;
+        }
+
+        var delayCalls = 0;
+        Task Delay(CancellationToken ct)
+        {
+            delayCalls++;
+
+            // No-op delay: the test proves retry behaviour, not real timing.
+            return Task.CompletedTask;
+        }
+
+        try
+        {
+            var replacement = await CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, CancellationToken.None);
+
+            Assert.AreSame(created, replacement);
+            Assert.AreEqual(2, attempts, "The factory must be retried exactly once after the first failure.");
+            Assert.AreEqual(2, delayCalls, "The bounded delay must be awaited before every attempt (including the first made in this helper), so two attempts require two delay calls.");
+        }
+        finally
+        {
+            created?.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task CreateReplacementWithRetryAsync_DelaysBeforeFirstAttempt_EvenWhenItSucceeds()
+    {
+        // This helper is only reached after the fast-path replacement create has already failed
+        // once, so even its very first attempt is itself a retry and must be preceded by the
+        // bounded backoff — not just the attempts after that.
+        var callOrder = new List<string>();
+        NamedPipeServerStream? created = null;
+        var name = UniquePipeName();
+        var security = CurrentUserPipeSecurity();
+
+        NamedPipeServerStream Factory()
+        {
+            callOrder.Add("create");
+            created = CliPipeServer.CreateServerStream(name, security, firstInstance: true);
+            return created;
+        }
+
+        Task Delay(CancellationToken ct)
+        {
+            callOrder.Add("delay");
+            return Task.CompletedTask;
+        }
+
+        try
+        {
+            var replacement = await CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, CancellationToken.None);
+
+            Assert.AreSame(created, replacement);
+            CollectionAssert.AreEqual(
+                DelayThenCreateOrder,
+                callOrder,
+                "The delay must be awaited before the create attempt, even when that first attempt succeeds.");
+        }
+        finally
+        {
+            created?.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task CreateReplacementWithRetryAsync_NonRecoverableException_PropagatesWithoutRetry()
+    {
+        // Only IOException/UnauthorizedAccessException are recoverable pipe-creation failures worth
+        // retrying. Anything else (a programming/non-recoverable error) must propagate immediately
+        // instead of being retried forever.
+        var attempts = 0;
+        NamedPipeServerStream Factory()
+        {
+            attempts++;
+            throw new InvalidOperationException("simulated programming/non-recoverable failure");
+        }
+
+        var delayCalls = 0;
+        Task Delay(CancellationToken ct)
+        {
+            delayCalls++;
+            return Task.CompletedTask;
+        }
+
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            () => CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, CancellationToken.None));
+
+        Assert.AreEqual(1, attempts, "A non-recoverable exception must not be retried.");
+        Assert.AreEqual(1, delayCalls, "No additional delay must occur once a non-recoverable exception propagates (no retry follows it).");
+    }
+
+    [TestMethod]
+    public async Task CreateReplacementWithRetryAsync_CancelledDuringRetry_StopsRetryingAndThrows()
+    {
+        var attempts = 0;
+        NamedPipeServerStream Factory()
+        {
+            attempts++;
+            throw new IOException("simulated persistent replacement-creation failure");
+        }
+
+        using var cts = new CancellationTokenSource();
+
+        var delayCalls = 0;
+        Task Delay(CancellationToken ct)
+        {
+            delayCalls++;
+            if (delayCalls == 2)
+            {
+                // Simulate app shutdown happening while the retry loop is backing off before the
+                // second attempt (the delay before the first attempt already ran normally).
+                cts.Cancel();
+                return Task.Delay(Timeout.Infinite, ct);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        // Task.Delay surfaces cancellation as TaskCanceledException, a subtype of
+        // OperationCanceledException; assert on the base type the same way the accept loop's
+        // `catch (OperationCanceledException)` does, rather than the exact derived type.
+        var threwOperationCanceled = false;
+        try
+        {
+            await CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            threwOperationCanceled = true;
+        }
+
+        Assert.IsTrue(threwOperationCanceled, "Cancellation during the retry delay must propagate as OperationCanceledException.");
+
+        Assert.AreEqual(1, attempts, "Retry must stop as soon as cancellation is observed, not keep spinning.");
     }
 }

@@ -1254,7 +1254,6 @@ NTSTATUS
 NTSYSAPI
 nullability
 NULLCURSOR
-nullid
 nullonfailure
 nullref
 numberbox
@@ -1979,7 +1978,6 @@ unittests
 UNLEN
 UNORM
 unparsable
-unparseable
 unremapped
 Unsend
 Unsubscribes

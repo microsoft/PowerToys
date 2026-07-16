@@ -18,10 +18,12 @@ internal interface ICliCommandHandler
     /// <summary>
     /// Executes the command against the pre-fetched <paramref name="context"/> and returns the
     /// one-line JSON response. Expected error conditions are returned as an error envelope rather than
-    /// thrown; an <see cref="OperationCanceledException"/> from a cancelled hardware write is allowed
-    /// to propagate and is mapped to <c>TIMEOUT</c> by the dispatcher.
+    /// thrown. The dispatcher passes the server's app-lifetime token; client Ctrl+C/deadlines are
+    /// local to the CLI, only close the pipe, and are not propagated to handlers. If server shutdown
+    /// is observed before or after a non-interruptible hardware call, the handler maps that
+    /// cancellation to <c>TIMEOUT</c> when it can still return a response.
     /// </summary>
     /// <param name="context">The per-request snapshot of ViewModel/MonitorManager state.</param>
-    /// <param name="ct">Cancellation token (Ctrl+C / server timeout).</param>
+    /// <param name="ct">The server's app-lifetime cancellation token.</param>
     Task<string> ExecuteAsync(CliCommandContext context, CancellationToken ct);
 }

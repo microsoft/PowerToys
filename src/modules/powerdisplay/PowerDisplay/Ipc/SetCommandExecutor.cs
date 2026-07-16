@@ -39,7 +39,10 @@ public static class SetCommandExecutor
     /// <param name="snapshot">Pre-discovered monitor list (already filtered by the caller if needed).</param>
     /// <param name="hidden">Set of monitor IDs hidden by user preference.</param>
     /// <param name="req">The set request from the CLI IPC channel.</param>
-    /// <param name="ct">Cancellation token (Ctrl+C / timeout).</param>
+    /// <param name="ct">
+    /// The server's app-lifetime cancellation token. Client Ctrl+C/deadlines are local to the CLI,
+    /// only close the pipe, and are not propagated to handlers.
+    /// </param>
     /// <returns>
     /// Exactly one of <c>Result</c> or <c>Error</c> is non-null.
     /// </returns>
@@ -126,8 +129,10 @@ public static class SetCommandExecutor
         var beforeKnown = monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation);
         var op = await manager.SetRotationAsync(monitor.Id, index.Value, ct);
 
-        // A blocking rotation that overran the CLI timeout (or Ctrl+C) cancels the token but cannot be
-        // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
+        // The server receives its own app-lifetime token; a client Ctrl+C/deadline only closes the
+        // pipe and is not propagated here. If server shutdown is observed before or after the
+        // non-interruptible rotation call, surface the cancellation as TIMEOUT when a response can
+        // still be returned.
         ct.ThrowIfCancellationRequested();
 
         if (!op.IsSuccess)

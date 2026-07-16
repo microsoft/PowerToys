@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -19,6 +22,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 public class AdjustCommandExecutorTests
 {
     private const int DefaultStep = 5;
+    private const string StepExpectedRange = "[0, 2147483647]";
 
     private static readonly IReadOnlySet<string> EmptyHidden =
         new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -34,6 +38,85 @@ public class AdjustCommandExecutorTests
         ReadValues = MonitorReadFlags.Brightness,
         CurrentBrightness = current,
     };
+
+    private sealed class RecordingManager : IMonitorManager
+    {
+        public int Calls { get; private set; }
+
+        public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetContrastAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetVolumeAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetPowerStateAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+
+        public Task<MonitorOperationResult> SetRotationAsync(string id, int v, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(MonitorOperationResult.Success());
+        }
+    }
+
+    private static async Task AssertNegativeStepRejectedAsync(int? requestedStep, int defaultStep, int expectedStep)
+    {
+        var snapshot = new List<Monitor> { BrightnessMon(50) };
+        var req = new AdjustRequest { MonitorNumber = 1, Setting = "brightness", Step = requestedStep };
+        var manager = new RecordingManager();
+
+        var (result, error) = await AdjustCommandExecutor.ExecuteAsync(manager, snapshot, EmptyHidden, req, isUp: true, defaultStep, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
+        Assert.AreEqual(CliMessageIds.OutOfRange, error.Error.MessageId);
+        Assert.AreEqual("step", error.Error.Setting);
+        Assert.AreEqual(expectedStep.ToString(CultureInfo.InvariantCulture), error.Error.Value);
+        Assert.AreEqual(StepExpectedRange, error.Error.ExpectedRange);
+        Assert.AreEqual(0, manager.Calls);
+        Assert.AreNotEqual(CliErrorCodes.HardwareFailure, error.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task Up_ExplicitNegativeStep_ReturnsOutOfRange_AndSkipsHardware()
+        => await AssertNegativeStepRejectedAsync(-1, DefaultStep, -1);
+
+    [TestMethod]
+    public async Task Up_ExplicitIntMinStep_ReturnsOutOfRange_AndSkipsHardware()
+        => await AssertNegativeStepRejectedAsync(int.MinValue, DefaultStep, int.MinValue);
+
+    [TestMethod]
+    public async Task Up_NegativeDefaultStep_ReturnsOutOfRange_AndSkipsHardware()
+        => await AssertNegativeStepRejectedAsync(null, -1, -1);
 
     [TestMethod]
     public async Task Up_AddsStep_AndReportsBeforeAfter()

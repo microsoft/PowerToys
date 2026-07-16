@@ -27,16 +27,6 @@ internal static class Resources
 
     internal static string Text_Unknown => Get(nameof(Text_Unknown));
 
-    internal static string Text_Failed => Get(nameof(Text_Failed));
-
-    internal static string Text_NotConnectedSkipped => Get(nameof(Text_NotConnectedSkipped));
-
-    internal static string Text_NoSettingsInProfile => Get(nameof(Text_NoSettingsInProfile));
-
-    internal static string Text_OutOfRangeSkipped => Get(nameof(Text_OutOfRangeSkipped));
-
-    internal static string Text_InvalidValueSkipped => Get(nameof(Text_InvalidValueSkipped));
-
     internal static string Text_NoProfilesSaved => Get(nameof(Text_NoProfilesSaved));
 
     internal static string Text_NoVcpCapabilities => Get(nameof(Text_NoVcpCapabilities));
@@ -44,9 +34,9 @@ internal static class Resources
     internal static string Text_NoValuesReported => Get(nameof(Text_NoValuesReported));
 
     // ---- error messages / hints (with arguments) ----
-    internal static string Text_AppliedProfile(string profile) => Format(nameof(Text_AppliedProfile), profile);
+    internal static string Text_ProfileProcessedBestEffort(string profile) => Format(nameof(Text_ProfileProcessedBestEffort), profile);
 
-    internal static string Warn_MonitorNumberIgnored(int number) => Format(nameof(Warn_MonitorNumberIgnored), number);
+    internal static string Warn_MonitorNumberIgnored(string numbers) => Format(nameof(Warn_MonitorNumberIgnored), numbers);
 
     internal static string Error_NoSettingSpecified => Get(nameof(Error_NoSettingSpecified));
 
