@@ -106,7 +106,9 @@ public static class CharacterMappings
 
         new(Language.BG, "Bulgarian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_I] = ["й"],
+            [LetterKey.VK_E] = ["€"],
+            [LetterKey.VK_I] = ["ѝ"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
         }),
 
         new(Language.CA, "Catalan", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
