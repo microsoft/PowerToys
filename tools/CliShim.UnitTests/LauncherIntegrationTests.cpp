@@ -35,6 +35,13 @@ namespace
         { L"powerdisplaycli", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
     };
 
+    constexpr const wchar_t* RejectedLegacyCommands[] = {
+        L"fancyzones",
+        L"imageresizer",
+        L"filelocksmith",
+        L"powerdisplay",
+    };
+
     std::filesystem::path GetTestBinaryDirectory()
     {
         wchar_t modulePath[MAX_PATH]{};
@@ -191,6 +198,22 @@ namespace CliShimUnitTests
             CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
 
             Assert::AreEqual(ExitCommandNotMapped, RunAndGetExitCode(shimPath));
+        }
+
+        TEST_METHOD(UnsuffixedLegacyCommandsReturnCommandNotMapped)
+        {
+            TemporaryDirectory installation;
+            const std::filesystem::path cliDirectory = installation.GetPath() / L"cli";
+            const std::filesystem::path shimSource = GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
+
+            for (const wchar_t* command : RejectedLegacyCommands)
+            {
+                const std::filesystem::path shimPath = cliDirectory / (std::wstring{ command } + L".exe");
+                CopyExecutable(shimSource, shimPath);
+
+                const std::wstring message = L"Legacy command was unexpectedly mapped: " + std::wstring{ command };
+                Assert::AreEqual(ExitCommandNotMapped, RunAndGetExitCode(shimPath), message.c_str());
+            }
         }
 
         TEST_METHOD(MissingTargetReturnsLaunchFailed)
