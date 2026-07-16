@@ -119,17 +119,21 @@ public partial class ListViewModelTests
         {
             var initialUpdate = await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
             Assert.IsFalse(initialUpdate.ForceFirstItem);
+            Assert.IsTrue(initialUpdate.EnsureSelectionVisible);
 
             var regularUpdate = await ObserveNextItemsUpdateAsync(viewModel, () => page.TriggerItemsChanged(1));
             Assert.IsTrue(regularUpdate.ForceFirstItem);
+            Assert.IsTrue(regularUpdate.EnsureSelectionVisible);
 
             var explicitIncrementalUpdate = await ObserveNextItemsUpdateAsync(
                 viewModel,
                 () => page.TriggerItemsChanged(ListViewModel.IncrementalRefresh));
             Assert.IsFalse(explicitIncrementalUpdate.ForceFirstItem);
+            Assert.IsTrue(explicitIncrementalUpdate.EnsureSelectionVisible);
 
             var loadMoreUpdate = await ObserveNextItemsUpdateAsync(viewModel, viewModel.LoadMoreIfNeeded);
             Assert.IsFalse(loadMoreUpdate.ForceFirstItem);
+            Assert.IsFalse(loadMoreUpdate.EnsureSelectionVisible);
         }
         finally
         {
