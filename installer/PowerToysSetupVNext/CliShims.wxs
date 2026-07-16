@@ -3,7 +3,7 @@
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
   <!--
-    CLI shims: tiny Native AOT launchers installed into the "cli" subfolder. Each shim
+    CLI shims: tiny native launchers installed into the "cli" subfolder. Each shim
     forwards to a real PowerToys CLI (one level up, or under WinUI3Apps). The cli folder
     is appended to PATH so the shims are callable by name from a terminal.
   -->

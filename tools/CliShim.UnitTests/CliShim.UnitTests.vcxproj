@@ -6,6 +6,8 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerToysCliShimUnitTests</RootNamespace>
     <ProjectName>CliShim.UnitTests</ProjectName>
+    <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <IsTestProject>true</IsTestProject>
     <!-- No precompiled header: a single test source plus the shared parser. -->
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\CliShim\</OutDir>

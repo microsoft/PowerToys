@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT license. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Single source of truth for the runtime mapping and staged command executables. -->
+  <ItemGroup>
+    <CliShim Include="fancyzones">
+      <RelativeTarget>../FancyZonesCLI.exe</RelativeTarget>
+    </CliShim>
+    <CliShim Include="imageresizer">
+      <RelativeTarget>../WinUI3Apps/PowerToys.ImageResizerCLI.exe</RelativeTarget>
+    </CliShim>
+    <CliShim Include="filelocksmith">
+      <RelativeTarget>../FileLocksmithCLI.exe</RelativeTarget>
+    </CliShim>
+  </ItemGroup>
+</Project>

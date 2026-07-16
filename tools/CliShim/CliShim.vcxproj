@@ -1,18 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Shared settings (ProjectConfigurations, static CRT, warnings-as-errors, toolset,
-       platform version) come from Cpp.Build.props via ForceImportBeforeCppProps. -->
+  <!-- Shared configurations, static CRT, warnings, toolset, and SDK come from Cpp.Build.props. -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A7FB7FA-65EA-4004-BA73-1B237435A57B}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PowerToysCliShim</RootNamespace>
     <ProjectName>PowerToys.CliShim</ProjectName>
-    <!-- Two-file, dependency-free launcher: no precompiled header. -->
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
-    <!-- Isolate this project's build output so nothing strays into the shared bin root; the
-         StageCliShims target below copies the single binary to one exe per command name into
-         the installer's "cli" folder. -->
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\CliShim\</OutDir>
     <TargetName>PowerToys.CliShim</TargetName>
   </PropertyGroup>
@@ -20,19 +15,22 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <!-- This launcher has no third-party dependencies; opt out of the repo-wide vcpkg
-       integration (set to true in Cpp.Build.props) so it needs no manifest restore. Set
-       after the import above so it wins over that default. -->
+  <Import Project="CliShimManifest.props" />
+
   <PropertyGroup>
     <VcpkgEnabled>false</VcpkgEnabled>
     <VcpkgManifestEnabled>false</VcpkgManifestEnabled>
+    <CliStageDir>$(RepoRoot)$(Platform)\$(Configuration)\cli\</CliStageDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>VERSION_MAJOR=$(Version.Split('.')[0]);VERSION_MINOR=$(Version.Split('.')[1]);VERSION_REVISION=$(Version.Split('.')[2]);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
     <Link>
-      <!-- Console launcher: override the repo-wide default (Windows) from Cpp.Build.props. -->
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -40,62 +38,50 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="CommandLine.cpp" />
     <ClInclude Include="CommandLine.h" />
+    <ResourceCompile Include="CliShim.rc" />
+    <None Include="CliShimManifest.props" />
   </ItemGroup>
-
-  <!--
-    Single source of truth for the set of command names (mirrors the ShimTargets table in
-    main.cpp). StageCliShims copies the built binary to one "<name>.exe" per item, and
-    ValidateCliShimManifest fails the build if any name is missing from main.cpp,
-    CliShims.wxs, or ESRPSigning_core.json.
-  -->
-  <ItemGroup>
-    <CliShim Include="fancyzones" />
-    <CliShim Include="imageresizer" />
-    <CliShim Include="filelocksmith" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <CliStageDir>$(RepoRoot)$(Platform)\$(Configuration)\cli\</CliStageDir>
-  </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <!--
-    Drift guard: keep the command set identical across main.cpp (the runtime table), the
-    <CliShim> items above, CliShims.wxs (installer harvest) and ESRPSigning_core.json
-    (signing). A mismatch would otherwise ship a shim that always exits 9009, or an unsigned
-    binary. Runs before compilation so the failure is immediate and actionable.
-  -->
-  <Target Name="ValidateCliShimManifest" BeforeTargets="ClCompile">
+  <!-- Generate the C++ lookup table directly from the shared manifest. -->
+  <Target Name="GenerateCliShimTargets" BeforeTargets="ClCompile">
+    <ItemGroup>
+      <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
+    </ItemGroup>
+    <MakeDir Directories="$(IntDir)" />
+    <WriteLinesToFile File="$(IntDir)CliShimTargets.g.inc"
+                      Lines="@(_CliShimTargetLine)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <!-- WiX keeps explicit components for stable MSI identity; verify its command set exactly. -->
+  <Target Name="ValidateCliShimInstallerManifest" BeforeTargets="ClCompile">
     <PropertyGroup>
-      <_CliShimMainText>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\main.cpp'))</_CliShimMainText>
       <_CliShimWxsText>$([System.IO.File]::ReadAllText('$(RepoRoot)installer\PowerToysSetupVNext\CliShims.wxs'))</_CliShimWxsText>
-      <_CliShimEsrpText>$([System.IO.File]::ReadAllText('$(RepoRoot).pipelines\ESRPSigning_core.json'))</_CliShimEsrpText>
+      <_CliShimWxsCount>$([System.Text.RegularExpressions.Regex]::Matches('$(_CliShimWxsText)', 'cli\\[^&quot;\\]+\.exe').Count)</_CliShimWxsCount>
+      <_CliShimManifestCount>@(CliShim-&gt;Count())</_CliShimManifestCount>
     </PropertyGroup>
     <ItemGroup>
       <CliShim>
-        <InMain>$(_CliShimMainText.Contains('L&quot;%(Identity)&quot;'))</InMain>
         <InWxs>$(_CliShimWxsText.Contains('cli\%(Identity).exe'))</InWxs>
-        <InEsrp>$(_CliShimEsrpText.Contains('cli\\%(Identity).exe'))</InEsrp>
       </CliShim>
     </ItemGroup>
-    <Error Condition="'%(CliShim.InMain)' != 'True'"
-           Text="CliShim drift: command '%(CliShim.Identity)' is not mapped in main.cpp. Add/rename it in main.cpp, CliShim.vcxproj, CliShims.wxs and ESRPSigning_core.json together." />
     <Error Condition="'%(CliShim.InWxs)' != 'True'"
-           Text="CliShim drift: command '%(CliShim.Identity)' is missing from CliShims.wxs. Add/rename it in main.cpp, CliShim.vcxproj, CliShims.wxs and ESRPSigning_core.json together." />
-    <Error Condition="'%(CliShim.InEsrp)' != 'True'"
-           Text="CliShim drift: command '%(CliShim.Identity)' is missing from ESRPSigning_core.json. Add/rename it in main.cpp, CliShim.vcxproj, CliShims.wxs and ESRPSigning_core.json together." />
+           Text="CliShim installer drift: command '%(CliShim.Identity)' is missing from CliShims.wxs." />
+    <Error Condition="'$(_CliShimWxsCount)' != '$(_CliShimManifestCount)'"
+           Text="CliShim installer drift: CliShims.wxs contains $(_CliShimWxsCount) command executables, but CliShimManifest.props defines $(_CliShimManifestCount)." />
   </Target>
 
-  <!--
-    Copy the single built binary to one exe per command name into the installer's "cli"
-    staging folder, which CliShims.wxs harvests and ESRP signs. The launcher resolves its own
-    file name at run time, so the copies need no per-name content.
-  -->
+  <!-- Recreate the staged command set so renamed or removed commands cannot leave stale files. -->
   <Target Name="StageCliShims" AfterTargets="Build">
+    <ItemGroup>
+      <_ExistingCliShim Include="$(CliStageDir)*.exe" />
+    </ItemGroup>
+    <Delete Files="@(_ExistingCliShim)" />
     <MakeDir Directories="$(CliStageDir)" />
     <Copy SourceFiles="@(CliShim->'$(TargetPath)')"
-          DestinationFiles="@(CliShim->'$(CliStageDir)%(Identity).exe')"
-          SkipUnchangedFiles="true" />
+          DestinationFiles="@(CliShim->'$(CliStageDir)%(Identity).exe')" />
   </Target>
 </Project>

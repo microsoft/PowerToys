@@ -30,9 +30,12 @@ namespace CliShimUnitTests
                 { L"fancyzones", L"" },
                 { L"filelocksmith", L"" },
 
-                // Quoted program name (path with spaces): ends at the closing quote, no backslash-escaping.
+                // Quotes group whitespace within argv[0]; backslashes have no special meaning.
                 { LR"("C:\Program Files\PowerToys\cli\fancyzones.exe" arg)", L"arg" },
                 { LR"("C:\Program Files\PowerToys\cli\fancyzones.exe")", L"" },
+                { LR"("C:\Program Files"\PowerToys\cli\fancyzones.exe arg)", L"arg" },
+                { LR"(C:\Program" Files"\PowerToys\cli\fancyzones.exe arg)", L"arg" },
+                { LR"("C:\Program Files"\PowerToys\cli\fancyzones.exe)", L"" },
 
                 // The user's exact quoting in the tail is preserved verbatim (the whole point of the shim).
                 { LR"("C:\cli\fancyzones.exe" "a b")", LR"("a b")" },

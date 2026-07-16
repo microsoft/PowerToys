@@ -28,18 +28,10 @@ namespace
         const wchar_t* target;
     };
 
-    // Command name (the shim's own file name without extension) -> target CLI path,
-    // relative to the shim's own directory (forward slashes; std::filesystem normalizes
-    // them). The shims are installed in "<install>\cli\", so the targets sit one level up
-    // (install root) or under the WinUI3Apps subfolder.
-    //
-    // This table is the single source of truth for the command names: CliShim.vcxproj
-    // validates that its <CliShim> items, CliShims.wxs, and ESRPSigning_core.json all
-    // reference exactly the names that appear here, failing the build on any drift.
+    // Generated from CliShimManifest.props. Paths are relative to the shim directory; the
+    // shims live in "<install>\cli\", so targets are one level up or under WinUI3Apps.
     constexpr ShimTarget ShimTargets[] = {
-        { L"fancyzones", L"../FancyZonesCLI.exe" },
-        { L"imageresizer", L"../WinUI3Apps/PowerToys.ImageResizerCLI.exe" },
-        { L"filelocksmith", L"../FileLocksmithCLI.exe" },
+#include "CliShimTargets.g.inc"
     };
 
     // Stay alive on Ctrl+C / Ctrl+Break so we can still capture the child's exit code; the
