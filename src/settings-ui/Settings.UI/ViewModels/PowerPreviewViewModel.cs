@@ -225,6 +225,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
 
+            _threeMfThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredThreeMfThumbnailsEnabledValue();
+            if (_threeMfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _threeMfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _threeMfThumbnailEnabledStateIsGPOConfigured = true;
+                _threeMfThumbnailIsEnabled = _threeMfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _threeMfThumbnailIsGpoEnabled = _threeMfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _threeMfThumbnailIsGpoDisabled = _threeMfThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
+            }
+            else
+            {
+                _threeMfThumbnailIsEnabled = Settings.Properties.EnableThreeMfThumbnail;
+            }
+
+            _threeMfThumbnailColor = Settings.Properties.ThreeMfThumbnailColor.Value;
+
             _qoiThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue();
             if (_qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -321,6 +337,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _stlThumbnailIsGpoDisabled;
         private bool _stlThumbnailIsEnabled;
         private string _stlThumbnailColor;
+        private GpoRuleConfigured _threeMfThumbnailEnabledGpoRuleConfiguration;
+        private bool _threeMfThumbnailEnabledStateIsGPOConfigured;
+        private bool _threeMfThumbnailIsGpoEnabled;
+        private bool _threeMfThumbnailIsGpoDisabled;
+        private bool _threeMfThumbnailIsEnabled;
+        private string _threeMfThumbnailColor;
 
         private GpoRuleConfigured _qoiThumbnailEnabledGpoRuleConfiguration;
         private bool _qoiThumbnailEnabledStateIsGPOConfigured;
@@ -345,6 +367,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _svgThumbnailEnabledStateIsGPOConfigured || _pdfThumbnailEnabledStateIsGPOConfigured
                     || _gcodeThumbnailEnabledStateIsGPOConfigured || _stlThumbnailEnabledStateIsGPOConfigured
+                    || _threeMfThumbnailEnabledStateIsGPOConfigured
                     || _qoiThumbnailEnabledStateIsGPOConfigured || _bgcodeThumbnailEnabledStateIsGPOConfigured;
             }
         }
@@ -1000,6 +1023,66 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _stlThumbnailColor = value;
                     Settings.Properties.StlThumbnailColor.Value = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        public bool ThreeMfThumbnailIsEnabled
+        {
+            get
+            {
+                return _threeMfThumbnailIsEnabled;
+            }
+
+            set
+            {
+                if (_threeMfThumbnailEnabledStateIsGPOConfigured)
+                {
+                    // If it's GPO configured, shouldn't be able to change this state.
+                    return;
+                }
+
+                if (value != _threeMfThumbnailIsEnabled)
+                {
+                    _threeMfThumbnailIsEnabled = value;
+                    Settings.Properties.EnableThreeMfThumbnail = value;
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        // Used to only disable enabled button on forced enabled state. (With this users still able to change the utility properties.)
+        public bool ThreeMfThumbnailIsGpoEnabled
+        {
+            get
+            {
+                return _threeMfThumbnailIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool ThreeMfThumbnailIsGpoDisabled
+        {
+            get
+            {
+                return _threeMfThumbnailIsGpoDisabled;
+            }
+        }
+
+        public string ThreeMfThumbnailColor
+        {
+            get
+            {
+                return _threeMfThumbnailColor;
+            }
+
+            set
+            {
+                if (value != _threeMfThumbnailColor)
+                {
+                    _threeMfThumbnailColor = value;
+                    Settings.Properties.ThreeMfThumbnailColor.Value = value;
                     RaisePropertyChanged();
                 }
             }

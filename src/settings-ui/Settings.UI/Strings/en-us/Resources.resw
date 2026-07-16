@@ -1086,6 +1086,17 @@ opera.exe</value>
   <data name="FileExplorerPreview_Color_Thumbnail_STL.Header" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_ThreeMf.Header" xml:space="preserve">
+    <value>3D Manufacturing Format</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_ThreeMf.Description" xml:space="preserve">
+    <value>.3mf</value>
+    <comment>{Locked}</comment>
+  </data>
+  <data name="FileExplorerPreview_Color_Thumbnail_ThreeMf.Header" xml:space="preserve">
+    <value>Color</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_QOI.Header" xml:space="preserve">
     <value>Quite Ok Image</value>
     <comment>{Locked}</comment>
@@ -2033,7 +2044,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>File Locksmith lists which processes are using the selected files or directories and allows closing those processes.</value>
   </data>
   <data name="Oobe_FileExplorer.Description" xml:space="preserve">
-    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), STL (.stl), G-code (.gcode), Binary G-code (.bgcode), and developer files to be viewed in the preview pane. It introduces File Explorer thumbnail support for a number of these file types as well.</value>
+    <value>PowerToys introduces add-ons to the Windows File Explorer that will enable files like Markdown (.md), PDF (.pdf), SVG (.svg), G-code (.gcode), Binary G-code (.bgcode), and developer files to be viewed in the preview pane. It also introduces File Explorer thumbnail support for formats such as SVG, PDF, G-code, Binary G-code, STL (.stl), 3MF (.3mf), and QOI.</value>
   </data>
   <data name="Oobe_ImageResizer.Description" xml:space="preserve">
     <value>Image Resizer is a Windows shell extension for simple bulk image-resizing.</value>

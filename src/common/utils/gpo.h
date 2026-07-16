@@ -47,6 +47,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerGcodeThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_BGCODE_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerBgcodeThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerSTLThumbnails";
+    const std::wstring POLICY_CONFIGURE_ENABLED_THREEMF_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerThreeMfThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_HOSTS_FILE_EDITOR = L"ConfigureEnabledUtilityHostsFileEditor";
     const std::wstring POLICY_CONFIGURE_ENABLED_IMAGE_RESIZER = L"ConfigureEnabledUtilityImageResizer";
     const std::wstring POLICY_CONFIGURE_ENABLED_KEYBOARD_MANAGER = L"ConfigureEnabledUtilityKeyboardManager";
@@ -386,6 +387,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredStlThumbnailsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_STL_THUMBNAILS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredThreeMfThumbnailsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_THREEMF_THUMBNAILS);
     }
 
     inline gpo_rule_configured_t getConfiguredHostsFileEditorEnabledValue()

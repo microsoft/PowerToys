@@ -37,6 +37,7 @@
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_100_0">PowerToys version 0.100.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -265,6 +266,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileExplorerGcodeThumbnails">Gcode file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerBgcodeThumbnails">BGcode file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSTLThumbnails">STL file thumbnail: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerThreeMfThumbnails">3MF file thumbnail: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityHostsFileEditor">Hosts file editor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityImageResizer">Image Resizer: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityKeyboardManager">Keyboard Manager: Configure enabled state</string>

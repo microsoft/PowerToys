@@ -15,6 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerPreviewProperties
     {
         public const string DefaultStlThumbnailColor = "#FFC924";
+        public const string DefaultThreeMfThumbnailColor = "#FFC924";
         public const int DefaultMonacoMaxFileSize = 50;
         public const int DefaultMonacoFontSize = 14;
         public const int DefaultSvgBackgroundColorMode = (int)SvgPreviewColorMode.Default;
@@ -294,6 +295,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("stl-thumbnail-color-setting")]
         public StringProperty StlThumbnailColor { get; set; }
 
+        private bool enableThreeMfThumbnail = true;
+
+        [JsonPropertyName("threemf-thumbnail-toggle-setting")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EnableThreeMfThumbnail
+        {
+            get => enableThreeMfThumbnail;
+            set
+            {
+                if (value != enableThreeMfThumbnail)
+                {
+                    LogTelemetryEvent(value);
+                    enableThreeMfThumbnail = value;
+                }
+            }
+        }
+
+        [JsonPropertyName("threemf-thumbnail-color-setting")]
+        public StringProperty ThreeMfThumbnailColor { get; set; }
+
         private bool enableQoiPreview = true;
 
         [JsonPropertyName("qoi-previewer-toggle-setting")]
@@ -334,6 +355,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SvgBackgroundSolidColor = new StringProperty(DefaultSvgBackgroundSolidColor);
             SvgBackgroundCheckeredShade = new IntProperty(DefaultSvgBackgroundCheckeredShade);
             StlThumbnailColor = new StringProperty(DefaultStlThumbnailColor);
+            ThreeMfThumbnailColor = new StringProperty(DefaultThreeMfThumbnailColor);
             MonacoPreviewMaxFileSize = new IntProperty(DefaultMonacoMaxFileSize);
             MonacoPreviewFontSize = new IntProperty(DefaultMonacoFontSize);
         }
