@@ -13,11 +13,6 @@ namespace PowerDisplay.ViewModels;
 public class PowerStateItem
 {
     /// <summary>
-    /// VCP power mode value representing On state
-    /// </summary>
-    public const int PowerStateOn = 0x01;
-
-    /// <summary>
     /// VCP value for this power state
     /// </summary>
     public int Value { get; set; }

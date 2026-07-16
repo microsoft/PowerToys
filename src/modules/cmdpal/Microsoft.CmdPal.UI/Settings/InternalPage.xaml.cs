@@ -26,6 +26,8 @@ public sealed partial class InternalPage : Page
 
     public string GalleryFeedUrl => _settingsService.Settings.GalleryFeedUrl ?? string.Empty;
 
+    public bool ShowHwndFrame => _settingsService.Settings.ShowHwndFrame;
+
     public InternalPage()
     {
         InitializeComponent();
@@ -119,5 +121,17 @@ public sealed partial class InternalPage : Page
     private void ToggleDevRibbonClicked(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.Send(new ToggleDevRibbonMessage());
+    }
+
+    private void ShowHwndFrameToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleSwitch toggle)
+        {
+            var newValue = toggle.IsOn;
+            if (newValue != _settingsService.Settings.ShowHwndFrame)
+            {
+                _settingsService.UpdateSettings(s => s with { ShowHwndFrame = newValue });
+            }
+        }
     }
 }

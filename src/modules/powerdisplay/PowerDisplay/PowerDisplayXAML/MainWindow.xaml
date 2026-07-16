@@ -235,7 +235,7 @@
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
                                             helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                            helpers:SliderExtensions.MouseWheelChange="5"
+                                            helpers:SliderExtensions.MouseWheelChange="{x:Bind ViewModel.MouseWheelIncrement, Mode=OneWay}"
                                             IsEnabled="{x:Bind ViewModel.IsLinkedBrightnessSliderEnabled, Mode=OneWay}"
                                             IsTabStop="True"
                                             Maximum="100"
@@ -525,7 +525,7 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelIncrement, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsBrightnessSliderEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -556,7 +556,7 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelIncrement, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -586,7 +586,7 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelIncrement, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -706,28 +706,42 @@
                                     x:Name="ProfilesFlyout"
                                     Opened="Flyout_Opened"
                                     ShouldConstrainToRootBounds="False">
-                                    <ListView
-                                        x:Name="ProfilesListView"
-                                        ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
-                                        SelectionChanged="ProfileListView_SelectionChanged"
-                                        SelectionMode="Single">
-                                        <ListView.Header>
-                                            <TextBlock
-                                                x:Uid="ProfilesHeader"
-                                                Margin="{StaticResource FlyoutListHeaderMargin}"
-                                                FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        </ListView.Header>
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate x:DataType="models:PowerDisplayProfile">
+                                    <Grid>
+                                        <StackPanel
+                                            HorizontalAlignment="Center"
+                                            Spacing="{StaticResource FlyoutStandardSpacing}"
+                                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.IsProfilesLoading), Mode=OneWay}">
+                                            <ProgressRing
+                                                x:Uid="ProfilesLoadingIndicator"
+                                                Width="{StaticResource FlyoutScanningIndicatorSize}"
+                                                Height="{StaticResource FlyoutScanningIndicatorSize}"
+                                                IsActive="True" />
+                                            <TextBlock x:Uid="ProfilesLoadingText" />
+                                        </StackPanel>
+                                        <ListView
+                                            x:Name="ProfilesListView"
+                                            ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}"
+                                            SelectionChanged="ProfileListView_SelectionChanged"
+                                            SelectionMode="Single"
+                                            Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.HasProfiles), Mode=OneWay}">
+                                            <ListView.Header>
                                                 <TextBlock
-                                                    Padding="{StaticResource FlyoutListItemPadding}"
-                                                    Text="{x:Bind Name}"
-                                                    TextTrimming="CharacterEllipsis"
-                                                    TextWrapping="NoWrap" />
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
+                                                    x:Uid="ProfilesHeader"
+                                                    Margin="{StaticResource FlyoutListHeaderMargin}"
+                                                    FontSize="{StaticResource FlyoutSecondaryTextFontSize}"
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </ListView.Header>
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate x:DataType="models:PowerDisplayProfile">
+                                                    <TextBlock
+                                                        Padding="{StaticResource FlyoutListItemPadding}"
+                                                        Text="{x:Bind DisplayName}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap" />
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </Grid>
                                 </Flyout>
                             </Button.Flyout>
                         </Button>

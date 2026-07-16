@@ -445,7 +445,7 @@ namespace PowerDisplay.Common.Utils
                 var custom = customMappings.FirstOrDefault(m =>
                     m.VcpCode == vcpCode &&
                     m.Value == value &&
-                    (m.ApplyToAll || (!m.ApplyToAll && m.TargetMonitorId == monitorId)));
+                    (m.ApplyToAll || (!m.ApplyToAll && MonitorIdComparer.Equal(m.TargetMonitorId, monitorId))));
 
                 if (custom != null && !string.IsNullOrEmpty(custom.CustomName))
                 {

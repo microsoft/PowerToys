@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!--
+      WinForms is needed for System.Windows.Forms.SendKeys.SendWait, used by the global-hotkey
+      injection in KeyboardHelper. (Same approach as the legacy harness.)
+    -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.PowerToys.UITest.Next</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.UITest.Next</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Engine is winappcli (Microsoft.WinAppCli) — installed once per machine via
+      `winget install Microsoft.winappcli`. We shell out to winapp.exe and parse its
+      JSON output. No managed dependency on the engine — only MSTest's attribute surface.
+    -->
+    <PackageReference Include="MSTest.TestFramework" />
+    <!--
+      ScreenRecorderLib encodes the optional pipeline screen recording (ScreenRecording.cs)
+      in realtime via native Media Foundation. Pipeline-only diagnostic; no PATH/FFmpeg setup.
+      The package ships a single mixed-mode (managed + native) assembly per architecture under
+      build\<arch>\, wired up by a non-transitive build\*.targets. GeneratePathProperty lets us
+      re-publish that assembly as a copy-local item (below) so it also flows to the test projects
+      that reference this library.
+    -->
+    <PackageReference Include="ScreenRecorderLib" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <!--
+    Map the build platform to ScreenRecorderLib's per-architecture folder (Win32 -> x86; x64,
+    ARM64 and x86 match by name) and copy the resolved mixed-mode assembly to output as a
+    CopyToOutputDirectory item. Unlike the package's build\*.targets <Reference>, this flows
+    transitively through ProjectReference so consuming UI-test projects also deploy the DLL.
+  -->
+  <PropertyGroup>
+    <ScreenRecorderLibArch>$(Platform)</ScreenRecorderLibArch>
+    <ScreenRecorderLibArch Condition="'$(Platform)' == 'Win32'">x86</ScreenRecorderLibArch>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(PkgScreenRecorderLib)\build\$(ScreenRecorderLibArch)\ScreenRecorderLib.dll')">
+    <None Include="$(PkgScreenRecorderLib)\build\$(ScreenRecorderLibArch)\ScreenRecorderLib.dll">
+      <Link>ScreenRecorderLib.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
+  </ItemGroup>
+</Project>

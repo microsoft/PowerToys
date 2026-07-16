@@ -32,6 +32,7 @@
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.UnitTestsBase\\Microsoft.CmdPal.Ext.UnitTestBase.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests\\Microsoft.CmdPal.Ext.WebSearch.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests\\Microsoft.CmdPal.Ext.WindowWalker.UnitTests.csproj",
+      "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests\\Microsoft.CmdPal.Ext.WindowsSettings.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UI.ViewModels.UnitTests\\Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CmdPal.UITests\\Microsoft.CmdPal.UITests.csproj",
       "src\\modules\\cmdpal\\Tests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests\\Microsoft.CommandPalette.Extensions.Toolkit.UnitTests.csproj",

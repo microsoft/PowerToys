@@ -29,6 +29,13 @@ public record PerformCommandMessage
     /// </summary>
     public Action? OnBeforeShowConfirmation { get; set; }
 
+    /// <summary>
+    /// When set, and the command turns out to be a page, the main window is
+    /// summoned before navigating. Used by senders that run while the palette
+    /// is hidden (for example the toast's action button).
+    /// </summary>
+    public bool ShowWindowIfPage { get; set; }
+
     public PerformCommandMessage(ExtensionObject<ICommand> command)
     {
         Command = command;

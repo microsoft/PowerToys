@@ -44,4 +44,43 @@ namespace updating
         // args[0]=exe, args[1]=action, args[2]=installer, args[3]=installDir
         return argCount >= 4;
     }
+
+    // Returns true when the value read from UpdateState.json is a plain installer
+    // filename that can be combined with the pending-updates directory. UpdateState.json
+    // is persisted state that may be stale, corrupted, or otherwise unexpected, so the
+    // cached filename could contain path separators or an absolute/drive-relative path.
+    // Only a single bare filename (the form produced by the download step) is accepted;
+    // anything else is rejected so the updater never looks outside the Updates folder.
+    inline bool IsSafeDownloadedInstallerFilename(const std::wstring& filename)
+    {
+        if (filename.empty())
+        {
+            return false;
+        }
+
+        // Reject any path separators or parent-directory tokens outright. Installer
+        // asset filenames never contain these.
+        if (filename.find(L'/') != std::wstring::npos ||
+            filename.find(L'\\') != std::wstring::npos ||
+            filename.find(L"..") != std::wstring::npos)
+        {
+            return false;
+        }
+
+        const fs::path candidate{ filename };
+
+        // Must be a single path component: no drive/root and no directory portion.
+        if (candidate.has_root_name() || candidate.has_root_directory() || candidate.has_parent_path())
+        {
+            return false;
+        }
+
+        const auto name = candidate.filename().wstring();
+        if (name != filename || name == L"." || name == L"..")
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
