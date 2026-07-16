@@ -19,7 +19,7 @@ namespace
 
     // A distinct code for "the command is known, but its target could not be launched"
     // (missing target, CreateProcess failure). Keeping this separate from 9009 lets a
-    // calling script tell a typo'd/unmapped command from a broken install.
+    // calling script tell a mistyped or unmapped command from a broken install.
     constexpr int ExitLaunchFailed = 1;
 
     struct ShimTarget

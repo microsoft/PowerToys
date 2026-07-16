@@ -27,6 +27,12 @@
         </RegistryKey>
         <File Source="$(var.BinDir)cli\filelocksmith.exe" Id="CliShim_filelocksmith.exe" Checksum="yes" />
       </Component>
+      <Component Id="CliShim_powerdisplay_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_powerdisplay_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)cli\powerdisplay.exe" Id="CliShim_powerdisplay.exe" Checksum="yes" />
+      </Component>
 
       <!--
         Append the cli folder to PATH (per-user vs per-machine, mirroring Core.wxs).
@@ -61,6 +67,7 @@
       <ComponentRef Id="CliShim_fancyzones_exe" />
       <ComponentRef Id="CliShim_imageresizer_exe" />
       <ComponentRef Id="CliShim_filelocksmith_exe" />
+      <ComponentRef Id="CliShim_powerdisplay_exe" />
       <?if $(var.PerUser) = "true" ?>
       <ComponentRef Id="cli_env_path_user" />
       <?else?>

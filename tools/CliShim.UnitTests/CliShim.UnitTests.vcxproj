@@ -31,11 +31,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <!-- The parser under test is linked directly (not via a ProjectReference to the launcher
-         exe), mirroring how the tests are built independent of the shim's Application output. -->
+    <!-- Link the parser directly; the ProjectReference below supplies the production exe only
+         for process-level integration tests. -->
     <ClCompile Include="..\CliShim\CommandLine.cpp" />
     <ClCompile Include="CommandLineTests.cpp" />
+    <ClCompile Include="LauncherIntegrationTests.cpp" />
     <ClInclude Include="..\CliShim\CommandLine.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CliShim\CliShim.vcxproj">
+      <Project>{8A7FB7FA-65EA-4004-BA73-1B237435A57B}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyCliShimUnderTest" AfterTargets="Build">
+    <PropertyGroup>
+      <_CliShimUnderTest>$(RepoRoot)$(Platform)\$(Configuration)\CliShim\PowerToys.CliShim.exe</_CliShimUnderTest>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_CliShimUnderTest)')"
+           Text="CLI shim under test was not built: '$(_CliShimUnderTest)'." />
+    <Copy SourceFiles="$(_CliShimUnderTest)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

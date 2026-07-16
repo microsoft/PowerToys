@@ -12,5 +12,8 @@
     <CliShim Include="filelocksmith">
       <RelativeTarget>../FileLocksmithCLI.exe</RelativeTarget>
     </CliShim>
+    <CliShim Include="powerdisplay">
+      <RelativeTarget>../WinUI3Apps/PowerToys.PowerDisplay.Cli.exe</RelativeTarget>
+    </CliShim>
   </ItemGroup>
 </Project>
