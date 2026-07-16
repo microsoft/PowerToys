@@ -140,6 +140,43 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public void ListPage_MapsDetailsSizeFromStringAndNumber()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Large by name", "details": { "title": "A", "size": "large" } },
+                { "title": "Medium by number", "details": { "title": "B", "size": 1 } },
+                { "title": "Default size", "details": { "title": "C" } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+    }
+
+    private static int GetDetailsSize(IDetails? details)
+    {
+        Assert.IsNotNull(details);
+        var provider = details as IExtendedAttributesProvider;
+        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
+        var properties = provider!.GetProperties();
+        Assert.IsNotNull(properties);
+        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
+        return (int)size!;
+    }
+
+    [TestMethod]
     public void ContextItems_ParseNestedMoreCommandsRecursively()
     {
         using var fake = new JSFakeExtension();

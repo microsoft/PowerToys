@@ -118,8 +118,8 @@ function buildProgressButton(
  * The hero image is a local asset that ships with the sample, so it renders
  * without a network connection.
  *
- * Not-yet-supported: the JS `Details` type has no `Size` (Small/Medium/Large),
- * so the C# size variants collapse into the single default size here.
+ * The details `size` field (small, medium, or large) controls how wide the
+ * details pane is; the metadata item below asks for a `large` pane.
  */
 export class SampleListPageWithDetails extends ListPageBase {
   readonly id = 'sample-list-page-with-details';
@@ -164,11 +164,12 @@ export class SampleListPageWithDetails extends ListPageBase {
       new ListItemBase({
         command: new NoOpCommand('details-metadata'),
         title: 'This one has metadata',
-        subtitle: 'And a details panel',
+        subtitle: 'And a large details panel',
         details: {
           title: 'Metadata Example',
-          body: 'Each of the sections below is some sample metadata',
+          body: 'Each of the sections below is some sample metadata. This item asks for a `large` details pane.',
           metadata: sampleMetadata(),
+          size: 'large',
         },
       }),
     ];

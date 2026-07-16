@@ -4,7 +4,16 @@
 
 import { ContentPageBase } from '@microsoft/cmdpal-sdk';
 import type { CommandResult, Content, FormContent } from '@microsoft/cmdpal-sdk';
+import { fileURLToPath } from 'node:url';
 import { icon } from '../util.js';
+
+/**
+ * Absolute path to the image that ships with the sample. The build copies
+ * `assets/` into `dist/assets/`, so this file sits next to the compiled output.
+ * Resolving it from `import.meta.url` keeps the path relative to wherever the
+ * extension is installed and avoids depending on a network fetch to render.
+ */
+const localImagePath = fileURLToPath(new URL('../assets/hero.png', import.meta.url));
 
 const loremIpsum =
   "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
@@ -105,8 +114,8 @@ export class SamplePlainTextContentPage extends ContentPageBase {
 /**
  * A page showing images. Mirrors the C# `SampleImageContentPage`.
  *
- * Approximation: the C# page loads packaged JPG and SVG assets. This sample
- * ships no binary assets, so a web-hosted image URL stands in.
+ * The image is a local asset that ships with the sample, so it renders without
+ * a network connection (matching the hero image on the details page).
  */
 export class SampleImageContentPage extends ContentPageBase {
   readonly id = 'sample-image-content-page';
@@ -116,9 +125,7 @@ export class SampleImageContentPage extends ContentPageBase {
   override icon = icon('\uE722');
 
   override getContent(): Content[] {
-    const image = icon(
-      'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/Logo.png',
-    );
+    const image = icon(localImagePath);
     return [
       { type: 'image', image },
       { type: 'image', image, maxWidth: 200, maxHeight: 200 },

@@ -224,7 +224,43 @@ internal static class JSModelMapper
             Body = GetString(detailsProp, "body") ?? GetString(detailsProp, "Body") ?? string.Empty,
             HeroImage = GetIcon(detailsProp, "heroImage", "HeroImage"),
             Metadata = ParseMetadata(detailsProp, connection),
+            Size = ParseContentSize(detailsProp),
         };
+    }
+
+    /// <summary>
+    /// Reads the optional details "size" field. Accepts either the string names
+    /// (small, medium, large) or the numeric <see cref="ContentSize"/> value the
+    /// host uses (0, 1, 2). Defaults to <see cref="ContentSize.Small"/>.
+    /// </summary>
+    internal static ContentSize ParseContentSize(JsonElement parent)
+    {
+        if (!TryGetAnyCase(parent, "size", "Size", out var sizeProp))
+        {
+            return ContentSize.Small;
+        }
+
+        if (sizeProp.ValueKind == JsonValueKind.Number && sizeProp.TryGetInt32(out var numeric))
+        {
+            return numeric switch
+            {
+                (int)ContentSize.Medium => ContentSize.Medium,
+                (int)ContentSize.Large => ContentSize.Large,
+                _ => ContentSize.Small,
+            };
+        }
+
+        if (sizeProp.ValueKind == JsonValueKind.String)
+        {
+            return sizeProp.GetString()?.ToLowerInvariant() switch
+            {
+                "medium" => ContentSize.Medium,
+                "large" => ContentSize.Large,
+                _ => ContentSize.Small,
+            };
+        }
+
+        return ContentSize.Small;
     }
 
     internal static IContextItem[] ParseContextItems(JsonElement parent, string camel, string pascal, JsonRpcConnection connection)
