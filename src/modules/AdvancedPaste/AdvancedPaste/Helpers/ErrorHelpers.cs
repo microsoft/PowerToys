@@ -32,11 +32,6 @@ public static class ErrorHelpers
             {
                 return resourceLoader.GetString("OpenAICompatibleModelRequired");
             }
-
-            if (exception.Message.Contains("API key", StringComparison.OrdinalIgnoreCase))
-            {
-                return resourceLoader.GetString("OpenAICompatibleTokenRequired");
-            }
         }
 
         return (HttpStatusCode)apiRequestStatus switch

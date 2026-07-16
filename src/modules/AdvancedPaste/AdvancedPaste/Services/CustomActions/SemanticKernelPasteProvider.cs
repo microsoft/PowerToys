@@ -147,8 +147,9 @@ namespace AdvancedPaste.Services.CustomActions
                     break;
                 case AIServiceType.OpenAICompatible:
                     var compatibleModelName = RequireOpenAICompatibleModelName(_config.Model);
+                    var compatibleApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
 #pragma warning disable SKEXP0010 // OpenAI-compatible custom endpoints are experimental in Semantic Kernel.
-                    kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), apiKey, serviceId: compatibleModelName);
+                    kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), compatibleApiKey, serviceId: compatibleModelName);
 #pragma warning restore SKEXP0010
                     break;
                 case AIServiceType.AzureOpenAI:
@@ -191,7 +192,7 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return serviceType switch
             {
-                AIServiceType.Ollama => false,
+                AIServiceType.Ollama or AIServiceType.OpenAICompatible => false,
                 _ => true,
             };
         }

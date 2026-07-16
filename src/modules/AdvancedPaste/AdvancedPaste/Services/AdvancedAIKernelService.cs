@@ -52,16 +52,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         var runtimeConfig = GetRuntimeConfiguration();
         var serviceType = runtimeConfig.ServiceType;
         var modelName = runtimeConfig.ModelName;
-        var requiresApiKey = RequiresApiKey(serviceType);
-        var apiKey = string.Empty;
-        if (requiresApiKey)
+        this.credentialsProvider.Refresh();
+        var apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
+        if (RequiresApiKey(serviceType) && string.IsNullOrWhiteSpace(apiKey))
         {
-            this.credentialsProvider.Refresh();
-            apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
-            }
+            throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
         }
 
         var endpoint = string.IsNullOrWhiteSpace(runtimeConfig.Endpoint) ? null : runtimeConfig.Endpoint.Trim();
@@ -74,8 +69,9 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
                 break;
             case AIServiceType.OpenAICompatible:
                 var compatibleModelName = RequireOpenAICompatibleModelName(modelName);
+                var compatibleApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
 #pragma warning disable SKEXP0010 // OpenAI-compatible custom endpoints are experimental in Semantic Kernel.
-                kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), apiKey, serviceId: compatibleModelName);
+                kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), compatibleApiKey, serviceId: compatibleModelName);
 #pragma warning restore SKEXP0010
                 break;
             case AIServiceType.AzureOpenAI:
@@ -202,7 +198,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private static bool RequiresApiKey(AIServiceType serviceType)
     {
-        return true;
+        return serviceType != AIServiceType.OpenAICompatible;
     }
 
     private static string RequireEndpoint(string endpoint, AIServiceType serviceType)

@@ -141,9 +141,6 @@
   <data name="OpenAICompatibleModelRequired" xml:space="preserve">
     <value>A model name is required for the configured AI endpoint.</value>
   </data>
-  <data name="OpenAICompatibleTokenRequired" xml:space="preserve">
-    <value>An API token is required for the configured AI endpoint.</value>
-  </data>
   <data name="OpenAICompatibleRequestRejected" xml:space="preserve">
     <value>The configured AI endpoint rejected the request. Check the model name and whether the model supports this input.</value>
   </data>

@@ -6,13 +6,16 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Services;
 using AdvancedPaste.Services.CustomActions;
+using AdvancedPaste.UnitTests.Mocks;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
@@ -75,6 +78,46 @@ public sealed class OpenAICompatibleProviderTests
         var semanticKernelProvider = (SemanticKernelPasteProvider)provider;
         CollectionAssert.Contains(semanticKernelProvider.SupportedServiceTypes.ToArray(), AIServiceType.OpenAICompatible);
         Assert.IsTrue(AdvancedAIKernelService.IsServiceTypeSupported(AIServiceType.OpenAICompatible));
+    }
+
+    [TestMethod]
+    public void SemanticKernelProvider_AllowsMissingCredential()
+    {
+        var provider = new SemanticKernelPasteProvider(new PasteAIConfig
+        {
+            ProviderType = AIServiceType.OpenAICompatible,
+            Model = "test-model",
+            Endpoint = "http://localhost:8080/v1",
+            ApiKey = string.Empty,
+        });
+        var createKernel = typeof(SemanticKernelPasteProvider).GetMethod("CreateKernel", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.IsNotNull(createKernel);
+        Assert.IsNotNull(createKernel.Invoke(provider, null));
+    }
+
+    [TestMethod]
+    public void AdvancedAIKernelService_AllowsMissingCredential()
+    {
+        var credentialsProvider = new Mock<IAICredentialsProvider>();
+        credentialsProvider.Setup(provider => provider.GetKey()).Returns(string.Empty);
+        var userSettings = new IntegrationTestUserSettings(
+            AIServiceType.OpenAICompatible,
+            "test-model",
+            "http://localhost:8080/v1",
+            moderationEnabled: false,
+            providerId: "no-auth-provider");
+        var service = new AdvancedAIKernelService(
+            credentialsProvider.Object,
+            new NoOpKernelQueryCacheService(),
+            new Mock<IPromptModerationService>().Object,
+            userSettings,
+            new Mock<ICustomActionTransformService>().Object);
+        var createKernel = typeof(KernelServiceBase).GetMethod("CreateKernel", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        Assert.IsNotNull(createKernel);
+        Assert.IsNotNull(createKernel.Invoke(service, null));
+        credentialsProvider.Verify(provider => provider.Refresh(), Times.Once);
     }
 
     [TestMethod]

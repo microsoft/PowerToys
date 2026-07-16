@@ -824,7 +824,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             // For endpoint-based services, keep empty if the user didn't provide a value.
-            if (RequiresApiKeyForService(serviceType) && string.IsNullOrWhiteSpace(trimmedApiKey))
+            if (RequiresApiKeyForService(serviceType) && serviceKind != AIServiceType.OpenAICompatible && string.IsNullOrWhiteSpace(trimmedApiKey))
             {
                 args.Cancel = true;
                 ShowPasteAIValidationError("AdvancedPaste_OpenAICompatible_TokenRequired", PasteAIApiKeyPasswordBox);
