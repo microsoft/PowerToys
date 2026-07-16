@@ -19,6 +19,7 @@
             <!--  Template for a single tab in the strip: optional icon, title, optional badge pill  -->
             <DataTemplate x:Key="TabItemTemplate" x:DataType="viewModels:TabViewModel">
                 <StackPanel
+                    VerticalAlignment="Top"
                     AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                     Orientation="Horizontal"
                     Spacing="8">
@@ -32,10 +33,10 @@
                         Visibility="{x:Bind HasIcon, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                     <TextBlock VerticalAlignment="Center" Text="{x:Bind Title, Mode=OneWay}" />
                     <Border
-                        Padding="6,0"
+                        Padding="8,4"
                         VerticalAlignment="Center"
                         Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
-                        CornerRadius="10"
+                        CornerRadius="16"
                         Visibility="{x:Bind HasBadge, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock
                             VerticalAlignment="Center"
@@ -67,11 +68,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  Tab strip  -->
+        <!--  Tab strip: styled as a pivot header (underline indicator, no selection fill)  -->
         <ListView
             x:Name="TabStrip"
             Grid.Row="0"
-            Padding="8,4"
+            Padding="8,0"
+            Background="Transparent"
             IsItemClickEnabled="False"
             ItemTemplate="{StaticResource TabItemTemplate}"
             ItemsSource="{x:Bind ViewModel.Tabs, Mode=OneWay}"
@@ -84,11 +86,65 @@
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemContainerStyle>
-                <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="MinWidth" Value="0" />
-                    <Setter Property="Padding" Value="12,6" />
-                    <Setter Property="Margin" Value="2,0" />
+                    <Setter Property="Padding" Value="12,8" />
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="UseSystemFocusVisuals" Value="True" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <Grid x:Name="Root" Background="{TemplateBinding Background}">
+                                    <ContentPresenter
+                                        x:Name="ContentPresenter"
+                                        Padding="{TemplateBinding Padding}"
+                                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        Foreground="{TemplateBinding Foreground}" />
+                                    <Border
+                                        x:Name="SelectionIndicator"
+                                        Height="2"
+                                        Margin="4,0"
+                                        VerticalAlignment="Bottom"
+                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                        CornerRadius="1"
+                                        Visibility="Collapsed" />
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                    <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
+                                                    <Setter Target="SelectionIndicator.Visibility" Value="Visible" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="PointerOverSelected">
+                                                <VisualState.Setters>
+                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                    <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
+                                                    <Setter Target="SelectionIndicator.Visibility" Value="Visible" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="PressedSelected">
+                                                <VisualState.Setters>
+                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                                    <Setter Target="ContentPresenter.FontWeight" Value="SemiBold" />
+                                                    <Setter Target="SelectionIndicator.Visibility" Value="Visible" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemContainerTransitions>

@@ -91,11 +91,6 @@ public partial class TabbedPageViewModel : PageViewModel
 
         var newTabs = BuildTabViewModels(model.GetTabs());
 
-        // The shared search box stays visible for the whole tabbed page as long
-        // as any tab supports search; it is inert on non-searchable tabs.
-        HasSearchBox = AnyTabSearchable(newTabs);
-        UpdateProperty(nameof(HasSearchBox));
-
         DoOnUiThread(() =>
         {
             ListHelpers.InPlaceUpdateList(Tabs, newTabs);
@@ -131,18 +126,7 @@ public partial class TabbedPageViewModel : PageViewModel
         return result;
     }
 
-    private bool AnyTabSearchable(IEnumerable<TabViewModel> tabs)
-    {
-        foreach (var tab in tabs)
-        {
-            if (tab.Page is IListPage)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    private static bool PageIsSearchable(IPage? page) => page is IListPage or IParametersPage;
 
     //// Dynamic tab set: re-read GetTabs() and preserve the active tab by identity ////
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
@@ -156,7 +140,6 @@ public partial class TabbedPageViewModel : PageViewModel
             }
 
             var newTabs = BuildTabViewModels(model.GetTabs());
-            var searchable = AnyTabSearchable(newTabs);
             var activeId = SelectedTab?.TabId;
 
             DoOnUiThread(() =>
@@ -176,8 +159,6 @@ public partial class TabbedPageViewModel : PageViewModel
                 }
 
                 ListHelpers.InPlaceUpdateList(Tabs, newTabs);
-                HasSearchBox = searchable;
-                UpdateProperty(nameof(HasSearchBox));
                 UpdateProperty(nameof(HasTabs));
 
                 // Preserve the active tab when it still exists, else fall back to
@@ -218,12 +199,19 @@ public partial class TabbedPageViewModel : PageViewModel
         {
             ActiveChild = null;
             ActiveTabIsLoading = false;
+            SetHasSearchBox(false);
             UpdateProperty(nameof(PlaceholderText));
             return;
         }
 
         var child = GetOrCreateChild(tab);
         ActiveChild = child;
+
+        // The shared search box follows the active tab: it activates for a
+        // searchable page (list, dynamic list or parameters) and deactivates
+        // otherwise. Deriving this from the page type keeps it correct
+        // immediately, without waiting for the child's async initialization.
+        SetHasSearchBox(PageIsSearchable(tab.Page));
 
         if (child is null)
         {
@@ -244,6 +232,15 @@ public partial class TabbedPageViewModel : PageViewModel
         }
 
         UpdateProperty(nameof(PlaceholderText));
+    }
+
+    private void SetHasSearchBox(bool value)
+    {
+        HasSearchBox = value;
+
+        // Always raise so the shell re-evaluates search-box visibility for the
+        // active tab, even when the value matches the previous tab's.
+        UpdateProperty(nameof(HasSearchBox));
     }
 
     private PageViewModel? GetOrCreateChild(TabViewModel tab)
@@ -318,13 +315,19 @@ public partial class TabbedPageViewModel : PageViewModel
             case nameof(PlaceholderText):
                 UpdateProperty(nameof(PlaceholderText));
                 break;
+            case nameof(HasSearchBox):
+                // Follow the active child if it revises its searchability once
+                // its async initialization completes.
+                SetHasSearchBox(child.HasSearchBox);
+                break;
         }
     }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
     {
-        // Forward the shared query to the active tab when it supports search;
-        // otherwise the box is inert for this tab.
+        // Forward the shared query to the active tab when it supports search.
+        // On non-searchable tabs the box is deactivated, so there is nothing to
+        // forward.
         if (ActiveChild is { HasSearchBox: true } child)
         {
             child.SearchTextBox = searchTextBox;

@@ -102,7 +102,47 @@ public partial class TabbedPageViewModelTests
     }
 
     [TestMethod]
-    public async Task HasSearchBox_TrueWhenAnyTabIsListPage()
+    public async Task HasSearchBox_TrueWhenActiveTabIsSearchable()
+    {
+        var page = new TestTabbedPage(
+        [
+            new Tab("Issues", new TestListPage("issues")),
+            new Tab("Docs", new TestContentPage("docs")),
+        ]);
+
+        var viewModel = CreateViewModel(page);
+        viewModel.InitializeProperties();
+
+        // The first tab is the default active tab and it is a list page, so the
+        // shared search box is active.
+        await WaitFor(() => viewModel.SelectedTab is not null, "Tab was not selected");
+        await WaitFor(() => viewModel.HasSearchBox, "Search box was not activated for the list tab");
+
+        viewModel.SafeCleanup();
+    }
+
+    [TestMethod]
+    public async Task HasSearchBox_FalseWhenActiveTabIsNotSearchable()
+    {
+        var page = new TestTabbedPage(
+        [
+            new Tab("Docs", new TestContentPage("docs")),
+            new Tab("Issues", new TestListPage("issues")),
+        ]);
+
+        var viewModel = CreateViewModel(page);
+        viewModel.InitializeProperties();
+
+        // The first (active) tab is a content page, so the shared search box is
+        // deactivated even though a later tab is searchable.
+        await WaitFor(() => viewModel.SelectedTab is not null, "Tab was not selected");
+        await WaitFor(() => !viewModel.HasSearchBox, "Search box was not deactivated for the content tab");
+
+        viewModel.SafeCleanup();
+    }
+
+    [TestMethod]
+    public async Task HasSearchBox_FollowsActiveTabOnSwitch()
     {
         var page = new TestTabbedPage(
         [
@@ -114,25 +154,17 @@ public partial class TabbedPageViewModelTests
         viewModel.InitializeProperties();
 
         await WaitFor(() => viewModel.Tabs.Count == 2, "Tabs did not populate");
-        Assert.IsTrue(viewModel.HasSearchBox);
 
-        viewModel.SafeCleanup();
-    }
+        // Content tab active: search box deactivated.
+        await WaitFor(() => !viewModel.HasSearchBox, "Search box was not deactivated for the content tab");
 
-    [TestMethod]
-    public async Task HasSearchBox_FalseWhenNoTabIsSearchable()
-    {
-        var page = new TestTabbedPage(
-        [
-            new Tab("Docs", new TestContentPage("docs")),
-            new Tab("About", new TestContentPage("about")),
-        ]);
+        // Switch to the list tab: search box activates.
+        viewModel.SelectedTab = viewModel.Tabs[1];
+        await WaitFor(() => viewModel.HasSearchBox, "Search box was not activated after switching to the list tab");
 
-        var viewModel = CreateViewModel(page);
-        viewModel.InitializeProperties();
-
-        await WaitFor(() => viewModel.Tabs.Count == 2, "Tabs did not populate");
-        Assert.IsFalse(viewModel.HasSearchBox);
+        // Switch back to the content tab: search box deactivates again.
+        viewModel.SelectedTab = viewModel.Tabs[0];
+        await WaitFor(() => !viewModel.HasSearchBox, "Search box was not deactivated after switching back to the content tab");
 
         viewModel.SafeCleanup();
     }
