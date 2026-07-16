@@ -56,7 +56,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
-    private InterlockedBoolean _isLoading;
+    private InterlockedBoolean _isLoadingMore;
     private int _activeFetchCount;
     private int _latestFetchGeneration;
     private bool _deferredFetchRequested;
@@ -149,7 +149,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
     {
-        RequestFetch(args.TotalItems == IncrementalRefresh);
+        // Perform a soft refresh when:
+        // - the caller explicitly requests it through a flag piggybacked on args.TotalItems;
+        // - incremental loading (LoadMore) is used, which implies a soft refresh by definition.
+        RequestFetch(keepSelection: args.TotalItems == IncrementalRefresh || _isLoadingMore.Value);
     }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
@@ -201,7 +204,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
             ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
             UpdateEmptyContent();
-            _isLoading.Clear();
+            _isLoadingMore.Clear();
         }
     }
 
@@ -537,7 +540,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     _forceFirstItemPending = false;
 
                     ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
-                    _isLoading.Clear();
+                    _isLoadingMore.Clear();
                 }
             });
     }
@@ -998,7 +1001,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (!_isLoading.Set())
+        if (!_isLoadingMore.Set())
         {
             return;
 
@@ -1016,17 +1019,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     model.LoadMore();
 
-                    // _isLoading flag will be set as a result of LoadMore,
-                    // which must raise ItemsChanged to end the loading.
+                    // LoadMore must raise ItemsChanged; the resulting fetch clears
+                    // _isLoadingMore when the updated items are published.
                 }
                 else
                 {
-                    _isLoading.Clear();
+                    _isLoadingMore.Clear();
                 }
             }
             catch (Exception ex)
             {
-                _isLoading.Clear();
+                _isLoadingMore.Clear();
                 ShowException(ex, model.Name);
             }
         });
