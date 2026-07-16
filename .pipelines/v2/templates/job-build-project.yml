@@ -459,7 +459,7 @@ jobs:
         msbuildArchitecture: x64
         maximumCpuCount: true
 
-  # CLI shims (fancyzones/imageresizer/filelocksmith) are built by the main PowerToys.slnx
+  # CLI shims (fancyzonescli/imageresizercli/filelocksmithcli/powerdisplaycli) are built by the main PowerToys.slnx
   # build above (tools/CliShim/CliShim.vcxproj). Its StageCliShims target copies one exe per
   # command name from CliShimManifest.props into <BuildPlatform>\<BuildConfiguration>\cli.
   # The signing policy covers that folder, and the build validates the WiX command set before

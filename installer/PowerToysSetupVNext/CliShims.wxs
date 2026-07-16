@@ -9,29 +9,29 @@
   -->
   <Fragment>
     <DirectoryRef Id="CliFolder">
-      <Component Id="CliShim_fancyzones_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
+      <Component Id="CliShim_fancyzonescli_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_fancyzones_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_fancyzonescli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\fancyzones.exe" Id="CliShim_fancyzones.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)cli\fancyzonescli.exe" Id="CliShim_fancyzonescli.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_imageresizer_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
+      <Component Id="CliShim_imageresizercli_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_imageresizer_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_imageresizercli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\imageresizer.exe" Id="CliShim_imageresizer.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)cli\imageresizercli.exe" Id="CliShim_imageresizercli.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_filelocksmith_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
+      <Component Id="CliShim_filelocksmithcli_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_filelocksmith_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_filelocksmithcli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\filelocksmith.exe" Id="CliShim_filelocksmith.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)cli\filelocksmithcli.exe" Id="CliShim_filelocksmithcli.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_powerdisplay_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
+      <Component Id="CliShim_powerdisplaycli_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_powerdisplay_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_powerdisplaycli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\powerdisplay.exe" Id="CliShim_powerdisplay.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)cli\powerdisplaycli.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
       </Component>
 
       <!--
@@ -64,10 +64,10 @@
         </RegistryKey>
         <RemoveFolder Id="RemoveFolderCliFolder" Directory="CliFolder" On="uninstall" />
       </Component>
-      <ComponentRef Id="CliShim_fancyzones_exe" />
-      <ComponentRef Id="CliShim_imageresizer_exe" />
-      <ComponentRef Id="CliShim_filelocksmith_exe" />
-      <ComponentRef Id="CliShim_powerdisplay_exe" />
+      <ComponentRef Id="CliShim_fancyzonescli_exe" />
+      <ComponentRef Id="CliShim_imageresizercli_exe" />
+      <ComponentRef Id="CliShim_filelocksmithcli_exe" />
+      <ComponentRef Id="CliShim_powerdisplaycli_exe" />
       <?if $(var.PerUser) = "true" ?>
       <ComponentRef Id="cli_env_path_user" />
       <?else?>

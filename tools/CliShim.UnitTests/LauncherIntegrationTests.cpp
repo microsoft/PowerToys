@@ -29,10 +29,10 @@ namespace
 
     // Keep this list in sync with CliShimManifest.props.
     constexpr ShimMapping ExpectedMappings[] = {
-        { L"fancyzones", L"..\\FancyZonesCLI.exe" },
-        { L"imageresizer", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
-        { L"filelocksmith", L"..\\FileLocksmithCLI.exe" },
-        { L"powerdisplay", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
+        { L"fancyzonescli", L"..\\FancyZonesCLI.exe" },
+        { L"imageresizercli", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
+        { L"filelocksmithcli", L"..\\FileLocksmithCLI.exe" },
+        { L"powerdisplaycli", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
     };
 
     std::filesystem::path GetTestBinaryDirectory()
@@ -196,7 +196,7 @@ namespace CliShimUnitTests
         TEST_METHOD(MissingTargetReturnsLaunchFailed)
         {
             TemporaryDirectory installation;
-            const std::filesystem::path shimPath = installation.GetPath() / L"cli" / L"fancyzones.exe";
+            const std::filesystem::path shimPath = installation.GetPath() / L"cli" / L"fancyzonescli.exe";
 
             CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
 

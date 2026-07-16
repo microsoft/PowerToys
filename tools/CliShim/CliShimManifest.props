@@ -3,16 +3,16 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Single source of truth for the runtime mapping and staged command executables. -->
   <ItemGroup>
-    <CliShim Include="fancyzones">
+    <CliShim Include="fancyzonescli">
       <RelativeTarget>../FancyZonesCLI.exe</RelativeTarget>
     </CliShim>
-    <CliShim Include="imageresizer">
+    <CliShim Include="imageresizercli">
       <RelativeTarget>../WinUI3Apps/PowerToys.ImageResizerCLI.exe</RelativeTarget>
     </CliShim>
-    <CliShim Include="filelocksmith">
+    <CliShim Include="filelocksmithcli">
       <RelativeTarget>../FileLocksmithCLI.exe</RelativeTarget>
     </CliShim>
-    <CliShim Include="powerdisplay">
+    <CliShim Include="powerdisplaycli">
       <RelativeTarget>../WinUI3Apps/PowerToys.PowerDisplay.Cli.exe</RelativeTarget>
     </CliShim>
   </ItemGroup>

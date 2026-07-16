@@ -25,31 +25,31 @@ namespace CliShimUnitTests
 
             const Case cases[] = {
                 // Normal shell launches: unquoted program name, ends at first whitespace.
-                { L"fancyzones arg", L"arg" },
-                { L"fancyzones a b c", L"a b c" },
-                { L"fancyzones", L"" },
-                { L"filelocksmith", L"" },
+                { L"fancyzonescli arg", L"arg" },
+                { L"fancyzonescli a b c", L"a b c" },
+                { L"fancyzonescli", L"" },
+                { L"filelocksmithcli", L"" },
 
                 // Quotes group whitespace within argv[0]; backslashes have no special meaning.
-                { LR"("C:\Program Files\PowerToys\cli\fancyzones.exe" arg)", L"arg" },
-                { LR"("C:\Program Files\PowerToys\cli\fancyzones.exe")", L"" },
-                { LR"("C:\Program Files"\PowerToys\cli\fancyzones.exe arg)", L"arg" },
-                { LR"(C:\Program" Files"\PowerToys\cli\fancyzones.exe arg)", L"arg" },
-                { LR"("C:\Program Files"\PowerToys\cli\fancyzones.exe)", L"" },
+                { LR"("C:\Program Files\PowerToys\cli\fancyzonescli.exe" arg)", L"arg" },
+                { LR"("C:\Program Files\PowerToys\cli\fancyzonescli.exe")", L"" },
+                { LR"("C:\Program Files"\PowerToys\cli\fancyzonescli.exe arg)", L"arg" },
+                { LR"(C:\Program" Files"\PowerToys\cli\fancyzonescli.exe arg)", L"arg" },
+                { LR"("C:\Program Files"\PowerToys\cli\fancyzonescli.exe)", L"" },
 
                 // The user's exact quoting in the tail is preserved verbatim (the whole point of the shim).
-                { LR"("C:\cli\fancyzones.exe" "a b")", LR"("a b")" },
-                { LR"(fancyzones --path "C:\a b\c.png")", LR"(--path "C:\a b\c.png")" },
+                { LR"("C:\cli\fancyzonescli.exe" "a b")", LR"("a b")" },
+                { LR"(fancyzonescli --path "C:\a b\c.png")", LR"(--path "C:\a b\c.png")" },
 
                 // Tabs count as whitespace for both the argv[0] terminator and the trim.
-                { L"fancyzones\targ", L"arg" },
-                { L"fancyzones \t arg", L"arg" },
+                { L"fancyzonescli\targ", L"arg" },
+                { L"fancyzonescli \t arg", L"arg" },
 
                 // Regression: a command line padded with leading whitespace must NOT leak the program
                 // name (a non-shell parent can pass this via CreateProcessW; the OS loader never does).
-                { L"  fancyzones arg", L"arg" },
-                { L" fancyzones", L"" },
-                { LR"(  "C:\cli\fancyzones.exe" arg)", L"arg" },
+                { L"  fancyzonescli arg", L"arg" },
+                { L" fancyzonescli", L"" },
+                { LR"(  "C:\cli\fancyzonescli.exe" arg)", L"arg" },
 
                 // Degenerate input.
                 { L"", L"" },
