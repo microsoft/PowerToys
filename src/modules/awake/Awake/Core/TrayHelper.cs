@@ -16,6 +16,7 @@ using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Core.Threading;
 using Awake.Properties;
+using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 
@@ -341,8 +342,15 @@ namespace Awake.Core
 
                         case (uint)TrayCommands.TC_MODE_INDEFINITE:
                             {
+                                GpoRuleConfigured indefiniteEnabled = GPOWrapper.GetConfiguredAwakeIndefinitelyEnabledValue();
+
                                 AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
-                                Manager.SetIndefiniteKeepAwake(keepDisplayOn: settings.Properties.KeepDisplayOn);
+
+                                if (indefiniteEnabled == GpoRuleConfigured.Enabled)
+                                {
+                                    Manager.SetIndefiniteKeepAwake(keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                }
+
                                 break;
                             }
 
@@ -426,6 +434,14 @@ namespace Awake.Core
 
         internal static void SetTray(AwakeSettings settings, bool startedFromPowerToys)
         {
+            GpoRuleConfigured indefiniteEnabled = GPOWrapper.GetConfiguredAwakeIndefinitelyEnabledValue();
+
+            if (settings.Properties.Mode == AwakeMode.INDEFINITE && indefiniteEnabled == GpoRuleConfigured.Disabled)
+            {
+                settings.Properties.Mode = AwakeMode.PASSIVE;
+                settings.Properties.KeepDisplayOn = false;
+            }
+
             SetTray(
                 settings.Properties.KeepDisplayOn,
                 settings.Properties.Mode,
@@ -515,7 +531,15 @@ namespace Awake.Core
             InsertSeparator(0);
 
             InsertMenuItem(0, TrayCommands.TC_MODE_PASSIVE, Resources.AWAKE_OFF, mode == AwakeMode.PASSIVE);
-            InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE);
+
+            GpoRuleConfigured indefiniteEnabled = GPOWrapper.GetConfiguredAwakeIndefinitelyEnabledValue();
+            bool indefiniteMenuItemDisabled = false;
+            if (indefiniteEnabled == GpoRuleConfigured.Disabled)
+            {
+                indefiniteMenuItemDisabled = true;
+            }
+
+            InsertMenuItem(0, TrayCommands.TC_MODE_INDEFINITE, Resources.AWAKE_KEEP_INDEFINITELY, mode == AwakeMode.INDEFINITE, indefiniteMenuItemDisabled);
             InsertMenuItem(0, TrayCommands.TC_MODE_EXPIRABLE, Resources.AWAKE_KEEP_UNTIL_EXPIRATION, mode == AwakeMode.EXPIRABLE, true);
         }
     }

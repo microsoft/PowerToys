@@ -135,9 +135,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 if (generalSettings != null)
                 {
                     ViewModel.IsEnabled = generalSettings.Enabled.Awake;
+                    ViewModel.IsIndefiniteEnabled = awakeSettings.Properties.IndefiniteEnabledValue;
                     ViewModel.ModuleSettings = (AwakeSettings)awakeSettings.Clone();
 
                     UpdateEnabledState(generalSettings.Enabled.Awake);
+                    UpdateIndefiniteEnabledState(awakeSettings.Properties.IndefiniteEnabledValue);
                 }
                 else
                 {
@@ -170,6 +172,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void UpdateIndefiniteEnabledState(bool recommendedState)
+        {
+            var indefiniteEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredAwakeIndefinitelyEnabledValue();
+
+            if (indefiniteEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || indefiniteEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                ViewModel.IsIndefiniteEnabledGpoConfigured = true;
+                ViewModel.IndefiniteEnabledGPOConfiguration = indefiniteEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
+            else
+            {
+                ViewModel.IsIndefiniteEnabled = recommendedState;
+            }
+        }
+
         private void Settings_Changed(object sender, FileSystemEventArgs e)
         {
             bool taskAdded = _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
@@ -182,6 +200,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             UpdateEnabledState(_generalSettingsRepository.SettingsConfig.Enabled.Awake);
+            UpdateIndefiniteEnabledState(_moduleSettingsRepository.SettingsConfig.Properties.IndefiniteEnabledValue);
             ViewModel.RefreshEnabledState();
         }
     }

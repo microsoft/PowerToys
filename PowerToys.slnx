@@ -139,6 +139,13 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/gpo/" />
+  <Folder Name="/gpo/assets/">
+    <File Path="gpo/assets/PowerToys.admx" />
+  </Folder>
+  <Folder Name="/gpo/assets/en-US/">
+    <File Path="gpo/assets/en-US/PowerToys.adml" />
+  </Folder>
   <Folder Name="/modules/" />
   <Folder Name="/modules/AdvancedPaste/">
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste/AdvancedPaste.csproj">
