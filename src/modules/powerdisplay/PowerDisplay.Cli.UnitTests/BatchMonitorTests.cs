@@ -73,6 +73,14 @@ public class BatchMonitorTests
     public void MonitorNumber_TrailingComma_ProducesParseError()
         => Assert.IsTrue(Parse("set", "-n", "1,", "--brightness", "50").Errors.Count > 0);
 
+    [DataTestMethod]
+    [DataRow("0")]
+    [DataRow("-1")]
+    [DataRow("1,0,2")]
+    [DataRow("1,-2,3")]
+    public void MonitorNumber_NonPositive_ProducesParseError(string monitorNumbers)
+        => Assert.IsTrue(Parse("set", "-n", monitorNumbers, "--brightness", "50").Errors.Count > 0);
+
     [TestMethod]
     public void MonitorNumber_Absent_IsNullOrEmpty()
     {

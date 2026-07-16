@@ -123,7 +123,8 @@ internal abstract class CliVcpSetting
         Monitor monitor,
         CliMonitorRef monitorRef,
         SetRequest req,
-        CancellationToken ct)
+        CancellationToken ct,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings = null)
     {
         if (!Supports(monitor))
         {
@@ -173,8 +174,8 @@ internal abstract class CliVcpSetting
         {
             Monitor = monitorRef,
             Setting = Name,
-            BeforeDisplay = beforeKnown ? FormatDisplay(beforeValue) : null,
-            AfterDisplay = FormatDisplay(value.Value),
+            BeforeDisplay = beforeKnown ? FormatDisplay(beforeValue, customMappings, monitor.Id) : null,
+            AfterDisplay = FormatDisplay(value.Value, customMappings, monitor.Id),
         }, null);
     }
 

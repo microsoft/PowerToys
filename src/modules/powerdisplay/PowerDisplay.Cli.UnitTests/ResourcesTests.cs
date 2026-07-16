@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Cli.Options;
 using PowerDisplay.Cli.Properties;
 
 namespace PowerDisplay.Cli.UnitTests;
@@ -10,6 +11,28 @@ namespace PowerDisplay.Cli.UnitTests;
 [TestClass]
 public class ResourcesTests
 {
+    private const string ExecutableName = "PowerToys.PowerDisplay.Cli.exe";
+
+    [TestMethod]
+    public void CommandHints_ReferenceShippedExecutable()
+    {
+        StringAssert.Contains(Resources.Hint_UseSetForAbsolute, ExecutableName);
+        StringAssert.Contains(Resources.Hint_UseHexVcp, ExecutableName);
+        StringAssert.Contains(Resources.Hint_RunList, ExecutableName);
+        StringAssert.Contains(Resources.Hint_SelectorMissing, ExecutableName);
+        StringAssert.Contains(Resources.Hint_RunProfiles, ExecutableName);
+    }
+
+    [TestMethod]
+    public void OptionDescriptions_ReferenceShippedExecutable()
+    {
+        StringAssert.Contains(CliOptions.MonitorNumber.Description, ExecutableName);
+        StringAssert.Contains(CliOptions.ColorTemperature.Description, ExecutableName);
+        StringAssert.Contains(CliOptions.InputSource.Description, ExecutableName);
+        StringAssert.Contains(CliOptions.PowerState.Description, ExecutableName);
+        StringAssert.Contains(CliOptions.ProfileId.Description, ExecutableName);
+    }
+
     [TestMethod]
     public void SafeFormat_PlaceholderIndexOutOfRange_DoesNotThrow_ReturnsTemplate()
     {

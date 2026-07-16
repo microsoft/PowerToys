@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Contracts;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc;
@@ -39,6 +40,7 @@ public static class SetCommandExecutor
     /// <param name="snapshot">Pre-discovered monitor list (already filtered by the caller if needed).</param>
     /// <param name="hidden">Set of monitor IDs hidden by user preference.</param>
     /// <param name="req">The set request from the CLI IPC channel.</param>
+    /// <param name="customMappings">User-defined names for discrete VCP values.</param>
     /// <param name="ct">
     /// The server's app-lifetime cancellation token. Client Ctrl+C/deadlines are local to the CLI,
     /// only close the pipe, and are not propagated to handlers.
@@ -51,7 +53,8 @@ public static class SetCommandExecutor
         IReadOnlyList<Monitor> snapshot,
         IReadOnlySet<string> hidden,
         SetRequest req,
-        CancellationToken ct)
+        CancellationToken ct,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings = null)
     {
         // --- 1. Exclude hidden monitors ---
         var visible = MonitorDtoProjector.ExcludeHidden(snapshot, hidden);
@@ -92,7 +95,7 @@ public static class SetCommandExecutor
 
         // Continuous vs. discrete parsing, validation, formatting, and the panel-blanking gate are
         // dispatched polymorphically by the descriptor's ApplySetAsync template method.
-        return await descriptor.ApplySetAsync(manager, monitor!, monitorRef, req, ct);
+        return await descriptor.ApplySetAsync(manager, monitor!, monitorRef, req, ct, customMappings);
     }
 
     // ─── Orientation ──────────────────────────────────────────────────────────

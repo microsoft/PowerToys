@@ -60,13 +60,14 @@ public class CliRequestDispatcherTests
         Func<int, CancellationToken, Task<string?>>? applyProfile = null,
         int defaultStep = 5,
         Func<CancellationToken, Task<PowerDisplayProfiles>>? loadProfilesAsync = null,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings = null,
         CancellationToken ct = default)
     {
         return CliRequestDispatcher.BuildResponseAsync(
             envelope,
             monitors ?? new[] { MakeMon() },
             NoHidden,
-            Array.Empty<CustomVcpValueMapping>(),
+            customMappings ?? Array.Empty<CustomVcpValueMapping>(),
             new NoOpManager(),
             defaultStep,
             loadProfilesAsync ?? (_ => Task.FromResult(profiles ?? EmptyProfiles)),
@@ -150,6 +151,36 @@ public class CliRequestDispatcherTests
         // signal.) A handler that passed a wrong value to the executor, or swapped before/after, fails here.
         Assert.AreEqual("50%", result.BeforeDisplay);
         Assert.AreEqual("75%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Set_DiscreteValue_UsesMonitorSpecificCustomName()
+    {
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11, 0x12 });
+        var mon = MakeMon(1, "A");
+        mon.VcpCapabilitiesInfo = caps;
+        mon.ReadValues = MonitorReadFlags.InputSource;
+        mon.CurrentInputSource = 0x11;
+
+        var mappings = new List<CustomVcpValueMapping>
+        {
+            new() { VcpCode = 0x60, Value = 0x11, CustomName = "Work laptop", ApplyToAll = false, TargetMonitorId = "A" },
+            new() { VcpCode = 0x60, Value = 0x12, CustomName = "Game console", ApplyToAll = false, TargetMonitorId = "A" },
+            new() { VcpCode = 0x60, Value = 0x12, CustomName = "Wrong monitor", ApplyToAll = false, TargetMonitorId = "B" },
+        };
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Set,
+            Set = new SetRequest { MonitorNumber = 1, Setting = CliSettingNames.InputSource, RawValue = "0x12" },
+        };
+
+        var json = await Dispatch(envelope, monitors: new[] { mon }, customMappings: mappings);
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("Work laptop (0x11)", result.BeforeDisplay);
+        Assert.AreEqual("Game console (0x12)", result.AfterDisplay);
     }
 
     [TestMethod]

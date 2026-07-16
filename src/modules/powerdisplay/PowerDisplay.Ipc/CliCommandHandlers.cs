@@ -81,7 +81,8 @@ internal static class CliCommandHandlers
                 context.Snapshot,
                 context.HiddenIds,
                 context.Envelope.Set,
-                ct).ConfigureAwait(false);
+                ct,
+                context.CustomMappings).ConfigureAwait(false);
 
             return CliResponse.ResultOrError(outcome, ContractsJsonContext.Default.CliSetResult);
         }

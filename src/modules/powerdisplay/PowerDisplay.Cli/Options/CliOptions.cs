@@ -22,7 +22,7 @@ public static class CliOptions
         new[] { "--monitor-number", "-n" },
         ParseMonitorNumbers,
         isDefault: false,
-        description: "Index(es) of the monitor(s) (1-based), comma-separated for multiple (e.g. 1,2,3). Multiple monitors are applied together by set/up/down. Run 'powerdisplay list' to discover.")
+        description: "Index(es) of the monitor(s) (1-based), comma-separated for multiple (e.g. 1,2,3). Multiple monitors are applied together by set/up/down. Run 'PowerToys.PowerDisplay.Cli.exe list' to discover.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
@@ -104,21 +104,21 @@ public static class CliOptions
     // --- set: discrete ---
     public static readonly Option<string?> ColorTemperature = new(
         ["--color-temperature"],
-        "Hex VCP value (e.g. 0x05). Run 'powerdisplay capabilities --setting color-temperature' to list supported values.")
+        "Hex VCP value (e.g. 0x05). Run 'PowerToys.PowerDisplay.Cli.exe capabilities --setting color-temperature' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<string?> InputSource = new(
         ["--input-source"],
-        "Hex VCP value (e.g. 0x11). Run 'powerdisplay capabilities --setting input-source' to list supported values.")
+        "Hex VCP value (e.g. 0x11). Run 'PowerToys.PowerDisplay.Cli.exe capabilities --setting input-source' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<string?> PowerState = new(
         ["--power-state"],
-        "Hex VCP value (e.g. 0x01=On, 0x04=Off (DPM)). Run 'powerdisplay capabilities --setting power-state' to list supported values.")
+        "Hex VCP value (e.g. 0x01=On, 0x04=Off (DPM)). Run 'PowerToys.PowerDisplay.Cli.exe capabilities --setting power-state' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
@@ -155,7 +155,7 @@ public static class CliOptions
     // --- apply-profile ---
     public static readonly Argument<int> ProfileId = new(
         "id",
-        "Numeric id of the profile to apply. Run 'powerdisplay profiles' to list them.")
+        "Numeric id of the profile to apply. Run 'PowerToys.PowerDisplay.Cli.exe profiles' to list them.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
@@ -176,9 +176,9 @@ public static class CliOptions
     }
 
     // Parses the single --monitor-number/-n token as a comma-separated list of 1-based indices
-    // (e.g. "1,2,3"). Duplicates are collapsed preserving first-seen order; any empty or non-integer
-    // element flows through the single ArgumentError envelope like other parse failures. Returns an
-    // empty array only when the option is absent.
+    // (e.g. "1,2,3"). Duplicates are collapsed preserving first-seen order; any empty, non-integer,
+    // or non-positive element flows through the single ArgumentError envelope like other parse failures.
+    // Returns an empty array only when the option is absent.
     private static int[] ParseMonitorNumbers(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
@@ -193,7 +193,8 @@ public static class CliOptions
         {
             var trimmed = part.Trim();
             if (trimmed.Length == 0
-                || !int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+                || !int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number)
+                || number < 1)
             {
                 result.ErrorMessage = Resources.Error_InvalidMonitorNumber(raw);
                 return Array.Empty<int>();
