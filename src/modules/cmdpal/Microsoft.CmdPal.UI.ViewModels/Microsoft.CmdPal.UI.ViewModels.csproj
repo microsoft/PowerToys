@@ -42,16 +42,11 @@
   </ItemGroup>
   <!-- Adaptive Cards CsWinRT projection setup.
        Keep GeneratePathProperty on the AdaptiveCards PackageReference's above. -->
-  <PropertyGroup>
-    <AdaptiveCardsNative>runtimes\win-$(Platform)\native</AdaptiveCardsNative>
-  </PropertyGroup>
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
-    <None Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
-    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
