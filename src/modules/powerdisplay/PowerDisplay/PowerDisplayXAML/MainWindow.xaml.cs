@@ -479,7 +479,7 @@ namespace PowerDisplay
                 return;
             }
 
-            Logger.LogInfo($"[UI] ProfileListView_SelectionChanged: Applying profile '{selectedProfile.Name}'");
+            Logger.LogInfo($"[UI] ProfileListView_SelectionChanged: Applying profile '{selectedProfile.DisplayName}'");
 
             // Apply profile via ViewModel command
             if (_viewModel?.ApplyProfileCommand?.CanExecute(selectedProfile) == true)
