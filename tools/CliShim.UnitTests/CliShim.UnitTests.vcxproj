@@ -43,7 +43,9 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="CopyCliShimUnderTest" AfterTargets="Build">
+  <Target Name="CopyCliShimUnderTest"
+          AfterTargets="Build"
+          Condition="'$(_IsSkippedTestProject)' != 'true'">
     <PropertyGroup>
       <_CliShimUnderTest>$(RepoRoot)$(Platform)\$(Configuration)\CliShim\PowerToys.CliShim.exe</_CliShimUnderTest>
     </PropertyGroup>

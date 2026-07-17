@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="NuGet">
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+    <NuGetTargetPlatformIdentifier>Windows</NuGetTargetPlatformIdentifier>
+    <NuGetTargetPlatformVersion>$(WindowsTargetPlatformVersion)</NuGetTargetPlatformVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A7FB7FA-65EA-4004-BA73-1B237435A57B}</ProjectGuid>
@@ -19,16 +28,12 @@
   <PropertyGroup>
     <VcpkgEnabled>false</VcpkgEnabled>
     <VcpkgManifestEnabled>false</VcpkgManifestEnabled>
-    <CliStageDir>$(RepoRoot)$(Platform)\$(Configuration)\cli\</CliStageDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>VERSION_MAJOR=$(Version.Split('.')[0]);VERSION_MINOR=$(Version.Split('.')[1]);VERSION_REVISION=$(Version.Split('.')[2]);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -40,45 +45,44 @@
     <ResourceCompile Include="CliShim.rc" />
     <None Include="CliShimManifest.props" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\common\version\version.vcxproj">
+      <Project>{CC6E41AC-8174-4E8A-8D22-85DD7F4851DF}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <Target Name="GenerateCliShimTargets" BeforeTargets="ClCompile">
+  <Target Name="GenerateCliShimTargets"
+          BeforeTargets="ClCompile"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildProjectDirectory)\CliShimManifest.props"
+          Outputs="$(IntDir)CliShimTargets.g.inc">
     <ItemGroup>
       <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
     </ItemGroup>
     <MakeDir Directories="$(IntDir)" />
     <WriteLinesToFile File="$(IntDir)CliShimTargets.g.inc"
                       Lines="@(_CliShimTargetLine)"
-                      Overwrite="true"
-                      WriteOnlyWhenDifferent="true" />
+                      Overwrite="true" />
   </Target>
 
   <!-- Keep explicit WiX components synchronized with the shared manifest. -->
   <Target Name="ValidateCliShimInstallerManifest" BeforeTargets="ClCompile">
     <PropertyGroup>
       <_CliShimWxsText>$([System.IO.File]::ReadAllText('$(RepoRoot)installer\PowerToysSetupVNext\CliShims.wxs'))</_CliShimWxsText>
-      <_CliShimWxsCount>$([System.Text.RegularExpressions.Regex]::Matches('$(_CliShimWxsText)', 'cli\\[^&quot;\\]+\.exe').Count)</_CliShimWxsCount>
+      <_CliShimWxsCount>$([System.Text.RegularExpressions.Regex]::Matches('$(_CliShimWxsText)', 'Name=&quot;[^&quot;]+\.exe&quot;').Count)</_CliShimWxsCount>
       <_CliShimManifestCount>@(CliShim-&gt;Count())</_CliShimManifestCount>
     </PropertyGroup>
     <ItemGroup>
       <CliShim>
-        <InWxs>$(_CliShimWxsText.Contains('cli\%(Identity).exe'))</InWxs>
+        <InWxs>$(_CliShimWxsText.Contains('Name=&quot;%(Identity).exe&quot;'))</InWxs>
       </CliShim>
     </ItemGroup>
     <Error Condition="'%(CliShim.InWxs)' != 'True'"
            Text="CliShim installer drift: command '%(CliShim.Identity)' is missing from CliShims.wxs." />
     <Error Condition="'$(_CliShimWxsCount)' != '$(_CliShimManifestCount)'"
            Text="CliShim installer drift: CliShims.wxs contains $(_CliShimWxsCount) command executables, but CliShimManifest.props defines $(_CliShimManifestCount)." />
-  </Target>
-
-  <Target Name="StageCliShims" AfterTargets="Build">
-    <ItemGroup>
-      <_ExistingCliShim Include="$(CliStageDir)*.exe" />
-    </ItemGroup>
-    <Delete Files="@(_ExistingCliShim)" />
-    <MakeDir Directories="$(CliStageDir)" />
-    <Copy SourceFiles="@(CliShim->'$(TargetPath)')"
-          DestinationFiles="@(CliShim->'$(CliStageDir)%(Identity).exe')" />
   </Target>
 </Project>

@@ -9,25 +9,25 @@
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_fancyzonescli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\fancyzonescli.exe" Id="CliShim_fancyzonescli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="fancyzonescli.exe" Id="CliShim_fancyzonescli.exe" Checksum="yes" />
       </Component>
       <Component Id="CliShim_imageresizercli_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_imageresizercli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\imageresizercli.exe" Id="CliShim_imageresizercli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="imageresizercli.exe" Id="CliShim_imageresizercli.exe" Checksum="yes" />
       </Component>
       <Component Id="CliShim_filelocksmithcli_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_filelocksmithcli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\filelocksmithcli.exe" Id="CliShim_filelocksmithcli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="filelocksmithcli.exe" Id="CliShim_filelocksmithcli.exe" Checksum="yes" />
       </Component>
       <Component Id="CliShim_powerdisplaycli_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="CliShim_powerdisplaycli_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)cli\powerdisplaycli.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="powerdisplaycli.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
       </Component>
 
       <!-- MSI broadcasts WM_SETTINGCHANGE; terminals open before install must be reopened. -->

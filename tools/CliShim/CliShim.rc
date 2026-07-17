@@ -4,13 +4,7 @@
 
 #include <windows.h>
 
-#define STRINGIZE2(value) #value
-#define STRINGIZE(value) STRINGIZE2(value)
-
-#define FILE_VERSION VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, 0
-#define FILE_VERSION_STRING \
-    STRINGIZE(VERSION_MAJOR) \
-    "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_REVISION) ".0"
+#include "../../src/common/version/version.h"
 
 1 VERSIONINFO
 FILEVERSION FILE_VERSION

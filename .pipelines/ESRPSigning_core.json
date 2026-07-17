@@ -64,7 +64,7 @@
             "FancyZonesCLI.exe",
             "FancyZonesCLI.dll",
 
-            "cli\\*.exe",
+            "CliShim\\PowerToys.CliShim.exe",
 
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",

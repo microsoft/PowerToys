@@ -5,6 +5,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <wil/stl.h>
+#include <wil/win32_helpers.h>
+
 #include <cstdio>
 #include <filesystem>
 #include <string>
@@ -36,27 +39,6 @@ namespace
         return TRUE;
     }
 
-    std::wstring GetOwnModulePath()
-    {
-        std::wstring buffer(MAX_PATH, L'\0');
-        for (;;)
-        {
-            const DWORD copied = GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
-            if (copied == 0)
-            {
-                return {};
-            }
-
-            if (copied < buffer.size())
-            {
-                buffer.resize(copied);
-                return buffer;
-            }
-
-            buffer.resize(buffer.size() * 2); // Truncated when copied == size; grow and retry.
-        }
-    }
-
     const wchar_t* ResolveTarget(const std::wstring& commandName)
     {
         for (const ShimTarget& entry : ShimTargets)
@@ -75,8 +57,8 @@ int wmain()
 {
     SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
 
-    const std::wstring modulePath = GetOwnModulePath();
-    if (modulePath.empty())
+    std::wstring modulePath;
+    if (FAILED(wil::GetModuleFileNameW(nullptr, modulePath)))
     {
         std::fwprintf(stderr, L"cli-shim: could not determine the shim's own path.\n");
         return ExitLaunchFailed;

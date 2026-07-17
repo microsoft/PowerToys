@@ -381,12 +381,12 @@ try {
     if (-not $SkipBuild) {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
+    }
 
-        $cliStageDir = Join-Path $buildOutputPath 'cli'
-        if (-not (Test-Path $cliStageDir) -or -not (Get-ChildItem $cliStageDir -Filter *.exe -ErrorAction SilentlyContinue)) {
-            Write-Error "No CLI shims found in '$cliStageDir'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
-            exit 1
-        }
+    $cliShimPath = Join-Path $buildOutputPath 'CliShim\PowerToys.CliShim.exe'
+    if (-not (Test-Path -LiteralPath $cliShimPath -PathType Leaf)) {
+        Write-Error "CLI shim not found at '$cliShimPath'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
+        exit 1
     }
 
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
