@@ -23,10 +23,11 @@
             ShortcutTemplate="{StaticResource ModuleItemShortcutTemplate}" />
         <controlConverters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:EnumToModuleListSortOptionConverter x:Key="EnumToModuleListSortOptionConverter" />
+        <x:Double x:Key="DashboardModuleRowMinHeight">45</x:Double>
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
             <tkcontrols:SettingsCard
                 MinWidth="0"
-                MinHeight="40"
+                MinHeight="{StaticResource DashboardModuleRowMinHeight}"
                 Padding="12,4,12,4"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
@@ -73,7 +74,7 @@
         <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
             <tkcontrols:SettingsCard
                 MinWidth="0"
-                MinHeight="40"
+                MinHeight="{StaticResource DashboardModuleRowMinHeight}"
                 Padding="12,4,12,4"
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Stretch"
@@ -299,6 +300,7 @@
                         <controls:ModuleList
                             x:Name="ModulesCard"
                             Grid.Row="1"
+                            ItemMinHeight="{StaticResource DashboardModuleRowMinHeight}"
                             ItemsSource="{x:Bind ViewModel.AllModules, Mode=OneWay}"
                             SortOption="{x:Bind ViewModel.DashboardSortOrder, Mode=TwoWay, Converter={StaticResource EnumToModuleListSortOptionConverter}}" />
                     </controls:Card>

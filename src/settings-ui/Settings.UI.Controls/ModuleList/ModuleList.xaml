@@ -53,7 +53,7 @@
             <DataTemplate x:DataType="controls:ModuleListItem">
                 <tkcontrols:SettingsCard
                     MinWidth="0"
-                    MinHeight="0"
+                    MinHeight="{Binding (tk:FrameworkElementExtensions.Ancestor).ItemMinHeight, RelativeSource={RelativeSource Self}}"
                     Padding="12,4,12,4"
                     tk:FrameworkElementExtensions.AncestorType="controls:ModuleList"
                     Background="Transparent"

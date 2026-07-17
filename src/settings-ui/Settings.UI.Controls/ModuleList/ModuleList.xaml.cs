@@ -30,6 +30,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         public static readonly DependencyProperty IsItemClickableProperty = DependencyProperty.Register(nameof(IsItemClickable), typeof(bool), typeof(ModuleList), new PropertyMetadata(true));
 
+        public double ItemMinHeight
+        {
+            get => (double)GetValue(ItemMinHeightProperty);
+            set => SetValue(ItemMinHeightProperty, value);
+        }
+
+        public static readonly DependencyProperty ItemMinHeightProperty = DependencyProperty.Register(nameof(ItemMinHeight), typeof(double), typeof(ModuleList), new PropertyMetadata(0d));
+
         public object ItemsSource
         {
             get => (object)GetValue(ItemsSourceProperty);
