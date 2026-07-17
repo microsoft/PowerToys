@@ -64,6 +64,7 @@
                         </controls:GPOInfoControl>
                         <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander
+                                Name="PowerDisplayFlyoutSettings"
                                 x:Uid="PowerDisplayFlyoutHeader"
                                 HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
                                 IsExpanded="True">
@@ -74,7 +75,7 @@
                                 <tkcontrols:SettingsExpander.Items>
                                     <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
                                     <tkcontrols:SettingsCard Visibility="Collapsed" />
-                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
+                                    <tkcontrols:SettingsCard Name="PowerDisplayActivationShortcut" x:Uid="PowerDisplay_ActivationShortcut">
                                         <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
 

@@ -52,6 +52,22 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ((App)App.Current)!.OpenScoobe();
         }
 
+        private void DashboardModuleItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { Tag: DashboardModuleItem item })
+            {
+                ViewModel.DashboardModuleItemClick(item);
+            }
+        }
+
+        private void DashboardShortcutModule_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement { Tag: DashboardListItem item })
+            {
+                ViewModel.DashboardListItemClick(item.Tag);
+            }
+        }
+
         private void SortAlphabetical_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.DashboardSortOrder = DashboardSortOrder.Alphabetical;

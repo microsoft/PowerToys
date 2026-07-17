@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Windows.UI;
@@ -44,6 +45,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     public partial class DashboardModuleItem : INotifyPropertyChanged
     {
         public string Label { get; set; }
+
+        public ModuleType ModuleType { get; set; }
+
+        public string NavigationElementName { get; set; }
+
+        public string NavigationParentElementName { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

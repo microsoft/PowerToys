@@ -24,13 +24,28 @@
         <controlConverters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:EnumToModuleListSortOptionConverter x:Key="EnumToModuleListSortOptionConverter" />
         <DataTemplate x:Key="ModuleItemShortcutTemplate" x:DataType="viewmodels:DashboardModuleShortcutItem">
-            <Grid MinHeight="36" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="140" />
-                </Grid.ColumnDefinitions>
+            <tkcontrols:SettingsCard
+                MinWidth="0"
+                MinHeight="40"
+                Padding="12,4,12,4"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                Background="Transparent"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                Click="DashboardModuleItem_Click"
+                CornerRadius="0"
+                IsClickEnabled="True"
+                Tag="{x:Bind}">
+                <tkcontrols:SettingsCard.Header>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </tkcontrols:SettingsCard.Header>
                 <ItemsControl
-                    Grid.Column="1"
+                    MinWidth="140"
                     HorizontalAlignment="Left"
                     AutomationProperties.AccessibilityView="Raw"
                     IsTabStop="False"
@@ -53,30 +68,38 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
-            </Grid>
+            </tkcontrols:SettingsCard>
         </DataTemplate>
         <DataTemplate x:Key="ModuleItemActivationTemplate" x:DataType="viewmodels:DashboardModuleActivationItem">
-            <Grid MinHeight="36" ColumnSpacing="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" MinWidth="140" />
-                </Grid.ColumnDefinitions>
+            <tkcontrols:SettingsCard
+                MinWidth="0"
+                MinHeight="40"
+                Padding="12,4,12,4"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                Background="Transparent"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                Click="DashboardModuleItem_Click"
+                CornerRadius="0"
+                IsClickEnabled="True"
+                Tag="{x:Bind}">
+                <tkcontrols:SettingsCard.Header>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Text="{x:Bind Label, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                </tkcontrols:SettingsCard.Header>
                 <TextBlock
-                    VerticalAlignment="Center"
-                    Text="{x:Bind Label, Mode=OneWay}"
-                    TextWrapping="WrapWholeWords" />
-                <TextBlock
-                    Grid.Column="1"
+                    MinWidth="140"
+                    HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind Activation, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
-            </Grid>
+            </tkcontrols:SettingsCard>
         </DataTemplate>
     </local:NavigablePage.Resources>
     <Grid Margin="16,0,0,0" RowSpacing="12">
@@ -174,12 +197,13 @@
                                     Visibility="{x:Bind ViewModel.QuickAccessItems.Count, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
                             </Grid>
                         </controls:Card>
-                        <controls:Card x:Uid="ShortcutsOverview" VerticalAlignment="Top">
+                        <controls:Card
+                            x:Uid="ShortcutsOverview"
+                            Padding="0"
+                            VerticalAlignment="Top"
+                            DividerVisibility="Collapsed">
                             <Grid>
-                                <ItemsRepeater
-                                    Grid.Row="2"
-                                    Margin="8,0,0,0"
-                                    ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
+                                <ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind ViewModel.ShortcutModules, Mode=OneWay}">
                                     <ItemsRepeater.Layout>
                                         <StackLayout Orientation="Vertical" Spacing="0" />
                                     </ItemsRepeater.Layout>
@@ -187,17 +211,33 @@
                                         <DataTemplate x:DataType="viewmodels:DashboardListItem">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="32" />
+                                                    <ColumnDefinition Width="48" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <Image
-                                                    Width="16"
-                                                    Margin="0,10,0,0"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Top"
-                                                    AutomationProperties.AccessibilityView="Raw"
-                                                    Source="{x:Bind Icon, Mode=OneWay}"
-                                                    ToolTipService.ToolTip="{x:Bind Label}" />
+                                                <Button
+                                                    MinWidth="0"
+                                                    MinHeight="0"
+                                                    Padding="0"
+                                                    HorizontalAlignment="Stretch"
+                                                    VerticalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    VerticalContentAlignment="Stretch"
+                                                    AutomationProperties.Name="{x:Bind Label, Mode=OneWay}"
+                                                    BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                                                    BorderThickness="0,1,0,0"
+                                                    Click="DashboardShortcutModule_Click"
+                                                    CornerRadius="0"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}"
+                                                    ToolTipService.ToolTip="{x:Bind Label}">
+                                                    <Image
+                                                        Width="20"
+                                                        Height="20"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        AutomationProperties.AccessibilityView="Raw"
+                                                        Source="{x:Bind Icon, Mode=OneWay}" />
+                                                </Button>
                                                 <ItemsControl
                                                     Grid.Column="1"
                                                     IsTabStop="False"

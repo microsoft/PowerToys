@@ -36,7 +36,10 @@
                     </controls:GPOInfoControl>
 
                     <controls:SettingsGroup x:Uid="LightSwitch_ShortcutsSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="LightSwitch_ThemeToggle_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+                        <tkcontrols:SettingsCard
+                            Name="LightSwitchThemeToggleShortcut"
+                            x:Uid="LightSwitch_ThemeToggle_Shortcut"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
                             <controls:ShortcutControl
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 AllowDisable="True"
