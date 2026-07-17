@@ -2,11 +2,7 @@
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <!--
-    CLI shims: tiny native launchers installed into the "cli" subfolder. Each shim
-    forwards to a real PowerToys CLI (one level up, or under WinUI3Apps). The cli folder
-    is appended to PATH so the shims are callable by name from a terminal.
-  -->
+  <!-- PATH-visible shims forward to the installed PowerToys CLIs. -->
   <Fragment>
     <DirectoryRef Id="CliFolder">
       <Component Id="CliShim_fancyzonescli_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
@@ -34,12 +30,6 @@
         <File Source="$(var.BinDir)cli\powerdisplaycli.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
       </Component>
 
-      <!--
-        Append the cli folder to PATH (per-user vs per-machine, mirroring Core.wxs).
-        MSI broadcasts WM_SETTINGCHANGE on commit, so Explorer and newly-opened terminals
-        pick up the new PATH; terminals already open at install time must be reopened before
-        the short command names resolve.
-      -->
       <?if $(var.PerUser) = "true" ?>
       <Component Id="cli_env_path_user" Guid="87AA86E8-81E8-44CB-9519-FC70CF7BEA56" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">

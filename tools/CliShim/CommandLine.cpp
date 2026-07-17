@@ -14,19 +14,14 @@ namespace CommandLine
 
         size_t index = 0;
 
-        // Skip leading whitespace before argv[0]. The OS loader never produces this, but a
-        // non-shell parent that calls CreateProcessW with a padded lpCommandLine can, and
-        // without this the unquoted scan below would stall at index 0 and leak the program
-        // name into the forwarded arguments.
+        // CreateProcessW callers can supply leading whitespace before argv[0].
         while (index < commandLine.size() && isWhitespace(commandLine[index]))
         {
             ++index;
         }
 
-        // argv[0] follows special CRT rules: quotes may occur anywhere in the token and
-        // toggle whether whitespace is significant. Backslashes have no special meaning.
-        // Continue after a closing quote because a valid path can mix quoted and unquoted
-        // segments, for example: "C:\Program Files"\PowerToys\cli.exe.
+        // CRT argv[0] parsing treats quotes as whitespace toggles and backslashes literally;
+        // adjacent quoted and unquoted segments remain one token.
         bool inQuotes = false;
         while (index < commandLine.size())
         {

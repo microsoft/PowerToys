@@ -459,12 +459,6 @@ jobs:
         msbuildArchitecture: x64
         maximumCpuCount: true
 
-  # CLI shims (fancyzonescli/imageresizercli/filelocksmithcli/powerdisplaycli) are built by the main PowerToys.slnx
-  # build above (tools/CliShim/CliShim.vcxproj). Its StageCliShims target copies one exe per
-  # command name from CliShimManifest.props into <BuildPlatform>\<BuildConfiguration>\cli.
-  # The signing policy covers that folder, and the build validates the WiX command set before
-  # signing and installer harvesting run.
-
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
     displayName: HACK Copy core WebView2 ARM64 dll to output directory

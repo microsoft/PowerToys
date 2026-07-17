@@ -9,10 +9,7 @@
 
 namespace CommandLine
 {
-    // Returns the command line with its first token (argv[0]) removed, following the C
-    // runtime rule for the program name: leading whitespace is skipped first, quotes group
-    // whitespace but are otherwise part of argv[0]'s tokenization, and the token ends at the
-    // first unquoted whitespace. Whitespace before the first real argument is then trimmed.
-    // The remaining arguments are returned verbatim.
+    // Removes argv[0] using CRT quote rules, trims separating spaces/tabs, and
+    // preserves the remaining command-line text verbatim.
     std::wstring StripArgumentZero(std::wstring_view commandLine);
 }

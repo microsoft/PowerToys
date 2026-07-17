@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Shared configurations, static CRT, warnings, toolset, and SDK come from Cpp.Build.props. -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8A7FB7FA-65EA-4004-BA73-1B237435A57B}</ProjectGuid>
@@ -44,7 +43,6 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <!-- Generate the C++ lookup table directly from the shared manifest. -->
   <Target Name="GenerateCliShimTargets" BeforeTargets="ClCompile">
     <ItemGroup>
       <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
@@ -56,7 +54,7 @@
                       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <!-- WiX keeps explicit components for stable MSI identity; verify its command set exactly. -->
+  <!-- Keep explicit WiX components synchronized with the shared manifest. -->
   <Target Name="ValidateCliShimInstallerManifest" BeforeTargets="ClCompile">
     <PropertyGroup>
       <_CliShimWxsText>$([System.IO.File]::ReadAllText('$(RepoRoot)installer\PowerToysSetupVNext\CliShims.wxs'))</_CliShimWxsText>
@@ -74,7 +72,6 @@
            Text="CliShim installer drift: CliShims.wxs contains $(_CliShimWxsCount) command executables, but CliShimManifest.props defines $(_CliShimManifestCount)." />
   </Target>
 
-  <!-- Recreate the staged command set so renamed or removed commands cannot leave stale files. -->
   <Target Name="StageCliShims" AfterTargets="Build">
     <ItemGroup>
       <_ExistingCliShim Include="$(CliStageDir)*.exe" />

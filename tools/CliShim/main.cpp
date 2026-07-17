@@ -13,13 +13,10 @@
 
 namespace
 {
-    // The exit code cmd.exe returns for "command not found". Used only when the shim is
-    // invoked under a name that is not in the table below (for example a renamed copy).
+    // Match cmd.exe's "command not found" exit code for unmapped shim names.
     constexpr int ExitCommandNotMapped = 9009;
 
-    // A distinct code for "the command is known, but its target could not be launched"
-    // (missing target, CreateProcess failure). Keeping this separate from 9009 lets a
-    // calling script tell a mistyped or unmapped command from a broken install.
+    // Distinguish mapped commands whose targets cannot be launched.
     constexpr int ExitLaunchFailed = 1;
 
     struct ShimTarget
@@ -28,22 +25,17 @@ namespace
         const wchar_t* target;
     };
 
-    // Generated from CliShimManifest.props. Paths are relative to the shim directory; the
-    // shims live in "<install>\cli\", so targets are one level up or under WinUI3Apps.
+    // Generated from CliShimManifest.props.
     constexpr ShimTarget ShimTargets[] = {
 #include "CliShimTargets.g.inc"
     };
 
-    // Stay alive on Ctrl+C / Ctrl+Break so we can still capture the child's exit code; the
-    // child shares the console group and receives the signal directly. Returning TRUE tells
-    // the system we handled it, so this process is not terminated.
+    // The child receives Ctrl+C/Break; keep the shim alive to return its exit code.
     BOOL WINAPI ConsoleCtrlHandler(DWORD /*controlType*/)
     {
         return TRUE;
     }
 
-    // Returns the full path of this executable, growing the buffer to accommodate long
-    // paths. Returns an empty string on failure.
     std::wstring GetOwnModulePath()
     {
         std::wstring buffer(MAX_PATH, L'\0');
@@ -61,7 +53,7 @@ namespace
                 return buffer;
             }
 
-            buffer.resize(buffer.size() * 2); // ERROR_INSUFFICIENT_BUFFER: grow and retry.
+            buffer.resize(buffer.size() * 2);
         }
     }
 
@@ -109,14 +101,10 @@ int wmain()
         return ExitLaunchFailed;
     }
 
-    // Forward the user's arguments byte-for-byte. GetCommandLineW is the raw command line
-    // (the Win32 equivalent of the managed Environment.CommandLine); stripping argv[0]
-    // preserves the user's exact quoting, which re-quoting parsed args would corrupt.
+    // Forward the raw tail so the caller's argument quoting remains unchanged.
     const std::wstring forwardedArguments = CommandLine::StripArgumentZero(GetCommandLineW());
 
-    // Rebuild a command line whose argv[0] is the resolved (quoted) target followed by the
-    // forwarded tail. lpApplicationName below still points at the target, so this argv[0]
-    // is purely cosmetic for the child.
+    // lpApplicationName selects the target; quote argv[0] for the child command line.
     std::wstring commandLine = L'"' + targetPath.wstring() + L'"';
     if (!forwardedArguments.empty())
     {

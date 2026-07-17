@@ -382,11 +382,6 @@ try {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
 
-        # CLI shims (fancyzonescli/imageresizercli/filelocksmithcli/powerdisplaycli) are built by the main PowerToys.slnx
-        # build (tools\CliShim\CliShim.vcxproj), whose StageCliShims target stages one exe per
-        # command name into <Platform>\<Configuration>\cli for the installer to harvest. Fail
-        # fast with an actionable message if that build hasn't run, instead of a later opaque
-        # WiX harvest error on a missing cli\*.exe source.
         $cliStageDir = Join-Path $buildOutputPath 'cli'
         if (-not (Test-Path $cliStageDir) -or -not (Get-ChildItem $cliStageDir -Filter *.exe -ErrorAction SilentlyContinue)) {
             Write-Error "No CLI shims found in '$cliStageDir'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."

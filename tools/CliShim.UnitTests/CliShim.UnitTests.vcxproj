@@ -8,7 +8,6 @@
     <ProjectName>CliShim.UnitTests</ProjectName>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
     <IsTestProject>true</IsTestProject>
-    <!-- No precompiled header: a single test source plus the shared parser. -->
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\CliShim\</OutDir>
   </PropertyGroup>
@@ -16,7 +15,6 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <!-- No third-party dependencies; opt out of the repo-wide vcpkg integration. -->
   <PropertyGroup>
     <VcpkgEnabled>false</VcpkgEnabled>
     <VcpkgManifestEnabled>false</VcpkgManifestEnabled>
@@ -31,8 +29,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <!-- Link the parser directly; the ProjectReference below supplies the production exe only
-         for process-level integration tests. -->
+    <!-- Compile the parser directly; the project reference supplies the integration-test executable. -->
     <ClCompile Include="..\CliShim\CommandLine.cpp" />
     <ClCompile Include="CommandLineTests.cpp" />
     <ClCompile Include="LauncherIntegrationTests.cpp" />
