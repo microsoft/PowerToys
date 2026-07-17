@@ -12,6 +12,9 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class AliasManager : ObservableObject
 {
+    private const string DeprecatedShellCommandId = "com.microsoft.cmdpal.shell";
+    private const string RunCommandId = "com.microsoft.cmdpal.run";
+
     private readonly TopLevelCommandManager _topLevelCommandManager;
     private readonly ISettingsService _settingsService;
 
@@ -20,7 +23,7 @@ public partial class AliasManager : ObservableObject
         new CommandAlias(":", "com.microsoft.cmdpal.registry", true),
         new CommandAlias("$", "com.microsoft.cmdpal.windowsSettings", true),
         new CommandAlias("=", "com.microsoft.cmdpal.calculator", true),
-        new CommandAlias(">", "com.microsoft.cmdpal.shell", true),
+        new CommandAlias(">", RunCommandId, true),
         new CommandAlias("<", "com.microsoft.cmdpal.windowwalker", true),
         new CommandAlias("??", "com.microsoft.cmdpal.websearch", true),
         new CommandAlias("file", "com.microsoft.indexer.fileSearch", false),
@@ -31,6 +34,8 @@ public partial class AliasManager : ObservableObject
     {
         _topLevelCommandManager = tlcManager;
         _settingsService = settingsService;
+
+        MigrateRenamedRunAliases();
 
         if (_settingsService.Settings.Aliases.Count == 0)
         {
@@ -70,6 +75,37 @@ public partial class AliasManager : ObservableObject
                     .AddRange(_defaultAliases.ToDictionary(a => a.SearchPrefix, a => a)),
             },
             hotReload: false);
+    }
+
+    private void MigrateRenamedRunAliases()
+    {
+        var aliases = _settingsService.Settings.Aliases;
+        var migratedAliases = MigrateRenamedRunAliases(aliases);
+        if (ReferenceEquals(aliases, migratedAliases))
+        {
+            return;
+        }
+
+        _settingsService.UpdateSettings(
+            static s => s with { Aliases = MigrateRenamedRunAliases(s.Aliases) },
+            hotReload: false);
+    }
+
+    private static ImmutableDictionary<string, CommandAlias> MigrateRenamedRunAliases(ImmutableDictionary<string, CommandAlias> aliases)
+    {
+        var runCommandHasAlias = aliases.Values.Any(alias => alias.CommandId == RunCommandId);
+        var migratedAliases = aliases;
+        foreach (var alias in aliases)
+        {
+            if (alias.Value.CommandId == DeprecatedShellCommandId)
+            {
+                migratedAliases = runCommandHasAlias
+                    ? migratedAliases.Remove(alias.Key)
+                    : migratedAliases.SetItem(alias.Key, alias.Value with { CommandId = RunCommandId });
+            }
+        }
+
+        return migratedAliases;
     }
 
     public string? KeysFromId(string commandId)
