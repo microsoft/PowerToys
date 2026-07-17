@@ -799,34 +799,34 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Kbps", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} Kbps", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} Kbps", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} Kbps", value);
         }
 
         // Kbits to Mbits
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Mbps", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} Mbps", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} Mbps", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} Mbps", value);
         }
 
         // Mbits to Gbits
         value /= 1024;
-        if (value < 100)
+        if (MathF.Round(value, 1) < 10f)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} Gbps", value);
         }
 
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} Gbps", value);
+        return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} Gbps", value);
     }
 
     private static string FormatAsBytesPerSecString(float value)
@@ -835,34 +835,34 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KB/s", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} KB/s", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} KB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} KB/s", value);
         }
 
         // KB to MB
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MB/s", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} MB/s", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} MB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} MB/s", value);
         }
 
         // MB to GB
         value /= 1024;
-        if (value < 100)
+        if (MathF.Round(value, 1) < 10f)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} GB/s", value);
         }
 
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} GB/s", value);
+        return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} GB/s", value);
     }
 
     private static string FormatAsBinaryBytesPerSecString(float value)
@@ -871,34 +871,34 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} KiB/s", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} KiB/s", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} KiB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} KiB/s", value);
         }
 
         // KiB to MiB
         value /= 1024;
         if (value < 1024)
         {
-            if (value < 100)
+            if (MathF.Round(value, 1) < 10f)
             {
-                return string.Format(CultureInfo.InvariantCulture, "{0:0.0} MiB/s", value);
+                return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} MiB/s", value);
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0:0} MiB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} MiB/s", value);
         }
 
         // MiB to GiB
         value /= 1024;
-        if (value < 100)
+        if (MathF.Round(value, 1) < 10f)
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0:0.0} GiB/s", value);
+            return string.Format(CultureInfo.InvariantCulture, "{0,-4:0.0} GiB/s", value);
         }
 
-        return string.Format(CultureInfo.InvariantCulture, "{0:0} GiB/s", value);
+        return string.Format(CultureInfo.InvariantCulture, "{0,-4:0} GiB/s", value);
     }
 
     internal override void PushActivate()
