@@ -41,6 +41,7 @@ public class NumberTranslator
         { "root", 2 },
         { "factorial", 1 },
         { "sign", 1 },
+        { "sgn", 1 },
         { "round", 1 },
         { "rand", 0 },
         { "randi", 1 },
