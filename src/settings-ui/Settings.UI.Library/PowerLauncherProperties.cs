@@ -140,7 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UsePinyin = false;
             ShowPluginsOverview = 0;
             TitleFontSize = 16;
-            EnableAudibleFeedback = true;
+            EnableAudibleFeedback = false;
         }
     }
 }

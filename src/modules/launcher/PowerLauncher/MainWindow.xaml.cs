@@ -785,6 +785,7 @@ namespace PowerLauncher
         {
             return soundName switch
             {
+                "None" => null,
                 "Beep" => System.Media.SystemSounds.Beep,
                 "Asterisk" => System.Media.SystemSounds.Asterisk,
                 "Exclamation" => System.Media.SystemSounds.Exclamation,
