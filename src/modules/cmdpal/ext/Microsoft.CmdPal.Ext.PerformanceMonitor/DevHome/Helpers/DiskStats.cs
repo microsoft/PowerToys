@@ -98,7 +98,8 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
             {
                 var read = diskCounterWithName.Value[0].NextValue();
                 var written = diskCounterWithName.Value[1].NextValue();
-                var diskTimePercent = diskCounterWithName.Value[2].NextValue();
+
+                var diskTimePercent = Math.Clamp(diskCounterWithName.Value[2].NextValue(), 0f, 100f);
                 var name = diskCounterWithName.Key;
 
                 DiskUsages[name].Read = read;
@@ -120,7 +121,11 @@ internal sealed partial class DiskStats : PerformanceCounterSourceBase, IDisposa
 
     public string CreateDiskImageUrl(int diskChartIndex)
     {
-        return ChartHelper.CreateImageUrl(DiskChartValues.ElementAt(diskChartIndex).Value, ChartHelper.ChartType.Dis);
+        var chartValues = DiskChartValues.ElementAt(diskChartIndex).Value;
+        lock (chartValues)
+        {
+            return ChartHelper.CreateImageUrl(chartValues, ChartHelper.ChartType.Dis);
+        }
     }
 
     public string GetDiskName(int diskIndex)
