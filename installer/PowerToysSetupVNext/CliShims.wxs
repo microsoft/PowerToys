@@ -30,6 +30,7 @@
         <File Source="$(var.BinDir)cli\powerdisplaycli.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
       </Component>
 
+      <!-- MSI broadcasts WM_SETTINGCHANGE; terminals open before install must be reopened. -->
       <?if $(var.PerUser) = "true" ?>
       <Component Id="cli_env_path_user" Guid="87AA86E8-81E8-44CB-9519-FC70CF7BEA56" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">

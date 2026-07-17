@@ -53,7 +53,7 @@ namespace
                 return buffer;
             }
 
-            buffer.resize(buffer.size() * 2);
+            buffer.resize(buffer.size() * 2); // Truncated when copied == size; grow and retry.
         }
     }
 
@@ -104,7 +104,7 @@ int wmain()
     // Forward the raw tail so the caller's argument quoting remains unchanged.
     const std::wstring forwardedArguments = CommandLine::StripArgumentZero(GetCommandLineW());
 
-    // lpApplicationName selects the target; quote argv[0] for the child command line.
+    // lpApplicationName selects the target; argv[0] in the command line is cosmetic.
     std::wstring commandLine = L'"' + targetPath.wstring() + L'"';
     if (!forwardedArguments.empty())
     {

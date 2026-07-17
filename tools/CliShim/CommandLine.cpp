@@ -14,7 +14,8 @@ namespace CommandLine
 
         size_t index = 0;
 
-        // CreateProcessW callers can supply leading whitespace before argv[0].
+        // A non-shell CreateProcessW caller can prepend whitespace; without this skip the
+        // unquoted scan stalls at index 0 and leaks argv[0] into the forwarded tail.
         while (index < commandLine.size() && isWhitespace(commandLine[index]))
         {
             ++index;

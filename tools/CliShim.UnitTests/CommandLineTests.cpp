@@ -41,7 +41,7 @@ namespace CliShimUnitTests
                 { L"fancyzonescli\targ", L"arg" },
                 { L"fancyzonescli \t arg", L"arg" },
 
-                // Leading whitespace must not leak argv[0] into the forwarded tail.
+                // Non-shell CreateProcessW callers can prepend whitespace; argv[0] must not leak.
                 { L"  fancyzonescli arg", L"arg" },
                 { L" fancyzonescli", L"" },
                 { LR"(  "C:\cli\fancyzonescli.exe" arg)", L"arg" },
