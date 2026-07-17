@@ -168,9 +168,16 @@
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                    <controls:SettingsExpander x:Uid="Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                ContentAlignment="Left"
+                                IsEnabled="{x:Bind viewModel.ShowSystemTrayIcon, Mode=OneWay}">
+                                <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind viewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  'For Developers' section  -->
 

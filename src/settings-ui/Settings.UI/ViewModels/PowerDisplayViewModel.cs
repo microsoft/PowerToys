@@ -323,6 +323,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
                     SignalSettingsUpdated();
                     Logger.LogInfo($"ShowSystemTrayIcon changed to {value}");
+                    OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get => _settings.Properties.ShowThemeAdaptiveTrayIcon;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.ShowThemeAdaptiveTrayIcon, value, v => _settings.Properties.ShowThemeAdaptiveTrayIcon = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"ShowThemeAdaptiveTrayIcon changed to {value}");
                 }
             }
         }
