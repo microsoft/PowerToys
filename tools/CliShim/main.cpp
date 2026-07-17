@@ -96,7 +96,7 @@ int wmain()
 
     STARTUPINFOW startupInfo{};
     startupInfo.cb = sizeof(startupInfo);
-    PROCESS_INFORMATION processInfo{};
+    wil::unique_process_information processInfo;
 
     if (!CreateProcessW(
             targetPath.c_str(),
@@ -118,9 +118,6 @@ int wmain()
 
     DWORD exitCode = static_cast<DWORD>(ExitLaunchFailed);
     GetExitCodeProcess(processInfo.hProcess, &exitCode);
-
-    CloseHandle(processInfo.hProcess);
-    CloseHandle(processInfo.hThread);
 
     return static_cast<int>(exitCode);
 }
