@@ -192,4 +192,3 @@ Existing ColorPicker end-to-end tests remain the real clipboard integration cove
 - Build `ColorPickerUI`.
 - Build and run `ColorPickerUI.UnitTests`.
 - Confirm the existing ColorPicker end-to-end clipboard scenario remains applicable.
-

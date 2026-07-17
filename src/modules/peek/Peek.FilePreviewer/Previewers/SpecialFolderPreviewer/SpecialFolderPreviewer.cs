@@ -90,7 +90,7 @@ public partial class SpecialFolderPreviewer : ObservableObject, ISpecialFolderPr
         await Dispatcher.RunOnUiThread(async () =>
         {
             var storageItem = await Item.GetStorageItemAsync();
-            ClipboardHelper.SaveToClipboard(storageItem);
+            Peek.Common.Helpers.ClipboardHelper.SaveToClipboard(storageItem);
         });
     }
 

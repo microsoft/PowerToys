@@ -107,7 +107,7 @@ namespace Peek.FilePreviewer.Previewers
             await Dispatcher.RunOnUiThread(async () =>
             {
                 var storageItem = await Item.GetStorageItemAsync();
-                ClipboardHelper.SaveToClipboard(storageItem);
+                Peek.Common.Helpers.ClipboardHelper.SaveToClipboard(storageItem);
             });
         }
 

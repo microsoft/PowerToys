@@ -632,7 +632,7 @@ namespace AdvancedPaste.ViewModels
 
         private async Task CopyPasteAndHideAsync(DataPackage package)
         {
-            await ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
+            await AdvancedPaste.Helpers.ClipboardHelper.TryCopyPasteAsync(package, HideWindow);
             Query = string.Empty;
 
             // Delete any temp files created. A delay is needed to ensure the file is not in use by the target application -
