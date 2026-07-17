@@ -31,8 +31,10 @@ namespace Awake.Core
     /// Helper class that allows talking to Win32 APIs without having to rely on PInvoke in other parts
     /// of the codebase.
     /// </summary>
-    public class Manager
+    public class Manager : IDisposable
     {
+        private bool _disposed;
+
         internal static bool IsUsingPowerToysConfig { get; set; }
 
         internal static SettingsUtils? ModuleSettings { get; set; }
@@ -40,6 +42,8 @@ namespace Awake.Core
         internal static AwakeMode CurrentOperatingMode { get; private set; }
 
         private static bool IsDisplayOn { get; set; }
+
+        private static bool IsScreenLocked { get; set; }
 
         private static uint TimeRemaining { get; set; }
 
@@ -62,6 +66,7 @@ namespace Awake.Core
             _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
+            SystemEvents.SessionSwitch += OnSessionSwitch;
         }
 
         internal static void StartMonitor()
@@ -138,7 +143,7 @@ namespace Awake.Core
 
         private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
-            return keepDisplayOn
+            return keepDisplayOn && !IsScreenLocked
                 ? ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS
                 : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
         }
@@ -560,6 +565,20 @@ namespace Awake.Core
             }
         }
 
+        private static void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
+        {
+            if (e.Reason == SessionSwitchReason.SessionLock)
+            {
+                IsScreenLocked = true;
+            }
+            else if (e.Reason == SessionSwitchReason.SessionUnlock)
+            {
+                IsScreenLocked = false;
+            }
+
+            ReapplyAwakeState();
+        }
+
         public static Process? GetParentProcess()
         {
             return GetParentProcess(Process.GetCurrentProcess().Handle);
@@ -571,6 +590,32 @@ namespace Awake.Core
             int status = Bridge.NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf<ProcessBasicInformation>(), out _);
 
             return status != 0 ? null : Process.GetProcessById(pbi.InheritedFromUniqueProcessId.ToInt32());
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (disposing)
+            {
+                SystemEvents.SessionSwitch -= OnSessionSwitch;
+            }
+
+            _disposed = true;
+        }
+
+        ~Manager()
+        {
+            Dispose(false);
         }
     }
 }
