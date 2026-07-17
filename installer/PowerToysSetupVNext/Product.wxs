@@ -300,7 +300,7 @@
             </Directory>
           </Directory>
           <Directory Id="ToolsFolder" Name="Tools" />
-          <Directory Id="CliFolder" Name="cli" />
+          <Directory Id="CliFolder" Name="bin" />
         </Directory>
       </StandardDirectory>
       <StandardDirectory Id="ProgramMenuFolder">

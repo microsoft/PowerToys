@@ -24,27 +24,27 @@ namespace CliShimUnitTests
             };
 
             const Case cases[] = {
-                { L"fancyzonescli arg", L"arg" },
-                { L"fancyzonescli a b c", L"a b c" },
-                { L"fancyzonescli", L"" },
-                { L"filelocksmithcli", L"" },
+                { L"PowerToys.FancyZones.CLI arg", L"arg" },
+                { L"PowerToys.FancyZones.CLI a b c", L"a b c" },
+                { L"PowerToys.FancyZones.CLI", L"" },
+                { L"PowerToys.FileLocksmith.CLI", L"" },
 
-                { LR"("C:\Program Files\PowerToys\cli\fancyzonescli.exe" arg)", L"arg" },
-                { LR"("C:\Program Files\PowerToys\cli\fancyzonescli.exe")", L"" },
-                { LR"("C:\Program Files"\PowerToys\cli\fancyzonescli.exe arg)", L"arg" },
-                { LR"(C:\Program" Files"\PowerToys\cli\fancyzonescli.exe arg)", L"arg" },
-                { LR"("C:\Program Files"\PowerToys\cli\fancyzonescli.exe)", L"" },
+                { LR"("C:\Program Files\PowerToys\bin\PowerToys.FancyZones.CLI.exe" arg)", L"arg" },
+                { LR"("C:\Program Files\PowerToys\bin\PowerToys.FancyZones.CLI.exe")", L"" },
+                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", L"arg" },
+                { LR"(C:\Program" Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", L"arg" },
+                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe)", L"" },
 
-                { LR"("C:\cli\fancyzonescli.exe" "a b")", LR"("a b")" },
-                { LR"(fancyzonescli --path "C:\a b\c.png")", LR"(--path "C:\a b\c.png")" },
+                { LR"("C:\bin\PowerToys.FancyZones.CLI.exe" "a b")", LR"("a b")" },
+                { LR"(PowerToys.FancyZones.CLI --path "C:\a b\c.png")", LR"(--path "C:\a b\c.png")" },
 
-                { L"fancyzonescli\targ", L"arg" },
-                { L"fancyzonescli \t arg", L"arg" },
+                { L"PowerToys.FancyZones.CLI\targ", L"arg" },
+                { L"PowerToys.FancyZones.CLI \t arg", L"arg" },
 
                 // Non-shell CreateProcessW callers can prepend whitespace; argv[0] must not leak.
-                { L"  fancyzonescli arg", L"arg" },
-                { L" fancyzonescli", L"" },
-                { LR"(  "C:\cli\fancyzonescli.exe" arg)", L"arg" },
+                { L"  PowerToys.FancyZones.CLI arg", L"arg" },
+                { L" PowerToys.FancyZones.CLI", L"" },
+                { LR"(  "C:\bin\PowerToys.FancyZones.CLI.exe" arg)", L"arg" },
 
                 { L"", L"" },
 

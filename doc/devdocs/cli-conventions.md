@@ -2,6 +2,11 @@
 
 This document describes the conventions for implementing command-line interfaces (CLI) in PowerToys modules.
 
+## PATH-Visible Command Naming and Location
+
+- Name module CLI command shims `PowerToys.<ModuleName>.CLI.exe` (for example, `PowerToys.ImageResizer.CLI.exe`).
+- Install these shims in the `bin` subfolder of the PowerToys installation directory.
+
 ## Library
 
 Use the **System.CommandLine** library for CLI argument parsing. This is already defined in `Directory.Packages.props`:
@@ -89,5 +94,5 @@ Reference implementations:
 
 - CLI executables are signed automatically in CI/CD.
 - **New CLI tools**: Add your executable and dll to `.pipelines/ESRPSigning_core.json` in the signing list.
-- CLI executables are deployed alongside their parent module (e.g., `C:\Program Files\PowerToys\modules\[ModuleName]\`).
+- CLI executables are deployed alongside their parent module (e.g., `C:\Program Files\PowerToys\modules\[ModuleName]\`). PATH-visible shims are deployed to `C:\Program Files\PowerToys\bin\`.
 - Use self-contained deployment (import `Common.SelfContained.props`).

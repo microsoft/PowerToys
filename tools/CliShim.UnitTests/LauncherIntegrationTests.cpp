@@ -29,10 +29,10 @@ namespace
 
     // Keep this list in sync with CliShimManifest.props.
     constexpr ShimMapping ExpectedMappings[] = {
-        { L"fancyzonescli", L"..\\FancyZonesCLI.exe" },
-        { L"imageresizercli", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
-        { L"filelocksmithcli", L"..\\FileLocksmithCLI.exe" },
-        { L"powerdisplaycli", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
+        { L"PowerToys.FancyZones.CLI", L"..\\FancyZonesCLI.exe" },
+        { L"PowerToys.ImageResizer.CLI", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
+        { L"PowerToys.FileLocksmith.CLI", L"..\\FileLocksmithCLI.exe" },
+        { L"PowerToys.PowerDisplay.CLI", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
     };
 
     constexpr const wchar_t* RejectedLegacyCommands[] = {
@@ -40,6 +40,10 @@ namespace
         L"imageresizer",
         L"filelocksmith",
         L"powerdisplay",
+        L"fancyzonescli",
+        L"imageresizercli",
+        L"filelocksmithcli",
+        L"powerdisplaycli",
     };
 
     std::filesystem::path GetTestBinaryDirectory()
@@ -172,14 +176,14 @@ namespace CliShimUnitTests
         TEST_METHOD(AllMappedCommandsLaunchExpectedRelativeTargets)
         {
             TemporaryDirectory installation;
-            const std::filesystem::path cliDirectory = installation.GetPath() / L"cli";
+            const std::filesystem::path binDirectory = installation.GetPath() / L"bin";
             const std::filesystem::path shimSource = GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
             const std::filesystem::path targetSource = GetSystemCommandInterpreter();
 
             for (const ShimMapping& mapping : ExpectedMappings)
             {
-                const std::filesystem::path shimPath = cliDirectory / (std::wstring{ mapping.command } + L".exe");
-                const std::filesystem::path targetPath = (cliDirectory / mapping.relativeTarget).lexically_normal();
+                const std::filesystem::path shimPath = binDirectory / (std::wstring{ mapping.command } + L".exe");
+                const std::filesystem::path targetPath = (binDirectory / mapping.relativeTarget).lexically_normal();
 
                 CopyExecutable(shimSource, shimPath);
                 CopyExecutable(targetSource, targetPath);
@@ -193,22 +197,22 @@ namespace CliShimUnitTests
         TEST_METHOD(UnknownCommandReturnsCommandNotMapped)
         {
             TemporaryDirectory installation;
-            const std::filesystem::path shimPath = installation.GetPath() / L"cli" / L"unknown.exe";
+            const std::filesystem::path shimPath = installation.GetPath() / L"bin" / L"unknown.exe";
 
             CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
 
             Assert::AreEqual(ExitCommandNotMapped, RunAndGetExitCode(shimPath));
         }
 
-        TEST_METHOD(UnsuffixedLegacyCommandsReturnCommandNotMapped)
+        TEST_METHOD(LegacyCommandsReturnCommandNotMapped)
         {
             TemporaryDirectory installation;
-            const std::filesystem::path cliDirectory = installation.GetPath() / L"cli";
+            const std::filesystem::path binDirectory = installation.GetPath() / L"bin";
             const std::filesystem::path shimSource = GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
 
             for (const wchar_t* command : RejectedLegacyCommands)
             {
-                const std::filesystem::path shimPath = cliDirectory / (std::wstring{ command } + L".exe");
+                const std::filesystem::path shimPath = binDirectory / (std::wstring{ command } + L".exe");
                 CopyExecutable(shimSource, shimPath);
 
                 const std::wstring message = L"Legacy command was unexpectedly mapped: " + std::wstring{ command };
@@ -219,7 +223,7 @@ namespace CliShimUnitTests
         TEST_METHOD(MissingTargetReturnsLaunchFailed)
         {
             TemporaryDirectory installation;
-            const std::filesystem::path shimPath = installation.GetPath() / L"cli" / L"fancyzonescli.exe";
+            const std::filesystem::path shimPath = installation.GetPath() / L"bin" / L"PowerToys.FancyZones.CLI.exe";
 
             CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
 
