@@ -231,7 +231,7 @@ namespace ColorPicker.ViewModels
         private void SetColorDetails(System.Drawing.Color color)
         {
             ColorBrush = new SolidColorBrush(new Color { A = color.A, R = color.R, G = color.G, B = color.B });
-            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentation.Value, _userSettings.CopiedColorRepresentationFormat.Value);
+            ColorText = ColorRepresentationHelper.GetStringRepresentation(color, _userSettings.CopiedColorRepresentationFormat.Value);
             ColorName = ColorRepresentationHelper.GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color));
         }
 

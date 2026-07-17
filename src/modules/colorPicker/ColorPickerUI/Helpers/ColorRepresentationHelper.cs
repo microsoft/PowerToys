@@ -19,21 +19,9 @@ namespace ColorPicker.Helpers
         /// Return a <see cref="string"/> representation of a given <see cref="Color"/>
         /// </summary>
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
-        /// <param name="colorRepresentationType">The type of the representation</param>
+        /// <param name="colorFormat">The format used for the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentationFromMediaColor(Windows.UI.Color color, string colorRepresentationType)
-        {
-            var drawingcolor = Color.FromArgb(color.A, color.R, color.G, color.B);
-            return GetStringRepresentation(drawingcolor, colorRepresentationType, string.Empty);
-        }
-
-        /// <summary>
-        /// Return a <see cref="string"/> representation of a given <see cref="Color"/>
-        /// </summary>
-        /// <param name="color">The <see cref="Color"/> for the presentation</param>
-        /// <param name="colorRepresentationType">The type of the representation</param>
-        /// <returns>A <see cref="string"/> representation of a color</returns>
-        public static string GetStringRepresentation(Color color, string colorRepresentationType, string colorFormat)
+        public static string GetStringRepresentation(Color color, string colorFormat)
         {
             if (string.IsNullOrEmpty(colorFormat))
             {
