@@ -18,14 +18,16 @@ public class Settings : ISettingsInterface
     private bool showDialogToConfirmCommand;
     private bool showSuccessMessageAfterEmptyingRecycleBin;
     private FirmwareType firmwareType;
+    private bool localizeSystemCommands;
 
-    public Settings(bool hideDisconnectedNetworkInfo = false, bool hideEmptyRecycleBin = false, bool showDialogToConfirmCommand = false, bool showSuccessMessageAfterEmptyingRecycleBin = false, FirmwareType firmwareType = FirmwareType.Uefi)
+    public Settings(bool hideDisconnectedNetworkInfo = false, bool hideEmptyRecycleBin = false, bool showDialogToConfirmCommand = false, bool showSuccessMessageAfterEmptyingRecycleBin = false, FirmwareType firmwareType = FirmwareType.Uefi, bool localizeSystemCommands = true)
     {
         this.hideDisconnectedNetworkInfo = hideDisconnectedNetworkInfo;
         this.hideEmptyRecycleBin = hideEmptyRecycleBin;
         this.showDialogToConfirmCommand = showDialogToConfirmCommand;
         this.showSuccessMessageAfterEmptyingRecycleBin = showSuccessMessageAfterEmptyingRecycleBin;
         this.firmwareType = firmwareType;
+        this.localizeSystemCommands = localizeSystemCommands;
     }
 
     public bool HideDisconnectedNetworkInfo() => hideDisconnectedNetworkInfo;
@@ -35,6 +37,8 @@ public class Settings : ISettingsInterface
     public bool ShowDialogToConfirmCommand() => showDialogToConfirmCommand;
 
     public bool ShowSuccessMessageAfterEmptyingRecycleBin() => showSuccessMessageAfterEmptyingRecycleBin;
+
+    public bool LocalizeSystemCommands() => localizeSystemCommands;
 
     public FirmwareType GetSystemFirmwareType() => firmwareType;
 }

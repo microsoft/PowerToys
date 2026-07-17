@@ -161,6 +161,10 @@
   <data name="Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo" xml:space="preserve">
     <value>Hide disconnected network info</value>
   </data>
+  <data name="Microsoft_plugin_ext_settings_localizeSystemCommands" xml:space="preserve">
+    <value>Use localized system commands instead of English ones</value>
+    <comment>Label of a toggle setting. When disabled, command names like "Shutdown computer" are shown in English regardless of the system language.</comment>
+  </data>
   <data name="Microsoft_plugin_ext_system_page_title" xml:space="preserve">
     <value>Windows system commands</value>
   </data>

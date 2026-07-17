@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.System.Helpers;
 using Microsoft.CmdPal.Ext.System.Pages;
@@ -144,5 +145,45 @@ public class QueryTests : CommandPaletteUnitTestBase
         var firstItem = result.FirstOrDefault();
         var firstItemIsUefiCommand = firstItem?.Title.Contains("UEFI", StringComparison.OrdinalIgnoreCase) ?? false;
         Assert.AreEqual(hasCommand, firstItemIsUefiCommand, $"Expected to match (or not match) 'UEFI firmware settings' but got '{firstItem?.Title}'");
+    }
+
+    [DataTestMethod]
+    [DataRow("shutdown", "Shutdown computer")]
+    [DataRow("restart", "Restart computer")]
+    [DataRow("sign out", "Sign out of computer")]
+    [DataRow("uefi", "UEFI firmware settings")]
+    public void EnglishCommandsWhenLocalizationDisabledTest(string input, string matchedTitle)
+    {
+        // With the "localize system commands" setting disabled the titles must be the
+        // English (en-US) strings regardless of the current UI culture.
+        var settings = new Settings(localizeSystemCommands: false);
+        var pages = new SystemCommandPage(settings);
+        var allCommands = pages.GetItems();
+
+        var result = Query(input, allCommands);
+
+        Assert.IsNotNull(result);
+        var firstItem = result.FirstOrDefault();
+        Assert.IsNotNull(firstItem, "No items matched the query.");
+        Assert.AreEqual(matchedTitle, firstItem.Title, $"Expected the English title for '{input}' but got '{firstItem.Title}'");
+    }
+
+    [TestMethod]
+    public void EnglishCultureLookupProducesEnglishTitlesTest()
+    {
+        // Calling the command builder with an explicit en-US culture must produce English
+        // titles independent of the machine's UI language.
+        var commands = Commands.GetSystemCommands(
+            isUefi: true,
+            hideEmptyRecycleBin: false,
+            confirmCommands: false,
+            emptyRBSuccessMessage: false,
+            culture: new CultureInfo("en-US"));
+
+        var titles = commands.Select(c => c.Title).ToList();
+
+        CollectionAssert.Contains(titles, "Shutdown computer");
+        CollectionAssert.Contains(titles, "Restart computer");
+        CollectionAssert.Contains(titles, "UEFI firmware settings");
     }
 }

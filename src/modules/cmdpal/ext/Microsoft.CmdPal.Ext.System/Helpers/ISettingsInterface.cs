@@ -20,5 +20,7 @@ public interface ISettingsInterface
 
     public bool HideDisconnectedNetworkInfo();
 
+    public bool LocalizeSystemCommands();
+
     public FirmwareType GetSystemFirmwareType();
 }

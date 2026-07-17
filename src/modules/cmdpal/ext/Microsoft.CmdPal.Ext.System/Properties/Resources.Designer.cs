@@ -203,6 +203,15 @@ namespace Microsoft.CmdPal.Ext.System {
                 return ResourceManager.GetString("Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Use localized system commands instead of English ones.
+        /// </summary>
+        public static string Microsoft_plugin_ext_settings_localizeSystemCommands {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_ext_settings_localizeSystemCommands", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to System commands.

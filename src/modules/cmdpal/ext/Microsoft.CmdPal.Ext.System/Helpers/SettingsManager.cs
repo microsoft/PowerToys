@@ -37,6 +37,12 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Resources.Microsoft_plugin_ext_settings_hideDisconnectedNetworkInfo,
         false);
 
+    private readonly ToggleSetting _localizeSystemCommands = new(
+        Namespaced(nameof(LocalizeSystemCommands)),
+        Resources.Microsoft_plugin_ext_settings_localizeSystemCommands,
+        Resources.Microsoft_plugin_ext_settings_localizeSystemCommands,
+        true);
+
     internal static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -53,6 +59,8 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool HideDisconnectedNetworkInfo() => _hideDisconnectedNetworkInfo.Value;
 
+    public bool LocalizeSystemCommands() => _localizeSystemCommands.Value;
+
     public FirmwareType GetSystemFirmwareType() => Win32Helpers.GetSystemFirmwareType();
 
     public SettingsManager()
@@ -63,6 +71,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         Settings.Add(_showSuccessMessageAfterEmptyingRecycleBin);
         Settings.Add(_hideEmptyRecycleBin);
         Settings.Add(_hideDisconnectedNetworkInfo);
+        Settings.Add(_localizeSystemCommands);
 
         LoadSettings();
 

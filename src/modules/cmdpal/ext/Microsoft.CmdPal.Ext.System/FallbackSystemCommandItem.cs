@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.CmdPal.Ext.System.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -21,12 +22,13 @@ internal sealed partial class FallbackSystemCommandItem : FallbackCommandItem
         Subtitle = string.Empty;
         Icon = Icons.LockIcon;
 
+        var culture = settings.LocalizeSystemCommands() ? CultureInfo.CurrentUICulture : new CultureInfo("en-US");
         var isBootedInUefiMode = settings.GetSystemFirmwareType() == FirmwareType.Uefi;
         var hideEmptyRB = settings.HideEmptyRecycleBin();
         var confirmSystemCommands = settings.ShowDialogToConfirmCommand();
         var showSuccessOnEmptyRB = settings.ShowSuccessMessageAfterEmptyingRecycleBin();
 
-        systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB);
+        systemCommands = Commands.GetSystemCommands(isBootedInUefiMode, hideEmptyRB, confirmSystemCommands, showSuccessOnEmptyRB, culture);
     }
 
     private readonly List<IListItem> systemCommands;
