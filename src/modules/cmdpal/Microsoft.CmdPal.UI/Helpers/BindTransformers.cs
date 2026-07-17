@@ -27,4 +27,7 @@ internal static class BindTransformers
 
     public static Visibility VisibleWhenAny(bool value1, bool value2)
         => (value1 || value2) ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Thickness BottomBorderThicknessWhenAll(bool value1, bool value2)
+        => value1 && value2 ? new Thickness(0, 0, 0, 1) : new Thickness(0);
 }
