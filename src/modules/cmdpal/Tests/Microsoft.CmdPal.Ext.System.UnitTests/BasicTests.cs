@@ -39,6 +39,28 @@ public class BasicTests
     }
 
     [TestMethod]
+    public void UpdateShutdownFlagsTest()
+    {
+        // SHUTDOWN_INSTALL_UPDATES | SHUTDOWN_RESTART
+        Assert.AreEqual(0x44u, WindowsUpdateHelper.GetUpdateShutdownFlags(restart: true));
+
+        // SHUTDOWN_INSTALL_UPDATES | SHUTDOWN_POWEROFF
+        Assert.AreEqual(0x48u, WindowsUpdateHelper.GetUpdateShutdownFlags(restart: false));
+    }
+
+    [TestMethod]
+    public void UpdatePendingDetectionDoesNotThrowTest()
+    {
+        // The WUAPI query must never throw; on any failure it reports false. The actual
+        // value depends on the machine's update state, but back-to-back calls within the
+        // cache interval must agree (the second call takes the cached path).
+        var first = WindowsUpdateHelper.IsUpdatePending();
+        var second = WindowsUpdateHelper.IsUpdatePending();
+
+        Assert.AreEqual(first, second, "Cached query should return the same value within the cache interval.");
+    }
+
+    [TestMethod]
     public void NetworkConnectionPropertiesTest()
     {
         // Test that network connection properties can be accessed without throwing exceptions
