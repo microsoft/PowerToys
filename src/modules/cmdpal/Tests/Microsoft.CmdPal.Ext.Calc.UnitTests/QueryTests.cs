@@ -158,6 +158,41 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [DataTestMethod]
+    [DataRow(false, PrimaryAction.Copy)]
+    [DataRow(false, PrimaryAction.Paste)]
+    [DataRow(true, PrimaryAction.Copy)]
+    [DataRow(true, PrimaryAction.Paste)]
+    public void GroupedResultContinuationUsesRawValue(bool useEquals, PrimaryAction primaryAction)
+    {
+        CultureInfo.CurrentCulture = new CultureInfo("hi-IN", false);
+        var settings = new Settings(primaryAction: primaryAction);
+        var page = new CalculatorListPage(settings);
+
+        if (useEquals)
+        {
+            page.UpdateSearchText(string.Empty, "12345678=");
+        }
+        else
+        {
+            page.UpdateSearchText(string.Empty, "12345678");
+            var result = page.GetItems().Single();
+            var replaceCommand = result.MoreCommands
+                .OfType<CommandItem>()
+                .Select(item => item.Command)
+                .OfType<ReplaceQueryCommand>()
+                .Single();
+
+            replaceCommand.Invoke();
+        }
+
+        Assert.AreEqual("12345678", page.SearchText);
+
+        page.UpdateSearchText(page.SearchText, page.SearchText + "+1");
+
+        Assert.AreEqual("1,23,45,679", page.GetItems().Single().Title);
+    }
+
+    [DataTestMethod]
     [DataRow("2^64", "18,446,744,073,709,551,616", "0x10000000000000000")]
     [DataRow("0-(2^64)", "-18,446,744,073,709,551,616", "-0x10000000000000000")]
     public void TopLevelPageQuery_ReturnsResult_WhenIntegerExceedsInt64Bounds(string input, string expectedTitle, string expectedHexContext)
