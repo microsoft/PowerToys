@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -15,15 +17,32 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 public class AliasManagerTests
 {
     [TestMethod]
-    public void Constructor_PopulatesRunDefaultAliasWithCurrentCommandId()
+    public void Constructor_PopulatesDefaultAliasesWithBuiltInCommandIds()
     {
         var (settingsService, getSettings) = CreateSettingsService(new SettingsModel());
+        var expectedAliases = new Dictionary<string, (string CommandId, bool IsDirect)>
+        {
+            [":"] = (BuiltInCommandIds.Registry, true),
+            ["$"] = (BuiltInCommandIds.WindowsSettings, true),
+            ["="] = (BuiltInCommandIds.Calculator, true),
+            [">"] = (BuiltInCommandIds.Run, true),
+            ["<"] = (BuiltInCommandIds.WindowWalker, true),
+            ["??"] = (BuiltInCommandIds.WebSearch, true),
+            ["file "] = (BuiltInCommandIds.FileSearch, false),
+            [")"] = (BuiltInCommandIds.TimeDate, true),
+        };
 
         _ = new AliasManager(null!, settingsService.Object);
 
-        var runAlias = getSettings().Aliases[">"];
-        Assert.AreEqual("com.microsoft.cmdpal.run", runAlias.CommandId);
-        Assert.IsTrue(runAlias.IsDirect);
+        var aliases = getSettings().Aliases;
+        Assert.AreEqual(expectedAliases.Count, aliases.Count);
+        Assert.AreEqual(expectedAliases.Count, expectedAliases.Values.Select(alias => alias.CommandId).Distinct().Count());
+        foreach (var expectedAlias in expectedAliases)
+        {
+            Assert.IsTrue(aliases.TryGetValue(expectedAlias.Key, out var alias));
+            Assert.AreEqual(expectedAlias.Value.CommandId, alias.CommandId);
+            Assert.AreEqual(expectedAlias.Value.IsDirect, alias.IsDirect);
+        }
     }
 
     [TestMethod]
@@ -32,17 +51,17 @@ public class AliasManagerTests
         var aliases = ImmutableDictionary<string, CommandAlias>.Empty
             .Add(">", new CommandAlias(">", "com.microsoft.cmdpal.shell", true))
             .Add("run ", new CommandAlias("run", "com.microsoft.cmdpal.shell"))
-            .Add("=", new CommandAlias("=", "com.microsoft.cmdpal.calculator", true));
+            .Add("=", new CommandAlias("=", BuiltInCommandIds.Calculator, true));
         var (settingsService, getSettings) = CreateSettingsService(new SettingsModel { Aliases = aliases });
 
         _ = new AliasManager(null!, settingsService.Object);
 
         var migratedAliases = getSettings().Aliases;
-        Assert.AreEqual("com.microsoft.cmdpal.run", migratedAliases[">"].CommandId);
+        Assert.AreEqual(BuiltInCommandIds.Run, migratedAliases[">"].CommandId);
         Assert.IsTrue(migratedAliases[">"].IsDirect);
-        Assert.AreEqual("com.microsoft.cmdpal.run", migratedAliases["run "].CommandId);
+        Assert.AreEqual(BuiltInCommandIds.Run, migratedAliases["run "].CommandId);
         Assert.IsFalse(migratedAliases["run "].IsDirect);
-        Assert.AreEqual("com.microsoft.cmdpal.calculator", migratedAliases["="].CommandId);
+        Assert.AreEqual(BuiltInCommandIds.Calculator, migratedAliases["="].CommandId);
         Assert.IsFalse(migratedAliases.Values.Any(alias => alias.CommandId == "com.microsoft.cmdpal.shell"));
     }
 
@@ -51,14 +70,14 @@ public class AliasManagerTests
     {
         var aliases = ImmutableDictionary<string, CommandAlias>.Empty
             .Add(">", new CommandAlias(">", "com.microsoft.cmdpal.shell", true))
-            .Add("run ", new CommandAlias("run", "com.microsoft.cmdpal.run"));
+            .Add("run ", new CommandAlias("run", BuiltInCommandIds.Run));
         var (settingsService, getSettings) = CreateSettingsService(new SettingsModel { Aliases = aliases });
 
         _ = new AliasManager(null!, settingsService.Object);
 
         var migratedAliases = getSettings().Aliases;
         Assert.IsFalse(migratedAliases.ContainsKey(">"));
-        Assert.AreEqual("com.microsoft.cmdpal.run", migratedAliases["run "].CommandId);
+        Assert.AreEqual(BuiltInCommandIds.Run, migratedAliases["run "].CommandId);
         Assert.IsFalse(migratedAliases["run "].IsDirect);
         Assert.IsFalse(migratedAliases.Values.Any(alias => alias.CommandId == "com.microsoft.cmdpal.shell"));
     }
