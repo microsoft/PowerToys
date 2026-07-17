@@ -669,6 +669,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             var sounds = new ObservableCollection<SoundOption>
             {
+                new SoundOption { Name = GetLocalizedSoundName("None"), Value = "None" },
                 new SoundOption { Name = GetLocalizedSoundName("Beep"), Value = "Beep" },
                 new SoundOption { Name = GetLocalizedSoundName("Asterisk"), Value = "Asterisk" },
                 new SoundOption { Name = GetLocalizedSoundName("Exclamation"), Value = "Exclamation" },
