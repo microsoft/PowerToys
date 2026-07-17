@@ -132,12 +132,13 @@ namespace AdvancedPaste.ViewModels
                     return false;
                 }
 
-                if (!TryResolveAdvancedAIProvider(out _))
+                if (!TryResolveAdvancedAIProvider(out var provider))
                 {
                     return false;
                 }
 
-                return _credentialsProvider.IsConfigured();
+                return !RequiresConfiguredCredentialForAdvancedAI(provider.ServiceTypeKind)
+                    || _credentialsProvider.IsConfigured();
             }
         }
 
@@ -868,6 +869,11 @@ namespace AdvancedPaste.ViewModels
             return serviceType is AIServiceType.OpenAI
                 or AIServiceType.AzureOpenAI
                 or AIServiceType.OpenAICompatible;
+        }
+
+        internal static bool RequiresConfiguredCredentialForAdvancedAI(AIServiceType serviceType)
+        {
+            return serviceType != AIServiceType.OpenAICompatible;
         }
 
         private bool UpdateOpenAIKey()

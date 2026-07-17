@@ -13,6 +13,7 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Services;
 using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.UnitTests.Mocks;
+using AdvancedPaste.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -45,10 +46,13 @@ public sealed class OpenAICompatibleProviderTests
     [TestMethod]
     [DataRow("https://api.example.com/v1", true)]
     [DataRow("http://localhost:8080/v1", true)]
+    [DataRow("  http://localhost:8080/v1  ", true)]
+    [DataRow("http://user:password@localhost:8080/v1", false)]
+    [DataRow("http://localhost:8080/v1#fragment", false)]
     [DataRow("ftp://example.com/v1", false)]
     [DataRow("example.com/v1", false)]
     [DataRow("", false)]
-    public void EndpointValidation_AcceptsOnlyAbsoluteHttpEndpoints(string endpoint, bool expected)
+    public void EndpointValidation_AcceptsOnlySafeAbsoluteHttpEndpoints(string endpoint, bool expected)
     {
         Assert.AreEqual(expected, PasteAIProviderValidation.TryGetOpenAICompatibleEndpoint(endpoint, out _));
     }
@@ -121,6 +125,14 @@ public sealed class OpenAICompatibleProviderTests
     }
 
     [TestMethod]
+    public void AdvancedAIAvailability_DoesNotRequireCredentialForCompatibleProvider()
+    {
+        Assert.IsFalse(OptionsViewModel.RequiresConfiguredCredentialForAdvancedAI(AIServiceType.OpenAICompatible));
+        Assert.IsTrue(OptionsViewModel.RequiresConfiguredCredentialForAdvancedAI(AIServiceType.OpenAI));
+        Assert.IsTrue(OptionsViewModel.RequiresConfiguredCredentialForAdvancedAI(AIServiceType.AzureOpenAI));
+    }
+
+    [TestMethod]
     public void Provider_DoesNotUseClientModeration()
     {
         Assert.IsFalse(CustomActionTransformService.ShouldModerate(new PasteAIConfig
@@ -146,17 +158,22 @@ public sealed class OpenAICompatibleProviderTests
             new System.InvalidOperationException("A model name is required for OpenAICompatible."),
             -1);
         var rejectedRequest = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), (int)HttpStatusCode.BadRequest);
+        var authenticationFailed = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), (int)HttpStatusCode.Unauthorized);
+        var rateLimited = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), (int)HttpStatusCode.TooManyRequests);
         var unavailableModel = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), (int)HttpStatusCode.ServiceUnavailable);
         var networkError = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), -1);
+        const int GenericStatusCode = 418;
+        var genericError = ErrorHelpers.TranslateOpenAICompatibleError(new HttpRequestException(), GenericStatusCode);
+        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
-        Assert.IsFalse(string.IsNullOrWhiteSpace(invalidEndpoint));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(invalidModel));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(rejectedRequest));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(unavailableModel));
-        Assert.IsFalse(string.IsNullOrWhiteSpace(networkError));
-        Assert.AreNotEqual(invalidEndpoint, invalidModel);
-        Assert.AreNotEqual(rejectedRequest, networkError);
-        Assert.AreNotEqual(unavailableModel, networkError);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleEndpointInvalid"), invalidEndpoint);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleModelRequired"), invalidModel);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleRequestRejected"), rejectedRequest);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleAuthenticationFailed"), authenticationFailed);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleRateLimited"), rateLimited);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleServiceUnavailable"), unavailableModel);
+        Assert.AreEqual(resourceLoader.GetString("OpenAICompatibleNetworkError"), networkError);
+        StringAssert.Contains(genericError, GenericStatusCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
     }
 
     [TestMethod]

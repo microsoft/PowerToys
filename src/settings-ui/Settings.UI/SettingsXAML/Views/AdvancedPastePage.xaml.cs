@@ -888,6 +888,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 AIServiceType.AzureAIInference => "https://{resource-name}.cognitiveservices.azure.com/",
                 AIServiceType.Mistral => "https://api.mistral.ai/v1/",
                 AIServiceType.Ollama => "http://localhost:11434/",
+                AIServiceType.OpenAICompatible => "http://localhost:1234/v1/",
                 _ => string.Empty,
             };
         }

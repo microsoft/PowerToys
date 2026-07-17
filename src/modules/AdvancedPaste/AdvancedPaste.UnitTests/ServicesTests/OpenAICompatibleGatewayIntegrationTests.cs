@@ -51,11 +51,6 @@ public sealed class OpenAICompatibleGatewayIntegrationTests
             providerId: ProviderId);
         _credentialsProvider = new EnhancedVaultCredentialsProvider(userSettings);
 
-        if (!_credentialsProvider.IsConfigured())
-        {
-            Assert.Inconclusive("Live Gateway credential is not configured in Windows Password Vault.");
-        }
-
         PromptModerationService moderationService = new(_credentialsProvider);
         PasteAIProviderFactory providerFactory = new();
         _customActionTransformService = new CustomActionTransformService(moderationService, providerFactory, _credentialsProvider, userSettings);

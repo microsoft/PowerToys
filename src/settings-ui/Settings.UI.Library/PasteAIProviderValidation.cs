@@ -25,6 +25,8 @@ public static class PasteAIProviderValidation
     public static bool TryGetOpenAICompatibleEndpoint(string endpoint, out Uri endpointUri)
     {
         return Uri.TryCreate(endpoint?.Trim(), UriKind.Absolute, out endpointUri)
-            && (endpointUri.Scheme == Uri.UriSchemeHttp || endpointUri.Scheme == Uri.UriSchemeHttps);
+            && (endpointUri.Scheme == Uri.UriSchemeHttp || endpointUri.Scheme == Uri.UriSchemeHttps)
+            && string.IsNullOrEmpty(endpointUri.UserInfo)
+            && string.IsNullOrEmpty(endpointUri.Fragment);
     }
 }

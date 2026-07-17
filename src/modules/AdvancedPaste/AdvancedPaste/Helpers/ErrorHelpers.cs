@@ -37,11 +37,17 @@ public static class ErrorHelpers
         return (HttpStatusCode)apiRequestStatus switch
         {
             HttpStatusCode.BadRequest => resourceLoader.GetString("OpenAICompatibleRequestRejected"),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => resourceLoader.GetString("OpenAICompatibleAuthenticationFailed"),
             HttpStatusCode.NotFound => resourceLoader.GetString("OpenAICompatibleEndpointOrModelNotFound"),
-            HttpStatusCode.ServiceUnavailable => resourceLoader.GetString("OpenAICompatibleServiceUnavailable"),
+            HttpStatusCode.TooManyRequests => resourceLoader.GetString("OpenAICompatibleRateLimited"),
+            HttpStatusCode.RequestTimeout or HttpStatusCode.BadGateway or HttpStatusCode.ServiceUnavailable or HttpStatusCode.GatewayTimeout
+                => resourceLoader.GetString("OpenAICompatibleServiceUnavailable"),
             0 => resourceLoader.GetString("OpenAICompatibleNetworkError"),
             _ when apiRequestStatus < 0 => resourceLoader.GetString("OpenAICompatibleNetworkError"),
-            _ => TranslateErrorText(apiRequestStatus),
+            _ => string.Format(
+                CultureInfo.InvariantCulture,
+                resourceLoader.GetString("OpenAICompatibleRequestFailed"),
+                apiRequestStatus),
         };
     }
 }

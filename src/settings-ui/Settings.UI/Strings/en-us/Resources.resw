@@ -644,7 +644,7 @@ opera.exe</value>
     <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
   </data>
   <data name="AdvancedPaste_OpenAICompatible_LegalDescription" xml:space="preserve">
-    <value>Clipboard content is sent to the configured OpenAI-compatible endpoint. Review that service's data handling practices before using this provider.</value>
+    <value>Clipboard content is sent to the configured OpenAI-compatible endpoint. Review that service's data handling practices before using this provider, and use HTTPS unless you trust the local network connection.</value>
   </data>
   <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
     <value>Terms of Use</value>
