@@ -188,8 +188,7 @@ public partial class PowerAccent : IDisposable
         if (codePointInfo.Count == 1)
         {
             return string.Format(
-                CultureInfo.InvariantCulture,
-                "(U+{0:X4}) {1}", codePointInfo[0].CodePoint, codePointInfo[0].Name);
+                CultureInfo.InvariantCulture, "(U+{0:X4}) {1}", codePointInfo[0].CodePoint, codePointInfo[0].Name);
         }
 
         // Multiple code points. Build the description string with each code point's information.
