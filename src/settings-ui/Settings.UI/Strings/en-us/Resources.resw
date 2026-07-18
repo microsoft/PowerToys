@@ -3588,6 +3588,30 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_Group_Language" xml:space="preserve">
     <value>Language sets</value>
   </data>
+  <data name="QuickAccent_ReferenceGuide.Header" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Card.Header" xml:space="preserve">
+    <value>View characters organised by language, with search</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Button.Content" xml:space="preserve">
+    <value>Open reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Title.Text" xml:space="preserve">
+    <value>Character reference guide</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Search.PlaceholderText" xml:space="preserve">
+    <value>Search for a character…</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_Hint.Message" xml:space="preserve">
+    <value>Hover over a character to see its Unicode name. Click to copy it to the clipboard.</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_NoResults.Text" xml:space="preserve">
+    <value>No characters found matching your search.</value>
+  </data>
+  <data name="QuickAccent_ReferenceGuide_SelectedSets" xml:space="preserve">
+    <value>Selected sets</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
     <value>Special Characters</value>
   </data>

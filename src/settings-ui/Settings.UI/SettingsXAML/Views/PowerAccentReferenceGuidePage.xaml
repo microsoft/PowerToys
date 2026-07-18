@@ -1,0 +1,166 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerAccentReferenceGuidePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <!--  Groups the flat FilteredGroups collection for the ListView with GroupStyle.  -->
+        <CollectionViewSource
+            x:Name="LanguagesViewSource"
+            IsSourceGrouped="True"
+            ItemsPath="Languages" />
+
+        <!--  Compact borderless style for individual character copy buttons.  -->
+        <Style x:Key="CharacterButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="4,2" />
+            <Setter Property="MinWidth" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+    </local:NavigablePage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!--  Page header with back button  -->
+        <Grid
+            Grid.Row="0"
+            Padding="24,12"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+            BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="0"
+                Margin="0,0,12,0"
+                Click="BackButton_Click"
+                Style="{ThemeResource NavigationBackButtonSmallStyle}" />
+            <TextBlock
+                x:Uid="QuickAccent_ReferenceGuide_Title"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Style="{ThemeResource SubtitleTextBlockStyle}"
+                TextTrimming="CharacterEllipsis" />
+            <AutoSuggestBox
+                x:Uid="QuickAccent_ReferenceGuide_Search"
+                Grid.Column="2"
+                Width="220"
+                Margin="16,0,0,0"
+                HorizontalAlignment="Right"
+                QueryIcon="Find"
+                Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+
+        <!--  Usage hint  -->
+        <InfoBar
+            x:Uid="QuickAccent_ReferenceGuide_Hint"
+            Grid.Row="1"
+            Margin="24,8"
+            IsClosable="False"
+            IsOpen="True"
+            IsTabStop="False"
+            Severity="Informational" />
+
+        <!--  Empty state  -->
+        <TextBlock
+            x:Uid="QuickAccent_ReferenceGuide_NoResults"
+            Grid.Row="2"
+            Margin="24,24"
+            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <!--  Main scrollable content - single virtualising ListView with GroupStyle  -->
+        <ListView
+            Grid.Row="2"
+            Padding="24,0,24,24"
+            IsItemClickEnabled="False"
+            ItemContainerStyle="{StaticResource NonInteractiveListViewItemStyle}"
+            ItemsSource="{x:Bind LanguagesViewSource.View, Mode=OneWay}"
+            SelectionMode="None">
+
+            <!--  Language card template  -->
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ReferenceLanguageModel">
+                    <controls:Card
+                        Title="{x:Bind DisplayName}"
+                        Margin="0,4"
+                        Padding="12,4,12,12">
+                        <controls:Card.Content>
+                            <!--  Key mappings - one row per key  -->
+                            <ItemsControl ItemsSource="{x:Bind KeyMappings}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:KeyMappingModel">
+                                        <!--  Left-aligned with the Card's 16px title indent.  -->
+                                        <Grid
+                                            Margin="4,2"
+                                            VerticalAlignment="Center"
+                                            ColumnDefinitions="96,*">
+
+                                            <!--  Key label (Margin vertically aligns the key label with the characters)  -->
+                                            <TextBlock
+                                                Grid.Column="0"
+                                                Margin="0,2,0,0"
+                                                VerticalAlignment="Center"
+                                                FontSize="13"
+                                                FontWeight="SemiBold"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                Text="{x:Bind KeyLabel}" />
+
+                                            <!--  Characters for this key - each is a button that copies to clipboard  -->
+                                            <ItemsControl
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                ItemsSource="{x:Bind Characters}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <tkcontrols:WrapPanel HorizontalSpacing="4" Orientation="Horizontal" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:CharacterModel">
+                                                        <Button
+                                                            Click="CharacterButton_Click"
+                                                            Content="{x:Bind DisplayValue}"
+                                                            Style="{StaticResource CharacterButtonStyle}"
+                                                            ToolTipService.ToolTip="{x:Bind Tooltip}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </controls:Card.Content>
+                    </controls:Card>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <!--  Group header template  -->
+            <ListView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate x:DataType="vm:ReferenceGroupModel">
+                            <TextBlock
+                                Margin="0,16,0,0"
+                                Style="{ThemeResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind GroupHeader}" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </ListView.GroupStyle>
+
+        </ListView>
+
+    </Grid>
+</local:NavigablePage>

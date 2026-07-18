@@ -3,14 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Text;
-using System.Unicode;
 
 using ManagedCommon;
+using PowerAccent.Common;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
 
+using LetterKey = PowerToys.PowerAccentKeyboardService.LetterKey;
 using PowerAccentActivationKey = Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentActivationKey;
 
 namespace PowerAccent.Core;
@@ -53,19 +53,12 @@ public partial class PowerAccent : IDisposable
 
         Logger.InitializeLogger("\\QuickAccent\\Logs");
 
-        LoadUnicodeInfoCache();
-
         _keyboardListener = new KeyboardListener();
         _keyboardListener.InitHook();
         _settingService = new SettingsService(_keyboardListener);
         _usageInfo = new CharactersUsageInfo();
 
         SetEvents();
-    }
-
-    private void LoadUnicodeInfoCache()
-    {
-        UnicodeInfo.GetCharInfo(0);
     }
 
     private void SetEvents()
@@ -169,64 +162,47 @@ public partial class PowerAccent : IDisposable
 
     private string GetCharacterDescription(string character)
     {
-        List<UnicodeCharInfo> unicodeList = new List<UnicodeCharInfo>();
-        foreach (var codePoint in character.AsCodePointEnumerable())
-        {
-            unicodeList.Add(UnicodeInfo.GetCharInfo(codePoint));
-        }
-
-        if (unicodeList.Count == 0)
+        // TODO: Zero-width joiners (U+200D) and variation selectors (U+FE0F, etc.) currently show
+        // up as their own entries in the description (e.g. for complex emoji sequences). In the
+        // future, when we support arbitrary user-defined sequences, we will want to filter these
+        // out for display purposes, since they're not meaningful to users even though they're
+        // technically part of the code point sequence.
+        if (string.IsNullOrEmpty(character))
         {
             return string.Empty;
         }
 
-        var description = new StringBuilder();
-        if (unicodeList.Count == 1)
+        // Enumerate code points manually to handle surrogate pairs and combining sequences
+        // correctly. For example, "°C" is a two-code-point string (U+00B0 + U+0043) but should
+        // be treated as a single character for description purposes.
+        var codePointInfo = new List<(int CodePoint, string Str, string Name)>();
+        for (int i = 0; i < character.Length;)
         {
-            var unicode = unicodeList.First();
-            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-            description.AppendFormat(CultureInfo.InvariantCulture, "(U+{0}) {1}", charUnicodeNumber, unicode.Name);
-
-            return description.ToString();
+            int codePoint = char.ConvertToUtf32(character, i);
+            string codePointString = char.ConvertFromUtf32(codePoint);
+            string name = UnicodeHelper.GetCharacterName(codePointString) ?? string.Empty;
+            codePointInfo.Add((codePoint, codePointString, name));
+            i += char.IsHighSurrogate(character[i]) ? 2 : 1;
         }
 
-        var displayTextAndCodes = new StringBuilder();
-        var names = new StringBuilder();
-        foreach (var unicode in unicodeList)
+        if (codePointInfo.Count == 1)
         {
-            var charUnicodeNumber = unicode.CodePoint.ToString("X4", CultureInfo.InvariantCulture);
-            if (displayTextAndCodes.Length > 0)
-            {
-                displayTextAndCodes.Append(" - ");
-            }
-
-            displayTextAndCodes.AppendFormat(CultureInfo.InvariantCulture, "{0}: (U+{1})", unicode.GetDisplayText(), charUnicodeNumber);
-
-            if (names.Length > 0)
-            {
-                names.Append(", ");
-            }
-
-            names.Append(unicode.Name);
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "(U+{0:X4}) {1}", codePointInfo[0].CodePoint, codePointInfo[0].Name);
         }
 
-        description.Append(displayTextAndCodes);
-        description.Append(": ");
-        description.Append(names);
+        // Multiple code points. Build the description string with each code point's information.
+        string displayTextAndCodes = string.Join(" - ", codePointInfo.Select(info =>
+            string.Format(CultureInfo.InvariantCulture, "{0}: (U+{1:X4})", info.Str, info.CodePoint)));
 
-        return description.ToString();
+        string names = string.Join(", ", codePointInfo.Select(info => info.Name));
+
+        return string.Format(CultureInfo.InvariantCulture, "{0}: {1}", displayTextAndCodes, names);
     }
 
-    private string[] GetCharacterDescriptions(string[] characters)
-    {
-        string[] charInfoCollection = Array.Empty<string>();
-        foreach (string character in characters)
-        {
-            charInfoCollection = charInfoCollection.Append<string>(GetCharacterDescription(character)).ToArray<string>();
-        }
-
-        return charInfoCollection;
-    }
+    private string[] GetCharacterDescriptions(string[] characters) =>
+        Array.ConvertAll(characters, GetCharacterDescription);
 
     private void SendInputAndHideToolbar(InputType inputType)
     {

@@ -6,6 +6,7 @@ using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -35,33 +36,75 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             SetCheckBoxStatus();
         }
 
+        private bool updatingSelectAllCheckBox;
+
         private void SetCheckBoxStatus()
         {
-            if (ViewModel.SelectedLanguageOptions.Length == 0)
+            updatingSelectAllCheckBox = true;
+            try
             {
-                this.QuickAccent_SelectedLanguage_All.IsChecked = false;
-                this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
+                if (ViewModel.SelectedLanguageOptions.Length == 0)
+                {
+                    this.QuickAccent_SelectedLanguage_All.IsChecked = false;
+                    this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
+                }
+                else if (ViewModel.AllSelected)
+                {
+                    this.QuickAccent_SelectedLanguage_All.IsChecked = true;
+                    this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
+                }
+                else
+                {
+                    this.QuickAccent_SelectedLanguage_All.IsThreeState = true;
+                    this.QuickAccent_SelectedLanguage_All.IsChecked = null;
+                }
             }
-            else if (ViewModel.AllSelected)
+            finally
             {
-                this.QuickAccent_SelectedLanguage_All.IsChecked = true;
-                this.QuickAccent_SelectedLanguage_All.IsThreeState = false;
-            }
-            else
-            {
-                this.QuickAccent_SelectedLanguage_All.IsThreeState = true;
-                this.QuickAccent_SelectedLanguage_All.IsChecked = null;
+                updatingSelectAllCheckBox = false;
             }
         }
 
         private void QuickAccent_SelectedLanguage_SelectAll(object sender, RoutedEventArgs e)
         {
-            this.QuickAccent_Language_Select.SelectAllSafe();
+            if (updatingSelectAllCheckBox)
+            {
+                return;
+            }
+
+            loadingLanguageListDontTriggerSelectionChanged = true;
+            try
+            {
+                this.QuickAccent_Language_Select.SelectAllSafe();
+                ViewModel.SelectedLanguageOptions = ViewModel.Languages.ToArray();
+            }
+            finally
+            {
+                loadingLanguageListDontTriggerSelectionChanged = false;
+            }
+
+            SetCheckBoxStatus();
         }
 
         private void QuickAccent_SelectedLanguage_UnselectAll(object sender, RoutedEventArgs e)
         {
-            this.QuickAccent_Language_Select.DeselectAll();
+            if (updatingSelectAllCheckBox)
+            {
+                return;
+            }
+
+            loadingLanguageListDontTriggerSelectionChanged = true;
+            try
+            {
+                this.QuickAccent_Language_Select.DeselectAll();
+                ViewModel.SelectedLanguageOptions = [];
+            }
+            finally
+            {
+                loadingLanguageListDontTriggerSelectionChanged = false;
+            }
+
+            SetCheckBoxStatus();
         }
 
         private bool loadingLanguageListDontTriggerSelectionChanged;
@@ -121,6 +164,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             QuickAccent_Language_Select.MaxWidth = Math.Max(
                 QuickAccent_Language_Select.MinWidth,
                 availableWidth);
+        }
+
+        private void ReferenceGuideButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Pass the currently selected language codes so the reference guide can
+            // surface them at the top and mark them as selected.
+            var selectedCodes = ViewModel.SelectedLanguageOptions
+                .Select(l => l.LanguageCode)
+                .ToArray();
+
+            NavigationService.Navigate<PowerAccentReferenceGuidePage>(selectedCodes);
         }
     }
 }
