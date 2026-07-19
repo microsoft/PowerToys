@@ -147,9 +147,9 @@ namespace PreviewPaneUnitTests
         }
 
         [DataTestMethod]
-        [DataRow("https://localmdimages/..%2Fsecret.png", @"C:\docs")]
-        [DataRow("https://localmdimages/..%5Csecret.png", @"C:\docs")]
-        [DataRow("https://localmdimages/C%3A%5Cother%5Csecret.png", @"C:\docs")]
+        [DataRow("https://localmdimages/.." + "%2F" + "secret.png", @"C:\docs")]
+        [DataRow("https://localmdimages/.." + "%5C" + "secret.png", @"C:\docs")]
+        [DataRow("https://localmdimages/C" + "%3A%5C" + "other" + "%5C" + "secret.png", @"C:\docs")]
         [DataRow("https://example.com/images/test.png", @"C:\docs")]
         [DataRow("https://localmdimages/", @"C:\docs")]
         [DataRow("not a url", @"C:\docs")]

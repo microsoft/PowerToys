@@ -58,7 +58,7 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 // rewritten or blocked.
                 parsedMarkdown = Regex.Replace(
                     parsedMarkdown,
-                    @"(<img\b[^>]*?\bsrc\s*=\s*"")([^""]+)("")",
+                    @"(<img\b[^>]*?\ssrc\s*=\s*"")([^""]+)("")",
                     m =>
                     {
                         string src = m.Groups[2].Value;
