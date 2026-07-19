@@ -104,6 +104,11 @@ namespace WorkspacesEditor
             // runs OFF the UI thread below so the editor never appears hung.
             WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: false);
 
+            // If the fast load already produced workspaces, the service was up and
+            // provisioning is a no-op — a later reload would only risk clobbering
+            // the user's edits, so we suppress it (see the guard below).
+            bool initialListEmpty = _mainViewModel.Workspaces.Count == 0;
+
             // normal start of editor
             if (_mainWindow == null)
             {
@@ -119,23 +124,36 @@ namespace WorkspacesEditor
             _mainWindow.Topmost = false;
 
             // Deferred per-user service provisioning + legacy migration, OFF the UI
-            // thread.  When it completes, reload on the UI thread so any newly
-            // migrated / protected workspaces appear; dialogs are enabled on this
-            // reload so a genuine, still-unresolved problem is surfaced accurately.
+            // thread.  When it completes we reload ONLY when it is safe to do so —
+            // never while the user is mid-edit, and only when the initial load was
+            // empty (so the reload can add newly migrated/protected workspaces but
+            // can never destroy user work).  IsProvisioning drives an optional
+            // "Setting up protection…" affordance in the UI.
+            _mainViewModel.IsProvisioning = true;
             System.Threading.Tasks.Task.Run(() =>
             {
+                bool available = false;
                 try
                 {
-                    WorkspacesEditorIO.EnsureSettingsProvisioned();
-                    Dispatcher.Invoke(() =>
-                    {
-                        WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: true);
-                    });
+                    available = WorkspacesEditorIO.EnsureSettingsProvisioned();
                 }
                 catch (Exception ex)
                 {
                     Logger.LogWarning($"Background settings provisioning failed: {ex.Message}");
                 }
+
+                Dispatcher.Invoke(() =>
+                {
+                    _mainViewModel.IsProvisioning = false;
+
+                    // Safe-reload guard: only when the service is now reachable, the
+                    // user isn't editing, and the initial list was empty (so no
+                    // in-progress or already-shown data can be clobbered).
+                    if (available && initialListEmpty && !_mainViewModel.IsEditInProgress)
+                    {
+                        WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: true);
+                    }
+                });
             });
         }
 

@@ -16,6 +16,26 @@
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Grid Margin="0,16,0,0">
+        <Grid.Resources>
+            <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        </Grid.Resources>
         <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
+
+        <!-- Transient, non-blocking status shown while first-run service
+             provisioning (UAC + MSIX deploy) runs in the background.  The editor
+             stays fully interactive; this only tells the user setup is underway so
+             an initially-empty list doesn't look like data loss. -->
+        <Border
+            Margin="0,0,0,20"
+            Padding="14,8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="#DD2B2B2B"
+            CornerRadius="14"
+            Visibility="{Binding MainViewModel.IsProvisioning, ElementName=WorkspacesMainWindow, Converter={StaticResource BoolToVis}}">
+            <TextBlock
+                Foreground="White"
+                Text="{x:Static props:Resources.Provisioning_Status}" />
+        </Border>
     </Grid>
 </Window>
