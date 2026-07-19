@@ -1,4 +1,4 @@
-<Window
+﻿<Window
     x:Class="WorkspacesEditor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -21,10 +21,12 @@
         </Grid.Resources>
         <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
 
-        <!-- Transient, non-blocking status shown while first-run service
-             provisioning (UAC + MSIX deploy) runs in the background.  The editor
-             stays fully interactive; this only tells the user setup is underway so
-             an initially-empty list doesn't look like data loss. -->
+        <!--
+            Transient, non-blocking status shown while first-run service
+            provisioning (UAC + MSIX deploy) runs in the background.  The editor
+            stays fully interactive; this only tells the user setup is underway so
+            an initially-empty list doesn't look like data loss.
+        -->
         <Border
             Margin="0,0,0,20"
             Padding="14,8"
@@ -33,9 +35,7 @@
             Background="#DD2B2B2B"
             CornerRadius="14"
             Visibility="{Binding MainViewModel.IsProvisioning, ElementName=WorkspacesMainWindow, Converter={StaticResource BoolToVis}}">
-            <TextBlock
-                Foreground="White"
-                Text="{x:Static props:Resources.Provisioning_Status}" />
+            <TextBlock Foreground="White" Text="{x:Static props:Resources.Provisioning_Status}" />
         </Border>
     </Grid>
 </Window>
