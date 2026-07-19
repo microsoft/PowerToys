@@ -25,6 +25,10 @@ public sealed partial class SelectorControl : UserControl
     // Number of items currently in the accent bar (mirrors the bound ObservableCollection).
     public int ItemCount => CharactersList.Items.Count;
 
+    // The window sizing calculation must reserve the space outside the accent list as well as the
+    // items themselves. Read it from the surface so the calculation stays in sync with the XAML.
+    internal double HorizontalSurfaceMarginDip => Surface.Margin.Left + Surface.Margin.Right;
+
     // Wire the inner TransientSurface to the hosting window's Show/Hide so it animates in/out.
     // TransientSurface.SubscribeTo explicitly supports being "placed within" the window content.
     public void SubscribeSurfaceTo(TransparentWindow host) => Surface.SubscribeTo(host);
