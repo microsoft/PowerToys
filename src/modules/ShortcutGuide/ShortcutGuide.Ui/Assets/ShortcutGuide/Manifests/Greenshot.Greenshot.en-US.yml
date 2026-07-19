@@ -1,0 +1,276 @@
+PackageName: Greenshot.Greenshot
+Name: Greenshot
+WindowFilter: "Greenshot.exe"
+BackgroundProcess: true
+Shortcuts:
+  - SectionName: Capture
+    Properties:
+      - Name: Capture region
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <PrtScn>
+      - Name: Capture last region
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - <PrtScn>
+      - Name: Capture window
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: true
+            Keys:
+              - <PrtScn>
+      - Name: Capture fullscreen
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - <PrtScn>
+      - Name: Capture Internet Explorer tab
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - <PrtScn>
+  - SectionName: While selecting a region
+    Properties:
+      - Name: Switch between region and window mode
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <Space>
+      - Name: Select a child window element
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <PageDown>
+      - Name: Toggle magnifier
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - Z
+      - Name: Confirm selection
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <Enter>
+      - Name: Cancel capture
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <Esc>
+  - SectionName: Editor - draw
+    Properties:
+      - Name: Rectangle tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - R
+      - Name: Ellipse tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - E
+      - Name: Line tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - L
+      - Name: Arrow tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Freehand line tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - F
+      - Name: Highlight tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - H
+      - Name: Obfuscate tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - O
+      - Name: Crop tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - C
+      - Name: Text tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - T
+      - Name: Selection tool
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <Esc>
+      - Name: Enlarge screenshot by 25px
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - "+"
+      - Name: Crop to visible elements
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - "-"
+      - Name: Paste image from clipboard
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - V
+  - SectionName: Editor - text
+    Properties:
+      - Name: Insert line break
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - <Enter>
+      - Name: Delete previous word
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - <Backspace>
+      - Name: Select all text
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - A
+      - Name: Finish editing text
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - <Enter>
+  - SectionName: Editor - export
+    Properties:
+      - Name: Save
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - S
+      - Name: Save as
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - S
+      - Name: Copy image to clipboard
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - C
+      - Name: Print
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - P
+      - Name: E-mail
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - E
