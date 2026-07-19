@@ -155,7 +155,9 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         Size iconSize,
         double scale)
     {
-        var scaledSize = new Size(iconSize.Width * scale, iconSize.Height * scale);
+        var scaledSize = iconSize.IsEmpty
+            ? iconSize
+            : new Size(iconSize.Width * scale, iconSize.Height * scale);
 
         if (!string.IsNullOrEmpty(iconString))
         {
@@ -215,7 +217,9 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 
     private static IconSource? GetStringIconSource(string iconString, string? fontFamily, Size size)
     {
-        var iconSize = (int)Math.Max(size.Width, size.Height);
+        var iconSize = size.IsEmpty
+            ? DefaultIconSize
+            : (int)Math.Max(size.Width, size.Height);
         return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
     }
 }

@@ -40,22 +40,17 @@
     <PackageReference Include="WyHash" />
 
   </ItemGroup>
-  <!-- <AdaptiveCardsWorkaround> -->
-  <!-- Workaround for Adaptive Cards not supporting correct RIDs when using .NET 8.
-       Don't forget GeneratePathProperty on the AdaptiveCards PackageReference's above -->
-  <PropertyGroup>
-    <AdaptiveCardsNative>runtimes\win10-$(Platform)\native</AdaptiveCardsNative>
-  </PropertyGroup>
+  <!-- Adaptive Cards CsWinRT projection setup.
+       Keep GeneratePathProperty on the AdaptiveCards PackageReference's above. -->
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\lib\uap10.0\AdaptiveCards.ObjectModel.WinUI3.winmd" />
-    <None Include="$(PkgAdaptiveCards_ObjectModel_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.ObjectModel.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgAdaptiveCards_Rendering_WinUI3)\lib\uap10.0\AdaptiveCards.Rendering.WinUI3.winmd" />
-    <Content Include="$(PkgAdaptiveCards_Rendering_WinUI3)\$(AdaptiveCardsNative)\AdaptiveCards.Rendering.WinUI3.dll" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
 
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Apps\Microsoft.CmdPal.Ext.Apps.csproj" />
