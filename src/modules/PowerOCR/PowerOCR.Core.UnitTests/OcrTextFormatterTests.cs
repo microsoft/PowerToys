@@ -40,6 +40,20 @@ public sealed class OcrTextFormatterTests
     }
 
     [TestMethod]
+    public void FormatDocument_JapaneseLanguage_JoinsSingleCharacterWords()
+    {
+        var document = new OcrDocument(
+        [
+            new OcrLineData(
+                "日 本",
+                new OcrRect(0, 0, 40, 20),
+                [new("日", new(0, 0, 20, 20)), new("本", new(20, 0, 20, 20))]),
+        ]);
+
+        Assert.AreEqual("日本", OcrTextFormatter.FormatDocument(document, "ja-JP"));
+    }
+
+    [TestMethod]
     public void FormatDocument_RightToLeftLanguage_ReversesWordOrderPerLine()
     {
         var document = new OcrDocument(
