@@ -53,7 +53,7 @@ public static partial class OcrTextFormatter
 
     public static bool UsesSpaces(string languageTag)
         => !languageTag.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
-           && !languageTag.Equals("ja", StringComparison.OrdinalIgnoreCase);
+           && !languageTag.StartsWith("ja", StringComparison.OrdinalIgnoreCase);
 
     internal static string JoinCjkAwareWords(IReadOnlyList<OcrWordData> words)
     {
