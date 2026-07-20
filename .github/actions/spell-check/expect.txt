@@ -24,7 +24,7 @@ advancedpaste
 advapi
 advfirewall
 AFeature
-affordances
+affordance
 afterfx
 AFX
 agentskills
@@ -113,13 +113,13 @@ azman
 azureaiinference
 azureinference
 azureopenai
-Backlight
 backticks
 Badflags
 Badmode
 Badparam
 bbwe
 BCIE
+Belarusian
 BESTEFFORT
 bezelled
 bhid
@@ -136,6 +136,7 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
+Blackmagic
 bla
 BLENDFUNCTION
 blittable
@@ -185,6 +186,7 @@ CAPTURECHANGED
 CARETBLINKING
 carlos
 Carlseibert
+caseinsensitive
 caub
 CBN
 cch
@@ -416,7 +418,6 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
-DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -434,6 +435,7 @@ downsampling
 downscale
 DPICHANGED
 DPIs
+dpm
 DPMS
 DPSAPI
 DQTAT
@@ -466,13 +468,12 @@ DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
 DWMSENDICONICTHUMBNAIL
-DWMWA
-DWMWCP
+dwmwa
+dwmwcp
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
-DWRITE
 dxgi
 Dxva
 eab
@@ -542,6 +543,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+Fairlight
 FARPROC
 fdw
 fdx
@@ -624,7 +626,9 @@ GETPROPERTYSTOREFLAGS
 GETSCREENSAVERRUNNING
 GETSECKEY
 GETSTICKYKEYS
+GETTASKBARPOS
 GETTEXTLENGTH
+GETWORKAREA
 gfx
 GHND
 gitmodules
@@ -676,9 +680,11 @@ hcursor
 hcwhite
 hdc
 HDEVNOTIFY
+hdmi
 hdr
 HDROP
 hdwwiz
+Headered
 Helpline
 helptext
 hgdiobj
@@ -836,6 +842,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC
@@ -863,7 +870,6 @@ jjw
 jobject
 JOBOBJECT
 jpe
-JPN
 jpnime
 jrsoftware
 Jsons
@@ -996,9 +1002,7 @@ LTM
 LTRREADING
 luid
 lusrmgr
-LVDS
 LWA
-LWIN
 LZero
 MAGTRANSFORM
 makeappx
@@ -1061,8 +1065,6 @@ MINIMIZESTART
 MINMAXINFO
 minwindef
 Mip
-Miracast
-miracast
 mkdn
 mlcfg
 mmc
@@ -1208,7 +1210,6 @@ nonclient
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
-nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
@@ -1238,6 +1239,8 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
+NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH
@@ -1313,6 +1316,7 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
+parseable
 PARTIALCONFIRMATIONDIALOGTITLE
 PATCOPY
 PATHMUSTEXIST
@@ -1368,6 +1372,7 @@ pii
 pinfo
 pinvoke
 pipename
+Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
@@ -1391,6 +1396,7 @@ popups
 POPUPWINDOW
 portfile
 POSITIONITEM
+Postbot
 POWERBROADCAST
 powerdisplay
 POWERDISPLAYMODULEINTERFACE
@@ -1422,7 +1428,6 @@ Prefixer
 Premul
 prependpath
 prepopulate
-Prereq
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1511,6 +1516,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+RCW
 RCZOOMIT
 rdp
 RDW
@@ -1548,6 +1554,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 RENDERFULLCONTENT
+renumbers
 reparented
 reparenting
 reportfileaccesses
@@ -1561,6 +1568,7 @@ RESIZETOFIT
 resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
+resx
 RETURNONLYFSDIRS
 Revalidates
 RGBQUAD
@@ -1643,6 +1651,7 @@ SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
 SETRULES
+SETAUTOHIDEBAREX
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
@@ -1821,7 +1830,6 @@ svchost
 SVGIn
 SVGIO
 svgz
-SVIDEO
 SVSI
 SWFO
 swp
@@ -1920,6 +1928,7 @@ tracerpt
 trackbar
 trafficmanager
 transicc
+transitioning
 TRAYMOUSEMESSAGE
 triaging
 trl
@@ -1956,6 +1965,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+unescaped
 ungroup
 UNICODETEXT
 unins
@@ -2000,7 +2010,6 @@ valuegenerator
 VARTYPE
 vbcscompiler
 vcamp
-VCENTER
 vcgtq
 VCINSTALLDIR
 vcp
@@ -2038,7 +2047,6 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
 vreinterpretq
 VSC
 VSCBD
@@ -2084,9 +2092,12 @@ wifi
 wikimedia
 wikipedia
 winapi
+winapp
+winappcli
 winappsdk
 windir
 WINDOWCREATED
+WINDOWDESTROYED
 windowedge
 WINDOWINFO
 WINDOWNAME
@@ -2182,6 +2193,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi
@@ -2190,6 +2202,7 @@ XUP
 XVIRTUALSCREEN
 XXL
 xxxxxx
+Yankunytjatjara
 ycombinator
 yinle
 yinyue

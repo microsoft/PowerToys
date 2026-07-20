@@ -48,6 +48,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
     private readonly ISystemClock _clock;
+    private readonly SemaphoreSlim _profileOperationGate = new(1, 1);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
@@ -66,6 +67,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HasProfiles))]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
     public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
+    public partial bool IsProfilesLoading { get; private set; }
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -90,9 +95,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _cancellationTokenSource = new CancellationTokenSource();
         Monitors = new ObservableCollection<MonitorViewModel>();
         Profiles = new ObservableCollection<PowerDisplayProfile>();
-        IsScanning = true;
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
+        MouseWheelIncrement = 5;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
@@ -100,9 +105,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Initialize the monitor manager
         _monitorManager = new MonitorManager();
-
-        // Load profiles for quick apply feature
-        LoadProfiles();
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
@@ -128,6 +130,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowIdentifyMonitorsButton { get; set; }
+
+    /// <summary>
+    /// Gets or sets the per-mouse-wheel-notch step applied to every flyout slider. Loaded from
+    /// PowerDisplaySettings; defaults to 5 (the historical hardcoded step).
+    /// </summary>
+    [ObservableProperty]
+    public partial int MouseWheelIncrement { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
@@ -238,9 +247,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
-    /// Combines settings value with HasProfiles check.
+    /// Combines the settings value with profile availability or loading state.
     /// </summary>
-    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && HasProfiles;
+    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && (HasProfiles || IsProfilesLoading);
 
     // Custom VCP mappings - loaded from settings
     private List<CustomVcpValueMapping> _customVcpMappings = new();
@@ -447,25 +456,65 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Load profiles from disk for quick apply feature
+    /// Reloads profiles from disk for the quick-apply feature without blocking the UI thread.
     /// </summary>
-    private void LoadProfiles()
+    private async Task ReloadProfilesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var profilesData = ProfileService.LoadProfiles();
-            Profiles.Clear();
-            foreach (var profile in profilesData.Profiles)
-            {
-                Profiles.Add(profile);
-            }
-
-            OnPropertyChanged(nameof(HasProfiles));
-            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+            await RunProfileOperationAsync(
+                async token =>
+                {
+                    var profilesData = await ProfileHelper.LoadProfilesAsync(token);
+                    ReplaceProfiles(profilesData);
+                },
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
+            Profiles.Clear();
+            OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(ShowProfileSwitcherButton));
             Logger.LogError($"[Profile] Failed to load profiles: {ex.Message}");
+        }
+    }
+
+    private void ReplaceProfiles(PowerDisplayProfiles profilesData)
+    {
+        Profiles.Clear();
+        foreach (var profile in profilesData.GetAssignedProfiles())
+        {
+            Profiles.Add(profile);
+        }
+
+        OnPropertyChanged(nameof(HasProfiles));
+        OnPropertyChanged(nameof(ShowProfileSwitcherButton));
+    }
+
+    private async Task RunProfileOperationAsync(
+        Func<CancellationToken, Task> operation,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        await _profileOperationGate.WaitAsync(cancellationToken);
+        try
+        {
+            IsProfilesLoading = true;
+            await operation(cancellationToken);
+        }
+        finally
+        {
+            try
+            {
+                IsProfilesLoading = false;
+            }
+            finally
+            {
+                _profileOperationGate.Release();
+            }
         }
     }
 
@@ -479,6 +528,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+            MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
 
             // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
             // method runs after monitors are already discovered, the toggle hook can seed the master

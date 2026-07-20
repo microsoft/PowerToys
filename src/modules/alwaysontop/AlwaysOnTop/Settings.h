@@ -29,7 +29,7 @@ struct Settings
     bool roundCornersEnabled = true;
     bool blockInGameMode = true;
     bool frameAccentColor = true;
-    int frameThickness = 15;
+    int frameThickness = 4;
     int frameOpacity = 100;
     COLORREF frameColor = RGB(0, 173, 239);
     std::vector<std::wstring> excludedApps{};

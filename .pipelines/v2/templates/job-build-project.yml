@@ -171,6 +171,11 @@ jobs:
     fetchTags: false
     fetchDepth: 1
 
+  # Checkout to surface a missing import before full build.
+  - pwsh: |-
+      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
+    displayName: Audit shared common props for CSharp projects in src sub-folder
+
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-
         $MSBuildCacheParameters = ""
@@ -463,11 +468,6 @@ jobs:
       targetFolder: $(Build.SourcesDirectory)/ARM64/Release/WinUI3Apps/
       flattenFolders: True
       OverWrite: True
-
-  # Check if all projects (located in src sub-folder) import common props
-  - pwsh: |-
-      & '.pipelines/verifyCommonProps.ps1' -sourceDir '$(build.sourcesdirectory)\src'
-    displayName: Audit shared common props for CSharp projects in src sub-folder
 
   # Check if deps.json files don't reference different dll versions.
   - pwsh: |-

@@ -407,7 +407,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Edge select mode
         Shortcut:
         - Win: false
@@ -415,7 +415,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 2
+            - "<2>"
       - Name: Face select mode
         Shortcut:
         - Win: false
@@ -423,7 +423,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 3
+            - "<3>"
       - Name: Extrude region
         Shortcut:
         - Win: false
