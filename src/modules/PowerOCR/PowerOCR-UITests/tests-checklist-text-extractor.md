@@ -26,7 +26,7 @@
  * Multi-monitor / extended display:
    - [ ] Move the cursor to a monitor positioned to the **left** of the primary display and activate the overlay; verify the overlay covers that monitor and OCR succeeds.
    - [ ] Move the cursor to a monitor positioned **above** the primary display and activate the overlay; verify the overlay covers that monitor and OCR succeeds.
-   - [x] Verify text is correctly captured on all monitors (multiple DPI settings).
+   - [ ] Verify text is correctly captured on all monitors (multiple DPI settings).
  * Mixed DPI:
    - [ ] Set monitors to 100% DPI; activate overlay and verify correct region selection and OCR result.
    - [ ] Set monitors to 150% DPI; activate overlay and verify correct region selection and OCR result.
