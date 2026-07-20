@@ -62,7 +62,7 @@ Write-Host "==============================================" -ForegroundColor Yel
 Write-Host " PTSettingsSvc prototype verification"          -ForegroundColor Yellow
 Write-Host "==============================================" -ForegroundColor Yellow
 Write-Host " User      : $env:USERDOMAIN\$env:USERNAME"
-Write-Host " Pipe      : \\.\pipe\PTSettingsSvc"
+Write-Host " Pipe      : \\.\pipe\PTSettingsSvc_$([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)"
 Write-Host " DataRoot  : $DataRoot"
 Write-Host " InstallFld: $FakeInstall"
 
