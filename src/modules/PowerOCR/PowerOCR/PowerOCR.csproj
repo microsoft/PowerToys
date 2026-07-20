@@ -1,57 +1,69 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
 
   <PropertyGroup>
     <AssemblyTitle>PowerToys.PowerOCR</AssemblyTitle>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+    <AssemblyName>PowerToys.PowerOCR</AssemblyName>
+    <RootNamespace>PowerOCR</RootNamespace>
+    <OutputType>WinExe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ProjectGuid>{25C91A4E-BA4E-467A-85CD-8B62545BF674}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <ApplicationIcon>PowerOCRLogo.ico</ApplicationIcon>
-    <PackageIcon>PowerOCRLogo.png</PackageIcon>
-    <RootNamespace>PowerOCR</RootNamespace>
-    <AssemblyName>PowerToys.PowerOCR</AssemblyName>
-    <ProjectTypeGuids>{2150E333-8FDC-42A3-9474-1A3956D46DE8}</ProjectTypeGuids>
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Platforms>x64;ARM64</Platforms>
+    <UseWinUI>true</UseWinUI>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\PowerOCR\PowerOCR.ico</ApplicationIcon>
+    <StartupObject>PowerOCR.Program</StartupObject>
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ProjectPriFileName>PowerToys.PowerOCR.pri</ProjectPriFileName>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
 
   <ItemGroup>
-	  <Resource Include="PowerOCRLogo.ico" />
-	  <Resource Include="PowerOCRLogo.png" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
-	
+
   <ItemGroup>
-    <PackageReference Include="System.ComponentModel.Composition" />
+    <Page Remove="PowerOCRXAML\App.xaml" />
+    <ApplicationDefinition Include="PowerOCRXAML\App.xaml" />
   </ItemGroup>
-	
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="WinUIEx" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PowerOCR.Core\PowerOCR.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
-  </ItemGroup>
-	
-  <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-	
-  <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-		<Generator>PublicResXFileCodeGenerator</Generator>
-		<LastGenOutput>Resources.Designer.cs</LastGenOutput>
-		<SubType>Designer</SubType>
-	</EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Cancel.Text" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CancelShortcut" xml:space="preserve">
+    <value>Cancel (Esc)</value>
+  </data>
+  <data name="ResultTextSingleLine.Text" xml:space="preserve">
+    <value>Format result as a single line</value>
+  </data>
+  <data name="ResultTextSingleLineShortcut" xml:space="preserve">
+    <value>Format result as a single line (S)</value>
+  </data>
+  <data name="ResultTextTable.Text" xml:space="preserve">
+    <value>Format result as a table</value>
+  </data>
+  <data name="ResultTextTableShortcut" xml:space="preserve">
+    <value>Format result as a table (T)</value>
+  </data>
+  <data name="SelectedLanguage.Header" xml:space="preserve">
+    <value>Selected language</value>
+  </data>
+  <data name="Settings.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="NoOcrLanguages" xml:space="preserve">
+    <value>No OCR languages are installed.</value>
+  </data>
+  <data name="ScreenCaptureFailed" xml:space="preserve">
+    <value>Text Extractor could not capture this display.</value>
+  </data>
+  <data name="OcrFailed" xml:space="preserve">
+    <value>Text Extractor could not recognize text in this selection.</value>
+  </data>
+  <data name="ClipboardFailed" xml:space="preserve">
+    <value>Text Extractor could not copy the recognized text to the clipboard.</value>
+  </data>
+  <data name="NoTextFound" xml:space="preserve">
+    <value>No text was found in this selection.</value>
+  </data>
+  <data name="LanguagesComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Selected language</value>
+  </data>
+  <data name="SingleLineToggleButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Format result as a single line</value>
+  </data>
+  <data name="SingleLineToggleButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Format result as a single line (S)</value>
+  </data>
+  <data name="TableToggleButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Format result as a table</value>
+  </data>
+  <data name="TableToggleButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Format result as a table (T)</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="CancelButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="CancelButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cancel (Esc)</value>
+  </data>
+</root>
