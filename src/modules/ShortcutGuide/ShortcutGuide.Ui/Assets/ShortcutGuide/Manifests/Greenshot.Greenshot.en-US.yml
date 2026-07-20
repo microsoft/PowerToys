@@ -13,7 +13,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - <PrtScn>
+              - <PrtScr>
       - Name: Capture last region
         Recommended: true
         Shortcut:
