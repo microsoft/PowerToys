@@ -21,6 +21,7 @@ public:
     int MinSize() const { return m_minSize; }
     void AspectRatio( double ratio ) { m_aspectRatio = ratio; }
     double AspectRatio() const { return m_aspectRatio; }
+    void BorderColor( COLORREF color ) { m_borderColor = color; }
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
 

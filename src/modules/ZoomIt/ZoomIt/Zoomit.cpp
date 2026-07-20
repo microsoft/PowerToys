@@ -8760,6 +8760,7 @@ LRESULT APIENTRY MainWndProc(
                 // Select the region to mirror. The selection border stays up
                 // to show what's being mirrored; it is excluded from capture.
                 g_RecordCropping = TRUE;
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
                 g_MirrorSelectRectangle.AspectRatio( 0.0 );
                 bool mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr );
                 g_RecordCropping = FALSE;
