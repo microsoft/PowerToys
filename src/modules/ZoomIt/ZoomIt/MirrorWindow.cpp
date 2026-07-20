@@ -30,6 +30,36 @@ const UINT MIRROR_TOPMOST_TIMER_MS = 250;
 
 //----------------------------------------------------------------------------
 //
+// RequestBorderlessCapture
+//
+// Windows 11 draws a yellow system border around captured windows and
+// monitors unless the process requests borderless capture access, which is
+// granted without a prompt for desktop apps. Until the request completes,
+// IsBorderRequired(false) has no effect. Must be called from an MTA thread
+// because it blocks on the request.
+//
+//----------------------------------------------------------------------------
+static void RequestBorderlessCapture()
+{
+    static bool requested = false;
+    if( requested )
+    {
+        return;
+    }
+    requested = true;
+
+    try
+    {
+        if( winrt::ApiInformation::IsTypePresent( L"Windows.Graphics.Capture.GraphicsCaptureAccess" ) )
+        {
+            winrt::GraphicsCaptureAccess::RequestAccessAsync( winrt::GraphicsCaptureAccessKind::Borderless ).get();
+        }
+    }
+    catch( ... ) {}
+}
+
+//----------------------------------------------------------------------------
+//
 // GetMonitorRect
 //
 //----------------------------------------------------------------------------
@@ -204,14 +234,14 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
         {
             // Bright green border around the mirrored window so the
             // presenter can see what's being mirrored, matching the record
-            // border's width and translucency but distinct in color. It
+            // border's width but fully opaque and distinct in color. It
             // follows the window as it moves and resizes.
             m_borderWindow = CreateWindowExW( WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT | WS_EX_LAYERED,
                                               m_className, L"ZoomIt DemoMirror Border", WS_POPUP,
                                               0, 0, 0, 0,
                                               nullptr, nullptr, GetModuleHandle( nullptr ), this );
             THROW_LAST_ERROR_IF_NULL( m_borderWindow );
-            SetLayeredWindowAttributes( m_borderWindow, 0, 191, LWA_ALPHA );
+            SetLayeredWindowAttributes( m_borderWindow, 0, 255, LWA_ALPHA );
             EnableWindow( m_borderWindow, FALSE );
             SetWindowDisplayAffinity( m_borderWindow, WDA_EXCLUDEFROMCAPTURE );
             m_borderTarget = m_sourceRect;
@@ -568,6 +598,11 @@ LRESULT MirrorWindow::WindowProc( HWND window, UINT message, WPARAM wordParam, L
 void MirrorWindow::RenderLoop()
 {
     winrt::init_apartment( winrt::apartment_type::multi_threaded );
+
+    // The borderless-capture grant must exist before IsBorderRequired(false)
+    // works, so acquire it and re-apply the setting to the live session.
+    RequestBorderlessCapture();
+    m_frameWait->ShowCaptureBorder( false );
 
     while( !m_stopEvent.is_signaled() )
     {

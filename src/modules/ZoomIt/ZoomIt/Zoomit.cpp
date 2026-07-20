@@ -8770,6 +8770,10 @@ LRESULT APIENTRY MainWndProc(
                 }
                 mirrorSourceRect = g_MirrorSelectRectangle.SelectedRect();
                 mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONEAREST );
+
+                // The selection border defaults to translucent; make the
+                // mirror border fully opaque so it reads bright green.
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
             }
 
             HMONITOR mirrorTargetMonitor = FindMirrorTargetMonitor( mirrorSourceMonitor );
