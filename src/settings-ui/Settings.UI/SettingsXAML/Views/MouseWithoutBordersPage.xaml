@@ -496,9 +496,9 @@
                             <ToggleSwitch x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
-                                    ContentAlignment="Left"
+                                    x:Uid="ShowThemeAdaptiveTrayIcon"
                                     IsEnabled="{x:Bind ViewModel.ShowOriginalUI, Mode=OneWay}">
-                                    <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
