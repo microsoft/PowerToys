@@ -122,7 +122,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,184,308,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,241,308,50,14
     LTEXT           "ZoomIt v12.11",IDC_VERSION,42,7,73,10
-    LTEXT           "Copyright © 2006-2026 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
+    LTEXT           "Copyright ï¿½ 2006-2026 Mark Russinovich",IDC_COPYRIGHT,42,17,251,8
     CONTROL         "<a HREF=""https://www.sysinternals.com"">Sysinternals - www.sysinternals.com</a>",IDC_LINK,
                     "SysLink",WS_TABSTOP,42,26,150,9
     ICON            "APPICON",IDC_STATIC,12,9,20,20
@@ -259,6 +259,17 @@ BEGIN
     LTEXT           "To enter and exit LiveZoom, enter the hotkey specified below.",IDC_STATIC,7,71,230,13
     LTEXT           "LiveZoom Toggle:",IDC_STATIC,7,87,62,8
     CONTROL         "",IDC_LIVE_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,85,80,12
+END
+
+DEMOMIRROR DIALOGEX 0, 0, 317, 136
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "DemoMirror mirrors a region of the screen or a window, including the mouse pointer, onto a second monitor. Use it to show a demo app on the presentation monitor, on top of the slide show, without leaving the presentation.",IDC_STATIC,7,7,272,27
+    LTEXT           "Enter the hotkey to select a region to mirror and enter it again to stop mirroring. To mirror the window under the cursor instead, enter the hotkey with the Alt key in the opposite mode.",IDC_STATIC,7,39,272,19
+    LTEXT           "Use Ctrl+Up and Ctrl+Down to zoom the mirrored image around the mouse pointer.",IDC_STATIC,7,63,272,13
+    LTEXT           "Mirror Toggle:",IDC_STATIC,7,87,62,8
+    CONTROL         "",IDC_MIRROR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,85,80,12
 END
 
 RECORD DIALOGEX 0, 0, 276, 228
@@ -450,6 +461,14 @@ BEGIN
         BOTTOMMARGIN, 89
     END
 
+    "DEMOMIRROR", DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 97
+    END
+
     "RECORD", DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -517,6 +536,11 @@ BEGIN
 END
 
 LIVEZOOM AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+DEMOMIRROR AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
