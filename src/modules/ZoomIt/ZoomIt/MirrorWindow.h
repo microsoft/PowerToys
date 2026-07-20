@@ -39,9 +39,12 @@ private:
     static const int ZOOM_IN_HOTKEY_ID = 1;
     static const int ZOOM_OUT_HOTKEY_ID = 2;
     static const UINT_PTR TOPMOST_TIMER_ID = 1;
+    // Private to the mirror window: re-fit it to the source's aspect ratio.
+    static const UINT WM_MIRROR_RELAYOUT = WM_USER + 1;
 
     void RenderLoop();
     void RenderFrame();
+    RECT ComputeWindowRect() const;
     LRESULT WindowProc( HWND window, UINT message, WPARAM wordParam, LPARAM longParam );
 
     const wchar_t* m_className = L"ZoomitMirrorWindow";
@@ -50,9 +53,11 @@ private:
     HWND	m_sourceWindow = nullptr;
     RECT	m_sourceRect{};		// mirrored region in screen coordinates
     RECT	m_textureCrop{};	// mirrored region in capture-texture coordinates
+    RECT	m_targetRect{};		// target monitor rectangle
     int		m_bufferWidth = 0;
     int		m_bufferHeight = 0;
     winrt::SizeInt32	m_contentSize{};
+    winrt::SizeInt32	m_poolSize{};
 
     winrt::com_ptr<ID3D11Device>		m_device;
     winrt::com_ptr<ID3D11DeviceContext>	m_context;

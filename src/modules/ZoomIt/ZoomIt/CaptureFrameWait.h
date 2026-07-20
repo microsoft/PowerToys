@@ -124,6 +124,11 @@ public:
             m_session.IsBorderRequired( show );
         }
     }
+    void RecreateFramePool( winrt::SizeInt32 const& size )
+    {
+        auto lock = m_lock.lock_exclusive();
+        m_framePool.Recreate( m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 1, size );
+    }
 
 private:
     void OnFrameArrived(

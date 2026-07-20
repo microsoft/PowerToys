@@ -58,6 +58,8 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_zoomTarget = 1.0f;
     m_sourceTexture = nullptr;
     m_contentSize = item.Size();
+    m_poolSize = item.Size();
+    m_targetRect = GetMonitorRect( targetMonitor );
 
     // The mirrored region in capture-texture coordinates: monitor captures
     // are relative to the monitor origin, window captures use the full
@@ -85,17 +87,7 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_centerX = m_bufferWidth / 2.0f;
     m_centerY = m_bufferHeight / 2.0f;
 
-    // Size the mirror to the largest rectangle with the source's aspect
-    // ratio that fits on the target monitor, centered.
-    RECT targetRect = GetMonitorRect( targetMonitor );
-    const int monitorWidth = targetRect.right - targetRect.left;
-    const int monitorHeight = targetRect.bottom - targetRect.top;
-    const double scale = min( static_cast<double>( monitorWidth ) / m_bufferWidth,
-                              static_cast<double>( monitorHeight ) / m_bufferHeight );
-    const int windowWidth = max( 1, static_cast<int>( m_bufferWidth * scale ) );
-    const int windowHeight = max( 1, static_cast<int>( m_bufferHeight * scale ) );
-    const int windowLeft = targetRect.left + ( monitorWidth - windowWidth ) / 2;
-    const int windowTop = targetRect.top + ( monitorHeight - windowHeight ) / 2;
+    RECT windowRect = ComputeWindowRect();
 
     try
     {
@@ -146,7 +138,9 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
         // must never steal focus from the demo app.
         m_window = CreateWindowExW( WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT,
                                     m_className, L"ZoomIt DemoMirror", WS_POPUP,
-                                    windowLeft, windowTop, windowWidth, windowHeight,
+                                    windowRect.left, windowRect.top,
+                                    windowRect.right - windowRect.left,
+                                    windowRect.bottom - windowRect.top,
                                     nullptr, nullptr, GetModuleHandle( nullptr ), this );
         THROW_LAST_ERROR_IF_NULL( m_window );
 
@@ -239,6 +233,31 @@ void MirrorWindow::Stop()
 
 //----------------------------------------------------------------------------
 //
+// MirrorWindow::ComputeWindowRect
+//
+// The largest rectangle with the source's aspect ratio that fits on the
+// target monitor, centered.
+//
+//----------------------------------------------------------------------------
+RECT MirrorWindow::ComputeWindowRect() const
+{
+    const int monitorWidth = m_targetRect.right - m_targetRect.left;
+    const int monitorHeight = m_targetRect.bottom - m_targetRect.top;
+    const double scale = min( static_cast<double>( monitorWidth ) / m_bufferWidth,
+                              static_cast<double>( monitorHeight ) / m_bufferHeight );
+    const int windowWidth = max( 1, static_cast<int>( m_bufferWidth * scale ) );
+    const int windowHeight = max( 1, static_cast<int>( m_bufferHeight * scale ) );
+
+    RECT windowRect;
+    windowRect.left = m_targetRect.left + ( monitorWidth - windowWidth ) / 2;
+    windowRect.top = m_targetRect.top + ( monitorHeight - windowHeight ) / 2;
+    windowRect.right = windowRect.left + windowWidth;
+    windowRect.bottom = windowRect.top + windowHeight;
+    return windowRect;
+}
+
+//----------------------------------------------------------------------------
+//
 // MirrorWindow::WindowProc
 //
 //----------------------------------------------------------------------------
@@ -276,6 +295,16 @@ LRESULT MirrorWindow::WindowProc( HWND window, UINT message, WPARAM wordParam, L
         }
         break;
 
+    case WM_MIRROR_RELAYOUT:
+    {
+        // The mirrored window resized; re-fit to its new aspect ratio.
+        RECT windowRect = ComputeWindowRect();
+        SetWindowPos( window, HWND_TOPMOST, windowRect.left, windowRect.top,
+                      windowRect.right - windowRect.left,
+                      windowRect.bottom - windowRect.top, SWP_NOACTIVATE );
+        return 0;
+    }
+
     case WM_MOUSEACTIVATE:
         return MA_NOACTIVATE;
     }
@@ -305,6 +334,30 @@ void MirrorWindow::RenderLoop()
 
         if( frame )
         {
+            // A mirrored window can resize; recreate the frame pool, cache
+            // texture, and swapchain at the new content size and re-fit the
+            // mirror window to the new aspect ratio.
+            if( m_sourceWindow != nullptr &&
+                frame->ContentSize.Width > 0 && frame->ContentSize.Height > 0 &&
+                ( frame->ContentSize.Width != m_poolSize.Width ||
+                  frame->ContentSize.Height != m_poolSize.Height ))
+            {
+                m_poolSize = frame->ContentSize;
+                m_bufferWidth = m_poolSize.Width;
+                m_bufferHeight = m_poolSize.Height;
+                m_sourceTexture = nullptr;
+                m_frameWait->RecreateFramePool( m_poolSize );
+                if( FAILED( m_swapChain->ResizeBuffers( 2, m_bufferWidth, m_bufferHeight,
+                                                        DXGI_FORMAT_B8G8R8A8_UNORM, 0 ) ) )
+                {
+                    break;
+                }
+                PostMessage( m_window, WM_MIRROR_RELAYOUT, 0, 0 );
+
+                // Wait for a frame at the new size.
+                continue;
+            }
+
             auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>( frame->FrameTexture );
             if( m_sourceTexture == nullptr )
             {
