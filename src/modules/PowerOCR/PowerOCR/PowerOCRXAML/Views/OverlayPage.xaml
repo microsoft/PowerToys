@@ -84,6 +84,8 @@
             x:Name="RegionClickCanvas"
             AutomationProperties.AutomationId="RegionClickCanvas"
             Background="Transparent"
+            PointerCanceled="Canvas_PointerCanceled"
+            PointerCaptureLost="Canvas_PointerCaptureLost"
             PointerMoved="Canvas_PointerMoved"
             PointerPressed="Canvas_PointerPressed"
             PointerReleased="Canvas_PointerReleased"

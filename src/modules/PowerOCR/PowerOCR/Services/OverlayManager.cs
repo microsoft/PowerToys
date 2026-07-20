@@ -289,6 +289,10 @@ internal sealed class OverlayManager : IOverlayManager
             return;
         }
 
+        // Unconditionally unclip the cursor — covers Escape, settings, successful capture,
+        // native termination, and external window close paths.
+        CursorClipper.UnClip();
+
         _sessionCts?.Cancel();
         _sessionCts?.Dispose();
         _sessionCts = null;
