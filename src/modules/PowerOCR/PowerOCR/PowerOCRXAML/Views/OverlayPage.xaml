@@ -1,0 +1,46 @@
+<UserControl
+    x:Class="PowerOCR.Views.OverlayPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid
+        x:Name="RootGrid"
+        AutomationProperties.AutomationId="TextExtractorWindow"
+        Background="Transparent">
+
+        <!--  Full-window screenshot  -->
+        <Image
+            x:Name="BackgroundImage"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Stretch="Fill" />
+
+        <!--  Dim overlay  -->
+        <Rectangle
+            x:Name="DimOverlay"
+            Fill="Black"
+            Opacity="0.4" />
+
+        <!--  Error InfoBar  -->
+        <InfoBar
+            x:Name="ErrorInfoBar"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            IsClosable="False"
+            IsOpen="False"
+            Margin="0,48,0,0"
+            Severity="Error" />
+
+        <!--  Cancel button  -->
+        <Button
+            x:Name="CancelButton"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            AutomationProperties.AutomationId="CancelButton"
+            Click="CancelButton_Click"
+            Content="Cancel" />
+    </Grid>
+</UserControl>

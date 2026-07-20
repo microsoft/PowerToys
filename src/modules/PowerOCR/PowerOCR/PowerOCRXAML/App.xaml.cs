@@ -79,6 +79,11 @@ public partial class App : Application, IDisposable
         services.AddSingleton<KeyboardMonitor>();
         services.AddSingleton<SettingsDeepLink>();
 
+        // Overlay services (Task 4)
+        services.AddSingleton<IScreenCaptureService, ScreenCaptureService>();
+        services.AddSingleton<IOverlayWindowFactory, OverlayWindowFactory>();
+        services.AddSingleton<IOverlayManager, OverlayManager>();
+
         _serviceProvider = services.BuildServiceProvider();
 
         // Register native events for show/terminate
@@ -92,6 +97,9 @@ public partial class App : Application, IDisposable
         eventListener.Register(
             PowerToys.Interop.Constants.TerminatePowerOCRSharedEvent(),
             Terminate);
+
+        // Resolve overlay manager so its activation subscription is live
+        _serviceProvider.GetRequiredService<IOverlayManager>();
 
         if (_runnerPid >= 0)
         {
