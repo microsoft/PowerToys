@@ -61,7 +61,7 @@ internal sealed class OverlayManager : IOverlayManager
         if (displays.Count == 0)
         {
             Logger.LogWarning("No displays found for capture.");
-            _sessionActive = false;
+            CloseAll(cancelled: false);
             return;
         }
 
@@ -84,7 +84,7 @@ internal sealed class OverlayManager : IOverlayManager
                 cap.Dispose();
             }
 
-            _sessionActive = false;
+            CloseAll(cancelled: false);
             return;
         }
         catch (Exception ex)
@@ -120,12 +120,7 @@ internal sealed class OverlayManager : IOverlayManager
             catch (Exception ex2)
             {
                 Logger.LogError("Failed to show error overlay", ex2);
-                foreach (var cap in captures)
-                {
-                    cap.Dispose();
-                }
-
-                _sessionActive = false;
+                CloseAll(cancelled: false);
             }
 
             return;
