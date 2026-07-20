@@ -202,31 +202,29 @@ internal sealed class OverlayManager : IOverlayManager
         {
             var token = _sessionCts?.Token ?? CancellationToken.None;
 
-            // Determine bitmap and mode
-            Bitmap bitmapForOcr;
+            // Determine bitmap and mode. Word mode reuses the shared capture bitmap, while
+            // region/table/single-line modes own a cropped bitmap that must be disposed here.
+            using Bitmap? croppedBitmap = isClick ? null : capture.Crop(selection.Local);
+            Bitmap bitmapForOcr = isClick ? capture.Bitmap : croppedBitmap!;
             OcrCaptureMode mode;
             OcrPoint? clickPoint = null;
 
             if (isClick)
             {
                 // Clicked-word mode: use full cached bitmap with local click point
-                bitmapForOcr = capture.Bitmap;
                 mode = OcrCaptureMode.Word;
                 clickPoint = new OcrPoint(selection.Local.X, selection.Local.Y);
             }
             else if (_viewModel.IsTable)
             {
-                bitmapForOcr = capture.Crop(selection.Local);
                 mode = OcrCaptureMode.Table;
             }
             else if (_viewModel.IsSingleLine)
             {
-                bitmapForOcr = capture.Crop(selection.Local);
                 mode = OcrCaptureMode.SingleLine;
             }
             else
             {
-                bitmapForOcr = capture.Crop(selection.Local);
                 mode = OcrCaptureMode.Region;
             }
 
@@ -237,12 +235,6 @@ internal sealed class OverlayManager : IOverlayManager
                 clickPoint);
 
             string result = await _textExtractorService.ExtractAsync(request, token);
-
-            // Dispose cropped bitmap (not the original capture bitmap)
-            if (!isClick)
-            {
-                bitmapForOcr.Dispose();
-            }
 
             // Keep overlays open for whitespace/empty output
             if (string.IsNullOrWhiteSpace(result))
