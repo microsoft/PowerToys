@@ -6,6 +6,7 @@ using System;
 
 using Microsoft.Extensions.DependencyInjection;
 using PowerOCR.Models;
+using PowerOCR.ViewModels;
 
 namespace PowerOCR.Services;
 
@@ -18,11 +19,12 @@ internal sealed class OverlayWindowFactory : IOverlayWindowFactory
         _serviceProvider = serviceProvider;
     }
 
-    public OCROverlay Create(DisplayCapture capture, IOverlayManager manager)
+    public OCROverlay Create(DisplayCapture capture, OverlaySessionViewModel viewModel, IOverlayManager manager)
     {
         return ActivatorUtilities.CreateInstance<OCROverlay>(
             _serviceProvider,
             capture,
+            viewModel,
             manager);
     }
 }

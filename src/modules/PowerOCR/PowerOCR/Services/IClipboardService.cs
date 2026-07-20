@@ -2,12 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using PowerOCR.Models;
-using PowerOCR.ViewModels;
+using System.Threading.Tasks;
 
 namespace PowerOCR.Services;
 
-internal interface IOverlayWindowFactory
+internal interface IClipboardService
 {
-    OCROverlay Create(DisplayCapture capture, OverlaySessionViewModel viewModel, IOverlayManager manager);
+    Task SetTextAsync(string text);
 }
