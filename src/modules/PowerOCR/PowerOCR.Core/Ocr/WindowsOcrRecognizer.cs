@@ -35,7 +35,7 @@ public sealed class WindowsOcrRecognizer : IOcrRecognizer
             bitmap.Save(stream, ImageFormat.Bmp);
             stream.Position = 0;
 
-            var randomAccessStream = stream.AsRandomAccessStream();
+            using var randomAccessStream = stream.AsRandomAccessStream();
             BitmapDecoder decoder = await BitmapDecoder.CreateAsync(randomAccessStream).AsTask(cancellationToken);
             SoftwareBitmap softwareBitmap = await decoder.GetSoftwareBitmapAsync().AsTask(cancellationToken);
 
