@@ -38,14 +38,54 @@ namespace PTSettingsSvc
                    L"(A;;GA;;;BA)";                   // BUILTIN\Administrators : full
         }
 
+        // The pipe is created with FILE_FLAG_OVERLAPPED so that both the
+        // ConnectNamedPipe wait and every read/write can be aborted the instant
+        // the service is asked to stop.  The server handles one connection at a
+        // time on the worker thread, so a single reusable manual-reset event and
+        // a borrowed stop-event pointer are sufficient (no per-call allocation,
+        // no cross-thread sharing of an OVERLAPPED).
+        HANDLE g_ioEvent = nullptr;   // manual-reset; owned by RunPipeServer
+        HANDLE g_stopEvt = nullptr;   // borrowed from ServiceMain / console
+
+        // Wait for an overlapped op to complete OR for stop to be signalled.
+        // On stop, cancels the pending I/O and reaps it (so the OVERLAPPED is
+        // safe to leave scope) and returns false.
+        bool WaitOverlapped(HANDLE pipe, OVERLAPPED& ov, DWORD& transferred)
+        {
+            HANDLE waits[2] = { g_ioEvent, g_stopEvt };
+            DWORD w = WaitForMultipleObjects(2, waits, FALSE, INFINITE);
+            if (w != WAIT_OBJECT_0)
+            {
+                CancelIoEx(pipe, &ov);
+                DWORD reaped = 0;
+                GetOverlappedResult(pipe, &ov, &reaped, TRUE);
+                return false;
+            }
+            return GetOverlappedResult(pipe, &ov, &transferred, TRUE) != FALSE;
+        }
+
         bool ReadExact(HANDLE pipe, void* buf, DWORD len)
         {
             BYTE* p = static_cast<BYTE*>(buf);
             DWORD remaining = len;
             while (remaining > 0)
             {
+                OVERLAPPED ov{};
+                ov.hEvent = g_ioEvent;
+                ResetEvent(g_ioEvent);
                 DWORD got = 0;
-                if (!ReadFile(pipe, p, remaining, &got, nullptr) || got == 0)
+                if (!ReadFile(pipe, p, remaining, &got, &ov))
+                {
+                    if (GetLastError() != ERROR_IO_PENDING)
+                    {
+                        return false;
+                    }
+                    if (!WaitOverlapped(pipe, ov, got))
+                    {
+                        return false;
+                    }
+                }
+                if (got == 0)
                 {
                     return false;
                 }
@@ -61,8 +101,22 @@ namespace PTSettingsSvc
             DWORD remaining = len;
             while (remaining > 0)
             {
+                OVERLAPPED ov{};
+                ov.hEvent = g_ioEvent;
+                ResetEvent(g_ioEvent);
                 DWORD wrote = 0;
-                if (!WriteFile(pipe, p, remaining, &wrote, nullptr) || wrote == 0)
+                if (!WriteFile(pipe, p, remaining, &wrote, &ov))
+                {
+                    if (GetLastError() != ERROR_IO_PENDING)
+                    {
+                        return false;
+                    }
+                    if (!WaitOverlapped(pipe, ov, wrote))
+                    {
+                        return false;
+                    }
+                }
+                if (wrote == 0)
                 {
                     return false;
                 }
@@ -249,7 +303,7 @@ namespace PTSettingsSvc
 
             HANDLE pipe = CreateNamedPipeW(
                 pipeName.c_str(),
-                PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
+                PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
                 PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT |
                     PIPE_REJECT_REMOTE_CLIENTS,
                 /*nMaxInstances*/ PIPE_UNLIMITED_INSTANCES,
@@ -265,35 +319,75 @@ namespace PTSettingsSvc
 
     DWORD RunPipeServer(HANDLE stopEvent)
     {
+        g_stopEvt = stopEvent;
+        g_ioEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+        if (!g_ioEvent)
+        {
+            return GetLastError();
+        }
+
+        DWORD rc = ERROR_SUCCESS;
         for (;;)
         {
             if (WaitForSingleObject(stopEvent, 0) == WAIT_OBJECT_0)
             {
-                return ERROR_SUCCESS;
+                break;
             }
 
             HANDLE pipe = CreateProtectedPipe();
             if (pipe == INVALID_HANDLE_VALUE)
             {
-                return GetLastError();
+                rc = GetLastError();
+                break;
             }
 
-            // ConnectNamedPipe blocks until a client opens the pipe.  The
-            // service control handler signals stopEvent AND closes the pipe
-            // handle (via DisconnectNamedPipe from the stop handler) to
-            // unblock us during shutdown — we observe that path via
-            // ERROR_BROKEN_PIPE / ERROR_INVALID_HANDLE.
-            BOOL connected = ConnectNamedPipe(pipe, nullptr);
-            DWORD err = connected ? ERROR_SUCCESS : GetLastError();
-            if (!connected && err == ERROR_PIPE_CONNECTED)
+            // Overlapped ConnectNamedPipe: rather than blocking indefinitely on
+            // an idle pipe, wait on BOTH the connect completion and stopEvent so
+            // a SERVICE_CONTROL_STOP (which only signals stopEvent) unblocks us
+            // immediately even when no client ever connects.  The synchronous
+            // ConnectNamedPipe(pipe, nullptr) used previously could not be
+            // interrupted and left the service stuck in STOP_PENDING when idle.
+            OVERLAPPED ov{};
+            ov.hEvent = g_ioEvent;
+            ResetEvent(g_ioEvent);
+
+            bool connected = false;
+            bool stopping = false;
+
+            if (ConnectNamedPipe(pipe, &ov))
             {
-                connected = TRUE;
+                connected = true;   // unusual for an overlapped pipe
+            }
+            else
+            {
+                DWORD err = GetLastError();
+                if (err == ERROR_PIPE_CONNECTED)
+                {
+                    connected = true;   // a client arrived before we called
+                }
+                else if (err == ERROR_IO_PENDING)
+                {
+                    HANDLE waits[2] = { g_ioEvent, stopEvent };
+                    if (WaitForMultipleObjects(2, waits, FALSE, INFINITE) == WAIT_OBJECT_0)
+                    {
+                        DWORD dummy = 0;
+                        connected = GetOverlappedResult(pipe, &ov, &dummy, TRUE) != FALSE;
+                    }
+                    else
+                    {
+                        stopping = true;
+                        CancelIoEx(pipe, &ov);
+                        DWORD dummy = 0;
+                        GetOverlappedResult(pipe, &ov, &dummy, TRUE);
+                    }
+                }
+        // else: connect failed outright — drop this pipe and loop.
             }
 
-            if (WaitForSingleObject(stopEvent, 0) == WAIT_OBJECT_0)
+            if (stopping || WaitForSingleObject(stopEvent, 0) == WAIT_OBJECT_0)
             {
                 CloseHandle(pipe);
-                return ERROR_SUCCESS;
+                break;
             }
 
             if (connected)
@@ -305,5 +399,10 @@ namespace PTSettingsSvc
 
             CloseHandle(pipe);
         }
+
+        CloseHandle(g_ioEvent);
+        g_ioEvent = nullptr;
+        g_stopEvt = nullptr;
+        return rc;
     }
 }
