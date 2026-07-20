@@ -47,9 +47,9 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
-                                ContentAlignment="Left"
+                                x:Uid="ShowThemeAdaptiveTrayIcon"
                                 IsEnabled="{x:Bind ViewModel.ShowTrayIcon, Mode=OneWay}">
-                                <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
