@@ -10,6 +10,7 @@ using PowerOCR.Core.Models;
 using PowerOCR.Core.Ocr;
 using PowerOCR.Core.Services;
 using Windows.Globalization;
+using Windows.Media.Ocr;
 
 namespace PowerOCR.Core.UnitTests;
 
@@ -43,7 +44,7 @@ public sealed class TextExtractorServiceTests
     {
         public required OcrDocument Document { get; init; }
 
-        public Bitmap? ReceivedBitmap { get; private set; }
+        public int ReceivedBitmapWidth { get; private set; }
 
         public Task<OcrDocument> RecognizeAsync(
             Bitmap bitmap,
@@ -51,7 +52,7 @@ public sealed class TextExtractorServiceTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ReceivedBitmap = bitmap;
+            ReceivedBitmapWidth = bitmap.Width;
             return Task.FromResult(Document);
         }
     }
@@ -116,6 +117,33 @@ public sealed class TextExtractorServiceTests
         string result = await service.ExtractAsync(request, CancellationToken.None);
 
         Assert.AreEqual("Hello", result);
+    }
+
+    [TestMethod]
+    public async Task ExtractAsync_OversizedBitmap_UsesUnscaledBitmapWidth()
+    {
+        int oversizedWidth = (int)Math.Floor(OcrEngine.MaxImageDimension / 1.5) + 1;
+        var recognizer = new FakeRecognizer { Document = MakeDocument() };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(oversizedWidth, 100, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Region);
+
+        await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual(oversizedWidth, recognizer.ReceivedBitmapWidth);
+    }
+
+    [TestMethod]
+    public async Task ExtractAsync_WordMode_NoHit_ReturnsEmptyString()
+    {
+        var recognizer = new FakeRecognizer { Document = MakeDocument() };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(10, 10, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Word, new OcrPoint(50, 50));
+
+        string result = await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual(string.Empty, result);
     }
 
     [TestMethod]

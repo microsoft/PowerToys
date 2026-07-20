@@ -42,6 +42,7 @@ public sealed class TextExtractorService : ITextExtractorService
             request.Language,
             cancellationToken);
 
+#pragma warning disable CA2208
         return request.Mode switch
         {
             OcrCaptureMode.Region => OcrTextFormatter.FormatDocument(document, request.Language.LanguageTag),
@@ -49,8 +50,9 @@ public sealed class TextExtractorService : ITextExtractorService
                 OcrTextFormatter.FormatDocument(document, request.Language.LanguageTag)),
             OcrCaptureMode.Table => TableTextFormatter.Format(document.Lines, request.Language.LanguageTag),
             OcrCaptureMode.Word => GetClickedWord(document, TransformPoint(request.ClickPoint, prepared)),
-            _ => throw new ArgumentOutOfRangeException(nameof(request), "Unknown OcrCaptureMode value."),
+            _ => throw new ArgumentOutOfRangeException(nameof(request.Mode), "Unknown OcrCaptureMode value."),
         };
+#pragma warning restore CA2208
     }
 
     private static OcrPoint TransformPoint(OcrPoint? clickPoint, PreparedBitmap prepared)
