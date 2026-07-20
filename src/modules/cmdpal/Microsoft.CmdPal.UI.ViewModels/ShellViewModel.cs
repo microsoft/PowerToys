@@ -298,6 +298,11 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
+                if (message.ShowWindowIfPage)
+                {
+                    WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(IntPtr.Zero));
+                }
+
                 _isNested = !isMainPage;
                 _currentlyTransient = message.TransientPage;
 
@@ -499,7 +504,27 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     if (result.Args is IToastArgs a)
                     {
-                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
+                        // Extensions built against newer SDKs can attach an icon
+                        // and an action command via IToastArgs2.
+                        IconInfoViewModel? icon = null;
+                        CommandViewModel? command = null;
+                        if (a is IToastArgs2 a2)
+                        {
+                            if (a2.Icon is not null)
+                            {
+                                icon = new IconInfoViewModel(a2.Icon);
+                                icon.InitializeProperties();
+                            }
+
+                            var toastCommand = a2.Command;
+                            if (toastCommand is not null)
+                            {
+                                command = new CommandViewModel(toastCommand, new(CurrentPage));
+                                command.InitializeProperties();
+                            }
+                        }
+
+                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
                         UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
                     }
 

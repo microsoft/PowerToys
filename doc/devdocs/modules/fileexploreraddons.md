@@ -14,7 +14,7 @@ File Explorer Add-ons are extensions that enhance Windows File Explorer function
 
 ## Links
 
-- [Source code folder](https://github.com/microsoft/PowerToys/tree/main/src/modules/fileexplorerpreview)
+- [Source code folder](https://github.com/microsoft/PowerToys/tree/main/src/modules/previewpane)
 - [Issue tracker](https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+label%3A%22File+Explorer%22)
 
 ## Implementation Details

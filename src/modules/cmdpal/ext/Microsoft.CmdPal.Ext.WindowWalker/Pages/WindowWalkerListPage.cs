@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 using Microsoft.CmdPal.Ext.WindowWalker.Messages;
@@ -23,7 +24,7 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
     {
         Icon = Icons.WindowWalkerIcon;
         Name = Resources.windowwalker_name;
-        Id = "com.microsoft.cmdpal.windowwalker";
+        Id = BuiltInCommandIds.WindowWalker;
         PlaceholderText = Resources.windowwalker_PlaceholderText;
 
         EmptyContent = new CommandItem(new NoOpCommand())

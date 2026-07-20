@@ -5,9 +5,9 @@
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 /// <summary>
-/// Controls the unit used to display network transmission speed.
+/// Controls the unit used to display network or disk transmission speed.
 /// </summary>
-internal enum NetworkSpeedUnit
+internal enum SpeedUnit
 {
     /// <summary>Bits per second (Kbps, Mbps, Gbps) — SI decimal prefixes.</summary>
     BitsPerSecond,

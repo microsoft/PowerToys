@@ -95,7 +95,11 @@
                 PreviewKeyDown="FilterBox_PreviewKeyDown"
                 PreviewKeyUp="FilterBox_PreviewKeyUp"
                 Style="{StaticResource SearchTextBoxStyle}"
-                TextChanged="FilterBox_TextChanged" />
+                TextChanged="FilterBox_TextChanged">
+                <TextBox.ContextFlyout>
+                    <TextCommandBarFlyout Opening="FilterBoxContextFlyout_Opening" />
+                </TextBox.ContextFlyout>
+            </TextBox>
             <!--  Disabled Description="{x:Bind CurrentPageViewModel.TextToSuggest, Mode=OneWay}" for now, needs more work  -->
         </controls:Case>
 
