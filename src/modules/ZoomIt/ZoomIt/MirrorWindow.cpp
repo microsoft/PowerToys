@@ -16,6 +16,11 @@
 #include "pch.h"
 #include "MirrorWindow.h"
 
+namespace util
+{
+    using namespace robmikh::common::desktop;
+}
+
 const float MIRROR_ZOOM_MAX = 8.0f;
 const float MIRROR_ZOOM_ANIMATION_STEP = 0.3f;
 const float MIRROR_PAN_ANIMATION_STEP = 0.25f;
@@ -44,7 +49,8 @@ static RECT GetMonitorRect( HMONITOR monitor )
 //----------------------------------------------------------------------------
 bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRect,
                           HWND sourceWindow, HMONITOR sourceMonitor,
-                          HMONITOR targetMonitor, HWND notifyWindow )
+                          HMONITOR targetMonitor, HWND notifyWindow,
+                          std::function<AnnotationState()> annotationQuery )
 {
     if( IsActive() )
     {
@@ -54,6 +60,9 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_sourceRect = sourceRect;
     m_sourceWindow = sourceWindow;
     m_notifyWindow = notifyWindow;
+    m_annotationQuery = annotationQuery;
+    m_annotationState = AnnotationState::None;
+    m_monitorOverride = false;
     m_zoom = 1.0f;
     m_zoomTarget = 1.0f;
     m_sourceTexture = nullptr;
@@ -247,6 +256,112 @@ void MirrorWindow::Stop()
     m_winrtDevice = nullptr;
     m_sourceWindow = nullptr;
     m_notifyWindow = nullptr;
+    m_annotationQuery = nullptr;
+    m_annotationState = AnnotationState::None;
+    m_monitorOverride = false;
+}
+
+//----------------------------------------------------------------------------
+//
+// MirrorWindow::SwitchCapture
+//
+// Replaces the capture source mid-mirror, resizing the swapchain to the new
+// content size and re-fitting the mirror window.
+//
+//----------------------------------------------------------------------------
+bool MirrorWindow::SwitchCapture( winrt::GraphicsCaptureItem const& item, bool enableCursor )
+{
+    try
+    {
+        auto frameWait = std::make_unique<CaptureFrameWait>( m_winrtDevice, item, item.Size() );
+        frameWait->EnableCursorCapture( enableCursor );
+        frameWait->ShowCaptureBorder( false );
+        m_frameWait->StopCapture();
+        m_frameWait = std::move( frameWait );
+    }
+    catch( ... )
+    {
+        return false;
+    }
+
+    m_poolSize = item.Size();
+    m_bufferWidth = m_poolSize.Width;
+    m_bufferHeight = m_poolSize.Height;
+    m_contentSize = m_poolSize;
+    m_sourceTexture = nullptr;
+    if( FAILED( m_swapChain->ResizeBuffers( 2, m_bufferWidth, m_bufferHeight,
+                                            DXGI_FORMAT_B8G8R8A8_UNORM, 0 ) ) )
+    {
+        return false;
+    }
+    PostMessage( m_window, WM_MIRROR_RELAYOUT, 0, 0 );
+    return true;
+}
+
+//----------------------------------------------------------------------------
+//
+// MirrorWindow::UpdateAnnotationState
+//
+// While mirroring a window, ZoomIt's zoom/draw/live-zoom overlays aren't
+// part of the window's surface, so they wouldn't show in the mirror. When
+// one of those modes activates, temporarily mirror the monitor under the
+// cursor (where the annotation UI appears) instead, and switch back to the
+// window when the mode exits. Returns true when the capture was switched so
+// the caller can discard the frame from the previous capture.
+//
+//----------------------------------------------------------------------------
+bool MirrorWindow::UpdateAnnotationState()
+{
+    const AnnotationState state = m_annotationQuery();
+    if( state == m_annotationState )
+    {
+        return false;
+    }
+    bool switched = false;
+
+    if( state == AnnotationState::None )
+    {
+        if( IsWindow( m_sourceWindow ) )
+        {
+            try
+            {
+                auto item = util::CreateCaptureItemForWindow( m_sourceWindow );
+                if( SwitchCapture( item, true ) )
+                {
+                    m_monitorOverride = false;
+                    switched = true;
+                }
+            }
+            catch( ... ) {}
+        }
+    }
+    else if( !m_monitorOverride )
+    {
+        POINT cursorPos;
+        GetCursorPos( &cursorPos );
+        HMONITOR monitor = MonitorFromPoint( cursorPos, MONITOR_DEFAULTTONEAREST );
+        try
+        {
+            auto item = util::CreateCaptureItemForMonitor( monitor );
+
+            // Live zoom already renders a magnified cursor into the frame;
+            // capturing the cursor too would double it.
+            if( SwitchCapture( item, state != AnnotationState::AnnotatingLiveZoom ) )
+            {
+                m_overrideRect = GetMonitorRect( monitor );
+                m_monitorOverride = true;
+                switched = true;
+            }
+        }
+        catch( ... ) {}
+    }
+    else
+    {
+        // Already mirroring the monitor; just track the cursor-capture state.
+        m_frameWait->EnableCursorCapture( state != AnnotationState::AnnotatingLiveZoom );
+    }
+    m_annotationState = state;
+    return switched;
 }
 
 //----------------------------------------------------------------------------
@@ -356,12 +471,27 @@ void MirrorWindow::RenderLoop()
             break;
         }
 
+        // Stop if the mirrored window went away.
+        if( m_sourceWindow != nullptr && !IsWindow( m_sourceWindow ) )
+        {
+            PostMessage( m_notifyWindow, WM_USER_MIRROR_STOP, 0, 0 );
+            break;
+        }
+
+        // Switch between window and monitor capture as ZoomIt annotation
+        // modes come and go. On a switch, discard any frame from the
+        // previous capture.
+        if( m_sourceWindow != nullptr && m_annotationQuery && UpdateAnnotationState() )
+        {
+            continue;
+        }
+
         if( frame )
         {
             // A mirrored window can resize; recreate the frame pool, cache
             // texture, and swapchain at the new content size and re-fit the
             // mirror window to the new aspect ratio.
-            if( m_sourceWindow != nullptr &&
+            if( m_sourceWindow != nullptr && !m_monitorOverride &&
                 frame->ContentSize.Width > 0 && frame->ContentSize.Height > 0 &&
                 ( frame->ContentSize.Width != m_poolSize.Width ||
                   frame->ContentSize.Height != m_poolSize.Height ))
@@ -383,10 +513,20 @@ void MirrorWindow::RenderLoop()
             }
 
             auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>( frame->FrameTexture );
+            D3D11_TEXTURE2D_DESC textureDesc;
+            frameTexture->GetDesc( &textureDesc );
+            if( m_sourceTexture != nullptr )
+            {
+                // The cached copy must match the frame exactly for CopyResource.
+                D3D11_TEXTURE2D_DESC cachedDesc;
+                m_sourceTexture->GetDesc( &cachedDesc );
+                if( cachedDesc.Width != textureDesc.Width || cachedDesc.Height != textureDesc.Height )
+                {
+                    m_sourceTexture = nullptr;
+                }
+            }
             if( m_sourceTexture == nullptr )
             {
-                D3D11_TEXTURE2D_DESC textureDesc;
-                frameTexture->GetDesc( &textureDesc );
                 textureDesc.Usage = D3D11_USAGE_DEFAULT;
                 textureDesc.BindFlags = 0;
                 textureDesc.CPUAccessFlags = 0;
@@ -398,13 +538,6 @@ void MirrorWindow::RenderLoop()
             }
             m_context->CopyResource( m_sourceTexture.get(), frameTexture.get() );
             m_contentSize = frame->ContentSize;
-        }
-        else if( m_sourceWindow != nullptr && !IsWindow( m_sourceWindow ) )
-        {
-            // The mirrored window closed; have the main window stop
-            // mirroring, since this window belongs to its thread.
-            PostMessage( m_notifyWindow, WM_USER_MIRROR_STOP, 0, 0 );
-            break;
         }
 
         if( m_sourceTexture != nullptr )
@@ -439,9 +572,10 @@ void MirrorWindow::RenderFrame()
     m_sourceTexture->GetDesc( &sourceDesc );
 
     // The mirrored region in texture coordinates, clamped to the captured
-    // content, which changes when a mirrored window resizes.
+    // content, which changes when a mirrored window resizes. Window and
+    // monitor-override captures mirror the full captured content.
     RECT crop = m_textureCrop;
-    if( m_sourceWindow != nullptr )
+    if( m_monitorOverride || m_sourceWindow != nullptr )
     {
         SetRect( &crop, 0, 0, m_contentSize.Width, m_contentSize.Height );
     }
@@ -467,7 +601,12 @@ void MirrorWindow::RenderFrame()
         POINT cursorPos;
         if( GetCursorPos( &cursorPos ) )
         {
-            if( m_sourceWindow != nullptr )
+            if( m_monitorOverride )
+            {
+                desiredX = static_cast<float>( cursorPos.x - m_overrideRect.left );
+                desiredY = static_cast<float>( cursorPos.y - m_overrideRect.top );
+            }
+            else if( m_sourceWindow != nullptr )
             {
                 RECT windowRect;
                 if( GetWindowRect( m_sourceWindow, &windowRect ) &&

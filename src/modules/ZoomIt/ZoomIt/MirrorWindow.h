@@ -20,6 +20,11 @@
 class MirrorWindow
 {
 public:
+    // ZoomIt annotation modes (zoom/draw/live zoom) render in overlay
+    // windows a window capture can't see; while one is active a window
+    // mirror temporarily switches to capturing the monitor.
+    enum class AnnotationState { None, Annotating, AnnotatingLiveZoom };
+
     ~MirrorWindow() { Stop(); }
 
     bool IsActive() const { return m_window != nullptr; }
@@ -32,7 +37,8 @@ public:
                 HWND sourceWindow,
                 HMONITOR sourceMonitor,
                 HMONITOR targetMonitor,
-                HWND notifyWindow );
+                HWND notifyWindow,
+                std::function<AnnotationState()> annotationQuery = nullptr );
     void Stop();
 
 private:
@@ -44,6 +50,8 @@ private:
 
     void RenderLoop();
     void RenderFrame();
+    bool UpdateAnnotationState();
+    bool SwitchCapture( winrt::GraphicsCaptureItem const& item, bool enableCursor );
     RECT ComputeWindowRect() const;
     LRESULT WindowProc( HWND window, UINT message, WPARAM wordParam, LPARAM longParam );
 
@@ -66,6 +74,11 @@ private:
     winrt::com_ptr<ID3D11Texture2D>		m_sourceTexture;
     winrt::Direct3D11::IDirect3DDevice	m_winrtDevice{ nullptr };
     std::unique_ptr<CaptureFrameWait>	m_frameWait;
+
+    std::function<AnnotationState()>	m_annotationQuery;
+    AnnotationState	m_annotationState = AnnotationState::None;
+    bool	m_monitorOverride = false;	// capturing the monitor while annotating
+    RECT	m_overrideRect{};			// override monitor rectangle
 
     std::thread			m_renderThread;
     wil::unique_event	m_stopEvent{ wil::EventOptions::ManualReset };

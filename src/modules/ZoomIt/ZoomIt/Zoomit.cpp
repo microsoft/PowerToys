@@ -8786,9 +8786,21 @@ LRESULT APIENTRY MainWndProc(
             }
             catch( const winrt::hresult_error& ) {}
 
+            // Reports when a zoom/draw/live-zoom mode is active so a window
+            // mirror can temporarily capture the monitor instead - those
+            // modes render in overlay windows a window capture can't see.
+            auto mirrorAnnotationQuery = []() {
+                if( g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ))
+                    return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
+                if( g_Zoomed )
+                    return MirrorWindow::AnnotationState::Annotating;
+                return MirrorWindow::AnnotationState::None;
+            };
+
             if( mirrorItem == nullptr ||
                 !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
-                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd )) {
+                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
+                                       mirrorAnnotationQuery )) {
 
                 g_MirrorSelectRectangle.Stop();
                 MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );
