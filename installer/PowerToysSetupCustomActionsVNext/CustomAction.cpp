@@ -1209,20 +1209,19 @@ UINT __stdcall RemoveWindowsServiceByName(std::wstring serviceName)
         return ERROR_INSTALL_FAILURE;
     }
 
-    SERVICE_STATUS ss;
+    SERVICE_STATUS ss{};
     if (ControlService(hService, SERVICE_CONTROL_STOP, &ss))
     {
-        Sleep(1000);
-        while (QueryServiceStatus(hService, &ss))
+        // Wait for the service to stop, but NEVER block the (un)install forever:
+        // a service that hangs in STOP_PENDING must not hang the installer.  Cap
+        // the wait; DeleteService below still marks the service for deletion even
+        // if it hasn't fully stopped yet.
+        const ULONGLONG deadlineTick = GetTickCount64() + 30000; // 30s cap
+        while (QueryServiceStatus(hService, &ss) &&
+               ss.dwCurrentState == SERVICE_STOP_PENDING &&
+               GetTickCount64() < deadlineTick)
         {
-            if (ss.dwCurrentState == SERVICE_STOP_PENDING)
-            {
-                Sleep(1000);
-            }
-            else
-            {
-                break;
-            }
+            Sleep(500);
         }
     }
 
