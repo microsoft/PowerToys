@@ -179,6 +179,8 @@ internal sealed class OverlayManager : IOverlayManager
             {
                 window.Activate();
             }
+
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCRInvokedEvent());
         }
         catch (Exception ex)
         {
