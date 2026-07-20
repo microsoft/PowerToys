@@ -93,19 +93,19 @@
                                     <tkcontrols:SettingsCard ContentAlignment="Left">
                                         <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsExpander
-                                        x:Uid="PowerDisplay_ShowSystemTrayIcon"
-                                        HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}"
-                                        IsExpanded="False">
-                                        <CheckBox IsChecked="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                                        <tkcontrols:SettingsExpander.Items>
-                                            <tkcontrols:SettingsCard
-                                                ContentAlignment="Left"
-                                                IsEnabled="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=OneWay}">
-                                                <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
-                                            </tkcontrols:SettingsCard>
-                                        </tkcontrols:SettingsExpander.Items>
-                                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsExpander
+                        x:Uid="PowerDisplay_ShowSystemTrayIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}"
+                        IsExpanded="False">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="ShowThemeAdaptiveTrayIcon"
+                                IsEnabled="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=OneWay}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                                     <tkcontrols:SettingsCard ContentAlignment="Left">
                                         <CheckBox x:Uid="PowerDisplay_ShowProfileSwitcher" IsChecked="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
