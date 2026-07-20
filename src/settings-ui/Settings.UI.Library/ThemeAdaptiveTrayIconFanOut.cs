@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         /// <param name="themeAdaptive">Whether theme-adaptive tray icons should be enabled.</param>
         /// <param name="sendConfigMsg">Optional IPC callback used by the Settings UI (may be null in tests).</param>
-        public static void ApplyToModules(bool themeAdaptive, Func<string, int>? sendConfigMsg)
+        public static void ApplyToModules(bool themeAdaptive, Func<string, int> sendConfigMsg)
         {
             try
             {
@@ -67,7 +67,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private static void ApplyAwake(bool themeAdaptive, Func<string, int>? sendConfigMsg)
+        /// <summary>
+        /// Returns the ZoomIt settings.json path when the theme-adaptive property was patched,
+        /// so the Settings UI can push it through ZoomItSettingsInterop.SaveSettingsJson.
+        /// </summary>
+        public static string TryGetPatchedZoomItSettingsPath()
+        {
+            var settingsUtils = SettingsUtils.Default;
+            if (!settingsUtils.SettingsExists(ZoomItSettings.ModuleName))
+            {
+                return null;
+            }
+
+            return settingsUtils.GetSettingsFilePath(ZoomItSettings.ModuleName);
+        }
+
+        private static void ApplyAwake(bool themeAdaptive, Func<string, int> sendConfigMsg)
         {
             if (!PatchModuleSettingsFile(AwakeSettings.ModuleName, SnakeCasePropertyName, themeAdaptive, wrapAsBoolProperty: false))
             {
@@ -85,26 +100,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             sendConfigMsg("{\"powertoys\":{\"Awake\":" + settingsJson + "}}");
         }
 
-        private static void ApplyZoomIt(bool themeAdaptive, Func<string, int>? sendConfigMsg)
+        private static void ApplyZoomIt(bool themeAdaptive, Func<string, int> sendConfigMsg)
         {
             if (!PatchModuleSettingsFile(ZoomItSettings.ModuleName, PascalCasePropertyName, themeAdaptive, wrapAsBoolProperty: true))
             {
                 return;
             }
 
-            var settingsJson = File.ReadAllText(SettingsUtils.Default.GetSettingsFilePath(ZoomItSettings.ModuleName));
-
-            // ZoomIt applies settings through the interop layer (registry) then reloads on this action.
+            // Registry application via ZoomItSettingsInterop happens in Settings.UI (GeneralViewModel).
             // ShowThemeAdaptiveTrayIcon is honored once the ZoomIt module PR's RegSettings entry is present.
-            try
-            {
-                global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(settingsJson);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("ZoomIt SaveSettingsJson failed during theme-adaptive tray fan-out.", ex);
-            }
-
             sendConfigMsg?.Invoke("{\"action\":{\"ZoomIt\":{\"action_name\":\"refresh_settings\", \"value\":\"\"}}}");
         }
 
