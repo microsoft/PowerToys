@@ -137,7 +137,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // the class-level note on why the ListView is not measured), capped at the monitor's max
         // usable width so long lists scroll.
         double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
-        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceMarginDip;
+        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceOverheadDip;
 
         // The Unicode description row needs room for a readable line; the WPF original gave it a
         // 600px MinWidth. Widen a short accent bar to match when the row is shown (the accent bar
