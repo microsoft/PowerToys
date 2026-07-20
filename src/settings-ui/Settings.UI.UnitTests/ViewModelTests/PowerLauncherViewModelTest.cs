@@ -116,6 +116,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.EnableAudibleFeedback, viewModel.EnableAudibleFeedback);
             Assert.AreEqual(originalSettings.Properties.EnableOpeningSound, viewModel.EnableOpeningSound);
             Assert.AreEqual(originalSettings.Properties.EnableClosingSound, viewModel.EnableClosingSound);
+            
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
