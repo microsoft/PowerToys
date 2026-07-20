@@ -32,13 +32,18 @@ public:
     // For window mirroring, sourceWindow is the mirrored window and
     // sourceRect is its window rect; for region mirroring, sourceWindow is
     // null and sourceRect is the mirrored region in screen coordinates.
+    // With trackWindow, item must be a monitor capture: the mirror shows
+    // the region under the tracked window instead of the window's own
+    // surface, so ZoomIt annotations show in place, at the cost of
+    // occluding windows becoming visible.
     bool Start( winrt::GraphicsCaptureItem const& item,
                 RECT sourceRect,
                 HWND sourceWindow,
                 HMONITOR sourceMonitor,
                 HMONITOR targetMonitor,
                 HWND notifyWindow,
-                std::function<AnnotationState()> annotationQuery = nullptr );
+                std::function<AnnotationState()> annotationQuery = nullptr,
+                bool trackWindow = false );
     void Stop();
 
 private:
@@ -63,8 +68,12 @@ private:
     RECT	m_sourceRect{};		// mirrored region in screen coordinates
     RECT	m_textureCrop{};	// mirrored region in capture-texture coordinates
     RECT	m_targetRect{};		// target monitor rectangle
-    int		m_bufferWidth = 0;
+    RECT	m_sourceMonitorRect{};	// source monitor rectangle (window tracking)
+    bool	m_trackWindow = false;	// monitor capture cropped to the window rect
+    int		m_bufferWidth = 0;	// swapchain dimensions
     int		m_bufferHeight = 0;
+    int		m_imageWidth = 0;	// displayed image dimensions, for layout
+    int		m_imageHeight = 0;
     winrt::SizeInt32	m_contentSize{};
     winrt::SizeInt32	m_poolSize{};
 

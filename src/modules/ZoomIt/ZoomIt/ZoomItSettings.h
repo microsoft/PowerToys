@@ -22,6 +22,7 @@ DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
 DWORD   g_SnipPanoramaSaveToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
 DWORD   g_MirrorToggleKey = ((HOTKEYF_CONTROL) << 8) | '9';
+BOOLEAN g_MirrorTrackWindow = TRUE;
 
 DWORD	g_ShowExpiredTime = 1;
 DWORD	g_SliderZoomLevel = 3;
@@ -88,6 +89,7 @@ REG_SETTING RegSettings[] = {
     { L"SnipPanoramaSaveToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaSaveToggleKey, static_cast<DOUBLE>(g_SnipPanoramaSaveToggleKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
     { L"MirrorToggleKey", SETTING_TYPE_DWORD, 0, &g_MirrorToggleKey, static_cast<DOUBLE>(g_MirrorToggleKey) },
+    { L"MirrorTrackWindow", SETTING_TYPE_BOOLEAN, 0, &g_MirrorTrackWindow, static_cast<DOUBLE>(g_MirrorTrackWindow) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
     { L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, static_cast<DOUBLE>(g_OptionsShown) },

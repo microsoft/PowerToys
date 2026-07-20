@@ -5086,6 +5086,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         if( g_MirrorToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_SETHOTKEY, g_MirrorToggleKey, 0 );
+        CheckDlgButton( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW,
+            g_MirrorTrackWindow ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -5575,6 +5577,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
             g_NoiseCancellation = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION) == BST_CHECKED;
             g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
+            g_MirrorTrackWindow = IsDlgButtonChecked(g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -8776,10 +8779,15 @@ LRESULT APIENTRY MainWndProc(
                 break;
             }
 
+            // With window tracking, mirror the monitor region under the
+            // window instead of the window's own surface so ZoomIt zoom and
+            // draw annotations show in place.
+            bool mirrorTrackWindow = ( hWndMirrorSource != NULL && g_MirrorTrackWindow );
+
             winrt::Windows::Graphics::Capture::GraphicsCaptureItem mirrorItem{ nullptr };
             try {
 
-                if( hWndMirrorSource != NULL )
+                if( hWndMirrorSource != NULL && !mirrorTrackWindow )
                     mirrorItem = util::CreateCaptureItemForWindow( hWndMirrorSource );
                 else
                     mirrorItem = util::CreateCaptureItemForMonitor( mirrorSourceMonitor );
@@ -8800,7 +8808,7 @@ LRESULT APIENTRY MainWndProc(
             if( mirrorItem == nullptr ||
                 !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
                                        mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
-                                       mirrorAnnotationQuery )) {
+                                       mirrorAnnotationQuery, mirrorTrackWindow )) {
 
                 g_MirrorSelectRectangle.Stop();
                 MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );

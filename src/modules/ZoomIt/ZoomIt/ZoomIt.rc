@@ -270,6 +270,8 @@ BEGIN
     LTEXT           "Use Ctrl+Up and Ctrl+Down to zoom the mirrored image around the mouse pointer.",IDC_STATIC,7,63,272,13
     LTEXT           "Mirror Toggle:",IDC_STATIC,7,87,62,8
     CONTROL         "",IDC_MIRROR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,85,80,12
+    CONTROL         "Mirror windows by tracking their screen region, so zoom and draw show in place (uncheck to mirror the window's own surface, unaffected by overlapping windows):",IDC_MIRROR_TRACK_WINDOW,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,105,272,26
 END
 
 RECORD DIALOGEX 0, 0, 276, 228

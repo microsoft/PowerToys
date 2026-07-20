@@ -50,7 +50,8 @@ static RECT GetMonitorRect( HMONITOR monitor )
 bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRect,
                           HWND sourceWindow, HMONITOR sourceMonitor,
                           HMONITOR targetMonitor, HWND notifyWindow,
-                          std::function<AnnotationState()> annotationQuery )
+                          std::function<AnnotationState()> annotationQuery,
+                          bool trackWindow )
 {
     if( IsActive() )
     {
@@ -59,6 +60,7 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
 
     m_sourceRect = sourceRect;
     m_sourceWindow = sourceWindow;
+    m_trackWindow = trackWindow;
     m_notifyWindow = notifyWindow;
     m_annotationQuery = annotationQuery;
     m_annotationState = AnnotationState::None;
@@ -69,32 +71,38 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_contentSize = item.Size();
     m_poolSize = item.Size();
     m_targetRect = GetMonitorRect( targetMonitor );
+    m_sourceMonitorRect = GetMonitorRect( sourceMonitor );
 
     // The mirrored region in capture-texture coordinates: monitor captures
     // are relative to the monitor origin, window captures use the full
-    // captured content.
-    if( m_sourceWindow != nullptr )
+    // captured content. Window tracking captures the monitor and recomputes
+    // the crop from the window rect every frame.
+    if( m_trackWindow || m_sourceWindow == nullptr )
     {
-        SetRect( &m_textureCrop, 0, 0, m_contentSize.Width, m_contentSize.Height );
+        SetRect( &m_textureCrop,
+                 sourceRect.left - m_sourceMonitorRect.left,
+                 sourceRect.top - m_sourceMonitorRect.top,
+                 sourceRect.right - m_sourceMonitorRect.left,
+                 sourceRect.bottom - m_sourceMonitorRect.top );
     }
     else
     {
-        RECT monitorRect = GetMonitorRect( sourceMonitor );
-        SetRect( &m_textureCrop,
-                 sourceRect.left - monitorRect.left,
-                 sourceRect.top - monitorRect.top,
-                 sourceRect.right - monitorRect.left,
-                 sourceRect.bottom - monitorRect.top );
+        SetRect( &m_textureCrop, 0, 0, m_contentSize.Width, m_contentSize.Height );
     }
-    m_bufferWidth = m_textureCrop.right - m_textureCrop.left;
-    m_bufferHeight = m_textureCrop.bottom - m_textureCrop.top;
-    if( m_bufferWidth <= 0 || m_bufferHeight <= 0 )
+
+    // The swapchain covers the full capture; the displayed image is the
+    // crop, which drives the mirror window's aspect ratio.
+    m_bufferWidth = m_trackWindow ? m_contentSize.Width : ( m_textureCrop.right - m_textureCrop.left );
+    m_bufferHeight = m_trackWindow ? m_contentSize.Height : ( m_textureCrop.bottom - m_textureCrop.top );
+    m_imageWidth = m_textureCrop.right - m_textureCrop.left;
+    m_imageHeight = m_textureCrop.bottom - m_textureCrop.top;
+    if( m_bufferWidth <= 0 || m_bufferHeight <= 0 || m_imageWidth <= 0 || m_imageHeight <= 0 )
     {
         return false;
     }
 
-    m_centerX = m_bufferWidth / 2.0f;
-    m_centerY = m_bufferHeight / 2.0f;
+    m_centerX = m_imageWidth / 2.0f;
+    m_centerY = m_imageHeight / 2.0f;
 
     RECT windowRect = ComputeWindowRect();
 
@@ -259,6 +267,7 @@ void MirrorWindow::Stop()
     m_annotationQuery = nullptr;
     m_annotationState = AnnotationState::None;
     m_monitorOverride = false;
+    m_trackWindow = false;
 }
 
 //----------------------------------------------------------------------------
@@ -287,6 +296,8 @@ bool MirrorWindow::SwitchCapture( winrt::GraphicsCaptureItem const& item, bool e
     m_poolSize = item.Size();
     m_bufferWidth = m_poolSize.Width;
     m_bufferHeight = m_poolSize.Height;
+    m_imageWidth = m_bufferWidth;
+    m_imageHeight = m_bufferHeight;
     m_contentSize = m_poolSize;
     m_sourceTexture = nullptr;
     if( FAILED( m_swapChain->ResizeBuffers( 2, m_bufferWidth, m_bufferHeight,
@@ -318,6 +329,16 @@ bool MirrorWindow::UpdateAnnotationState()
         return false;
     }
     bool switched = false;
+
+    if( m_trackWindow )
+    {
+        // Window tracking already captures the monitor, so annotations show
+        // in place; just avoid a doubled cursor while live zoom renders a
+        // magnified one.
+        m_frameWait->EnableCursorCapture( state != AnnotationState::AnnotatingLiveZoom );
+        m_annotationState = state;
+        return false;
+    }
 
     if( state == AnnotationState::None )
     {
@@ -376,10 +397,10 @@ RECT MirrorWindow::ComputeWindowRect() const
 {
     const int monitorWidth = m_targetRect.right - m_targetRect.left;
     const int monitorHeight = m_targetRect.bottom - m_targetRect.top;
-    const double scale = min( static_cast<double>( monitorWidth ) / m_bufferWidth,
-                              static_cast<double>( monitorHeight ) / m_bufferHeight );
-    const int windowWidth = max( 1, static_cast<int>( m_bufferWidth * scale ) );
-    const int windowHeight = max( 1, static_cast<int>( m_bufferHeight * scale ) );
+    const double scale = min( static_cast<double>( monitorWidth ) / m_imageWidth,
+                              static_cast<double>( monitorHeight ) / m_imageHeight );
+    const int windowWidth = max( 1, static_cast<int>( m_imageWidth * scale ) );
+    const int windowHeight = max( 1, static_cast<int>( m_imageHeight * scale ) );
 
     RECT windowRect;
     windowRect.left = m_targetRect.left + ( monitorWidth - windowWidth ) / 2;
@@ -491,7 +512,7 @@ void MirrorWindow::RenderLoop()
             // A mirrored window can resize; recreate the frame pool, cache
             // texture, and swapchain at the new content size and re-fit the
             // mirror window to the new aspect ratio.
-            if( m_sourceWindow != nullptr && !m_monitorOverride &&
+            if( m_sourceWindow != nullptr && !m_monitorOverride && !m_trackWindow &&
                 frame->ContentSize.Width > 0 && frame->ContentSize.Height > 0 &&
                 ( frame->ContentSize.Width != m_poolSize.Width ||
                   frame->ContentSize.Height != m_poolSize.Height ))
@@ -499,6 +520,8 @@ void MirrorWindow::RenderLoop()
                 m_poolSize = frame->ContentSize;
                 m_bufferWidth = m_poolSize.Width;
                 m_bufferHeight = m_poolSize.Height;
+                m_imageWidth = m_bufferWidth;
+                m_imageHeight = m_bufferHeight;
                 m_sourceTexture = nullptr;
                 m_frameWait->RecreateFramePool( m_poolSize );
                 if( FAILED( m_swapChain->ResizeBuffers( 2, m_bufferWidth, m_bufferHeight,
@@ -573,9 +596,24 @@ void MirrorWindow::RenderFrame()
 
     // The mirrored region in texture coordinates, clamped to the captured
     // content, which changes when a mirrored window resizes. Window and
-    // monitor-override captures mirror the full captured content.
+    // monitor-override captures mirror the full captured content; window
+    // tracking follows the window rect within the monitor capture.
     RECT crop = m_textureCrop;
-    if( m_monitorOverride || m_sourceWindow != nullptr )
+    if( m_trackWindow )
+    {
+        RECT windowRect;
+        if( !GetWindowRect( m_sourceWindow, &windowRect ) )
+        {
+            return;
+        }
+        m_sourceRect = windowRect;
+        SetRect( &crop,
+                 windowRect.left - m_sourceMonitorRect.left,
+                 windowRect.top - m_sourceMonitorRect.top,
+                 windowRect.right - m_sourceMonitorRect.left,
+                 windowRect.bottom - m_sourceMonitorRect.top );
+    }
+    else if( m_monitorOverride || m_sourceWindow != nullptr )
     {
         SetRect( &crop, 0, 0, m_contentSize.Width, m_contentSize.Height );
     }
@@ -588,6 +626,14 @@ void MirrorWindow::RenderFrame()
     if( cropWidth <= 0 || cropHeight <= 0 )
     {
         return;
+    }
+
+    // A tracked window's crop changes as it resizes; re-fit the mirror.
+    if( m_trackWindow && ( cropWidth != m_imageWidth || cropHeight != m_imageHeight ))
+    {
+        m_imageWidth = cropWidth;
+        m_imageHeight = cropHeight;
+        PostMessage( m_window, WM_MIRROR_RELAYOUT, 0, 0 );
     }
 
     const int subWidth = max( 1, min( static_cast<int>( cropWidth / m_zoom ), m_bufferWidth ) );
@@ -606,7 +652,7 @@ void MirrorWindow::RenderFrame()
                 desiredX = static_cast<float>( cursorPos.x - m_overrideRect.left );
                 desiredY = static_cast<float>( cursorPos.y - m_overrideRect.top );
             }
-            else if( m_sourceWindow != nullptr )
+            else if( m_sourceWindow != nullptr && !m_trackWindow )
             {
                 RECT windowRect;
                 if( GetWindowRect( m_sourceWindow, &windowRect ) &&
