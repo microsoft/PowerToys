@@ -117,6 +117,19 @@ internal sealed class OverlayManager : IOverlayManager
             captureFailed = true;
         }
 
+        // A terminate/disable request can run on the dispatcher while the awaited captures
+        // above complete. If the session was torn down, release every locally captured image
+        // and abort before resolving or creating any overlay windows.
+        if (!_sessionActive || token.IsCancellationRequested)
+        {
+            foreach (var cap in captures)
+            {
+                cap.Dispose();
+            }
+
+            return;
+        }
+
         if (captureFailed)
         {
             // Dispose any successful captures
@@ -202,10 +215,6 @@ internal sealed class OverlayManager : IOverlayManager
         {
             var token = _sessionCts?.Token ?? CancellationToken.None;
 
-            // Determine bitmap and mode. Word mode reuses the shared capture bitmap, while
-            // region/table/single-line modes own a cropped bitmap that must be disposed here.
-            using Bitmap? croppedBitmap = isClick ? null : capture.Crop(selection.Local);
-            Bitmap bitmapForOcr = isClick ? capture.Bitmap : croppedBitmap!;
             OcrCaptureMode mode;
             OcrPoint? clickPoint = null;
 
@@ -228,13 +237,34 @@ internal sealed class OverlayManager : IOverlayManager
                 mode = OcrCaptureMode.Region;
             }
 
-            var request = new OcrExtractionRequest(
-                bitmapForOcr,
-                _viewModel.SelectedLanguage,
-                mode,
-                clickPoint);
+            // OCR boundary: any failure here (including a WinRT COMException raised by the
+            // OCR engine) surfaces as OcrFailed, never ClipboardFailed.
+            string result;
+            try
+            {
+                // Word mode reuses the shared capture bitmap, while region/table/single-line
+                // modes own a cropped bitmap that must be disposed once OCR completes.
+                using Bitmap? croppedBitmap = isClick ? null : capture.Crop(selection.Local);
+                Bitmap bitmapForOcr = isClick ? capture.Bitmap : croppedBitmap!;
 
-            string result = await _textExtractorService.ExtractAsync(request, token);
+                var request = new OcrExtractionRequest(
+                    bitmapForOcr,
+                    _viewModel.SelectedLanguage,
+                    mode,
+                    clickPoint);
+
+                result = await _textExtractorService.ExtractAsync(request, token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("OCR extraction failed", ex);
+                ShowErrorOnAll(ResourceLoaderInstance.ResourceLoader.GetString("OcrFailed"));
+                return;
+            }
 
             // Keep overlays open for whitespace/empty output
             if (string.IsNullOrWhiteSpace(result))
@@ -244,8 +274,22 @@ internal sealed class OverlayManager : IOverlayManager
                 return;
             }
 
-            // Write to clipboard
-            await _clipboardService.SetTextAsync(result);
+            // Clipboard boundary: failures here surface as ClipboardFailed so the extracted
+            // content is not silently lost.
+            try
+            {
+                await _clipboardService.SetTextAsync(result);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Clipboard write failed", ex);
+                ShowErrorOnAll(ResourceLoaderInstance.ResourceLoader.GetString("ClipboardFailed"));
+                return;
+            }
 
             // Emit telemetry and close
             PowerToysTelemetry.Log.WriteEvent(new PowerOCRCaptureEvent());
@@ -257,13 +301,9 @@ internal sealed class OverlayManager : IOverlayManager
         }
         catch (Exception ex)
         {
-            Logger.LogError("OCR capture failed", ex);
-
-            string errorKey = ex is System.Runtime.InteropServices.COMException
-                ? "ClipboardFailed"
-                : "OcrFailed";
-            string errorMsg = ResourceLoaderInstance.ResourceLoader.GetString(errorKey);
-            ShowErrorOnAll(errorMsg);
+            // Defensive net: OCR and clipboard failures are handled at their own boundaries
+            // above; this only guards the async void caller against unexpected errors.
+            Logger.LogError("Capture pipeline failed unexpectedly", ex);
         }
         finally
         {
@@ -346,7 +386,7 @@ internal sealed class OverlayManager : IOverlayManager
         if (!string.IsNullOrEmpty(preferredName))
         {
             var preferred = viewModel.Languages.FirstOrDefault(
-                l => l.NativeName.Equals(preferredName, StringComparison.Ordinal));
+                l => l.NativeName.Equals(preferredName, StringComparison.OrdinalIgnoreCase));
             if (preferred is not null)
             {
                 viewModel.SelectedLanguage = preferred;
