@@ -232,6 +232,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
+            OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
         }
 
         private bool _enabledStateIsGPOConfigured;
