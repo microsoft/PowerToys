@@ -142,11 +142,12 @@ namespace Peek.FilePreviewer.Controls
                 _loadTableDataCts = new System.Threading.CancellationTokenSource();
                 var token = _loadTableDataCts.Token;
 
-                if (Previewer != null)
+                var previewer = Previewer;
+                if (previewer != null)
                 {
                     try
                     {
-                        await System.Threading.Tasks.Task.Run(() => Previewer.LoadTableDataAsync(table, token), token);
+                        await System.Threading.Tasks.Task.Run(() => previewer.LoadTableDataAsync(table, token), token);
                     }
                     catch (System.OperationCanceledException)
                     {
