@@ -28,6 +28,9 @@
 #include <common/interop/shared_constants.h>
 #include <common/utils/ProcessWaiter.h>
 #include <common/utils/process_path.h>
+#include <common/Themes/icon_helpers.h>
+#include <common/Themes/theme_listener.h>
+#include <Shlwapi.h>
 
 #include "../ZoomItModuleInterface/trace.h"
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
@@ -1663,6 +1666,58 @@ std::wstring OcrFromHBITMAP( HBITMAP hBitmap )
 // EnableDisableTrayIcon
 //
 //----------------------------------------------------------------------------
+#ifdef __ZOOMIT_POWERTOYS__
+static BOOLEAN g_TrayIconVisible = FALSE;
+static ThemeListener g_trayThemeListener;
+
+static HICON GetZoomItTrayIconHandle()
+{
+    WCHAR modulePath[MAX_PATH];
+    GetModuleFileName(g_hInstance, modulePath, MAX_PATH);
+    PathRemoveFileSpec(modulePath);
+    std::wstring whiteIconPath = std::wstring(modulePath) + L"\\appiconWhite.ico";
+    std::wstring darkIconPath = std::wstring(modulePath) + L"\\appiconDark.ico";
+    return LoadThemeAdaptiveTrayIcon(
+        g_ShowThemeAdaptiveTrayIcon == TRUE,
+        whiteIconPath.c_str(),
+        darkIconPath.c_str(),
+        g_hInstance,
+        L"APPICON");
+}
+
+static void RefreshTrayIcon(HWND hWnd)
+{
+    if (!g_TrayIconVisible || hWnd == nullptr)
+    {
+        return;
+    }
+
+    NOTIFYICONDATA tNotifyIconData;
+    memset(&tNotifyIconData, 0, sizeof(tNotifyIconData));
+    tNotifyIconData.cbSize = sizeof(NOTIFYICONDATA);
+    tNotifyIconData.hWnd = hWnd;
+    tNotifyIconData.uID = 1;
+    tNotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+    tNotifyIconData.uCallbackMessage = WM_USER_TRAY_ACTIVATE;
+    tNotifyIconData.hIcon = GetZoomItTrayIconHandle();
+    lstrcpyn(tNotifyIconData.szTip, APPNAME, sizeof(APPNAME));
+    Shell_NotifyIcon(NIM_MODIFY, &tNotifyIconData);
+}
+
+static void HandleTraySystemThemeChange()
+{
+    if (g_ShowThemeAdaptiveTrayIcon && g_TrayIconVisible)
+    {
+        RefreshTrayIcon(g_hWndMain);
+    }
+}
+
+static void InitializeTrayThemeListener()
+{
+    g_trayThemeListener.AddSystemThemeChangedHandler(&HandleTraySystemThemeChange);
+}
+#endif
+
 void EnableDisableTrayIcon( HWND hWnd, BOOLEAN Enable )
 {
     NOTIFYICONDATA tNotifyIconData;
@@ -1673,9 +1728,27 @@ void EnableDisableTrayIcon( HWND hWnd, BOOLEAN Enable )
     tNotifyIconData.uID = 1;
     tNotifyIconData.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     tNotifyIconData.uCallbackMessage = WM_USER_TRAY_ACTIVATE;
+#ifdef __ZOOMIT_POWERTOYS__
+    tNotifyIconData.hIcon = GetZoomItTrayIconHandle();
+#else
     tNotifyIconData.hIcon = LoadIcon( g_hInstance, L"APPICON" );
+#endif
     lstrcpyn(tNotifyIconData.szTip, APPNAME, sizeof(APPNAME));
+
+#ifdef __ZOOMIT_POWERTOYS__
+    if (Enable)
+    {
+        const DWORD message = g_TrayIconVisible ? NIM_MODIFY : NIM_ADD;
+        g_TrayIconVisible = Shell_NotifyIcon(message, &tNotifyIconData) ? TRUE : FALSE;
+    }
+    else
+    {
+        Shell_NotifyIcon(NIM_DELETE, &tNotifyIconData);
+        g_TrayIconVisible = FALSE;
+    }
+#else
     Shell_NotifyIcon(Enable ? NIM_ADD : NIM_DELETE, &tNotifyIconData);
+#endif
 }
 
 //----------------------------------------------------------------------------
@@ -10403,7 +10476,21 @@ LRESULT APIENTRY MainWndProc(
         }
 
         // Apply tray icon setting
-        EnableDisableTrayIcon(hWnd, g_ShowTrayIcon);
+        if (g_ShowTrayIcon)
+        {
+            if (g_TrayIconVisible)
+            {
+                RefreshTrayIcon(hWnd);
+            }
+            else
+            {
+                EnableDisableTrayIcon(hWnd, TRUE);
+            }
+        }
+        else
+        {
+            EnableDisableTrayIcon(hWnd, FALSE);
+        }
 
         // This is also called by ZoomIt when it starts and loads the Settings. Opacity is added after loading from registry, so we use the same pattern.
         if ((g_PenColor >> 24) == 0)
@@ -12074,6 +12161,9 @@ HWND InitInstance( HINSTANCE hInstance, int nCmdShow )
 
     // Add tray icon
     EnableDisableTrayIcon( hWndMain, g_ShowTrayIcon );
+#ifdef __ZOOMIT_POWERTOYS__
+    InitializeTrayThemeListener();
+#endif
     return hWndMain;
 
 }
