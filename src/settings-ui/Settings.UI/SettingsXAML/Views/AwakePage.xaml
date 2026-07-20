@@ -100,8 +100,10 @@
                         <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
-                    <tkcontrols:SettingsCard ContentAlignment="Left" HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
-                        <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowThemeAdaptiveTrayIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
