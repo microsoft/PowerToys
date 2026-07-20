@@ -15,4 +15,8 @@
       <_Parameter1>PowerToys.PowerOCR.Core.UnitTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
 </Project>
