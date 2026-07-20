@@ -397,8 +397,17 @@ RECT MirrorWindow::ComputeWindowRect() const
 {
     const int monitorWidth = m_targetRect.right - m_targetRect.left;
     const int monitorHeight = m_targetRect.bottom - m_targetRect.top;
-    const double scale = min( static_cast<double>( monitorWidth ) / m_imageWidth,
-                              static_cast<double>( monitorHeight ) / m_imageHeight );
+    double scale = min( static_cast<double>( monitorWidth ) / m_imageWidth,
+                        static_cast<double>( monitorHeight ) / m_imageHeight );
+
+    // Mirror windows at native size, scaling only when they don't fit on
+    // the target monitor, so the image stays stable as the window resizes.
+    // Regions always fill the monitor.
+    if( m_sourceWindow != nullptr )
+    {
+        scale = min( scale, 1.0 );
+    }
+
     const int windowWidth = max( 1, static_cast<int>( m_imageWidth * scale ) );
     const int windowHeight = max( 1, static_cast<int>( m_imageHeight * scale ) );
 
