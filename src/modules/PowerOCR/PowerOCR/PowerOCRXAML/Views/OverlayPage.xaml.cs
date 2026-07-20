@@ -214,6 +214,24 @@ public sealed partial class OverlayPage : UserControl
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Shared cleanup for normal release, pointer-canceled, and capture-lost paths.
+    /// When <paramref name="pointer"/> is non-null the capture is still held and must be
+    /// released explicitly; pass null when capture has already been taken away by the system.
+    /// </summary>
+    private void EndSelectionCleanup(Pointer? pointer)
+    {
+        _isSelecting = false;
+
+        if (pointer is not null)
+        {
+            RegionClickCanvas.ReleasePointerCapture(pointer);
+        }
+
+        CursorClipper.UnClip();
+        Toolbar.Visibility = Visibility.Visible;
+    }
+
     private async void Canvas_PointerReleased(object sender, PointerRoutedEventArgs e)
     {
         if (!_isSelecting)
@@ -221,14 +239,7 @@ public sealed partial class OverlayPage : UserControl
             return;
         }
 
-        _isSelecting = false;
-
-        // Release pointer capture and cursor clipping
-        RegionClickCanvas.ReleasePointerCapture(e.Pointer);
-        CursorClipper.UnClip();
-
-        // Restore toolbar
-        Toolbar.Visibility = Visibility.Visible;
+        EndSelectionCleanup(e.Pointer);
 
         if (_capture is null || _manager is null || XamlRoot is null)
         {
@@ -246,6 +257,26 @@ public sealed partial class OverlayPage : UserControl
 
         await _manager.CaptureAsync(_capture, pixelSelection, isClick);
         e.Handled = true;
+    }
+
+    private void Canvas_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        // Fires when the system revokes pointer capture mid-drag (e.g. task-switch, touch
+        // cancellation). Capture is already gone so pass null to skip the redundant release.
+        if (_isSelecting)
+        {
+            EndSelectionCleanup(null);
+        }
+    }
+
+    private void Canvas_PointerCanceled(object sender, PointerRoutedEventArgs e)
+    {
+        // Fires when the system cancels the pointer interaction (e.g. stylus lifted out of
+        // range, device disconnected). Capture is still ours; release it explicitly.
+        if (_isSelecting)
+        {
+            EndSelectionCleanup(e.Pointer);
+        }
     }
 
     private void Canvas_RightTapped(object sender, RightTappedRoutedEventArgs e)
