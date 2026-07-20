@@ -7,18 +7,25 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ManagedCommon;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media.Imaging;
 using PowerOCR.Core.Models;
+using PowerOCR.Core.Services;
 using PowerOCR.Helpers;
 using PowerOCR.Models;
+using PowerOCR.Settings;
 using PowerOCR.Telemetry;
+using PowerOCR.ViewModels;
+using Windows.Globalization;
 using Windows.Graphics.Imaging;
+using Windows.Media.Ocr;
 using Windows.Storage.Streams;
 
 namespace PowerOCR.Services;
@@ -28,20 +35,33 @@ internal sealed class OverlayManager : IOverlayManager
     private readonly IActivationService _activationService;
     private readonly IScreenCaptureService _screenCaptureService;
     private readonly IOverlayWindowFactory _windowFactory;
+    private readonly ITextExtractorService _textExtractorService;
+    private readonly IClipboardService _clipboardService;
+    private readonly IUserSettings _userSettings;
+    private readonly IServiceProvider _serviceProvider;
     private readonly List<OCROverlay> _activeWindows = new();
     private readonly List<DisplayCapture> _activeCaptures = new();
     private CancellationTokenSource? _sessionCts;
+    private OverlaySessionViewModel? _viewModel;
     private bool _sessionActive;
     private bool _disposed;
 
     public OverlayManager(
         IActivationService activationService,
         IScreenCaptureService screenCaptureService,
-        IOverlayWindowFactory windowFactory)
+        IOverlayWindowFactory windowFactory,
+        ITextExtractorService textExtractorService,
+        IClipboardService clipboardService,
+        IUserSettings userSettings,
+        IServiceProvider serviceProvider)
     {
         _activationService = activationService;
         _screenCaptureService = screenCaptureService;
         _windowFactory = windowFactory;
+        _textExtractorService = textExtractorService;
+        _clipboardService = clipboardService;
+        _userSettings = userSettings;
+        _serviceProvider = serviceProvider;
 
         _activationService.ActivationRequested += OnActivationRequested;
     }
@@ -56,6 +76,10 @@ internal sealed class OverlayManager : IOverlayManager
         _sessionActive = true;
         _sessionCts = new CancellationTokenSource();
         var token = _sessionCts.Token;
+
+        // Create shared view model for this session
+        _viewModel = _serviceProvider.GetRequiredService<OverlaySessionViewModel>();
+        PopulateLanguages(_viewModel);
 
         var displays = DisplayArea.FindAll();
         if (displays.Count == 0)
@@ -110,7 +134,7 @@ internal sealed class OverlayManager : IOverlayManager
                 captures.Add(errorCapture);
                 _activeCaptures.AddRange(captures);
 
-                var errorWindow = _windowFactory.Create(errorCapture, this);
+                var errorWindow = _windowFactory.Create(errorCapture, _viewModel, this);
                 _activeWindows.Add(errorWindow);
                 errorWindow.Activate();
 
@@ -133,7 +157,7 @@ internal sealed class OverlayManager : IOverlayManager
         {
             foreach (var capture in captures)
             {
-                var window = _windowFactory.Create(capture, this);
+                var window = _windowFactory.Create(capture, _viewModel, this);
                 _activeWindows.Add(window);
             }
 
@@ -147,6 +171,114 @@ internal sealed class OverlayManager : IOverlayManager
         {
             Logger.LogError("Failed to create or activate overlay windows", ex);
             CloseAll(cancelled: false);
+        }
+    }
+
+    public async Task CaptureAsync(DisplayCapture capture, PixelSelection selection, bool isClick)
+    {
+        if (_viewModel is null || !_sessionActive)
+        {
+            return;
+        }
+
+        // Reject a second capture while processing
+        if (_viewModel.IsProcessing)
+        {
+            return;
+        }
+
+        // Reject if no language is available
+        if (_viewModel.SelectedLanguage is null)
+        {
+            string noLangMsg = ResourceLoaderInstance.ResourceLoader.GetString("NoOcrLanguages");
+            ShowErrorOnAll(noLangMsg);
+            return;
+        }
+
+        _viewModel.IsProcessing = true;
+        _viewModel.HasError = false;
+
+        try
+        {
+            var token = _sessionCts?.Token ?? CancellationToken.None;
+
+            // Determine bitmap and mode
+            Bitmap bitmapForOcr;
+            OcrCaptureMode mode;
+            OcrPoint? clickPoint = null;
+
+            if (isClick)
+            {
+                // Clicked-word mode: use full cached bitmap with local click point
+                bitmapForOcr = capture.Bitmap;
+                mode = OcrCaptureMode.Word;
+                clickPoint = new OcrPoint(selection.Local.X, selection.Local.Y);
+            }
+            else if (_viewModel.IsTable)
+            {
+                bitmapForOcr = capture.Crop(selection.Local);
+                mode = OcrCaptureMode.Table;
+            }
+            else if (_viewModel.IsSingleLine)
+            {
+                bitmapForOcr = capture.Crop(selection.Local);
+                mode = OcrCaptureMode.SingleLine;
+            }
+            else
+            {
+                bitmapForOcr = capture.Crop(selection.Local);
+                mode = OcrCaptureMode.Region;
+            }
+
+            var request = new OcrExtractionRequest(
+                bitmapForOcr,
+                _viewModel.SelectedLanguage,
+                mode,
+                clickPoint);
+
+            string result = await _textExtractorService.ExtractAsync(request, token);
+
+            // Dispose cropped bitmap (not the original capture bitmap)
+            if (!isClick)
+            {
+                bitmapForOcr.Dispose();
+            }
+
+            // Keep overlays open for whitespace/empty output
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                string noTextMsg = ResourceLoaderInstance.ResourceLoader.GetString("NoTextFound");
+                ShowErrorOnAll(noTextMsg);
+                return;
+            }
+
+            // Write to clipboard
+            await _clipboardService.SetTextAsync(result);
+
+            // Emit telemetry and close
+            PowerToysTelemetry.Log.WriteEvent(new PowerOCRCaptureEvent());
+            CloseAll(cancelled: false);
+        }
+        catch (OperationCanceledException)
+        {
+            // Session was cancelled - do nothing
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("OCR capture failed", ex);
+
+            string errorKey = ex is System.Runtime.InteropServices.COMException
+                ? "ClipboardFailed"
+                : "OcrFailed";
+            string errorMsg = ResourceLoaderInstance.ResourceLoader.GetString(errorKey);
+            ShowErrorOnAll(errorMsg);
+        }
+        finally
+        {
+            if (_sessionActive && _viewModel is not null)
+            {
+                _viewModel.IsProcessing = false;
+            }
         }
     }
 
@@ -175,6 +307,7 @@ internal sealed class OverlayManager : IOverlayManager
 
         _activeCaptures.Clear();
 
+        _viewModel = null;
         _sessionActive = false;
 
         if (cancelled)
@@ -196,6 +329,57 @@ internal sealed class OverlayManager : IOverlayManager
         if (_sessionActive)
         {
             CloseAll(cancelled: false);
+        }
+    }
+
+    private void PopulateLanguages(OverlaySessionViewModel viewModel)
+    {
+        var recognizers = OcrEngine.AvailableRecognizerLanguages;
+        foreach (var lang in recognizers)
+        {
+            viewModel.Languages.Add(lang);
+        }
+
+        if (viewModel.Languages.Count == 0)
+        {
+            return;
+        }
+
+        // Try preferred language from settings
+        string preferredName = _userSettings.PreferredLanguage.Value;
+        if (!string.IsNullOrEmpty(preferredName))
+        {
+            var preferred = viewModel.Languages.FirstOrDefault(
+                l => l.NativeName.Equals(preferredName, StringComparison.Ordinal));
+            if (preferred is not null)
+            {
+                viewModel.SelectedLanguage = preferred;
+                return;
+            }
+        }
+
+        // Fallback to current input language
+        string inputTag = Language.CurrentInputMethodLanguageTag;
+        if (!string.IsNullOrEmpty(inputTag))
+        {
+            var inputLang = viewModel.Languages.FirstOrDefault(
+                l => l.LanguageTag.Equals(inputTag, StringComparison.OrdinalIgnoreCase));
+            if (inputLang is not null)
+            {
+                viewModel.SelectedLanguage = inputLang;
+                return;
+            }
+        }
+
+        // Final fallback: first installed language
+        viewModel.SelectedLanguage = viewModel.Languages[0];
+    }
+
+    private void ShowErrorOnAll(string message)
+    {
+        foreach (var window in _activeWindows)
+        {
+            window.ShowError(message);
         }
     }
 

@@ -105,4 +105,7 @@
   <data name="CancelButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Cancel (Esc)</value>
   </data>
+  <data name="CancelMenuItem.Text" xml:space="preserve">
+    <value>Cancel (Esc)</value>
+  </data>
 </root>

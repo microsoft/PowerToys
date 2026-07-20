@@ -17,6 +17,7 @@ using PowerOCR.Helpers;
 using PowerOCR.Keyboard;
 using PowerOCR.Services;
 using PowerOCR.Settings;
+using PowerOCR.ViewModels;
 
 namespace PowerOCR;
 
@@ -83,6 +84,10 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IScreenCaptureService, ScreenCaptureService>();
         services.AddSingleton<IOverlayWindowFactory, OverlayWindowFactory>();
         services.AddSingleton<IOverlayManager, OverlayManager>();
+
+        // Task 5: Clipboard and session view model
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddTransient<OverlaySessionViewModel>();
 
         _serviceProvider = services.BuildServiceProvider();
 

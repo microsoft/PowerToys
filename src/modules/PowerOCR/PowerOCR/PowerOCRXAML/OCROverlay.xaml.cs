@@ -5,6 +5,7 @@
 using Microsoft.UI.Windowing;
 using PowerOCR.Models;
 using PowerOCR.Services;
+using PowerOCR.ViewModels;
 using Windows.Graphics;
 using WinUIEx;
 
@@ -19,7 +20,11 @@ public sealed partial class OCROverlay : WindowEx
     private readonly IOverlayManager _manager;
     private bool _closingFromManager;
 
-    public OCROverlay(DisplayCapture capture, IOverlayManager manager)
+    public OCROverlay(
+        DisplayCapture capture,
+        OverlaySessionViewModel viewModel,
+        IOverlayManager manager,
+        SettingsDeepLink settingsDeepLink)
     {
         _manager = manager;
 
@@ -27,7 +32,7 @@ public sealed partial class OCROverlay : WindowEx
 
         AppWindow.Title = "Text Extractor";
 
-        OverlayContent.Initialize(this, capture, manager);
+        OverlayContent.Initialize(this, capture, manager, viewModel, settingsDeepLink);
 
         var bounds = capture.Bounds;
         AppWindow.MoveAndResize(new RectInt32(bounds.X, bounds.Y, bounds.Width, bounds.Height));

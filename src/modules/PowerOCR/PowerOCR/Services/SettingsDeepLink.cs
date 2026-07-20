@@ -11,7 +11,7 @@ using ManagedCommon;
 
 namespace PowerOCR.Services;
 
-internal sealed class SettingsDeepLink
+public sealed class SettingsDeepLink
 {
     public void Open()
     {
