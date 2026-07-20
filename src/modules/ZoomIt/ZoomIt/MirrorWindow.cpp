@@ -53,10 +53,27 @@ static void RequestBorderlessCapture()
     {
         if( winrt::ApiInformation::IsTypePresent( L"Windows.Graphics.Capture.GraphicsCaptureAccess" ) )
         {
-            winrt::GraphicsCaptureAccess::RequestAccessAsync( winrt::GraphicsCaptureAccessKind::Borderless ).get();
+            auto status = winrt::GraphicsCaptureAccess::RequestAccessAsync( winrt::GraphicsCaptureAccessKind::Borderless ).get();
+            wchar_t message[128];
+            swprintf_s( message, L"[Mirror] Borderless capture access status=%d\n", static_cast<int>( status ) );
+            OutputDebugStringW( message );
+        }
+        else
+        {
+            OutputDebugStringW( L"[Mirror] GraphicsCaptureAccess type not present\n" );
         }
     }
-    catch( ... ) {}
+    catch( const winrt::hresult_error& error )
+    {
+        wchar_t message[256];
+        swprintf_s( message, L"[Mirror] Borderless capture access request failed: 0x%08X\n",
+                    static_cast<unsigned>( error.code().value ) );
+        OutputDebugStringW( message );
+    }
+    catch( ... )
+    {
+        OutputDebugStringW( L"[Mirror] Borderless capture access request failed\n" );
+    }
 }
 
 //----------------------------------------------------------------------------
