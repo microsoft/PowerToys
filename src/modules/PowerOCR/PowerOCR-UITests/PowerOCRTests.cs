@@ -190,18 +190,40 @@ public class PowerOCRTests : UITestBase
         var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
         Assert.IsNotNull(textExtractorWindow, "TextExtractor window should appear after hotkey activation");
 
-        // Verify and toggle SingleLine mode
+        // Verify SingleLine mode is independent of its initial state
         var singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
         Assert.IsNotNull(singleLineButton, "SingleLine toggle button should be found on the toolbar");
+        if (singleLineButton.Selected)
+        {
+            singleLineButton.Click();
+            Thread.Sleep(500);
+
+            singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
+            Assert.IsFalse(singleLineButton.Selected, "SingleLine toggle button should be deselected after the reset click");
+        }
+
         singleLineButton.Click();
         Thread.Sleep(500);
+
+        singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
         Assert.IsTrue(singleLineButton.Selected, "SingleLine toggle button should be selected after click");
 
-        // Verify and toggle Table mode
+        // Verify Table mode is independent of its initial state
         var tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
         Assert.IsNotNull(tableButton, "Table toggle button should be found on the toolbar");
+        if (tableButton.Selected)
+        {
+            tableButton.Click();
+            Thread.Sleep(500);
+
+            tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
+            Assert.IsFalse(tableButton.Selected, "Table toggle button should be deselected after the reset click");
+        }
+
         tableButton.Click();
         Thread.Sleep(500);
+
+        tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
         Assert.IsTrue(tableButton.Selected, "Table toggle button should be selected after click");
 
         // Dismiss the overlay and verify it disappears

@@ -7,10 +7,11 @@
    - [x] Disable Text Extractor and verify that the activation shortcut no longer activates the utility.
  * With Text Extractor enabled and activated:
    - [x] Try to select text and verify it is copied to the clipboard.
+   - [ ] Click a single word or character without dragging and verify the recognized token is copied to the clipboard.
    - [x] Try to select a different OCR language by right-clicking and verify the change is applied.
-   - [x] Toggle Single-line mode via `SingleLineToggleButton`; verify the button reports Selected = true.
-   - [x] Toggle Table mode via `TableToggleButton`; verify the button reports Selected = true.
-   - [x] Press Escape after toggling toolbar modes and verify the overlay is dismissed.
+   - [ ] Toggle Single-line mode via `SingleLineToggleButton`; verify the button reports Selected = true.
+   - [ ] Toggle Table mode via `TableToggleButton`; verify the button reports Selected = true.
+   - [ ] Press Escape after toggling toolbar modes and verify the overlay is dismissed.
  * Rendering – WinUI theming:
    - [ ] Switch Windows to Light theme; activate the overlay and verify the toolbar and canvas render correctly.
    - [ ] Switch Windows to Dark theme; activate the overlay and verify the toolbar and canvas render correctly.
