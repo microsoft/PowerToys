@@ -6115,7 +6115,7 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Break_BackgroundImage_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
-  <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
+  <data name="ShowThemeAdaptiveTrayIcon.Header" xml:space="preserve">
     <value>Show monochrome system tray icons that match the Windows theme</value>
   </data>
   <data name="ShowThemeAdaptiveTrayIcon.Description" xml:space="preserve">
