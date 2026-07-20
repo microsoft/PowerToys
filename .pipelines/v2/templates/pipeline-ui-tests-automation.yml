@@ -26,6 +26,7 @@ parameters:
     values:
       - latestMainOfficialBuild
       - buildNow
+      - buildNowSlim
       - specificBuildId
   - name: specificBuildId
     type: string
@@ -37,18 +38,21 @@ parameters:
 
 stages:
   - ${{ each platform in parameters.buildPlatforms }}:
-    # Full build path: build PowerToys + UI tests + run tests
-    - ${{ if eq(parameters.buildSource, 'buildNow') }}:
+    # Full build path: build PowerToys + UI tests + run tests.
+    # buildNow downloads the whole build and runs in place; buildNowSlim downloads only the installer
+    # from that same full build and installs it. Both require the full build, so they share this path.
+    - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
       - template: pipeline-ui-tests-full-build.yml
         parameters:
           platform: ${{ platform }}
+          buildSource: ${{ parameters.buildSource }}
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           useVSPreview: ${{ parameters.useVSPreview }}
           useLatestWebView2: ${{ parameters.useLatestWebView2 }}
           uiTestModules: ${{ parameters.uiTestModules }}
 
-    # Official build path: build UI tests only + download official build + run tests  
-    - ${{ if ne(parameters.buildSource, 'buildNow') }}:
+    # Official build path: build UI tests only + download official build + run tests
+    - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
       - template: pipeline-ui-tests-official-build.yml
         parameters:
           platform: ${{ platform }}
