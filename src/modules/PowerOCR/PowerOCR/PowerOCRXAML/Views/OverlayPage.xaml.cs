@@ -45,6 +45,7 @@ public sealed partial class OverlayPage : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        SizeChanged += OnSizeChanged;
     }
 
     /// <summary>
@@ -65,8 +66,9 @@ public sealed partial class OverlayPage : UserControl
 
         BackgroundImage.Source = capture.ImageSource;
 
-        // Initialize masks to cover the full area (dim everything initially)
-        UpdateMasksFullCover();
+        // Masks are sized against the real layout dimensions once the page is laid out
+        // (see OnLoaded / OnSizeChanged). Computing them here would run before the first
+        // layout pass, when ActualWidth/ActualHeight are still 0.
     }
 
     /// <summary>
@@ -81,12 +83,40 @@ public sealed partial class OverlayPage : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         RootGrid.Focus(FocusState.Programmatic);
+        RefreshMasks();
+    }
+
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        RefreshMasks();
+    }
+
+    /// <summary>
+    /// Recomputes the selection masks against the current layout size. Preserves an
+    /// in-progress selection; otherwise dims the whole surface. Called on the first
+    /// rendered layout and on every later size change (e.g. DPI or resolution changes),
+    /// so the full-cover mask always matches the real display bounds.
+    /// </summary>
+    private void RefreshMasks()
+    {
+        if (_isSelecting)
+        {
+            UpdateMasks();
+        }
+        else
+        {
+            UpdateMasksFullCover();
+        }
     }
 
     private void UpdateMasksFullCover()
     {
-        double pageWidth = ActualWidth > 0 ? ActualWidth : 1920;
-        double pageHeight = ActualHeight > 0 ? ActualHeight : 1080;
+        double pageHeight = ActualHeight;
+        if (pageHeight <= 0)
+        {
+            // Layout has not run yet; masks are recomputed on Loaded/SizeChanged.
+            return;
+        }
 
         TopMask.Height = pageHeight;
         BottomMask.Height = 0;
