@@ -341,8 +341,6 @@ function Test-CoreFiles {
         'PowerToys.CropAndLockModuleInterface.dll',
         'PowerToys.CropAndLock.exe',
         'PowerToys.PowerOCRModuleInterface.dll',
-        'PowerToys.PowerOCR.dll',
-        'PowerToys.PowerOCR.exe',
         'PowerToys.AdvancedPasteModuleInterface.dll',
         'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
@@ -504,7 +502,12 @@ function Test-CoreFiles {
         'PowerAccent.Common.dll',
         'PowerToys.PowerAccent.dll',
         'PowerToys.PowerAccent.exe',
-        'PowerToys.PowerAccentKeyboardService.dll'
+        'PowerToys.PowerAccentKeyboardService.dll',
+
+        # PowerOCR (Text Extractor) - managed app moved to WinUI3Apps
+        'PowerToys.PowerOCR.Core.dll',
+        'PowerToys.PowerOCR.dll',
+        'PowerToys.PowerOCR.exe'
     )
     
     # Tools signed files (in Tools subdirectory)
