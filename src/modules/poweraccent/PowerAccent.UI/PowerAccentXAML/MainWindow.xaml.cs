@@ -14,9 +14,10 @@ namespace PowerAccent.UI;
 
 public sealed partial class MainWindow : TransparentWindow, IDisposable
 {
-    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip) plus the
-    // surface margin, not measured from the ListView: its DesiredSize (wrapped in a ScrollViewer) is
-    // racy while item containers realize and intermittently reports 0, yielding a blank/clipped bar.
+    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip) plus
+    // HorizontalSurfaceOverheadDip (Surface outer margin + its 1px border on each side), not
+    // measured from the ListView: its DesiredSize (wrapped in a ScrollViewer) is racy while item
+    // containers realize and intermittently reports 0, yielding a blank/clipped bar.
     // The one-row bar hugs its content like the WPF original, capped at the monitor width; beyond
     // that it scrolls and ScrollIntoView reveals the selected glyph.
     private const double RowHeightDip = 92;          // one row of accent pills (item Height=48 + card border)
