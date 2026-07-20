@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 
 namespace PowerOCR.Helpers;
@@ -32,7 +33,10 @@ public sealed class ThrottledActionInvoker : IThrottledActionInvoker, IDisposabl
         }
         else
         {
-            _dispatcherQueue.TryEnqueue(() => ScheduleOnDispatcherThread(action, milliseconds));
+            if (!_dispatcherQueue.TryEnqueue(() => ScheduleOnDispatcherThread(action, milliseconds)))
+            {
+                Logger.LogError("Failed to enqueue the Text Extractor settings debounce request.");
+            }
         }
     }
 
