@@ -57,6 +57,17 @@ if ($RemoveData)
         if (Test-Path $binRoot) { Write-Output "WARNING: '$binRoot' not fully removed." }
         else                    { Write-Output "bin tree '$binRoot' removed." }
     }
+
+    # Remove the per-user virtual-account profiles (C:\Windows\ServiceProfiles\
+    # PTSettingsSvc_<SID> + their HKLM ProfileList entries).  Deleting a service
+    # does NOT remove its virtual-account profile, so without this they accumulate
+    # across install/uninstall cycles (Design §11/§12.8).
+    Get-CimInstance Win32_UserProfile -ErrorAction SilentlyContinue |
+        Where-Object { $_.LocalPath -match '\\ServiceProfiles\\PTSettingsSvc_' } |
+        ForEach-Object {
+            try { Remove-CimInstance -InputObject $_ -ErrorAction Stop; Write-Output "removed vacct profile: $($_.LocalPath)" }
+            catch { Write-Output "WARNING: could not remove profile $($_.LocalPath): $($_.Exception.Message)" }
+        }
 }
 
 exit 0

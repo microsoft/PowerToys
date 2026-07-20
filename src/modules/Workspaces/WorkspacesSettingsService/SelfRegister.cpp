@@ -11,6 +11,10 @@
 #include <string>
 #include <fstream>
 #include <chrono>
+#include <filesystem>
+#include <userenv.h>
+
+#pragma comment(lib, "userenv.lib")
 
 namespace PTSettingsSvc
 {
@@ -324,6 +328,120 @@ namespace PTSettingsSvc
         return RunRegister(userSidString);
     }
 
+    // Best-effort recursive delete; never throws.
+    static void RemoveTreeBestEffort(const std::wstring& path)
+    {
+        if (path.empty())
+        {
+            return;
+        }
+        std::error_code ec;
+        std::filesystem::remove_all(std::filesystem::path(path), ec);
+        RegLog(L"remove-tree '" + path + L"' ec=" + std::to_wstring(ec.value()));
+    }
+
+    // Delete the virtual-account profile for PTSettingsSvc_<sid>
+    // (C:\Windows\ServiceProfiles\PTSettingsSvc_<sid> + its HKLM ProfileList
+    // entry).  DeleteService does NOT remove this, so without it stale profiles
+    // accumulate across install/uninstall cycles.  Best-effort.
+    static void DeleteServiceAccountProfile(const std::wstring& sid)
+    {
+        const std::wstring svcName = ServiceKeyName(sid); // PTSettingsSvc_<sid>
+        const std::wstring matchSuffix = L"\\" + svcName;
+
+        HKEY hList = nullptr;
+        if (RegOpenKeyExW(HKEY_LOCAL_MACHINE,
+                          L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList",
+                          0, KEY_READ, &hList) == ERROR_SUCCESS)
+        {
+            std::vector<std::wstring> profileSids;
+            wchar_t keyName[256];
+            DWORD idx = 0, nameLen = ARRAYSIZE(keyName);
+            while (RegEnumKeyExW(hList, idx, keyName, &nameLen, nullptr, nullptr, nullptr, nullptr) == ERROR_SUCCESS)
+            {
+                HKEY hSub = nullptr;
+                if (RegOpenKeyExW(hList, keyName, 0, KEY_READ, &hSub) == ERROR_SUCCESS)
+                {
+                    wchar_t img[MAX_PATH];
+                    DWORD cb = sizeof(img), type = 0;
+                    if (RegQueryValueExW(hSub, L"ProfileImagePath", nullptr, &type,
+                                         reinterpret_cast<BYTE*>(img), &cb) == ERROR_SUCCESS &&
+                        (type == REG_SZ || type == REG_EXPAND_SZ))
+                    {
+                        std::wstring imgPath(img);
+                        if (imgPath.size() >= matchSuffix.size() &&
+                            _wcsicmp(imgPath.c_str() + imgPath.size() - matchSuffix.size(),
+                                     matchSuffix.c_str()) == 0)
+                        {
+                            profileSids.emplace_back(keyName);
+                        }
+                    }
+                    RegCloseKey(hSub);
+                }
+                ++idx;
+                nameLen = ARRAYSIZE(keyName);
+            }
+            RegCloseKey(hList);
+
+            for (const auto& psid : profileSids)
+            {
+                if (DeleteProfileW(psid.c_str(), nullptr, nullptr))
+                {
+                    RegLog(L"DeleteProfile ok " + psid);
+                }
+                else
+                {
+                    RegLog(L"DeleteProfile gle=" + std::to_wstring(GetLastError()) + L" " + psid);
+                }
+            }
+        }
+
+        // Fallback: remove any leftover profile directory DeleteProfile missed.
+        wchar_t winDir[MAX_PATH];
+        if (GetWindowsDirectoryW(winDir, ARRAYSIZE(winDir)))
+        {
+            RemoveTreeBestEffort(std::wstring(winDir) + L"\\ServiceProfiles\\" + svcName);
+        }
+    }
+
+    // True if any PTSettingsSvc_<other-sid> service still exists.  Used to keep
+    // the SHARED runnable-exe dir (SettingsSvcBin) when other users' per-user
+    // services still point at it; only the last user removes it.
+    static bool AnyOtherPerUserServiceRemains(const std::wstring& excludeSid)
+    {
+        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_ENUMERATE_SERVICE);
+        if (!scm)
+        {
+            return true; // unknown -> conservative (keep the shared bin)
+        }
+        DWORD need = 0, count = 0, resume = 0;
+        EnumServicesStatusExW(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL,
+                              nullptr, 0, &need, &count, &resume, nullptr);
+        bool remains = false;
+        if (GetLastError() == ERROR_MORE_DATA && need > 0)
+        {
+            std::vector<BYTE> buf(need);
+            if (EnumServicesStatusExW(scm, SC_ENUM_PROCESS_INFO, SERVICE_WIN32, SERVICE_STATE_ALL,
+                                      buf.data(), need, &need, &count, &resume, nullptr))
+            {
+                auto* svcs = reinterpret_cast<ENUM_SERVICE_STATUS_PROCESSW*>(buf.data());
+                const std::wstring prefix = L"PTSettingsSvc_";
+                const std::wstring self = ServiceKeyName(excludeSid);
+                for (DWORD i = 0; i < count; ++i)
+                {
+                    const wchar_t* n = svcs[i].lpServiceName;
+                    if (n && wcsncmp(n, prefix.c_str(), prefix.size()) == 0 && self != n)
+                    {
+                        remains = true;
+                        break;
+                    }
+                }
+            }
+        }
+        CloseServiceHandle(scm);
+        return remains;
+    }
+
     int RunUnregister(const std::wstring& userSidString)
     {
         if (userSidString.empty())
@@ -331,38 +449,53 @@ namespace PTSettingsSvc
             return static_cast<int>(E_INVALIDARG);
         }
 
+        RegLog(L"--unregister begin sid=" + userSidString);
         const std::wstring keyName = ServiceKeyName(userSidString);
 
-        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT);
-        if (!scm)
-        {
-            return static_cast<int>(GetLastError());
-        }
-
-        SC_HANDLE svc = OpenServiceW(scm, keyName.c_str(),
-                                     SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
-        if (!svc)
-        {
-            DWORD err = GetLastError();
-            CloseServiceHandle(scm);
-            // Already gone is success.
-            return err == ERROR_SERVICE_DOES_NOT_EXIST ? 0 : static_cast<int>(err);
-        }
-
-        StopAndWait(svc);
-
         int rc = 0;
-        if (!DeleteService(svc))
+        SC_HANDLE scm = OpenSCManagerW(nullptr, nullptr, SC_MANAGER_CONNECT);
+        if (scm)
         {
-            DWORD err = GetLastError();
-            if (err != ERROR_SERVICE_MARKED_FOR_DELETE)
+            SC_HANDLE svc = OpenServiceW(scm, keyName.c_str(),
+                                         SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE);
+            if (svc)
             {
-                rc = static_cast<int>(err);
+                StopAndWait(svc);
+                if (!DeleteService(svc))
+                {
+                    DWORD err = GetLastError();
+                    if (err != ERROR_SERVICE_MARKED_FOR_DELETE)
+                    {
+                        rc = static_cast<int>(err);
+                    }
+                }
+                CloseServiceHandle(svc);
             }
+            else if (GetLastError() != ERROR_SERVICE_DOES_NOT_EXIST)
+            {
+                rc = static_cast<int>(GetLastError());
+            }
+            CloseServiceHandle(scm);
+        }
+        else
+        {
+            rc = static_cast<int>(GetLastError());
         }
 
-        CloseServiceHandle(svc);
-        CloseServiceHandle(scm);
+        // Best-effort per-SID resource teardown, always attempted (even if the
+        // service was already gone) so a re-run finishes a partial cleanup.
+        // DeleteService by itself leaves behind: (1) the protected per-user store,
+        // (2) the virtual-account profile, and (3) — when this was the last user
+        // — the shared runnable-exe copy.  Since --unregister runs elevated, we
+        // remove them here (Design §11/§12.8 uninstall cleanup).
+        RemoveTreeBestEffort(GetUserFolder(userSidString)); // Settings\<sid>
+        DeleteServiceAccountProfile(userSidString);
+        if (!AnyOtherPerUserServiceRemains(userSidString))
+        {
+            RemoveTreeBestEffort(GetServiceBinRoot()); // shared bin: only if last
+        }
+
+        RegLog(L"--unregister end rc=" + std::to_wstring(rc));
         return rc;
     }
 }
