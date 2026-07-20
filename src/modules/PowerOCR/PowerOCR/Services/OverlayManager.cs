@@ -146,26 +146,7 @@ internal sealed class OverlayManager : IOverlayManager
         catch (Exception ex)
         {
             Logger.LogError("Failed to create or activate overlay windows", ex);
-
-            foreach (var window in _activeWindows)
-            {
-                window.CloseFromManager();
-            }
-
-            _activeWindows.Clear();
-
-            foreach (var cap in _activeCaptures)
-            {
-                cap.Dispose();
-            }
-
-            _activeCaptures.Clear();
-
-            _sessionCts?.Cancel();
-            _sessionCts?.Dispose();
-            _sessionCts = null;
-
-            _sessionActive = false;
+            CloseAll(cancelled: false);
         }
     }
 
