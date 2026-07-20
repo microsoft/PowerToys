@@ -25,39 +25,56 @@ internal sealed class ScreenCaptureService : IScreenCaptureService
         var outerBounds = display.OuterBounds;
         var bounds = new DisplayBounds(outerBounds.X, outerBounds.Y, outerBounds.Width, outerBounds.Height);
 
-        cancellationToken.ThrowIfCancellationRequested();
-
-        // Capture the display using GDI+
-        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
-        using (var graphics = Graphics.FromImage(bitmap))
-        {
-            graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bitmap.Size, CopyPixelOperation.SourceCopy);
-        }
+        Bitmap? bitmap = null;
+        SoftwareBitmapSource? source = null;
+        SoftwareBitmap? softwareBitmap = null;
+        DisplayCapture? capture = null;
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Convert to SoftwareBitmapSource for WinUI display
-        using var memoryStream = new MemoryStream();
-        bitmap.Save(memoryStream, ImageFormat.Bmp);
-        memoryStream.Position = 0;
-
-        using var randomAccessStream = new InMemoryRandomAccessStream();
-        using (var outputStream = randomAccessStream.GetOutputStreamAt(0))
+        try
         {
-            await RandomAccessStream.CopyAsync(memoryStream.AsInputStream(), outputStream);
-            await outputStream.FlushAsync();
+            // Capture the display using GDI+
+            bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.CopyFromScreen(bounds.X, bounds.Y, 0, 0, bitmap.Size, CopyPixelOperation.SourceCopy);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Convert to SoftwareBitmapSource for WinUI display
+            using var memoryStream = new MemoryStream();
+            bitmap.Save(memoryStream, ImageFormat.Bmp);
+            memoryStream.Position = 0;
+
+            using var randomAccessStream = new InMemoryRandomAccessStream();
+            using (var outputStream = randomAccessStream.GetOutputStreamAt(0))
+            {
+                await RandomAccessStream.CopyAsync(memoryStream.AsInputStream(), outputStream);
+                await outputStream.FlushAsync();
+            }
+
+            var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+            softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied);
+
+            source = new SoftwareBitmapSource();
+            await source.SetBitmapAsync(softwareBitmap);
+
+            capture = new DisplayCapture(bounds, bitmap, source);
+            return capture;
         }
+        finally
+        {
+            softwareBitmap?.Dispose();
 
-        var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
-        var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
-            BitmapPixelFormat.Bgra8,
-            BitmapAlphaMode.Premultiplied);
-
-        var source = new SoftwareBitmapSource();
-        await source.SetBitmapAsync(softwareBitmap);
-
-        softwareBitmap.Dispose();
-
-        return new DisplayCapture(bounds, bitmap, source);
+            if (capture is null)
+            {
+                source?.Dispose();
+                bitmap?.Dispose();
+            }
+        }
     }
 }
