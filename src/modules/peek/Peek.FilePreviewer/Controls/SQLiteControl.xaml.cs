@@ -146,10 +146,15 @@ namespace Peek.FilePreviewer.Controls
                 {
                     try
                     {
-                        await Previewer.LoadTableDataAsync(table, token);
+                        await System.Threading.Tasks.Task.Run(() => Previewer.LoadTableDataAsync(table, token), token);
                     }
                     catch (System.OperationCanceledException)
                     {
+                        return;
+                    }
+                    catch (Microsoft.Data.Sqlite.SqliteException)
+                    {
+                        // A malformed / locked / unsupported table would otherwise crash Peek from this async void handler.
                         return;
                     }
                 }

@@ -23,7 +23,8 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer.Helpers
                 string baseKey = col.Name.Replace(".", "_")
                                          .Replace("[", "_")
                                          .Replace("]", "_")
-                                         .Replace("/", "_");
+                                         .Replace("/", "_")
+                                         .Replace(",", "_");
 
                 if (string.IsNullOrEmpty(baseKey))
                 {

@@ -93,7 +93,7 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
             var tableNames = new List<string>();
             using (var cmd = connection.CreateCommand())
             {
-                cmd.CommandText = "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name;";
+                cmd.CommandText = @"SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite\_%' ESCAPE '\' ORDER BY name;";
                 using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                 while (await reader.ReadAsync(cancellationToken))
                 {
@@ -167,20 +167,27 @@ namespace Peek.FilePreviewer.Previewers.SqlitePreviewer
                 using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                 while (await reader.ReadAsync(cancellationToken))
                 {
-                    var row = new Dictionary<string, string?>(reader.FieldCount, StringComparer.Ordinal);
-                    for (int i = 0; i < reader.FieldCount && i < tableInfo.Columns.Count; i++)
+                    var ordinalByName = new Dictionary<string, int>(reader.FieldCount, StringComparer.Ordinal);
+                    for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        var col = tableInfo.Columns[i];
-                        if (reader.IsDBNull(i))
+                        ordinalByName[reader.GetName(i)] = i;
+                    }
+
+                    var row = new Dictionary<string, string?>(tableInfo.Columns.Count, StringComparer.Ordinal);
+                    foreach (var col in tableInfo.Columns)
+                    {
+                        if (!ordinalByName.TryGetValue(col.Name, out int i) || reader.IsDBNull(i))
                         {
                             row[col.BindingKey] = null;
                         }
+                        else if (reader.GetFieldType(i) == typeof(byte[]))
+                        {
+                            using var blobStream = reader.GetStream(i);
+                            row[col.BindingKey] = string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Blob_Value"), blobStream.Length);
+                        }
                         else
                         {
-                            var value = reader.GetValue(i);
-                            row[col.BindingKey] = value is byte[] blob
-                                ? string.Format(CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("Sqlite_Blob_Value"), blob.Length)
-                                : value?.ToString();
+                            row[col.BindingKey] = reader.GetValue(i)?.ToString();
                         }
                     }
 
