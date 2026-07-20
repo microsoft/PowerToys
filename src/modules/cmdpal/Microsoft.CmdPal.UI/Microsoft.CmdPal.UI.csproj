@@ -232,6 +232,12 @@
     <Content Update="..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\iconWhite.ico" Condition="Exists('Assets\iconWhite.ico')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\iconDark.ico" Condition="Exists('Assets\iconDark.ico')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Assets\StoreLogo.dark.svg">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
