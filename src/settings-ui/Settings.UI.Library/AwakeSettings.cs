@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -41,7 +41,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     // Fix old buggy default value that might be saved in Settings. Some components don't deal well with negative time zones and minimum time offsets.
                     ExpirationDateTime = Properties.ExpirationDateTime.Year < 2 ? DateTimeOffset.Now : Properties.ExpirationDateTime,
-                    ShowThemeAdaptiveTrayIcon = Properties.ShowThemeAdaptiveTrayIcon,
                 },
             };
         }
