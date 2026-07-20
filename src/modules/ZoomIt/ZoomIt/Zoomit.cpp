@@ -8753,7 +8753,7 @@ LRESULT APIENTRY MainWndProc(
                     break;
                 }
                 mirrorSourceMonitor = MonitorFromWindow( hWndMirrorSource, MONITOR_DEFAULTTONEAREST );
-                GetWindowRect( hWndMirrorSource, &mirrorSourceRect );
+                mirrorSourceRect = MirrorWindow::GetWindowFrameRect( hWndMirrorSource );
 
             } else {
 

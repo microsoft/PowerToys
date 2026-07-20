@@ -33,6 +33,10 @@ public:
 
     bool IsActive() const { return m_window != nullptr; }
 
+    // Visible window bounds, excluding the invisible resize/shadow frame
+    // that GetWindowRect includes.
+    static RECT GetWindowFrameRect( HWND window );
+
     // For window mirroring, sourceWindow is the mirrored window and
     // sourceRect is its window rect; for region mirroring, sourceWindow is
     // null and sourceRect is the mirrored region in screen coordinates.

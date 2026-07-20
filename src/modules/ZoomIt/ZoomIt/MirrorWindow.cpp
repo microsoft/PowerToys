@@ -16,6 +16,7 @@
 #include "pch.h"
 #include "MirrorWindow.h"
 #include "Utility.h"
+#include <dwmapi.h>
 
 namespace util
 {
@@ -68,6 +69,31 @@ static RECT GetMonitorRect( HMONITOR monitor )
     MONITORINFO monitorInfo = { sizeof( monitorInfo ) };
     GetMonitorInfo( monitor, &monitorInfo );
     return monitorInfo.rcMonitor;
+}
+
+//----------------------------------------------------------------------------
+//
+// MirrorWindow::GetWindowFrameRect
+//
+// GetWindowRect includes the invisible resize borders around modern
+// windows, which would mirror as a margin of desktop; the DWM extended
+// frame bounds are the visible edges.
+//
+//----------------------------------------------------------------------------
+RECT MirrorWindow::GetWindowFrameRect( HWND window )
+{
+    typedef HRESULT ( WINAPI *type_pDwmGetWindowAttribute )( HWND, DWORD, PVOID, DWORD );
+    static type_pDwmGetWindowAttribute pDwmGetWindowAttributeDynamic =
+        reinterpret_cast<type_pDwmGetWindowAttribute>(
+            GetProcAddress( LoadLibraryW( L"dwmapi.dll" ), "DwmGetWindowAttribute" ) );
+
+    RECT rect{};
+    if( pDwmGetWindowAttributeDynamic == nullptr ||
+        FAILED( pDwmGetWindowAttributeDynamic( window, DWMWA_EXTENDED_FRAME_BOUNDS, &rect, sizeof( rect ) ) ) )
+    {
+        GetWindowRect( window, &rect );
+    }
+    return rect;
 }
 
 //----------------------------------------------------------------------------
@@ -139,6 +165,15 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
 
     try
     {
+        // Acquire the borderless-capture grant before creating the session
+        // so the yellow system capture border never appears. The request
+        // blocks, and needs an MTA thread.
+        std::thread( []() {
+            winrt::init_apartment( winrt::apartment_type::multi_threaded );
+            RequestBorderlessCapture();
+            winrt::uninit_apartment();
+        } ).join();
+
         // A dedicated D3D device keeps mirroring independent of any
         // simultaneous recording session.
         m_device = util::CreateD3D11Device();
@@ -152,9 +187,8 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
         auto dxgiDevice = m_device.as<IDXGIDevice>();
         m_winrtDevice = CreateDirect3DDevice( dxgiDevice.get() );
 
-        m_frameWait = std::make_unique<CaptureFrameWait>( m_winrtDevice, item, item.Size() );
+        m_frameWait = std::make_unique<CaptureFrameWait>( m_winrtDevice, item, item.Size(), false );
         m_frameWait->EnableCursorCapture( true );
-        m_frameWait->ShowCaptureBorder( false );
 
         WNDCLASSW windowClass{};
         windowClass.lpfnWndProc = []( HWND window, UINT message, WPARAM wordParam, LPARAM longParam ) -> LRESULT
@@ -340,9 +374,8 @@ bool MirrorWindow::SwitchCapture( winrt::GraphicsCaptureItem const& item, bool e
 {
     try
     {
-        auto frameWait = std::make_unique<CaptureFrameWait>( m_winrtDevice, item, item.Size() );
+        auto frameWait = std::make_unique<CaptureFrameWait>( m_winrtDevice, item, item.Size(), false );
         frameWait->EnableCursorCapture( enableCursor );
-        frameWait->ShowCaptureBorder( false );
         m_frameWait->StopCapture();
         m_frameWait = std::move( frameWait );
     }
@@ -599,11 +632,6 @@ void MirrorWindow::RenderLoop()
 {
     winrt::init_apartment( winrt::apartment_type::multi_threaded );
 
-    // The borderless-capture grant must exist before IsBorderRequired(false)
-    // works, so acquire it and re-apply the setting to the live session.
-    RequestBorderlessCapture();
-    m_frameWait->ShowCaptureBorder( false );
-
     while( !m_stopEvent.is_signaled() )
     {
         auto frame = m_frameWait->TryGetNextFrame( MIRROR_FRAME_TIMEOUT_MS );
@@ -622,9 +650,8 @@ void MirrorWindow::RenderLoop()
         // Track the source window with the border.
         if( m_sourceWindow != nullptr && m_borderWindow != nullptr )
         {
-            RECT windowRect;
-            if( GetWindowRect( m_sourceWindow, &windowRect ) &&
-                !EqualRect( &windowRect, &m_borderTarget ))
+            RECT windowRect = GetWindowFrameRect( m_sourceWindow );
+            if( !IsRectEmpty( &windowRect ) && !EqualRect( &windowRect, &m_borderTarget ))
             {
                 m_borderTarget = windowRect;
                 PostMessage( m_window, WM_MIRROR_BORDER, 0, 0 );
@@ -733,8 +760,8 @@ void MirrorWindow::RenderFrame()
     RECT crop = m_textureCrop;
     if( m_trackWindow )
     {
-        RECT windowRect;
-        if( !GetWindowRect( m_sourceWindow, &windowRect ) )
+        RECT windowRect = GetWindowFrameRect( m_sourceWindow );
+        if( IsRectEmpty( &windowRect ) )
         {
             return;
         }
@@ -786,9 +813,8 @@ void MirrorWindow::RenderFrame()
             }
             else if( m_sourceWindow != nullptr && !m_trackWindow )
             {
-                RECT windowRect;
-                if( GetWindowRect( m_sourceWindow, &windowRect ) &&
-                    windowRect.right > windowRect.left && windowRect.bottom > windowRect.top )
+                RECT windowRect = GetWindowFrameRect( m_sourceWindow );
+                if( windowRect.right > windowRect.left && windowRect.bottom > windowRect.top )
                 {
                     desiredX = ( cursorPos.x - windowRect.left ) * static_cast<float>( cropWidth ) /
                                     ( windowRect.right - windowRect.left );
