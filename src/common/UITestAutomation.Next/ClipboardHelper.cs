@@ -46,20 +46,34 @@ public static class ClipboardHelper
         return string.Empty;
     }
 
-    private static T? RunSTA<T>(Func<T> body)
+    private static T? RunSTA<T>(Func<T> body, int maxAttempts = 10, int retryDelayMS = 100)
     {
         T? result = default;
         try
         {
             var thread = new Thread(() =>
             {
-                try
+                for (var attempt = 1; attempt <= maxAttempts; attempt++)
                 {
-                    result = body();
-                }
-                catch
-                {
-                    // Best effort — clipboard can throw under contention (OpenClipboard failures).
+                    try
+                    {
+                        result = body();
+                        return;
+                    }
+                    catch when (attempt < maxAttempts)
+                    {
+                        // The clipboard is a single shared resource: OpenClipboard fails transiently
+                        // while another process still holds it open — very common right after an app
+                        // writes data (e.g. the Measure Tool committing a measurement on click, which
+                        // itself bails silently if OpenClipboard fails). A single-shot attempt surfaces
+                        // that as a false empty/failure, so wait a beat and retry instead of giving up.
+                        Console.WriteLine($"[clipboard] operation blocked (clipboard locked); retry {attempt}/{maxAttempts}");
+                        Thread.Sleep(retryDelayMS);
+                    }
+                    catch
+                    {
+                        // Final attempt also failed — leave result at its default (null/false/empty).
+                    }
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);
