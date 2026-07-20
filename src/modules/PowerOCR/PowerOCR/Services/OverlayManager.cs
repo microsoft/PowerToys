@@ -246,35 +246,52 @@ internal sealed class OverlayManager : IOverlayManager
         var outerBounds = display.OuterBounds;
         var bounds = new DisplayBounds(outerBounds.X, outerBounds.Y, outerBounds.Width, outerBounds.Height);
 
-        // Create a black error bitmap
-        var bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
-        using (var graphics = Graphics.FromImage(bitmap))
+        Bitmap? bitmap = null;
+        SoftwareBitmapSource? source = null;
+        SoftwareBitmap? softwareBitmap = null;
+        DisplayCapture? capture = null;
+
+        try
         {
-            graphics.Clear(Color.Black);
+            // Create a black error bitmap
+            bitmap = new Bitmap(bounds.Width, bounds.Height, PixelFormat.Format32bppArgb);
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.Black);
+            }
+
+            // Convert to SoftwareBitmapSource
+            using var memoryStream = new MemoryStream();
+            bitmap.Save(memoryStream, ImageFormat.Bmp);
+            memoryStream.Position = 0;
+
+            using var randomAccessStream = new InMemoryRandomAccessStream();
+            using (var outputStream = randomAccessStream.GetOutputStreamAt(0))
+            {
+                await RandomAccessStream.CopyAsync(memoryStream.AsInputStream(), outputStream);
+                await outputStream.FlushAsync();
+            }
+
+            var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
+            softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied);
+
+            source = new SoftwareBitmapSource();
+            await source.SetBitmapAsync(softwareBitmap);
+
+            capture = new DisplayCapture(bounds, bitmap, source);
+            return capture;
         }
-
-        // Convert to SoftwareBitmapSource
-        using var memoryStream = new MemoryStream();
-        bitmap.Save(memoryStream, ImageFormat.Bmp);
-        memoryStream.Position = 0;
-
-        using var randomAccessStream = new InMemoryRandomAccessStream();
-        using (var outputStream = randomAccessStream.GetOutputStreamAt(0))
+        finally
         {
-            await RandomAccessStream.CopyAsync(memoryStream.AsInputStream(), outputStream);
-            await outputStream.FlushAsync();
+            softwareBitmap?.Dispose();
+
+            if (capture is null)
+            {
+                source?.Dispose();
+                bitmap?.Dispose();
+            }
         }
-
-        var decoder = await BitmapDecoder.CreateAsync(randomAccessStream);
-        var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
-            BitmapPixelFormat.Bgra8,
-            BitmapAlphaMode.Premultiplied);
-
-        var source = new SoftwareBitmapSource();
-        await source.SetBitmapAsync(softwareBitmap);
-
-        softwareBitmap.Dispose();
-
-        return new DisplayCapture(bounds, bitmap, source);
     }
 }
