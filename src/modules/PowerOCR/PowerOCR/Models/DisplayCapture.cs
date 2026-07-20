@@ -62,5 +62,6 @@ public sealed class DisplayCapture : IDisposable
 
         _disposed = true;
         Bitmap.Dispose();
+        ImageSource.Dispose();
     }
 }

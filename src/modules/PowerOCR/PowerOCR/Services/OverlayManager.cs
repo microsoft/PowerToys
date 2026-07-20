@@ -134,16 +134,43 @@ internal sealed class OverlayManager : IOverlayManager
         // All captures succeeded – create overlay windows
         _activeCaptures.AddRange(captures);
 
-        foreach (var capture in captures)
+        try
         {
-            var window = _windowFactory.Create(capture, this);
-            _activeWindows.Add(window);
-        }
+            foreach (var capture in captures)
+            {
+                var window = _windowFactory.Create(capture, this);
+                _activeWindows.Add(window);
+            }
 
-        // Activate all windows; last one gets keyboard focus
-        foreach (var window in _activeWindows)
+            // Activate all windows; last one gets keyboard focus
+            foreach (var window in _activeWindows)
+            {
+                window.Activate();
+            }
+        }
+        catch (Exception ex)
         {
-            window.Activate();
+            Logger.LogError("Failed to create or activate overlay windows", ex);
+
+            foreach (var window in _activeWindows)
+            {
+                window.CloseFromManager();
+            }
+
+            _activeWindows.Clear();
+
+            foreach (var cap in _activeCaptures)
+            {
+                cap.Dispose();
+            }
+
+            _activeCaptures.Clear();
+
+            _sessionCts?.Cancel();
+            _sessionCts?.Dispose();
+            _sessionCts = null;
+
+            _sessionActive = false;
         }
     }
 
@@ -196,14 +223,22 @@ internal sealed class OverlayManager : IOverlayManager
         }
     }
 
-    private void OnActivationRequested(object? sender, EventArgs e)
+    private async void OnActivationRequested(object? sender, EventArgs e)
     {
         if (_sessionActive)
         {
             return;
         }
 
-        _ = ShowAsync();
+        try
+        {
+            await ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Overlay activation failed unexpectedly", ex);
+            CloseAll(cancelled: false);
+        }
     }
 
     private static async Task<DisplayCapture> CreateErrorCaptureAsync(DisplayArea display)
