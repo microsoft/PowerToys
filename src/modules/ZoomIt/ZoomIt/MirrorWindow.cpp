@@ -134,6 +134,18 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
             THROW_LAST_ERROR_IF( GetLastError() != ERROR_CLASS_ALREADY_EXISTS );
         }
 
+        // Full-monitor black backdrop behind the mirror so letterbox areas
+        // don't show the presentation. Created first so the mirror window,
+        // created after it, starts out above it.
+        m_backdropWindow = CreateWindowExW( WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT,
+                                            m_className, L"ZoomIt DemoMirror Backdrop", WS_POPUP,
+                                            m_targetRect.left, m_targetRect.top,
+                                            m_targetRect.right - m_targetRect.left,
+                                            m_targetRect.bottom - m_targetRect.top,
+                                            nullptr, nullptr, GetModuleHandle( nullptr ), nullptr );
+        THROW_LAST_ERROR_IF_NULL( m_backdropWindow );
+        SetWindowDisplayAffinity( m_backdropWindow, WDA_EXCLUDEFROMCAPTURE );
+
         // No activation and click-through: the mirror is display-only and
         // must never steal focus from the demo app.
         m_window = CreateWindowExW( WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TRANSPARENT,
@@ -176,6 +188,7 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
         return false;
     }
 
+    ShowWindow( m_backdropWindow, SW_SHOWNA );
     ShowWindow( m_window, SW_SHOWNA );
 
     // Ctrl+Up/Ctrl+Down zoom the mirror, matching LiveZoom. Registration
@@ -219,6 +232,11 @@ void MirrorWindow::Stop()
         UnregisterHotKey( m_window, ZOOM_OUT_HOTKEY_ID );
         DestroyWindow( m_window );
         m_window = nullptr;
+    }
+    if( m_backdropWindow != nullptr )
+    {
+        DestroyWindow( m_backdropWindow );
+        m_backdropWindow = nullptr;
     }
 
     m_frameWait = nullptr;
@@ -291,6 +309,12 @@ LRESULT MirrorWindow::WindowProc( HWND window, UINT message, WPARAM wordParam, L
         {
             SetWindowPos( window, HWND_TOPMOST, 0, 0, 0, 0,
                           SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+            if( m_backdropWindow != nullptr )
+            {
+                // Keep the backdrop directly below the mirror.
+                SetWindowPos( m_backdropWindow, window, 0, 0, 0, 0,
+                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+            }
             return 0;
         }
         break;

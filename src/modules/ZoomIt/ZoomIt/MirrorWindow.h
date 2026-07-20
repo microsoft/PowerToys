@@ -49,6 +49,7 @@ private:
 
     const wchar_t* m_className = L"ZoomitMirrorWindow";
     HWND	m_window = nullptr;
+    HWND	m_backdropWindow = nullptr;
     HWND	m_notifyWindow = nullptr;
     HWND	m_sourceWindow = nullptr;
     RECT	m_sourceRect{};		// mirrored region in screen coordinates
