@@ -25,6 +25,9 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
     private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
 
+    // Handles the fractional pixels that may occur with scaled displays from truncating the character list.
+    private const double LayoutRoundingDip = 1;
+
     private readonly Core.PowerAccent _powerAccent;
     private int _selectedIndex = -1;
     private bool _active;
@@ -138,7 +141,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // the class-level note on why the ListView is not measured), capped at the monitor's max
         // usable width so long lists scroll.
         double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
-        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceOverheadDip;
+        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceOverheadDip + LayoutRoundingDip;
 
         // The Unicode description row needs room for a readable line; the WPF original gave it a
         // 600px MinWidth. Widen a short accent bar to match when the row is shown (the accent bar
