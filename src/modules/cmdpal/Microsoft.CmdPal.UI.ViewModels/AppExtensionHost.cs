@@ -5,13 +5,14 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.UI.ViewModels.Auth;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public abstract partial class AppExtensionHost : IExtensionHost
+public abstract partial class AppExtensionHost : IExtensionHost, IExtensionHost2
 {
     private static readonly GlobalLogPageContext _globalLogPageContext = new();
 
@@ -168,6 +169,14 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
         return Task.CompletedTask.AsAsyncAction();
     }
+
+    /// <summary>
+    /// <see cref="IExtensionHost2"/>. Delegate the interactive authorization flow
+    /// to the process-wide <see cref="AuthBrokerService"/>, passing this host so
+    /// it can surface a cancelable, non-blocking status while the browser is open.
+    /// </summary>
+    public IAsyncOperation<IAuthorizationResult> RequestAuthorizationAsync(IAuthorizationRequest request)
+        => AuthBrokerService.Instance.RequestAuthorizationAsync(request, this);
 
     public abstract string? GetExtensionDisplayName();
 }

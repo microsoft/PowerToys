@@ -140,6 +140,10 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        // Give the authorization broker a window-aware platform so it can open
+        // the browser and re-foreground Command Palette when a redirect lands.
+        ViewModels.Auth.AuthBrokerService.Instance.SetPlatform(new WindowAuthBrokerPlatform());
+
         // The HWND itself is borderless / transparent — the visible card lives inside
         // RootElement (CmdPalMainControl) and draws its own corners, border, shadow, and
         // backdrop via the SystemBackdropElement. The frame can be re-enabled via an
@@ -1416,6 +1420,20 @@ public sealed partial class MainWindow : WindowEx,
                         else if (uri.StartsWith("x-cmdpal://settings", StringComparison.OrdinalIgnoreCase))
                         {
                             WeakReferenceMessenger.Default.Send<OpenSettingsMessage>(new());
+                            return;
+                        }
+                        else if (uri.StartsWith("x-cmdpal://auth/callback", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // OAuth redirect for a CustomScheme authorization flow.
+                            // Route it to the pending broker request by its state;
+                            // an unknown state is ignored. Never log the URI: it
+                            // can carry an authorization code.
+                            var handled = ViewModels.Auth.AuthBrokerService.Instance.TryCompleteCustomSchemeRedirect(uri);
+                            if (!handled)
+                            {
+                                Logger.LogWarning("Received an auth callback that did not match a pending request.");
+                            }
+
                             return;
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
