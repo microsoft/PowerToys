@@ -739,6 +739,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_CUSTOM_LAYOUTS_FILE_UPDATE)
         {
             CustomLayouts::instance().LoadData();
+            RefreshLayouts();
         }
         else if (message == WM_PRIV_APPLIED_LAYOUTS_FILE_UPDATE)
         {
