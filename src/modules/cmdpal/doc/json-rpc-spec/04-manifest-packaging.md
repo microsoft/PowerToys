@@ -24,7 +24,7 @@ The key files:
 
 ## `package.json` Schema
 
-CmdPal discovers extensions by finding directories with a `package.json` that contains a `cmdpal` object. Top-level npm fields provide identity; the `cmdpal` section provides CmdPal-specific metadata. The parsed `cmdpal` fields are `displayName`, `icon`, `publisher`, `main`, `debug`, `debugPort`, and `capabilities`.
+CmdPal discovers extensions by finding directories with a `package.json` that contains a `cmdpal` object. Top-level npm fields provide identity; the `cmdpal` section provides CmdPal-specific metadata. The parsed `cmdpal` fields are `displayName`, `icon`, `publisher`, `main`, `debug`, and `debugPort`.
 
 ### Full Example
 
@@ -42,7 +42,6 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
     "displayName": "My Extension",
     "icon": "icon.png",
     "publisher": "your-name",
-    "capabilities": ["commands"],
     "debug": false,
     "debugPort": 9230
   },
@@ -69,6 +68,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 | `name` | `string` | ✅ | Package identifier. Must be unique across installed extensions. Used as the extension ID. |
 | `version` | `string` | ❌ | Semantic version string (e.g., `"1.0.0"`). |
 | `description` | `string` | ❌ | Brief description shown in the extension gallery and settings. |
+| `author` | `string` or `object` | ❌ | npm author. Used as the publisher name only when `cmdpal.publisher` is absent. Accepts the string form `"Name <email> (url)"` or an object with a `name` property; only the name is used. |
 | `main` | `string` | Conditional | Relative path to the entry point JavaScript file. Required when `cmdpal.main` is not specified. This is what `node` executes. |
 | `engines.node` | `string` | ❌ | Node.js version requirement (expected value: `">=22.0.0"`). |
 
@@ -78,8 +78,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 |-------|------|----------|-------------|
 | `displayName` | `string` | ❌ | Human-readable name shown in CmdPal UI. Falls back to `name` if not provided. |
 | `icon` | `string` | ❌ | Icon glyph character (e.g., `"\uE943"`) or relative path to an icon file (PNG recommended). |
-| `publisher` | `string` | ❌ | Author or publisher name. |
-| `capabilities` | `string[]` | ❌ | List of capabilities the extension provides (e.g., `["commands"]`). |
+| `publisher` | `string` | ❌ | Author or publisher name. When omitted, the top-level npm `author` name is used as a fallback. |
 | `debug` | `boolean` | ❌ | When `true`, starts Node.js with `--inspect` for debugger attachment. Default: `false`. |
 | `debugPort` | `integer` | ❌ | Inspector port when `debug` is `true`. If not specified, auto-assigned starting at 9229. |
 | `main` | `string` | ❌ | Optional override of the top-level `main` field (for packages where the CmdPal entry point differs from the npm main). |
@@ -228,8 +227,7 @@ Extensions are distributed as standard npm packages. The recommended `package.js
   "cmdpal": {
     "displayName": "My Extension",
     "icon": "icon.png",
-    "publisher": "your-name",
-    "capabilities": ["commands"]
+    "publisher": "your-name"
   },
   "scripts": {
     "build": "tsc",

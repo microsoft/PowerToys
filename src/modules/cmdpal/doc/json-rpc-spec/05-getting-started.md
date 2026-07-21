@@ -62,7 +62,6 @@ Update `package.json` so it is an ES module, points `main` at the built entry, a
     "displayName": "My First Extension",
     "icon": "\uE8A5",
     "publisher": "Your Name",
-    "capabilities": ["commands"],
     "debug": true
   },
   "scripts": {

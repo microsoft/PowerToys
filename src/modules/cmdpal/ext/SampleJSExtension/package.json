@@ -8,10 +8,7 @@
   "cmdpal": {
     "displayName": "Sample Pages Commands (JS)",
     "publisher": "Microsoft Corporation",
-    "icon": "\uE82D",
-    "capabilities": [
-      "commands"
-    ]
+    "icon": "\uE82D"
   },
   "scripts": {
     "clean": "node -e \"const{rmSync}=require('node:fs');rmSync('dist',{recursive:true,force:true})\"",
