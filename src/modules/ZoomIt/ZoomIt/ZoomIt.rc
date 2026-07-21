@@ -269,8 +269,8 @@ BEGIN
     LTEXT           "Enter the hotkey to mirror the entire screen, enter it with the Shift key to select a region to mirror, or with the Alt key to mirror the window under the cursor. Enter the hotkey again to stop mirroring.",IDC_STATIC,7,39,272,27
     LTEXT           "Mirror Toggle:",IDC_STATIC,7,73,62,8
     CONTROL         "",IDC_MIRROR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,71,80,12
-    CONTROL         "Mirror windows by tracking their screen region, so zoom and draw show in place (uncheck to mirror the window's own surface, unaffected by overlapping windows):",IDC_MIRROR_TRACK_WINDOW,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,91,272,26
+    LTEXT           "When mirroring a window, DemoMirror can track the window's screen region so ZoomIt zoom and draw show in place. Uncheck to mirror the window's surface directly, unaffected by overlapping windows.",IDC_STATIC,7,91,272,27
+    CONTROL         "Track window region:",IDC_MIRROR_TRACK_WINDOW,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_RIGHT | WS_TABSTOP,7,121,90,10
 END
 
 RECORD DIALOGEX 0, 0, 276, 228
