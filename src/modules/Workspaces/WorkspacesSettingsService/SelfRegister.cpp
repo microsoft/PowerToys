@@ -490,12 +490,23 @@ namespace PTSettingsSvc
         // remove them here (Design §11/§12.8 uninstall cleanup).
         RemoveTreeBestEffort(GetUserFolder(userSidString)); // Settings\<sid>
         DeleteServiceAccountProfile(userSidString);
-        if (!AnyOtherPerUserServiceRemains(userSidString))
+
+        const bool removeSharedBin = !AnyOtherPerUserServiceRemains(userSidString);
+
+        // Log the end BEFORE removing the shared bin.  RegLog writes into (and
+        // re-creates) SettingsSvcBin, so anything logged AFTER the bin removal
+        // would resurrect the very directory we just deleted (leaving an empty
+        // SettingsSvcBin\register.log behind).  The bin removal is therefore the
+        // last action and is intentionally NOT logged.
+        RegLog(L"--unregister end rc=" + std::to_wstring(rc) +
+               (removeSharedBin ? L" (removing shared bin)" : L" (shared bin kept)"));
+
+        if (removeSharedBin)
         {
-            RemoveTreeBestEffort(GetServiceBinRoot()); // shared bin: only if last
+            std::error_code ec;
+            std::filesystem::remove_all(std::filesystem::path(GetServiceBinRoot()), ec);
         }
 
-        RegLog(L"--unregister end rc=" + std::to_wstring(rc));
         return rc;
     }
 }
