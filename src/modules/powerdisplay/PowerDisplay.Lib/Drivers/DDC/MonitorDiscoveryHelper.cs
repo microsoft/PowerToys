@@ -91,9 +91,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
         /// <param name="monitorInfo">Display info from QueryDisplayConfig (DevicePath, FriendlyName, MonitorNumber)</param>
+        /// <param name="monitorId">Canonical DevicePath-based monitor ID derived by the discovery controller</param>
         internal Monitor? CreateMonitorFromPhysical(
             PHYSICAL_MONITOR physicalMonitor,
-            MonitorDisplayInfo monitorInfo)
+            MonitorDisplayInfo monitorInfo,
+            string monitorId)
         {
             try
             {
@@ -107,18 +109,15 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = monitorInfo.FriendlyName;
                 }
 
-                // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
-                // If DevicePath is missing we cannot produce a stable Id, so the monitor is
-                // skipped — better to drop one entry than to persist settings under a key
-                // that won't survive the next reboot.
-                if (string.IsNullOrEmpty(monitorInfo.DevicePath))
+                // Use the stable DevicePath-based Id derived once by the discovery controller.
+                // A missing DevicePath produces an empty Id, so skip the monitor rather than
+                // persist settings under a key that will not survive the next reboot.
+                if (string.IsNullOrEmpty(monitorId))
                 {
                     Logger.LogWarning(
                         $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}') — DevicePath unavailable, cannot generate stable Id");
                     return null;
                 }
-
-                string monitorId = MonitorIdentity.FromDevicePath(monitorInfo.DevicePath);
 
                 // If still no good name, use default value
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))

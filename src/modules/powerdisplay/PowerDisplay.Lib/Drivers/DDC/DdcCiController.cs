@@ -70,6 +70,9 @@ namespace PowerDisplay.Common.Drivers.DDC
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
+        internal static string DeriveMonitorId(MonitorDisplayInfo info) =>
+            MonitorIdentity.FromDevicePath(info.DevicePath);
+
         public string Name => "DDC/CI Monitor Controller";
 
         /// <inheritdoc />
@@ -304,6 +307,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         private Monitor? BuildMonitorFromPhysical(
             PHYSICAL_MONITOR physical,
             MonitorDisplayInfo info,
+            string monitorId,
             VcpDiscoveryEvidence evidence)
         {
             if (evidence.Capabilities == null)
@@ -313,7 +317,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             try
             {
-                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info);
+                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info, monitorId);
                 if (monitor == null)
                 {
                     return null;
@@ -685,6 +689,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     cancellationToken.ThrowIfCancellationRequested();
                     var physical = physicals[i];
                     var info = matchingInfos[i];
+                    var monitorId = DeriveMonitorId(info);
 
 #if DEBUG
                     if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
@@ -712,7 +717,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     // retries instead of blocking the threadpool.
                     var evidence = await FetchCapabilitiesWithFallbackAsync(
                         physical.HPhysicalMonitor,
-                        info.DevicePath,
+                        monitorId,
                         cancellationToken);
 
                     if (evidence.Capabilities == null)
@@ -726,7 +731,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     // Dispatch to the threadpool; await before the next physical because
                     // they share the same hMonitor's I2C arbitration.
                     var monitor = await Task.Run(
-                        () => BuildMonitorFromPhysical(physical, info, evidence),
+                        () => BuildMonitorFromPhysical(physical, info, monitorId, evidence),
                         cancellationToken);
 
                     if (monitor != null)

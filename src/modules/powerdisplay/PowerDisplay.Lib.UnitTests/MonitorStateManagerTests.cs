@@ -7,6 +7,8 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Drivers;
+using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 
@@ -64,6 +66,45 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(100, features[0x10].Maximum);
         Assert.AreEqual(VcpObservationSource.MaximumCompatibilityProbe, features[0x10].Source);
         Assert.AreEqual(SuccessfulUtc, features[0x10].LastSuccessfulUtc);
+    }
+
+    [TestMethod]
+    public void ControllerDerivedCacheKey_MatchesMonitorIdAndSurvivesRetentionRoundTrip()
+    {
+        const string rawDevicePath =
+            @"\\?\DISPLAY#AOCB326#5&2f1a4f2&0&UID4352#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
+        var displayInfo = new MonitorDisplayInfo
+        {
+            DevicePath = rawDevicePath,
+            FriendlyName = "AOC Q27G3XMN",
+            GdiDeviceName = @"\\.\DISPLAY1",
+            MonitorNumber = 1,
+        };
+        var canonicalId = MonitorIdentity.FromDevicePath(rawDevicePath);
+        var controllerCacheKey = DdcCiController.DeriveMonitorId(displayInfo);
+
+        Assert.AreEqual(canonicalId, controllerCacheKey);
+        Assert.AreNotEqual(rawDevicePath, controllerCacheKey);
+
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            manager.UpdateMonitorParameter(canonicalId, "Brightness", 35);
+            manager.UpsertKnownGoodFeature(controllerCacheKey, Feature(0x10, current: 35));
+            manager.RetainMonitorStates(new[] { canonicalId });
+        }
+
+        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
+        {
+            var monitors = document.RootElement.GetProperty("monitors");
+            Assert.IsTrue(monitors.TryGetProperty(canonicalId, out _));
+            Assert.IsFalse(monitors.TryGetProperty(rawDevicePath, out _));
+        }
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.AreEqual(35, reloaded.GetMonitorParameters(canonicalId)?.Brightness);
+        Assert.AreEqual(35, reloaded.GetKnownGoodFeatures(canonicalId)[0x10].Current);
+        Assert.IsNull(reloaded.GetMonitorParameters(rawDevicePath));
+        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(rawDevicePath).Count);
     }
 
     [TestMethod]
