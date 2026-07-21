@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Serialization;
 using PowerDisplay.Common.Utils;
@@ -23,7 +24,7 @@ namespace PowerDisplay.Common.Services
     /// from frequently updated state (monitor_state.json).
     /// Simplified to use direct save strategy for reliability and simplicity (KISS principle).
     /// </summary>
-    public partial class MonitorStateManager : IDisposable
+    public partial class MonitorStateManager : IDisposable, IKnownGoodVcpStore
     {
         private readonly string _stateFilePath;
         private readonly ConcurrentDictionary<string, MonitorState> _states = new(MonitorIdComparer.Instance);
@@ -47,6 +48,8 @@ namespace PowerDisplay.Common.Services
             public int? Volume { get; set; }
 
             public string? CapabilitiesRaw { get; set; }
+
+            public Dictionary<byte, KnownGoodVcpFeature> KnownGoodVcpFeatures { get; } = new();
         }
 
         /// <summary>
@@ -54,15 +57,24 @@ namespace PowerDisplay.Common.Services
         /// Uses PathConstants for consistent path management.
         /// </summary>
         public MonitorStateManager()
+            : this(PathConstants.MonitorStateFilePath, ensureDefaultDirectory: true)
         {
-            // Use PathConstants for consistent path management
-            PathConstants.EnsurePowerDisplayFolderExists();
-            _stateFilePath = PathConstants.MonitorStateFilePath;
+        }
 
-            // Initialize debouncer for batching rapid updates (e.g., slider drag)
+        internal MonitorStateManager(string stateFilePath)
+            : this(stateFilePath, ensureDefaultDirectory: false)
+        {
+        }
+
+        private MonitorStateManager(string stateFilePath, bool ensureDefaultDirectory)
+        {
+            if (ensureDefaultDirectory)
+            {
+                PathConstants.EnsurePowerDisplayFolderExists();
+            }
+
+            _stateFilePath = stateFilePath;
             _saveDebouncer = new SimpleDebouncer(SaveDebounceMs);
-
-            // Load existing state if available
             LoadStateFromDisk();
         }
 
@@ -88,36 +100,32 @@ namespace PowerDisplay.Common.Services
 
                 // Update the specific property
                 bool shouldSave = true;
-                switch (property)
+                lock (state)
                 {
-                    case "Brightness":
-                        state.Brightness = value;
-                        break;
-                    case "ColorTemperature":
-                        state.ColorTemperatureVcp = value;
-                        break;
-                    case "Contrast":
-                        state.Contrast = value;
-                        break;
-                    case "Volume":
-                        state.Volume = value;
-                        break;
-                    default:
-                        Logger.LogWarning($"Unknown property: {property}");
-                        shouldSave = false;
-                        break;
+                    switch (property)
+                    {
+                        case "Brightness":
+                            state.Brightness = value;
+                            break;
+                        case "ColorTemperature":
+                            state.ColorTemperatureVcp = value;
+                            break;
+                        case "Contrast":
+                            state.Contrast = value;
+                            break;
+                        case "Volume":
+                            state.Volume = value;
+                            break;
+                        default:
+                            Logger.LogWarning($"Unknown property: {property}");
+                            shouldSave = false;
+                            break;
+                    }
                 }
 
                 if (shouldSave)
                 {
-                    // Mark dirty for flush on dispose
-                    _isDirty = true;
-                }
-
-                // Schedule debounced save (SimpleDebouncer handles cancellation of previous calls)
-                if (shouldSave)
-                {
-                    _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                    MarkDirtyAndScheduleSave();
                 }
             }
             catch (Exception ex)
@@ -140,10 +148,68 @@ namespace PowerDisplay.Common.Services
 
             if (_states.TryGetValue(monitorId, out var state))
             {
-                return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
+                lock (state)
+                {
+                    return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
+                }
             }
 
             return null;
+        }
+
+        public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId)
+        {
+            if (string.IsNullOrEmpty(monitorId) || !_states.TryGetValue(monitorId, out var state))
+            {
+                return new Dictionary<byte, KnownGoodVcpFeature>();
+            }
+
+            lock (state)
+            {
+                return state.KnownGoodVcpFeatures.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value.Clone());
+            }
+        }
+
+        public void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(monitorId);
+            ArgumentNullException.ThrowIfNull(feature);
+
+            var value = feature.ToVcpFeatureValue();
+            if (!value.IsValid)
+            {
+                throw new ArgumentOutOfRangeException(nameof(feature), "Known-good VCP values must have a valid range.");
+            }
+
+            var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
+            lock (state)
+            {
+                state.KnownGoodVcpFeatures[feature.Code] = feature.Clone();
+            }
+
+            MarkDirtyAndScheduleSave();
+        }
+
+        public void RetainMonitorIds(IEnumerable<string> monitorIds)
+        {
+            ArgumentNullException.ThrowIfNull(monitorIds);
+            var retained = new HashSet<string>(monitorIds, MonitorIdComparer.Instance);
+            var removed = false;
+
+            foreach (var monitorId in _states.Keys)
+            {
+                if (!retained.Contains(monitorId))
+                {
+                    removed |= _states.TryRemove(monitorId, out _);
+                }
+            }
+
+            if (removed)
+            {
+                MarkDirtyAndScheduleSave();
+            }
         }
 
         /// <summary>
@@ -214,14 +280,26 @@ namespace PowerDisplay.Common.Services
             }
         }
 
-        private static MonitorState CloneState(MonitorState s) => new()
+        private static MonitorState CloneState(MonitorState source)
         {
-            Brightness = s.Brightness,
-            ColorTemperatureVcp = s.ColorTemperatureVcp,
-            Contrast = s.Contrast,
-            Volume = s.Volume,
-            CapabilitiesRaw = s.CapabilitiesRaw,
-        };
+            var clone = new MonitorState();
+
+            lock (source)
+            {
+                clone.Brightness = source.Brightness;
+                clone.ColorTemperatureVcp = source.ColorTemperatureVcp;
+                clone.Contrast = source.Contrast;
+                clone.Volume = source.Volume;
+                clone.CapabilitiesRaw = source.CapabilitiesRaw;
+
+                foreach (var feature in source.KnownGoodVcpFeatures)
+                {
+                    clone.KnownGoodVcpFeatures[feature.Key] = feature.Value.Clone();
+                }
+            }
+
+            return clone;
+        }
 
         /// <summary>
         /// Load state from disk.
@@ -242,10 +320,10 @@ namespace PowerDisplay.Common.Services
                 {
                     foreach (var kvp in stateFile.Monitors)
                     {
-                        var monitorKey = kvp.Key; // Should be MonitorId (e.g., "GSM5C6D")
+                        var monitorKey = kvp.Key;
                         var entry = kvp.Value;
 
-                        _states[monitorKey] = new MonitorState
+                        var state = new MonitorState
                         {
                             Brightness = entry.Brightness,
                             ColorTemperatureVcp = entry.ColorTemperatureVcp,
@@ -253,6 +331,16 @@ namespace PowerDisplay.Common.Services
                             Volume = entry.Volume,
                             CapabilitiesRaw = entry.CapabilitiesRaw,
                         };
+
+                        foreach (var feature in entry.KnownGoodVcpFeatures)
+                        {
+                            if (feature.ToVcpFeatureValue().IsValid)
+                            {
+                                state.KnownGoodVcpFeatures[feature.Code] = feature.Clone();
+                            }
+                        }
+
+                        _states[monitorKey] = state;
                     }
                 }
             }
@@ -260,6 +348,12 @@ namespace PowerDisplay.Common.Services
             {
                 Logger.LogError($"Failed to load monitor state: {ex.Message}");
             }
+        }
+
+        private void MarkDirtyAndScheduleSave()
+        {
+            _isDirty = true;
+            _saveDebouncer.Debounce(SaveStateToDiskAsync);
         }
 
         /// <summary>
@@ -326,15 +420,22 @@ namespace PowerDisplay.Common.Services
                 var monitorId = kvp.Key;
                 var state = kvp.Value;
 
-                stateFile.Monitors[monitorId] = new MonitorStateEntry
+                lock (state)
                 {
-                    Brightness = state.Brightness,
-                    ColorTemperatureVcp = state.ColorTemperatureVcp,
-                    Contrast = state.Contrast,
-                    Volume = state.Volume,
-                    CapabilitiesRaw = state.CapabilitiesRaw,
-                    LastUpdated = now,
-                };
+                    stateFile.Monitors[monitorId] = new MonitorStateEntry
+                    {
+                        Brightness = state.Brightness,
+                        ColorTemperatureVcp = state.ColorTemperatureVcp,
+                        Contrast = state.Contrast,
+                        Volume = state.Volume,
+                        CapabilitiesRaw = state.CapabilitiesRaw,
+                        KnownGoodVcpFeatures = state.KnownGoodVcpFeatures.Values
+                            .OrderBy(feature => feature.Code)
+                            .Select(feature => feature.Clone())
+                            .ToList(),
+                        LastUpdated = now,
+                    };
+                }
             }
 
             return JsonSerializer.Serialize(stateFile, MonitorStateSerializationContext.Default.MonitorStateFile);

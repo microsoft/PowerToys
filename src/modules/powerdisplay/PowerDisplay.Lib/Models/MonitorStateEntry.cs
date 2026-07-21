@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace PowerDisplay.Common.Models
@@ -42,6 +43,9 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         [JsonPropertyName("capabilitiesRaw")]
         public string? CapabilitiesRaw { get; set; }
+
+        [JsonPropertyName("knownGoodVcpFeatures")]
+        public List<KnownGoodVcpFeature> KnownGoodVcpFeatures { get; set; } = new();
 
         /// <summary>
         /// Gets or sets when this entry was last updated.
