@@ -307,7 +307,7 @@ public class PeekFilePreviewTests : UITestBase
 
         var normalizedPath = filePath.TrimEnd(Path.DirectorySeparatorChar);
         var parentPath = Path.GetDirectoryName(normalizedPath);
-        var selectedItemName = Path.GetFileName(filePath.TrimEnd(Path.DirectorySeparatorChar));
+        var selectedItemName = Path.GetFileName(normalizedPath);
         Assert.IsFalse(string.IsNullOrEmpty(parentPath), $"Could not determine the parent folder for {filePath}.");
 
         for (var attempt = 1; attempt <= ExplorerOpenAttempts; attempt++)
@@ -322,7 +322,7 @@ public class PeekFilePreviewTests : UITestBase
             Process.Start(new ProcessStartInfo
             {
                 FileName = "explorer.exe",
-                Arguments = $"/n,\"{parentPath}\"",
+                Arguments = $"/n,/select,\"{normalizedPath}\"",
                 UseShellExecute = true,
             });
 
@@ -337,20 +337,6 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             explorerWindowHandle = explorerWindow.WindowHandle;
-            explorerWindow.EnsureForeground();
-
-            Element? item = null;
-            if (!explorerWindow.WaitFor(
-                () => (item = FindExplorerItem(explorerWindow, selectedItemName)) is not null,
-                timeoutMS: ExplorerSelectionTimeoutMS,
-                pollIntervalMS: 500))
-            {
-                continue;
-            }
-
-            explorerWindow.EnsureForeground();
-            item!.Focus();
-            KeyboardHelper.SendKeys(Key.Space);
 
             if (explorerWindow.WaitFor(
                 () => FindExplorerItem(explorerWindow, selectedItemName)?.Selected == true,
