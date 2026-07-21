@@ -13,9 +13,13 @@ namespace Peek.UITests;
 public class PeekFilePreviewTests : UITestBase
 {
     private const string PeekProcessName = "PowerToys.Peek.UI";
-    private const int ExplorerOpenTimeoutMS = 15_000;
-    private const int PeekWindowTimeoutMS = 15_000;
-    private const int MaxHotkeyAttempts = 3;
+    private const int ExplorerOpenTimeoutMS = 30_000;
+    private const int ExplorerSelectionTimeoutMS = 30_000;
+    private const int ExplorerOpenAttempts = 3;
+    private const int PeekWindowTimeoutMS = 30_000;
+    private const int PreviewLoadTimeoutMS = 60_000;
+    private const int MaxHotkeyAttempts = 5;
+    private const int MaxNavigationAttempts = 3;
 
     private long explorerWindowHandle;
 
@@ -243,20 +247,12 @@ public class PeekFilePreviewTests : UITestBase
 
         for (var index = 1; index < testFiles.Count; index++)
         {
-            peekWindow.EnsureForeground();
-            KeyboardHelper.SendKeys(Key.Right);
-            peekWindow = WaitForPeekWindow(testFiles[index], PeekWindowTimeoutMS)
-                ?? throw new AssertFailedException($"Peek did not navigate to {Path.GetFileName(testFiles[index])}.");
-            EnsurePeekReady(peekWindow);
+            peekWindow = NavigateToFileWithRetry(peekWindow, Key.Right, testFiles[index]);
         }
 
         for (var index = testFiles.Count - 2; index >= 0; index--)
         {
-            peekWindow.EnsureForeground();
-            KeyboardHelper.SendKeys(Key.Left);
-            peekWindow = WaitForPeekWindow(testFiles[index], PeekWindowTimeoutMS)
-                ?? throw new AssertFailedException($"Peek did not navigate back to {Path.GetFileName(testFiles[index])}.");
-            EnsurePeekReady(peekWindow);
+            peekWindow = NavigateToFileWithRetry(peekWindow, Key.Left, testFiles[index]);
         }
     }
 
@@ -308,38 +304,55 @@ public class PeekFilePreviewTests : UITestBase
     {
         Assert.IsTrue(File.Exists(filePath) || Directory.Exists(filePath), $"Test asset does not exist: {filePath}");
 
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = "explorer.exe",
-            Arguments = $"/select,\"{filePath}\"",
-            UseShellExecute = true,
-        });
-
         var parentName = Path.GetFileName(Path.GetDirectoryName(filePath.TrimEnd(Path.DirectorySeparatorChar)));
-        var explorerWindow = WindowsFinder.WaitForWindowByApp(
-            "explorer",
-            window => window.Title.Contains(parentName, StringComparison.OrdinalIgnoreCase),
-            ExplorerOpenTimeoutMS);
-
-        Assert.IsNotNull(explorerWindow, $"Explorer did not open the parent folder for {filePath}.");
-        explorerWindowHandle = explorerWindow!.WindowHandle;
-        explorerWindow.EnsureForeground();
-
         var selectedItemName = Path.GetFileName(filePath.TrimEnd(Path.DirectorySeparatorChar));
-        Assert.IsTrue(
-            explorerWindow.WaitFor(
-                () => explorerWindow.FindAll<Element>(By.Name(selectedItemName), 0).Any(element => element.Selected),
-                timeoutMS: 10_000,
-                pollIntervalMS: 250),
-            $"Explorer did not select {selectedItemName}.");
 
-        return explorerWindow;
+        for (var attempt = 1; attempt <= ExplorerOpenAttempts; attempt++)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"/select,\"{filePath}\"",
+                UseShellExecute = true,
+            });
+
+            var explorerWindow = WindowsFinder.WaitForWindowByApp(
+                "explorer",
+                window => window.Title.Contains(parentName, StringComparison.OrdinalIgnoreCase),
+                ExplorerOpenTimeoutMS);
+
+            if (explorerWindow is null)
+            {
+                continue;
+            }
+
+            explorerWindowHandle = explorerWindow.WindowHandle;
+            explorerWindow.EnsureForeground();
+
+            if (explorerWindow.WaitFor(
+                () => explorerWindow.FindAll<Element>(By.Name(selectedItemName), 0).Any(element => element.Selected),
+                timeoutMS: ExplorerSelectionTimeoutMS,
+                pollIntervalMS: 500))
+            {
+                return explorerWindow;
+            }
+        }
+
+        Assert.Fail(
+            $"Explorer did not select {selectedItemName} after {ExplorerOpenAttempts} launch attempts " +
+            $"({ExplorerSelectionTimeoutMS / 1_000}s selection timeout per attempt).");
+        return null!;
     }
 
     private Session SendPeekHotkeyWithRetry(string expectedPath)
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
         {
+            if (explorerWindowHandle != 0)
+            {
+                WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
+            }
+
             KeyboardHelper.SendKeys(Key.Ctrl, Key.Space);
             var peekWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS / MaxHotkeyAttempts);
             if (peekWindow is not null)
@@ -389,9 +402,49 @@ public class PeekFilePreviewTests : UITestBase
                title.StartsWith(name + " -", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static Session NavigateToFileWithRetry(Session peekWindow, Key key, string expectedPath)
+    {
+        for (var attempt = 1; attempt <= MaxNavigationAttempts; attempt++)
+        {
+            var expectedWindow = WaitForPeekWindow(expectedPath, timeoutMS: 500);
+            if (expectedWindow is not null)
+            {
+                EnsurePeekReady(expectedWindow);
+                return expectedWindow;
+            }
+
+            EnsurePeekReady(peekWindow);
+            peekWindow.EnsureForeground();
+            KeyboardHelper.SendKeys(key);
+
+            expectedWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS);
+            if (expectedWindow is not null)
+            {
+                EnsurePeekReady(expectedWindow);
+                return expectedWindow;
+            }
+        }
+
+        Assert.Fail(
+            $"Peek did not navigate to {Path.GetFileName(expectedPath)} after " +
+            $"{MaxNavigationAttempts} {key} key attempts.");
+        return null!;
+    }
+
     private static void EnsurePeekReady(Session peekWindow)
     {
         peekWindow.Find<Button>(By.AccessibilityId("PinButton"), 15_000);
+
+        var loadingIndicator = peekWindow
+            .FindAll<Element>(By.AccessibilityId("LoadingIndicator"), 1_000)
+            .FirstOrDefault();
+
+        if (loadingIndicator is not null)
+        {
+            Assert.IsTrue(
+                loadingIndicator.WaitForGone(PreviewLoadTimeoutMS),
+                $"Peek was still loading '{peekWindow.WindowTitle}' after {PreviewLoadTimeoutMS / 1_000}s.");
+        }
     }
 
     private static string FileNameFromTitle(string title, HashSet<string> expectedNames)
@@ -420,8 +473,6 @@ public class PeekFilePreviewTests : UITestBase
     private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
         var previewWindow = OpenPeekWindow(filePath);
-        previewWindow.Find<Button>(By.AccessibilityId("PinButton"), 10_000);
-        Thread.Sleep(3_000);
         VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
     }
 

@@ -185,6 +185,11 @@ namespace Peek.FilePreviewer
             return value == stateToMatch;
         }
 
+        public Visibility IsLoadingIndicatorVisible(PreviewState? state)
+        {
+            return MatchPreviewState(state, PreviewState.Loading) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
         public Visibility IsPreviewVisible(IPreviewer? previewer, PreviewState? state)
         {
             var isValidPreview = previewer != null && MatchPreviewState(state, PreviewState.Loaded);
