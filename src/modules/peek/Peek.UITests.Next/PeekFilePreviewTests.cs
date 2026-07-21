@@ -305,21 +305,30 @@ public class PeekFilePreviewTests : UITestBase
     {
         Assert.IsTrue(File.Exists(filePath) || Directory.Exists(filePath), $"Test asset does not exist: {filePath}");
 
-        var parentName = Path.GetFileName(Path.GetDirectoryName(filePath.TrimEnd(Path.DirectorySeparatorChar)));
+        var normalizedPath = filePath.TrimEnd(Path.DirectorySeparatorChar);
+        var parentPath = Path.GetDirectoryName(normalizedPath);
         var selectedItemName = Path.GetFileName(filePath.TrimEnd(Path.DirectorySeparatorChar));
+        Assert.IsFalse(string.IsNullOrEmpty(parentPath), $"Could not determine the parent folder for {filePath}.");
 
         for (var attempt = 1; attempt <= ExplorerOpenAttempts; attempt++)
         {
+            CloseExplorerFileWindows();
+
+            var existingHandles = WindowsFinder.ListByApp("explorer")
+                .Where(IsExplorerFileWindow)
+                .Select(window => window.Hwnd)
+                .ToHashSet();
+
             Process.Start(new ProcessStartInfo
             {
                 FileName = "explorer.exe",
-                Arguments = $"/select,\"{filePath}\"",
+                Arguments = $"/n,\"{parentPath}\"",
                 UseShellExecute = true,
             });
 
             var explorerWindow = WindowsFinder.WaitForWindowByApp(
                 "explorer",
-                window => window.Title.Contains(parentName, StringComparison.OrdinalIgnoreCase),
+                window => IsExplorerFileWindow(window) && !existingHandles.Contains(window.Hwnd),
                 ExplorerOpenTimeoutMS);
 
             if (explorerWindow is null)
@@ -330,8 +339,21 @@ public class PeekFilePreviewTests : UITestBase
             explorerWindowHandle = explorerWindow.WindowHandle;
             explorerWindow.EnsureForeground();
 
+            Element? item = null;
+            if (!explorerWindow.WaitFor(
+                () => (item = FindExplorerItem(explorerWindow, selectedItemName)) is not null,
+                timeoutMS: ExplorerSelectionTimeoutMS,
+                pollIntervalMS: 500))
+            {
+                continue;
+            }
+
+            explorerWindow.EnsureForeground();
+            item!.Focus();
+            KeyboardHelper.SendKeys(Key.Space);
+
             if (explorerWindow.WaitFor(
-                () => explorerWindow.FindAll<Element>(By.Name(selectedItemName), 0).Any(element => element.Selected),
+                () => FindExplorerItem(explorerWindow, selectedItemName)?.Selected == true,
                 timeoutMS: ExplorerSelectionTimeoutMS,
                 pollIntervalMS: 500))
             {
@@ -436,6 +458,12 @@ public class PeekFilePreviewTests : UITestBase
     {
         peekWindow.Find<Button>(By.AccessibilityId("PinButton"), 15_000);
 
+        var previewState = peekWindow.Find<Element>(By.AccessibilityId("PreviewStateAutomationPeer"), 15_000);
+        Assert.IsTrue(
+            previewState.WaitForValue("Loaded", timeoutMS: PreviewLoadTimeoutMS),
+            $"Peek did not finish loading '{peekWindow.WindowTitle}' within {PreviewLoadTimeoutMS / 1_000}s. " +
+            $"Last preview state: '{previewState.GetValue()}'.");
+
         var loadingIndicator = peekWindow
             .FindAll<Element>(By.AccessibilityId("LoadingIndicator"), 1_000)
             .FirstOrDefault();
@@ -444,7 +472,7 @@ public class PeekFilePreviewTests : UITestBase
         {
             Assert.IsTrue(
                 loadingIndicator.WaitForGone(PreviewLoadTimeoutMS),
-                $"Peek was still loading '{peekWindow.WindowTitle}' after {PreviewLoadTimeoutMS / 1_000}s.");
+                $"Peek's loading indicator did not disappear for '{peekWindow.WindowTitle}'.");
         }
     }
 
@@ -536,10 +564,7 @@ public class PeekFilePreviewTests : UITestBase
     private void CloseTestWindows()
     {
         var peekClosed = WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
-        var explorerClosed = WindowControl.TryCloseByApp(
-            "explorer",
-            window => string.Equals(window.ClassName, "CabinetWClass", StringComparison.OrdinalIgnoreCase),
-            timeoutMS: 10_000);
+        var explorerClosed = CloseExplorerFileWindows();
 
         if (!peekClosed)
         {
@@ -552,6 +577,28 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         explorerWindowHandle = 0;
+    }
+
+    private static Element? FindExplorerItem(Session explorerWindow, string itemName)
+    {
+        var exactMatches = explorerWindow.FindAll<Element>(By.Name(itemName), 0)
+            .Where(element => string.Equals(element.Name, itemName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        return exactMatches.FirstOrDefault(element =>
+                   string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(element.ControlType, "DataItem", StringComparison.OrdinalIgnoreCase))
+               ?? exactMatches.FirstOrDefault(element => element.Width > 0 && element.Height > 0);
+    }
+
+    private static bool CloseExplorerFileWindows()
+    {
+        return WindowControl.TryCloseByApp("explorer", IsExplorerFileWindow, timeoutMS: 10_000);
+    }
+
+    private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window)
+    {
+        return string.Equals(window.ClassName, "CabinetWClass", StringComparison.OrdinalIgnoreCase);
     }
 
     private readonly record struct WindowBounds(int Left, int Top, int Width, int Height)
