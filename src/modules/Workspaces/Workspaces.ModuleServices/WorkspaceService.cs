@@ -87,8 +87,12 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
     {
         try
         {
-            EnsureSettingsInitialized();
-
+            // Enumeration is a PASSIVE read (e.g. the Command Palette listing
+            // workspaces at startup).  It must NOT trigger provisioning: doing so
+            // popped a UAC right after install, before the user had even engaged
+            // with Workspaces.  Provisioning is reserved for EXPLICIT actions
+            // (opening the editor, saving, launching a workspace).  If the service
+            // isn't up yet, Load returns empty (protected-only, never plaintext).
             var items = WorkspacesStorage.Load();
 
             return Task.FromResult(OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items));

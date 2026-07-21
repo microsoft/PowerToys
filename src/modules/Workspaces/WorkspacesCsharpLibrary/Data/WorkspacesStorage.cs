@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,8 +15,9 @@ namespace WorkspacesCsharpLibrary.Data;
 /// <summary>
 /// Reader/writer for persisted workspaces.  All access goes through the
 /// PTSettingsSvc service (Design-v6-Final.md §10): the service stores opaque
-/// bytes, this class owns the JSON shape, defensive parsing and the
-/// no-service last-resort fallback to the legacy %LocalAppData% file.
+/// bytes and this class owns the JSON shape and defensive parsing.  It is
+/// protected-store-only — there is NO fallback to the user-writable legacy
+/// %LocalAppData% file (that file is only the one-time migration source).
 /// </summary>
 public static class WorkspacesStorage
 {
@@ -35,9 +35,12 @@ public static class WorkspacesStorage
                 return Array.Empty<ProjectWrapper>();
 
             case PTSettingsClient.Result.Unavailable:
-                // No service installed (no-admin install / declined elevation).
-                // Last resort: read the legacy file directly (Design §10/§11).
-                return ParseDefensive(ReadLegacyBytes());
+                // Protected-store-only: the service isn't up yet.  Do NOT read the
+                // user-writable legacy file (it is stale once migrated, and
+                // tamperable) — return empty until protection is provisioned.
+                // Migration (which reads the legacy file exactly once) is what
+                // seeds the protected store.
+                return Array.Empty<ProjectWrapper>();
 
             default:
                 // AuthRejected / Protocol / IoError → fail safe to empty.
@@ -66,9 +69,7 @@ public static class WorkspacesStorage
     /// Unlike the old best-effort behaviour, a missing/incompatible service does
     /// NOT silently write plaintext to %LocalAppData%; it returns
     /// <see cref="SaveOutcome.ProtectionUnavailable"/> so the caller can prompt
-    /// the user to enable protection (elevation).  A genuinely cannot-elevate
-    /// user (non-admin) may opt into the unprotected write via
-    /// <see cref="SaveUnprotected"/> (§10 last resort).
+    /// the user to enable protection (elevation).
     /// </summary>
     public static SaveOutcome Save(IReadOnlyList<ProjectWrapper> workspaces)
     {
@@ -89,17 +90,6 @@ public static class WorkspacesStorage
             default:
                 return SaveOutcome.Failed;
         }
-    }
-
-    /// <summary>
-    /// Explicit unprotected write to the legacy %LocalAppData% file — the §10
-    /// last resort for users who genuinely cannot elevate to create the service.
-    /// Callers must only use this after the user has acknowledged the reduced
-    /// protection.  Returns true on success.
-    /// </summary>
-    public static bool SaveUnprotected(IReadOnlyList<ProjectWrapper> workspaces)
-    {
-        return WriteLegacyBytes(Serialise(workspaces));
     }
 
     private static IReadOnlyList<ProjectWrapper> ParseDefensive(byte[] bytes)
@@ -163,47 +153,6 @@ public static class WorkspacesStorage
         };
 
         return JsonSerializer.SerializeToUtf8Bytes(file, WorkspacesStorageJsonContext.Default.WorkspacesFile);
-    }
-
-    private static byte[] ReadLegacyBytes()
-    {
-        try
-        {
-            var legacy = SettingsPaths.LegacyWorkspacesFile();
-            return File.Exists(legacy) ? File.ReadAllBytes(legacy) : Array.Empty<byte>();
-        }
-        catch (IOException)
-        {
-            return Array.Empty<byte>();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Array.Empty<byte>();
-        }
-    }
-
-    private static bool WriteLegacyBytes(byte[] bytes)
-    {
-        try
-        {
-            var legacy = SettingsPaths.LegacyWorkspacesFile();
-            var dir = Path.GetDirectoryName(legacy);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            File.WriteAllBytes(legacy, bytes);
-            return true;
-        }
-        catch (IOException)
-        {
-            return false;
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return false;
-        }
     }
 
     internal sealed class WorkspacesFile
