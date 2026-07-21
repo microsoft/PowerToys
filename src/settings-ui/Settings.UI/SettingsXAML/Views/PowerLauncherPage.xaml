@@ -485,6 +485,54 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        Name="PowerLauncherEnableAudibleFeedback"
+                        x:Uid="PowerLauncher_EnableAudibleFeedback"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableAudibleFeedback, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="PowerLauncherOpeningSound"
+                                x:Uid="PowerLauncher_OpeningSound"
+                                IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ComboBox
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        DisplayMemberPath="Name"
+                                        ItemsSource="{x:Bind ViewModel.AvailableSounds}"
+                                        SelectedValue="{x:Bind ViewModel.OpeningSound, Mode=TwoWay}"
+                                        SelectedValuePath="Value" />
+                                    <Button
+                                        x:Uid="PowerLauncher_PreviewOpeningSound"
+                                        Click="PreviewOpeningSound_Click"
+                                        Style="{StaticResource SubtleButtonStyle}">
+                                        <FontIcon FontSize="14" Glyph="&#xE768;" />
+                                    </Button>
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+
+                            <tkcontrols:SettingsCard
+                                Name="PowerLauncherClosingSound"
+                                x:Uid="PowerLauncher_ClosingSound"
+                                IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <ComboBox
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        DisplayMemberPath="Name"
+                                        ItemsSource="{x:Bind ViewModel.AvailableSounds}"
+                                        SelectedValue="{x:Bind ViewModel.ClosingSound, Mode=TwoWay}"
+                                        SelectedValuePath="Value" />
+                                    <Button
+                                        x:Uid="PowerLauncher_PreviewClosingSound"
+                                        Click="PreviewClosingSound_Click"
+                                        Style="{StaticResource SubtleButtonStyle}">
+                                        <FontIcon FontSize="14" Glyph="&#xE768;" />
+                                    </Button>
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"

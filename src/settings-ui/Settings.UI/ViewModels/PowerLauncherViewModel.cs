@@ -639,16 +639,101 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public int TitleFontSize
         {
-            get
-            {
-                return settings.Properties.TitleFontSize;
-            }
-
+            get => settings.Properties.TitleFontSize;
             set
             {
                 if (settings.Properties.TitleFontSize != value)
                 {
                     settings.Properties.TitleFontSize = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        private ObservableCollection<SoundOption> _availableSounds;
+
+        public ObservableCollection<SoundOption> AvailableSounds
+        {
+            get
+            {
+                if (_availableSounds == null)
+                {
+                    _availableSounds = GetAvailableSounds();
+                }
+
+                return _availableSounds;
+            }
+        }
+
+        private ObservableCollection<SoundOption> GetAvailableSounds()
+        {
+            var sounds = new ObservableCollection<SoundOption>
+            {
+                new SoundOption { Name = GetLocalizedSoundName("None"), Value = "None" },
+                new SoundOption { Name = GetLocalizedSoundName("Beep"), Value = "Beep" },
+                new SoundOption { Name = GetLocalizedSoundName("Asterisk"), Value = "Asterisk" },
+                new SoundOption { Name = GetLocalizedSoundName("Exclamation"), Value = "Exclamation" },
+                new SoundOption { Name = GetLocalizedSoundName("Hand"), Value = "Hand" },
+                new SoundOption { Name = GetLocalizedSoundName("Question"), Value = "Question" },
+            };
+            return sounds;
+        }
+
+        private string GetLocalizedSoundName(string soundKey)
+        {
+            try
+            {
+                var loader = Helpers.ResourceLoaderInstance.ResourceLoader;
+                return loader.GetString($"PowerLauncher_Sound_{soundKey}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load localized sound name for key '{soundKey}'", ex);
+                return soundKey;
+            }
+        }
+
+        public class SoundOption
+        {
+            public string Name { get; set; }
+
+            public string Value { get; set; }
+        }
+
+        public bool EnableAudibleFeedback
+        {
+            get => settings.Properties.EnableAudibleFeedback;
+            set
+            {
+                if (settings.Properties.EnableAudibleFeedback != value)
+                {
+                    settings.Properties.EnableAudibleFeedback = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public string OpeningSound
+        {
+            get => settings.Properties.OpeningSound;
+            set
+            {
+                if (settings.Properties.OpeningSound != value)
+                {
+                    settings.Properties.OpeningSound = value;
+                    UpdateSettings();
+                }
+            }
+        }
+
+        public string ClosingSound
+        {
+            get => settings.Properties.ClosingSound;
+            set
+            {
+                if (settings.Properties.ClosingSound != value)
+                {
+                    settings.Properties.ClosingSound = value;
                     UpdateSettings();
                 }
             }

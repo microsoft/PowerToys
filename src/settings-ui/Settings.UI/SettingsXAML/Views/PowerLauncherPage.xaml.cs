@@ -99,6 +99,43 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal);
         }
 
+        private void PreviewOpeningSound_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            PlayPreviewSound(ViewModel.OpeningSound);
+        }
+
+        private void PreviewClosingSound_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            PlayPreviewSound(ViewModel.ClosingSound);
+        }
+
+        private void PlayPreviewSound(string soundName)
+        {
+            try
+            {
+                var sound = GetSystemSound(soundName);
+                sound?.Play();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to play preview sound", ex);
+            }
+        }
+
+        private static System.Media.SystemSound GetSystemSound(string soundName)
+        {
+            return soundName switch
+            {
+                "None" => null,
+                "Beep" => System.Media.SystemSounds.Beep,
+                "Asterisk" => System.Media.SystemSounds.Asterisk,
+                "Exclamation" => System.Media.SystemSounds.Exclamation,
+                "Hand" => System.Media.SystemSounds.Hand,
+                "Question" => System.Media.SystemSounds.Question,
+                _ => System.Media.SystemSounds.Beep,
+            };
+        }
+
         /*
         public Tuple<string, string> SelectedSearchResultPreference
         {

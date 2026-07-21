@@ -97,6 +97,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("hotkey_changed")]
         public bool HotkeyChanged { get; set; } = false;
 
+        [JsonPropertyName("enable_audible_feedback")]
+        public bool EnableAudibleFeedback { get; set; }
+
+        [JsonPropertyName("opening_sound")]
+        public string OpeningSound { get; set; } = "Beep";
+
+        [JsonPropertyName("closing_sound")]
+        public string ClosingSound { get; set; } = "Beep";
+
         [CmdConfigureIgnoreAttribute]
         public HotkeySettings DefaultOpenPowerLauncher => new HotkeySettings(false, false, true, false, 32);
 
@@ -131,6 +140,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             UsePinyin = false;
             ShowPluginsOverview = 0;
             TitleFontSize = 16;
+            EnableAudibleFeedback = false;
         }
     }
 }
