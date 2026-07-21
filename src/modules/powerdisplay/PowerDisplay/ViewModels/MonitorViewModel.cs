@@ -217,6 +217,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public int MouseWheelIncrement => _mainViewModel?.MouseWheelIncrement ?? 5;
 
+    /// <summary>
+    /// Gets a value indicating whether this monitor's flyout sliders accept mouse-wheel input.
+    /// </summary>
+    public bool IsMouseWheelControlEnabled
+        => _mainViewModel?.IsMouseWheelControlEnabled ?? false;
+
     public MonitorViewModel(Monitor monitor, MonitorManager monitorManager, MainViewModel mainViewModel)
     {
         _monitor = monitor;
@@ -869,6 +875,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             OnPropertyChanged(nameof(IsInteractionEnabled));
             OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.IsMouseWheelControlEnabled))
+        {
+            OnPropertyChanged(nameof(IsMouseWheelControlEnabled));
         }
         else if (e.PropertyName == nameof(MainViewModel.HasMonitors))
         {
