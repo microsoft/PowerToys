@@ -172,7 +172,7 @@ npm run build
 Then link the built extension into the CmdPal extensions directory. A directory junction lets CmdPal load the folder while you keep editing in place:
 
 ```powershell
-$extensionsDir = "$env:LOCALAPPDATA\Microsoft\PowerToys\CommandPalette\JSExtensions"
+$extensionsDir = "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions"
 New-Item -ItemType Directory -Force -Path $extensionsDir | Out-Null
 New-Item -ItemType Junction -Path "$extensionsDir\my-first-extension" -Target (Resolve-Path .)
 ```

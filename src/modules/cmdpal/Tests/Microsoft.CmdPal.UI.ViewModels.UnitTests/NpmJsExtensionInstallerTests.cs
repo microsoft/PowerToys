@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class NpmJsExtensionInstallerTests
 {
-    private const string Root = @"C:\Users\sample\AppData\Local\Microsoft\PowerToys\CommandPalette\JSExtensions";
+    private const string Root = @"C:\Users\sample\AppData\Local\Microsoft\PowerToys\CmdPal\JSExtensions";
 
     private static readonly string[] ExpectedUninstallOrder = ["stop", "remove"];
 
