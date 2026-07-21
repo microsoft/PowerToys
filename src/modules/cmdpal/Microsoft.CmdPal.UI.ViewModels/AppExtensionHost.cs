@@ -4,8 +4,11 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Auth;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -177,6 +180,41 @@ public abstract partial class AppExtensionHost : IExtensionHost, IExtensionHost2
     /// </summary>
     public IAsyncOperation<IAuthorizationResult> RequestAuthorizationAsync(IAuthorizationRequest request)
         => AuthBrokerService.Instance.RequestAuthorizationAsync(request, this);
+
+    /// <summary>
+    /// <see cref="IExtensionHost2"/>. Navigate Command Palette to a page owned by
+    /// the extension. Reuses the existing navigation pipeline: a
+    /// <see cref="PerformCommandMessage"/> with <see cref="PerformCommandMessage.ShowWindowIfPage"/>
+    /// set foregrounds the window and navigates when the command is a page. When
+    /// the mode is GoHome or GoBack, the stack is reset first via the matching
+    /// message. A null page is treated as a graceful no-op.
+    /// </summary>
+    public IAsyncAction GoToPageAsync(ICommand? page, NavigationMode navigationMode)
+    {
+        if (page is null)
+        {
+            return Task.CompletedTask.AsAsyncAction();
+        }
+
+        return Task.Run(() =>
+        {
+            switch (navigationMode)
+            {
+                case NavigationMode.GoHome:
+                    WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(WithAnimation: false, FocusSearch: false));
+                    break;
+                case NavigationMode.GoBack:
+                    WeakReferenceMessenger.Default.Send<GoBackMessage>(new(WithAnimation: false, FocusSearch: false));
+                    break;
+                case NavigationMode.Push:
+                default:
+                    break;
+            }
+
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(
+                new(new ExtensionObject<ICommand>(page)) { ShowWindowIfPage = true });
+        }).AsAsyncAction();
+    }
 
     public abstract string? GetExtensionDisplayName();
 }
