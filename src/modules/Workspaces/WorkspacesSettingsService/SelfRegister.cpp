@@ -105,6 +105,41 @@ namespace PTSettingsSvc
             return GetServiceBinRoot() + L"\\" + ver;
         }
 
+        // Upgrade tidy-up: remove every version subfolder under SettingsSvcBin
+        // except `keepDir` (the version the service now runs from).  Without this,
+        // each upgrade leaves the previous version's exe copy behind and they
+        // accumulate.  Best-effort and collected-then-deleted so we don't remove
+        // entries mid-iteration; a still-locked old exe is simply left for a
+        // later run.
+        void PruneOldServiceBinVersions(const std::wstring& keepDir)
+        {
+            std::error_code ec;
+            std::filesystem::path root(GetServiceBinRoot());
+            std::filesystem::path keep(keepDir);
+            std::vector<std::filesystem::path> toRemove;
+            for (std::filesystem::directory_iterator it(root, ec), end; !ec && it != end; it.increment(ec))
+            {
+                std::error_code isDirEc;
+                if (!it->is_directory(isDirEc) || isDirEc)
+                {
+                    continue;
+                }
+                std::error_code sameEc;
+                bool same = std::filesystem::equivalent(it->path(), keep, sameEc);
+                if (sameEc || same)
+                {
+                    continue; // keep the current version (and be conservative on error)
+                }
+                toRemove.push_back(it->path());
+            }
+            for (const auto& p : toRemove)
+            {
+                std::error_code rmEc;
+                std::filesystem::remove_all(p, rmEc);
+                RegLog(L"prune-old-bin '" + p.wstring() + L"' ec=" + std::to_wstring(rmEc.value()));
+            }
+        }
+
         // binPath = "<exe>" "<sid>"  — the SID flows back to the running service
         // as argv[1] (see wmain), which uses it as the pipe/owner SID.
         std::wstring BuildBinPath(const std::wstring& exePath, const std::wstring& sid)
@@ -306,6 +341,11 @@ namespace PTSettingsSvc
             RegLog(L"--register end rc=" + std::to_wstring(rc) +
                    L" total-ms=" + std::to_wstring(NowMs() - t0) +
                    (created ? L" (created)" : L" (repointed)"));
+
+            // Now the service runs from binDir; drop any older version copies so
+            // upgrades don't accumulate stale exe dirs under SettingsSvcBin.
+            PruneOldServiceBinVersions(binDir);
+
             (void)created;
             CloseServiceHandle(svc);
             CloseServiceHandle(scm);
