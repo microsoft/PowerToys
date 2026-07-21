@@ -66,7 +66,7 @@ steps:
   # the .msix as the per-user payload.
   - pwsh: |-
       $svcDir = "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\WorkspacesSettingsService"
-      & "$(Build.SourcesDirectory)\src\modules\Workspaces\WorkspacesSettingsService\devtools\build-msix.ps1" `
+      & "$(Build.SourcesDirectory)\src\modules\Workspaces\WorkspacesSettingsService\build-msix.ps1" `
           -ExePath "$svcDir\PowerToys.PTSettingsSvc.exe" `
           -OutMsix "$svcDir\PTSettingsSvc.msix" `
           -Version "${{ parameters.versionNumber }}" `

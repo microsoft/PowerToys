@@ -1,24 +1,22 @@
 # Workspaces v6 (Approach 4) — testing the settings service
 
 The tamper-resistant settings service (`PTSettingsSvc_<SID>`) and its protected
-store are validated with the developer tooling under:
+store are packaged by the build pipeline from:
 
 ```
-src/modules/Workspaces/WorkspacesSettingsService/devtools/
+src/modules/Workspaces/WorkspacesSettingsService/build-msix.ps1
 ```
 
-See [`devtools/README.md`](src/modules/Workspaces/WorkspacesSettingsService/devtools/README.md)
-for the authoritative, up-to-date steps. In short:
+which stages `package/AppxManifest.xml` + the built `PowerToys.PTSettingsSvc.exe`
+into a signed MSIX (see `.pipelines/v2/templates/steps-build-installer-vnext.yml`
+and Design-v6-Final.md §12.1).
 
-1. Build the service + smoke test (`Debug|x64`).
-2. Elevated PowerShell 7+: `pwsh -File .\setup-ptsettingssvc.ps1`
-   — registers the per-user virtual-account service `NT SERVICE\PTSettingsSvc_<SID>`
-   and creates the PROTECTED store at
-   `%ProgramData%\Microsoft\PowerToys\Settings\<SID>\`.
-3. Non-elevated PowerShell 7+: `pwsh -File .\verify-prototype.ps1`
-   — runs the 9-step end-to-end security suite (liveness, caller allow-list,
-   path-prefix, DACL hardness, round-trip, NotFound, per-user DACL, non-user
-   owner, and the core check: a Medium-IL non-elevated write/delete is rejected).
+The prototype developer/security-verification harness (service setup and the
+end-to-end 9-step security suite: liveness, caller allow-list, path-prefix, DACL
+hardness, round-trip, NotFound, per-user DACL, non-user-owner, and the core
+Medium-IL tamper-rejection check) is preserved on the
+`workspaces-eop-v6-devtools-archive` branch under
+`src/modules/Workspaces/WorkspacesSettingsService/devtools/`.
 
 For full installed-build (MSIX) lifecycle testing — fresh install, upgrade,
 repair, uninstall — use the artifact inspector `Inspect-PtSettingsSvc.ps1` and
