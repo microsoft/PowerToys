@@ -70,13 +70,14 @@ public class PeekFilePreviewTests : UITestBase
     [TestInitialize]
     public void PreparePeekTest()
     {
+        CloseTestWindows();
         WindowControl.TryCloseByApp("PowerToys.Settings");
     }
 
     [TestCleanup]
     public void CleanupPeekTest()
     {
-        ClosePeekAndExplorer();
+        CloseTestWindows();
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -141,7 +142,7 @@ public class PeekFilePreviewTests : UITestBase
         var movedBounds = MoveWindowBy(initialWindow, 100, 50);
 
         ClickPinButton(initialWindow);
-        ClosePeekAndExplorer();
+        CloseTestWindows();
 
         var secondWindow = OpenPeekWindow(secondImagePath);
         AssertBoundsEqual(movedBounds, GetWindowBounds(secondWindow), "when switching images while pinned");
@@ -156,7 +157,7 @@ public class PeekFilePreviewTests : UITestBase
         var movedBounds = MoveWindowBy(initialWindow, 150, 75);
 
         ClickPinButton(initialWindow);
-        ClosePeekAndExplorer();
+        CloseTestWindows();
 
         var reopenedWindow = OpenPeekWindow(imagePath);
         AssertBoundsEqual(movedBounds, GetWindowBounds(reopenedWindow), "after reopening while pinned");
@@ -174,7 +175,7 @@ public class PeekFilePreviewTests : UITestBase
 
         ClickPinButton(pinnedWindow);
         ClickPinButton(pinnedWindow);
-        ClosePeekAndExplorer();
+        CloseTestWindows();
 
         var unpinnedWindow = OpenPeekWindow(secondFilePath);
         var unpinnedBounds = GetWindowBounds(unpinnedWindow);
@@ -199,7 +200,7 @@ public class PeekFilePreviewTests : UITestBase
 
         ClickPinButton(initialWindow);
         ClickPinButton(initialWindow);
-        ClosePeekAndExplorer();
+        CloseTestWindows();
 
         var reopenedWindow = OpenPeekWindow(imagePath);
         var reopenedBounds = GetWindowBounds(reopenedWindow);
@@ -532,17 +533,24 @@ public class PeekFilePreviewTests : UITestBase
             .ToList();
     }
 
-    private void ClosePeekAndExplorer()
+    private void CloseTestWindows()
     {
-        WindowControl.TryCloseByApp(PeekProcessName);
+        var peekClosed = WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
+        var explorerClosed = WindowControl.TryCloseByApp(
+            "explorer",
+            window => string.Equals(window.ClassName, "CabinetWClass", StringComparison.OrdinalIgnoreCase),
+            timeoutMS: 10_000);
 
-        if (explorerWindowHandle == 0)
+        if (!peekClosed)
         {
-            return;
+            TestContext.WriteLine("Cleanup could not close every visible Peek window within 10 seconds.");
         }
 
-        WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
-        KeyboardHelper.SendKeys(Key.Alt, Key.F4);
+        if (!explorerClosed)
+        {
+            TestContext.WriteLine("Cleanup could not close every File Explorer window within 10 seconds.");
+        }
+
         explorerWindowHandle = 0;
     }
 
