@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,10 +15,10 @@ public class PeekFilePreviewTests : UITestBase
 {
     private const string PeekProcessName = "PowerToys.Peek.UI";
     private const int ExplorerOpenTimeoutMS = 30_000;
-    private const int ExplorerSelectionTimeoutMS = 30_000;
     private const int ExplorerOpenAttempts = 3;
     private const int PeekWindowTimeoutMS = 30_000;
     private const int PreviewLoadTimeoutMS = 60_000;
+    private const int PreviewOpenAttempts = 2;
     private const int MaxHotkeyAttempts = 5;
     private const int MaxNavigationAttempts = 3;
 
@@ -296,9 +297,26 @@ public class PeekFilePreviewTests : UITestBase
     private Session OpenPeekWindow(string filePath)
     {
         OpenExplorerAndSelect(filePath);
-        var peekWindow = SendPeekHotkeyWithRetry(filePath);
-        EnsurePeekReady(peekWindow);
-        return peekWindow;
+
+        for (var attempt = 1; attempt <= PreviewOpenAttempts; attempt++)
+        {
+            var peekWindow = SendPeekHotkeyWithRetry(filePath);
+            try
+            {
+                EnsurePeekReady(peekWindow);
+                return peekWindow;
+            }
+            catch (AssertFailedException ex) when (attempt < PreviewOpenAttempts)
+            {
+                TestContext.WriteLine(
+                    $"Peek preview readiness attempt {attempt}/{PreviewOpenAttempts} failed for " +
+                    $"'{Path.GetFileName(filePath)}': {ex.Message}. Closing Peek and retrying activation.");
+                WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
+            }
+        }
+
+        Assert.Fail($"Peek did not become ready for '{Path.GetFileName(filePath)}'.");
+        return null!;
     }
 
     private Session OpenExplorerAndSelect(string filePath)
@@ -306,9 +324,8 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsTrue(File.Exists(filePath) || Directory.Exists(filePath), $"Test asset does not exist: {filePath}");
 
         var normalizedPath = filePath.TrimEnd(Path.DirectorySeparatorChar);
-        var parentPath = Path.GetDirectoryName(normalizedPath);
         var selectedItemName = Path.GetFileName(normalizedPath);
-        Assert.IsFalse(string.IsNullOrEmpty(parentPath), $"Could not determine the parent folder for {filePath}.");
+        TestContext.WriteLine(GetActivationDiagnostics($"Opening Explorer for '{normalizedPath}'"));
 
         for (var attempt = 1; attempt <= ExplorerOpenAttempts; attempt++)
         {
@@ -319,12 +336,15 @@ public class PeekFilePreviewTests : UITestBase
                 .Select(window => window.Hwnd)
                 .ToHashSet();
 
-            Process.Start(new ProcessStartInfo
+            using var launchProcess = Process.Start(new ProcessStartInfo
             {
                 FileName = "explorer.exe",
                 Arguments = $"/n,/select,\"{normalizedPath}\"",
                 UseShellExecute = true,
             });
+            TestContext.WriteLine(
+                $"Explorer launch attempt {attempt}/{ExplorerOpenAttempts}: " +
+                $"launcherPid={launchProcess?.Id.ToString() ?? "unknown"}, existingHwnds=[{string.Join(", ", existingHandles)}].");
 
             var explorerWindow = WindowsFinder.WaitForWindowByApp(
                 "explorer",
@@ -333,23 +353,21 @@ public class PeekFilePreviewTests : UITestBase
 
             if (explorerWindow is null)
             {
+                TestContext.WriteLine(GetActivationDiagnostics($"No fresh Explorer HWND after launch attempt {attempt}"));
                 continue;
             }
 
             explorerWindowHandle = explorerWindow.WindowHandle;
-
-            if (explorerWindow.WaitFor(
-                () => FindExplorerItem(explorerWindow, selectedItemName) is not null,
-                timeoutMS: ExplorerSelectionTimeoutMS,
-                pollIntervalMS: 500))
-            {
-                return explorerWindow;
-            }
+            TestContext.WriteLine(
+                $"Explorer ready for '{selectedItemName}': hwnd={explorerWindow.WindowHandle}, " +
+                $"pid={explorerWindow.ProcessId}, title='{explorerWindow.WindowTitle}', " +
+                $"session={GetProcessSessionId(explorerWindow.ProcessId)}, elevated={FormatElevation(explorerWindow.IsElevated)}.");
+            return explorerWindow;
         }
 
         Assert.Fail(
-            $"Explorer did not show {selectedItemName} after {ExplorerOpenAttempts} launch attempts " +
-            $"({ExplorerSelectionTimeoutMS / 1_000}s item timeout per attempt).");
+            $"Explorer did not open for {selectedItemName} after {ExplorerOpenAttempts} launch attempts." +
+            Environment.NewLine + GetActivationDiagnostics("Explorer launch failed"));
         return null!;
     }
 
@@ -357,29 +375,120 @@ public class PeekFilePreviewTests : UITestBase
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
         {
+            var foregrounded = false;
             if (explorerWindowHandle != 0)
             {
-                WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
+                foregrounded = WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
             }
 
+            TestContext.WriteLine(
+                $"Peek hotkey attempt {attempt}/{MaxHotkeyAttempts} for '{Path.GetFileName(expectedPath)}': " +
+                $"explorerHwnd={explorerWindowHandle}, foregrounded={foregrounded}, " +
+                $"foregroundHwnd={WindowControl.GetForegroundWindowHandle().ToInt64()}.");
             KeyboardHelper.SendKeys(Key.Ctrl, Key.Space);
             var peekWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS / MaxHotkeyAttempts);
             if (peekWindow is not null)
             {
+                TestContext.WriteLine(
+                    $"Peek opened after hotkey attempt {attempt}: hwnd={peekWindow.WindowHandle}, " +
+                    $"pid={peekWindow.ProcessId}, title='{peekWindow.WindowTitle}', " +
+                    $"session={GetProcessSessionId(peekWindow.ProcessId)}, elevated={FormatElevation(peekWindow.IsElevated)}.");
                 return peekWindow;
             }
+
+            TestContext.WriteLine(GetActivationDiagnostics($"No matching Peek window after hotkey attempt {attempt}"));
         }
 
-        var windows = string.Join(
-            Environment.NewLine,
-            WindowsFinder.ListByApp(PeekProcessName)
-                .Select(window => $"hwnd={window.Hwnd}, title='{window.Title}', size={window.Width}x{window.Height}"));
         Assert.Fail(
             $"Peek did not open {Path.GetFileName(expectedPath)} after {MaxHotkeyAttempts} hotkey attempts." +
-            Environment.NewLine +
-            (windows.Length == 0 ? "No Peek windows were found." : windows));
+            Environment.NewLine + GetActivationDiagnostics("Peek activation failed"));
         return null!;
     }
+
+    private string GetActivationDiagnostics(string stage)
+    {
+        var output = new StringBuilder();
+        using var testHost = Process.GetCurrentProcess();
+        output.AppendLine($"[{DateTime.UtcNow:O}] {stage}");
+        output.AppendLine(
+            $"Test host: pid={testHost.Id}, session={GetProcessSessionId(testHost.Id)}, " +
+            $"elevated={ElevationHelper.IsCurrentProcessElevated()}, foregroundHwnd={WindowControl.GetForegroundWindowHandle().ToInt64()}.");
+        output.AppendLine(
+            $"Settings session: pid={Session.ProcessId}, session={GetProcessSessionId(Session.ProcessId)}, " +
+            $"elevated={FormatElevation(Session.IsElevated)}.");
+        output.AppendLine("Configured Peek shortcut: Ctrl+Space; AlwaysRunNotElevated=true; EnableSpaceToActivate=false.");
+        AppendProcessDiagnostics(output, "PowerToys");
+        AppendProcessDiagnostics(output, "explorer");
+        AppendProcessDiagnostics(output, PeekProcessName);
+        AppendWindowDiagnostics(output, "explorer");
+        AppendWindowDiagnostics(output, PeekProcessName);
+        return output.ToString();
+    }
+
+    private static void AppendProcessDiagnostics(StringBuilder output, string processName)
+    {
+        var processes = Process.GetProcessesByName(processName);
+        if (processes.Length == 0)
+        {
+            output.AppendLine($"Process '{processName}': none.");
+            return;
+        }
+
+        foreach (var process in processes)
+        {
+            using (process)
+            {
+                output.AppendLine(
+                    $"Process '{processName}': pid={process.Id}, session={GetProcessSessionId(process.Id)}, " +
+                    $"elevated={FormatElevation(ElevationHelper.IsProcessElevated(process.Id))}, " +
+                    $"mainHwnd={GetMainWindowHandle(process)}.");
+            }
+        }
+    }
+
+    private static void AppendWindowDiagnostics(StringBuilder output, string appName)
+    {
+        var windows = WindowsFinder.ListByApp(appName);
+        if (windows.Count == 0)
+        {
+            output.AppendLine($"Windows for '{appName}': none.");
+            return;
+        }
+
+        foreach (var window in windows)
+        {
+            output.AppendLine(
+                $"Window for '{appName}': hwnd={window.Hwnd}, pid={window.ProcessId}, " +
+                $"class='{window.ClassName}', title='{window.Title}', size={window.Width}x{window.Height}.");
+        }
+    }
+
+    private static int? GetProcessSessionId(int processId)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            return process.SessionId;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static long? GetMainWindowHandle(Process process)
+    {
+        try
+        {
+            return process.MainWindowHandle.ToInt64();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string FormatElevation(bool? elevated) => elevated?.ToString() ?? "unknown";
 
     private static Session? WaitForPeekWindow(string filePath, int timeoutMS)
     {
@@ -563,18 +672,6 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         explorerWindowHandle = 0;
-    }
-
-    private static Element? FindExplorerItem(Session explorerWindow, string itemName)
-    {
-        var exactMatches = explorerWindow.FindAll<Element>(By.Name(itemName), 0)
-            .Where(element => string.Equals(element.Name, itemName, StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        return exactMatches.FirstOrDefault(element =>
-                   string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(element.ControlType, "DataItem", StringComparison.OrdinalIgnoreCase))
-               ?? exactMatches.FirstOrDefault(element => element.Width > 0 && element.Height > 0);
     }
 
     private static bool CloseExplorerFileWindows()

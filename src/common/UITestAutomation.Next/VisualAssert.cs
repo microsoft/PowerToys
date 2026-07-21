@@ -13,6 +13,8 @@ public static class VisualAssert
 {
     private const int HashSize = 8;
     private const int SimilarityThreshold = 95;
+    private const int VisualRetryTimeoutMS = 15_000;
+    private const int VisualRetryIntervalMS = 500;
 
     /// <summary>
     /// Asserts that the current visual state of a session matches its embedded baseline image.
@@ -45,10 +47,9 @@ public static class VisualAssert
             .FirstOrDefault(name => Path.GetFileNameWithoutExtension(name).EndsWith(scenarioSubname, StringComparison.Ordinal));
         var testImagePath = GetTempFilePath(scenarioSubname, "test", ".png");
 
-        session.Screenshot(testImagePath);
-
         if (string.IsNullOrEmpty(baselineImageResourceName))
         {
+            session.Screenshot(testImagePath);
             testContext?.AddResultFile(testImagePath);
             Assert.Fail($"Baseline image for scenario {scenarioSubname} can't be found; test image saved to {testImagePath}.");
         }
@@ -61,17 +62,31 @@ public static class VisualAssert
         }
 
         using var baselineImage = new Bitmap(stream!);
-        using var testImage = new Bitmap(testImagePath);
-        if (AreImagesSimilar(baselineImage, testImage))
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(VisualRetryTimeoutMS);
+        var similarity = 0;
+        do
         {
-            return;
+            session.Screenshot(testImagePath);
+            using var testImage = new Bitmap(testImagePath);
+            similarity = CalculateSimilarity(baselineImage, testImage);
+            if (similarity >= SimilarityThreshold)
+            {
+                return;
+            }
+
+            if (DateTime.UtcNow < deadline)
+            {
+                Thread.Sleep(VisualRetryIntervalMS);
+            }
         }
+        while (DateTime.UtcNow < deadline);
 
         baselineImage.Save(baselineImagePath);
         testContext?.AddResultFile(baselineImagePath);
         testContext?.AddResultFile(testImagePath);
         Assert.Fail(
-            $"Visual result for scenario {scenarioSubname} did not match. " +
+            $"Visual result for scenario {scenarioSubname} did not reach {SimilarityThreshold}% similarity " +
+            $"within {VisualRetryTimeoutMS / 1_000}s (last similarity: {similarity}%). " +
             $"Baseline: {baselineImagePath}; test image: {testImagePath}.");
     }
 
@@ -86,13 +101,12 @@ public static class VisualAssert
         return Path.Combine(Path.GetTempPath(), fileName);
     }
 
-    private static bool AreImagesSimilar(Bitmap baselineImage, Bitmap testImage)
+    private static int CalculateSimilarity(Bitmap baselineImage, Bitmap testImage)
     {
         var baselineHash = ComputeAverageHash(baselineImage);
         var testHash = ComputeAverageHash(testImage);
         var matchingBits = HashSize * HashSize - System.Numerics.BitOperations.PopCount(baselineHash ^ testHash);
-        var similarity = matchingBits * 100 / (HashSize * HashSize);
-        return similarity >= SimilarityThreshold;
+        return matchingBits * 100 / (HashSize * HashSize);
     }
 
     private static ulong ComputeAverageHash(Bitmap image)

@@ -319,6 +319,9 @@ public static class WindowControl
         }
     }
 
+    /// <summary>Return the current foreground window handle.</summary>
+    public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
     public static bool TryFocusByApp(string appNameOrPid)
     {
         try
