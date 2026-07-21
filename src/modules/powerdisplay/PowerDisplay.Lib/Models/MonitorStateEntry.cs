@@ -44,6 +44,9 @@ namespace PowerDisplay.Common.Models
         [JsonPropertyName("capabilitiesRaw")]
         public string? CapabilitiesRaw { get; set; }
 
+        /// <summary>
+        /// Gets or sets the known-good VCP observations cached for this exact DevicePath monitor entry.
+        /// </summary>
         [JsonPropertyName("knownGoodVcpFeatures")]
         public List<KnownGoodVcpFeature> KnownGoodVcpFeatures { get; set; } = new();
 

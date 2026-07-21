@@ -12,8 +12,6 @@ namespace PowerDisplay.Common.Interfaces
         IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId);
 
         void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature);
-
-        void RetainMonitorIds(IEnumerable<string> monitorIds);
     }
 
     internal sealed class NullKnownGoodVcpStore : IKnownGoodVcpStore
@@ -26,10 +24,6 @@ namespace PowerDisplay.Common.Interfaces
         public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId) => Empty;
 
         public void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature)
-        {
-        }
-
-        public void RetainMonitorIds(IEnumerable<string> monitorIds)
         {
         }
     }

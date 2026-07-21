@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
@@ -99,16 +100,30 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RetainMonitorIds_RemovesOnlyUnretainedMonitorState()
+    public void RetainMonitorStates_RemovesEntireUnretainedMonitorEntry()
     {
-        using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
-        manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            manager.UpdateMonitorParameter(MonitorA, "Brightness", 25);
+            manager.UpdateMonitorParameter(MonitorB, "Contrast", 80);
+            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
+            manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
 
-        manager.RetainMonitorIds(new[] { MonitorA });
+            manager.RetainMonitorStates(new[] { MonitorA });
+        }
 
-        Assert.AreEqual(1, manager.GetKnownGoodFeatures(MonitorA).Count);
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorB).Count);
+        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
+        {
+            var monitors = document.RootElement.GetProperty("monitors");
+            Assert.IsTrue(monitors.TryGetProperty(MonitorA, out _));
+            Assert.IsFalse(monitors.TryGetProperty(MonitorB, out _));
+        }
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.AreEqual(25, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
+        Assert.IsNull(reloaded.GetMonitorParameters(MonitorB));
+        Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
+        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorB).Count);
     }
 
     [TestMethod]
@@ -125,14 +140,25 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RetainMonitorIds_EmptySetClearsKnownGoodState()
+    public void RetainMonitorStates_EmptySetClearsCompleteState()
     {
-        using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
+            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
 
-        manager.RetainMonitorIds(Array.Empty<string>());
+            manager.RetainMonitorStates(Array.Empty<string>());
+        }
 
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorA).Count);
+        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
+        {
+            var monitors = document.RootElement.GetProperty("monitors");
+            Assert.IsFalse(monitors.TryGetProperty(MonitorA, out _));
+        }
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.IsNull(reloaded.GetMonitorParameters(MonitorA));
+        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorA).Count);
     }
 
     [TestMethod]

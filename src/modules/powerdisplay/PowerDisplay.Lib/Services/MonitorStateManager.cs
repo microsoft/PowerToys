@@ -192,7 +192,13 @@ namespace PowerDisplay.Common.Services
             MarkDirtyAndScheduleSave();
         }
 
-        public void RetainMonitorIds(IEnumerable<string> monitorIds)
+        /// <summary>
+        /// Removes complete persisted monitor state entries for any exact DevicePath monitor Id not present in
+        /// <paramref name="monitorIds"/>. Removing an entry clears its saved brightness, contrast, volume,
+        /// color temperature, capabilities, and known-good VCP cache.
+        /// </summary>
+        /// <param name="monitorIds">The exact DevicePath monitor Ids whose persisted state entries should be retained.</param>
+        public void RetainMonitorStates(IEnumerable<string> monitorIds)
         {
             ArgumentNullException.ThrowIfNull(monitorIds);
             var retained = new HashSet<string>(monitorIds, MonitorIdComparer.Instance);
