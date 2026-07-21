@@ -103,16 +103,18 @@ if (-not (Test-Path $dscOutputDir)) {
 Write-Host "DSC manifests will be generated to: '$dscOutputDir'"
 
 Write-Host "Cleaning previously generated DSC manifest files from '$dscOutputDir'."
-Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
+Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
 
-$arguments = @('manifest', '--resource', 'settings', '--outputDir', $dscOutputDir)
-Write-Host "Invoking DSC manifest generator: '$exePath' $($arguments -join ' ')"
-& $exePath @arguments
-if ($LASTEXITCODE -ne 0) {
-    throw "PowerToys.DSC.exe exited with code $LASTEXITCODE"
+foreach ($resource in @('settings', 'profile')) {
+    $arguments = @('manifest', '--resource', $resource, '--outputDir', $dscOutputDir)
+    Write-Host "Invoking DSC manifest generator: '$exePath' $($arguments -join ' ')"
+    & $exePath @arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "PowerToys.DSC.exe exited with code $LASTEXITCODE"
+    }
 }
 
-$generatedFiles = Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction Stop
+$generatedFiles = Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.dsc.resource.json' -ErrorAction Stop
 if ($generatedFiles.Count -eq 0) {
     throw "No DSC manifest files were generated in '$dscOutputDir'."
 }
