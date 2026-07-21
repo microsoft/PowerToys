@@ -73,7 +73,9 @@
             x:Name="TabStrip"
             Grid.Row="0"
             Padding="8,0"
-            Background="Transparent"
+            Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CmdPal.TopBarBorderBrush}"
+            BorderThickness="0,0,0,1"
             IsItemClickEnabled="False"
             ItemTemplate="{StaticResource TabItemTemplate}"
             ItemsSource="{x:Bind ViewModel.Tabs, Mode=OneWay}"
@@ -117,7 +119,11 @@
                                         Visibility="Collapsed" />
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
+                                            <VisualState x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
                                             <VisualState x:Name="Selected">
                                                 <VisualState.Setters>
                                                     <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
@@ -160,7 +166,7 @@
             Visibility="{x:Bind ViewModel.ActiveTabIsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <!--  Active tab content  -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Margin="0,2,0,0">
             <Frame x:Name="TabFrame" />
             <TextBlock
                 x:Name="UnsupportedPlaceholder"
