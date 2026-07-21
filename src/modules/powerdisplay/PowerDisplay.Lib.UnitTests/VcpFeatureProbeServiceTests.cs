@@ -109,19 +109,56 @@ public sealed class VcpFeatureProbeServiceTests
     }
 
     [TestMethod]
-    public async Task ProbeAsync_CancellationBeforeFirstReadStopsNativeCalls()
+    public async Task ProbeAsync_PreCancelledTokenSkipsDelayAndNativeReads()
     {
         var reader = new QueueReader(VcpReadAttempt.Success(10, 100));
+        var delays = new List<TimeSpan>();
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        var service = new VcpFeatureProbeService(
-            reader,
-            (_, token) => Task.FromCanceled(token),
-            new byte[] { 0x10 });
+        var service = CreateService(reader, delays, new byte[] { 0x10 });
 
         await Assert.ThrowsExceptionAsync<OperationCanceledException>(
             () => service.ProbeAsync(new IntPtr(1), cancellation.Token));
 
+        Assert.AreEqual(0, delays.Count);
+        Assert.AreEqual(0, reader.CallCount);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_CancellationDuringTransactionDelayStopsBeforeNativeRead()
+    {
+        var reader = new QueueReader(VcpReadAttempt.Success(10, 100));
+        var delays = new List<TimeSpan>();
+        var delayStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var cancellation = new CancellationTokenSource();
+        var service = new VcpFeatureProbeService(
+            reader,
+            async (delay, token) =>
+            {
+                delays.Add(delay);
+                delayStarted.TrySetResult(true);
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+            },
+            new byte[] { 0x10 });
+
+        var probeTask = service.ProbeAsync(new IntPtr(1), cancellation.Token);
+
+        await delayStarted.Task;
+        cancellation.Cancel();
+
+        OperationCanceledException? exception = null;
+        try
+        {
+            await probeTask;
+        }
+        catch (OperationCanceledException ex)
+        {
+            exception = ex;
+        }
+
+        Assert.IsNotNull(exception);
+
+        CollectionAssert.AreEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
         Assert.AreEqual(0, reader.CallCount);
     }
 
