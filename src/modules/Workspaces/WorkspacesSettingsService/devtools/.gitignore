@@ -1,3 +1,0 @@
-# Compiled helpers produced by the validation scripts are build artifacts and
-# must never be committed.
-*.exe
