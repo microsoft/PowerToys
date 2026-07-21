@@ -78,6 +78,26 @@ public sealed class VcpDiscoveryEvidenceTests
     }
 
     [TestMethod]
+    public void Reconcile_MaximumCompatibilityUnionsParsedCapabilitiesWithExactIdCache()
+    {
+        var parsedCapabilities = new VcpCapabilities();
+        parsedCapabilities.SupportedVcpCodes[0x12] = new VcpCodeInfo(0x12, "Contrast");
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: parsedCapabilities,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
+            includeCache: true);
+
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
+        Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x12));
+        Assert.AreEqual(1, result.InitialValues.Count);
+        Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
+        Assert.IsFalse(result.InitialValues[0x10].IsLive);
+    }
+
+    [TestMethod]
     public void Reconcile_InvalidCachedRangeIsIgnored()
     {
         var cached = Cached(0x10, current: 25);

@@ -71,6 +71,9 @@ internal sealed class VcpDiscoveryEvidence
                 var cachedValue = knownGood.ToVcpFeatureValue();
                 if (cachedValue.IsValid)
                 {
+                    // includeCache is only enabled by Maximum compatibility mode; when it is, exact-ID
+                    // cache evidence intentionally supplements parsed capabilities because caps strings
+                    // can omit previously proven continuous VCP support.
                     capabilities ??= new VcpCapabilities();
                     capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
                     values[code] = new VcpInitialValue(
