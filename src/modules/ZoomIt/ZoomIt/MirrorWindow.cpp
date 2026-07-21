@@ -23,9 +23,6 @@ namespace util
     using namespace robmikh::common::desktop;
 }
 
-const float MIRROR_ZOOM_MAX = 8.0f;
-const float MIRROR_ZOOM_ANIMATION_STEP = 0.3f;
-const float MIRROR_PAN_ANIMATION_STEP = 0.25f;
 const DWORD MIRROR_FRAME_TIMEOUT_MS = 33;
 const UINT MIRROR_TOPMOST_TIMER_MS = 250;
 
@@ -139,8 +136,6 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_annotationQuery = annotationQuery;
     m_annotationState = AnnotationState::None;
     m_monitorOverride = false;
-    m_zoom = 1.0f;
-    m_zoomTarget = 1.0f;
     m_sourceTexture = nullptr;
     m_contentSize = item.Size();
     m_poolSize = item.Size();
@@ -174,9 +169,6 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     {
         return false;
     }
-
-    m_centerX = m_imageWidth / 2.0f;
-    m_centerY = m_imageHeight / 2.0f;
 
     RECT windowRect = ComputeWindowRect();
 
@@ -312,11 +304,6 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
         ShowWindow( m_borderWindow, SW_SHOWNA );
     }
 
-    // Ctrl+Up/Ctrl+Down zoom the mirror, matching LiveZoom. Registration
-    // fails benignly when LiveZoom is active and owns the keys.
-    RegisterHotKey( m_window, ZOOM_IN_HOTKEY_ID, MOD_CONTROL, VK_UP );
-    RegisterHotKey( m_window, ZOOM_OUT_HOTKEY_ID, MOD_CONTROL, VK_DOWN );
-
     // The presentation reasserts topmost when a slide show starts, so
     // periodically reclaim it like live zoom does.
     SetTimer( m_window, TOPMOST_TIMER_ID, MIRROR_TOPMOST_TIMER_MS, nullptr );
@@ -349,8 +336,6 @@ void MirrorWindow::Stop()
     if( m_window != nullptr )
     {
         KillTimer( m_window, TOPMOST_TIMER_ID );
-        UnregisterHotKey( m_window, ZOOM_IN_HOTKEY_ID );
-        UnregisterHotKey( m_window, ZOOM_OUT_HOTKEY_ID );
         DestroyWindow( m_window );
         m_window = nullptr;
     }
@@ -438,11 +423,11 @@ bool MirrorWindow::UpdateAnnotationState()
     }
     bool switched = false;
 
-    if( m_trackWindow )
+    if( m_trackWindow || m_sourceWindow == nullptr )
     {
-        // Window tracking already captures the monitor, so annotations show
-        // in place; just avoid a doubled cursor while live zoom renders a
-        // magnified one.
+        // Monitor captures (screen, region, and window tracking) show
+        // annotations in place; just avoid a doubled cursor while live zoom
+        // renders a magnified one.
         m_frameWait->EnableCursorCapture( state != AnnotationState::AnnotatingLiveZoom );
         m_annotationState = state;
         return false;
@@ -477,7 +462,6 @@ bool MirrorWindow::UpdateAnnotationState()
             // capturing the cursor too would double it.
             if( SwitchCapture( item, state != AnnotationState::AnnotatingLiveZoom ) )
             {
-                m_overrideRect = GetMonitorRect( monitor );
                 m_monitorOverride = true;
                 switched = true;
             }
@@ -584,27 +568,6 @@ LRESULT MirrorWindow::WindowProc( HWND window, UINT message, WPARAM wordParam, L
         UpdateBorderWindow();
         return 0;
 
-    case WM_HOTKEY:
-        if( wordParam == ZOOM_IN_HOTKEY_ID )
-        {
-            float zoomTarget = m_zoomTarget;
-            if( zoomTarget < MIRROR_ZOOM_MAX )
-            {
-                m_zoomTarget = zoomTarget * 2;
-            }
-            return 0;
-        }
-        else if( wordParam == ZOOM_OUT_HOTKEY_ID )
-        {
-            float zoomTarget = m_zoomTarget;
-            if( zoomTarget > 1.0f )
-            {
-                m_zoomTarget = max( zoomTarget / 2, 1.0f );
-            }
-            return 0;
-        }
-        break;
-
     case WM_TIMER:
         if( wordParam == TOPMOST_TIMER_ID )
         {
@@ -678,7 +641,7 @@ void MirrorWindow::RenderLoop()
         // Switch between window and monitor capture as ZoomIt annotation
         // modes come and go. On a switch, discard any frame from the
         // previous capture.
-        if( m_sourceWindow != nullptr && m_annotationQuery && UpdateAnnotationState() )
+        if( m_annotationQuery && UpdateAnnotationState() )
         {
             continue;
         }
@@ -752,21 +715,12 @@ void MirrorWindow::RenderLoop()
 //
 // MirrorWindow::RenderFrame
 //
-// Copies the visible sub-rectangle of the cached source frame into the
-// swapchain and presents it. The sub-rectangle shrinks with the zoom level
-// and pans to follow the mouse.
+// Copies the mirrored region of the cached source frame into the swapchain
+// and presents it.
 //
 //----------------------------------------------------------------------------
 void MirrorWindow::RenderFrame()
 {
-    // Animate toward the target zoom level.
-    const float zoomTarget = m_zoomTarget;
-    m_zoom += ( zoomTarget - m_zoom ) * MIRROR_ZOOM_ANIMATION_STEP;
-    if( fabsf( zoomTarget - m_zoom ) < 0.01f )
-    {
-        m_zoom = zoomTarget;
-    }
-
     D3D11_TEXTURE2D_DESC sourceDesc;
     m_sourceTexture->GetDesc( &sourceDesc );
 
@@ -782,7 +736,6 @@ void MirrorWindow::RenderFrame()
         {
             return;
         }
-        m_sourceRect = windowRect;
         SetRect( &crop,
                  windowRect.left - m_sourceMonitorRect.left,
                  windowRect.top - m_sourceMonitorRect.top,
@@ -812,55 +765,14 @@ void MirrorWindow::RenderFrame()
         PostMessage( m_window, WM_MIRROR_RELAYOUT, 0, 0 );
     }
 
-    const int subWidth = max( 1, min( static_cast<int>( cropWidth / m_zoom ), m_bufferWidth ) );
-    const int subHeight = max( 1, min( static_cast<int>( cropHeight / m_zoom ), m_bufferHeight ) );
-
-    // Pan to follow the mouse when zoomed.
-    float desiredX = cropWidth / 2.0f;
-    float desiredY = cropHeight / 2.0f;
-    if( m_zoom > 1.0f )
-    {
-        POINT cursorPos;
-        if( GetCursorPos( &cursorPos ) )
-        {
-            if( m_monitorOverride )
-            {
-                desiredX = static_cast<float>( cursorPos.x - m_overrideRect.left );
-                desiredY = static_cast<float>( cursorPos.y - m_overrideRect.top );
-            }
-            else if( m_sourceWindow != nullptr && !m_trackWindow )
-            {
-                RECT windowRect = GetWindowFrameRect( m_sourceWindow );
-                if( windowRect.right > windowRect.left && windowRect.bottom > windowRect.top )
-                {
-                    desiredX = ( cursorPos.x - windowRect.left ) * static_cast<float>( cropWidth ) /
-                                    ( windowRect.right - windowRect.left );
-                    desiredY = ( cursorPos.y - windowRect.top ) * static_cast<float>( cropHeight ) /
-                                    ( windowRect.bottom - windowRect.top );
-                }
-            }
-            else
-            {
-                desiredX = static_cast<float>( cursorPos.x - m_sourceRect.left );
-                desiredY = static_cast<float>( cursorPos.y - m_sourceRect.top );
-            }
-        }
-    }
-    desiredX = max( subWidth / 2.0f, min( desiredX, cropWidth - subWidth / 2.0f ) );
-    desiredY = max( subHeight / 2.0f, min( desiredY, cropHeight - subHeight / 2.0f ) );
-    m_centerX += ( desiredX - m_centerX ) * MIRROR_PAN_ANIMATION_STEP;
-    m_centerY += ( desiredY - m_centerY ) * MIRROR_PAN_ANIMATION_STEP;
-
-    int boxLeft = crop.left + static_cast<int>( m_centerX - subWidth / 2.0f );
-    int boxTop = crop.top + static_cast<int>( m_centerY - subHeight / 2.0f );
-    boxLeft = max( static_cast<int>( crop.left ), min( boxLeft, static_cast<int>( crop.right ) - subWidth ) );
-    boxTop = max( static_cast<int>( crop.top ), min( boxTop, static_cast<int>( crop.bottom ) - subHeight ) );
+    const int width = min( cropWidth, m_bufferWidth );
+    const int height = min( cropHeight, m_bufferHeight );
 
     D3D11_BOX box;
-    box.left = boxLeft;
-    box.top = boxTop;
-    box.right = boxLeft + subWidth;
-    box.bottom = boxTop + subHeight;
+    box.left = crop.left;
+    box.top = crop.top;
+    box.right = crop.left + width;
+    box.bottom = crop.top + height;
     box.front = 0;
     box.back = 1;
 
@@ -870,6 +782,6 @@ void MirrorWindow::RenderFrame()
         return;
     }
     m_context->CopySubresourceRegion( backBuffer.get(), 0, 0, 0, 0, m_sourceTexture.get(), 0, &box );
-    m_swapChain->SetSourceSize( subWidth, subHeight );
+    m_swapChain->SetSourceSize( width, height );
     m_swapChain->Present( 1, 0 );
 }

@@ -105,6 +105,7 @@ COLORREF	g_CustomColors[16];
 #define WEBCAM_TOGGLE_HOTKEY     21
 #define MIRROR_HOTKEY            22
 #define MIRROR_WINDOW_HOTKEY     23
+#define MIRROR_CROP_HOTKEY       24
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -428,6 +429,7 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
     case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
     case MIRROR_HOTKEY: return L"MIRROR_HOTKEY";
     case MIRROR_WINDOW_HOTKEY: return L"MIRROR_WINDOW_HOTKEY";
+    case MIRROR_CROP_HOTKEY: return L"MIRROR_CROP_HOTKEY";
     default: return L"UNKNOWN_HOTKEY";
     }
 }
@@ -3571,6 +3573,7 @@ void UnregisterAllHotkeys( HWND hWnd )
     unregisterHotkey( COPY_CROP_HOTKEY );
     unregisterHotkey( MIRROR_HOTKEY );
     unregisterHotkey( MIRROR_WINDOW_HOTKEY );
+    unregisterHotkey( MIRROR_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -3626,7 +3629,11 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_MirrorToggleKey) {
         registerHotkey( MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
         UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+        if ( mirrorCropMod != 0 ) {
+            registerHotkey( MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        }
         if ( mirrorWindowMod != 0 ) {
             registerHotkey( MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
         }
@@ -5689,8 +5696,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
             }
-            else if( UINT mirrorWindowMod = newMirrorToggleMod ^ MOD_ALT; newMirrorToggleKey &&
+            else if( UINT mirrorCropMod = newMirrorToggleMod ^ MOD_SHIFT, mirrorWindowMod = newMirrorToggleMod ^ MOD_ALT; newMirrorToggleKey &&
                 (!RegisterHotKey(GetParent(hDlg), MIRROR_HOTKEY, newMirrorToggleMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)) ||
                 (mirrorWindowMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)))) {
 
                 MessageBox(hDlg, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
@@ -7932,8 +7940,10 @@ LRESULT APIENTRY MainWndProc(
                 }
             }
             if (showOptions == FALSE && g_MirrorToggleKey) {
+                UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
                 UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
                 if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                    (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
                     (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF))) {
 
                     MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
@@ -8700,14 +8710,15 @@ LRESULT APIENTRY MainWndProc(
             break;
 
         case MIRROR_HOTKEY:
+        case MIRROR_CROP_HOTKEY:
         case MIRROR_WINDOW_HOTKEY: {
 
             //
-            // DemoMirror: mirror a region or window, including the mouse
-            // cursor, onto a second monitor on top of a slide show so the
-            // audience can follow a demo without the presenter leaving the
-            // presentation. Entered once to start mirroring and again to
-            // stop.
+            // DemoMirror: mirror the screen, a region (Shift), or a window
+            // (Alt), including the mouse cursor, onto a second monitor on
+            // top of a slide show so the audience can follow a demo without
+            // the presenter leaving the presentation. Entered once to start
+            // mirroring and again to stop.
             //
             if( g_MirrorWindow.IsActive() ) {
 
@@ -8755,7 +8766,7 @@ LRESULT APIENTRY MainWndProc(
                 mirrorSourceMonitor = MonitorFromWindow( hWndMirrorSource, MONITOR_DEFAULTTONEAREST );
                 mirrorSourceRect = MirrorWindow::GetWindowFrameRect( hWndMirrorSource );
 
-            } else {
+            } else if( wParam == MIRROR_CROP_HOTKEY ) {
 
                 // Select the region to mirror. The selection border stays up
                 // to show what's being mirrored; it is excluded from capture.
@@ -8773,6 +8784,22 @@ LRESULT APIENTRY MainWndProc(
 
                 // The selection border defaults to translucent; make the
                 // mirror border fully opaque so it reads bright green.
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+
+            } else {
+
+                // Mirror the entire monitor under the cursor, with a
+                // full-monitor border showing that mirroring is active.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                mirrorSourceMonitor = MonitorFromPoint( mirrorPoint, MONITOR_DEFAULTTONEAREST );
+                MONITORINFO mirrorMonitorInfo = { sizeof( mirrorMonitorInfo ) };
+                GetMonitorInfo( mirrorSourceMonitor, &mirrorMonitorInfo );
+                mirrorSourceRect = mirrorMonitorInfo.rcMonitor;
+
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                g_MirrorSelectRectangle.Start( nullptr, true );
                 SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
             }
 
@@ -10771,8 +10798,10 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_MirrorToggleKey)
         {
+            UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
             UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
             if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
                 (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)))
             {
                 if(!g_StartedByPowerToys)

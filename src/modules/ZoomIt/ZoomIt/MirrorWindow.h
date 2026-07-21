@@ -55,8 +55,6 @@ public:
     void Stop();
 
 private:
-    static const int ZOOM_IN_HOTKEY_ID = 1;
-    static const int ZOOM_OUT_HOTKEY_ID = 2;
     static const UINT_PTR TOPMOST_TIMER_ID = 1;
     // Private to the mirror window: re-fit it to the source's aspect ratio.
     static const UINT WM_MIRROR_RELAYOUT = WM_USER + 1;
@@ -100,12 +98,7 @@ private:
     std::function<AnnotationState()>	m_annotationQuery;
     AnnotationState	m_annotationState = AnnotationState::None;
     bool	m_monitorOverride = false;	// capturing the monitor while annotating
-    RECT	m_overrideRect{};			// override monitor rectangle
 
     std::thread			m_renderThread;
     wil::unique_event	m_stopEvent{ wil::EventOptions::ManualReset };
-    std::atomic<float>	m_zoomTarget{ 1.0f };
-    float	m_zoom = 1.0f;
-    float	m_centerX = 0;
-    float	m_centerY = 0;
 };

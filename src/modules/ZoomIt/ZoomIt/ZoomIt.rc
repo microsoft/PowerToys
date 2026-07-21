@@ -265,13 +265,12 @@ DEMOMIRROR DIALOGEX 0, 0, 317, 136
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "DemoMirror mirrors a region of the screen or a window, including the mouse pointer, onto a second monitor. Use it to show a demo app on the presentation monitor, on top of the slide show, without leaving the presentation.",IDC_STATIC,7,7,272,27
-    LTEXT           "Enter the hotkey to select a region to mirror and enter it again to stop mirroring. To mirror the window under the cursor instead, enter the hotkey with the Alt key in the opposite mode.",IDC_STATIC,7,39,272,19
-    LTEXT           "Use Ctrl+Up and Ctrl+Down to zoom the mirrored image around the mouse pointer.",IDC_STATIC,7,63,272,13
-    LTEXT           "Mirror Toggle:",IDC_STATIC,7,87,62,8
-    CONTROL         "",IDC_MIRROR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,85,80,12
+    LTEXT           "DemoMirror mirrors the screen, a region of the screen, or a window, including the mouse pointer, onto a second monitor. Use it to show a demo app on the presentation monitor, on top of the slide show, without leaving the presentation.",IDC_STATIC,7,7,272,27
+    LTEXT           "Enter the hotkey to mirror the entire screen, enter it with the Shift key to select a region to mirror, or with the Alt key to mirror the window under the cursor. Enter the hotkey again to stop mirroring.",IDC_STATIC,7,39,272,27
+    LTEXT           "Mirror Toggle:",IDC_STATIC,7,73,62,8
+    CONTROL         "",IDC_MIRROR_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,71,80,12
     CONTROL         "Mirror windows by tracking their screen region, so zoom and draw show in place (uncheck to mirror the window's own surface, unaffected by overlapping windows):",IDC_MIRROR_TRACK_WINDOW,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,105,272,26
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,7,91,272,26
 END
 
 RECORD DIALOGEX 0, 0, 276, 228
