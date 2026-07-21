@@ -115,6 +115,13 @@ public static class WindowHelper
     public static void SetMainWindowSize(IntPtr hWnd, int width, int height) =>
         SetWindowPos(hWnd, IntPtr.Zero, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
+    /// <summary>Move a window to explicit screen coordinates while preserving its current size.</summary>
+    public static void MoveWindow(IntPtr hWnd, int x, int y)
+    {
+        var (left, top, right, bottom) = GetWindowBounds(hWnd);
+        SetWindowPos(hWnd, IntPtr.Zero, x, y, right - left, bottom - top, SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
     /// <summary>
     /// Maximize a window so it fills the monitor work area and is fully on-screen. Used as the default
     /// window state for tests so a module's restored (possibly small or off-screen) last window rect

@@ -212,7 +212,19 @@ public sealed class Session
 
         while (true)
         {
-            var matches = ExecuteSearch(by);
+            List<SearchHit> matches;
+            try
+            {
+                matches = ExecuteSearch(by);
+            }
+            catch (AssertFailedException ex) when (
+                DateTime.UtcNow < deadline &&
+                ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase))
+            {
+                Thread.Sleep(200);
+                continue;
+            }
+
             var typed = new List<T>(matches.Count);
             foreach (var m in matches)
             {
