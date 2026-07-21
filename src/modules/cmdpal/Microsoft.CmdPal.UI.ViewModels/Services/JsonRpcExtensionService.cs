@@ -298,7 +298,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     private static string GetDefaultExtensionsPath()
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(localAppData, "Microsoft", "PowerToys", "CommandPalette", "JSExtensions");
+        return Path.Combine(localAppData, "Microsoft", "PowerToys", "CmdPal", "JSExtensions");
     }
 
     private static bool PathsEqual(string a, string b) =>
