@@ -58,22 +58,8 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         _manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
         _manifestDirectory = manifestDirectory ?? throw new ArgumentNullException(nameof(manifestDirectory));
 
-        // Map declared capabilities to provider types. Default to Commands when unspecified.
-        var caps = _manifest.Capabilities;
-        if (caps is { Length: > 0 })
-        {
-            foreach (var cap in caps)
-            {
-                if (string.Equals(cap, "commands", StringComparison.OrdinalIgnoreCase))
-                {
-                    AddProviderType(ProviderType.Commands);
-                }
-            }
-        }
-        else
-        {
-            AddProviderType(ProviderType.Commands);
-        }
+        // JS extensions currently expose a single command provider.
+        AddProviderType(ProviderType.Commands);
     }
 
     /// <summary>
