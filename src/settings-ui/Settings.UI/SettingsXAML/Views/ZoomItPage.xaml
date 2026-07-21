@@ -399,6 +399,29 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="ZoomIt_MirrorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="ZoomItMirrorShortcut"
+                        x:Uid="ZoomIt_Mirror_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsExpanded="True">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.MirrorToggleKey, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="ZoomItMirrorTrackWindow" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Mirror_TrackWindow" IsChecked="{x:Bind ViewModel.MirrorTrackWindow, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_FullScreen}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_Crop}" />
+                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.MirrorToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Mirror_Shortcut_Window}" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipShortcut"
