@@ -152,12 +152,13 @@ public static class ServiceProvisioner
             return Outcome.ElevationFailed;
         }
 
-        // Record the attempt up front so a crash mid-elevation doesn't make us
-        // re-prompt on the next trigger.  The sentinel is VERSION-SCOPED, so a
-        // later upgrade (new version) legitimately re-prompts once to re-point
-        // the service to the new binary (§12.8 upgrade path).
-        TryWriteAttemptSentinel();
-
+        // The attempt sentinel is written AFTER the elevation returns, and only
+        // when the user actually made a choice (completed or declined) — NOT when
+        // the elevation could not even be launched.  This avoids the trap where a
+        // missed / failed UAC permanently suppresses re-prompts on this version
+        // (the version-scoped sentinel would otherwise stick forever, degrading
+        // the editor).  A later upgrade (new version) or an explicit forced
+        // request legitimately re-prompts.
         var runner = options.ElevationRunner ?? RunElevatedPowerShell;
         var arguments = BuildInstallArguments(serviceMsix, userSid!);
 
@@ -165,13 +166,22 @@ public static class ServiceProvisioner
         switch (elevation)
         {
             case ElevationResult.Declined:
+                // Explicit user choice — record it so we don't nag on every editor
+                // open.  (An explicit save still forces a fresh prompt.)
+                TryWriteAttemptSentinel();
                 return Outcome.UserDeclined;
 
             case ElevationResult.Failed:
+                // The helper could not be launched (policy, transient error, …) —
+                // this was NOT the user's decision.  Do NOT persist the sentinel so
+                // the next trigger retries instead of being suppressed for good.
                 return Outcome.ElevationFailed;
 
             case ElevationResult.Completed:
             default:
+                // The elevated helper ran (whether or not it fully succeeded) —
+                // record the attempt so a repeat trigger doesn't re-prompt.
+                TryWriteAttemptSentinel();
                 return IsServiceAvailable() ? Outcome.Provisioned : Outcome.AttemptedNotConfirmed;
         }
     }
