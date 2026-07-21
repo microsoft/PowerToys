@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ManagedCommon;
 using PowerDisplay.Common.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 
@@ -31,14 +32,23 @@ namespace PowerDisplay.Common.Drivers.DDC
         public VcpReadAttempt Read(IntPtr handle, byte code) => DdcCiNative.ReadVcpFeature(handle, code);
     }
 
-    internal readonly record struct VcpProbeObservation(byte Code, VcpFeatureValue Value, int? ErrorCode)
+    internal readonly record struct VcpProbeObservation(
+        byte Code,
+        VcpFeatureValue Value,
+        int Attempts,
+        int? LastError)
     {
         public bool IsSuccess => Value.IsValid;
 
-        public static VcpProbeObservation Success(byte code, VcpFeatureValue value) => new(code, value, null);
+        public static VcpProbeObservation Success(
+            byte code,
+            VcpFeatureValue value,
+            int attempts = 1,
+            int? lastError = null) =>
+            new(code, value, attempts, lastError);
 
-        public static VcpProbeObservation Indeterminate(byte code, int? errorCode) =>
-            new(code, VcpFeatureValue.Invalid, errorCode);
+        public static VcpProbeObservation Indeterminate(byte code, int? lastError, int attempts = 1) =>
+            new(code, VcpFeatureValue.Invalid, attempts, lastError);
     }
 
     internal sealed class VcpFeatureProbeService
@@ -69,7 +79,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             foreach (var code in _codes)
             {
-                observations[code] = await ProbeCodeAsync(handle, code, cancellationToken);
+                observations[code] = await ProbeCodeAsync(handle, code, cancellationToken).ConfigureAwait(false);
             }
 
             return observations;
@@ -81,25 +91,44 @@ namespace PowerDisplay.Common.Drivers.DDC
             CancellationToken cancellationToken)
         {
             int? lastError = null;
+            var attempts = 0;
 
             for (var attempt = 1; attempt <= MaxAttempts; attempt++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await _delayAsync(TransactionInterval, cancellationToken);
+                await _delayAsync(TransactionInterval, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = _reader.Read(handle, code);
+                var result = await Task.Run(
+                    () => _reader.Read(handle, code),
+                    cancellationToken).ConfigureAwait(false);
+                attempts = attempt;
                 if (result.IsSuccess)
                 {
                     var value = new VcpFeatureValue((int)result.Current, 0, (int)result.Maximum);
                     if (value.IsValid)
                     {
-                        return VcpProbeObservation.Success(code, value);
+                        Logger.LogDebug(
+                            $"DDC: [max-compat] VCP probe attempt " +
+                            $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
+                            $"status=success, current={result.Current}, maximum={result.Maximum})");
+                        return Complete(
+                            handle,
+                            VcpProbeObservation.Success(code, value, attempt, lastError));
                     }
+
+                    Logger.LogDebug(
+                        $"DDC: [max-compat] VCP probe attempt " +
+                        $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
+                        $"status=invalid-range, current={result.Current}, maximum={result.Maximum})");
                 }
                 else
                 {
                     lastError = result.ErrorCode;
+                    Logger.LogDebug(
+                        $"DDC: [max-compat] VCP probe attempt " +
+                        $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
+                        $"status=failed, error={FormatError(lastError)})");
                     if (!IsTransient(result.ErrorCode))
                     {
                         break;
@@ -107,8 +136,33 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
-            return VcpProbeObservation.Indeterminate(code, lastError);
+            return Complete(
+                handle,
+                VcpProbeObservation.Indeterminate(code, lastError, attempts));
         }
+
+        private static VcpProbeObservation Complete(IntPtr handle, VcpProbeObservation observation)
+        {
+            var status = observation.IsSuccess ? "success" : "indeterminate";
+            var message =
+                $"DDC: [max-compat] VCP probe outcome " +
+                $"(handle=0x{handle:X}, code=0x{observation.Code:X2}, attempts={observation.Attempts}, " +
+                $"status={status}, lastError={FormatError(observation.LastError)})";
+
+            if (observation.IsSuccess)
+            {
+                Logger.LogInfo(message);
+            }
+            else
+            {
+                Logger.LogWarning(message);
+            }
+
+            return observation;
+        }
+
+        private static string FormatError(int? errorCode) =>
+            errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
 
         internal static bool IsTransient(int errorCode) => errorCode is
             unchecked((int)0xC0262582) or

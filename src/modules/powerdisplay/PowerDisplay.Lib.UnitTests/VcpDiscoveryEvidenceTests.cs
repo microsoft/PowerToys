@@ -95,6 +95,26 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.AreEqual(1, result.InitialValues.Count);
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
         Assert.IsFalse(result.InitialValues[0x10].IsLive);
+        Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
+    }
+
+    [TestMethod]
+    public void Reconcile_MaximumCompatibilityMarksAdvertisedCachedCodeAsLiveFallback()
+    {
+        var parsedCapabilities = new VcpCapabilities();
+        parsedCapabilities.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: parsedCapabilities,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
+            includeCache: true);
+
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
+        Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
+        Assert.IsFalse(result.InitialValues[0x10].IsLive);
+        Assert.IsTrue(result.InitialValues[0x10].PreferLiveRead);
     }
 
     [TestMethod]

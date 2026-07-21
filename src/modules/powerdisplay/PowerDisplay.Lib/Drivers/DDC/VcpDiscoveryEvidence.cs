@@ -15,7 +15,8 @@ namespace PowerDisplay.Common.Drivers.DDC;
 internal readonly record struct VcpInitialValue(
     VcpFeatureValue Value,
     VcpObservationSource Source,
-    bool IsLive);
+    bool IsLive,
+    bool PreferLiveRead = false);
 
 internal sealed class VcpDiscoveryEvidence
 {
@@ -54,6 +55,8 @@ internal sealed class VcpDiscoveryEvidence
 
         foreach (var code in ContinuousCodes)
         {
+            var parsedCapabilitiesAdvertiseCode = parsedCapabilities?.SupportsVcpCode(code) == true;
+
             if (live.TryGetValue(code, out var observation) && observation.IsSuccess)
             {
                 capabilities ??= new VcpCapabilities();
@@ -79,7 +82,8 @@ internal sealed class VcpDiscoveryEvidence
                     values[code] = new VcpInitialValue(
                         cachedValue,
                         knownGood.Source,
-                        IsLive: false);
+                        IsLive: false,
+                        PreferLiveRead: parsedCapabilitiesAdvertiseCode);
                 }
             }
         }

@@ -30,6 +30,8 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsTrue(result[0x10].IsSuccess);
         Assert.AreEqual(30, result[0x10].Value.Current);
         Assert.AreEqual(100, result[0x10].Value.Maximum);
+        Assert.AreEqual(1, result[0x10].Attempts);
+        Assert.IsNull(result[0x10].LastError);
         CollectionAssert.AreEqual(new[] { TimeSpan.FromMilliseconds(100) }, delays);
     }
 
@@ -46,6 +48,8 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(2, reader.CallCount);
         Assert.IsTrue(result[0x10].IsSuccess);
+        Assert.AreEqual(2, result[0x10].Attempts);
+        Assert.AreEqual(InvalidCommand, result[0x10].LastError);
         CollectionAssert.AreEqual(
             new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100) },
             delays);
@@ -64,7 +68,8 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(3, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
-        Assert.AreEqual(InvalidCommand, result[0x10].ErrorCode);
+        Assert.AreEqual(3, result[0x10].Attempts);
+        Assert.AreEqual(InvalidCommand, result[0x10].LastError);
     }
 
     [TestMethod]
@@ -77,6 +82,8 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(1, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.AreEqual(1, result[0x10].Attempts);
+        Assert.AreEqual(VcpNotSupported, result[0x10].LastError);
     }
 
     [TestMethod]
@@ -92,6 +99,8 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(3, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.AreEqual(3, result[0x10].Attempts);
+        Assert.IsNull(result[0x10].LastError);
     }
 
     [TestMethod]
@@ -162,8 +171,37 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(0, reader.CallCount);
     }
 
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task ProbeAsync_ReaderRunsOffCallerThread()
+    {
+        using var releaseReader = new ManualResetEventSlim();
+        var callerThreadId = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var readerThreadId = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var invocation = new TaskCompletionSource<Task<IReadOnlyDictionary<byte, VcpProbeObservation>>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var reader = new CoordinatedReader(readerThreadId, releaseReader);
+        var service = CreateService(reader, new List<TimeSpan>());
+        var caller = new Thread(() =>
+        {
+            callerThreadId.TrySetResult(Environment.CurrentManagedThreadId);
+            invocation.TrySetResult(service.ProbeAsync(new IntPtr(1), CancellationToken.None));
+        });
+
+        caller.Start();
+        var callerId = await callerThreadId.Task;
+        var readerId = await readerThreadId.Task;
+        releaseReader.Set();
+
+        Assert.IsTrue(caller.Join(TimeSpan.FromSeconds(1)));
+        var result = await await invocation.Task;
+
+        Assert.AreNotEqual(callerId, readerId);
+        Assert.IsTrue(result[0x10].IsSuccess);
+    }
+
     private static VcpFeatureProbeService CreateService(
-        QueueReader reader,
+        IVcpFeatureReader reader,
         List<TimeSpan> delays,
         IReadOnlyList<byte>? codes = null) =>
         new(
@@ -188,6 +226,18 @@ public sealed class VcpFeatureProbeServiceTests
             CallCount++;
             Codes.Add(code);
             return _attempts.Dequeue();
+        }
+    }
+
+    private sealed class CoordinatedReader(
+        TaskCompletionSource<int> readerThreadId,
+        ManualResetEventSlim releaseReader) : IVcpFeatureReader
+    {
+        public VcpReadAttempt Read(IntPtr handle, byte code)
+        {
+            readerThreadId.TrySetResult(Environment.CurrentManagedThreadId);
+            releaseReader.Wait();
+            return VcpReadAttempt.Success(10, 100);
         }
     }
 }

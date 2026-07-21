@@ -37,21 +37,82 @@ public sealed class ContinuousVcpInitializerTests
     }
 
     [TestMethod]
-    public void Initialize_CachedInitialValueDoesNotReadOrClaimFreshRead()
+    public void Initialize_OmittedCodeCachedValueDoesNotReadOrClaimFreshRead()
     {
         var reader = new RecordingReader(VcpReadAttempt.Failure(1));
         var store = new RecordingStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
-        var evidence = Evidence(new VcpInitialValue(
-            new VcpFeatureValue(45, 0, 100),
-            VcpObservationSource.MaximumCompatibilityProbe,
-            IsLive: false));
+        var evidence = CachedEvidence(parsedAdvertisesBrightness: false);
 
         initializer.Initialize(monitor, new IntPtr(1), evidence);
 
         Assert.AreEqual(0, reader.CallCount);
         Assert.AreEqual(45, monitor.CurrentBrightness);
+        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.IsNull(store.LastFeature);
+    }
+
+    [TestMethod]
+    public void Initialize_AdvertisedCachedCodeUsesFreshLiveValueAndPersists()
+    {
+        var reader = new RecordingReader(VcpReadAttempt.Success(60, 100));
+        var store = new RecordingStore();
+        var clock = new FixedClock();
+        var initializer = new ContinuousVcpInitializer(reader, store, clock);
+        var monitor = BrightnessMonitor();
+
+        initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedEvidence(parsedAdvertisesBrightness: true));
+
+        Assert.AreEqual(1, reader.CallCount);
+        Assert.AreEqual(60, monitor.CurrentBrightness);
+        Assert.AreEqual(100, monitor.BrightnessVcpMax);
+        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.AreEqual(60, store.LastFeature!.Current);
+        Assert.AreEqual(100, store.LastFeature.Maximum);
+        Assert.AreEqual(VcpObservationSource.CapabilitiesInitialization, store.LastFeature.Source);
+        Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
+    }
+
+    [TestMethod]
+    public void Initialize_AdvertisedCachedCodeUsesCacheWhenLiveReadFails()
+    {
+        var reader = new RecordingReader(VcpReadAttempt.Failure(unchecked((int)0xC0262589)));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessMonitor();
+
+        initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedEvidence(parsedAdvertisesBrightness: true));
+
+        Assert.AreEqual(1, reader.CallCount);
+        Assert.AreEqual(45, monitor.CurrentBrightness);
+        Assert.AreEqual(100, monitor.BrightnessVcpMax);
+        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.IsNull(store.LastFeature);
+    }
+
+    [TestMethod]
+    public void Initialize_AdvertisedCachedCodeUsesCacheWhenLiveRangeIsInvalid()
+    {
+        var reader = new RecordingReader(VcpReadAttempt.Success(60, 0));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessMonitor();
+
+        initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedEvidence(parsedAdvertisesBrightness: true));
+
+        Assert.AreEqual(1, reader.CallCount);
+        Assert.AreEqual(45, monitor.CurrentBrightness);
+        Assert.AreEqual(100, monitor.BrightnessVcpMax);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
         Assert.IsNull(store.LastFeature);
     }
@@ -109,6 +170,31 @@ public sealed class ContinuousVcpInitializerTests
             string.Empty,
             capabilities,
             new Dictionary<byte, VcpInitialValue> { [0x10] = value });
+    }
+
+    private static VcpDiscoveryEvidence CachedEvidence(bool parsedAdvertisesBrightness)
+    {
+        var parsedCapabilities = new VcpCapabilities();
+        var parsedCode = parsedAdvertisesBrightness ? (byte)0x10 : (byte)0x12;
+        parsedCapabilities.SupportedVcpCodes[parsedCode] =
+            new VcpCodeInfo(parsedCode, parsedAdvertisesBrightness ? "Brightness" : "Contrast");
+
+        return VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: parsedCapabilities,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature>
+            {
+                [0x10] = new KnownGoodVcpFeature
+                {
+                    Code = 0x10,
+                    Current = 45,
+                    Maximum = 100,
+                    Source = VcpObservationSource.MaximumCompatibilityProbe,
+                    LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
+                },
+            },
+            includeCache: true);
     }
 
     private sealed class RecordingReader(VcpReadAttempt result) : IVcpFeatureReader

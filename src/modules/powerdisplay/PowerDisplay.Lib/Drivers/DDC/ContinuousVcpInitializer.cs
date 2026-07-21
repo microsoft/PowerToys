@@ -46,16 +46,23 @@ internal sealed class ContinuousVcpInitializer
             return;
         }
 
+        VcpInitialValue? cachedFallback = null;
         if (evidence.InitialValues.TryGetValue(code, out var initial))
         {
-            ApplyValue(monitor, code, initial.Value, markAsRead: initial.IsLive);
-            return;
+            if (!initial.PreferLiveRead)
+            {
+                ApplyValue(monitor, code, initial.Value, markAsRead: initial.IsLive);
+                return;
+            }
+
+            cachedFallback = initial;
         }
 
         var read = _reader.Read(handle, code);
         if (!read.IsSuccess)
         {
             Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
+            ApplyCachedFallback(monitor, code, cachedFallback);
             return;
         }
 
@@ -65,6 +72,7 @@ internal sealed class ContinuousVcpInitializer
             Logger.LogWarning(
                 $"DDC: [{monitor.Id}] Ignoring invalid {VcpNames.GetCodeName(code).ToLowerInvariant()} " +
                 $"range current={read.Current}, max={read.Maximum}");
+            ApplyCachedFallback(monitor, code, cachedFallback);
             return;
         }
 
@@ -79,6 +87,17 @@ internal sealed class ContinuousVcpInitializer
                 Source = VcpObservationSource.CapabilitiesInitialization,
                 LastSuccessfulUtc = _clock.UtcNow,
             });
+    }
+
+    private static void ApplyCachedFallback(
+        Monitor monitor,
+        byte code,
+        VcpInitialValue? cachedFallback)
+    {
+        if (cachedFallback is { } fallback)
+        {
+            ApplyValue(monitor, code, fallback.Value, markAsRead: false);
+        }
     }
 
     private static bool IsSupported(Monitor monitor, byte code) => code switch
