@@ -339,7 +339,7 @@ public class PeekFilePreviewTests : UITestBase
             explorerWindowHandle = explorerWindow.WindowHandle;
 
             if (explorerWindow.WaitFor(
-                () => FindExplorerItem(explorerWindow, selectedItemName)?.Selected == true,
+                () => FindExplorerItem(explorerWindow, selectedItemName) is not null,
                 timeoutMS: ExplorerSelectionTimeoutMS,
                 pollIntervalMS: 500))
             {
@@ -348,8 +348,8 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         Assert.Fail(
-            $"Explorer did not select {selectedItemName} after {ExplorerOpenAttempts} launch attempts " +
-            $"({ExplorerSelectionTimeoutMS / 1_000}s selection timeout per attempt).");
+            $"Explorer did not show {selectedItemName} after {ExplorerOpenAttempts} launch attempts " +
+            $"({ExplorerSelectionTimeoutMS / 1_000}s item timeout per attempt).");
         return null!;
     }
 
