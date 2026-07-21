@@ -533,6 +533,8 @@ public partial class MainViewModel
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
+            _stateManager.RetainMonitorStates(monitors.Select(monitor => monitor.Id));
+
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();
         }

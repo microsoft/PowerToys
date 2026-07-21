@@ -42,21 +42,21 @@ namespace PowerDisplay.Common.Services
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
 
-        public MonitorManager()
+        public MonitorManager(IKnownGoodVcpStore? knownGoodStore = null)
         {
             // Initialize controllers
-            InitializeControllers();
+            InitializeControllers(knownGoodStore ?? NullKnownGoodVcpStore.Instance);
         }
 
         /// <summary>
         /// Initialize controllers
         /// </summary>
-        private void InitializeControllers()
+        private void InitializeControllers(IKnownGoodVcpStore knownGoodStore)
         {
             try
             {
                 // DDC/CI controller (external monitors)
-                _ddcController = new DdcCiController();
+                _ddcController = new DdcCiController(knownGoodStore);
             }
             catch (Exception ex)
             {

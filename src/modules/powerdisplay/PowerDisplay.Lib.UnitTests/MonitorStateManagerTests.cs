@@ -127,6 +127,17 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
+    public void RetainMonitorStates_CaseInsensitiveRetainedIdKeepsState()
+    {
+        using var manager = new MonitorStateManager(_statePath);
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
+
+        manager.RetainMonitorStates(new[] { MonitorA.ToLowerInvariant() });
+
+        Assert.AreEqual(1, manager.GetKnownGoodFeatures(MonitorA).Count);
+    }
+
+    [TestMethod]
     public void ConcurrentUpserts_PreserveBothMonitorEntries()
     {
         using var manager = new MonitorStateManager(_statePath);
