@@ -8,7 +8,10 @@ using System.IO;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using PowerDisplay.Common.Services;
+using PowerDisplay.Models;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -32,12 +35,17 @@ namespace PowerDisplay.Helpers
     {
         private const uint MyNotifyId = 1001;
         private const uint WmTrayIcon = PInvoke.WM_USER + 1;
+        private const uint WmMouseMove = 0x0200;
+        private const long BoundsCacheLifetimeMs = 1000;
+        private const uint MaxSampleAgeMs = 500;
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
         private readonly uint _wmTaskbarRestart;
+        private readonly DispatcherQueue _dispatcherQueue;
+        private readonly WheelDeltaAccumulator _wheelDeltaAccumulator = new();
 
         private Window? _window;
         private nint _hwnd;
@@ -46,6 +54,20 @@ namespace PowerDisplay.Helpers
         private NOTIFYICONDATAW? _trayIconData;
         private nint _largeIcon;
         private nint _popupMenu;
+        private TrayIconMouseWheelListener? _mouseWheelListener;
+        private MouseWheelControlMode _mouseWheelControlMode;
+        private TrayIconBounds? _cachedBounds;
+        private long _boundsCacheTimestamp;
+        private long _hoverGeneration;
+        private bool _sampleDispatchFailureLogged;
+        private bool _boundsFailureLogged;
+
+        internal event Action<int>? MouseWheelScrolled;
+
+        /// <summary>
+        /// Gets or sets the UI-state gate checked before wheel deltas enter the accumulator.
+        /// </summary>
+        internal Func<bool>? CanProcessMouseWheel { get; set; }
 
         public TrayIconService(
             SettingsUtils settingsUtils,
@@ -57,6 +79,7 @@ namespace PowerDisplay.Helpers
             _toggleWindowAction = toggleWindowAction;
             _exitAction = exitAction;
             _openSettingsAction = openSettingsAction;
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             // TaskbarCreated is the message that's broadcast when explorer.exe
             // restarts. We need to know when that happens to be able to bring our
@@ -68,6 +91,8 @@ namespace PowerDisplay.Helpers
         {
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             bool shouldShow = showSystemTrayIcon ?? settings.Properties.ShowSystemTrayIcon;
+            var mouseWheelMode = settings.Properties.MouseWheelControlMode.Normalize();
+            UpdateMouseWheelMode(mouseWheelMode);
 
             if (shouldShow)
             {
@@ -119,8 +144,14 @@ namespace PowerDisplay.Helpers
                         // Reset _trayIconData to allow retry via WM_WINDOWPOSCHANGING or WM_TASKBAR_RESTART
                         Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed, will retry later");
                         _trayIconData = null;
+                        DisposeMouseWheelListener();
                         return;
                     }
+                }
+
+                if (mouseWheelMode != MouseWheelControlMode.Disabled)
+                {
+                    EnsureMouseWheelListener();
                 }
 
                 if (_popupMenu == 0)
@@ -138,6 +169,10 @@ namespace PowerDisplay.Helpers
 
         public void Destroy()
         {
+            DisposeMouseWheelListener();
+            _mouseWheelControlMode = MouseWheelControlMode.Disabled;
+            InvalidateMouseWheelHover(disarm: false);
+
             if (_trayIconData is not null)
             {
                 var d = (NOTIFYICONDATAW)_trayIconData;
@@ -167,6 +202,242 @@ namespace PowerDisplay.Helpers
                 _window.Close();
                 _window = null;
                 _hwnd = 0;
+            }
+        }
+
+        private void UpdateMouseWheelMode(MouseWheelControlMode mode)
+        {
+            mode = mode.Normalize();
+            if (_mouseWheelControlMode == mode)
+            {
+                if (mode != MouseWheelControlMode.Disabled && _trayIconData is not null)
+                {
+                    EnsureMouseWheelListener();
+                }
+
+                return;
+            }
+
+            _mouseWheelControlMode = mode;
+            InvalidateMouseWheelHover(disarm: true);
+
+            if (mode == MouseWheelControlMode.Disabled)
+            {
+                DisposeMouseWheelListener();
+            }
+            else if (_trayIconData is not null)
+            {
+                EnsureMouseWheelListener();
+            }
+        }
+
+        private void EnsureMouseWheelListener()
+        {
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                return;
+            }
+
+            _mouseWheelListener ??= new TrayIconMouseWheelListener(
+                OnWheelSampleBatch,
+                OnMouseWheelListenerDisarmed);
+            _mouseWheelListener.SetEnabled(true);
+        }
+
+        private void DisposeMouseWheelListener()
+        {
+            _mouseWheelListener?.Dispose();
+            _mouseWheelListener = null;
+            _cachedBounds = null;
+            _wheelDeltaAccumulator.Reset();
+        }
+
+        private void InvalidateMouseWheelHover(bool disarm)
+        {
+            unchecked
+            {
+                _hoverGeneration++;
+            }
+
+            _cachedBounds = null;
+            _boundsCacheTimestamp = 0;
+            _wheelDeltaAccumulator.Reset();
+
+            if (disarm)
+            {
+                _mouseWheelListener?.Disarm();
+            }
+        }
+
+        private void HandleTrayMouseMove()
+        {
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                return;
+            }
+
+            if (!GetCursorPos(out var cursor))
+            {
+                if (!_boundsFailureLogged)
+                {
+                    Logger.LogWarning("[TrayWheel] GetCursorPos failed while arming tray hover");
+                    _boundsFailureLogged = true;
+                }
+
+                return;
+            }
+
+            var now = Environment.TickCount64;
+            if (_cachedBounds is TrayIconBounds cached &&
+                now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
+                cached.Contains(cursor.X, cursor.Y))
+            {
+                EnsureMouseWheelListener();
+                if (_mouseWheelListener?.IsArmed != true)
+                {
+                    unchecked
+                    {
+                        _hoverGeneration++;
+                    }
+
+                    _wheelDeltaAccumulator.Reset();
+                }
+
+                _mouseWheelListener?.Arm(cached, _hoverGeneration);
+                return;
+            }
+
+            if (!TryGetCurrentIconBounds(out var bounds) ||
+                !bounds.Contains(cursor.X, cursor.Y))
+            {
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            var previousBounds = _cachedBounds;
+            var startsNewHover =
+                _mouseWheelListener?.IsArmed != true ||
+                !previousBounds.HasValue ||
+                previousBounds.Value != bounds;
+            if (startsNewHover)
+            {
+                unchecked
+                {
+                    _hoverGeneration++;
+                }
+
+                _wheelDeltaAccumulator.Reset();
+            }
+
+            _cachedBounds = bounds;
+            _boundsCacheTimestamp = now;
+            EnsureMouseWheelListener();
+            _mouseWheelListener?.Arm(bounds, _hoverGeneration);
+        }
+
+        private unsafe bool TryGetCurrentIconBounds(out TrayIconBounds bounds)
+        {
+            bounds = default;
+            if (_hwnd == 0 || _trayIconData is null)
+            {
+                return false;
+            }
+
+            var identifier = new NotifyIconIdentifier
+            {
+                CbSize = (uint)sizeof(NotifyIconIdentifier),
+                HWnd = _hwnd,
+                Id = MyNotifyId,
+                GuidItem = Guid.Empty,
+            };
+
+            var result = ShellNotifyIconGetRectNative(ref identifier, out var rect);
+            bounds = new TrayIconBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            if (result < 0 || !bounds.IsValid)
+            {
+                if (!_boundsFailureLogged)
+                {
+                    Logger.LogWarning(
+                        $"[TrayWheel] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
+                    _boundsFailureLogged = true;
+                }
+
+                return false;
+            }
+
+            _boundsFailureLogged = false;
+            return true;
+        }
+
+        private void OnWheelSampleBatch(TrayWheelSample[] samples)
+        {
+            if (!_dispatcherQueue.TryEnqueue(() => ProcessWheelSampleBatch(samples)) &&
+                !_sampleDispatchFailureLogged)
+            {
+                Logger.LogWarning("[TrayWheel] Failed to enqueue wheel samples to the UI thread");
+                _sampleDispatchFailureLogged = true;
+            }
+        }
+
+        private void ProcessWheelSampleBatch(TrayWheelSample[] samples)
+        {
+            _sampleDispatchFailureLogged = false;
+
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            if (CanProcessMouseWheel?.Invoke() != true)
+            {
+                _wheelDeltaAccumulator.Reset();
+                return;
+            }
+
+            if (!TryGetCurrentIconBounds(out var currentBounds))
+            {
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            var totalNotches = 0;
+            var now = unchecked((uint)Environment.TickCount);
+            foreach (var sample in samples)
+            {
+                if (sample.HoverGeneration != _hoverGeneration ||
+                    unchecked(now - sample.Timestamp) > MaxSampleAgeMs ||
+                    !currentBounds.Contains(sample.X, sample.Y))
+                {
+                    InvalidateMouseWheelHover(disarm: true);
+                    return;
+                }
+
+                totalNotches += _wheelDeltaAccumulator.Add(sample.Delta);
+            }
+
+            _cachedBounds = currentBounds;
+            _boundsCacheTimestamp = Environment.TickCount64;
+
+            if (totalNotches != 0)
+            {
+                MouseWheelScrolled?.Invoke(totalNotches);
+            }
+        }
+
+        private void OnMouseWheelListenerDisarmed(long generation)
+        {
+            if (!_dispatcherQueue.TryEnqueue(() =>
+            {
+                if (generation == _hoverGeneration)
+                {
+                    InvalidateMouseWheelHover(disarm: false);
+                }
+            }) &&
+                !_sampleDispatchFailureLogged)
+            {
+                Logger.LogWarning("[TrayWheel] Failed to enqueue hover cleanup to the UI thread");
+                _sampleDispatchFailureLogged = true;
             }
         }
 
@@ -212,7 +483,11 @@ namespace PowerDisplay.Helpers
                         else if (wParam == PInvoke.WM_USER + 2)
                         {
                             // Exit menu item
-                            _exitAction?.Invoke();
+                            if (!_dispatcherQueue.TryEnqueue(() => _exitAction()))
+                            {
+                                Logger.LogWarning("[TrayIcon] Failed to enqueue the exit action");
+                                _exitAction();
+                            }
                         }
                     }
 
@@ -237,12 +512,16 @@ namespace PowerDisplay.Helpers
                     {
                         // Handle the case where explorer.exe restarts.
                         // Even if we created it before, do it again
+                        InvalidateMouseWheelHover(disarm: true);
                         SetupTrayIcon();
                     }
-                    else if (uMsg == WmTrayIcon)
+                    else if (uMsg == WmTrayIcon && (uint)wParam == MyNotifyId)
                     {
                         switch ((uint)lParam)
                         {
+                            case WmMouseMove:
+                                HandleTrayMouseMove();
+                                break;
                             case PInvoke.WM_RBUTTONUP:
                                 {
                                     if (_popupMenu != 0)
@@ -288,6 +567,11 @@ namespace PowerDisplay.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         private static unsafe partial bool Shell_NotifyIconNative(uint dwMessage, NOTIFYICONDATAW* lpData);
 
+        [LibraryImport("shell32.dll", EntryPoint = "Shell_NotifyIconGetRect")]
+        private static partial int ShellNotifyIconGetRectNative(
+            ref NotifyIconIdentifier identifier,
+            out NativeRect iconLocation);
+
         [LibraryImport("shell32.dll", EntryPoint = "ExtractIconExW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial uint ExtractIconExNative(string lpszFile, int nIconIndex, out nint phiconLarge, out nint phiconSmall, uint nIcons);
 
@@ -316,6 +600,24 @@ namespace PowerDisplay.Helpers
         {
             public int X;
             public int Y;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NotifyIconIdentifier
+        {
+            public uint CbSize;
+            public nint HWnd;
+            public uint Id;
+            public Guid GuidItem;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeRect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
 
         private const int GwlWndproc = -4;
