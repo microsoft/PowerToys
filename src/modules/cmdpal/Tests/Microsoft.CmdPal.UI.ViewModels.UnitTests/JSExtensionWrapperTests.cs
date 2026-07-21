@@ -22,7 +22,6 @@ public class JSExtensionWrapperTests
             Publisher = "unit-test",
             Main = "index.js",
             EntryPointPath = Path.Combine(Path.GetTempPath(), "index.js"),
-            Capabilities = ["commands"],
         },
         Path.Combine(Path.GetTempPath(), "test-ext"));
 
