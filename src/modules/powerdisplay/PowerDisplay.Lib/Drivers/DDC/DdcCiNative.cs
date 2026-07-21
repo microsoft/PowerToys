@@ -75,6 +75,16 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
         }
 
+        internal static VcpReadAttempt ReadVcpFeature(IntPtr handle, byte code)
+        {
+            if (GetVCPFeatureAndVCPFeatureReply(handle, code, IntPtr.Zero, out uint current, out uint maximum))
+            {
+                return VcpReadAttempt.Success(current, maximum);
+            }
+
+            return VcpReadAttempt.Failure(Marshal.GetLastWin32Error());
+        }
+
         /// <summary>
         /// Sequentially probes each VCP code in <see cref="ProbeableContinuousVcpCodes"/>
         /// via GetVCPFeatureAndVCPFeatureReply. Used as the max-compatibility-mode fallback
