@@ -124,8 +124,14 @@ namespace JsonUtils
             return Ok(std::vector<WorkspacesData::WorkspacesProject>{});
 
         case PTSettingsClient::Result::ServiceUnavailable:
-            // No service (no-admin / declined-UAC): legacy file fallback.
-            return ReadWorkspaces(WorkspacesData::WorkspacesFile());
+            // Protected-store-only: do NOT read the stale, user-writable legacy
+            // file.  The protected store is the single source of truth; once
+            // migration has seeded it, the legacy file is out of date.  Surface a
+            // distinct error so the launcher tells the user protection isn't set up
+            // rather than launching from a stale (or attacker-tampered) plaintext
+            // file.
+            Logger::error("GetBlob unavailable; protected settings service not reachable (no plaintext fallback).");
+            return Error(WorkspacesFileError::ServiceAccessError);
 
         default:
             // AuthRejected / Protocol / IoError: the protected settings EXIST but

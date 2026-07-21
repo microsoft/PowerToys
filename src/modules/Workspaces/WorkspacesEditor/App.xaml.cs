@@ -132,10 +132,13 @@ namespace WorkspacesEditor
             _mainViewModel.IsProvisioning = true;
             System.Threading.Tasks.Task.Run(() =>
             {
-                bool available = false;
                 try
                 {
-                    available = WorkspacesEditorIO.EnsureSettingsProvisioned();
+                    // Provision the per-user service + migrate legacy data.  The
+                    // reload below reads the result from the protected store (or
+                    // surfaces the "set up protection" message); we no longer branch
+                    // on the return value here.
+                    WorkspacesEditorIO.EnsureSettingsProvisioned();
                 }
                 catch (Exception ex)
                 {
@@ -146,10 +149,14 @@ namespace WorkspacesEditor
                 {
                     _mainViewModel.IsProvisioning = false;
 
-                    // Safe-reload guard: only when the service is now reachable, the
-                    // user isn't editing, and the initial list was empty (so no
-                    // in-progress or already-shown data can be clobbered).
-                    if (available && initialListEmpty && !_mainViewModel.IsEditInProgress)
+                    // Reload from the protected store once provisioning settled,
+                    // guarded so it never clobbers in-progress edits or an
+                    // already-populated list.  We reload even when the service is
+                    // NOT available: with no unprotected fallback, that path now
+                    // surfaces the "set up protection" message instead of leaving a
+                    // silently-empty editor.  When the service IS available it loads
+                    // the (possibly just-migrated) protected workspaces.
+                    if (initialListEmpty && !_mainViewModel.IsEditInProgress)
                     {
                         WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: true);
                     }

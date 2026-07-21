@@ -59,14 +59,29 @@ namespace WorkspacesEditor.Utils
                         return new ParsingResult(true);
 
                     case PTSettingsClient.Result.Unavailable:
-                        if (!File.Exists(parser.File))
+                        // Protected-store-only: do NOT read the stale, user-writable
+                        // legacy file.  The protected %ProgramData% store is the single
+                        // source of truth; once migration has seeded it, the legacy
+                        // file is out of date.  On the fast initial load the background
+                        // provisioning (App.OnStartup) provisions + migrates and then
+                        // reloads from the protected store.  If it is still unavailable
+                        // on a user-facing load, protection simply isn't set up yet —
+                        // tell the user (their data is preserved and appears once
+                        // protection is enabled) rather than showing stale plaintext.
+                        Logger.LogWarning("GetBlob unavailable; protected store not reachable (no plaintext fallback).");
+                        if (showDialogs)
                         {
-                            Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
-                            return new ParsingResult(true);
+                            System.Windows.MessageBox.Show(
+                                "PowerToys couldn't load your workspaces because the protected Workspaces settings service isn't set up yet. " +
+                                "Workspaces are stored only in a protected, tamper-resistant location — the older unprotected file is no longer used. " +
+                                "Setting it up needs a one-time administrator approval: reopen the Workspaces editor (or restart PowerToys) and accept the prompt. " +
+                                "Your existing workspaces are preserved and will appear once protection is enabled.",
+                                "Workspaces",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Warning);
                         }
 
-                        workspaces = parser.Read(parser.File);
-                        break;
+                        return new ParsingResult(true);
 
                     case PTSettingsClient.Result.AuthRejected:
                         // The protected settings EXIST but this app wasn't authorized
