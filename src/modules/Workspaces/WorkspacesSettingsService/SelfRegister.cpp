@@ -522,13 +522,18 @@ namespace PTSettingsSvc
             rc = static_cast<int>(GetLastError());
         }
 
-        // Best-effort per-SID resource teardown, always attempted (even if the
+        // Best-effort per-SID APP-ARTIFACT teardown, always attempted (even if the
         // service was already gone) so a re-run finishes a partial cleanup.
-        // DeleteService by itself leaves behind: (1) the protected per-user store,
-        // (2) the virtual-account profile, and (3) — when this was the last user
-        // — the shared runnable-exe copy.  Since --unregister runs elevated, we
-        // remove them here (Design §11/§12.8 uninstall cleanup).
-        RemoveTreeBestEffort(GetUserFolder(userSidString)); // Settings\<sid>
+        //
+        // The user's protected per-user store (Settings\<sid>) is deliberately
+        // PRESERVED — like mainline PowerToys, which keeps user settings under
+        // %LocalAppData% on uninstall, the workspaces DATA survives an
+        // uninstall/reinstall round-trip.  It stays fully protected while orphaned
+        // (SYSTEM-owned, user RX-only, protected DACL — a normal non-admin user
+        // still cannot modify it), and on reinstall the same deterministic virtual
+        // account re-owns it and ProvisionStore re-asserts the DACL.  Only APP
+        // artifacts are removed here: (1) the virtual-account profile, and (2) —
+        // when this was the last user — the shared runnable-exe copy.
         DeleteServiceAccountProfile(userSidString);
 
         const bool removeSharedBin = !AnyOtherPerUserServiceRemains(userSidString);

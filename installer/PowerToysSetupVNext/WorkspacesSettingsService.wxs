@@ -145,17 +145,21 @@
     </DirectoryRef>
 
     <!--
-      Uninstall data cleanup (Design-v6-Final.md §11).  There is NO install-time
+      Uninstall cleanup (Design-v6-Final.md §11).  There is NO install-time
       seeding under Approach 4: the per-user store is provisioned at register
       time and legacy data is migrated per-user by the runner through the service
       (§10), so the removed Seed-PtSettingsStore.ps1 (which wrote all users' blobs
       as SYSTEM with the old machine-wide account) is gone.
 
-      * Cleanup at uninstall: recursively delete the Settings data tree (the
-        runtime-created [SID]\...\workspaces.json nodes aren't MSI-tracked, so the
-        default RemoveFolder can't remove them).  The per-SID services themselves
-        are deleted by UnRegisterPTSettingsSvcCA (Product.wxs), so the script runs
-        with -RemoveService:$false.
+      * Cleanup at uninstall: remove the service's APP artifacts (the SettingsSvcBin
+        exe copies and the per-user virtual-account profiles), which aren't
+        MSI-tracked.  The per-SID services themselves are deleted by
+        UnRegisterPTSettingsSvcCA (Product.wxs), so the script runs with
+        -RemoveService:$false.
+      * The user's protected settings DATA (Settings\[SID]\...) is deliberately
+        PRESERVED, matching mainline PowerToys which keeps user settings on
+        uninstall; a reinstall re-owns it via the same virtual account.  It stays
+        protected (SYSTEM-owned, user RX-only) while orphaned.
     -->
     <DirectoryRef Id="WorkspacesSettingsServiceFolder"
                   FileSource="$(var.ProjectDir)\CustomActions">
@@ -165,10 +169,10 @@
       </Component>
     </DirectoryRef>
 
-    <!-- Recursively remove the protected data tree as SYSTEM on uninstall. -->
+    <!-- Remove the service APP artifacts as SYSTEM on uninstall (data preserved). -->
     <CustomAction Id="PtCleanupStore"
                   Directory="WorkspacesSettingsServiceFolder"
-                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtCleanupScript]&quot; -RemoveService:$false -RemoveData"
+                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtCleanupScript]&quot; -RemoveService:$false -RemoveAppArtifacts"
                   Execute="deferred" Impersonate="no" Return="ignore" />
 
     <InstallExecuteSequence>

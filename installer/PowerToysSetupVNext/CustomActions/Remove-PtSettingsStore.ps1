@@ -3,22 +3,28 @@
   PTSettingsSvc - uninstall cleanup (Design-v6-Final.md section 11 uninstall/cleanup).
 
   Runs as SYSTEM from the per-machine MSI (deferred CustomAction, on uninstall).
-  Removes the service and recursively deletes the protected data tree.
+  Removes the service and the service's APP artifacts, but PRESERVES the user's
+  protected settings DATA.
 
-  This recursive delete is REQUIRED: the per-user <SID>\blob.bin nodes are created
-  by the service at runtime and are NOT in the MSI component table, so the MSI's
-  default RemoveFolder won't touch them.  A non-elevated per-user uninstall cannot
-  do this (the tree is SYSTEM-owned, user has only RX) - only the elevated/SYSTEM
-  per-machine uninstall can.
+  Data preservation (parity with mainline PowerToys, which keeps user settings
+  under %LocalAppData% on uninstall): the per-user protected store
+  %ProgramData%\Microsoft\PowerToys\Settings\<SID>\... is intentionally LEFT in
+  place so an uninstall/reinstall round-trip does not lose the user's workspaces.
+  It stays fully protected while orphaned (SYSTEM-owned, user RX-only, protected
+  DACL — a normal non-admin user still cannot modify it), and on reinstall the
+  same deterministic virtual account re-owns it and ProvisionStore re-asserts the
+  DACL.  Only APP artifacts are removed here.
 
-.PARAMETER RemoveService   Stop + delete the PTSettingsSvc service (default: on).
-.PARAMETER RemoveData      Recursively delete the SettingsSvc data tree (default: on).
+.PARAMETER RemoveService        Stop + delete the PTSettingsSvc service (default: on).
+.PARAMETER RemoveAppArtifacts   Remove the service's runnable-exe copy tree
+                                (SettingsSvcBin) and the per-user virtual-account
+                                profiles.  Does NOT touch the settings DATA tree.
 #>
 [CmdletBinding()]
 param(
-    [string]$ServiceName = 'PTSettingsSvc',
-    [switch]$RemoveService = $true,
-    [switch]$RemoveData    = $true
+    [string]$ServiceName        = 'PTSettingsSvc',
+    [switch]$RemoveService      = $true,
+    [switch]$RemoveAppArtifacts = $true
 )
 
 $ErrorActionPreference = 'Continue'
@@ -35,21 +41,16 @@ if ($RemoveService)
     else { Write-Output "service '$ServiceName' not present." }
 }
 
-if ($RemoveData)
-{
-    $root = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\Settings'
-    if (Test-Path $root)
-    {
-        # Recursive delete works because this runs as SYSTEM/admin (the tree is
-        # SYSTEM-owned with the user only RX; a non-elevated user could not).
-        Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction SilentlyContinue
-        if (Test-Path $root) { Write-Output "WARNING: '$root' not fully removed." }
-        else                 { Write-Output "data tree '$root' removed." }
-    }
-    else { Write-Output "data tree not present." }
+# DATA is intentionally preserved (see .SYNOPSIS).  Report it for diagnostics but
+# do NOT delete the Settings tree.
+$store = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\Settings'
+if (Test-Path $store) { Write-Output "settings DATA preserved (not removed): '$store'." }
 
-    # Also remove the service's runnable-exe copy tree (SettingsSvcBin), which is
-    # SYSTEM-owned/protected and not MSI-tracked (Design §12.8).
+if ($RemoveAppArtifacts)
+{
+    # Remove the service's runnable-exe copy tree (SettingsSvcBin), which is
+    # SYSTEM-owned/protected and not MSI-tracked (Design §12.8).  This is an APP
+    # artifact (a copy of the signed exe), NOT user data.
     $binRoot = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\SettingsSvcBin'
     if (Test-Path $binRoot)
     {
