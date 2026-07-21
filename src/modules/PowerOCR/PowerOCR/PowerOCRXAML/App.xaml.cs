@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using PowerOCR.Core.Imaging;
 using PowerOCR.Core.Ocr;
 using PowerOCR.Core.Services;
@@ -18,6 +19,7 @@ using PowerOCR.Keyboard;
 using PowerOCR.Services;
 using PowerOCR.Settings;
 using PowerOCR.ViewModels;
+using WinUIEx;
 
 namespace PowerOCR;
 
@@ -29,6 +31,7 @@ public partial class App : Application, IDisposable
     private readonly ETWTrace _etwTrace = new();
     private readonly int _runnerPid;
     private ServiceProvider? _serviceProvider;
+    private WindowEx? _lifetimeWindow;
     private bool _disposed;
 
     public static new App Current => (App)Application.Current;
@@ -123,6 +126,23 @@ public partial class App : Application, IDisposable
         }
     }
 
+    internal void EnsureLifetimeWindow()
+    {
+        if (_lifetimeWindow is not null)
+        {
+            return;
+        }
+
+        // Creating a Window before the first visible overlay is activated can fail inside
+        // WinUI XAML initialization. Create the hidden lifetime host only during teardown,
+        // while an activated overlay still keeps the windowing system initialized.
+        _lifetimeWindow = new WindowEx
+        {
+            Content = new Grid(),
+        };
+        _lifetimeWindow.AppWindow.Hide();
+    }
+
     private void Terminate()
     {
         var queue = DispatcherQueueForApp;
@@ -146,6 +166,8 @@ public partial class App : Application, IDisposable
         if (disposing)
         {
             _serviceProvider?.Dispose();
+            _lifetimeWindow?.Close();
+            _lifetimeWindow = null;
             _etwTrace?.Dispose();
         }
 

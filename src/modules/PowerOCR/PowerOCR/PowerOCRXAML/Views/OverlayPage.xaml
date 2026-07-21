@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:globalization="using:Windows.Globalization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -92,75 +93,99 @@
             RightTapped="Canvas_RightTapped">
             <Canvas.ContextFlyout>
                 <MenuFlyout x:Name="ContextMenuFlyout">
+                    <MenuFlyoutSeparator x:Name="LanguageSeparator" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="SingleLineMenuItem"
+                        x:Uid="SingleLineMenuItem"
+                        AutomationProperties.AutomationId="SingleLineMenuItem"
+                        IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}" />
+                    <ToggleMenuFlyoutItem
+                        x:Name="TableMenuItem"
+                        x:Uid="TableMenuItem"
+                        AutomationProperties.AutomationId="TableMenuItem"
+                        IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem
+                        x:Name="SettingsMenuItem"
+                        x:Uid="SettingsMenuItem"
+                        AutomationProperties.AutomationId="SettingsMenuItem"
+                        Click="SettingsMenuItem_Click" />
+                    <MenuFlyoutSeparator />
                     <MenuFlyoutItem
                         x:Name="CancelMenuItem"
                         x:Uid="CancelMenuItem"
                         AutomationProperties.AutomationId="CancelMenuItem"
-                        Click="CancelMenuItem_Click"
-                        Text="Cancel" />
+                        Click="CancelMenuItem_Click" />
                 </MenuFlyout>
             </Canvas.ContextFlyout>
         </Canvas>
 
         <!--  Toolbar  -->
-        <StackPanel
+        <Border
             x:Name="Toolbar"
-            Margin="0,0,0,32"
-            Padding="8,6"
+            Margin="12"
+            Padding="4,8"
             HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
-            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            VerticalAlignment="Top"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="8"
-            Orientation="Horizontal"
-            Spacing="4">
+            CornerRadius="8">
+            <Border.Shadow>
+                <ThemeShadow />
+            </Border.Shadow>
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <ComboBox
+                    x:Name="LanguagesComboBox"
+                    x:Uid="LanguagesComboBox"
+                    MinWidth="120"
+                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
+                    ItemsSource="{x:Bind ViewModel.Languages}"
+                    SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="globalization:Language">
+                            <TextBlock Text="{x:Bind NativeName, Mode=OneTime}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
 
-            <ComboBox
-                x:Name="LanguagesComboBox"
-                x:Uid="LanguagesComboBox"
-                MinWidth="120"
-                AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
-                DisplayMemberPath="NativeName"
-                ItemsSource="{x:Bind ViewModel.Languages}"
-                SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}" />
+                <ToggleButton
+                    x:Name="SingleLineToggleButton"
+                    x:Uid="SingleLineToggleButton"
+                    AutomationProperties.AutomationId="SingleLineToggleButton"
+                    IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
+                    Style="{StaticResource SubtleToggleButtonStyle}">
+                    <FontIcon FontSize="14" Glyph="&#xF16E;" />
+                </ToggleButton>
 
-            <ToggleButton
-                x:Name="SingleLineToggleButton"
-                x:Uid="SingleLineToggleButton"
-                AutomationProperties.AutomationId="SingleLineToggleButton"
-                IsChecked="{x:Bind ViewModel.IsSingleLine, Mode=TwoWay}"
-                Style="{StaticResource SubtleToggleButtonStyle}">
-                <FontIcon FontSize="14" Glyph="&#xE8B9;" />
-            </ToggleButton>
+                <ToggleButton
+                    x:Name="TableToggleButton"
+                    x:Uid="TableToggleButton"
+                    AutomationProperties.AutomationId="TableToggleButton"
+                    IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
+                    Style="{StaticResource SubtleToggleButtonStyle}">
+                    <FontIcon FontSize="14" Glyph="&#xE80A;" />
+                </ToggleButton>
 
-            <ToggleButton
-                x:Name="TableToggleButton"
-                x:Uid="TableToggleButton"
-                AutomationProperties.AutomationId="TableToggleButton"
-                IsChecked="{x:Bind ViewModel.IsTable, Mode=TwoWay}"
-                Style="{StaticResource SubtleToggleButtonStyle}">
-                <FontIcon FontSize="14" Glyph="&#xE80A;" />
-            </ToggleButton>
+                <Button
+                    x:Name="SettingsButton"
+                    x:Uid="SettingsButton"
+                    AutomationProperties.AutomationId="SettingsButton"
+                    Click="SettingsButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="14" Glyph="&#xE713;" />
+                </Button>
 
-            <Button
-                x:Name="SettingsButton"
-                x:Uid="SettingsButton"
-                AutomationProperties.AutomationId="SettingsButton"
-                Click="SettingsButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
-                <FontIcon FontSize="14" Glyph="&#xE713;" />
-            </Button>
-
-            <Button
-                x:Name="CancelButton"
-                x:Uid="CancelButton"
-                AutomationProperties.AutomationId="CancelButton"
-                Click="CancelButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
-                <FontIcon FontSize="14" Glyph="&#xE711;" />
-            </Button>
-        </StackPanel>
+                <Button
+                    x:Name="CancelButton"
+                    x:Uid="CancelButton"
+                    AutomationProperties.AutomationId="CancelButton"
+                    Click="CancelButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <FontIcon FontSize="14" Glyph="&#xE711;" />
+                </Button>
+            </StackPanel>
+        </Border>
 
         <!--  Processing indicator  -->
         <ProgressRing

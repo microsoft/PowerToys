@@ -8,7 +8,6 @@
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
-    IsShownInSwitchers="False"
-    IsTitleBarVisible="False">
+    IsShownInSwitchers="False">
     <views:OverlayPage x:Name="OverlayContent" />
 </winuiex:WindowEx>

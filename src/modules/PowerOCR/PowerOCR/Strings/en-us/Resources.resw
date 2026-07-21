@@ -108,4 +108,13 @@
   <data name="CancelMenuItem.Text" xml:space="preserve">
     <value>Cancel (Esc)</value>
   </data>
+  <data name="SingleLineMenuItem.Text" xml:space="preserve">
+    <value>Format result as a single line (S)</value>
+  </data>
+  <data name="TableMenuItem.Text" xml:space="preserve">
+    <value>Format result as a table (T)</value>
+  </data>
+  <data name="SettingsMenuItem.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
 </root>

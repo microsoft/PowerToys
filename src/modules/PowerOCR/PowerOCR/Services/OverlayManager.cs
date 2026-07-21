@@ -94,8 +94,11 @@ internal sealed class OverlayManager : IOverlayManager
 
         try
         {
-            foreach (var display in displays)
+            // DisplayArea.FindAll returns a WinRT IVectorView. Its IEnumerable projection can
+            // throw InvalidCastException in AOT builds, so iterate through the indexed API.
+            for (int index = 0; index < displays.Count; index++)
             {
+                var display = displays[index];
                 token.ThrowIfCancellationRequested();
                 var capture = await _screenCaptureService.CaptureAsync(display, token);
                 captures.Add(capture);
@@ -150,6 +153,7 @@ internal sealed class OverlayManager : IOverlayManager
                 var errorWindow = _windowFactory.Create(errorCapture, _viewModel, this);
                 _activeWindows.Add(errorWindow);
                 errorWindow.Activate();
+                errorWindow.PositionOnDisplay();
 
                 string errorMessage = ResourceLoaderInstance.ResourceLoader.GetString("ScreenCaptureFailed");
                 errorWindow.ShowError(errorMessage);
@@ -178,6 +182,7 @@ internal sealed class OverlayManager : IOverlayManager
             foreach (var window in _activeWindows)
             {
                 window.Activate();
+                window.PositionOnDisplay();
             }
 
             PowerToysTelemetry.Log.WriteEvent(new PowerOCRInvokedEvent());
@@ -330,6 +335,8 @@ internal sealed class OverlayManager : IOverlayManager
         _sessionCts?.Cancel();
         _sessionCts?.Dispose();
         _sessionCts = null;
+
+        App.Current.EnsureLifetimeWindow();
 
         foreach (var window in _activeWindows)
         {

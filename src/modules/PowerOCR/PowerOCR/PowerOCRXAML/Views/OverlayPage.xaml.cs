@@ -260,6 +260,17 @@ public sealed partial class OverlayPage : UserControl
 
         CursorClipper.UnClip();
         Toolbar.Visibility = Visibility.Visible;
+        ResetSelectionVisuals();
+    }
+
+    private void ResetSelectionVisuals()
+    {
+        _selX = 0;
+        _selY = 0;
+        _selWidth = 0;
+        _selHeight = 0;
+        SelectionBorder.Visibility = Visibility.Collapsed;
+        RefreshMasks();
     }
 
     private async void Canvas_PointerReleased(object sender, PointerRoutedEventArgs e)
@@ -269,10 +280,9 @@ public sealed partial class OverlayPage : UserControl
             return;
         }
 
-        EndSelectionCleanup(e.Pointer);
-
         if (_capture is null || _manager is null || XamlRoot is null)
         {
+            EndSelectionCleanup(e.Pointer);
             return;
         }
 
@@ -285,6 +295,7 @@ public sealed partial class OverlayPage : UserControl
         // Treat width or height below 3 physical pixels as clicked-word mode
         bool isClick = pixelSelection.Local.Width < 3 || pixelSelection.Local.Height < 3;
 
+        EndSelectionCleanup(e.Pointer);
         await _manager.CaptureAsync(_capture, pixelSelection, isClick);
         e.Handled = true;
     }
@@ -319,13 +330,17 @@ public sealed partial class OverlayPage : UserControl
 
     private void PopulateLanguageFlyoutItems()
     {
-        // Remove all language items (keep CancelMenuItem at end)
-        while (ContextMenuFlyout.Items.Count > 1)
+        // Remove the dynamic language items while preserving the fixed commands.
+        while (ContextMenuFlyout.Items.Count > 0
+               && !ReferenceEquals(ContextMenuFlyout.Items[0], LanguageSeparator))
         {
             ContextMenuFlyout.Items.RemoveAt(0);
         }
 
-        // Insert separator before Cancel if we have languages
+        LanguageSeparator.Visibility = ViewModel.Languages.Count > 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
         if (ViewModel.Languages.Count > 0)
         {
             int idx = 0;
@@ -343,8 +358,6 @@ public sealed partial class OverlayPage : UserControl
                 ContextMenuFlyout.Items.Insert(idx, item);
                 idx++;
             }
-
-            ContextMenuFlyout.Items.Insert(idx, new MenuFlyoutSeparator());
         }
     }
 
@@ -388,6 +401,16 @@ public sealed partial class OverlayPage : UserControl
     }
 
     private void SettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        OpenSettings();
+    }
+
+    private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        OpenSettings();
+    }
+
+    private void OpenSettings()
     {
         _settingsDeepLink?.Open();
         _manager?.CloseAll(cancelled: false);

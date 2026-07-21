@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.InteropServices;
+
 using Microsoft.UI.Windowing;
 using PowerOCR.Models;
 using PowerOCR.Services;
@@ -17,6 +19,12 @@ namespace PowerOCR;
 /// </summary>
 public sealed partial class OCROverlay : WindowEx
 {
+    private const uint DwmwaColorNone = 0xFFFFFFFE;
+    private const int DwmwaWindowCornerPreference = 33;
+    private const int DwmwaBorderColor = 34;
+    private const int DwmwcpDoNotRound = 1;
+
+    private readonly DisplayCapture _capture;
     private readonly IOverlayManager _manager;
     private bool _closingFromManager;
 
@@ -26,18 +34,37 @@ public sealed partial class OCROverlay : WindowEx
         IOverlayManager manager,
         SettingsDeepLink settingsDeepLink)
     {
+        _capture = capture;
         _manager = manager;
 
         InitializeComponent();
 
         AppWindow.Title = "Text Extractor";
+        ExtendsContentIntoTitleBar = true;
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+
+        nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        HwndExtensions.ToggleWindowStyle(hwnd, false, WindowStyle.TiledWindow);
+
+        uint borderColor = DwmwaColorNone;
+        _ = SetDwmUInt32Attribute(hwnd, DwmwaBorderColor, ref borderColor, sizeof(uint));
+
+        int cornerPreference = DwmwcpDoNotRound;
+        _ = SetDwmInt32Attribute(hwnd, DwmwaWindowCornerPreference, ref cornerPreference, sizeof(int));
+
+        SystemBackdrop = new TransparentTintBackdrop();
 
         OverlayContent.Initialize(this, capture, manager, viewModel, settingsDeepLink);
 
-        var bounds = capture.Bounds;
-        AppWindow.MoveAndResize(new RectInt32(bounds.X, bounds.Y, bounds.Width, bounds.Height));
+        PositionOnDisplay();
 
         AppWindow.Closing += OnAppWindowClosing;
+    }
+
+    public void PositionOnDisplay()
+    {
+        var bounds = _capture.Bounds;
+        AppWindow.MoveAndResize(new RectInt32(bounds.X, bounds.Y, bounds.Width, bounds.Height));
     }
 
     /// <summary>
@@ -67,4 +94,10 @@ public sealed partial class OCROverlay : WindowEx
             _manager.CloseAll(cancelled: true);
         }
     }
+
+    [LibraryImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute")]
+    private static partial int SetDwmUInt32Attribute(nint hwnd, int attribute, ref uint value, int size);
+
+    [LibraryImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute")]
+    private static partial int SetDwmInt32Attribute(nint hwnd, int attribute, ref int value, int size);
 }
