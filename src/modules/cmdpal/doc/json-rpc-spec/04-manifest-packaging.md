@@ -98,7 +98,7 @@ A `package.json` is recognized as a CmdPal extension if:
 Extensions are installed to:
 
 ```
-%LOCALAPPDATA%\Microsoft\PowerToys\CommandPalette\JSExtensions\
+%LOCALAPPDATA%\Microsoft\PowerToys\CmdPal\JSExtensions\
 ```
 
 Each extension occupies its own subdirectory:
@@ -195,10 +195,10 @@ For development, symlink or copy your extension to the JSExtensions directory:
 
 ```powershell
 # Option 1: Copy
-Copy-Item -Recurse ./my-extension "$env:LOCALAPPDATA\Microsoft\PowerToys\CommandPalette\JSExtensions\my-extension"
+Copy-Item -Recurse ./my-extension "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions\my-extension"
 
 # Option 2: Junction link (recommended for development)
-New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\Microsoft\PowerToys\CommandPalette\JSExtensions\my-extension" -Target (Resolve-Path ./my-extension)
+New-Item -ItemType Junction -Path "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions\my-extension" -Target (Resolve-Path ./my-extension)
 ```
 
 With a junction link, changes to your source files are reflected immediately (after build). The `*.js` file watcher triggers hot-reload automatically.

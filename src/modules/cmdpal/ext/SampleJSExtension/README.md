@@ -85,7 +85,7 @@ committed; `dist\` and `node_modules\` are git-ignored.
 CmdPal discovers JS/TS extensions under:
 
 ```
-%LOCALAPPDATA%\Microsoft\PowerToys\CommandPalette\JSExtensions\<name>\
+%LOCALAPPDATA%\Microsoft\PowerToys\CmdPal\JSExtensions\<name>\
 ```
 
 A discovered extension folder must contain `package.json` (with the `cmdpal`
@@ -93,7 +93,7 @@ section and a `main` that resolves to a built file), the compiled `dist\`, and
 its `node_modules\`. To sideload this sample after building it:
 
 ```powershell
-$dest = "$env:LOCALAPPDATA\Microsoft\PowerToys\CommandPalette\JSExtensions\SampleJSExtension"
+$dest = "$env:LOCALAPPDATA\Microsoft\PowerToys\CmdPal\JSExtensions\SampleJSExtension"
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 Copy-Item package.json, dist, node_modules -Destination $dest -Recurse -Force
 ```

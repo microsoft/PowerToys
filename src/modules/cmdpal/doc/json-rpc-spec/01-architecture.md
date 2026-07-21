@@ -52,7 +52,7 @@ The host tracks consecutive crashes per extension:
 Extensions are discovered from a well-known directory:
 
 ```
-%LOCALAPPDATA%\Microsoft\PowerToys\CommandPalette\JSExtensions\
+%LOCALAPPDATA%\Microsoft\PowerToys\CmdPal\JSExtensions\
 ```
 
 Each subdirectory containing a valid `package.json` with a `cmdpal` section is treated as an extension:
