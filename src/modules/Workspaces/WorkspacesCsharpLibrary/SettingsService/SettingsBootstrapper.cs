@@ -55,14 +55,29 @@ public static class SettingsBootstrapper
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var force = request.Reason is TriggerReason.ExplicitUserRequest
-                                   or TriggerReason.WorkspaceSaving;
+        // Explicit one-off actions (an explicit "enable protection" request, or a
+        // save) always run and always re-attempt.  Automatic triggers (editor
+        // open) run their provisioning at most once per process, so a single
+        // editor session prompts at most once.
+        var alwaysRun = request.Reason is TriggerReason.ExplicitUserRequest
+                                       or TriggerReason.WorkspaceSaving;
 
-        if (!force && Interlocked.Exchange(ref _autoBootstrapped, 1) != 0)
+        if (!alwaysRun && Interlocked.Exchange(ref _autoBootstrapped, 1) != 0)
         {
             // Already ran the automatic pass this process; nothing cheap left to do.
             return new Result(ServiceProvisioner.Outcome.AlreadyAttempted, WorkspacesMigration.Outcome.AlreadyMigrated);
         }
+
+        // Whether to bypass the version-scoped ATTEMPT SENTINEL.  Any trigger that
+        // reflects direct user intent to use Workspaces (opening the editor,
+        // saving, or an explicit enable) forces a fresh provisioning attempt.  The
+        // sentinel persists across uninstall (it lives under %LocalAppData%), so a
+        // same-version REINSTALL — or reopening the editor after a declined/failed
+        // prompt — must still re-prompt instead of being permanently stuck.  Only
+        // passive/background paths honor the sentinel back-off.
+        var force = request.Reason is TriggerReason.ExplicitUserRequest
+                                   or TriggerReason.WorkspaceSaving
+                                   or TriggerReason.EditorOpened;
 
         // Block 1: service initialization.  Only attempt when we have an install
         // folder to locate the payload; otherwise skip straight to migration,
