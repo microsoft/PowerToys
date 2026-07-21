@@ -270,6 +270,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public int MonitorNumber => _monitor.MonitorNumber;
 
     /// <summary>
+    /// Gets the GDI display source name used to match the Windows primary display.
+    /// </summary>
+    public string GdiDeviceName => _monitor.GdiDeviceName;
+
+    /// <summary>
     /// Gets the display name - includes monitor number when multiple monitors exist.
     /// Follows the same logic as Settings UI's MonitorInfo.DisplayName for consistency.
     /// </summary>
@@ -314,6 +319,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public bool SupportsContrast => _monitor.SupportsContrast;
 
     public bool SupportsBrightness => _monitor.SupportsBrightness;
+
+    /// <summary>
+    /// Gets a value indicating whether discovery read a trustworthy current brightness.
+    /// </summary>
+    public bool HasValidBrightnessReading
+        => _monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness);
 
     /// <summary>
     /// Gets a value indicating whether this monitor's brightness is currently driven by linked
