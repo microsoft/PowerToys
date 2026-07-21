@@ -154,8 +154,13 @@ namespace JsonUtils
             }
             if (rc == PTSettingsClient::Result::ServiceUnavailable)
             {
-                // No service: legacy file fallback (no-admin / declined-UAC).
-                return Write(WorkspacesData::WorkspacesFile(), projects);
+                // Protected-store-only: NO unprotected plaintext fallback for saves.
+                // Writing the user-writable %LocalAppData% file would defeat the
+                // tamper protection (a same-user attacker could rewrite it).  The
+                // launcher's write-back (e.g. last-launched time) is best-effort, so
+                // when the protected service isn't available we simply skip it.
+                Logger::warn("PutBlob unavailable; skipping workspace write-back (no unprotected fallback allowed).");
+                return false;
             }
             Logger::error("PutBlob failed ({}) writing workspaces.", static_cast<int>(rc));
             return false;

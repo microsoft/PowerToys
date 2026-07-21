@@ -149,8 +149,33 @@ namespace WorkspacesEditor.Utils
             }
             catch (Exception e)
             {
-                // Best-effort: on failure reads/writes fall back to the legacy file.
+                // Best-effort: on failure reads fall back to the legacy file.
                 Logger.LogWarning($"Settings bootstrap failed (continuing with fallback): {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Save-time recovery: force a one-time provisioning attempt (bypassing the
+        /// per-open sentinel) so a user who hasn't set up protection yet — or who
+        /// previously declined the UAC — can enable it exactly when they try to save.
+        /// Returns true iff the protected service is reachable afterwards.  Never
+        /// writes plaintext; saving stays protected-only.
+        /// </summary>
+        private static bool TryProvisionProtectedStore()
+        {
+            try
+            {
+                SettingsBootstrapper.EnsureInitialized(new BootstrapRequest
+                {
+                    Reason = SettingsBootstrapper.TriggerReason.WorkspaceSaving,
+                    InstallFolder = PowerToysPathResolver.GetPowerToysInstallPath(),
+                });
+                return ServiceProvisioner.IsServiceAvailable();
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning($"Save-time provisioning attempt failed: {e.Message}");
+                return false;
             }
         }
 
@@ -264,18 +289,45 @@ namespace WorkspacesEditor.Utils
                     return;
                 }
 
-                // v6: persist the settings through the service (PutBlob).  Fall back
-                // to the legacy %LocalAppData% file only when no service is installed
-                // (no-admin / declined-UAC), per §10.
-                var rc = PTSettingsClient.PutBlob(Encoding.UTF8.GetBytes(json));
+                // v6 (security): persist the settings through the service (PutBlob)
+                // ONLY.  The protected %ProgramData% store is the single source of
+                // truth for saves — there is deliberately NO unprotected plaintext
+                // fallback: writing the user-writable %LocalAppData% file would
+                // defeat the tamper protection (a same-user, non-elevated attacker
+                // could then rewrite it).
+                var payload = Encoding.UTF8.GetBytes(json);
+                var rc = PTSettingsClient.PutBlob(payload);
+
+                if (rc == PTSettingsClient.Result.Unavailable)
+                {
+                    // The protected service isn't set up yet (per-user install that
+                    // was never elevated, or a previously declined/failed UAC).  Give
+                    // the user the chance to enable protection right now (one elevation)
+                    // and retry — but NEVER fall back to an unprotected write.
+                    if (TryProvisionProtectedStore())
+                    {
+                        rc = PTSettingsClient.PutBlob(payload);
+                    }
+                }
+
                 switch (rc)
                 {
                     case PTSettingsClient.Result.Ok:
                         break;
 
                     case PTSettingsClient.Result.Unavailable:
-                        IOUtils fallback = new();
-                        fallback.WriteFile(serializer.File, json);
+                        // Protected service still not available (elevation declined /
+                        // failed).  Fail safe: do NOT write plaintext.  Keep the edit
+                        // in-window and tell the user how to enable protection.
+                        Logger.LogError("Save blocked: protected settings service unavailable and no unprotected fallback is allowed.");
+                        System.Windows.MessageBox.Show(
+                            "PowerToys couldn't save your workspaces because the protected Workspaces settings service isn't set up yet. " +
+                            "Workspaces are saved only to a protected, tamper-resistant location — there is no unprotected fallback. " +
+                            "Setting it up needs a one-time administrator approval: reopen the Workspaces editor (or restart PowerToys) and accept the prompt, then save again. " +
+                            "Your current changes are kept in this window until then.",
+                            "Workspaces",
+                            System.Windows.MessageBoxButton.OK,
+                            System.Windows.MessageBoxImage.Warning);
                         break;
 
                     case PTSettingsClient.Result.AuthRejected:

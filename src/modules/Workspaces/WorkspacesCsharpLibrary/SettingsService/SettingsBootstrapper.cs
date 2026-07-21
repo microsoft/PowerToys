@@ -55,7 +55,8 @@ public static class SettingsBootstrapper
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var force = request.Reason == TriggerReason.ExplicitUserRequest;
+        var force = request.Reason is TriggerReason.ExplicitUserRequest
+                                   or TriggerReason.WorkspaceSaving;
 
         if (!force && Interlocked.Exchange(ref _autoBootstrapped, 1) != 0)
         {
