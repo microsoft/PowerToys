@@ -51,25 +51,25 @@ The `profile` object has two entry lists:
 
 ### `keys[]` — single-key remappings
 
-| Property | Type   | Required | Description                                            |
-| -------- | ------ | -------- | ------------------------------------------------------ |
-| `from`   | string | yes      | The key being remapped, e.g. `CapsLock`.               |
+| Property | Type   | Required | Description                                              |
+| -------- | ------ | -------- | -------------------------------------------------------- |
+| `from`   | string | yes      | The key being remapped, e.g. `CapsLock`.                 |
 | `to`     | string | one of   | Target key or shortcut, e.g. `Esc`, `Ctrl+C`, `Disable`. |
-| `toText` | string | one of   | Text to type instead of the key.                       |
+| `toText` | string | one of   | Text to type instead of the key.                         |
 
 Exactly one of `to` or `toText` must be set.
 
 ### `shortcuts[]` — shortcut remappings
 
-| Property     | Type    | Required | Description                                                            |
-| ------------ | ------- | -------- | ---------------------------------------------------------------------- |
+| Property     | Type    | Required | Description                                                             |
+| ------------ | ------- | -------- | ----------------------------------------------------------------------- |
 | `from`       | string  | yes      | The shortcut being remapped, e.g. `Ctrl+Shift+A` or `Win+O, K` (chord). |
-| `to`         | string  | one of   | Target key or shortcut.                                                |
-| `toText`     | string  | one of   | Text to type instead of the shortcut.                                  |
-| `runProgram` | object  | one of   | Program to start (see below).                                          |
-| `openUri`    | string  | one of   | URI to open, e.g. `https://github.com` or `ms-settings:`.              |
+| `to`         | string  | one of   | Target key or shortcut.                                                 |
+| `toText`     | string  | one of   | Text to type instead of the shortcut.                                   |
+| `runProgram` | object  | one of   | Program to start (see below).                                           |
+| `openUri`    | string  | one of   | URI to open, e.g. `https://github.com` or `ms-settings:`.               |
 | `targetApp`  | string  | no       | Process name the remap applies to, e.g. `notepad.exe`. Omit for global. |
-| `exactMatch` | boolean | no       | Only trigger when no other keys are pressed. Default `false`.          |
+| `exactMatch` | boolean | no       | Only trigger when no other keys are pressed. Default `false`.           |
 
 Exactly one of `to`, `toText`, `runProgram`, or `openUri` must be set. A
 shortcut `from` requires at least one modifier plus one action key, and may
@@ -92,16 +92,16 @@ Key names are case-insensitive and independent of the active keyboard
 layout. Shortcut parts are joined with `+`; a chord second key follows after
 a comma.
 
-| Category      | Names                                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Letters/digits | `A`–`Z`, `0`–`9`                                                                                                              |
-| Function      | `F1`–`F24`                                                                                                                     |
-| Modifiers     | `Ctrl`, `Alt`, `Shift`, `Win` (either side); `LCtrl`, `RCtrl`, `LAlt`, `RAlt`, `LShift`, `RShift`, `LWin`, `RWin`              |
-| Navigation    | `Esc`, `Tab`, `CapsLock`, `Space`, `Enter`, `Backspace`, `Insert`, `Delete`, `Home`, `End`, `PgUp`, `PgDn`, `Up`, `Down`, `Left`, `Right`, `PrintScreen`, `ScrollLock`, `Pause`, `NumLock`, `Apps`, `Break`, `Clear`, `Sleep` |
-| Numpad        | `NumPad0`–`NumPad9`, `NumPadMultiply`, `NumPadAdd`, `NumPadSeparator`, `NumPadSubtract`, `NumPadDecimal`, `NumPadDivide`; numpad-origin variants: `NumPadEnter`, `NumPadHome`, `NumPadEnd`, `NumPadPgUp`, `NumPadPgDn`, `NumPadInsert`, `NumPadDelete`, `NumPadUp`, `NumPadDown`, `NumPadLeft`, `NumPadRight`, `NumPadSlash` |
-| Punctuation   | `Semicolon` (`;`), `Equals` (`=`), `Comma` (`,`), `Minus` (`-`), `Period` (`.`), `Slash` (`/`), `Backquote` (`` ` ``), `LBracket` (`[`), `Backslash` (`\`), `RBracket` (`]`), `Quote` (`'`), `OEM102` |
-| Media/browser | `VolumeMute`, `VolumeDown`, `VolumeUp`, `MediaNext`, `MediaPrev`, `MediaStop`, `MediaPlayPause`, `BrowserBack`, `BrowserForward`, `BrowserRefresh`, `BrowserStop`, `BrowserSearch`, `BrowserFavorites`, `BrowserHome`, `LaunchMail`, `LaunchMediaSelect`, `LaunchApp1`, `LaunchApp2` |
-| Special       | `Disable` (disables the key or shortcut), `VK<decimal>` or `0x<hex>` for any other virtual-key code                            |
+| Category       | Names                                                                                                                                                                                                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Letters/digits | `A`–`Z`, `0`–`9`                                                                                                                                                                                                                                                                                                             |
+| Function       | `F1`–`F24`                                                                                                                                                                                                                                                                                                                   |
+| Modifiers      | `Ctrl`, `Alt`, `Shift`, `Win` (either side); `LCtrl`, `RCtrl`, `LAlt`, `RAlt`, `LShift`, `RShift`, `LWin`, `RWin`                                                                                                                                                                                                            |
+| Navigation     | `Esc`, `Tab`, `CapsLock`, `Space`, `Enter`, `Backspace`, `Insert`, `Delete`, `Home`, `End`, `PgUp`, `PgDn`, `Up`, `Down`, `Left`, `Right`, `PrintScreen`, `ScrollLock`, `Pause`, `NumLock`, `Apps`, `Break`, `Clear`, `Sleep`                                                                                                |
+| Numpad         | `NumPad0`–`NumPad9`, `NumPadMultiply`, `NumPadAdd`, `NumPadSeparator`, `NumPadSubtract`, `NumPadDecimal`, `NumPadDivide`; numpad-origin variants: `NumPadEnter`, `NumPadHome`, `NumPadEnd`, `NumPadPgUp`, `NumPadPgDn`, `NumPadInsert`, `NumPadDelete`, `NumPadUp`, `NumPadDown`, `NumPadLeft`, `NumPadRight`, `NumPadSlash` |
+| Punctuation    | `Semicolon` (`;`), `Equals` (`=`), `Comma` (`,`), `Minus` (`-`), `Period` (`.`), `Slash` (`/`), `Backquote` (`` ` ``), `LBracket` (`[`), `Backslash` (`\`), `RBracket` (`]`), `Quote` (`'`), `OEM102`                                                                                                                        |
+| Media/browser  | `VolumeMute`, `VolumeDown`, `VolumeUp`, `MediaNext`, `MediaPrev`, `MediaStop`, `MediaPlayPause`, `BrowserBack`, `BrowserForward`, `BrowserRefresh`, `BrowserStop`, `BrowserSearch`, `BrowserFavorites`, `BrowserHome`, `LaunchMail`, `LaunchMediaSelect`, `LaunchApp1`, `LaunchApp2`                                         |
+| Special        | `Disable` (disables the key or shortcut), `VK<decimal>` or `0x<hex>` for any other virtual-key code                                                                                                                                                                                                                          |
 
 > **Note:** Punctuation names refer to the key's physical position on a US
 > layout (`Semicolon` is the `VK_OEM_1` key), so profiles behave identically
