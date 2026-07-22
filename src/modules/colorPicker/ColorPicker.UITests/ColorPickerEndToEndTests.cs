@@ -344,10 +344,9 @@ public class ColorPickerEndToEndTests : UITestBase
 
             // -- 13. Find the captured color inside the editor's tree ------------------------
             // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`.
-            // Each format renders as a ColorFormatControl (DataItem in the UIA tree) that
-            // contains a TextBox holding the formatted color string. The captured clipboard
-            // value will be ONE of those formats — we just need to find any element whose Name
-            // or Value contains it.
+            // Each format renders a selectable TextBlock whose visible text must also be its UIA
+            // Name. Unlike the WPF TextBox it replaced, a TextBlock has no ValuePattern fallback,
+            // so accepting the value only through UIA Value would miss an accessibility regression.
             var tree = editor.Inspect(depth: 12);
             var values = new List<(string Type, string Name, string Value)>();
             WalkElements(tree, values);
@@ -360,23 +359,16 @@ public class ColorPickerEndToEndTests : UITestBase
 
             Assert.IsTrue(values.Count > 0, "Editor reported no readable elements via inspect --json.");
 
-            // Match: find any element whose Name or Value contains the clipboard text
-            // case-insensitively. If the clipboard had a '#' prefix (e.g. "#FFFFFF") and the
-            // editor renders without it, also try the bare-hex form.
+            // Match the clipboard text through UIA Name, ignoring an optional leading '#'.
             var needle = capturedColor.Trim();
-            var needleBareHex = needle.TrimStart('#');
-
             var match = values.FirstOrDefault(v =>
-                v.Name.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
-                v.Value.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
-                (needleBareHex.Length > 0 &&
-                    (v.Name.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase) ||
-                     v.Value.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase))));
+                v.Type.Equals("Text", StringComparison.OrdinalIgnoreCase) &&
+                ContainsIgnoringHash(v.Name, needle));
 
-            if (string.IsNullOrEmpty(match.Name) && string.IsNullOrEmpty(match.Value))
+            if (string.IsNullOrEmpty(match.Name))
             {
                 Assert.Fail(
-                    $"Captured color '{capturedColor}' not found in editor tree." + Environment.NewLine +
+                    $"Captured color '{capturedColor}' was not exposed through the formatted color TextBlock's UIA Name." + Environment.NewLine +
                     "  See element dump above.");
             }
 

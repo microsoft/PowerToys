@@ -236,7 +236,6 @@
                                         TextTrimming="CharacterEllipsis"
                                         ToolTipService.ToolTip="{x:Bind FormatName, Mode=OneWay}" />
                                     <TextBlock
-                                        x:Uid="Color_Code"
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

@@ -177,9 +177,6 @@
   <data name="Select_color.Text" xml:space="preserve">
     <value>Select color</value>
   </data>
-  <data name="Color_Code.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Color code</value>
-  </data>
   <data name="Color_History.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Color history</value>
   </data>
