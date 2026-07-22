@@ -3022,6 +3022,54 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
     <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
+  <data name="AltWindowCycle.ModuleDescription" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle.ModuleTitle" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AltWindowCycle_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the next window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Header" xml:space="preserve">
+    <value>Next window</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the previous window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Header" xml:space="preserve">
+    <value>Previous window</value>
+  </data>
+  <data name="Shell_AltWindowCycle.Content" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Title" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Description" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Next.Text" xml:space="preserve">
+    <value>to cycle to the next window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Previous.Text" xml:space="preserve">
+    <value>to cycle to the previous window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the next and previous shortcuts to move through only the windows that belong to your currently focused app.</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
   </data>

@@ -72,6 +72,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
+    const std::wstring POLICY_CONFIGURE_ENABLED_ALT_WINDOW_CYCLE = L"ConfigureEnabledUtilityAltWindowCycle";
 
     // The registry value names for PowerToys installer and update policies.
     const std::wstring POLICY_DISABLE_PER_USER_INSTALLATION = L"PerUserInstallationDisabled";
@@ -286,6 +287,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredAlwaysOnTopEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP);
+    }
+
+    inline gpo_rule_configured_t getConfiguredAltWindowCycleEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_ALT_WINDOW_CYCLE);
     }
 
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()

@@ -289,6 +289,12 @@
                             AutomationProperties.AutomationId="GrabAndMoveNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}" />
                         <NavigationViewItem
+                            x:Name="AltWindowCycleNavigationItem"
+                            x:Uid="Shell_AltWindowCycle"
+                            helpers:NavHelper.NavigateTo="views:AltWindowCyclePage"
+                            AutomationProperties.AutomationId="AltWindowCycleNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}" />
+                        <NavigationViewItem
                             x:Name="WorkspacesNavigationItem"
                             x:Uid="Shell_Workspaces"
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
