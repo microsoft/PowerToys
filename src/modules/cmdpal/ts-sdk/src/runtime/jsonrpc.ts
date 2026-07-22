@@ -77,3 +77,9 @@ export function stringField(params: Record<string, unknown>, key: string): strin
   const value = params[key];
   return typeof value === 'string' ? value : undefined;
 }
+
+/** Reads a finite number field from a params record, or `undefined` otherwise. */
+export function numberField(params: Record<string, unknown>, key: string): number | undefined {
+  const value = params[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
