@@ -1,0 +1,11 @@
+{
+  "context": "extension",
+  "message": {
+    "Message": "Working",
+    "State": 0
+  },
+  "progress": {
+    "isIndeterminate": true
+  },
+  "statusId": "status-1"
+}

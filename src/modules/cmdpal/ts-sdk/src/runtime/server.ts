@@ -19,7 +19,8 @@ import { encodeMessage, MessageFramer } from './framing.js';
 import { JSONRPC_VERSION, isNotification, isRequest, type JsonRpcMessage } from './jsonrpc.js';
 import { setNotificationSink } from './notifications.js';
 import { ExtensionHost } from './ExtensionHost.js';
-import { ExtensionRuntime } from './runtime.js';
+import { ExtensionRuntime, DEFAULT_DISPOSE_TIMEOUT_MS } from './runtime.js';
+import { claimProtocolStdout } from './stdio.js';
 
 export { sendNotification } from './notifications.js';
 
@@ -48,47 +49,65 @@ const MESSAGE_STATE_VALUE: Record<MessageState, number> = {
  * @param factory Produces the extension's command provider.
  */
 export function startJsonRpcServer(factory: ProviderFactory): void {
+  // Claim stdout for the protocol before any extension author code runs, so
+  // early logging is redirected to stderr and cannot corrupt a protocol frame.
+  const stdout = claimProtocolStdout();
   const framer = new MessageFramer();
-  let shuttingDown = false;
+  let finalized = false;
+  let disposeTimeoutMs = DEFAULT_DISPOSE_TIMEOUT_MS;
 
   const writeMessage = (message: JsonRpcMessage): void => {
-    process.stdout.write(encodeMessage(message));
+    stdout.writeRaw(encodeMessage(message));
   };
 
   const notify = (method: string, params?: unknown): void => {
     writeMessage({ jsonrpc: JSONRPC_VERSION, method, params });
   };
 
-  const shutdown = (code: number): void => {
-    if (shuttingDown) {
+  // Idempotent shutdown: dispose the provider within the host-supplied bound,
+  // release the host bridge, restore stdout, and prefer setting process.exitCode
+  // over a hard process.exit so buffered protocol writes can flush.
+  const finalize = async (code: number): Promise<void> => {
+    if (finalized) {
       return;
     }
-    shuttingDown = true;
-    runtime.dispose();
+    finalized = true;
+    if (code !== 0) {
+      process.exitCode = code;
+    }
+    try {
+      await runtime.dispose(disposeTimeoutMs);
+    } catch (error) {
+      process.stderr.write(`cmdpal-sdk: shutdown disposal failed: ${describeError(error)}\n`);
+    }
     setNotificationSink(null);
     ExtensionHost.initialize(null);
-    process.exit(code);
+    stdout.restore();
+    process.stdin.pause();
   };
 
   const runtime = new ExtensionRuntime({
     send: writeMessage,
     onDispose: () => {
-      shutdown(0);
+      void finalize(0);
+    },
+    reportFatal: (code: number) => {
+      process.exitCode = code;
     },
   });
 
   setNotificationSink(notify);
   ExtensionHost.initialize(createHostBridge(notify));
 
-  const ready = (async (): Promise<void> => {
-    const provider = await factory();
-    provider.initializeWithHost?.(ExtensionHostBridgeProxy);
-    await runtime.setProvider(provider);
-  })();
+  runtime.beginInitialization(
+    (async (): Promise<ICommandProvider> => {
+      const provider = await factory();
+      provider.initializeWithHost?.(ExtensionHostBridgeProxy);
+      return provider;
+    })(),
+  );
 
-  let chain: Promise<void> = ready.catch((error: unknown) => {
-    process.stderr.write(`cmdpal-sdk: failed to initialize extension: ${describeError(error)}\n`);
-  });
+  let chain: Promise<void> = Promise.resolve();
 
   const enqueue = (message: unknown): void => {
     chain = chain
@@ -96,6 +115,15 @@ export function startJsonRpcServer(factory: ProviderFactory): void {
         if (isRequest(message)) {
           await runtime.handleRequest(message);
         } else if (isNotification(message)) {
+          if (message.method === 'dispose') {
+            const params = message.params;
+            if (params && typeof params === 'object' && 'timeoutMs' in params) {
+              const value = (params as { timeoutMs?: unknown }).timeoutMs;
+              if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+                disposeTimeoutMs = value;
+              }
+            }
+          }
           await runtime.handleNotification(message);
         }
       })
@@ -117,7 +145,7 @@ export function startJsonRpcServer(factory: ProviderFactory): void {
   });
 
   process.stdin.on('end', () => {
-    shutdown(0);
+    void finalize(0);
   });
 }
 
@@ -154,32 +182,80 @@ const ExtensionHostBridgeProxy: IExtensionHost = {
   log: (message, state) => {
     ExtensionHost.log(message, state);
   },
-  showStatus: (message, state, progress) => {
-    ExtensionHost.showStatus(message, state, progress);
+  showStatus: (message, state, progress) => ExtensionHost.showStatus(message, state, progress),
+  updateStatus: (statusId, message, state, progress) => {
+    ExtensionHost.updateStatus(statusId, message, state, progress);
   },
-  hideStatus: (messageId) => {
-    ExtensionHost.hideStatus(messageId);
+  hideStatus: (statusId) => {
+    ExtensionHost.hideStatus(statusId);
   },
   copyToClipboard: (text) => {
     ExtensionHost.copyToClipboard(text);
   },
 };
 
-function createHostBridge(notify: (method: string, params?: unknown) => void): IExtensionHost {
+interface TrackedStatus {
+  message: string;
+  state: MessageState;
+  progress?: ProgressState;
+}
+
+/**
+ * Builds the host bridge that forwards {@link IExtensionHost} calls to the host
+ * as JSON-RPC notifications. Exported for tests. The bridge mints a stable
+ * statusId for every status shown so a status can be updated or hidden by id,
+ * and keeps the message text so a host that still hides by message text keeps
+ * working until it is upgraded.
+ */
+export function createHostBridge(
+  notify: (method: string, params?: unknown) => void,
+): IExtensionHost {
+  let statusCounter = 0;
+  const statuses = new Map<string, TrackedStatus>();
+
+  const sendStatus = (statusId: string, tracked: TrackedStatus): void => {
+    // Carry the SDK-minted statusId so an up-to-date host can update or hide the
+    // exact status by id, and keep the Message text so today's host (which hides
+    // by message text) keeps working until it is upgraded.
+    notify('host/showStatus', {
+      statusId,
+      message: { Message: tracked.message, State: MESSAGE_STATE_VALUE[tracked.state] },
+      progress: tracked.progress,
+      context: 'extension',
+    });
+  };
+
   return {
     log(message: string, state: MessageState = 'info'): void {
       notify('host/logMessage', { message, state: MESSAGE_STATE_VALUE[state] });
     },
-    showStatus(message: string, state: MessageState = 'info', progress?: ProgressState): void {
-      notify('host/showStatus', {
-        message: { Message: message, State: MESSAGE_STATE_VALUE[state] },
-        progress,
-        context: 'extension',
-      });
+    showStatus(message: string, state: MessageState = 'info', progress?: ProgressState): string {
+      statusCounter += 1;
+      const statusId = `status-${String(statusCounter)}`;
+      const tracked: TrackedStatus = { message, state, progress };
+      statuses.set(statusId, tracked);
+      sendStatus(statusId, tracked);
+      return statusId;
     },
-    hideStatus(messageId: string): void {
+    updateStatus(
+      statusId: string,
+      message: string,
+      state: MessageState = 'info',
+      progress?: ProgressState,
+    ): void {
+      const tracked: TrackedStatus = { message, state, progress };
+      statuses.set(statusId, tracked);
+      sendStatus(statusId, tracked);
+    },
+    hideStatus(statusId: string): void {
+      const tracked = statuses.get(statusId);
+      statuses.delete(statusId);
       notify('host/hideStatus', {
-        message: { Message: messageId, State: MESSAGE_STATE_VALUE.info },
+        statusId,
+        message: {
+          Message: tracked?.message ?? statusId,
+          State: MESSAGE_STATE_VALUE[tracked?.state ?? 'info'],
+        },
       });
     },
     copyToClipboard(text: string): void {

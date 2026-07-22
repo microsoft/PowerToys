@@ -1,0 +1,19 @@
+{
+  "command": {
+    "displayName": "Item",
+    "id": "ci-1",
+    "name": "Item"
+  },
+  "displayName": "Command item",
+  "icon": {
+    "dark": {
+      "icon": ""
+    },
+    "light": {
+      "icon": ""
+    }
+  },
+  "id": "ci-1",
+  "subtitle": "Subtitle",
+  "title": "Command item"
+}
