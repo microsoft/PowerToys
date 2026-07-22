@@ -1075,7 +1075,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/WorkspacesLauncher/WorkspacesLauncher.vcxproj" Id="2cac093e-5fcf-4102-9c2c-ac7dd5d9eb96" />
-    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI/WorkspacesLauncherUI.csproj">
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.WinUI/WorkspacesLauncherUI.WinUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1161,6 +1161,14 @@
     <File Path="src/Monaco.props" />
     <File Path="src/Solution.props" />
     <File Path="src/Version.props" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/modules/" />
+  <Folder Name="/src/modules/Workspaces/">
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.UnitTests/WorkspacesLauncherUI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Project Path="src/ActionRunner/ActionRunner.vcxproj" Id="d29ddd63-e2cf-4657-9fd5-2aede4257e5d">
     <BuildDependency Project="src/common/updating/updating.vcxproj" />

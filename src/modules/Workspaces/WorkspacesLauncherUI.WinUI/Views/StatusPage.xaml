@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WorkspacesLauncherUI.Views.StatusPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WorkspacesLauncherUI.Models"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer
+            Grid.ColumnSpan="2"
+            AutomationProperties.Name="Application launch status list"
+            TabIndex="0">
+            <StackPanel AutomationProperties.AccessibilityView="Content" AutomationProperties.LiveSetting="Polite">
+                <ItemsControl AutomationProperties.Name="Applications" ItemsSource="{x:Bind ViewModel.AppsListed, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="models:AppLaunching">
+                            <Grid
+                                Margin="0,4"
+                                Padding="4"
+                                AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Margin="4,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{x:Bind IconImage}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.AccessibilityView="Raw"
+                                    Text="{x:Bind Name, Mode=OneWay}" />
+                                <tkcontrols:SwitchPresenter
+                                    Grid.Column="2"
+                                    Margin="8"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    TargetType="x:Boolean"
+                                    Value="{x:Bind Loading, Mode=OneWay}">
+                                    <tkcontrols:Case Value="True">
+                                        <ProgressRing
+                                            Width="20"
+                                            Height="20"
+                                            AutomationProperties.Name="Loading"
+                                            IsActive="True" />
+                                    </tkcontrols:Case>
+                                    <tkcontrols:Case Value="False">
+                                        <TextBlock
+                                            Width="20"
+                                            Height="20"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            FontSize="20"
+                                            Foreground="{x:Bind StateColor, Mode=OneWay}"
+                                            Text="{x:Bind StateGlyph, Mode=OneWay}" />
+                                    </tkcontrols:Case>
+                                </tkcontrols:SwitchPresenter>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Button
+            x:Name="DismissButton"
+            x:Uid="DismissButton"
+            Grid.Row="1"
+            Margin="0,16,4,0"
+            HorizontalAlignment="Stretch"
+            Click="DismissButton_Click"
+            Style="{ThemeResource AccentButtonStyle}"
+            TabIndex="1" />
+
+        <Button
+            x:Name="CancelButton"
+            x:Uid="CancelButton"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="4,16,0,0"
+            HorizontalAlignment="Stretch"
+            Click="CancelButton_Click"
+            Command="{x:Bind ViewModel.CancelLaunchCommand}"
+            TabIndex="2" />
+    </Grid>
+</Page>
