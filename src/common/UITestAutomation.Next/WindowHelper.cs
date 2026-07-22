@@ -54,6 +54,7 @@ public static class WindowHelper
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
     private const int SW_MAXIMIZE = 3;
+    private const int DwmExtendedFrameBoundsAttribute = 9;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -78,6 +79,9 @@ public static class WindowHelper
 
     [DllImport("gdi32.dll")]
     private static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hWnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
     /// <summary>True when any UIA-visible window's title contains <paramref name="titleContains"/> (CLI-based).</summary>
     public static bool IsWindowOpen(string titleContains) =>
@@ -138,6 +142,34 @@ public static class WindowHelper
         }
 
         return (0, 0, 0, 0);
+    }
+
+    /// <summary>
+    /// Capture the visible DWM frame from the screen. Unlike PrintWindow, this includes composed
+    /// WinUI/WebView content; unlike a raw GetWindowRect capture, it excludes invisible resize borders.
+    /// </summary>
+    public static void CaptureVisibleWindow(IntPtr hWnd, string outputPath)
+    {
+        var result = DwmGetWindowAttribute(
+            hWnd,
+            DwmExtendedFrameBoundsAttribute,
+            out var bounds,
+            Marshal.SizeOf<RECT>());
+        if (result != 0 || bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top)
+        {
+            throw new InvalidOperationException($"Unable to read visible frame bounds for HWND {hWnd} (HRESULT 0x{result:X8}).");
+        }
+
+        using var bitmap = new Bitmap(bounds.Right - bounds.Left, bounds.Bottom - bounds.Top);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.CopyFromScreen(
+            bounds.Left,
+            bounds.Top,
+            0,
+            0,
+            bitmap.Size,
+            CopyPixelOperation.SourceCopy);
+        bitmap.Save(outputPath, System.Drawing.Imaging.ImageFormat.Png);
     }
 
     /// <summary>Center point of the window in screen pixels.</summary>

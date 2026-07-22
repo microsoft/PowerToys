@@ -393,9 +393,17 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
+            if (!WaitForExplorerSelection(explorerWindow, normalizedPath, ExplorerOpenTimeoutMS))
+            {
+                TestContext.WriteLine(
+                    GetActivationDiagnostics(
+                        $"Explorer HWND {explorerWindow.WindowHandle} did not select '{selectedItemName}' after launch attempt {attempt}"));
+                continue;
+            }
+
             explorerWindowHandle = explorerWindow.WindowHandle;
             TestContext.WriteLine(
-                $"Explorer ready for '{selectedItemName}': hwnd={explorerWindow.WindowHandle}, " +
+                $"Explorer ready with '{selectedItemName}' selected: hwnd={explorerWindow.WindowHandle}, " +
                 $"pid={explorerWindow.ProcessId}, title='{explorerWindow.WindowTitle}', " +
                 $"session={GetProcessSessionId(explorerWindow.ProcessId)}, elevated={FormatElevation(explorerWindow.IsElevated)}.");
             return explorerWindow;
@@ -405,6 +413,36 @@ public class PeekFilePreviewTests : UITestBase
             $"Explorer did not open for {selectedItemName} after {ExplorerOpenAttempts} launch attempts." +
             Environment.NewLine + GetActivationDiagnostics("Explorer launch failed"));
         return null!;
+    }
+
+    private static bool WaitForExplorerSelection(Session explorerWindow, string selectedPath, int timeoutMS)
+    {
+        var fileName = Path.GetFileName(selectedPath);
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedPath);
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            foreach (var searchName in new[] { fileName, fileNameWithoutExtension }.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                var selectedItem = explorerWindow
+                    .FindAll<Element>(By.Name(searchName), timeoutMS: 500)
+                    .FirstOrDefault(element =>
+                        string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase) &&
+                        (string.Equals(element.Name, fileName, StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(element.Name, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)) &&
+                        element.Selected);
+
+                if (selectedItem is not null)
+                {
+                    return true;
+                }
+            }
+
+            Thread.Sleep(250);
+        }
+
+        return false;
     }
 
     private Session SendPeekHotkeyWithRetry(string expectedPath)

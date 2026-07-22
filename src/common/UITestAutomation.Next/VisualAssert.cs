@@ -50,7 +50,7 @@ public static class VisualAssert
 
         if (string.IsNullOrEmpty(baselineImageResourceName))
         {
-            session.Screenshot(testImagePath);
+            session.ScreenshotVisibleWindow(testImagePath);
             testContext?.AddResultFile(testImagePath);
             Assert.Fail($"Baseline image for scenario {scenarioSubname} can't be found; test image saved to {testImagePath}.");
         }
@@ -67,7 +67,7 @@ public static class VisualAssert
         var similarity = 0d;
         do
         {
-            session.Screenshot(testImagePath);
+            session.ScreenshotVisibleWindow(testImagePath);
             using var testImage = new Bitmap(testImagePath);
             similarity = CalculateSimilarity(baselineImage, testImage);
             if (similarity >= SimilarityThreshold)

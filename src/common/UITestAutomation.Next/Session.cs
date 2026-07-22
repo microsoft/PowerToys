@@ -315,6 +315,18 @@ public sealed class Session
         return outputPath;
     }
 
+    /// <summary>
+    /// Capture the session's visible DWM frame from the desktop, including composed content while
+    /// excluding the invisible resize border around top-level windows.
+    /// </summary>
+    public string ScreenshotVisibleWindow(string outputPath)
+    {
+        Assert.IsTrue(Scope == TargetScope.Window && WindowHandle != 0, "Visible-frame capture requires a window-scoped session.");
+        EnsureForeground();
+        WindowHelper.CaptureVisibleWindow(new IntPtr(WindowHandle), outputPath);
+        return outputPath;
+    }
+
     /// <summary>Non-asserting screenshot for cleanup / failure-artifact paths. Returns false on error.</summary>
     public bool TryScreenshot(string outputPath, Element? element = null, bool captureScreen = false)
     {
