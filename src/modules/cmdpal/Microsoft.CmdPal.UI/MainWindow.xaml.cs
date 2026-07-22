@@ -57,6 +57,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
+    IRecipient<MaximizeForDialogMessage>,
     IDisposable,
     IHostWindow
 {
@@ -111,6 +112,15 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+
+    // While a modal dialog (e.g. a confirmation) is showing, the card is forced to fill the
+    // whole window so the dialog — which renders in the window's popup layer and is clipped to
+    // the card's HWND region — isn't cut off. Cleared when the dialog closes.
+    private bool _dialogFullExpandActive;
+
+    // The most recent expand/collapse request, remembered so the correct compact layout can be
+    // restored once a dialog-driven full expansion ends.
+    private bool _lastExpandRequested;
 
     private DevRibbon? _devRibbon;
 
@@ -184,6 +194,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<MaximizeForDialogMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -1901,16 +1912,32 @@ public sealed partial class MainWindow : WindowEx,
         this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
     }
 
+    public void Receive(MaximizeForDialogMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() =>
+        {
+            _dialogFullExpandActive = message.Maximize;
+
+            // Re-run with the last requested state: when maximizing this fills the window; when
+            // the dialog closes it restores the normal compact/expanded layout.
+            HandleExpandCompactOnUiThread(_lastExpandRequested);
+        });
+    }
+
     // The HWND is already as large as it will ever need to be (and it's transparent), so
     // instead of resizing the window we simply shrink or grow the visible card inside it.
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
+        _lastExpandRequested = expanded;
+
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
-        if (!settings.CompactMode)
+        var preventCompactMode = _dialogFullExpandActive || !settings.CompactMode;
+        if (preventCompactMode)
         {
-            // When compact mode is off the card is always static and fills the entire window,
-            // regardless of how much content is currently displayed.
+            // When compact mode is off, or a dialog is active, the card is
+            // always static and fills the entire window, regardless of how much
+            // content is currently displayed.
             RootElement.SetCardStretch(true);
             RootElement.SetCardMaxHeight(double.PositiveInfinity);
         }
