@@ -271,6 +271,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFindMyMouse">Find My Mouse: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseHighlighter">Mouse Highlighter: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityCursorWrap">CursorWrap: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityMouseButtonLock">Mouse Button Lock: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseJump">Mouse Jump: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMousePointerCrosshairs">Mouse Pointer Crosshairs: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityMouseWithoutBorders">Mouse Without Borders: Configure enabled state</string>

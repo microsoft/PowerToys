@@ -198,6 +198,7 @@
             "PowerToys.MouseJumpUI.dll",
             "PowerToys.MouseJumpUI.exe",
             "PowerToys.CursorWrap.dll",
+            "PowerToys.MouseButtonLock.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",

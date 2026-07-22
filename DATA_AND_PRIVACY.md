@@ -305,6 +305,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.LightSwitch_ShortcutInvoked | Occurs when the shortcut for Light Switch is invoked. |
 | Microsoft.PowerToys.LightSwitch_ThemeTargetChanged | Occurs when the options for targeting the system or apps is updated. |
 
+### Mouse Button Lock
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.MouseButtonLock_EnableMouseButtonLock | Triggered when Mouse Button Lock is enabled or disabled. |
+
 ### Mouse Highlighter
 
 | Event Name | Description |

@@ -529,6 +529,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool mouseButtonLock; // defaulting to off
+
+        [JsonPropertyName("MouseButtonLock")]
+        public bool MouseButtonLock
+        {
+            get => mouseButtonLock;
+            set
+            {
+                if (mouseButtonLock != value)
+                {
+                    LogTelemetryEvent(value);
+                    mouseButtonLock = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

@@ -533,6 +533,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
+    <Project Path="src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj" Id="b550866e-10a1-4517-886c-e63d5f1f7d61" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
@@ -542,6 +543,10 @@
     <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/MouseButtonLock.UnitTests/MouseButtonLock.UnitTests.vcxproj" Id="15f55815-dffc-4eb7-99e4-b6754a52a5c7" />
+    <Project Path="src/modules/MouseUtils/MouseButtonLock.FuzzingTest/MouseButtonLock.FuzzingTest.vcxproj" Id="c3b77613-9c8c-4c23-9a55-73def4921125">
+      <Build Solution="*|ARM64" Project="false" />
     </Project>
   </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">

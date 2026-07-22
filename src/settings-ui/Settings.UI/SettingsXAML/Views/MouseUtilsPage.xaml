@@ -16,6 +16,7 @@
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
+        <converters:MillisecondsLabelConverter x:Key="MillisecondsLabelConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
@@ -67,6 +68,77 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseButtonLock" AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMouseButtonLockEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableMouseButtonLock"
+                            x:Uid="MouseUtils_Enable_MouseButtonLock"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseButtonLock.png}"
+                            IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsMouseButtonLockSettingsExpander"
+                        x:Uid="MouseUtils_MouseButtonLock_Options"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_LmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockLmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_RmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockRmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_MmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockMmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsMouseButtonLockHoldDuration" x:Uid="MouseUtils_MouseButtonLock_HoldDuration">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <TextBlock
+                                        MinWidth="56"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=OneWay, Converter={StaticResource MillisecondsLabelConverter}}"
+                                        TextAlignment="Right" />
+                                    <Slider
+                                        MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                        AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
+                                        LargeChange="400"
+                                        Maximum="2200"
+                                        Minimum="200"
+                                        SmallChange="100"
+                                        SnapsTo="StepValues"
+                                        StepFrequency="100"
+                                        ThumbToolTipValueConverter="{StaticResource MillisecondsLabelConverter}"
+                                        Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
+                                </StackPanel>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseButtonLockMoveCancelPixels"
+                                x:Uid="MouseUtils_MouseButtonLock_MoveCancelPixels">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockMoveCancelPixelsId"
+                                    LargeChange="5"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.MouseButtonLockMoveCancelPixels, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <InfoBar
+                        x:Uid="MouseUtils_MouseButtonLock_ButtonRecommendation"
+                        IsClosable="False"
+                        IsOpen="True"
+                        Severity="Informational"
+                        Visibility="{x:Bind MouseUtilsMouseButtonLockSettingsExpander.IsExpanded, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">

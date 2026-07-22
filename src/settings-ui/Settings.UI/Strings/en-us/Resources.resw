@@ -2540,6 +2540,57 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap.Description" xml:space="preserve">
     <value>Wrap the mouse cursor between monitor edges</value>
   </data>
+  <data name="MouseUtils_MouseButtonLock.Header" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock.Description" xml:space="preserve">
+    <value>Hold the left, right, or middle mouse button to lock it down, like ClickLock. Tap the same button again to release. Windows already provides ClickLock for the left button, so left-button locking here is off by default. Some games that read the mouse with raw or exclusive input may not respond to the lock. It also does not work over windows running as administrator or over on-screen keyboards.</value>
+    <comment>Mouse as in the hardware peripheral. ClickLock is a Windows feature name.</comment>
+  </data>
+  <data name="MouseUtils_Enable_MouseButtonLock.Header" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_Options.Header" xml:space="preserve">
+    <value>Buttons and behavior</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_Options.Description" xml:space="preserve">
+    <value>Choose which buttons lock and tune the hold-to-lock behavior.</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_LmbLock.Content" xml:space="preserve">
+    <value>Lock the left (primary) mouse button</value>
+    <comment>Mouse as in the hardware peripheral. The left button is the primary/main mouse button. Windows also ships its own ClickLock for this button.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_RmbLock.Content" xml:space="preserve">
+    <value>Lock the right mouse button</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MmbLock.Content" xml:space="preserve">
+    <value>Lock the middle mouse button</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_HoldDuration.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms is the abbreviation for milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_HoldDuration.Description" xml:space="preserve">
+    <value>How long to hold a button before it locks</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Header" xml:space="preserve">
+    <value>Drag threshold (pixels)</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_MoveCancelPixels.Description" xml:space="preserve">
+    <value>Movement beyond this distance during the hold is treated as a drag and will not lock.</value>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_ButtonRecommendation.Title" xml:space="preserve">
+    <value>Recommended for the right and middle buttons</value>
+    <comment>Recommendation shown for the Mouse Button Lock feature. Right and middle refer to mouse buttons.</comment>
+  </data>
+  <data name="MouseUtils_MouseButtonLock_ButtonRecommendation.Message" xml:space="preserve">
+    <value>Windows already includes ClickLock for the left button. To turn it on, open Control Panel &gt; Mouse &gt; Buttons and select "Turn on ClickLock".</value>
+    <comment>ClickLock is a Windows feature name. "Control Panel &gt; Mouse &gt; Buttons" is a navigation path in the Windows Control Panel.</comment>
+  </data>
   <data name="MouseUtils_CursorWrap_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation and behavior</value>
   </data>
