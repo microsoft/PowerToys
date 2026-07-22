@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using PowerOCR.Core.Imaging;
 using PowerOCR.Core.Ocr;
 using PowerOCR.Core.Services;
@@ -136,10 +135,7 @@ public partial class App : Application, IDisposable
         // Creating a Window before the first visible overlay is activated can fail inside
         // WinUI XAML initialization. Create the hidden lifetime host only during teardown,
         // while an activated overlay still keeps the windowing system initialized.
-        _lifetimeWindow = new WindowEx
-        {
-            Content = new Grid(),
-        };
+        _lifetimeWindow = new WindowEx();
         _lifetimeWindow.AppWindow.Hide();
     }
 

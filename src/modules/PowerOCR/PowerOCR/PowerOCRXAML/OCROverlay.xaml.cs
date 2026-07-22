@@ -39,11 +39,10 @@ public sealed partial class OCROverlay : WindowEx
 
         InitializeComponent();
 
-        AppWindow.Title = "Text Extractor";
         ExtendsContentIntoTitleBar = true;
         AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
-        nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+        nint hwnd = this.GetWindowHandle();
         HwndExtensions.ToggleWindowStyle(hwnd, false, WindowStyle.TiledWindow);
 
         uint borderColor = DwmwaColorNone;

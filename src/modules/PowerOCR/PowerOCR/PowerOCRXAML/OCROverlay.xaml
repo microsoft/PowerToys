@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:views="using:PowerOCR.Views"
     xmlns:winuiex="using:WinUIEx"
+    Title="Text Extractor"
     IsAlwaysOnTop="True"
     IsMaximizable="False"
     IsMinimizable="False"

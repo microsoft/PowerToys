@@ -27,6 +27,7 @@ using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
 using Windows.Storage.Streams;
+using WinUIEx;
 
 namespace PowerOCR.Services;
 
@@ -482,7 +483,7 @@ internal sealed class OverlayManager : IOverlayManager
 
         if (bringToForeground)
         {
-            WindowHelpers.BringToForeground(WinRT.Interop.WindowNative.GetWindowHandle(window));
+            WindowHelpers.BringToForeground(window.GetWindowHandle());
         }
     }
 
