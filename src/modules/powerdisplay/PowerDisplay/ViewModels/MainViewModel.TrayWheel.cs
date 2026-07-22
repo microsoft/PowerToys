@@ -23,7 +23,7 @@ public partial class MainViewModel
     /// Applies complete tray wheel notches to the configured brightness targets.
     /// </summary>
     /// <param name="notches">The signed number of complete wheel notches.</param>
-    public void AdjustBrightnessFromTrayWheel(int notches)
+    public TrayWheelAdjustmentFeedback? AdjustBrightnessFromTrayWheel(int notches)
     {
         var mode = MouseWheelControlMode.Normalize();
         if (mode == MouseWheelMode.Disabled ||
@@ -32,7 +32,7 @@ public partial class MainViewModel
             !IsInitialized ||
             !IsInteractionEnabled)
         {
-            return;
+            return null;
         }
 
         string? primaryGdiDeviceName = null;
@@ -67,12 +67,15 @@ public partial class MainViewModel
                 _trayWheelNoTargetLogged = true;
             }
 
-            return;
+            return null;
         }
 
         _trayWheelNoTargetLogged = false;
-        foreach (var adjustment in adjustments)
+        var brightnessValues = new int[adjustments.Count];
+        for (var i = 0; i < adjustments.Count; i++)
         {
+            var adjustment = adjustments[i];
+            brightnessValues[i] = adjustment.Brightness;
             foreach (var monitor in Monitors)
             {
                 if (MonitorIdComparer.Equal(monitor.Id, adjustment.Id))
@@ -82,6 +85,8 @@ public partial class MainViewModel
                 }
             }
         }
+
+        return new TrayWheelAdjustmentFeedback(mode, brightnessValues);
     }
 
     private static unsafe string? GetPrimaryGdiDeviceName()
