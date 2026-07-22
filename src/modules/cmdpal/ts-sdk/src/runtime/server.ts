@@ -23,7 +23,13 @@ import { ExtensionRuntime } from './runtime.js';
 
 export { sendNotification } from './notifications.js';
 
-/** Factory that produces the extension's command provider. */
+/**
+ * Factory that produces the extension's command provider. Called once when the
+ * JSON-RPC server starts.
+ *
+ * @returns The extension's {@link ICommandProvider}, synchronously or as a
+ * promise.
+ */
 export type ProviderFactory = () => ICommandProvider | Promise<ICommandProvider>;
 
 const MESSAGE_STATE_VALUE: Record<MessageState, number> = {
@@ -38,6 +44,8 @@ const MESSAGE_STATE_VALUE: Record<MessageState, number> = {
  * dispatches them to the provider produced by `factory`, and writes framed
  * responses and notifications to stdout. It runs until the host closes the
  * connection or sends a `dispose` notification.
+ *
+ * @param factory Produces the extension's command provider.
  */
 export function startJsonRpcServer(factory: ProviderFactory): void {
   const framer = new MessageFramer();
@@ -113,7 +121,11 @@ export function startJsonRpcServer(factory: ProviderFactory): void {
   });
 }
 
-/** Alias for {@link startJsonRpcServer}. */
+/**
+ * Alias for {@link startJsonRpcServer}.
+ *
+ * @param factory Produces the extension's command provider.
+ */
 export function run(factory: ProviderFactory): void {
   startJsonRpcServer(factory);
 }
@@ -121,6 +133,10 @@ export function run(factory: ProviderFactory): void {
 /**
  * Convenience activation wrapper. Returns the provider produced by `factory`;
  * the runtime handles host wiring when {@link startJsonRpcServer} runs.
+ *
+ * @param _context Activation details supplied by the host. Currently unused.
+ * @param factory Produces the extension's command provider.
+ * @returns The extension's command provider, synchronously or as a promise.
  */
 export function activate(
   _context: ActivationContext,

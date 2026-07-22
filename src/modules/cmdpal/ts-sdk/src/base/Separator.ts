@@ -15,13 +15,22 @@ import type { ICommand, IListItem } from '../types.js';
  * ```
  */
 export class Separator implements IListItem {
+  /** Placeholder command; separators are not invokable. */
   readonly command: ICommand;
+  /** Title text; empty for a plain divider. */
   title: string;
+  /** Section header text when the separator names a group. */
   section?: string;
 
   /** Marker used by the runtime to serialize this item as a separator. */
   readonly isSeparator = true;
 
+  /**
+   * Creates a separator.
+   *
+   * @param title Optional section header text. When omitted the separator
+   * renders as a plain horizontal line.
+   */
   constructor(title = '') {
     this.title = title;
     this.section = title || undefined;

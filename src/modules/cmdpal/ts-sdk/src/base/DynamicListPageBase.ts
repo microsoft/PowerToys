@@ -33,6 +33,13 @@ import { ListPageBase } from './ListPageBase.js';
  * ```
  */
 export abstract class DynamicListPageBase extends ListPageBase implements IDynamicListPage {
+  /**
+   * Called whenever the search text changes so the page can update its results.
+   * Typically stores the query and calls
+   * {@link DynamicListPageBase.notifyItemsChanged}.
+   *
+   * @param text The current text in the search box.
+   */
   abstract setSearchText(text: string): void | Promise<void>;
 
   /**

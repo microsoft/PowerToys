@@ -20,10 +20,19 @@ import type { CommandResult, IInvokableCommand, IconInfo } from '../types.js';
  * ```
  */
 export abstract class InvokableCommandBase implements IInvokableCommand {
+  /** Unique identifier for the command. */
   abstract readonly id: string;
+  /** Display name of the command. */
   abstract readonly name: string;
 
+  /** Icon shown for the command. */
   icon?: IconInfo | null = null;
 
+  /**
+   * Runs the command's action.
+   *
+   * @returns A {@link CommandResult} telling the host what to do next, either
+   * synchronously or as a promise.
+   */
   abstract invoke(): CommandResult | Promise<CommandResult>;
 }
