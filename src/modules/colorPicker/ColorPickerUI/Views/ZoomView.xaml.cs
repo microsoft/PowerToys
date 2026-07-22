@@ -24,6 +24,7 @@ namespace ColorPicker.Views
     public sealed partial class ZoomView : UserControl
     {
         private const int BaseZoomImageSize = 50;
+        private const double CursorSamplePatchSize = 4;
 
         // Card (Border) on-screen size = canvas (50*factor) + canvas Margin (3*2) + BorderThickness (1*2).
         private const double CardChrome = 8;
@@ -202,9 +203,26 @@ namespace ColorPicker.Views
             // dark-or-light border chosen from its own brightness so it never disappears.
             int centerIndex = n / 2;
             float cc = centerIndex * cell;
-            var highlight = IsLight(_zoomPixels[(centerIndex * n) + centerIndex]) ? Colors.Black : Colors.White;
+            Color centerPixel = _zoomPixels[(centerIndex * n) + centerIndex];
+            var highlight = IsLight(centerPixel) ? Colors.Black : Colors.White;
             ds.DrawRectangle(new Rect(cc, cc, cell, cell), highlight, 2f);
+
+            // MouseInfoProvider continues sampling the physical screen pixel under the cursor while
+            // this top-most window is visible. While the cursor remains at the initial zoom point it
+            // is at the canvas centre, so the grid and highlight above would otherwise replace the
+            // sampled color. Restore an opaque patch of the captured centre pixel last, matching the
+            // old shader's no-overlay sample at that point. Four DIPs remain at least two physical
+            // pixels wide during the roughly 0.5x grow animation and tolerate half-pixel centering.
+            Color cursorSample = Color.FromArgb(byte.MaxValue, centerPixel.R, centerPixel.G, centerPixel.B);
+            ds.FillRectangle(GetCursorSamplePatchBounds(w, h), cursorSample);
         }
+
+        internal static Rect GetCursorSamplePatchBounds(double width, double height)
+            => new(
+                (width - CursorSamplePatchSize) / 2,
+                (height - CursorSamplePatchSize) / 2,
+                CursorSamplePatchSize,
+                CursorSamplePatchSize);
 
         // Perceived luminance (Rec. 601) above ~55% — used to pick a contrasting grid/highlight color.
         private static bool IsLight(Color c) => ((0.299 * c.R) + (0.587 * c.G) + (0.114 * c.B)) > 140.0;

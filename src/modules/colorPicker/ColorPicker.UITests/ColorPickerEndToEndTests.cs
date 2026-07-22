@@ -19,9 +19,10 @@ namespace Microsoft.ColorPicker.UITests;
 ///   5. Clear the clipboard, move the cursor, send the shortcut chord.
 ///   6. Wait for the picker overlay window and read the displayed HEX from the overlay's
 ///      automation-peer TextBlock (AutomationId="ColorHexAutomationPeer").
-///   7. Left-click to capture. ColorPicker writes the captured color to the clipboard.
-///   8. Read the captured value from the clipboard and assert it matches the overlay HEX.
-///   9. Wait for the editor window and assert the captured value appears in its tree.
+///   7. Zoom to 4x and 8x without moving the cursor, and verify the displayed color is unchanged.
+///   8. Left-click to capture. ColorPicker writes the captured color to the clipboard.
+///   9. Read the captured value from the clipboard and assert it matches the overlay HEX.
+///  10. Wait for the editor window and assert the captured value appears in its tree.
 /// </summary>
 /// <remarks>
 /// The overlay's visible ColorTextBlock uses its accessible name for screen-reader announcements,
@@ -236,7 +237,47 @@ public class ColorPickerEndToEndTests : UITestBase
                 string.IsNullOrEmpty(overlayHex),
                 "Failed to read the overlay's HEX value from the ColorHexAutomationPeer TextBlock.");
 
-            // -- 10. Click to capture; ColorPicker writes the configured format to clipboard
+            // -- 10. Zoom without moving the cursor; the magnifier must not alter the sample --
+            // Establish the baseline from the factor-1 magnifier after its captured image is on
+            // screen. This avoids comparing against desktop content that may redraw between the
+            // initial UIA read and the first zoom capture.
+            MouseHelper.ScrollUp();
+
+            var zoomWindow = WindowsFinder.WaitForWindowByApp(
+                "PowerToys.ColorPickerUI",
+                w => w.Width > 300 && w.Height > 300,
+                timeoutMS: 2_500);
+            Assert.IsNotNull(zoomWindow, "The zoom magnifier window did not appear after scrolling.");
+            long zoomWindowHandle = zoomWindow!.WindowHandle;
+
+            Thread.Sleep(750); // Window show/layout plus at least one color-sampling timer tick.
+            string factorOneHex = ReadOverlayColor(overlay);
+            Assert.IsFalse(string.IsNullOrEmpty(factorOneHex), "The factor-1 magnifier exposed no sampled color.");
+
+            // Two more ticks reach factor 4, where the grid and center highlight appear.
+            // The sampled color must still be the captured center pixel rather than that overlay.
+            MouseHelper.ScrollUp();
+            MouseHelper.ScrollUp();
+            Thread.Sleep(750); // 200ms resize animation plus color-sampling timer ticks.
+            string factorFourHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorFourHex,
+                "The 4x magnifier changed the color sampled at the stationary cursor.");
+
+            MouseHelper.ScrollUp();
+            Thread.Sleep(750);
+            string factorEightHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorEightHex,
+                "The 8x magnifier changed the color sampled at the stationary cursor.");
+            TestContext.WriteLine("Overlay color remained stable at 4x and 8x zoom.");
+
+            // Use the latest displayed value for the clipboard cross-check below.
+            overlayHex = factorEightHex;
+
+            // -- 11. Click to capture; ColorPicker writes the configured format to clipboard
             MouseHelper.LeftClick();
             TestContext.WriteLine("Sent left-click to capture color.");
 
@@ -255,10 +296,10 @@ public class ColorPickerEndToEndTests : UITestBase
                 $"Overlay HEX '{overlayHex}' and clipboard '{capturedColor}' don't match.");
             TestContext.WriteLine("Overlay HEX matches clipboard value.");
 
-            // -- 11. Wait for the editor window ---------------------------------------------
+            // -- 12. Wait for the editor window ---------------------------------------------
             var editor = WindowsFinder.WaitForWindowByApp(
                 "PowerToys.ColorPickerUI",
-                w => w.Width > 300 && w.Height > 300,
+                w => w.Hwnd != zoomWindowHandle && w.Width > 300 && w.Height > 300,
                 timeoutMS: 10_000);
 
             if (editor is null)
@@ -275,7 +316,7 @@ public class ColorPickerEndToEndTests : UITestBase
 
             TestContext.WriteLine($"Editor window: hwnd={editor!.WindowHandle} title='{editor.WindowTitle}'");
 
-            // -- 12. Find the captured color inside the editor's tree ------------------------
+            // -- 13. Find the captured color inside the editor's tree ------------------------
             // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`.
             // Each format renders as a ColorFormatControl (DataItem in the UIA tree) that
             // contains a TextBox holding the formatted color string. The captured clipboard
@@ -331,6 +372,11 @@ public class ColorPickerEndToEndTests : UITestBase
             {
             }
         }
+    }
+
+    private static string ReadOverlayColor(Session overlay)
+    {
+        return overlay.Find(By.AccessibilityId("ColorHexAutomationPeer"), timeoutMS: 2_000).Name;
     }
 
     /// <summary>
