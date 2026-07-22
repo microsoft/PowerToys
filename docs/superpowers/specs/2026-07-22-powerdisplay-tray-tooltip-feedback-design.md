@@ -112,7 +112,7 @@ write.
 `TrayIconService.MouseWheelScrolled` remains an `Action<int>` event. `App` handles it with a lambda:
 
 1. Call `MainViewModel.AdjustBrightnessFromTrayWheel`.
-2. If the result is non-null, call `TrayIconService.ShowAdjustmentFeedback`.
+2. Always pass the nullable result to `TrayIconService.UpdateAdjustmentFeedback`.
 
 This keeps monitor selection and brightness state in the view model while keeping notification icon
 state and native tooltip delivery inside `TrayIconService`.
@@ -165,7 +165,9 @@ Resource comments describe every placeholder and include an English example.
 
 ## Native Tooltip Delivery
 
-`TrayIconService.ShowAdjustmentFeedback` runs on the UI thread.
+`TrayIconService.UpdateAdjustmentFeedback` runs on the UI thread. A `null` result immediately stops
+the feedback timer and restores the normal `PowerDisplay` tooltip, so a failed adjustment cannot
+leave a previous percentage visible.
 
 ### Update
 
@@ -192,6 +194,8 @@ Follow the EarTrumpet pattern:
 All HWND lookups and sends are best-effort:
 
 - Missing windows or zero handles do not change registration state.
+- Use `SendMessageTimeout(SMTO_ABORTIFHUNG, 100 ms)` for both messages so a stalled Explorer cannot
+  block the PowerDisplay UI thread.
 - The popup request produces no per-notch warning.
 - The updated `NIF_TIP` remains authoritative even if immediate popup cannot be requested.
 
@@ -246,6 +250,8 @@ discovery is unavailable.
 
 - `src/modules/powerdisplay/PowerDisplay.Models/TrayWheelAdjustmentFeedback.cs`
   - Add the immutable mode/value payload.
+- `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayWheelFeedbackTemplates.cs`
+  - Add the localized template payload used by the pure formatter.
 - `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayWheelFeedbackFormatter.cs`
   - Add pure formatting and length limiting.
 - `src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/TrayWheelFeedbackFormatterTests.cs`
