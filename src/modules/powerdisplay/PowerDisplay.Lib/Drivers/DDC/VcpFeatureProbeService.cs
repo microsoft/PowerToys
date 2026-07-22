@@ -198,6 +198,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             unchecked((int)0xC0262589) or
             unchecked((int)0xC026258A) or
             unchecked((int)0xC026258B) or
+            unchecked((int)0xC02625D8) or
             1460;
     }
 }

@@ -584,7 +584,14 @@ public partial class MainViewModel
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
-            _stateManager.RetainMonitorStates(monitors.Select(monitor => monitor.Id));
+            // SettingsUtils.SaveSettings logs and swallows I/O failures, so there is no reliable
+            // commit result to gate destructive state cleanup on. Keep entries from both the
+            // previously-read and rebuilt snapshots; successfully removed entries are pruned on
+            // the next reconciliation, while failed or same-cycle competing writes keep their state.
+            var retainedStateIds = MonitorStateRetentionPlanner.BuildRetainedIds(
+                existingMonitorSettings.Keys,
+                monitors.Select(monitor => monitor.Id));
+            _stateManager.RetainMonitorStates(retainedStateIds);
 
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();

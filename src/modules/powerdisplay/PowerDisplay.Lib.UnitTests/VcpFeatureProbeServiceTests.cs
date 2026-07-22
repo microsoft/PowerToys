@@ -18,6 +18,7 @@ public sealed class VcpFeatureProbeServiceTests
     private const int VcpNotSupported = unchecked((int)0xC0262584);
     private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
     private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
+    private const int CurrentValueGreaterThanMaximum = unchecked((int)0xC02625D8);
 
     [TestMethod]
     public async Task ProbeAsync_FirstSuccessReturnsValuesWithoutRetry()
@@ -52,6 +53,27 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsTrue(result[0x10].IsSuccess);
         Assert.AreEqual(2, result[0x10].Attempts);
         Assert.AreEqual(InvalidCommand, result[0x10].LastError);
+        CollectionAssert.AreEqual(
+            new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100) },
+            delays);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_CurrentValueGreaterThanMaximumThenSuccessRetriesWithPacing()
+    {
+        var reader = new QueueReader(
+            VcpReadAttempt.Failure(CurrentValueGreaterThanMaximum),
+            VcpReadAttempt.Success(current: 45, maximum: 100));
+        var delays = new List<TimeSpan>();
+        var service = CreateService(reader, delays);
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.AreEqual(2, reader.CallCount);
+        Assert.IsTrue(result[0x10].IsSuccess);
+        Assert.AreEqual(VcpProbeDisposition.Success, result[0x10].Disposition);
+        Assert.AreEqual(2, result[0x10].Attempts);
+        Assert.AreEqual(CurrentValueGreaterThanMaximum, result[0x10].LastError);
         CollectionAssert.AreEqual(
             new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100) },
             delays);
