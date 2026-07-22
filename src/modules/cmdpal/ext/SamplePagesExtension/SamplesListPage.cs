@@ -138,6 +138,13 @@ public partial class SamplesListPage : ListPage
             Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
         },
 
+        // Authorization sample
+        new ListItem(new SampleOAuthPage())
+        {
+            Title = "Sample: OAuth sign-in",
+            Subtitle = "Demonstrates the built-in authorization flow and host navigation",
+        },
+
         // Parameter pages
         new ListItem(new SimpleParameterTest())
         {
