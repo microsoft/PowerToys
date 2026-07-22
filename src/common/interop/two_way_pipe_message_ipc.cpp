@@ -401,14 +401,26 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
     const wchar_t* pipe_name = input_pipe_name.c_str();
     BOOL connected = FALSE;
     HANDLE connect_pipe_handle = INVALID_HANDLE_VALUE;
+
+    // Create the first instance with FILE_FLAG_FIRST_PIPE_INSTANCE so that CreateNamedPipe
+    // fails fast if a pipe with this name already exists (for example a leftover instance
+    // from a previous run or another process), making this server the sole owner of the
+    // pipe name instead of silently sharing it. The flag is only valid on the first
+    // instance; subsequent instances must omit it.
+    bool first_instance = true;
     while (!closed)
     {
         {
             std::unique_lock lock(pipe_connect_handle_mutex);
+            DWORD open_mode = PIPE_ACCESS_DUPLEX | WRITE_DAC;
+            if (first_instance)
+            {
+                open_mode |= FILE_FLAG_FIRST_PIPE_INSTANCE;
+            }
+
             connect_pipe_handle = CreateNamedPipe(
                 pipe_name,
-                PIPE_ACCESS_DUPLEX |
-                    WRITE_DAC,
+                open_mode,
                 PIPE_TYPE_MESSAGE |
                     PIPE_READMODE_MESSAGE |
                     PIPE_WAIT,
@@ -422,6 +434,8 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             {
                 return;
             }
+
+            first_instance = false;
 
             if (token != NULL)
             {
