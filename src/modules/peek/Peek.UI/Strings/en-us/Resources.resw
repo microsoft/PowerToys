@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -389,5 +389,25 @@
   </data>
   <data name="VideoCodecStoreLink.Text" xml:space="preserve">
     <value>Search in Microsoft Store</value>
+  </data>
+  <data name="Sqlite_Table_Count" xml:space="preserve">
+    <value>{0} tables</value>
+    <comment>{0} is the number of tables in the Sqlite database</comment>
+  </data>
+  <data name="Sqlite_Row_Count" xml:space="preserve">
+    <value>Records: {0}</value>
+    <comment>{0} is the number of rows in the selected Sqlite table</comment>
+  </data>
+  <data name="Sqlite_Row_Count_Truncated" xml:space="preserve">
+    <value>Records: {0} of {1}</value>
+    <comment>{0} is the number of rows shown (limited), {1} is the total row count</comment>
+  </data>
+  <data name="Sqlite_NoTableSelected.Text" xml:space="preserve">
+    <value>Select a table to view its data</value>
+    <comment>Placeholder shown in the Sqlite previewer when no table is selected</comment>
+  </data>
+  <data name="Sqlite_Blob_Value" xml:space="preserve">
+    <value>[BLOB, {0} bytes]</value>
+    <comment>Placeholder shown in a Sqlite cell for binary (BLOB) data; {0} is the size in bytes</comment>
   </data>
 </root>

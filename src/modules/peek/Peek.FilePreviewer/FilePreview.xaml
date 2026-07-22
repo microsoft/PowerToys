@@ -1,4 +1,4 @@
-﻿<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <UserControl
@@ -100,6 +100,14 @@
             Size="{x:Bind ArchivePreviewer.SizeText, Mode=OneWay}"
             Source="{x:Bind ArchivePreviewer.Tree, Mode=OneWay}"
             Visibility="{x:Bind IsPreviewVisible(ArchivePreviewer, Previewer.State), Mode=OneWay}" />
+
+        <controls:SqliteControl
+            x:Name="SqlitePreview"
+            LoadingState="{x:Bind SqlitePreviewer.State, Mode=OneWay}"
+            Tables="{x:Bind SqlitePreviewer.Tables, Mode=OneWay}"
+            TableCount="{x:Bind SqlitePreviewer.TableCountText, Mode=OneWay}"
+            Previewer="{x:Bind SqlitePreviewer, Mode=OneWay}"
+            Visibility="{x:Bind IsPreviewVisible(SqlitePreviewer, Previewer.State), Mode=OneWay}" />
 
         <controls:DriveControl
             x:Name="DrivePreview"
