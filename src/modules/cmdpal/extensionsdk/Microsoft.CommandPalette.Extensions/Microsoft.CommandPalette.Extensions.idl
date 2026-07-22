@@ -248,6 +248,74 @@ namespace Microsoft.CommandPalette.Extensions
     
         Windows.Foundation.IAsyncAction LogMessage(ILogMessage message);
     };
+
+    // Where the identity provider should redirect the browser back to once the
+    // user has authorized (or denied) the request. Command Palette owns the
+    // redirect target: it allocates it, hosts it, and routes the captured
+    // redirect back to the extension that started the flow.
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum AuthorizationRedirectKind
+    {
+        // http://127.0.0.1:{ephemeral-port}/ . RFC 8252 loopback interface
+        // redirection. Broadest identity-provider support (Google, Entra, ...).
+        Loopback = 0,
+        // x-cmdpal://auth/callback . Uses Command Palette's registered protocol.
+        // Auto-foregrounds Command Palette, but only works with providers that
+        // allow custom-scheme redirect URIs.
+        CustomScheme = 1,
+    };
+
+    // The parameters an extension supplies to start an authorization flow. The
+    // host injects "redirect_uri" and a cryptographically-random "state" before
+    // opening the browser, so callers must NOT set those. Everything else the
+    // provider needs (client_id, scope, response_type, code_challenge,
+    // code_challenge_method, and any provider-specific extras) goes in
+    // Parameters. PKCE is owned entirely by the extension (the verifier never
+    // leaves the extension process).
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IAuthorizationRequest
+    {
+        // Friendly name shown in the "waiting to sign in" status message.
+        String DisplayName { get; };
+        // The provider's authorization endpoint, e.g.
+        // "https://github.com/login/oauth/authorize".
+        String AuthorizationEndpoint { get; };
+        // Query parameters appended to the authorization endpoint. Do not
+        // include redirect_uri or state; the host supplies those.
+        Windows.Foundation.Collections.IMapView<String, String> Parameters { get; };
+        AuthorizationRedirectKind RedirectKind { get; };
+        // How long to wait for the redirect before failing. 0 means "use the
+        // host default" (60s). The host caps this (300s).
+        Int32 TimeoutSeconds { get; };
+    };
+
+    // The result of an authorization flow, handed back to the extension that
+    // started it. On success the extension completes the flow itself (exchanges
+    // the code at the token endpoint using its PKCE verifier and RedirectUri).
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IAuthorizationResult
+    {
+        Boolean IsSuccessful { get; };
+        // The exact redirect_uri the host used. This MUST be sent to the token
+        // endpoint during code exchange (RFC 6749 requires it to match).
+        String RedirectUri { get; };
+        // The query parameters captured from the redirect (e.g. "code"). The
+        // host has already validated "state" and removed it.
+        Windows.Foundation.Collections.IMapView<String, String> ResponseParameters { get; };
+        // Populated when IsSuccessful is false (provider error, timeout, user
+        // cancellation, or a broker failure).
+        String Error { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IExtensionHost2 requires IExtensionHost
+    {
+        // Run an interactive authorization flow. The host opens the browser to
+        // the authorization endpoint, captures the redirect, validates state,
+        // re-foregrounds Command Palette, and returns the captured parameters.
+        // The returned operation is cancelable.
+        Windows.Foundation.IAsyncOperation<IAuthorizationResult> RequestAuthorizationAsync(IAuthorizationRequest request);
+    };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IPage requires ICommand {
