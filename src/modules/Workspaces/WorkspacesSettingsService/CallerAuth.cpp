@@ -159,7 +159,7 @@ namespace PTSettingsSvc
             return hr;
         }
 
-        // 2b) Owner-SID binding (Design §12.8 / Approach 4).  This per-user
+        // 2b) Owner-SID binding.  This per-user
         //     service instance serves exactly ONE user — the SID it was
         //     registered for.  Reject any caller whose token user SID differs,
         //     so a caller that reached us via a forged pipe name (running as a
@@ -219,16 +219,16 @@ namespace PTSettingsSvc
 
         outIdentity.imagePath = canonical;
 
-        // 4) Caller-image trust anchor (Design §7 / §12.7, Approach 4 2026-07-07).
+        // 4) Caller-image trust anchor.
         //    EVERY caller must be Microsoft-signed AND its version must EXACTLY
         //    equal the service's own version.
         //
         //    Why EXACT equality (not a floor + max-delta policy):
-        //      * Under Approach 4 the service is per-user (PTSettingsSvc_<SID>),
+        //      * The service is per-user (PTSettingsSvc_<SID>),
         //        so a user's caller and service are 1:1 and upgrade together —
         //        the only legitimate caller version IS the service's own
         //        version.  The multi-user / multi-version tension that forced
-        //        the earlier floor+delta magic numbers no longer exists (§12.7),
+        //        the earlier floor+delta magic numbers no longer exists,
         //        so exact-match is false-positive-free and removes a tunable
         //        threshold from a security boundary.
         //      * Exact-match is the anti-DOWNGRADE control: signature alone would
@@ -237,7 +237,7 @@ namespace PTSettingsSvc
         //        %LocalAppData%); requiring caller == service rejects it.
         //      * The signature is verified by the service against the MACHINE
         //        trust store (CallerVerify.cpp), so it is NOT forgeable by a
-        //        non-admin user-store root (defeats the §13 objection).
+        //        non-admin user-store root (defeats the objection).
         //
         //    sigMicrosoft and callerVersion were captured above under
         //    impersonation so a user-profile image is readable.

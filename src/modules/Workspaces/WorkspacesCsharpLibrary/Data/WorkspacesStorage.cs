@@ -14,7 +14,7 @@ namespace WorkspacesCsharpLibrary.Data;
 
 /// <summary>
 /// Reader/writer for persisted workspaces.  All access goes through the
-/// PTSettingsSvc service (Design-v6-Final.md §10): the service stores opaque
+/// PTSettingsSvc service: the service stores opaque
 /// bytes and this class owns the JSON shape and defensive parsing.  It is
 /// protected-store-only — there is NO fallback to the user-writable legacy
 /// %LocalAppData% file (that file is only the one-time migration source).
@@ -48,7 +48,7 @@ public static class WorkspacesStorage
         }
     }
 
-    /// <summary>Outcome of a strict-mode save (Approach 4, §12.8 decision).</summary>
+    /// <summary>Outcome of a strict-mode save.</summary>
     public enum SaveOutcome
     {
         /// <summary>Persisted through the protected service.</summary>

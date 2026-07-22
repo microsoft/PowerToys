@@ -16,7 +16,7 @@ namespace PTSettingsSvc
         // workspaces.json) rather than an opaque "blob.bin": the service still
         // treats the bytes as opaque (it never parses them), but a real name
         // aids diagnostics and lets native direct-readers (the Launcher hot
-        // path, §9) open the same file by the name they already use.
+        // path) open the same file by the name they already use.
         //
         // Workspaces ships five executables; all operate on the same namespace
         // ("Workspaces") / file and so share one store.  The runner

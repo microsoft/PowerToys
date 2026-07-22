@@ -16,7 +16,7 @@
 // does not validate their shape, does not interpret a "schema version"
 // inside them.  Module-specific concerns (JSON shape, schema versioning,
 // migration from legacy on-disk layouts, sensitive-field stripping) all
-// live in the caller — see Design-v6-Final.md §4 and §10.
+// live in the caller.
 
 #pragma once
 
@@ -27,7 +27,7 @@ namespace PTSettingsSvc
     // Wire constants ---------------------------------------------------------
 
     // Per-user pipe naming lives in PipeName.h (\\.\pipe\PTSettingsSvc_<SID>);
-    // there is no single fixed pipe name under Approach 4 (§12.8).  kServiceName
+    // there is no single fixed pipe name.  kServiceName
     // is the BASE service key; the registrar appends _<SID> per user.
     constexpr const wchar_t* kServiceName = L"PTSettingsSvc";
 

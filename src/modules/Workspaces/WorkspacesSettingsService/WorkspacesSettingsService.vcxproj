@@ -88,7 +88,7 @@
     built from the SIGNED service binary and then signed itself, which happens
     in the installer pipeline (steps-build-installer-vnext.yml) AFTER core ESRP
     signing and BEFORE the MSI build.  Packing it at compile time would capture
-    the unsigned exe and ship an unsigned package (Design §12.1).  For local dev
+    the unsigned exe and ship an unsigned package.  For local dev
     builds, run devtools\build-msix.ps1 manually.
   -->
 </Project>

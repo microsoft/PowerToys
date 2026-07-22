@@ -1,4 +1,4 @@
-# Workspaces v6 (Approach 4) — testing the settings service
+# Workspaces v6 — testing the settings service
 
 The tamper-resistant settings service (`PTSettingsSvc_<SID>`) and its protected
 store are packaged by the build pipeline from:
@@ -8,8 +8,7 @@ src/modules/Workspaces/WorkspacesSettingsService/build-msix.ps1
 ```
 
 which stages `package/AppxManifest.xml` + the built `PowerToys.PTSettingsSvc.exe`
-into a signed MSIX (see `.pipelines/v2/templates/steps-build-installer-vnext.yml`
-and Design-v6-Final.md §12.1).
+into a signed MSIX (see `.pipelines/v2/templates/steps-build-installer-vnext.yml`).
 
 The prototype developer/security-verification harness (service setup and the
 end-to-end 9-step security suite: liveness, caller allow-list, path-prefix, DACL

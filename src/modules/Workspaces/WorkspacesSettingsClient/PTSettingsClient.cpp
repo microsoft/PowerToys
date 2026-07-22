@@ -20,7 +20,7 @@ namespace PTSettingsClient
 
         // This client reaches ITS OWN user's service instance, whose pipe is
         // \\.\pipe\PTSettingsSvc_<SID> where <SID> is our own token SID
-        // (Approach 4 / §12.8).  Computed once per process.
+        //.  Computed once per process.
         const std::wstring& OwnPipeName()
         {
             static const std::wstring name =

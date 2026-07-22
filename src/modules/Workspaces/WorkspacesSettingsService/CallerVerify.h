@@ -8,15 +8,14 @@
 namespace PTSettingsSvc
 {
     // Binary-identity anchor used when the install-path anchor cannot be
-    // trusted (per-user installs in a user-writable folder — Design-v6-Final.md
-    // §7 fallback branch / §15 #5 option d).
+    // trusted (per-user installs in a user-writable folder).
     //
     // Accepting a caller on this branch requires BOTH:
     //   * VerifyMicrosoftSignature(exe)  — the on-disk image carries a valid
     //     Authenticode signature that chains to a trusted machine root AND is
     //     signed by "Microsoft Corporation".  The check runs in the service's
     //     own context, so a user poisoning their HKCU cert stores cannot affect
-    //     it (contrast the §13 package-identity attack).
+    //     it (contrast the package-identity attack).
     //   * GetBinaryVersion(exe) == GetServiceOwnVersion()  — the caller is the
     //     same release as the service.  Because the signature protects the
     //     version resource, a re-stamped version breaks the signature, and an
@@ -49,11 +48,11 @@ namespace PTSettingsSvc
                static_cast<unsigned long long>(revision);
     }
 
-    // NOTE (Approach 4, 2026-07-07): the caller-auth version check is now EXACT
+    // NOTE: the caller-auth version check is now EXACT
     // equality (callerVersion == GetServiceOwnVersion()), inlined in
     // CallerAuth.cpp.  The former tunable floor + max-delta policy
     // (IsCallerVersionAcceptable / kMinSupportedCallerVersion /
     // kMaxMinorVersionDelta) existed only to tolerate several caller versions
     // under a shared machine-wide service; per-user (per-SID) service instances
-    // make caller and service 1:1, so it was removed (Design §12.7).
+    // make caller and service 1:1, so it was removed.
 }

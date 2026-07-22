@@ -809,7 +809,7 @@ LExit:
     return WcaFinalize(er);
 }
 
-// --- PTSettingsSvc (Design-v6-Final.md §12.8, Approach 4) --------------------
+// --- PTSettingsSvc --------------------
 // The MSIX now STAGES THE BINARY ONLY (no windows.service extension).  The
 // service is a per-user virtual-account instance (PTSettingsSvc_<SID>) that the
 // signed service exe self-registers when launched elevated with
@@ -1020,7 +1020,7 @@ UINT __stdcall InstallPTSettingsSvcCA(MSIHANDLE hInstall)
 
         // Per-machine: stage once, then provision the binary-only package for all
         // users so the signed exe is present in immutable WindowsApps for every
-        // user (Approach 4 — no windows.service extension registers anything).
+        // user (no windows.service extension registers anything).
         StagePackageOptions stageOptions;
         auto stageResult = pm.StagePackageByUriAsync(packageUri, stageOptions).get();
         uint32_t stageErrorCode = static_cast<uint32_t>(stageResult.ExtendedErrorCode());
@@ -1096,7 +1096,7 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
     // Impersonate="yes", mirroring UninstallServicesTask); when it cannot
     // elevate, the signed+immutable WindowsApps package is left as a harmless
     // orphan, removed later by a per-machine install or a manual elevated
-    // Remove-AppxPackage (Design §12.5).
+    // Remove-AppxPackage.
     hr = WcaGetProperty(L"InstallScope", &installScope);
     if (SUCCEEDED(hr) && installScope && wcscmp(installScope, L"perMachine") == 0)
     {
@@ -1153,7 +1153,7 @@ UINT __stdcall UnRegisterPTSettingsSvcCA(MSIHANDLE hInstall)
             // to run `<exe> --unregister <SID>` (deletes the service) and remove
             // the package.  If declined / no interactive session (silent
             // uninstall), leave the signed/immutable orphan WITHOUT blocking the
-            // uninstall (Design §12.5); a per-machine install or an elevated
+            // uninstall; a per-machine install or an elevated
             // Remove-AppxPackage + sc delete cleans it up later.
             const std::wstring userSid = GetImpersonatedUserSidString();
 

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  PTSettingsSvc - uninstall cleanup (Design-v6-Final.md section 11 uninstall/cleanup).
+  PTSettingsSvc - uninstall cleanup.
 
   Runs as SYSTEM from the per-machine MSI (deferred CustomAction, on uninstall).
   Removes the service and the service's APP artifacts, but PRESERVES the user's
@@ -49,7 +49,7 @@ if (Test-Path $store) { Write-Output "settings DATA preserved (not removed): '$s
 if ($RemoveAppArtifacts)
 {
     # Remove the service's runnable-exe copy tree (SettingsSvcBin), which is
-    # SYSTEM-owned/protected and not MSI-tracked (Design §12.8).  This is an APP
+    # SYSTEM-owned/protected and not MSI-tracked.  This is an APP
     # artifact (a copy of the signed exe), NOT user data.
     $binRoot = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\SettingsSvcBin'
     if (Test-Path $binRoot)
@@ -62,7 +62,7 @@ if ($RemoveAppArtifacts)
     # Remove the per-user virtual-account profiles (C:\Windows\ServiceProfiles\
     # PTSettingsSvc_<SID> + their HKLM ProfileList entries).  Deleting a service
     # does NOT remove its virtual-account profile, so without this they accumulate
-    # across install/uninstall cycles (Design §11/§12.8).
+    # across install/uninstall cycles.
     Get-CimInstance Win32_UserProfile -ErrorAction SilentlyContinue |
         Where-Object { $_.LocalPath -match '\\ServiceProfiles\\PTSettingsSvc_' } |
         ForEach-Object {

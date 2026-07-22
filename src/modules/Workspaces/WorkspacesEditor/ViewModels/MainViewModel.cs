@@ -169,7 +169,7 @@ namespace WorkspacesEditor.ViewModels
         /// <summary>
         /// True while the user is actively editing a project (edit page open) — used
         /// to suppress the background provisioning reload so it never clobbers
-        /// in-progress edits (Design §14.1 / non-blocking provisioning).
+        /// in-progress edits.
         /// </summary>
         public bool IsEditInProgress => editedProject != null || editPage != null;
 

@@ -74,7 +74,7 @@ namespace PTSettingsSvc
             }
             std::unique_ptr<void, LocalFreeDeleter> systemGuard(systemSid);
 
-            // Per Design-v6-Final.md §9 / §12.8 the per-user folder DACL is:
+            // The per-user folder DACL is:
             //   svc-vaccount:F, admin:F, SYSTEM:F, <specific user>:RX
             // Owner = SYSTEM so the low-privilege virtual account cannot rewrite
             // the DACL.  PROTECTED below blocks inheritance from the store root

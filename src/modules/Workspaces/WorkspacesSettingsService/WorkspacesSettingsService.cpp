@@ -3,8 +3,6 @@
 //
 // PTSettingsSvc — PowerToys Settings Service.
 //
-// Design context — see Design-v6-Final.md in the Workspaces-EoP-Fix folder.
-//
 // The service runs as a virtual service account (NT SERVICE\PTSettingsSvc),
 // owns the DACL on %ProgramData%\Microsoft\PowerToys\SettingsSvc\<ns>\<sid>\
 // and is the only writer to the blob.bin file inside it.  Callers (Editor,
@@ -117,7 +115,7 @@ int wmain(int argc, wchar_t* argv[])
     // Verbs:
     //   --console          run the pipe server in the foreground (local debug).
     //   --register  <SID>  elevated: create/re-point the per-user service +
-    //                      provision the protected store + start (Approach 4).
+    //                      provision the protected store + start.
     //   --repoint   <SID>  elevated: re-point binPath to this exe + restart.
     //   --unregister <SID> elevated: stop + delete the per-user service.
     // The first positional argument is the owner SID.  When running AS the

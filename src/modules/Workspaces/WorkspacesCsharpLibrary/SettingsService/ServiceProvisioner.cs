@@ -13,7 +13,7 @@ using System.Security.Principal;
 namespace WorkspacesCsharpLibrary.SettingsService;
 
 /// <summary>
-/// Service-initialization block (Design-v6-Final.md §11 "Lazy per-user install").
+/// Service-initialization block ("Lazy per-user install").
 ///
 /// The per-machine MSI registers PTSettingsSvc eagerly at install time.  A
 /// per-user install ships the service payload unregistered; this block performs
@@ -76,7 +76,7 @@ public static class ServiceProvisioner
     /// <summary>True when the service answers Ping with Ok (installed, running,
     /// AND accepts this caller's version).  A version mismatch after an upgrade
     /// surfaces as AuthRejected (not Ok), so it is treated as "needs
-    /// (re-)provisioning" — that is what drives the upgrade re-point (§12.8).</summary>
+    /// (re-)provisioning" — that is what drives the upgrade re-point.</summary>
     public static bool IsServiceAvailable()
     {
         // Fast pre-check: if the named pipe doesn't exist, the service isn't
@@ -213,7 +213,7 @@ public static class ServiceProvisioner
     }
 
     /// <summary>
-    /// Builds the elevated provisioning command (Approach 4, §12.8).  In ONE
+    /// Builds the elevated provisioning command.  In ONE
     /// elevation it (1) stages/updates the SIGNED service MSIX into immutable
     /// WindowsApps via <c>Add-AppxPackage</c> (the OS verifies its signature on
     /// deploy, so this cannot run attacker code), then (2) launches the staged,

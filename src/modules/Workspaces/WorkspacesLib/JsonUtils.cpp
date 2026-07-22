@@ -139,7 +139,7 @@ namespace JsonUtils
             // app's version/signature — common transiently right after a PowerToys
             // update, before re-provisioning).  Surface a distinct error so the
             // caller does NOT misreport this as an empty workspace list (which
-            // would be both inaccurate and alarming) — Design §10 / UX.
+            // would be both inaccurate and alarming).
             Logger::error("GetBlob failed ({}); reporting ServiceAccessError.", static_cast<int>(rc));
             return Error(WorkspacesFileError::ServiceAccessError);
         }

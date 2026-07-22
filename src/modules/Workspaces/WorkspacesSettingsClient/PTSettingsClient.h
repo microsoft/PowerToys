@@ -5,7 +5,7 @@
 // WorkspacesSnapshotTool / runner / etc.  The client is payload-agnostic —
 // it shuttles opaque bytes to and from the service.  Whatever the bytes mean
 // is the caller's responsibility (JSON shape, schema version, sensitive-
-// field stripping, migration logic — see Design-v6-Final.md §10).
+// field stripping, migration logic).
 //
 // Modules using settings (e.g. Workspaces) wrap this in their own
 // type-safe layer (Workspaces serialises its `Workspaces` object → UTF-8

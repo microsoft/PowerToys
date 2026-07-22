@@ -203,7 +203,7 @@ namespace PTSettingsSvc
             // account, and can't be modified even elevated -> StartService fails
             // with ERROR_ACCESS_DENIED).  So copy the staged exe into a protected,
             // account-readable %ProgramData% dir and run the service from there
-            // (Design §12.8).  Copy happens while the (possibly running) old
+            //.  Copy happens while the (possibly running) old
             // service is stopped below.
             const std::wstring binDir = VersionBinDir();
             const std::wstring runExe = binDir + L"\\" + kExeName;

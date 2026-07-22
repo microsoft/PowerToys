@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // Licensed under the MIT license.
 //
-// Elevated self-management of the per-user service instance (Approach 4,
-// Design-v6-Final.md §12.8).  Because the MSIX windows.service extension cannot
+// Elevated self-management of the per-user service instance.  Because the MSIX windows.service extension cannot
 // express a virtual account, the service is self-registered: the SIGNED service
 // binary (in immutable WindowsApps) is launched elevated with one of these verbs
 // by the installer custom action (per-machine, as SYSTEM) or the per-user

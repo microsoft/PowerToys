@@ -8,7 +8,7 @@ namespace WorkspacesCsharpLibrary.SettingsService;
 
 /// <summary>
 /// One-shot legacy migration, called by the runner on startup (idempotent).
-/// The service has no "migrate" concept (Design-v6-Final.md §10): migration is
+/// The service has no "migrate" concept: migration is
 /// simply "read the legacy %LocalAppData% file once and PutBlob it through the
 /// service".  A sentinel under %LocalAppData% short-circuits subsequent calls.
 /// </summary>

@@ -23,7 +23,7 @@ namespace PTSettingsSvc
     // Successful authentication means ALL of the following hold:
     //   * Caller token is a real interactive user (not SYSTEM / SERVICE /
     //     ANONYMOUS), so we have a SID to scope the per-user data folder.
-    //   * Caller image is trusted by EITHER anchor (Design-v6-Final.md §7):
+    //   * Caller image is trusted by EITHER anchor:
     //       - PATH anchor: image resolves under %ProgramFiles%\PowerToys and
     //         that folder's DACL is admin-only writable (per-machine), OR
     //       - BINARY-IDENTITY anchor: image is Microsoft-signed AND its version
@@ -34,7 +34,7 @@ namespace PTSettingsSvc
     //
     // The path anchor is preferred where available (smaller privileged surface,
     // immutability); the signature+version anchor is the fallback used only
-    // when the path cannot be trusted.  See §7 and §15 #5.
+    // when the path cannot be trusted.
     //
     // The function ImpersonateNamedPipeClient()s internally and reverts
     // before returning, regardless of success.
@@ -49,7 +49,7 @@ namespace PTSettingsSvc
     HRESULT AuthenticateCaller(HANDLE pipeHandle, CallerIdentity& outIdentity);
 
     // Owner SID this service instance was registered to serve
-    // (PTSettingsSvc_<SID>, Design §12.8 / Approach 4).  Set once at startup
+    // (PTSettingsSvc_<SID>).  Set once at startup
     // from the service's SID argument (or, for console/dev runs, the current
     // process user).  The auth pipeline rejects any caller whose token user SID
     // != this owner SID, and the pipe is named/scoped to it.  Empty => not set

@@ -2,8 +2,8 @@
 <!--
   PowerToys Settings Service (PTSettingsSvc) installer fragment.
 
-  Implements Design-v6-Final.md §9 (storage DACL) and §12.1/§12.8 (Approach 4:
-  MSIX-staged binary + per-user self-registered virtual-account service).
+  Implements the storage-root DACL hardening plus the MSIX-staged binary and
+  per-user self-registered virtual-account service.
 
   The service BINARY is distributed as a signed MSIX (binary-only staging, NO
   windows.service extension).  Both scopes ship the SAME MSIX; the per-user
@@ -27,7 +27,7 @@
        Per-user ([sid]) and per-namespace subfolders + their protected DACLs are
        created by the elevated register path (owner=SYSTEM, virtual-account
        Full, user RX); legacy data is migrated per-user by the runner via the
-       service (§10); there is no install-time SYSTEM seeding.
+       service; there is no install-time SYSTEM seeding.
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
@@ -42,7 +42,7 @@
       <Directory Id="WorkspacesSettingsServiceFolder" Name="WorkspacesSettingsService" />
     </DirectoryRef>
 
-    <!-- Service MSIX payload (Design §12.8, Approach 4).  Per-machine ships the
+    <!-- Service MSIX payload.  Per-machine ships the
          signed, binary-only PTSettingsSvc.msix and provisions it for all users
          via the InstallPTSettingsSvc custom action (Product.wxs).  There is no
          windows.service extension and no MSI <ServiceInstall>; the per-user
@@ -74,7 +74,7 @@
 
     <!--
       %ProgramData%\Microsoft\PowerToys\Settings — created at install with a
-      root DACL (Design §9).  util:PermissionEx replaces the inherited DACL with
+      root DACL.  util:PermissionEx replaces the inherited DACL with
       the explicit ACEs below, so the default %ProgramData% "Users can create"
       ACE does not carry through.  Authenticated Users get RX so each user can
       traverse to their own \[sid] node.  Per-user (\[sid]) and per-namespace
@@ -110,8 +110,8 @@
     </StandardDirectory>
 
     <!--
-      INSTALLFOLDER hardening (Design §8/§11).  Replaces the install folder's
-      DACL with the admin-only-writable set.  Under Approach 4 the caller-auth
+      INSTALLFOLDER hardening.  Replaces the install folder's
+      DACL with the admin-only-writable set.  The caller-auth
       path anchor is optional defense-in-depth (the load-bearing anchor is
       Microsoft-signature + exact version), but hardening the install folder
       remains valid DiD; SYSTEM/Administrators/TrustedInstaller keep write,
@@ -145,10 +145,10 @@
     </DirectoryRef>
 
     <!--
-      Uninstall cleanup (Design-v6-Final.md §11).  There is NO install-time
-      seeding under Approach 4: the per-user store is provisioned at register
+      Uninstall cleanup.  There is NO install-time
+      seeding: the per-user store is provisioned at register
       time and legacy data is migrated per-user by the runner through the service
-      (§10), so the removed Seed-PtSettingsStore.ps1 (which wrote all users' blobs
+     , so the removed Seed-PtSettingsStore.ps1 (which wrote all users' blobs
       as SYSTEM with the old machine-wide account) is gone.
 
       * Cleanup at uninstall: remove the service's APP artifacts (the SettingsSvcBin
@@ -190,7 +190,7 @@
   </Fragment>
 
   <!--
-    Per-user payload (Design §12.8, Approach 4).  A per-user MSI is non-elevated
+    Per-user payload.  A per-user MSI is non-elevated
     and cannot register a service, so it only STAGES the SIGNED, binary-only
     service MSIX under the install folder.  The managed ServiceProvisioner then,
     under one elevated UAC on first editor open, stages the MSIX and runs the exe

@@ -17,7 +17,7 @@
 //     (e.g. PowerToys.WorkspacesEditor.exe) under the PT install folder
 //     pointed to by HKLM\SOFTWARE\Classes\PowerToys\InstallFolder
 //     (or by the PT_DEV_INSTALL_FOLDER env var in dev builds), AND
-//   * that folder's DACL is admin-only writable (per Design-v6-Final.md §8).
+//   * that folder's DACL is admin-only writable.
 //
 // The verify-prototype.ps1 script automates both prerequisites.
 

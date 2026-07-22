@@ -76,7 +76,7 @@
         Per-user: the MSI is non-elevated and cannot register a service, so it
         only stages the service payload (exe + hardening script); the service is
         registered + the store hardened lazily via a one-time elevation the first
-        time protection is needed (Design §11 / §15 #5 d), driven by
+        time protection is needed, driven by
         SettingsBootstrapper / ServiceProvisioner in the managed code.
       -->
       <?if $(var.PerUser) != "true" ?>
@@ -133,7 +133,7 @@
       <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
 
       <?if $(var.PerUser) != "true" ?>
-      <!-- Per-machine: provision the PTSettingsSvc MSIX for all users (Design §12.4). -->
+      <!-- Per-machine: provision the PTSettingsSvc MSIX for all users. -->
       <Custom Action="SetInstallPTSettingsSvcParam" Before="InstallPTSettingsSvc" />
       <?endif?>
 
@@ -175,7 +175,7 @@
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
       <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
-      <!-- PTSettingsSvc MSIX teardown (Design §12.5).  Per-machine runs elevated
+      <!-- PTSettingsSvc MSIX teardown.  Per-machine runs elevated
            and removes the service package for all users; per-user is best-effort
            (non-elevated uninstall cannot delete the service, mirroring
            UninstallServicesTask) — the signed/immutable orphan is cleaned by a
@@ -247,7 +247,7 @@
 
     <CustomAction Id="UninstallPackageIdentityMSIX" Return="ignore" Impersonate="yes" DllEntry="UninstallPackageIdentityMSIXCA" BinaryRef="PTCustomActions" />
 
-    <!-- PTSettingsSvc MSIX provisioning (per-machine, Design §12.4).  Mirrors the
+    <!-- PTSettingsSvc MSIX provisioning (per-machine).  Mirrors the
          PackageIdentity CAs: deferred+impersonated install provisions for all
          users; immediate uninstall deprovisions + removes for all users. -->
     <CustomAction Id="SetInstallPTSettingsSvcParam" Property="InstallPTSettingsSvc" Value="[INSTALLFOLDER]" />

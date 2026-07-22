@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MSIX package for the PowerToys Settings Service (Design-v6-Final.md 12.1/12.8,
-  Approach 4).  The package STAGES THE BINARY ONLY into the immutable, signed
+  MSIX package for the PowerToys Settings Service.  The package STAGES THE BINARY ONLY into the immutable, signed
   WindowsApps store so a non-admin same-user attacker cannot replace it.  It does
   NOT use the windows.service extension: that extension's StartAccount is a closed
   enum (localSystem/localService/networkService) and cannot express the dedicated

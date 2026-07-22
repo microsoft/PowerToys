@@ -22,7 +22,7 @@ namespace PTSettingsSvc
 {
     namespace
     {
-        // Pipe SD (Approach 4): connect/read/write is granted to the OWNING
+        // Pipe SD: connect/read/write is granted to the OWNING
         // user's SID only (the per-user service instance serves exactly that
         // user); SYSTEM and BUILTIN\Administrators get full control for
         // diagnostics.  Everyone else is implicitly denied.  The protocol layer
@@ -175,11 +175,11 @@ namespace PTSettingsSvc
         {
             // No structural / schema check on the payload.  The service is
             // payload-agnostic; the caller is responsible for whatever
-            // shape it wants on disk.  See Design-v6-Final.md §4.
+            // shape it wants on disk.
 
             // The protected store root and per-user <sid> node are provisioned by
             // the elevated register path (owner=SYSTEM, protected DACL granting
-            // this service's virtual account Full + the user RX — §12.8).  The
+            // this service's virtual account Full + the user RX).  The
             // low-privilege runtime service only needs to create the namespace
             // child (which inherits that DACL) and write the file; it does NOT
             // touch owner/DACL (it lacks the privilege and doesn't need to).

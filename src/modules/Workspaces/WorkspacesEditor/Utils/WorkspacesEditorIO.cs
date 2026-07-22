@@ -26,7 +26,7 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
-                // Deferred per-user service init + legacy migration (Design §11 / §14.1).
+                // Deferred per-user service init + legacy migration.
                 // On a per-machine install the service is already up (no-op); on a
                 // per-user install with no service yet, this performs the one-time
                 // elevation to register + harden it, then migrates the legacy file.
@@ -46,7 +46,7 @@ namespace WorkspacesEditor.Utils
 
                 // v6: read the settings through the service (GetBlob).  Fall back to
                 // the legacy %LocalAppData% file only when no service is installed
-                // (no-admin / declined-UAC), per §10.
+                // (no-admin / declined-UAC).
                 var rc = PTSettingsClient.GetBlob(out var blob);
                 switch (rc)
                 {

@@ -9,11 +9,11 @@
 
 namespace PTSettingsSvc
 {
-    // --- Provisioning (elevated register path, Approach 4 §12.8) ---------------
+    // --- Provisioning (elevated register path) ---------------
     // These run from the service exe's `--register` mode under an elevated actor
     // (the installer CA as SYSTEM, or the per-user provisioner elevated), NOT at
     // service runtime — the low-privilege virtual account cannot set owner=SYSTEM
-    // or a protected DACL itself (Design §12.8, Blocker-1 resolution: store
+    // or a protected DACL itself (Blocker-1 resolution: store
     // provisioning moved out of the runtime service into the elevated registrar).
 
     // Creates the store root (<ProgramData>\Microsoft\PowerToys\Settings) if it
@@ -46,7 +46,7 @@ namespace PTSettingsSvc
     // (GetServiceBinRoot()\<version>): owner=SYSTEM; SYSTEM + Administrators
     // Full; BUILTIN\Users RX; and the service virtual account RX — the crucial
     // ACE that lets the low-priv service actually read/execute its own exe
-    // (WindowsApps does not grant our custom account, Design §12.8).  Protected
+    // (WindowsApps does not grant our custom account).  Protected
     // so the non-admin owning user cannot replace the exe.  Must run elevated
     // and AFTER the service (hence the virtual account) has been created.
     HRESULT ProtectServiceBinDir(const std::wstring& binDir,

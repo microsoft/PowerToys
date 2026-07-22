@@ -23,7 +23,7 @@ public class FolderUtils
     // temp-project handoff) AND the legacy / no-service fallback store.
     //
     // v6 note: the *protected* settings store does NOT live here — it is the
-    // service-managed blob under %ProgramData% (see SettingsPaths / §9).  The
+    // service-managed blob under %ProgramData% (see SettingsPaths).  The
     // Editor reads/writes the real settings through PTSettingsClient
     // (GetBlob / PutBlob); this %LocalAppData% path is only the working dir and
     // the no-service fallback, both of which must stay user-writable.

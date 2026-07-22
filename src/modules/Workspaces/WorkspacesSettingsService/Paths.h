@@ -17,7 +17,7 @@ namespace PTSettingsSvc
     // dedicated NT SERVICE\PTSettingsSvc_<SID> account, and its ACL cannot be
     // modified even elevated).  So the register path copies the exe into a
     // per-version subfolder here, owner=SYSTEM with a protected DACL that grants
-    // the virtual account RX, and points the service at that copy (Design §12.8).
+    // the virtual account RX, and points the service at that copy.
     std::wstring GetServiceBinRoot();
 
     // %ProgramData%\Microsoft\PowerToys\Settings\<sid>

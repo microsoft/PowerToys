@@ -39,7 +39,7 @@ public static class PTSettingsClient
         IoError,
     }
 
-    // Mirror of PTSettingsSvc pipe naming (Approach 4 / §12.8): each user has
+    // Mirror of PTSettingsSvc pipe naming: each user has
     // their own service instance PTSettingsSvc_<SID>, reachable at
     // \\.\pipe\PTSettingsSvc_<SID>.  We derive <SID> from OUR OWN token so we
     // always reach our own user's instance.  NamedPipeClientStream takes the

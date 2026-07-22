@@ -6,7 +6,7 @@
   Stages AppxManifest + logo + the built PowerToys.PTSettingsSvc.exe into a
   layout, packs it with makeappx, and (optionally) signs it with a cert.
   Invoked by the signed build pipeline (steps-build-installer-vnext.yml) and
-  usable locally against a built vcxproj (Design-v6-Final.md §12.1).
+  usable locally against a built vcxproj.
 #>
 [CmdletBinding()]
 param(

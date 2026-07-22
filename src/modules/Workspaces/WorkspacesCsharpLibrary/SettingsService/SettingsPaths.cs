@@ -91,7 +91,7 @@ public static class SettingsPaths
     /// Sentinel recording that deferred service provisioning has already been
     /// attempted for this user AT THIS VERSION, so repeated trigger points don't
     /// re-prompt for elevation — but a later upgrade (new version) legitimately
-    /// re-prompts once to re-point the service to the new binary (§12.8 upgrade
+    /// re-prompts once to re-point the service to the new binary (upgrade
     /// path).  Lives under %LocalAppData% (user-writable): it only governs UX
     /// back-off, never security.
     /// </summary>

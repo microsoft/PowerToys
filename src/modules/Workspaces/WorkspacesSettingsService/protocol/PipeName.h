@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation
 // Licensed under the MIT license.
 //
-// Per-user pipe naming (Design-v6-Final.md §12.8, Approach 4).
+// Per-user pipe naming.
 //
 // Each user gets their OWN service instance keyed by SID
 // (PTSettingsSvc_<SID>), reachable over the pipe
@@ -10,7 +10,7 @@
 // client derives it deterministically from its OWN token SID, so a caller can
 // only ever reach its own user's service instance and never discovers another
 // user's.  This is what dissolves the multi-user / multi-version problem and
-// lets caller-auth keep a clean exact version-match (§12.7).
+// lets caller-auth keep a clean exact version-match.
 
 #pragma once
 

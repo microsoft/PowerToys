@@ -103,7 +103,7 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         }
     }
 
-    // Deferred settings initialization (Design-v6-Final.md §11).  Composes the
+    // Deferred settings initialization.  Composes the
     // service-initialization and legacy-migration blocks behind one call so new
     // trigger points only have to invoke SettingsBootstrapper.EnsureInitialized.
     // On a per-machine install the service is already up, so provisioning is a
