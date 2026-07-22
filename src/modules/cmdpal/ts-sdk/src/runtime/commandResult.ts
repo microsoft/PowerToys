@@ -5,9 +5,22 @@
 /**
  * Serialization of {@link CommandResult} values to the numeric `Kind` / `Args`
  * wire shape described in `03-jsonrpc-protocol.md`.
+ *
+ * The serializer is strict: it validates that each result carries exactly the
+ * arguments its kind requires and throws a descriptive error for malformed
+ * shapes produced by untyped JavaScript callers, rather than silently dropping
+ * fields. The emitted bytes are identical to the previous serializer for every
+ * valid input.
  */
 
-import type { CommandResult, CommandResultArgs, CommandResultKind, ICommand } from '../types.js';
+import type {
+  CommandResult,
+  CommandResultKind,
+  ConfirmationArgs,
+  GoToPageArgs,
+  ICommand,
+  ToastArgs,
+} from '../types.js';
 
 /** Numeric wire value for each {@link CommandResultKind}. */
 export const CommandResultKindValue: Record<CommandResultKind, number> = {
@@ -35,68 +48,100 @@ export interface WireCommandResult {
 /** Serializes a command reference, used for nested result arguments. */
 export type CommandSerializer = (command: ICommand) => unknown;
 
-function readString(args: CommandResultArgs, key: string): string | undefined {
-  const value = args[key];
-  return typeof value === 'string' ? value : undefined;
-}
-
-function readBoolean(args: CommandResultArgs, key: string): boolean | undefined {
-  const value = args[key];
-  return typeof value === 'boolean' ? value : undefined;
-}
-
-function isCommand(value: unknown): value is ICommand {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as ICommand).id === 'string' &&
-    typeof (value as ICommand).name === 'string'
-  );
-}
-
-function isCommandResult(value: unknown): value is CommandResult {
-  return (
-    typeof value === 'object' && value !== null && typeof (value as CommandResult).kind === 'string'
-  );
-}
-
-function assign(target: Record<string, unknown>, key: string, value: unknown): void {
-  if (value !== undefined) {
-    target[key] = value;
+/** Error thrown when a {@link CommandResult} has an invalid shape. */
+export class InvalidCommandResultError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidCommandResultError';
   }
 }
 
-function serializeArgs(
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isCommand(value: unknown): value is ICommand {
+  return isRecord(value) && typeof value.id === 'string' && typeof value.name === 'string';
+}
+
+function requireArgs(kind: CommandResultKind, result: CommandResult): Record<string, unknown> {
+  const args = (result as { args?: unknown }).args;
+  if (!isRecord(args)) {
+    throw new InvalidCommandResultError(`Command result "${kind}" requires an args object.`);
+  }
+  return args;
+}
+
+function requireString(
   kind: CommandResultKind,
-  args: CommandResultArgs,
+  args: Record<string, unknown>,
+  key: string,
+): string {
+  const value = args[key];
+  if (typeof value !== 'string') {
+    throw new InvalidCommandResultError(
+      `Command result "${kind}" requires a string "${key}" argument.`,
+    );
+  }
+  return value;
+}
+
+function rejectForeignArgs(kind: CommandResultKind, result: CommandResult): void {
+  if ((result as { args?: unknown }).args !== undefined) {
+    throw new InvalidCommandResultError(`Command result "${kind}" does not accept args.`);
+  }
+}
+
+function serializeGoToPage(args: Record<string, unknown>): Record<string, unknown> {
+  const typed = args as Partial<GoToPageArgs>;
+  const wire: Record<string, unknown> = { PageId: requireString('goToPage', args, 'pageId') };
+  if (typed.navigationMode !== undefined) {
+    wire.NavigationMode = requireString('goToPage', args, 'navigationMode');
+  }
+  return wire;
+}
+
+function serializeToast(
+  args: Record<string, unknown>,
   serializeCommand: CommandSerializer,
 ): Record<string, unknown> {
-  const wire: Record<string, unknown> = {};
-  switch (kind) {
-    case 'goToPage':
-      assign(wire, 'PageId', readString(args, 'pageId'));
-      assign(wire, 'NavigationMode', readString(args, 'navigationMode'));
-      break;
-    case 'showToast': {
-      assign(wire, 'Message', readString(args, 'message'));
-      const nested = args.result;
-      if (isCommandResult(nested)) {
-        wire.Result = serializeCommandResult(nested, serializeCommand);
-      }
-      break;
+  const typed = args as Partial<ToastArgs>;
+  const wire: Record<string, unknown> = { Message: requireString('showToast', args, 'message') };
+  if (typed.result !== undefined) {
+    if (!isRecord(typed.result) || typeof (typed.result as CommandResult).kind !== 'string') {
+      throw new InvalidCommandResultError(
+        'Command result "showToast" requires a valid "result" continuation.',
+      );
     }
-    case 'confirm': {
-      assign(wire, 'Title', readString(args, 'title'));
-      assign(wire, 'Description', readString(args, 'description'));
-      assign(wire, 'IsPrimaryCommandCritical', readBoolean(args, 'isPrimaryCommandCritical'));
-      const primary = args.primaryCommand;
-      if (isCommand(primary)) {
-        wire.PrimaryCommand = serializeCommand(primary);
-      }
-      break;
+    wire.Result = serializeCommandResult(typed.result, serializeCommand);
+  }
+  return wire;
+}
+
+function serializeConfirm(
+  args: Record<string, unknown>,
+  serializeCommand: CommandSerializer,
+): Record<string, unknown> {
+  const typed = args as Partial<ConfirmationArgs>;
+  const wire: Record<string, unknown> = {
+    Title: requireString('confirm', args, 'title'),
+    Description: requireString('confirm', args, 'description'),
+  };
+  if (typed.isPrimaryCommandCritical !== undefined) {
+    if (typeof typed.isPrimaryCommandCritical !== 'boolean') {
+      throw new InvalidCommandResultError(
+        'Command result "confirm" requires a boolean "isPrimaryCommandCritical" argument.',
+      );
     }
-    default:
-      break;
+    wire.IsPrimaryCommandCritical = typed.isPrimaryCommandCritical;
+  }
+  if (typed.primaryCommand !== undefined) {
+    if (!isCommand(typed.primaryCommand)) {
+      throw new InvalidCommandResultError(
+        'Command result "confirm" requires a valid "primaryCommand" argument.',
+      );
+    }
+    wire.PrimaryCommand = serializeCommand(typed.primaryCommand);
   }
   return wire;
 }
@@ -112,6 +157,10 @@ const defaultCommandSerializer: CommandSerializer = (command) => ({
  * result carries a nested command (a confirm dialog's primary command), the
  * optional {@link CommandSerializer} is used to serialize it; a minimal
  * serializer is used when none is supplied.
+ *
+ * @throws InvalidCommandResultError when the result's shape does not match its
+ * kind, for example a `goToPage` result missing its `pageId`, or an argless
+ * kind such as `goHome` carrying an `args` object.
  */
 export function serializeCommandResult(
   result: CommandResult | null | undefined,
@@ -121,12 +170,32 @@ export function serializeCommandResult(
     return { Kind: CommandResultKindValue.dismiss };
   }
 
-  const wire: WireCommandResult = { Kind: kindToNumber(result.kind) };
-  if (result.args) {
-    const args = serializeArgs(result.kind, result.args, serializeCommand);
-    if (Object.keys(args).length > 0) {
-      wire.Args = args;
-    }
+  const kind = (result as CommandResult).kind;
+  if (typeof kind !== 'string' || !(kind in CommandResultKindValue)) {
+    throw new InvalidCommandResultError(`Unknown command result kind: ${String(kind)}`);
   }
-  return wire;
+
+  switch (kind) {
+    case 'dismiss':
+    case 'goHome':
+    case 'goBack':
+    case 'hide':
+    case 'keepOpen':
+      rejectForeignArgs(kind, result);
+      return { Kind: kindToNumber(kind) };
+    case 'goToPage':
+      return { Kind: kindToNumber(kind), Args: serializeGoToPage(requireArgs(kind, result)) };
+    case 'showToast':
+      return {
+        Kind: kindToNumber(kind),
+        Args: serializeToast(requireArgs(kind, result), serializeCommand),
+      };
+    case 'confirm':
+      return {
+        Kind: kindToNumber(kind),
+        Args: serializeConfirm(requireArgs(kind, result), serializeCommand),
+      };
+    default:
+      throw new InvalidCommandResultError(`Unknown command result kind: ${String(kind)}`);
+  }
 }

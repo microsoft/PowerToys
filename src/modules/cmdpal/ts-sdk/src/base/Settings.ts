@@ -13,6 +13,11 @@ import type {
   IconInfo,
   OptionalColor,
 } from '../types.js';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
+
+/** Handler invoked when a {@link Settings} collection changes. */
+export type SettingsChangedHandler = (settings: Settings) => void;
 
 /** A single choice within a {@link ChoiceSetSetting}. */
 export interface SettingChoice {
@@ -140,11 +145,34 @@ export type AnySetting = ToggleSetting | TextSetting | ChoiceSetSetting;
 export class Settings implements ICommandSettings {
   private readonly items: AnySetting[] = [];
   private page?: SettingsPage;
+  private readonly changedHandlers = new Set<SettingsChangedHandler>();
+
+  /**
+   * Optional hook run after a settings submission is applied. Throwing (or
+   * rejecting) surfaces the failure to the caller as a JSON-RPC error, so an
+   * author can signal that persistence failed. Mirrors saving in the C#
+   * Command Palette toolkit.
+   */
+  onSave?: (settings: Settings) => void | Promise<void>;
 
   /** Auto-generated content page that renders the settings as a form. */
   get settingsPage(): IContentPage {
     this.page ??= new SettingsPage(this);
     return this.page;
+  }
+
+  /**
+   * Subscribes to change notifications raised after a settings submission is
+   * applied. Mirrors the C# toolkit's `Settings.SettingsChanged` event.
+   *
+   * @param handler Called with this collection after each applied submission.
+   * @returns A function that removes the subscription when called.
+   */
+  onSettingsChanged(handler: SettingsChangedHandler): () => void {
+    this.changedHandlers.add(handler);
+    return () => {
+      this.changedHandlers.delete(handler);
+    };
   }
 
   /**
@@ -195,6 +223,21 @@ export class Settings implements ICommandSettings {
         setting.value = raw;
       }
     }
+  }
+
+  /**
+   * Applies a settings submission: updates values, raises the
+   * {@link Settings.onSettingsChanged} subscribers, and awaits the
+   * {@link Settings.onSave} hook. Used by the auto-generated settings page.
+   *
+   * @param inputs Map of setting key to its raw string value.
+   */
+  async submit(inputs: Record<string, string>): Promise<void> {
+    this.update(inputs);
+    for (const handler of this.changedHandlers) {
+      handler(this);
+    }
+    await this.onSave?.(this);
   }
 
   /** Builds the Adaptive Card template JSON for the settings form. */
@@ -286,11 +329,12 @@ class SettingsPage implements IContentPage {
   getContent(): Content[] {
     const form: FormContent = {
       type: 'form',
+      formId: 'settings',
       templateJson: this.settings.toTemplateJson(),
       dataJson: this.settings.toDataJson(),
-      submitForm: (inputs: string): CommandResult => {
-        this.settings.update(parseInputs(inputs));
-        return { kind: 'showToast', args: { message: 'Settings saved' } };
+      submitForm: async (inputs: string): Promise<CommandResult> => {
+        await this.settings.submit(parseInputs(inputs));
+        return { kind: 'goHome' };
       },
     };
     return [form];
@@ -311,4 +355,102 @@ function parseInputs(inputs: string): Record<string, string> {
     // Ignore malformed input and treat it as an empty submission.
   }
   return {};
+}
+
+function isFileNotFound(error: unknown): boolean {
+  return (
+    typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'ENOENT'
+  );
+}
+
+/**
+ * A JSON-backed key/value store for an extension's own settings file. Mirrors
+ * the C# toolkit's `JsonSettingsManager`: it owns a `filePath` and reads and
+ * writes that file as JSON via {@link JsonSettingsStore.load} and
+ * {@link JsonSettingsStore.save}. Point `filePath` at a location inside the
+ * extension's own folder.
+ *
+ * @example
+ * ```typescript
+ * const store = new JsonSettingsStore(join(__dirname, 'settings.json'));
+ * await store.load();
+ * const theme = store.get<string>('theme') ?? 'system';
+ * store.set('theme', 'dark');
+ * await store.save();
+ * ```
+ */
+export class JsonSettingsStore {
+  /** Absolute path to the JSON file backing this store. */
+  readonly filePath: string;
+
+  private values: Record<string, unknown> = {};
+
+  /**
+   * Creates a store backed by a JSON file.
+   *
+   * @param filePath Path to the JSON file, inside the extension's own folder.
+   */
+  constructor(filePath: string) {
+    this.filePath = filePath;
+  }
+
+  /**
+   * Reads and parses the backing file, seeding the in-memory values. A missing
+   * file is treated as an empty store rather than an error.
+   */
+  async load(): Promise<void> {
+    try {
+      const raw = await readFile(this.filePath, 'utf8');
+      const parsed: unknown = JSON.parse(raw);
+      this.values =
+        parsed && typeof parsed === 'object' ? { ...(parsed as Record<string, unknown>) } : {};
+    } catch (error) {
+      if (isFileNotFound(error)) {
+        this.values = {};
+        return;
+      }
+      throw error;
+    }
+  }
+
+  /** Writes the current values to the backing file, creating its folder. */
+  async save(): Promise<void> {
+    await mkdir(dirname(this.filePath), { recursive: true });
+    await writeFile(this.filePath, JSON.stringify(this.values, null, 2), 'utf8');
+  }
+
+  /**
+   * Reads a value by key.
+   *
+   * @typeParam T Expected value type.
+   * @param key Key to read.
+   * @returns The value, or `undefined` when the key is absent.
+   */
+  get<T>(key: string): T | undefined {
+    return this.values[key] as T | undefined;
+  }
+
+  /**
+   * Sets a value by key. Call {@link JsonSettingsStore.save} to persist.
+   *
+   * @param key Key to set.
+   * @param value Value to store.
+   */
+  set(key: string, value: unknown): void {
+    this.values[key] = value;
+  }
+
+  /**
+   * Whether a key is present in the store.
+   *
+   * @param key Key to check.
+   */
+  has(key: string): boolean {
+    return Object.prototype.hasOwnProperty.call(this.values, key);
+  }
+
+  /** Returns a shallow copy of every stored value. */
+  toObject(): Record<string, unknown> {
+    return { ...this.values };
+  }
 }

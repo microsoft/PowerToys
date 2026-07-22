@@ -1,0 +1,13 @@
+{
+  "image": {
+    "dark": {
+      "data": "aW1n"
+    },
+    "light": {
+      "data": "aW1n"
+    }
+  },
+  "maxHeight": 240,
+  "maxWidth": 320,
+  "type": "image"
+}
