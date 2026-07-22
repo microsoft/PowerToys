@@ -393,11 +393,11 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
-            if (!WaitForExplorerSelection(explorerWindow, normalizedPath, ExplorerOpenTimeoutMS))
+            if (!SelectExplorerItem(explorerWindow, normalizedPath, ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
                     GetActivationDiagnostics(
-                        $"Explorer HWND {explorerWindow.WindowHandle} did not select '{selectedItemName}' after launch attempt {attempt}"));
+                        $"Explorer HWND {explorerWindow.WindowHandle} did not expose '{selectedItemName}' after launch attempt {attempt}"));
                 continue;
             }
 
@@ -415,7 +415,7 @@ public class PeekFilePreviewTests : UITestBase
         return null!;
     }
 
-    private static bool WaitForExplorerSelection(Session explorerWindow, string selectedPath, int timeoutMS)
+    private static bool SelectExplorerItem(Session explorerWindow, string selectedPath, int timeoutMS)
     {
         var fileName = Path.GetFileName(selectedPath);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedPath);
@@ -425,16 +425,17 @@ public class PeekFilePreviewTests : UITestBase
         {
             foreach (var searchName in new[] { fileName, fileNameWithoutExtension }.Distinct(StringComparer.OrdinalIgnoreCase))
             {
-                var selectedItem = explorerWindow
+                var item = explorerWindow
                     .FindAll<Element>(By.Name(searchName), timeoutMS: 500)
                     .FirstOrDefault(element =>
-                        string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase) &&
                         (string.Equals(element.Name, fileName, StringComparison.OrdinalIgnoreCase) ||
                          string.Equals(element.Name, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)) &&
-                        element.Selected);
+                        element.Width > 0 &&
+                        element.Height > 0);
 
-                if (selectedItem is not null)
+                if (item is not null)
                 {
+                    item.Click(msPostAction: 500);
                     return true;
                 }
             }
