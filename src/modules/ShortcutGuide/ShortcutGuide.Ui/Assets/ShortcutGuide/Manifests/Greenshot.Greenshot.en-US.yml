@@ -89,7 +89,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - <Esc>
+              - <Escape>
   - SectionName: Editor - draw
     Properties:
       - Name: Rectangle tool
