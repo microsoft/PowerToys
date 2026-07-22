@@ -394,4 +394,194 @@ public class JSExtensionManifestTests
         Directory.CreateDirectory(directory);
         File.WriteAllText(fullPath, "// entry point");
     }
+
+    [TestMethod]
+    public void TryParse_UnknownFields_AreIgnored()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "unknown-fields",
+            "main": "index.js",
+            "keywords": ["a", "b"],
+            "scripts": { "build": "tsc" },
+            "futureTopLevel": 42,
+            "cmdpal": {
+                "displayName": "Has Unknowns",
+                "futureCmdPalField": { "nested": true }
+            }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("unknown-fields", result.Manifest!.Name);
+        Assert.AreEqual("Has Unknowns", result.Manifest.DisplayName);
+    }
+
+    [TestMethod]
+    public void TryParse_MalformedValueType_IsInvalid()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "malformed-type",
+            "main": "index.js",
+            "cmdpal": {
+                "debug": "not-a-boolean"
+            }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsFalse(result.IsValid);
+        Assert.IsNull(result.Manifest);
+    }
+
+    [TestMethod]
+    public void TryParse_MjsEntryPoint_IsValid()
+    {
+        CreateEntryPoint("index.mjs");
+        const string Json = """
+        {
+            "name": "esm-sample",
+            "main": "index.mjs",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual(Path.Combine(_testDirectory, "index.mjs"), result.Manifest!.EntryPointPath);
+    }
+
+    [TestMethod]
+    public void TryParse_CjsEntryPoint_IsValid()
+    {
+        CreateEntryPoint("index.cjs");
+        const string Json = """
+        {
+            "name": "cjs-sample",
+            "main": "index.cjs",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual(Path.Combine(_testDirectory, "index.cjs"), result.Manifest!.EntryPointPath);
+    }
+
+    [TestMethod]
+    public void TryParse_UnsupportedEntryPointExtension_IsInvalid()
+    {
+        CreateEntryPoint("index.ts");
+        const string Json = """
+        {
+            "name": "typescript-source",
+            "main": "index.ts",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsFalse(result.IsValid);
+        StringAssert.Contains(result.FailureReason, "JavaScript file");
+    }
+
+    [TestMethod]
+    public void TryParse_NameKey_IsNormalizedIdentity()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "  MixedCase-Name  ",
+            "main": "index.js",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("mixedcase-name", result.Manifest!.NameKey);
+    }
+
+    [TestMethod]
+    public void TryParse_EntryPointThroughJunction_IsRejected()
+    {
+        // Create a directory outside the extension dir with a real entry point, then expose it inside
+        // the extension dir through a junction. A lexically-contained path must still be rejected
+        // because it traverses a reparse point that redirects outside the package.
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionManifestJunctionTarget_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        File.WriteAllText(Path.Combine(outsideDirectory, "index.js"), "// entry point");
+
+        var junctionPath = Path.Combine(_testDirectory, "linked");
+        if (!TryCreateJunction(junctionPath, outsideDirectory))
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+            Assert.Inconclusive("A directory junction could not be created in this environment.");
+            return;
+        }
+
+        try
+        {
+            const string Json = """
+            {
+                "name": "junction-escape",
+                "main": "linked/index.js",
+                "cmdpal": {}
+            }
+            """;
+
+            var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+            Assert.IsFalse(result.IsValid);
+            StringAssert.Contains(result.FailureReason, "junction");
+        }
+        finally
+        {
+            // Remove the junction reparse point itself (non-recursive) before deleting the target so
+            // the shared cleanup does not try to recurse through the junction into the outside tree.
+            if (Directory.Exists(junctionPath))
+            {
+                Directory.Delete(junctionPath, recursive: false);
+            }
+
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
+    private static bool TryCreateJunction(string junctionPath, string targetPath)
+    {
+        try
+        {
+            var startInfo = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{junctionPath}\" \"{targetPath}\"")
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
+            using var process = System.Diagnostics.Process.Start(startInfo);
+            if (process is null)
+            {
+                return false;
+            }
+
+            process.WaitForExit(10_000);
+            return process.HasExited && process.ExitCode == 0 && Directory.Exists(junctionPath);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 }
