@@ -478,7 +478,31 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE98A;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.UsePinyin, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+					<tkcontrols:SettingsExpander
+                        Name="PowerLauncherAudioFeedback"
+                        x:Uid="PowerLauncher_AudioFeedback"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}"
+                        IsExpanded="False">
 
+						<ToggleSwitch IsOn="{x:Bind ViewModel.EnableAudibleFeedback, Mode=TwoWay}" />
+
+						<tkcontrols:SettingsExpander.Items>
+							<!-- Opening Sound Toggle -->
+							<tkcontrols:SettingsCard
+								x:Uid="PowerLauncher_OpeningSoundToggle"
+								IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+								<ToggleSwitch IsOn="{x:Bind ViewModel.EnableOpeningSound, Mode=TwoWay}" />
+							</tkcontrols:SettingsCard>
+
+							<!-- Closing Sound Toggle -->
+							<tkcontrols:SettingsCard
+								x:Uid="PowerLauncher_ClosingSoundToggle"
+								IsEnabled="{x:Bind ViewModel.EnableAudibleFeedback, Mode=OneWay}">
+								<ToggleSwitch IsOn="{x:Bind ViewModel.EnableClosingSound, Mode=TwoWay}" />
+							</tkcontrols:SettingsCard>
+						</tkcontrols:SettingsExpander.Items>
+					</tkcontrols:SettingsExpander>
+					
                     <tkcontrols:SettingsCard
                         Name="PowerLauncherGenerateThumbnailsFromFiles"
                         x:Uid="PowerLauncher_GenerateThumbnailsFromFiles"
