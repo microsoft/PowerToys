@@ -161,22 +161,71 @@ public class PowerOCRTests : UITestBase
         var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
         Assert.IsNotNull(textExtractorWindow, "TextExtractor window should be found after hotkey activation");
 
-        // Right-click on the canvas to open context menu
-        textExtractorWindow.Click(rightClick: true);
-        Thread.Sleep(500);
+        try
+        {
+            // Read the current language from the overlay toolbar ComboBox.
+            var languageComboBox = Find<ComboBox>(
+                By.AccessibilityId("OCROverlayLanguagesComboBox"),
+                5000,
+                true);
+            languageComboBox.Click();
 
-        // Select the first language option using its stable AutomationId
-        var firstLanguageItem = Find<Element>(
-            By.AccessibilityId("OCRLanguageMenuItem_0"),
-            3000,
-            true);
-        Assert.IsNotNull(firstLanguageItem, "At least one OCR language should be available.");
-        firstLanguageItem.Click();
-        Thread.Sleep(1000);
+            var comboBoxItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
+                .Where(item => item.Displayed)
+                .ToList();
+            Assert.IsTrue(comboBoxItems.Count > 0, "The overlay language ComboBox should contain OCR languages.");
 
-        // Close the TextExtractor overlay
-        SendKeys(Key.Esc);
-        Thread.Sleep(1000);
+            var selectedItems = comboBoxItems.Where(item => item.Selected).ToList();
+            Assert.AreEqual(1, selectedItems.Count, "The overlay language ComboBox should have one selected language.");
+            if (comboBoxItems.Count < 2)
+            {
+                Assert.Inconclusive("At least two installed OCR languages are required to verify a language change.");
+            }
+
+            var targetItem = comboBoxItems.First(item => !item.Selected);
+            var targetLanguageName = targetItem.Name;
+            SendKeys(Key.Esc);
+
+            // Select a different language through the canvas context menu.
+            var selectionCanvas = Find<Pane>(By.AccessibilityId("RegionClickCanvas"), 5000, true);
+            selectionCanvas.Click(rightClick: true);
+
+            var targetMenuItem = FindAll<Element>(By.Name(targetLanguageName), 3000, true)
+                .FirstOrDefault(item =>
+                    item.Displayed
+                    && item.AutomationId.StartsWith("OCRLanguageMenuItem_", StringComparison.Ordinal));
+            Assert.IsNotNull(targetMenuItem, $"The context menu should contain the '{targetLanguageName}' OCR language.");
+            targetMenuItem.Click();
+
+            // Re-open the toolbar ComboBox and verify its selected item changed.
+            languageComboBox = Find<ComboBox>(
+                By.AccessibilityId("OCROverlayLanguagesComboBox"),
+                5000,
+                true);
+            languageComboBox.Click();
+
+            var updatedSelectedItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
+                .Where(item => item.Displayed)
+                .Where(item => item.Selected)
+                .ToList();
+            Assert.AreEqual(1, updatedSelectedItems.Count, "The overlay language ComboBox should keep one selected language.");
+            Assert.AreEqual(
+                targetLanguageName,
+                updatedSelectedItems[0].Name,
+                "Selecting a context-menu language should update the toolbar ComboBox selection.");
+        }
+        finally
+        {
+            // Escape dismisses an open flyout first. Only send it again when the overlay
+            // is still present so the underlying Settings window never receives the key.
+            SendKeys(Key.Esc);
+            Thread.Sleep(250);
+            if (FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 1000, true).Count > 0)
+            {
+                SendKeys(Key.Esc);
+                Thread.Sleep(1000);
+            }
+        }
     }
 
     [TestMethod("PowerOCR.ToolbarModes")]

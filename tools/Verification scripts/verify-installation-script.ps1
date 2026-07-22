@@ -509,6 +509,11 @@ function Test-CoreFiles {
         'PowerToys.PowerOCR.dll',
         'PowerToys.PowerOCR.exe'
     )
+
+    # Required unsigned files in the WinUI3Apps subdirectory
+    $winUI3RequiredUnsignedFiles = @(
+        'PowerToys.PowerOCR.pri'
+    )
     
     # Tools signed files (in Tools subdirectory)
     $toolsSignedFiles = @(
@@ -570,6 +575,14 @@ function Test-CoreFiles {
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
         Add-CheckResult -Category "Signed Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $status -Message "WinUI3 signed file: $filePath"
+    }
+
+    # Check required unsigned WinUI3Apps files
+    Write-StatusMessage "Checking required unsigned WinUI3Apps files..." -Level Info
+    foreach ($file in $winUI3RequiredUnsignedFiles) {
+        $filePath = Join-Path $InstallPath "WinUI3Apps\$file"
+        $exists = Test-Path $filePath
+        Add-CheckResult -Category "Required Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $(if ($exists) { 'Pass' } else { 'Fail' }) -Message "Required WinUI3 file: $filePath"
     }
     
     # Check Tools signed files

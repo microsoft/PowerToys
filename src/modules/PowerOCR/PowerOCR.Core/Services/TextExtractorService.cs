@@ -12,6 +12,9 @@ namespace PowerOCR.Core.Services;
 
 public sealed class TextExtractorService : ITextExtractorService
 {
+    private const double DefaultScale = 1.0;
+    private const double EnhancedScale = 1.5;
+
     private readonly IBitmapPreprocessor _preprocessor;
     private readonly IOcrRecognizer _recognizer;
 
@@ -30,11 +33,18 @@ public sealed class TextExtractorService : ITextExtractorService
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
-        double scale = request.Mode == OcrCaptureMode.Word
-            || (request.Bitmap.Width * 1.5) > OcrEngine.MaxImageDimension
-            || (request.Bitmap.Height * 1.5) > OcrEngine.MaxImageDimension
-                ? 1.0
-                : 1.5;
+        double scale = DefaultScale;
+        if (request.Mode != OcrCaptureMode.Word
+            && (request.Bitmap.Width * EnhancedScale) <= OcrEngine.MaxImageDimension
+            && (request.Bitmap.Height * EnhancedScale) <= OcrEngine.MaxImageDimension)
+        {
+            var enhancedSize = _preprocessor.GetOutputSize(request.Bitmap, EnhancedScale);
+            if (enhancedSize.Width <= OcrEngine.MaxImageDimension
+                && enhancedSize.Height <= OcrEngine.MaxImageDimension)
+            {
+                scale = EnhancedScale;
+            }
+        }
 
         using PreparedBitmap prepared = _preprocessor.Prepare(request.Bitmap, scale);
         OcrDocument document = await _recognizer.RecognizeAsync(

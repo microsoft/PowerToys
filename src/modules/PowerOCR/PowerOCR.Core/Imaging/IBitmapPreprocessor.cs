@@ -8,5 +8,7 @@ namespace PowerOCR.Core.Imaging;
 
 public interface IBitmapPreprocessor
 {
+    Size GetOutputSize(Bitmap source, double scale);
+
     PreparedBitmap Prepare(Bitmap source, double scale);
 }

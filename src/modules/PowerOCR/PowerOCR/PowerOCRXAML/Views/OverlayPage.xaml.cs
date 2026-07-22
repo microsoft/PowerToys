@@ -322,10 +322,14 @@ public sealed partial class OverlayPage : UserControl
 
     private void Canvas_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
-        // Populate dynamic language items before showing
-        PopulateLanguageFlyoutItems();
         ContextMenuFlyout.ShowAt(RegionClickCanvas, e.GetPosition(RegionClickCanvas));
         e.Handled = true;
+    }
+
+    private void ContextMenuFlyout_Opening(object sender, object e)
+    {
+        // Opening also covers keyboard invocation through Shift+F10 or the Menu key.
+        PopulateLanguageFlyoutItems();
     }
 
     private void PopulateLanguageFlyoutItems()

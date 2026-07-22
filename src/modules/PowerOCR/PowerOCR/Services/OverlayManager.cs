@@ -152,8 +152,7 @@ internal sealed class OverlayManager : IOverlayManager
 
                 var errorWindow = _windowFactory.Create(errorCapture, _viewModel, this);
                 _activeWindows.Add(errorWindow);
-                errorWindow.Activate();
-                errorWindow.PositionOnDisplay();
+                ActivateAndPositionWindow(errorWindow, bringToForeground: true);
 
                 string errorMessage = ResourceLoaderInstance.ResourceLoader.GetString("ScreenCaptureFailed");
                 errorWindow.ShowError(errorMessage);
@@ -178,11 +177,14 @@ internal sealed class OverlayManager : IOverlayManager
                 _activeWindows.Add(window);
             }
 
-            // Activate all windows; last one gets keyboard focus
-            foreach (var window in _activeWindows)
+            // Activate every overlay, then explicitly give the last one foreground focus.
+            // Window.Activate alone cannot reliably cross the foreground-process boundary
+            // when this session was started by the Runner's named event.
+            for (int index = 0; index < _activeWindows.Count; index++)
             {
-                window.Activate();
-                window.PositionOnDisplay();
+                ActivateAndPositionWindow(
+                    _activeWindows[index],
+                    bringToForeground: index == _activeWindows.Count - 1);
             }
 
             PowerToysTelemetry.Log.WriteEvent(new PowerOCRInvokedEvent());
@@ -409,6 +411,14 @@ internal sealed class OverlayManager : IOverlayManager
         {
             var inputLang = viewModel.Languages.FirstOrDefault(
                 l => l.LanguageTag.Equals(inputTag, StringComparison.OrdinalIgnoreCase));
+
+            if (inputLang is null)
+            {
+                var inputLanguage = new Language(inputTag);
+                inputLang = viewModel.Languages.FirstOrDefault(
+                    l => l.AbbreviatedName.Equals(inputLanguage.AbbreviatedName, StringComparison.OrdinalIgnoreCase));
+            }
+
             if (inputLang is not null)
             {
                 viewModel.SelectedLanguage = inputLang;
@@ -418,6 +428,17 @@ internal sealed class OverlayManager : IOverlayManager
 
         // Final fallback: first installed language
         viewModel.SelectedLanguage = viewModel.Languages[0];
+    }
+
+    private static void ActivateAndPositionWindow(OCROverlay window, bool bringToForeground)
+    {
+        window.Activate();
+        window.PositionOnDisplay();
+
+        if (bringToForeground)
+        {
+            WindowHelpers.BringToForeground(WinRT.Interop.WindowNative.GetWindowHandle(window));
+        }
     }
 
     private void ShowErrorOnAll(string message)

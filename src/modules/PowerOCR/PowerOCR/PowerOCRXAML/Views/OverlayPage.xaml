@@ -92,7 +92,7 @@
             PointerReleased="Canvas_PointerReleased"
             RightTapped="Canvas_RightTapped">
             <Canvas.ContextFlyout>
-                <MenuFlyout x:Name="ContextMenuFlyout">
+                <MenuFlyout x:Name="ContextMenuFlyout" Opening="ContextMenuFlyout_Opening">
                     <MenuFlyoutSeparator x:Name="LanguageSeparator" />
                     <ToggleMenuFlyoutItem
                         x:Name="SingleLineMenuItem"

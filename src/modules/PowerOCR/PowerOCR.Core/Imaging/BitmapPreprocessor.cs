@@ -13,7 +13,30 @@ public sealed class BitmapPreprocessor : IBitmapPreprocessor
     private const int MinimumDimension = 64;
     private const int Padding = 8;
 
+    public Size GetOutputSize(Bitmap source, double scale)
+    {
+        var dimensions = CalculateDimensions(source, scale);
+        return dimensions.Output;
+    }
+
     public PreparedBitmap Prepare(Bitmap source, double scale)
+    {
+        var dimensions = CalculateDimensions(source, scale);
+        var output = new Bitmap(dimensions.Output.Width, dimensions.Output.Height, PixelFormat.Format32bppArgb);
+        using Graphics graphics = Graphics.FromImage(output);
+        graphics.Clear(source.GetPixel(0, 0));
+        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+        graphics.DrawImage(
+            source,
+            new Rectangle(dimensions.Offset, dimensions.Scaled),
+            new Rectangle(Point.Empty, source.Size),
+            GraphicsUnit.Pixel);
+
+        return new PreparedBitmap(output, scale, dimensions.Offset.X, dimensions.Offset.Y);
+    }
+
+    private static (Size Scaled, Size Output, Point Offset) CalculateDimensions(Bitmap source, double scale)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(scale, 0);
@@ -30,17 +53,9 @@ public sealed class BitmapPreprocessor : IBitmapPreprocessor
         int offsetX = requiresPadding ? Padding : 0;
         int offsetY = requiresPadding ? Padding : 0;
 
-        var output = new Bitmap(outputWidth, outputHeight, PixelFormat.Format32bppArgb);
-        using Graphics graphics = Graphics.FromImage(output);
-        graphics.Clear(source.GetPixel(0, 0));
-        graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-        graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-        graphics.DrawImage(
-            source,
-            new Rectangle(offsetX, offsetY, scaledWidth, scaledHeight),
-            new Rectangle(0, 0, source.Width, source.Height),
-            GraphicsUnit.Pixel);
-
-        return new PreparedBitmap(output, scale, offsetX, offsetY);
+        return (
+            new Size(scaledWidth, scaledHeight),
+            new Size(outputWidth, outputHeight),
+            new Point(offsetX, offsetY));
     }
 }

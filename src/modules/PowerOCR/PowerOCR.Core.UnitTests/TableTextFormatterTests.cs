@@ -42,6 +42,34 @@ public sealed class TableTextFormatterTests
             TableTextFormatter.Format(cells, "en-US"));
     }
 
+    [TestMethod]
+    public void Format_RowsSeparatedByLessThanGridSpacing_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("A2", 0, 21),
+        ];
+
+        Assert.AreEqual(
+            $"A1{Environment.NewLine}A2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_ColumnsSeparatedByLessThanGridSpacing_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 41, 0),
+        ];
+
+        Assert.AreEqual(
+            "A1\tB1",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
     private static OcrLineData Cell(string text, double x, double y)
         => new(text, new OcrRect(x, y, 40, 20), [new(text, new(x, y, 40, 20))]);
 }

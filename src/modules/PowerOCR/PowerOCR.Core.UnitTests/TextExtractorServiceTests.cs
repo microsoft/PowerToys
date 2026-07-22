@@ -46,6 +46,8 @@ public sealed class TextExtractorServiceTests
 
         public int ReceivedBitmapWidth { get; private set; }
 
+        public int ReceivedBitmapHeight { get; private set; }
+
         public Task<OcrDocument> RecognizeAsync(
             Bitmap bitmap,
             Language language,
@@ -53,6 +55,7 @@ public sealed class TextExtractorServiceTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             ReceivedBitmapWidth = bitmap.Width;
+            ReceivedBitmapHeight = bitmap.Height;
             return Task.FromResult(Document);
         }
     }
@@ -131,6 +134,21 @@ public sealed class TextExtractorServiceTests
         await service.ExtractAsync(request, CancellationToken.None);
 
         Assert.AreEqual(oversizedWidth, recognizer.ReceivedBitmapWidth);
+    }
+
+    [TestMethod]
+    public async Task ExtractAsync_UpscalingWithPaddingWouldExceedLimit_UsesUnscaledBitmap()
+    {
+        int widthAtUpscalingBoundary = (int)Math.Floor(OcrEngine.MaxImageDimension / 1.5);
+        var recognizer = new FakeRecognizer { Document = MakeDocument() };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(widthAtUpscalingBoundary, 40, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Region);
+
+        await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual(widthAtUpscalingBoundary + 16, recognizer.ReceivedBitmapWidth);
+        Assert.AreEqual(80, recognizer.ReceivedBitmapHeight);
     }
 
     [TestMethod]

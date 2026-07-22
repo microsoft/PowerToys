@@ -8,8 +8,6 @@ namespace PowerOCR.Core.Formatting;
 
 public static class TableTextFormatter
 {
-    private const int GridSpacing = 3;
-
     public static string Format(IReadOnlyList<OcrLineData> cells, string languageTag)
     {
         if (cells.Count == 0)
@@ -60,21 +58,14 @@ public static class TableTextFormatter
         OcrRect bounds,
         bool horizontal)
     {
-        int start = (int)Math.Floor(horizontal ? bounds.Y : bounds.X);
-        int end = (int)Math.Ceiling(horizontal ? bounds.Bottom : bounds.Right);
-        var occupied = new List<int>();
-
-        for (int position = start; position <= end; position += GridSpacing)
-        {
-            var scan = horizontal
-                ? new OcrRect(bounds.X, position, bounds.Width, 1)
-                : new OcrRect(position, bounds.Y, 1, bounds.Height);
-
-            if (cells.Any(cell => cell.Bounds.Intersects(scan)))
-            {
-                occupied.Add(position);
-            }
-        }
+        var occupied = cells
+            .Select(cell => horizontal
+                ? (Start: cell.Bounds.Y, End: cell.Bounds.Bottom)
+                : (Start: cell.Bounds.X, End: cell.Bounds.Right))
+            .Where(segment => segment.End > segment.Start)
+            .OrderBy(segment => segment.Start)
+            .ThenBy(segment => segment.End)
+            .ToList();
 
         var segments = new List<OcrRect>();
         if (occupied.Count == 0)
@@ -82,27 +73,30 @@ public static class TableTextFormatter
             return [bounds];
         }
 
-        int segmentStart = occupied[0];
-        int previous = occupied[0];
-        foreach (int current in occupied.Skip(1))
+        double segmentStart = occupied[0].Start;
+        double segmentEnd = occupied[0].End;
+        foreach (var current in occupied.Skip(1))
         {
-            if (current - previous != GridSpacing)
+            if (current.Start >= segmentEnd)
             {
-                segments.Add(CreateSegment(bounds, horizontal, segmentStart, previous));
-                segmentStart = current;
+                segments.Add(CreateSegment(bounds, horizontal, segmentStart, segmentEnd));
+                segmentStart = current.Start;
+                segmentEnd = current.End;
             }
-
-            previous = current;
+            else
+            {
+                segmentEnd = Math.Max(segmentEnd, current.End);
+            }
         }
 
-        segments.Add(CreateSegment(bounds, horizontal, segmentStart, previous));
+        segments.Add(CreateSegment(bounds, horizontal, segmentStart, segmentEnd));
         return segments;
     }
 
-    private static OcrRect CreateSegment(OcrRect bounds, bool horizontal, int start, int end)
+    private static OcrRect CreateSegment(OcrRect bounds, bool horizontal, double start, double end)
         => horizontal
-            ? new(bounds.X, start, bounds.Width, Math.Max(GridSpacing, end - start + GridSpacing))
-            : new(start, bounds.Y, Math.Max(GridSpacing, end - start + GridSpacing), bounds.Height);
+            ? new(bounds.X, start, bounds.Width, end - start)
+            : new(start, bounds.Y, end - start, bounds.Height);
 
     private static int BestIntersection(IReadOnlyList<OcrRect> segments, OcrRect cell)
     {
