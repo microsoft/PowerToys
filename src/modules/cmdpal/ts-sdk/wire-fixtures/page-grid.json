@@ -1,0 +1,21 @@
+{
+  "accentColor": {
+    "color": {
+      "a": 255,
+      "b": 120,
+      "g": 0,
+      "r": 120
+    },
+    "hasValue": true
+  },
+  "displayName": "Grid Page",
+  "gridProperties": {
+    "showSubtitle": false,
+    "showTitle": true,
+    "type": "medium"
+  },
+  "id": "page-grid",
+  "name": "Grid Page",
+  "pageType": "listPage",
+  "title": "Grid Page"
+}

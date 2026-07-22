@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import { describe, expect, it, vi } from 'vitest';
-import { NoOpCommand, OpenUrlCommand } from '../src/index.js';
+import { NoOpCommand, OpenUrlCommand, CopyTextCommand } from '../src/index.js';
 import { serializeCommandResult } from '../src/runtime/commandResult.js';
 
 describe('NoOpCommand', () => {
@@ -40,5 +40,29 @@ describe('OpenUrlCommand', () => {
     const command = new OpenUrlCommand('https://example.com/', undefined, vi.fn());
     expect(command.id).toBe('open-url:https://example.com/');
     expect(command.name).toBe('https://example.com/');
+  });
+});
+
+describe('CopyTextCommand id derivation', () => {
+  it('gives two different strings that share their first 24 characters distinct ids', () => {
+    // Both strings share the same leading 24 characters; a slice-based id would
+    // collide, but hashing the full payload must keep them distinct.
+    const prefix = 'the-same-first-24-charss';
+    const a = new CopyTextCommand(`${prefix}-alpha`);
+    const b = new CopyTextCommand(`${prefix}-beta`);
+
+    expect(prefix.length).toBe(24);
+    expect(a.id).not.toBe(b.id);
+  });
+
+  it('is stable for identical payloads', () => {
+    const a = new CopyTextCommand('hello', 'Copy hello');
+    const b = new CopyTextCommand('hello', 'Copy hello');
+    expect(a.id).toBe(b.id);
+  });
+
+  it('honors an explicit author-supplied id', () => {
+    const command = new CopyTextCommand('hello', 'Copy', 'Copied', 'my-stable-id');
+    expect(command.id).toBe('my-stable-id');
   });
 });

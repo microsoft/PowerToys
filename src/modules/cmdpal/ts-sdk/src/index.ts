@@ -32,8 +32,10 @@ export {
   ToggleSetting,
   TextSetting,
   ChoiceSetSetting,
+  JsonSettingsStore,
   type AnySetting,
   type SettingChoice,
+  type SettingsChangedHandler,
 } from './base/Settings.js';
 
 // Built-in commands.
@@ -54,3 +56,5 @@ export {
   sendNotification,
   type ProviderFactory,
 } from './runtime/server.js';
+export { PROTOCOL_VERSION, getSdkVersion, isProtocolCompatible } from './runtime/protocol.js';
+export { InvalidCommandResultError } from './runtime/commandResult.js';

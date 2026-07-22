@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { CommandResult, CommandResultKind } from '../src/types.js';
 import {
   CommandResultKindValue,
+  InvalidCommandResultError,
   kindToNumber,
   serializeCommandResult,
 } from '../src/runtime/commandResult.js';
@@ -86,5 +87,57 @@ describe('CommandResult kind mapping', () => {
         PrimaryCommand: { id: 'del' },
       },
     });
+  });
+});
+
+describe('CommandResult validation of untyped shapes', () => {
+  // These inputs come from plain JavaScript callers with no compile-time types,
+  // so the serializer must reject them loudly rather than silently drop fields.
+  it('rejects an unknown kind', () => {
+    expect(() => serializeCommandResult({ kind: 'explode' } as unknown as CommandResult)).toThrow(
+      InvalidCommandResultError,
+    );
+  });
+
+  it('rejects foreign args on an argument-less kind', () => {
+    expect(() =>
+      serializeCommandResult({
+        kind: 'goHome',
+        args: { message: 'no' },
+      } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
+  });
+
+  it('rejects goToPage without a pageId', () => {
+    expect(() =>
+      serializeCommandResult({ kind: 'goToPage', args: {} } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
+  });
+
+  it('rejects showToast without a message', () => {
+    expect(() =>
+      serializeCommandResult({
+        kind: 'showToast',
+        args: { text: 'oops' },
+      } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
+  });
+
+  it('rejects a nested toast continuation that is not a result', () => {
+    expect(() =>
+      serializeCommandResult({
+        kind: 'showToast',
+        args: { message: 'x', result: { foo: 1 } },
+      } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
+  });
+
+  it('rejects confirm with a non-boolean critical flag', () => {
+    expect(() =>
+      serializeCommandResult({
+        kind: 'confirm',
+        args: { title: 't', description: 'd', isPrimaryCommandCritical: 'yes' },
+      } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
   });
 });

@@ -140,13 +140,16 @@ export interface IInvokableCommand extends ICommand {
   invoke(): Promise<CommandResult> | CommandResult;
 }
 
-/** Extra values carried by a {@link CommandResult}, keyed by name. */
+/**
+ * Extra values carried by a {@link CommandResult}, keyed by name. Retained for
+ * backward compatibility; the typed argument interfaces below are preferred.
+ */
 export interface CommandResultArgs {
   [key: string]: unknown;
 }
 
 /** Arguments for a `goToPage` {@link CommandResult}. */
-export interface GoToPageArgs extends CommandResultArgs {
+export interface GoToPageArgs {
   /** Identifier of the page to navigate to. */
   pageId: string;
   /** How the target page is placed on the navigation stack. Defaults to `push`. */
@@ -154,7 +157,7 @@ export interface GoToPageArgs extends CommandResultArgs {
 }
 
 /** Arguments for a `showToast` {@link CommandResult}. */
-export interface ToastArgs extends CommandResultArgs {
+export interface ToastArgs {
   /** Text shown in the toast. */
   message: string;
   /** What the host should do after the toast is dismissed. */
@@ -162,7 +165,7 @@ export interface ToastArgs extends CommandResultArgs {
 }
 
 /** Arguments for a `confirm` {@link CommandResult}. */
-export interface ConfirmationArgs extends CommandResultArgs {
+export interface ConfirmationArgs {
   /** Title of the confirmation dialog. */
   title: string;
   /** Body text explaining what the user is confirming. */
@@ -173,16 +176,24 @@ export interface ConfirmationArgs extends CommandResultArgs {
   isPrimaryCommandCritical?: boolean;
 }
 
-/** Returned from `invoke()` to tell the host what to do next. */
-export interface CommandResult {
-  /** The action the host should take. */
-  kind: CommandResultKind;
-  /**
-   * Extra data for the action, such as {@link GoToPageArgs},
-   * {@link ToastArgs}, or {@link ConfirmationArgs}.
-   */
-  args?: CommandResultArgs;
-}
+/**
+ * Returned from `invoke()` to tell the host what to do next.
+ *
+ * This is a discriminated union keyed on {@link CommandResult.kind}. Each kind
+ * carries exactly the arguments it needs: the navigation and dismissal kinds
+ * take no arguments, while `goToPage`, `showToast`, and `confirm` each require
+ * their own typed argument object. Supplying the wrong argument object is a
+ * compile-time type error and is rejected at runtime.
+ */
+export type CommandResult =
+  | { kind: 'dismiss' }
+  | { kind: 'goHome' }
+  | { kind: 'goBack' }
+  | { kind: 'hide' }
+  | { kind: 'keepOpen' }
+  | { kind: 'goToPage'; args: GoToPageArgs }
+  | { kind: 'showToast'; args: ToastArgs }
+  | { kind: 'confirm'; args: ConfirmationArgs };
 
 // === Command items ===
 
@@ -422,6 +433,12 @@ export interface MarkdownContent {
 export interface FormContent {
   /** Discriminator identifying this as form content. */
   type: 'form';
+  /**
+   * Stable identifier for this form, unique within its page. Optional: when
+   * omitted the SDK assigns a deterministic id while serializing the page. Set
+   * it to keep a form's identity stable across content refreshes.
+   */
+  formId?: string;
   /** Adaptive Card JSON template. */
   templateJson: string;
   /** Form data values JSON. */
@@ -524,14 +541,31 @@ export interface IExtensionHost {
    * @param message Text to display.
    * @param state Severity of the message. Defaults to `info`.
    * @param progress Optional progress shown alongside the message.
+   * @returns A stable status id minted by the SDK. Pass it to
+   * {@link IExtensionHost.updateStatus} or {@link IExtensionHost.hideStatus} to
+   * update or hide this exact status later.
    */
-  showStatus(message: string, state?: MessageState, progress?: ProgressState): void;
+  showStatus(message: string, state?: MessageState, progress?: ProgressState): string;
+  /**
+   * Updates a status shown earlier without creating a duplicate.
+   *
+   * @param statusId Id returned by {@link IExtensionHost.showStatus}.
+   * @param message New text to display.
+   * @param state New severity. Defaults to `info`.
+   * @param progress New progress, if any.
+   */
+  updateStatus(
+    statusId: string,
+    message: string,
+    state?: MessageState,
+    progress?: ProgressState,
+  ): void;
   /**
    * Hides a previously shown status message.
    *
-   * @param messageId Identifier of the message to hide.
+   * @param statusId Id returned by {@link IExtensionHost.showStatus}.
    */
-  hideStatus(messageId: string): void;
+  hideStatus(statusId: string): void;
   /**
    * Copies text to the system clipboard.
    *
@@ -550,7 +584,10 @@ export interface ICommandProvider {
   displayName: string;
   /** Icon shown for the extension. */
   icon?: IconInfo | null;
-  /** When `true`, the palette caches commands and does not re-query them. */
+  /**
+   * When `true`, the palette caches commands and does not re-query them.
+   * Defaults to `true`, matching the Command Palette toolkit default.
+   */
   frozen?: boolean;
   /** Settings surface for the extension, or `null` when it has none. */
   settings?: ICommandSettings | null;
@@ -580,8 +617,12 @@ export interface ICommandProvider {
    * @param host Bridge used to talk back to the palette.
    */
   initializeWithHost?(host: IExtensionHost): void;
-  /** Releases resources before the extension process exits. */
-  dispose?(): void;
+  /**
+   * Releases resources before the extension process exits. May run
+   * asynchronously; the runtime awaits the returned promise, within a bounded
+   * shutdown window, before the process terminates.
+   */
+  dispose?(): void | Promise<void>;
 }
 
 // === Activation ===

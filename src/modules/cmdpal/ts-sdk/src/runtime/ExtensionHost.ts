@@ -47,19 +47,44 @@ export class ExtensionHost {
    * @param message Text to display.
    * @param state Severity of the message. Defaults to `info`.
    * @param progress Optional progress shown alongside the message.
+   * @returns A stable status id for later {@link ExtensionHost.updateStatus} or
+   * {@link ExtensionHost.hideStatus} calls, or an empty string when no host is
+   * installed yet.
    */
-  static showStatus(message: string, state: MessageState = 'info', progress?: ProgressState): void {
-    ExtensionHost.instance?.showStatus(message, state, progress);
+  static showStatus(
+    message: string,
+    state: MessageState = 'info',
+    progress?: ProgressState,
+  ): string {
+    return ExtensionHost.instance?.showStatus(message, state, progress) ?? '';
+  }
+
+  /**
+   * Updates a status shown earlier without creating a duplicate. No-op until
+   * the runtime installs a host.
+   *
+   * @param statusId Id returned by {@link ExtensionHost.showStatus}.
+   * @param message New text to display.
+   * @param state New severity. Defaults to `info`.
+   * @param progress New progress, if any.
+   */
+  static updateStatus(
+    statusId: string,
+    message: string,
+    state: MessageState = 'info',
+    progress?: ProgressState,
+  ): void {
+    ExtensionHost.instance?.updateStatus(statusId, message, state, progress);
   }
 
   /**
    * Hides a previously shown status message. No-op until the runtime installs a
    * host.
    *
-   * @param messageId Identifier of the status message to hide.
+   * @param statusId Id returned by {@link ExtensionHost.showStatus}.
    */
-  static hideStatus(messageId: string): void {
-    ExtensionHost.instance?.hideStatus(messageId);
+  static hideStatus(statusId: string): void {
+    ExtensionHost.instance?.hideStatus(statusId);
   }
 
   /**
