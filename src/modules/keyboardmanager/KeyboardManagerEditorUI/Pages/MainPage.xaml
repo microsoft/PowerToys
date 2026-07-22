@@ -68,6 +68,7 @@
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -96,6 +97,7 @@
             <Grid RowSpacing="16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="48" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <Grid VerticalAlignment="Top">
@@ -109,8 +111,83 @@
                         </StackPanel>
                     </Button>
                 </Grid>
+
+                <!--  Search / filter / bulk-select bar  -->
+                <Grid Grid.Row="1" Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ScrollViewer
+                        HorizontalScrollBarVisibility="Auto"
+                        HorizontalScrollMode="Auto"
+                        VerticalScrollMode="Disabled">
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                            <AutoSuggestBox
+                                x:Name="SearchBox"
+                                x:Uid="FilterSearchBox"
+                                MinWidth="220"
+                                VerticalAlignment="Center"
+                                QueryIcon="Find"
+                                TextChanged="SearchBox_TextChanged" />
+                            <ToggleButton
+                                x:Name="WinFilterToggle"
+                                x:Uid="FilterWinToggle"
+                                Checked="ModifierFilter_Changed"
+                                Unchecked="ModifierFilter_Changed" />
+                            <ToggleButton
+                                x:Name="CtrlFilterToggle"
+                                x:Uid="FilterCtrlToggle"
+                                Checked="ModifierFilter_Changed"
+                                Unchecked="ModifierFilter_Changed" />
+                            <ToggleButton
+                                x:Name="AltFilterToggle"
+                                x:Uid="FilterAltToggle"
+                                Checked="ModifierFilter_Changed"
+                                Unchecked="ModifierFilter_Changed" />
+                            <ToggleButton
+                                x:Name="ShiftFilterToggle"
+                                x:Uid="FilterShiftToggle"
+                                Checked="ModifierFilter_Changed"
+                                Unchecked="ModifierFilter_Changed" />
+                            <ComboBox
+                                x:Name="AppFilterCombo"
+                                MinWidth="150"
+                                VerticalAlignment="Center"
+                                ItemsSource="{x:Bind AppFilterOptions}"
+                                SelectedIndex="0"
+                                SelectionChanged="AppFilterCombo_SelectionChanged" />
+                            <Button
+                                x:Name="ClearFiltersBtn"
+                                x:Uid="FilterClearBtn"
+                                Click="ClearFilters_Click" />
+                        </StackPanel>
+                    </ScrollViewer>
+                    <StackPanel
+                        Grid.Column="1"
+                        Margin="8,0,0,0"
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        VerticalAlignment="Center">
+                        <ToggleButton
+                            x:Name="SelectionModeToggle"
+                            x:Uid="SelectModeToggle"
+                            Click="SelectionModeToggle_Click" />
+                        <Button
+                            x:Name="DeleteSelectedBtn"
+                            Click="DeleteSelectedBtn_Click"
+                            Content="{x:Bind DeleteSelectedLabel, Mode=OneWay}"
+                            IsEnabled="{x:Bind HasSelection, Mode=OneWay}"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Visibility="{x:Bind IsSelectionMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </Grid>
+
                 <Grid
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
@@ -162,11 +239,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="RemappingsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="RemappingsList_ItemClick"
                                                 ItemsSource="{x:Bind RemappingList}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:Remapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -257,11 +336,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="TextListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="TextMappingsList_ItemClick"
                                                 ItemsSource="{x:Bind TextMappings}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:TextMapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -346,11 +427,13 @@
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
 
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="ProgramsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="ProgramShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind ProgramShortcuts}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:ProgramShortcut">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -463,11 +546,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="UrlsListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="UrlShortcutsList_ItemClick"
                                                 ItemsSource="{x:Bind UrlShortcuts}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:URLShortcut">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -551,11 +636,13 @@
                                                 HorizontalAlignment="Stretch"
                                                 Fill="{ThemeResource CardStrokeColorDefaultBrush}" />
                                             <ListView
-                                                IsItemClickEnabled="True"
+                                                x:Name="DisabledListView"
+                                                IsItemClickEnabled="{x:Bind IsNotSelectionMode, Mode=OneWay}"
                                                 ItemClick="DisabledList_ItemClick"
                                                 ItemsSource="{x:Bind DisabledList}"
                                                 ScrollViewer.VerticalScrollMode="Disabled"
-                                                SelectionMode="None">
+                                                SelectionChanged="MappingList_SelectionChanged"
+                                                SelectionMode="{x:Bind ListSelectionMode, Mode=OneWay}">
                                                 <ListView.ItemTemplate>
                                                     <DataTemplate x:DataType="helper:Remapping">
                                                         <Grid MinHeight="48" Padding="0,8,0,8">
@@ -612,6 +699,33 @@
                                 </Grid>
                             </ScrollViewer>
                         </tkcontrols:Case>
+                        <tkcontrols:Case Value="NoResults">
+                            <StackPanel
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="8">
+                                <FontIcon
+                                    HorizontalAlignment="Center"
+                                    FontSize="24"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE721;" />
+                                <TextBlock
+                                    x:Uid="NoResultsTitle"
+                                    HorizontalAlignment="Center"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    x:Uid="NoResultsDescription"
+                                    HorizontalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    TextAlignment="Center" />
+                                <Button
+                                    x:Uid="NoResultsClearBtn"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Center"
+                                    Click="ClearFilters_Click" />
+                            </StackPanel>
+                        </tkcontrols:Case>
                     </tkcontrols:SwitchPresenter>
                 </Grid>
 
@@ -636,6 +750,14 @@
                     x:Uid="DeleteConfirmationDialog"
                     DefaultButton="Primary">
                     <TextBlock x:Uid="DeleteConfirmationDialogContent" TextWrapping="Wrap" />
+                </ContentDialog>
+
+                <!--  Confirmation Dialog for bulk delete  -->
+                <ContentDialog
+                    x:Name="BulkDeleteConfirmationDialog"
+                    x:Uid="BulkDeleteConfirmationDialog"
+                    DefaultButton="Close">
+                    <TextBlock x:Name="BulkDeleteConfirmationText" TextWrapping="Wrap" />
                 </ContentDialog>
             </Grid>
         </ContentControl>
