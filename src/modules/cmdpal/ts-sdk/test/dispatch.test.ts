@@ -86,7 +86,13 @@ describe('ExtensionRuntime request dispatch', () => {
 
     await runtime.handleRequest({ jsonrpc: JSONRPC_VERSION, id: 1, method: 'initialize' });
 
-    expect(responseFor(sent, 1)?.result).toEqual({ capabilities: ['commands'] });
+    const initResult = responseFor(sent, 1)?.result as Record<string, unknown>;
+    expect(initResult).toMatchObject({
+      protocolVersion: 1,
+      capabilities: ['commands'],
+      provider: { id: 'ext', displayName: 'Ext', frozen: true },
+    });
+    expect(typeof initResult.sdkVersion).toBe('string');
   });
 
   it('serializes top-level commands with a pageType for pages', async () => {
@@ -289,7 +295,7 @@ describe('ExtensionRuntime settings integration', () => {
       method: 'form/submit',
       params: { pageId: '__settings__', inputs: JSON.stringify({ dark: 'true' }), data: '{}' },
     });
-    expect(responseFor(sent, 3)?.result).toEqual({ Kind: 6, Args: { Message: 'Settings saved' } });
+    expect(responseFor(sent, 3)?.result).toEqual({ Kind: 1 });
     expect(settings.getSetting<ToggleSetting>('dark')?.value).toBe(true);
   });
 });

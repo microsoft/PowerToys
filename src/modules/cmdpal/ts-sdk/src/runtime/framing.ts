@@ -14,6 +14,10 @@
  *
  * where `<byte-count>` is the UTF-8 byte length of the body, not its character
  * length.
+ *
+ * The transport owns `stdout` exclusively: only framed protocol messages may be
+ * written to it. Author logging is redirected to `stderr` when the server
+ * claims the protocol `stdout`, so a stray `console.log` cannot corrupt a frame.
  */
 
 const HEADER_TERMINATOR = Buffer.from('\r\n\r\n', 'ascii');
