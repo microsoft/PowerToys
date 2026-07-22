@@ -952,6 +952,16 @@ namespace
     // elevated step completed; false if declined / no session (harmless orphan).
     bool TryUnregisterAndRemoveElevated(const std::wstring& userSid, const wchar_t* packageName)
     {
+        // Defensive: escape single quotes so the SID can't break out of the
+        // PowerShell single-quoted literal (SIDs are quote-free in practice, but
+        // this keeps the elevated command construction robust). packageName and
+        // the exe name are compile-time constants, so they need no escaping.
+        std::wstring sidLit = userSid;
+        for (size_t p = sidLit.find(L'\''); p != std::wstring::npos; p = sidLit.find(L'\'', p + 2))
+        {
+            sidLit.insert(p, 1, L'\'');
+        }
+
         std::wstring params =
             L"-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \""
             L"$loc = (Get-AppxPackage -Name '";
@@ -960,7 +970,7 @@ namespace
                   L"if ($loc) { & (Join-Path $loc '";
         params += kPTSettingsSvcExeName;
         params += L"') --unregister '";
-        params += userSid;
+        params += sidLit;
         params += L"' }; "
                   L"Get-AppxPackage -Name '";
         params += packageName;

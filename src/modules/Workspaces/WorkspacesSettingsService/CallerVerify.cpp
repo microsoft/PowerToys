@@ -18,14 +18,22 @@ namespace PTSettingsSvc
 {
     namespace
     {
-        // WinVerifyTrust with no UI; confirms the embedded signature is valid
-        // and chains to a trusted root.  Runs in the service's own security
-        // context, so it consults the machine trust stores, not the caller's.
-        bool EmbeddedSignatureChainsToTrustedRoot(const std::wstring& path)
+        // Verifies the embedded Authenticode signature of the image behind
+        // `hFile` AND that the signer leaf subject is "Microsoft Corporation".
+        //
+        // Runs WinVerifyTrust in the CURRENT thread's security context — the
+        // caller guarantees that is the service's own (SYSTEM) context, so the
+        // chain is built against the MACHINE trust store and a user-poisoned
+        // CurrentUser\Root cannot make a forged signer validate.  Reading the
+        // image is done through `hFile` (opened earlier while impersonating,
+        // since a per-user image is user-only readable); the signer is pulled
+        // from the verified provider data, so the file is not re-read by path.
+        bool ImageIsMicrosoftSigned(HANDLE hFile, const std::wstring& pathForDisplay)
         {
             WINTRUST_FILE_INFO fileInfo = {};
             fileInfo.cbStruct = sizeof(fileInfo);
-            fileInfo.pcwszFilePath = path.c_str();
+            fileInfo.pcwszFilePath = pathForDisplay.c_str();
+            fileInfo.hFile = hFile; // read via this handle, not by re-opening the path
 
             GUID action = WINTRUST_ACTION_GENERIC_VERIFY_V2;
 
@@ -43,98 +51,53 @@ namespace PTSettingsSvc
             HWND noWindow = static_cast<HWND>(INVALID_HANDLE_VALUE);
             LONG status = WinVerifyTrust(noWindow, &action, &wd);
 
-            wd.dwStateAction = WTD_STATEACTION_CLOSE;
-            WinVerifyTrust(noWindow, &action, &wd);
-
-            return status == ERROR_SUCCESS;
-        }
-
-        // Extracts the signer leaf certificate's simple display name and checks
-        // it is "Microsoft Corporation".  Production should pin the exact cert
-        // (public key / thumbprint) rather than the subject string.
-        bool SignerSubjectIsMicrosoft(const std::wstring& path)
-        {
-            HCERTSTORE store = nullptr;
-            HCRYPTMSG msg = nullptr;
-            DWORD encoding = 0;
-            DWORD contentType = 0;
-            DWORD formatType = 0;
-
-            if (!CryptQueryObject(CERT_QUERY_OBJECT_FILE,
-                                  path.c_str(),
-                                  CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
-                                  CERT_QUERY_FORMAT_FLAG_BINARY,
-                                  0,
-                                  &encoding,
-                                  &contentType,
-                                  &formatType,
-                                  &store,
-                                  &msg,
-                                  nullptr))
-            {
-                return false;
-            }
-
             bool isMicrosoft = false;
-
-            DWORD signerInfoSize = 0;
-            if (CryptMsgGetParam(msg, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &signerInfoSize) &&
-                signerInfoSize > 0)
+            if (status == ERROR_SUCCESS)
             {
-                std::vector<BYTE> signerInfoBuf(signerInfoSize);
-                if (CryptMsgGetParam(msg, CMSG_SIGNER_INFO_PARAM, 0, signerInfoBuf.data(), &signerInfoSize))
+                // Chain is valid AND chains to a trusted root (machine store,
+                // because we run as SYSTEM).  Confirm the signer leaf subject is
+                // Microsoft, read from the verified provider data — no second
+                // pass over the file, and no attacker-influenced trust store.
+                CRYPT_PROVIDER_DATA* prov = WTHelperProvDataFromStateData(wd.hWVTStateData);
+                if (prov)
                 {
-                    auto signerInfo = reinterpret_cast<CMSG_SIGNER_INFO*>(signerInfoBuf.data());
-
-                    CERT_INFO certInfo = {};
-                    certInfo.Issuer = signerInfo->Issuer;
-                    certInfo.SerialNumber = signerInfo->SerialNumber;
-
-                    PCCERT_CONTEXT cert = CertFindCertificateInStore(
-                        store,
-                        X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                        0,
-                        CERT_FIND_SUBJECT_CERT,
-                        &certInfo,
-                        nullptr);
-
-                    if (cert)
+                    CRYPT_PROVIDER_SGNR* signer =
+                        WTHelperGetProvSignerFromChain(prov, 0, FALSE, 0);
+                    if (signer && signer->csCertChain > 0)
                     {
-                        wchar_t name[256] = {};
-                        DWORD n = CertGetNameStringW(cert,
-                                                     CERT_NAME_SIMPLE_DISPLAY_TYPE,
-                                                     0,
-                                                     nullptr,
-                                                     name,
-                                                     ARRAYSIZE(name));
-                        if (n > 1)
+                        CRYPT_PROVIDER_CERT* leaf = WTHelperGetProvCertFromChain(signer, 0);
+                        if (leaf && leaf->pCert)
                         {
-                            isMicrosoft = (wcsstr(name, L"Microsoft Corporation") != nullptr);
+                            wchar_t name[256] = {};
+                            DWORD n = CertGetNameStringW(leaf->pCert,
+                                                        CERT_NAME_SIMPLE_DISPLAY_TYPE,
+                                                        0,
+                                                        nullptr,
+                                                        name,
+                                                        ARRAYSIZE(name));
+                            if (n > 1)
+                            {
+                                isMicrosoft = (wcsstr(name, L"Microsoft Corporation") != nullptr);
+                            }
                         }
-                        CertFreeCertificateContext(cert);
                     }
                 }
             }
 
-            if (msg)
-            {
-                CryptMsgClose(msg);
-            }
-            if (store)
-            {
-                CertCloseStore(store, 0);
-            }
+            wd.dwStateAction = WTD_STATEACTION_CLOSE;
+            WinVerifyTrust(noWindow, &action, &wd);
+
             return isMicrosoft;
         }
     }
 
-    bool VerifyMicrosoftSignature(const std::wstring& path)
+    bool VerifyMicrosoftSignature(HANDLE hImage, const std::wstring& pathForDisplay)
     {
-        if (path.empty())
+        if (hImage == nullptr || hImage == INVALID_HANDLE_VALUE)
         {
             return false;
         }
-        return EmbeddedSignatureChainsToTrustedRoot(path) && SignerSubjectIsMicrosoft(path);
+        return ImageIsMicrosoftSigned(hImage, pathForDisplay);
     }
 
     unsigned long long GetBinaryVersion(const std::wstring& path)

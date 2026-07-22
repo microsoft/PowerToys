@@ -105,6 +105,28 @@ namespace PTSettingsSvc
             return GetServiceBinRoot() + L"\\" + ver;
         }
 
+        // Prepares a staging directory to receive the elevated exe copy.  A
+        // non-admin could pre-create SettingsSvcBin (or the version subdir) as a
+        // junction/symlink to redirect our privileged CopyFile, or as a plain
+        // directory with attacker-friendly permissions.  So: refuse to follow a
+        // pre-existing reparse point (remove it), then create + apply the
+        // admin-only store DACL (SYSTEM/Admins Full, Authenticated Users RX,
+        // protected/no-inherit) BEFORE anything is written into it.  The final
+        // per-account DACL (adds the virtual account RX, owner=SYSTEM) is applied
+        // by ProtectServiceBinDir once the service — hence the account — exists.
+        HRESULT EnsureHardenedStagingDir(const std::wstring& dir)
+        {
+            DWORD attr = GetFileAttributesW(dir.c_str());
+            if (attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_REPARSE_POINT))
+            {
+                if (!RemoveDirectoryW(dir.c_str()))
+                {
+                    return HRESULT_FROM_WIN32(GetLastError());
+                }
+            }
+            return EnsureStoreRoot(dir);
+        }
+
         // Upgrade tidy-up: remove every version subfolder under SettingsSvcBin
         // except `keepDir` (the version the service now runs from).  Without this,
         // each upgrade leaves the previous version's exe copy behind and they
@@ -230,9 +252,19 @@ namespace PTSettingsSvc
             }
 
             // Stage the runnable copy (idempotent; overwrites on re-register).
+            // Harden the staging dirs (reject pre-planted reparse points + apply
+            // the admin-only DACL) BEFORE writing the elevated exe into them.
             t = NowMs();
-            EnsureDirectory(GetServiceBinRoot());
-            EnsureDirectory(binDir);
+            if (FAILED(EnsureHardenedStagingDir(GetServiceBinRoot())) ||
+                FAILED(EnsureHardenedStagingDir(binDir)))
+            {
+                rc = static_cast<int>(GetLastError());
+                if (rc == 0) { rc = static_cast<int>(ERROR_ACCESS_DENIED); }
+                RegLog(L"harden-staging-dir FAILED rc=" + std::to_wstring(rc));
+                if (svc) { CloseServiceHandle(svc); }
+                CloseServiceHandle(scm);
+                return rc;
+            }
             if (!CopyFileW(srcExe.c_str(), runExe.c_str(), FALSE))
             {
                 rc = static_cast<int>(GetLastError());

@@ -191,20 +191,44 @@ namespace PTSettingsSvc
 
         // The caller binary often lives under %LocalAppData% (per-user install),
         // which is ACL'd to the user only.  The service account cannot read it,
-        // so canonicalization and the signature/version checks MUST run while we
-        // are still impersonating the client (which can read its own image).
+        // so canonicalization, the (attacker-writable, non-security) version
+        // read, and OPENING the image handle run while we are still impersonating
+        // the client.  The Authenticode TRUST decision, however, must NOT run
+        // under impersonation: WinVerifyTrust would build the chain against the
+        // caller's CurrentUser\Root, so a non-admin could trust a self-signed
+        // root and forge a "Microsoft Corporation" signer, defeating this anchor.
+        // We therefore only OPEN the handle here and verify AFTER RevertToSelf().
         std::wstring canonical;
         bool sigMicrosoft = false;
         unsigned long long callerVersion = 0;
+        HANDLE hImage = INVALID_HANDLE_VALUE;
         if (gotImage)
         {
             canonical = CanonicalizePath(exePath);
-            sigMicrosoft = VerifyMicrosoftSignature(canonical);
+            hImage = CreateFileW(canonical.c_str(),
+                                 GENERIC_READ,
+                                 FILE_SHARE_READ | FILE_SHARE_DELETE,
+                                 nullptr,
+                                 OPEN_EXISTING,
+                                 FILE_ATTRIBUTE_NORMAL,
+                                 nullptr);
             callerVersion = GetBinaryVersion(canonical);
         }
 
-        // Revert before we touch any service-side resources (file IO etc).
+        // Revert before we touch any service-side resources (file IO etc) AND
+        // before the signature trust decision, so WinVerifyTrust consults the
+        // service's own (SYSTEM) machine trust store rather than the caller's.
         RevertToSelf();
+
+        // Now in the service's own context: verify the signature through the
+        // handle opened under impersonation.  SYSTEM cannot re-open a per-user
+        // image by path, but it can read through the already-open handle, while
+        // the chain is built against the machine trust store.
+        if (hImage != INVALID_HANDLE_VALUE)
+        {
+            sigMicrosoft = VerifyMicrosoftSignature(hImage, canonical);
+            CloseHandle(hImage);
+        }
 
         if (!hProc)
         {
