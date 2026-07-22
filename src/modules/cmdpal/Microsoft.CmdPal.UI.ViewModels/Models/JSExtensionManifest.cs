@@ -70,11 +70,6 @@ public sealed record JSExtensionManifest
     public JSExtensionEngines? Engines { get; init; }
 
     /// <summary>
-    /// Gets the capabilities declared by the extension (cmdpal.capabilities).
-    /// </summary>
-    public string[]? Capabilities { get; init; }
-
-    /// <summary>
     /// Gets the effective display name, falling back to <see cref="Name"/> when no display name is set.
     /// </summary>
     public string EffectiveDisplayName => string.IsNullOrWhiteSpace(DisplayName) ? Name ?? string.Empty : DisplayName;
@@ -178,16 +173,71 @@ public sealed record JSExtensionManifest
             Version = package.Version,
             Description = package.Description,
             Icon = package.CmdPal.Icon,
-            Publisher = package.CmdPal.Publisher,
+            Publisher = ResolvePublisher(package),
             Main = entryPoint,
             EntryPointPath = resolvedEntryPoint,
             Debug = package.CmdPal.Debug,
             DebugPort = package.CmdPal.DebugPort,
             Engines = package.Engines,
-            Capabilities = package.CmdPal.Capabilities,
         };
 
         return JSExtensionManifestParseResult.Success(manifest);
+    }
+
+    /// <summary>
+    /// Resolves the publisher name. The explicit cmdpal.publisher value wins. When it is
+    /// absent or whitespace, the name portion of the top-level npm "author" field is used.
+    /// Returns null when neither source provides a name.
+    /// </summary>
+    private static string? ResolvePublisher(JSPackageJson package)
+    {
+        if (!string.IsNullOrWhiteSpace(package.CmdPal?.Publisher))
+        {
+            return package.CmdPal.Publisher;
+        }
+
+        return ExtractAuthorName(package.Author);
+    }
+
+    /// <summary>
+    /// Extracts the author name from the npm "author" field. The field is either a string
+    /// such as "Jane Doe &lt;jane@example.com&gt; (https://example.com)" or an object with a
+    /// "name" property. For the string form, the substring before the first '&lt;' or '('
+    /// delimiter is taken. Returns null when no usable name can be determined.
+    /// </summary>
+    private static string? ExtractAuthorName(JsonElement? author)
+    {
+        if (author is not { } authorElement)
+        {
+            return null;
+        }
+
+        switch (authorElement.ValueKind)
+        {
+            case JsonValueKind.String:
+                var raw = authorElement.GetString();
+                if (string.IsNullOrWhiteSpace(raw))
+                {
+                    return null;
+                }
+
+                var end = raw.AsSpan().IndexOfAny('<', '(');
+                var name = (end >= 0 ? raw[..end] : raw).Trim();
+                return string.IsNullOrEmpty(name) ? null : name;
+
+            case JsonValueKind.Object:
+                if (authorElement.TryGetProperty("name", out var nameElement) &&
+                    nameElement.ValueKind == JsonValueKind.String)
+                {
+                    var objectName = nameElement.GetString();
+                    return string.IsNullOrWhiteSpace(objectName) ? null : objectName.Trim();
+                }
+
+                return null;
+
+            default:
+                return null;
+        }
     }
 
     private static string? ResolveEntryPoint(string extensionDirectory, string entryPoint, out string? error)

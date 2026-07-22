@@ -12,8 +12,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class JSExtensionManifestTests
 {
-    private static readonly string[] ExpectedCapabilities = ["commands"];
-
     private string _testDirectory = null!;
 
     [TestInitialize]
@@ -47,7 +45,6 @@ public class JSExtensionManifestTests
                 "displayName": "Sample Extension",
                 "icon": "icon.png",
                 "publisher": "sample-publisher",
-                "capabilities": ["commands"],
                 "debug": true,
                 "debugPort": 9230
             }
@@ -65,8 +62,6 @@ public class JSExtensionManifestTests
         Assert.AreEqual("Sample Extension", manifest.DisplayName);
         Assert.AreEqual("icon.png", manifest.Icon);
         Assert.AreEqual("sample-publisher", manifest.Publisher);
-        Assert.IsNotNull(manifest.Capabilities);
-        CollectionAssert.AreEqual(ExpectedCapabilities, manifest.Capabilities);
         Assert.IsTrue(manifest.Debug);
         Assert.AreEqual(9230, manifest.DebugPort);
         Assert.AreEqual(">=18", manifest.Engines!.Node);
@@ -315,6 +310,81 @@ public class JSExtensionManifestTests
         {
             File.Delete(escapeTarget);
         }
+    }
+
+    [TestMethod]
+    public void TryParse_PublisherFromAuthorString_WhenNoCmdPalPublisher()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "author-string",
+            "main": "index.js",
+            "author": "Jane Doe <jane@example.com> (https://example.com)",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("Jane Doe", result.Manifest!.Publisher);
+    }
+
+    [TestMethod]
+    public void TryParse_PublisherFromAuthorObject_WhenNoCmdPalPublisher()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "author-object",
+            "main": "index.js",
+            "author": { "name": "Acme Corp", "email": "dev@acme.example", "url": "https://acme.example" },
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("Acme Corp", result.Manifest!.Publisher);
+    }
+
+    [TestMethod]
+    public void TryParse_CmdPalPublisher_TakesPrecedenceOverAuthor()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "precedence",
+            "main": "index.js",
+            "author": "Author Name",
+            "cmdpal": { "publisher": "cmdpal-publisher" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("cmdpal-publisher", result.Manifest!.Publisher);
+    }
+
+    [TestMethod]
+    public void TryParse_NoPublisherAndNoAuthor_LeavesPublisherNull()
+    {
+        CreateEntryPoint("index.js");
+        const string Json = """
+        {
+            "name": "no-publisher",
+            "main": "index.js",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.IsNull(result.Manifest!.Publisher);
     }
 
     private void CreateEntryPoint(string relativePath)
