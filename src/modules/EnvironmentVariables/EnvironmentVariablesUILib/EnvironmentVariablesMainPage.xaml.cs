@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.Input;
+using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -66,6 +67,8 @@ namespace EnvironmentVariablesUILib
 
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
+
+            UpdateEditVariableDialogPrimaryButtonState();
 
             await EditVariableDialog.ShowAsync();
         }
@@ -147,13 +150,19 @@ namespace EnvironmentVariablesUILib
             {
                 if (AddVariableSwitchPresenter.Value as string == "NewVariable")
                 {
-                    profile.Variables.Add(new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile));
+                    var variable = new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile);
+                    if (variable.Validate() && !profile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
+                    {
+                        profile.Variables.Add(variable);
+                    }
                 }
                 else
                 {
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
-                        if (!profile.Variables.Where(x => x.Name == variable.Name).Any())
+                        if (!profile.Variables.Any(x =>
+                            EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
                         {
                             var clone = variable.Clone(true);
                             profile.Variables.Add(clone);
@@ -216,20 +225,39 @@ namespace EnvironmentVariablesUILib
 
         private void AddNewVariableName_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextBox nameTxtBox = sender as TextBox;
-            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            UpdateConfirmAddVariableButtonState();
+        }
 
-            if (nameTxtBox != null)
+        private void AddNewVariableValue_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateConfirmAddVariableButtonState();
+        }
+
+        private void UpdateConfirmAddVariableButtonState()
+        {
+            var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (profile == null)
             {
-                if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
-                {
-                    ConfirmAddVariableBtn.IsEnabled = false;
-                }
-                else
-                {
-                    ConfirmAddVariableBtn.IsEnabled = true;
-                }
+                ConfirmAddVariableBtn.IsEnabled = false;
+                return;
             }
+
+            if (AddVariableSwitchPresenter.Value as string == "NewVariable")
+            {
+                var variable = new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile);
+
+                ConfirmAddVariableBtn.IsEnabled =
+                    variable.Validate()
+                    && !profile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
+
+                return;
+            }
+
+            ConfirmAddVariableBtn.IsEnabled = ExistingVariablesListView.SelectedItems
+                .OfType<Variable>()
+                .Any(variable => !profile.Variables.Any(x =>
+                    EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)));
         }
 
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -247,7 +275,8 @@ namespace EnvironmentVariablesUILib
             if (e.AddedItems.Count > 0)
             {
                 var list = sender as ListView;
-                var duplicates = list.SelectedItems.GroupBy(x => ((Variable)x).Name.ToLowerInvariant()).Where(g => g.Count() > 1).ToList();
+                var duplicates = EnvironmentVariableComparisonHelper.GetDuplicateNameGroups(
+                    list.SelectedItems.Cast<Variable>()).ToList();
 
                 foreach (var dup in duplicates)
                 {
@@ -262,7 +291,7 @@ namespace EnvironmentVariablesUILib
                 Variable removedVariable = e.RemovedItems[0] as Variable;
                 for (int i = 0; i < profile.Variables.Count; i++)
                 {
-                    if (profile.Variables[i].Name == removedVariable.Name && profile.Variables[i].Values == removedVariable.Values)
+                    if (EnvironmentVariableComparisonHelper.EntriesEqual(profile.Variables[i], removedVariable))
                     {
                         toRemove = i;
                         break;
@@ -275,18 +304,7 @@ namespace EnvironmentVariablesUILib
                 }
             }
 
-            ConfirmAddVariableBtn.IsEnabled = false;
-            foreach (Variable variable in ExistingVariablesListView.SelectedItems)
-            {
-                if (variable != null)
-                {
-                    if (!profile.Variables.Where(x => x.Name.Equals(variable.Name, StringComparison.Ordinal) && x.Values.Equals(variable.Values, StringComparison.Ordinal)).Any())
-                    {
-                        ConfirmAddVariableBtn.IsEnabled = true;
-                        break;
-                    }
-                }
-            }
+            UpdateConfirmAddVariableButtonState();
         }
 
         private async void EditProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -318,9 +336,10 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (var profileItem in profile.Variables)
                     {
-                        if (profileItem.Name == item.Name && profileItem.Values == item.Values)
+                        if (EnvironmentVariableComparisonHelper.EntriesEqual(profileItem, item))
                         {
-                            if (ExistingVariablesListView.SelectedItems.Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase)).Any())
+                            if (ExistingVariablesListView.SelectedItems.Any(x =>
+                                EnvironmentVariableComparisonHelper.NamesEqual(((Variable)x).Name, profileItem.Name)))
                             {
                                 continue;
                             }
@@ -347,6 +366,8 @@ namespace EnvironmentVariablesUILib
             var variableType = set.Id == VariablesSet.SystemGuid ? VariablesSetType.System : VariablesSetType.User;
             AddDefaultVariableDialog.DataContext = new Variable(string.Empty, string.Empty, variableType);
 
+            UpdateAddDefaultVariableDialogButtonState();
+
             await AddDefaultVariableDialog.ShowAsync();
         }
 
@@ -363,65 +384,95 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var txtBox = sender as TextBox;
             var variable = EditVariableDialog.DataContext as Variable;
-            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
-            var variableSet = param.Set;
 
-            if (variableSet == null)
+            // Ensure Name is current regardless of binding timing.
+            if (variable != null)
             {
-                // default set
-                variableSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
+                variable.Name = txtBox.Text;
             }
 
-            if (variableSet != null)
-            {
-                if (variableSet.Variables.Where(x => x.Name.Equals(EditVariableDialogNameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any() || !variable.Valid)
-                {
-                    EditVariableDialog.IsPrimaryButtonEnabled = false;
-                }
-                else
-                {
-                    EditVariableDialog.IsPrimaryButtonEnabled = true;
-                }
-            }
-
-            if (!variable.Validate())
-            {
-                EditVariableDialog.IsPrimaryButtonEnabled = false;
-            }
+            UpdateEditVariableDialogPrimaryButtonState();
         }
 
         private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextBox nameTxtBox = sender as TextBox;
+            var txtBox = sender as TextBox;
             var variable = AddDefaultVariableDialog.DataContext as Variable;
-            var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
 
-            if (nameTxtBox != null)
+            // Ensure Name is current regardless of binding timing.
+            if (variable != null)
             {
-                if (nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
-                {
-                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
-                }
-                else
-                {
-                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
-                }
+                variable.Name = txtBox.Text;
             }
 
-            if (!variable.Validate())
+            UpdateAddDefaultVariableDialogButtonState();
+        }
+
+        private void AddDefaultVariableValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var txtBox = sender as TextBox;
+            var variable = AddDefaultVariableDialog.DataContext as Variable;
+
+            // Ensure Values is current regardless of binding timing.
+            if (variable != null)
+            {
+                variable.Values = txtBox.Text;
+            }
+
+            UpdateAddDefaultVariableDialogButtonState();
+        }
+
+        private void UpdateAddDefaultVariableDialogButtonState()
+        {
+            var variable = AddDefaultVariableDialog.DataContext as Variable;
+            if (variable == null)
             {
                 AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
             }
+
+            var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
+            bool isDuplicate = defaultSet.Variables.Any(x =>
+                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
+            AddDefaultVariableDialog.IsPrimaryButtonEnabled = !isDuplicate && variable.Validate();
         }
 
         private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             var txtBox = sender as TextBox;
             var variable = EditVariableDialog.DataContext as Variable;
-            EditVariableDialog.IsPrimaryButtonEnabled = true;
 
+            // Ensure Values is current regardless of binding timing.
+            variable.Values = txtBox.Text;
             variable.ValuesList = Variable.ValuesStringToValuesListItemCollection(txtBox.Text);
+            UpdateEditVariableDialogPrimaryButtonState();
+        }
+
+        private void UpdateEditVariableDialogPrimaryButtonState()
+        {
+            var variable = EditVariableDialog.DataContext as Variable;
+            var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
+
+            if (variable == null || param == null)
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            var variableSet = param.Set;
+            if (variableSet == null)
+            {
+                variableSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
+            }
+
+            bool hasDuplicate = variableSet != null
+                && variableSet.Variables.Any(x =>
+                    !ReferenceEquals(x, param.Variable)
+                    && EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
+
+            EditVariableDialog.IsPrimaryButtonEnabled = !hasDuplicate && variable.Validate();
         }
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
