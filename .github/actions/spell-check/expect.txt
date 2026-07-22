@@ -687,6 +687,8 @@ hdwwiz
 Headered
 Helpline
 helptext
+HELPTEXTA
+HELPTEXTW
 hgdiobj
 HGFE
 hglobal
@@ -2005,6 +2007,8 @@ uwp
 uxt
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 VARTYPE
@@ -2020,6 +2024,7 @@ VCRT
 vcruntime
 vcvars
 vdupq
+VERBA
 VERBSONLY
 VERBW
 VERIFYCONTEXT
