@@ -31,7 +31,7 @@ Shortcuts:
             Shift: false
             Alt: true
             Keys:
-              - <PrtScn>
+              - <PrtScr>
       - Name: Capture fullscreen
         Shortcut:
           - Win: false
