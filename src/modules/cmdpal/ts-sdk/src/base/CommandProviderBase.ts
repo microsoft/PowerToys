@@ -36,8 +36,11 @@ export abstract class CommandProviderBase implements ICommandProvider {
 
   /** Icon shown for the extension. Defaults to none. */
   icon?: IconInfo | null = null;
-  /** When `true`, the palette caches commands and does not re-query them. */
-  frozen?: boolean = false;
+  /**
+   * When `true`, the palette caches commands and does not re-query them.
+   * Defaults to `true`, matching the Command Palette toolkit default.
+   */
+  frozen?: boolean = true;
   /** Settings surface for the extension, or `null` when it has none. */
   settings?: ICommandSettings | null = null;
 

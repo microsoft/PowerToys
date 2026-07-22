@@ -1,0 +1,13 @@
+{
+  "displayName": "Frozen Extension",
+  "frozen": true,
+  "icon": {
+    "dark": {
+      "icon": ""
+    },
+    "light": {
+      "icon": ""
+    }
+  },
+  "id": "ext.frozen"
+}
