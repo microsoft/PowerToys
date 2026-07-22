@@ -38,6 +38,8 @@ namespace PowerDisplay.Helpers
         private const uint WmMouseMove = 0x0200;
         private const long BoundsCacheLifetimeMs = 1000;
         private const uint MaxSampleAgeMs = 500;
+        private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
@@ -46,6 +48,7 @@ namespace PowerDisplay.Helpers
         private readonly uint _wmTaskbarRestart;
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly WheelDeltaAccumulator _wheelDeltaAccumulator = new();
+        private readonly TrayIconRegistrationBackoff _registrationBackoff = new();
 
         private Window? _window;
         private nint _hwnd;
@@ -55,10 +58,14 @@ namespace PowerDisplay.Helpers
         private nint _largeIcon;
         private nint _popupMenu;
         private TrayIconMouseWheelListener? _mouseWheelListener;
+        private DispatcherQueueTimer? _registrationTimer;
         private MouseWheelControlMode _mouseWheelControlMode;
         private TrayIconBounds? _cachedBounds;
         private long _boundsCacheTimestamp;
         private long _hoverGeneration;
+        private bool _desiredTrayIconVisible;
+        private bool _isTrayIconRegistered;
+        private bool _registrationFailureLogged;
         private bool _sampleDispatchFailureLogged;
         private bool _boundsFailureLogged;
 
@@ -92,98 +99,38 @@ namespace PowerDisplay.Helpers
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             bool shouldShow = showSystemTrayIcon ?? settings.Properties.ShowSystemTrayIcon;
             var mouseWheelMode = settings.Properties.MouseWheelControlMode.Normalize();
+            _desiredTrayIconVisible = shouldShow;
             UpdateMouseWheelMode(mouseWheelMode);
 
-            if (shouldShow)
-            {
-                if (_window is null)
-                {
-                    _window = new Window();
-                    _hwnd = WindowNative.GetWindowHandle(_window);
-
-                    // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-                    // member (and instead like, use a local), then the pointer we marshal
-                    // into the WindowLongPtr will be useless after we leave this function,
-                    // and our **WindProc will explode**.
-                    _trayWndProc = WindowProc;
-                    var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
-                    _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndproc, hotKeyPrcPointer);
-                }
-
-                if (_trayIconData is null)
-                {
-                    // We need to stash this handle, so it doesn't clean itself up. If
-                    // explorer restarts, we'll come back through here, and we don't
-                    // really need to re-load the icon in that case. We can just use
-                    // the handle from the first time.
-                    _largeIcon = GetAppIconHandle();
-                    unsafe
-                    {
-                        _trayIconData = new NOTIFYICONDATAW()
-                        {
-                            cbSize = (uint)sizeof(NOTIFYICONDATAW),
-                            hWnd = new HWND(_hwnd),
-                            uID = MyNotifyId,
-                            uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
-                            uCallbackMessage = WmTrayIcon,
-                            hIcon = new HICON(_largeIcon),
-                            szTip = GetString("AppName"),
-                        };
-                    }
-                }
-
-                var d = (NOTIFYICONDATAW)_trayIconData;
-
-                // Add the notification icon
-                unsafe
-                {
-                    bool success = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &d);
-                    if (!success)
-                    {
-                        // Shell_NotifyIcon can fail if explorer.exe isn't ready yet (e.g., during system startup)
-                        // Reset _trayIconData to allow retry via WM_WINDOWPOSCHANGING or WM_TASKBAR_RESTART
-                        Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed, will retry later");
-                        _trayIconData = null;
-                        DisposeMouseWheelListener();
-                        return;
-                    }
-                }
-
-                if (mouseWheelMode != MouseWheelControlMode.Disabled)
-                {
-                    EnsureMouseWheelListener();
-                }
-
-                if (_popupMenu == 0)
-                {
-                    _popupMenu = CreatePopupMenu();
-                    InsertMenuNative(_popupMenu, 0, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 1, GetString("TrayMenu_Settings"));
-                    InsertMenuNative(_popupMenu, 1, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 2, GetString("TrayMenu_Exit"));
-                }
-            }
-            else
+            if (!shouldShow)
             {
                 Destroy();
+                return;
             }
+
+            EnsureTrayIconIdentity();
+            EnsureTrayIconRegistration();
         }
 
         public void Destroy()
         {
+            _desiredTrayIconVisible = false;
+            StopRegistrationRecovery();
             DisposeMouseWheelListener();
             _mouseWheelControlMode = MouseWheelControlMode.Disabled;
             InvalidateMouseWheelHover(disarm: false);
 
-            if (_trayIconData is not null)
+            if (_isTrayIconRegistered && _trayIconData is not null)
             {
                 var d = (NOTIFYICONDATAW)_trayIconData;
                 unsafe
                 {
-                    if (Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_DELETE, &d))
-                    {
-                        _trayIconData = null;
-                    }
+                    Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_DELETE, &d);
                 }
             }
+
+            _isTrayIconRegistered = false;
+            _trayIconData = null;
 
             if (_popupMenu != 0)
             {
@@ -205,12 +152,183 @@ namespace PowerDisplay.Helpers
             }
         }
 
+        private void EnsureTrayIconIdentity()
+        {
+            if (_window is null)
+            {
+                _window = new Window();
+                _hwnd = WindowNative.GetWindowHandle(_window);
+
+                // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+                // member (and instead like, use a local), then the pointer we marshal
+                // into the WindowLongPtr will be useless after we leave this function,
+                // and our **WindProc will explode**.
+                _trayWndProc = WindowProc;
+                var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
+                _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndproc, hotKeyPrcPointer);
+            }
+
+            if (_trayIconData is not null)
+            {
+                return;
+            }
+
+            // Keep the identity and its resources stable while Explorer registration is recovered.
+            _largeIcon = GetAppIconHandle();
+            unsafe
+            {
+                _trayIconData = new NOTIFYICONDATAW()
+                {
+                    cbSize = (uint)sizeof(NOTIFYICONDATAW),
+                    hWnd = new HWND(_hwnd),
+                    uID = MyNotifyId,
+                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
+                    uCallbackMessage = WmTrayIcon,
+                    hIcon = new HICON(_largeIcon),
+                    szTip = GetString("AppName"),
+                };
+            }
+        }
+
+        private void EnsureTrayIconRegistration()
+        {
+            if (!_desiredTrayIconVisible || _trayIconData is null || _hwnd == 0)
+            {
+                return;
+            }
+
+            if (IsTrayIconRegistrationHealthy())
+            {
+                CompleteTrayIconRegistration();
+                return;
+            }
+
+            // Check again immediately before adding. Shell_NotifyIconGetRect can fail transiently
+            // while the existing registration remains valid.
+            if (IsTrayIconRegistrationHealthy())
+            {
+                CompleteTrayIconRegistration();
+                return;
+            }
+
+            MarkTrayIconRegistrationStale(resetBackoff: _isTrayIconRegistered, scheduleRecovery: false);
+
+            var data = (NOTIFYICONDATAW)_trayIconData;
+            bool added;
+            unsafe
+            {
+                added = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &data);
+            }
+
+            if (added)
+            {
+                CompleteTrayIconRegistration();
+                return;
+            }
+
+            DisposeMouseWheelListener();
+            if (!_registrationFailureLogged)
+            {
+                Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed; retrying registration");
+                _registrationFailureLogged = true;
+            }
+
+            ScheduleRegistrationCheck(_registrationBackoff.NextDelay());
+        }
+
+        private void CompleteTrayIconRegistration()
+        {
+            _isTrayIconRegistered = true;
+            _registrationBackoff.Reset();
+            _registrationFailureLogged = false;
+            EnsureMouseWheelListener();
+            EnsureTrayIconMenu();
+            ScheduleRegistrationCheck(RegistrationHealthInterval);
+        }
+
+        private void MarkTrayIconRegistrationStale(bool resetBackoff, bool scheduleRecovery)
+        {
+            if (_isTrayIconRegistered)
+            {
+                _isTrayIconRegistered = false;
+                InvalidateMouseWheelHover(disarm: true);
+                DisposeMouseWheelListener();
+            }
+
+            if (resetBackoff)
+            {
+                _registrationBackoff.Reset();
+            }
+
+            if (scheduleRecovery)
+            {
+                ScheduleRegistrationCheck(ImmediateRegistrationCheck);
+            }
+        }
+
+        private unsafe bool IsTrayIconRegistrationHealthy()
+        {
+            if (_trayIconData is null || _hwnd == 0)
+            {
+                return false;
+            }
+
+            var identifier = new NotifyIconIdentifier
+            {
+                CbSize = (uint)sizeof(NotifyIconIdentifier),
+                HWnd = _hwnd,
+                Id = MyNotifyId,
+                GuidItem = Guid.Empty,
+            };
+
+            return ShellNotifyIconGetRectNative(ref identifier, out _) >= 0;
+        }
+
+        private void EnsureTrayIconMenu()
+        {
+            if (_popupMenu == 0)
+            {
+                _popupMenu = CreatePopupMenu();
+                InsertMenuNative(_popupMenu, 0, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 1, GetString("TrayMenu_Settings"));
+                InsertMenuNative(_popupMenu, 1, (uint)(MENU_ITEM_FLAGS.MF_BYPOSITION | MENU_ITEM_FLAGS.MF_STRING), PInvoke.WM_USER + 2, GetString("TrayMenu_Exit"));
+            }
+        }
+
+        private void ScheduleRegistrationCheck(TimeSpan delay)
+        {
+            if (!_desiredTrayIconVisible)
+            {
+                return;
+            }
+
+            _registrationTimer ??= _dispatcherQueue.CreateTimer();
+            _registrationTimer.IsRepeating = false;
+            _registrationTimer.Tick -= OnRegistrationTimerTick;
+            _registrationTimer.Tick += OnRegistrationTimerTick;
+            _registrationTimer.Stop();
+            _registrationTimer.Interval = delay;
+            _registrationTimer.Start();
+        }
+
+        private void OnRegistrationTimerTick(DispatcherQueueTimer sender, object args)
+        {
+            sender.Stop();
+            EnsureTrayIconRegistration();
+        }
+
+        private void StopRegistrationRecovery()
+        {
+            _registrationTimer?.Stop();
+            _registrationBackoff.Reset();
+            _registrationFailureLogged = false;
+        }
+
         private void UpdateMouseWheelMode(MouseWheelControlMode mode)
         {
             mode = mode.Normalize();
             if (_mouseWheelControlMode == mode)
             {
-                if (mode != MouseWheelControlMode.Disabled && _trayIconData is not null)
+                if (mode != MouseWheelControlMode.Disabled && _isTrayIconRegistered)
                 {
                     EnsureMouseWheelListener();
                 }
@@ -225,7 +343,7 @@ namespace PowerDisplay.Helpers
             {
                 DisposeMouseWheelListener();
             }
-            else if (_trayIconData is not null)
+            else if (_isTrayIconRegistered)
             {
                 EnsureMouseWheelListener();
             }
@@ -338,7 +456,7 @@ namespace PowerDisplay.Helpers
         private unsafe bool TryGetCurrentIconBounds(out TrayIconBounds bounds)
         {
             bounds = default;
-            if (_hwnd == 0 || _trayIconData is null)
+            if (!_isTrayIconRegistered || _hwnd == 0 || _trayIconData is null)
             {
                 return false;
             }
@@ -352,8 +470,14 @@ namespace PowerDisplay.Helpers
             };
 
             var result = ShellNotifyIconGetRectNative(ref identifier, out var rect);
+            if (result < 0)
+            {
+                MarkTrayIconRegistrationStale(resetBackoff: true, scheduleRecovery: true);
+                return false;
+            }
+
             bounds = new TrayIconBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
-            if (result < 0 || !bounds.IsValid)
+            if (!bounds.IsValid)
             {
                 if (!_boundsFailureLogged)
                 {
@@ -493,14 +617,11 @@ namespace PowerDisplay.Helpers
 
                     break;
 
-                // Shell_NotifyIcon can fail when we invoke it during the time explorer.exe isn't present/ready to handle it.
-                // We'll also never receive _wmTaskbarRestart message if the first call to Shell_NotifyIcon failed, so we use
-                // WM_WINDOWPOSCHANGING which is always received on explorer startup sequence.
                 case PInvoke.WM_WINDOWPOSCHANGING:
                     {
-                        if (_trayIconData is null)
+                        if (_desiredTrayIconVisible && !_isTrayIconRegistered)
                         {
-                            SetupTrayIcon();
+                            ScheduleRegistrationCheck(ImmediateRegistrationCheck);
                         }
                     }
 
@@ -510,10 +631,7 @@ namespace PowerDisplay.Helpers
                     // use it in a case label
                     if (uMsg == _wmTaskbarRestart)
                     {
-                        // Handle the case where explorer.exe restarts.
-                        // Even if we created it before, do it again
-                        InvalidateMouseWheelHover(disarm: true);
-                        SetupTrayIcon();
+                        MarkTrayIconRegistrationStale(resetBackoff: true, scheduleRecovery: true);
                     }
                     else if (uMsg == WmTrayIcon && (uint)wParam == MyNotifyId)
                     {
