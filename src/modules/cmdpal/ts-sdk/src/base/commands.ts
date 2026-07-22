@@ -12,11 +12,18 @@ export class NoOpCommand implements IInvokableCommand {
   name: string;
   icon?: IconInfo | null;
 
+  /**
+   * Creates a no-op command.
+   *
+   * @param id Identifier for the command. Defaults to `'noop'`.
+   * @param name Display name. Defaults to an empty string.
+   */
   constructor(id = 'noop', name = '') {
     this.id = id;
     this.name = name;
   }
 
+  /** Keeps the palette open without doing anything. */
   invoke(): CommandResult {
     return { kind: 'keepOpen' };
   }
@@ -27,10 +34,19 @@ export class OpenUrlCommand implements IInvokableCommand {
   id: string;
   name: string;
   icon?: IconInfo | null;
+  /** The URL opened when the command is invoked. */
   readonly url: string;
 
   private readonly opener: UrlOpener;
 
+  /**
+   * Creates a command that opens a URL.
+   *
+   * @param url URL to open.
+   * @param name Display name. Defaults to the URL.
+   * @param opener Function used to open the URL. Defaults to the system browser;
+   * override in tests.
+   */
   constructor(url: string, name?: string, opener: UrlOpener = openUrlInDefaultBrowser) {
     this.id = `open-url:${url}`;
     this.name = name ?? url;
@@ -38,6 +54,7 @@ export class OpenUrlCommand implements IInvokableCommand {
     this.opener = opener;
   }
 
+  /** Opens the URL and dismisses the palette. */
   invoke(): CommandResult {
     this.opener(this.url);
     return { kind: 'dismiss' };
@@ -49,9 +66,19 @@ export class CopyTextCommand implements IInvokableCommand {
   id: string;
   name: string;
   icon?: IconInfo | null;
+  /** The text copied to the clipboard when the command is invoked. */
   readonly text: string;
+  /** The toast message shown after the text is copied. */
   readonly toastMessage: string;
 
+  /**
+   * Creates a command that copies text.
+   *
+   * @param text Text to copy to the clipboard.
+   * @param name Display name. Defaults to `'Copy'`.
+   * @param toastMessage Confirmation shown after copying. Defaults to
+   * `'Copied to clipboard'`.
+   */
   constructor(text: string, name?: string, toastMessage?: string) {
     this.id = `copy-text:${text.slice(0, 24)}`;
     this.name = name ?? 'Copy';
@@ -59,19 +86,28 @@ export class CopyTextCommand implements IInvokableCommand {
     this.toastMessage = toastMessage ?? 'Copied to clipboard';
   }
 
+  /** Copies the text to the clipboard and shows the confirmation toast. */
   invoke(): CommandResult {
     ExtensionHost.copyToClipboard(this.text);
     return { kind: 'showToast', args: { message: this.toastMessage } };
   }
 }
 
+/** Options for constructing a {@link ConfirmableCommand}. */
 export interface ConfirmableCommandOptions {
+  /** Identifier for the command. */
   id: string;
+  /** Display name of the command. */
   name: string;
+  /** Title of the confirmation dialog. */
   title: string;
+  /** Body text explaining what the user is confirming. */
   description: string;
+  /** Command run once the user confirms. */
   primaryCommand: IInvokableCommand;
+  /** Render the confirm action with a destructive (critical) style. */
   isCritical?: boolean;
+  /** Icon shown for the command. */
   icon?: IconInfo | null;
 }
 
@@ -86,6 +122,11 @@ export class ConfirmableCommand implements IInvokableCommand {
   private readonly primaryCommand: IInvokableCommand;
   private readonly isCritical: boolean;
 
+  /**
+   * Creates a confirmable command.
+   *
+   * @param options Dialog text and the command to run on confirmation.
+   */
   constructor(options: ConfirmableCommandOptions) {
     this.id = options.id;
     this.name = options.name;
@@ -96,6 +137,7 @@ export class ConfirmableCommand implements IInvokableCommand {
     this.icon = options.icon ?? null;
   }
 
+  /** Returns a `confirm` result that prompts the user before proceeding. */
   invoke(): CommandResult {
     return {
       kind: 'confirm',
