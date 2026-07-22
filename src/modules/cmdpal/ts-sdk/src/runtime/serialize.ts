@@ -12,6 +12,7 @@ import type {
   Content,
   ContextItem,
   Details,
+  FormContent,
   ICommand,
   ICommandItem,
   IContentPage,
@@ -20,6 +21,23 @@ import type {
   IListPage,
 } from '../types.js';
 import { serializeCommandResult, type WireCommandResult } from './commandResult.js';
+
+/** Handler captured from a form at serialize time, keyed later by its id. */
+export type FormSubmitHandler = FormContent['submitForm'];
+
+/**
+ * Collects the forms encountered while a page's content is serialized. The
+ * serializer assigns each form a stable id (using the author's `formId` when
+ * present, otherwise a deterministic generated id) and registers its submit
+ * handler so a later `form/submit` can be routed by `(pageId, formId)` to the
+ * exact handler captured here, rather than re-fetching content and guessing.
+ */
+export interface FormCollector {
+  /** Mints the next generated form id for a form without an explicit id. */
+  nextId(): string;
+  /** Registers a form's submit handler under its resolved id. */
+  register(formId: string, handler: FormSubmitHandler): void;
+}
 
 function hasFunction(value: object, key: string): boolean {
   return key in value && typeof (value as Record<string, unknown>)[key] === 'function';
@@ -177,7 +195,7 @@ export class WireSerializer {
     return result;
   }
 
-  async content(content: Content): Promise<Record<string, unknown>> {
+  async content(content: Content, forms?: FormCollector): Promise<Record<string, unknown>> {
     switch (content.type) {
       case 'markdown':
         return { type: 'markdown', body: content.body };
@@ -194,20 +212,23 @@ export class WireSerializer {
         return result;
       }
       case 'form': {
+        const formId = content.formId ?? forms?.nextId() ?? 'form-0';
         const result: Record<string, unknown> = {
           type: 'form',
+          formId,
           templateJson: content.templateJson,
           dataJson: content.dataJson,
         };
         assign(result, 'stateJson', content.stateJson);
+        forms?.register(formId, content.submitForm.bind(content));
         return result;
       }
       case 'tree': {
         const children = await content.getChildren();
         return {
           type: 'tree',
-          rootContent: await this.content(content.rootContent),
-          children: await Promise.all(children.map((child) => this.content(child))),
+          rootContent: await this.content(content.rootContent, forms),
+          children: await Promise.all(children.map((child) => this.content(child, forms))),
         };
       }
     }

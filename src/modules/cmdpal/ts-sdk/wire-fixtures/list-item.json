@@ -1,0 +1,149 @@
+{
+  "command": {
+    "displayName": "Rich",
+    "id": "cmd-rich",
+    "name": "Rich"
+  },
+  "details": {
+    "body": "**Body** text",
+    "heroImage": {
+      "dark": {
+        "data": "aGVsbG8="
+      },
+      "light": {
+        "data": "aGVsbG8="
+      }
+    },
+    "metadata": [
+      {
+        "data": {
+          "tags": [
+            {
+              "background": {
+                "color": {
+                  "a": 255,
+                  "b": 215,
+                  "g": 120,
+                  "r": 0
+                },
+                "hasValue": true
+              },
+              "foreground": {
+                "color": {
+                  "a": 255,
+                  "b": 255,
+                  "g": 255,
+                  "r": 255
+                },
+                "hasValue": true
+              },
+              "text": "New",
+              "toolTip": "Recently added"
+            },
+            {
+              "background": {
+                "hasValue": false
+              },
+              "foreground": {
+                "hasValue": false
+              },
+              "text": "Beta"
+            }
+          ],
+          "type": "tags"
+        },
+        "key": "Tags"
+      },
+      {
+        "data": {
+          "link": "https://example.com",
+          "text": "Open",
+          "type": "link"
+        },
+        "key": "Link"
+      },
+      {
+        "data": {
+          "commands": [
+            {
+              "displayName": "Act",
+              "id": "act-1",
+              "name": "Act"
+            }
+          ],
+          "type": "commands"
+        },
+        "key": "Actions"
+      },
+      {
+        "data": {
+          "type": "separator"
+        },
+        "key": "Divider"
+      }
+    ],
+    "title": "Details title"
+  },
+  "displayName": "Rich item",
+  "icon": {
+    "dark": {
+      "icon": ""
+    },
+    "light": {
+      "icon": ""
+    }
+  },
+  "id": "cmd-rich",
+  "moreCommands": [
+    {
+      "command": {
+        "displayName": "More",
+        "id": "more-1",
+        "name": "More"
+      },
+      "isCritical": true,
+      "requestedShortcut": {
+        "modifiers": 1,
+        "scanCode": 30,
+        "vkey": 65
+      },
+      "title": "More action"
+    }
+  ],
+  "section": "Section A",
+  "subtitle": "With everything",
+  "tags": [
+    {
+      "background": {
+        "color": {
+          "a": 255,
+          "b": 215,
+          "g": 120,
+          "r": 0
+        },
+        "hasValue": true
+      },
+      "foreground": {
+        "color": {
+          "a": 255,
+          "b": 255,
+          "g": 255,
+          "r": 255
+        },
+        "hasValue": true
+      },
+      "text": "New",
+      "toolTip": "Recently added"
+    },
+    {
+      "background": {
+        "hasValue": false
+      },
+      "foreground": {
+        "hasValue": false
+      },
+      "text": "Beta"
+    }
+  ],
+  "title": "Rich item"
+}
