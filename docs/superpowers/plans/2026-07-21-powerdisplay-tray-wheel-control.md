@@ -22,6 +22,9 @@
 - Tray adjustment ignores linked-brightness mode and exclusions; the next All Displays slider action may resynchronize displays.
 - Never use `MonitorNumber == 1` as the primary-display test.
 - Install `WH_MOUSE_LL` only after Explorer confirms hover over the PowerDisplay icon; remove it on leave, disable, icon removal, Explorer restart, and shutdown.
+- Keep tray icon identity/configuration separate from live Explorer registration. Ordinary settings
+  refreshes never repeat `NIM_ADD`; missing registration self-heals with 250 ms, 500 ms, 1 s, 2 s,
+  then 5-second capped retries until success, with no user notification.
 - The hook callback must not call Shell, WinUI, logging, LINQ, monitor, or hardware APIs. It must always return `CallNextHookEx`.
 - Use AOT-safe interop and keep native callback delegates rooted for their complete lifetime.
 - Run `tools\build\build-essentials.cmd` before the first targeted build.
@@ -40,6 +43,7 @@
 | `src/settings-ui/Settings.UI.Library/PowerDisplayProperties.cs` | JSON property and legacy default. |
 | `src/modules/powerdisplay/PowerDisplay.Lib/Services/WheelDeltaAccumulator.cs` | Pure high-resolution wheel delta accumulation. |
 | `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayIconBounds.cs` | Pure screen-coordinate rectangle checks shared by the listener and tests. |
+| `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayIconRegistrationBackoff.cs` | Pure capped retry sequence for Explorer registration recovery. |
 | `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayWheelAdjustmentPlanner.cs` | Pure target selection, relative adjustment, and clamping. |
 | `src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs` | Settings mode adapter, enabled state, persistence, and live update signal. |
 | `src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml` | Three-state selector and disabled increment card. |
@@ -2421,8 +2425,8 @@ $vstest = Get-ChildItem -Path $vsRoot -Filter vstest.console.exe -Recurse |
 
 & $vstest "$repo\x64\Debug\tests\PowerDisplay.Lib.UnitTests\PowerDisplay.Lib.UnitTests.dll"
 & $vstest `
-    "$repo\Debug\x64\tests\SettingsTests\Settings.UI.UnitTests.dll" `
-    '/TestCaseFilter:FullyQualifiedName~PowerDisplayViewModelTests'
+    "$repo\Debug\x64\tests\SettingsTests\net10.0-windows10.0.26100.0\Settings.UI.UnitTests.dll" `
+    '/TestCaseFilter:FullyQualifiedName~ViewModelTests.PowerDisplay'
 ```
 
 Expected: both test invocations exit 0 with no failures.
@@ -2503,3 +2507,340 @@ Expected:
 - `git diff --check` exits 0.
 - The diff contains only the approved PowerDisplay mouse-wheel feature, its tests, localization, and design/plan documents.
 - The working tree is clean.
+
+---
+
+### Task 9: Make Tray Registration Self-Healing
+
+**Files:**
+- Create: `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayIconRegistrationBackoff.cs`
+- Create: `src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/TrayIconRegistrationBackoffTests.cs`
+- Modify: `src/modules/powerdisplay/PowerDisplay/Helpers/TrayIconService.cs`
+- Verify: `.superpowers/sdd/task-8-review-fix*.ps1` (ignored runtime harnesses; do not commit)
+
+**Interfaces:**
+- Produces: `TimeSpan TrayIconRegistrationBackoff.NextDelay()`.
+- Produces: `void TrayIconRegistrationBackoff.Reset()`.
+- Separates `TrayIconService` icon identity/configuration from live Explorer registration.
+- Preserves the existing version-0 callback and wheel listener interfaces.
+
+- [ ] **Step 1: Write failing capped-backoff tests**
+
+Create `src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/TrayIconRegistrationBackoffTests.cs`:
+
+```csharp
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Services;
+
+namespace PowerDisplay.UnitTests;
+
+[TestClass]
+public class TrayIconRegistrationBackoffTests
+{
+    [TestMethod]
+    public void NextDelay_UsesCappedRecoverySequence()
+    {
+        var backoff = new TrayIconRegistrationBackoff();
+
+        Assert.AreEqual(250, backoff.NextDelay().TotalMilliseconds);
+        Assert.AreEqual(500, backoff.NextDelay().TotalMilliseconds);
+        Assert.AreEqual(1000, backoff.NextDelay().TotalMilliseconds);
+        Assert.AreEqual(2000, backoff.NextDelay().TotalMilliseconds);
+        Assert.AreEqual(5000, backoff.NextDelay().TotalMilliseconds);
+        Assert.AreEqual(5000, backoff.NextDelay().TotalMilliseconds);
+    }
+
+    [TestMethod]
+    public void Reset_RestartsAtFirstDelay()
+    {
+        var backoff = new TrayIconRegistrationBackoff();
+        _ = backoff.NextDelay();
+        _ = backoff.NextDelay();
+
+        backoff.Reset();
+
+        Assert.AreEqual(250, backoff.NextDelay().TotalMilliseconds);
+    }
+}
+```
+
+- [ ] **Step 2: Build to verify RED**
+
+Run:
+
+```powershell
+$repo = (git rev-parse --show-toplevel)
+& "$repo\tools\build\build.ps1" `
+    -Platform x64 `
+    -Configuration Debug `
+    -Path "$repo\src\modules\powerdisplay\PowerDisplay.Lib.UnitTests" `
+    "/p:SolutionDir=$repo\"
+```
+
+Expected: non-zero exit code because `TrayIconRegistrationBackoff` does not exist.
+
+- [ ] **Step 3: Implement the pure retry sequence**
+
+Create `src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayIconRegistrationBackoff.cs`:
+
+```csharp
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+
+namespace PowerDisplay.Common.Services;
+
+/// <summary>
+/// Provides the capped retry sequence for notification-icon registration recovery.
+/// </summary>
+public sealed class TrayIconRegistrationBackoff
+{
+    private static readonly int[] DelayMilliseconds = [250, 500, 1000, 2000, 5000];
+
+    private int _index;
+
+    /// <summary>
+    /// Gets the next retry delay, capped at five seconds.
+    /// </summary>
+    /// <returns>The next retry delay.</returns>
+    public TimeSpan NextDelay()
+    {
+        var delay = DelayMilliseconds[_index];
+        if (_index < DelayMilliseconds.Length - 1)
+        {
+            _index++;
+        }
+
+        return TimeSpan.FromMilliseconds(delay);
+    }
+
+    /// <summary>
+    /// Restarts the sequence at 250 milliseconds.
+    /// </summary>
+    public void Reset()
+    {
+        _index = 0;
+    }
+}
+```
+
+- [ ] **Step 4: Run focused and full library tests**
+
+Build the unit-test project, then run:
+
+```powershell
+$repo = (git rev-parse --show-toplevel)
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+$vsRoot = & $vswhere -latest -prerelease -products * -property installationPath
+$vstest = Get-ChildItem -Path $vsRoot -Filter vstest.console.exe -Recurse |
+    Select-Object -First 1 -ExpandProperty FullName
+$dll = "$repo\x64\Debug\tests\PowerDisplay.Lib.UnitTests\PowerDisplay.Lib.UnitTests.dll"
+& $vstest $dll '/TestCaseFilter:FullyQualifiedName~TrayIconRegistrationBackoffTests'
+& $vstest $dll
+```
+
+Expected: 2/2 focused tests and the complete suite pass.
+
+- [ ] **Step 5: Reproduce the runtime RED with persisted state backup**
+
+Run the existing ignored downstream harness before changing `TrayIconService`. It must persist raw
+PowerDisplay/global settings backups and restore them in `finally`.
+
+Expected RED on current-branch bits:
+
+- AllDisplays + increment 10, real-icon `+120`: `50,50` remains `50,50`.
+- `show_system_tray_icon=false`: one icon remains.
+- Re-enable: two icons appear.
+- Logs contain duplicate `NIM_ADD` failure.
+
+- [ ] **Step 6: Separate desired visibility, identity, and live registration**
+
+Add to `TrayIconService`:
+
+```csharp
+private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
+private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
+
+private readonly TrayIconRegistrationBackoff _registrationBackoff = new();
+
+private DispatcherQueueTimer? _registrationTimer;
+private bool _desiredTrayIconVisible;
+private bool _isTrayIconRegistered;
+private bool _registrationFailureLogged;
+```
+
+Restructure `SetupTrayIcon` so:
+
+```csharp
+_desiredTrayIconVisible = shouldShow;
+UpdateMouseWheelMode(settings.Properties.MouseWheelControlMode.Normalize());
+
+if (!shouldShow)
+{
+    Destroy();
+    return;
+}
+
+// Preserve the existing window, NOTIFYICONDATA, icon, and menu creation blocks.
+// Do not call NIM_ADD directly from a normal settings refresh.
+EnsureTrayIconRegistration();
+```
+
+Add these helpers, adapting the existing `NOTIFYICONDATAW` and bounds interop without duplicating
+their layouts:
+
+```csharp
+private void EnsureTrayIconRegistration()
+{
+    if (!_desiredTrayIconVisible || _trayIconData is null || _hwnd == 0)
+    {
+        return;
+    }
+
+    if (IsTrayIconRegistrationHealthy())
+    {
+        _isTrayIconRegistered = true;
+        _registrationBackoff.Reset();
+        _registrationFailureLogged = false;
+        EnsureMouseWheelListener();
+        ScheduleRegistrationCheck(RegistrationHealthInterval);
+        return;
+    }
+
+    if (_isTrayIconRegistered)
+    {
+        _isTrayIconRegistered = false;
+        InvalidateMouseWheelHover(disarm: true);
+    }
+
+    var data = (NOTIFYICONDATAW)_trayIconData;
+    bool added;
+    unsafe
+    {
+        added = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &data);
+    }
+
+    if (added)
+    {
+        _isTrayIconRegistered = true;
+        _registrationBackoff.Reset();
+        _registrationFailureLogged = false;
+        EnsureMouseWheelListener();
+        ScheduleRegistrationCheck(RegistrationHealthInterval);
+        return;
+    }
+
+    DisposeMouseWheelListener();
+    if (!_registrationFailureLogged)
+    {
+        Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed; retrying registration");
+        _registrationFailureLogged = true;
+    }
+
+    ScheduleRegistrationCheck(_registrationBackoff.NextDelay());
+}
+
+private bool IsTrayIconRegistrationHealthy()
+{
+    if (_trayIconData is null || _hwnd == 0)
+    {
+        return false;
+    }
+
+    var identifier = new NotifyIconIdentifier
+    {
+        CbSize = (uint)Marshal.SizeOf<NotifyIconIdentifier>(),
+        HWnd = _hwnd,
+        Id = MyNotifyId,
+        GuidItem = Guid.Empty,
+    };
+
+    return ShellNotifyIconGetRectNative(ref identifier, out _) >= 0;
+}
+
+private void ScheduleRegistrationCheck(TimeSpan delay)
+{
+    if (!_desiredTrayIconVisible)
+    {
+        return;
+    }
+
+    _registrationTimer ??= _dispatcherQueue.CreateTimer();
+    _registrationTimer.IsRepeating = false;
+    _registrationTimer.Tick -= OnRegistrationTimerTick;
+    _registrationTimer.Tick += OnRegistrationTimerTick;
+    _registrationTimer.Stop();
+    _registrationTimer.Interval = delay;
+    _registrationTimer.Start();
+}
+
+private void OnRegistrationTimerTick(DispatcherQueueTimer sender, object args)
+{
+    sender.Stop();
+    EnsureTrayIconRegistration();
+}
+
+private void StopRegistrationRecovery()
+{
+    _registrationTimer?.Stop();
+    _registrationBackoff.Reset();
+    _registrationFailureLogged = false;
+}
+```
+
+Apply the state consistently:
+
+- `UpdateMouseWheelMode` may create a listener only when `_isTrayIconRegistered` is true.
+- `TryGetCurrentIconBounds` requires `_isTrayIconRegistered`; a failed current-bounds query marks
+  registration stale and schedules immediate recovery instead of destroying identity.
+- `TaskbarCreated` marks `_isTrayIconRegistered=false`, invalidates hover, resets backoff, and
+  schedules `ImmediateRegistrationCheck`.
+- `WM_WINDOWPOSCHANGING` schedules an immediate check only when
+  `_desiredTrayIconVisible && !_isTrayIconRegistered`.
+- `Destroy` sets `_desiredTrayIconVisible=false`, stops recovery, issues `NIM_DELETE` when
+  `_isTrayIconRegistered`, then clears registration, listener, identity, window, icon, and menu
+  state idempotently.
+- Never clear `_trayIconData` merely because `NIM_ADD` failed.
+
+- [ ] **Step 7: Build and run automated regression coverage**
+
+Run all PowerDisplay.Lib.UnitTests and build PowerDisplay x64 Debug.
+
+Expected: all tests pass and the build exits 0 with no new warnings/errors.
+
+- [ ] **Step 8: Verify runtime GREEN and exact cleanup**
+
+Using the persisted-backup harness and current-branch process-path proof, verify:
+
+1. Disabled blocks wheel adjustment without changing module PID.
+2. AllDisplays + increment 10 changes `50,50` to `60,60` without changing PID.
+3. Hide produces zero real PowerDisplay icons.
+4. Re-enable produces exactly one icon and wheel input still works.
+5. Explorer restart removes then self-heals exactly one icon; post-recovery wheel input works.
+6. Logs contain no duplicate-add loop and at most one warning per registration outage.
+7. Raw PowerDisplay/global settings SHA256, brightness, global enable, Explorer, and original
+   runner/module paths are exactly restored.
+
+Update `.superpowers/sdd/task-8-report.md` verdicts and evidence after the run.
+
+- [ ] **Step 9: Re-run cross-architecture build**
+
+Run ARM64 build essentials and PowerDisplay ARM64 Debug build.
+
+Expected: both commands exit 0.
+
+- [ ] **Step 10: Commit the self-healing registration fix**
+
+```powershell
+git add `
+    src/modules/powerdisplay/PowerDisplay.Lib/Services/TrayIconRegistrationBackoff.cs `
+    src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/TrayIconRegistrationBackoffTests.cs `
+    src/modules/powerdisplay/PowerDisplay/Helpers/TrayIconService.cs
+git commit -m "Make PowerDisplay tray registration self-healing"
+```
