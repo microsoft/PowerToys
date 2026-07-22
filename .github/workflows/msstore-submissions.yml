@@ -12,6 +12,7 @@ jobs:
 
   microsoft_store:
     name: Publish Microsoft Store
+    if: ${{ !github.event.release.prerelease }}
     environment: store
     runs-on: ubuntu-latest
     steps:

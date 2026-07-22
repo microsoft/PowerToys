@@ -11,6 +11,9 @@ parameters:
   - name: versionNumber
     type: string
     default: '0.0.1'
+  - name: resolvedVersionNumber
+    type: string
+    default: ''
   - name: artifactStem
     type: string
     default: ''
@@ -39,7 +42,11 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   variables:
     ${{ insert }}: ${{ parameters.variables }}
-    SymbolsArtifactName: "PowerToys_${{parameters.versionNumber}}_$(Build.BuildNumber)"
+    ${{ if eq(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.versionNumber }}
+    ${{ if ne(parameters.resolvedVersionNumber, '') }}:
+      EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
+    SymbolsArtifactName: "PowerToys_$(EffectiveVersionNumber)_$(Build.BuildNumber)"
   steps:
   - checkout: self
     clean: true
@@ -47,6 +54,20 @@ jobs:
     fetchTags: false # Tags still result in depth > 1 fetch; we don't need them here
     submodules: true
     persistCredentials: True
+
+  - pwsh: |-
+      $effectiveVersionNumber = '${{ parameters.resolvedVersionNumber }}'
+      if ([string]::IsNullOrWhiteSpace($effectiveVersionNumber) -or $effectiveVersionNumber.StartsWith('$(')) {
+        $effectiveVersionNumber = '${{ parameters.versionNumber }}'
+      }
+
+      if ($effectiveVersionNumber -match '^(?<numeric>\d+\.\d+(?:\.\d+){0,2})-preview$') {
+        $effectiveVersionNumber = $matches['numeric']
+      }
+
+      Write-Host "##vso[task.setvariable variable=EffectiveVersionNumber]$effectiveVersionNumber"
+      Write-Host "##vso[task.setvariable variable=SymbolsArtifactName]PowerToys_${effectiveVersionNumber}_$(Build.BuildNumber)"
+    displayName: Resolve symbol version
 
   - task: DownloadPipelineArtifact@2
     displayName: Download all PDBs from all prior build phases
@@ -83,7 +104,7 @@ jobs:
       SymbolsMaximumWaitTime: 30
       SymbolServerType: 'TeamServices'
       SymbolsProduct: 'PowerToys Converged Symbols'
-      SymbolsVersion: '${{ parameters.versionNumber }}'
+      SymbolsVersion: '$(EffectiveVersionNumber)'
       SymbolsArtifactName: $(SymbolsArtifactName)
       SymbolExpirationInDays: ${{ parameters.symbolExpiryTime }}
     env:

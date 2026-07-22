@@ -25,11 +25,11 @@ namespace updating
         try
         {
             auto packages = package_manager.FindPackagesForUser({}, MSIX_PACKAGE_NAME, MSIX_PACKAGE_PUBLISHER);
-            VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION);
+            VersionHelper current_version(VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION, VERSION_BUILD);
 
             for (auto package : packages)
             {
-                VersionHelper msix_version(package.Id().Version().Major, package.Id().Version().Minor, package.Id().Version().Revision);
+                VersionHelper msix_version(package.Id().Version().Major, package.Id().Version().Minor, package.Id().Version().Build, package.Id().Version().Revision);
 
                 if (msix_version < current_version)
                 {

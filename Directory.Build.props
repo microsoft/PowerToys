@@ -18,7 +18,7 @@
     <AnalysisMode>Recommended</AnalysisMode>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <NuGetAuditMode>direct</NuGetAuditMode>
-    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Don't add source revision hash to the product version of binaries. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>    <!-- Source commit is exposed explicitly via Version.props/version_gen.h. -->
     <PlatformTarget>$(Platform)</PlatformTarget>
     <RestoreEnablePackagePruning Condition=" '$(VisualStudioVersion)' == '17.0'">false </RestoreEnablePackagePruning>
 
@@ -74,7 +74,9 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <Version>$(Version).0</Version>
+    <VersionBuildSuffix Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('$(Version)', '^\d+\.\d+\.\d+$'))">.0</VersionBuildSuffix>
+    <VersionBuildSuffix Condition="'$(VersionBuildSuffix)' == ''"></VersionBuildSuffix>
+    <Version>$(Version)$(VersionBuildSuffix)</Version>
     <RepositoryUrl>https://github.com/microsoft/PowerToys</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

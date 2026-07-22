@@ -19,14 +19,14 @@ namespace updating
     struct new_version_download_info
     {
         Uri release_page_uri = nullptr;
-        VersionHelper version{ 0, 0, 0 };
+        VersionHelper version{ 0, 0, 0, 0 };
         Uri installer_download_url = nullptr;
         std::wstring installer_filename;
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
     using github_version_result = std::expected<github_version_info, std::wstring>;
 
-    wil::task<github_version_result> get_github_version_info_async(bool prerelease = false);
+    wil::task<github_version_result> get_github_version_info_async(bool include_prerelease = false);
     wil::task<std::optional<std::filesystem::path>> download_new_version_async(new_version_download_info new_version);
     std::filesystem::path get_pending_updates_path();
     void cleanup_updates();

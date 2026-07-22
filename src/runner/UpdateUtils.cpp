@@ -237,7 +237,7 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = std::move(get_github_version_info_async()).get();
+            const auto new_version_info = std::move(get_github_version_info_async(get_general_settings().includePrereleaseUpdates)).get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
@@ -277,7 +277,7 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = std::move(get_github_version_info_async()).get();
+        auto new_version_info = std::move(get_github_version_info_async(get_general_settings().includePrereleaseUpdates)).get();
         if (!new_version_info)
         {
             // We couldn't get a new version from github for some reason, log error
