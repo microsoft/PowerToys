@@ -15,6 +15,9 @@
     "dist",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "clean": "node -e \"const{rmSync}=require('node:fs');rmSync('dist',{recursive:true,force:true})\"",
     "build": "tsc -p tsconfig.build.json",
