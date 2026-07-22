@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -6256,4 +6256,77 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="AdvancedPaste_PythonScripts_GroupSettings.Header" xml:space="preserve">
+    <value>Python scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_RuntimeCard.Header" xml:space="preserve">
+    <value>Python runtime</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_RuntimeCard.Description" xml:space="preserve">
+    <value>Choose how to run custom Python scripts from the Advanced Paste menu</value>
+  </data>
+  <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Header" xml:space="preserve">
+    <value>Scripts folder</value>
+  </data>
+  <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Description" xml:space="preserve">
+    <value>Folder to scan for Python scripts (.py files). Leave blank to use the default location.</value>
+  </data>
+  <data name="AdvancedPaste_ScriptsFolder_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Default (%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts)</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_SettingsCard.Header" xml:space="preserve">
+    <value>Python interpreter</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_SettingsCard.Description" xml:space="preserve">
+    <value>Path to the Python executable used to run scripts. Leave blank to detect automatically (supports Anaconda, Miniconda, system Python).</value>
+  </data>
+  <data name="AdvancedPaste_PythonExecutablePath_TextBox.PlaceholderText" xml:space="preserve">
+    <value>Auto-detect (e.g. C:\Users\&lt;user&gt;\anaconda3\python.exe)</value>
+  </data>
+  <data name="AdvancedPaste_UseWsl_SettingsCard.Header" xml:space="preserve">
+    <value>Use WSL</value>
+  </data>
+  <data name="AdvancedPaste_UseWsl_SettingsCard.Description" xml:space="preserve">
+    <value>Run Python scripts in Windows Subsystem for Linux instead of native Windows Python.</value>
+  </data>
+  <data name="AdvancedPaste_WslDistribution_SettingsCard.Header" xml:space="preserve">
+    <value>WSL distribution</value>
+  </data>
+  <data name="AdvancedPaste_WslDistribution_SettingsCard.Description" xml:space="preserve">
+    <value>Select which WSL distribution to use for running Python scripts.</value>
+  </data>
+  <data name="AdvancedPaste_PythonScriptList.Header" xml:space="preserve">
+    <value>Discovered scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScriptList.Description" xml:space="preserve">
+    <value>Python scripts found in the scripts folder.</value>
+  </data>
+  <data name="AdvancedPaste_PythonScript_RefreshScripts.Content" xml:space="preserve">
+    <value>Refresh scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScript_ApplyChanges.Content" xml:space="preserve">
+    <value>Apply changes</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_ModeOff.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_ModeWindows.Content" xml:space="preserve">
+    <value>Windows Python</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_ModeWsl.Content" xml:space="preserve">
+    <value>WSL Python</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_LoadScripts.Content" xml:space="preserve">
+    <value>Load scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_OpenFolder" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_OpenScriptInEditor.Text" xml:space="preserve">
+    <value>Open script in editor</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_WslDefaultDistro" xml:space="preserve">
+    <value>(System default)</value>
+  </data>
+
 </root>

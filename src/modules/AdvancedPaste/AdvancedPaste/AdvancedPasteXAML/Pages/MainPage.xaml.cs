@@ -208,5 +208,43 @@ namespace AdvancedPaste.Pages
                 Clipboard.SetHistoryItemAsContent(item.Item);
             }
         }
+
+        private async void ShowErrorDetailsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var details = ViewModel.PasteActionError?.Details;
+            if (string.IsNullOrEmpty(details))
+            {
+                return;
+            }
+
+            var scrollViewer = new ScrollViewer
+            {
+                MaxHeight = 400,
+                MinWidth = 400,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            };
+
+            var textBlock = new TextBlock
+            {
+                Text = details,
+                TextWrapping = TextWrapping.Wrap,
+                FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
+                FontSize = 12,
+                IsTextSelectionEnabled = true,
+            };
+
+            scrollViewer.Content = textBlock;
+
+            var dialog = new ContentDialog
+            {
+                Title = ResourceLoaderInstance.ResourceLoader.GetString("ErrorDetailsDialogTitle"),
+                CloseButtonText = ResourceLoaderInstance.ResourceLoader.GetString("ErrorDetailsDialogClose"),
+                Content = scrollViewer,
+                XamlRoot = this.XamlRoot,
+            };
+
+            await dialog.ShowAsync();
+        }
     }
 }

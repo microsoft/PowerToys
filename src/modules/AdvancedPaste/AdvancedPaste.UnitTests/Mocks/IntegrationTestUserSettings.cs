@@ -47,8 +47,6 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public bool ShowCustomPreview => false;
 
-    public bool ShowAIPaste => true;
-
     public bool CloseAfterLosingFocus => false;
 
     public bool EnableClipboardPreview => true;
@@ -59,6 +57,22 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public PasteAIConfiguration PasteAIConfiguration => _configuration;
 
+    public IReadOnlyList<AdvancedPastePythonScriptAction> PythonScriptActions => Array.Empty<AdvancedPastePythonScriptAction>();
+
+    public string PythonScriptsFolder => string.Empty;
+
+    public string PythonExecutablePath => string.Empty;
+
+    public bool PythonUseWsl => false;
+
+    public string PythonWslDistribution => string.Empty;
+
+    public int PythonScriptTimeoutSeconds => 30;
+
+    public bool IsPythonScriptsEnabled => true;
+
+    public IReadOnlyDictionary<string, string> TrustedScriptHashes => new Dictionary<string, string>();
+
     public event EventHandler Changed;
 
     public Task SetActiveAIProviderAsync(string providerId)
@@ -66,5 +80,9 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
         _configuration.ActiveProviderId = providerId ?? string.Empty;
         Changed?.Invoke(this, EventArgs.Empty);
         return Task.CompletedTask;
+    }
+
+    public void StoreTrustedScriptHash(string scriptPath, string hash)
+    {
     }
 }

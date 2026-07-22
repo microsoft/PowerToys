@@ -345,6 +345,12 @@ If you disable this policy, users will not be able to select or use Ollama endpo
 If you enable or don't configure this policy, users can configure and use Foundry Local as their AI provider.
 
 If you disable this policy, users will not be able to select or use Foundry Local endpoint in Advanced Paste settings.</string>
+      <string id="AllowAdvancedPastePythonScripts">Advanced Paste: Allow Python scripts</string>
+      <string id="AllowAdvancedPastePythonScriptsDescription">This policy controls whether users can enable and execute Python scripts in Advanced Paste.
+
+If you enable or don't configure this policy, users can enable the Python scripts feature (Disabled/Windows/WSL modes) and run custom Python scripts for clipboard transformations.
+
+If you disable this policy, the Python scripts mode selector will be forced to Disabled and users will not be able to enable or run Python scripts through Advanced Paste.</string>
       <string id="MwbClipboardSharingEnabled">Clipboard sharing enabled</string>
       <string id="MwbFileTransferEnabled">File transfer enabled</string>
       <string id="MwbUseOriginalUserInterface">Original user interface is available</string>

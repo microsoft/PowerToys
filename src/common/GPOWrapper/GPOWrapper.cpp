@@ -232,6 +232,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPasteFoundryLocalValue());
     }
+    GpoRuleConfigured GPOWrapper::GetAllowedAdvancedPastePythonScriptsValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getAllowedAdvancedPastePythonScriptsValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredNewPlusEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredNewPlusEnabledValue());

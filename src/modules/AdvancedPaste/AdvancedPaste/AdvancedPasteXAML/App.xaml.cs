@@ -14,6 +14,7 @@ using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
 using AdvancedPaste.Services.CustomActions;
+using AdvancedPaste.Services.PythonScripts;
 using AdvancedPaste.Settings;
 using AdvancedPaste.ViewModels;
 using ManagedCommon;
@@ -83,6 +84,8 @@ namespace AdvancedPaste
                 services.AddSingleton<IPasteAIProviderFactory, PasteAIProviderFactory>();
                 services.AddSingleton<ICustomActionTransformService, CustomActionTransformService>();
                 services.AddSingleton<IKernelService, AdvancedAIKernelService>();
+                services.AddSingleton<IPythonScriptService, PythonScriptService>();
+                services.AddSingleton<IPythonScriptTrustService, PythonScriptTrustService>();
                 services.AddSingleton<IPasteFormatExecutor, PasteFormatExecutor>();
                 services.AddSingleton<OptionsViewModel>();
             }).Build();
