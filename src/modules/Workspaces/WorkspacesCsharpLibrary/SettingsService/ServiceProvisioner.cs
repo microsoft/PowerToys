@@ -136,7 +136,26 @@ public static class ServiceProvisioner
         }
 
         var serviceMsix = options.ServiceMsixPath;
-        if (string.IsNullOrEmpty(serviceMsix) || !File.Exists(serviceMsix))
+        var haveMsix = !string.IsNullOrEmpty(serviceMsix) && File.Exists(serviceMsix);
+
+#if DEBUG
+        // DEV-ONLY (physically absent from Release via conditional compilation):
+        // local builds never produce the SIGNED service MSIX, so fall back to
+        // registering directly from the just-built service exe.  This gives the
+        // same F5 -> editor -> UAC -> provisioned developer experience as
+        // production, with no self-signed package and no manual deploy script.
+        // The signature-verified Add-AppxPackage staging is skipped, but the
+        // exe's own --register still self-copies into the admin-only
+        // %ProgramData%\...\SettingsSvcBin and hardens the store, so the protected
+        // boundary is identical.  Release ALWAYS requires the signed MSIX below.
+        var devBinary = options.ServiceBinaryPath;
+        var useDevDirectRegister = !haveMsix
+            && !string.IsNullOrEmpty(devBinary) && File.Exists(devBinary);
+#else
+        const bool useDevDirectRegister = false;
+#endif
+
+        if (!haveMsix && !useDevDirectRegister)
         {
             // No package to install from (e.g. a no-admin xcopy deployment).
             // Don't write the sentinel: a later install that adds the payload
@@ -160,7 +179,14 @@ public static class ServiceProvisioner
         // the editor).  A later upgrade (new version) or an explicit forced
         // request legitimately re-prompts.
         var runner = options.ElevationRunner ?? RunElevatedPowerShell;
-        var arguments = BuildInstallArguments(serviceMsix, userSid!);
+        string arguments;
+#if DEBUG
+        arguments = useDevDirectRegister
+            ? BuildDevRegisterArguments(devBinary!, userSid!)
+            : BuildInstallArguments(serviceMsix!, userSid!);
+#else
+        arguments = BuildInstallArguments(serviceMsix!, userSid!);
+#endif
 
         var elevation = runner("powershell.exe", arguments);
         switch (elevation)
@@ -229,6 +255,33 @@ public static class ServiceProvisioner
              + "exit $LASTEXITCODE"
              + "\"";
     }
+
+#if DEBUG
+    /// <summary>
+    /// DEV-ONLY (compiled out of Release): builds the elevated command that
+    /// registers the per-user service DIRECTLY from a locally built service exe,
+    /// skipping the signed-MSIX <c>Add-AppxPackage</c> step (local builds never
+    /// produce a signed package).  The exe still self-copies into the admin-only
+    /// %ProgramData%\...\SettingsSvcBin and hardens the store via <c>--register</c>,
+    /// so the protected boundary matches production.  See
+    /// <see cref="EnsureProvisioned"/>'s <c>#if DEBUG</c> fallback.
+    /// </summary>
+    internal static string BuildDevRegisterArguments(string serviceBinary, string userSid)
+    {
+        return "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "
+             + "\""
+             + "$log = Join-Path $env:LOCALAPPDATA 'Microsoft\\PowerToys\\Workspaces\\Logs\\svc-provision.log'; "
+             + "New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null; "
+             + "function W($m){ Add-Content -Path $log -Value ((Get-Date).ToString('o') + ' ' + $m) }; "
+             + "W 'provision start (elevated, DEV direct --register, no MSIX)'; "
+             + "$exe = '" + serviceBinary + "'; "
+             + "$tr = Measure-Command { & $exe --register '" + userSid + "' }; "
+             + "W ('register ms=' + [int]$tr.TotalMilliseconds + ' exit=' + $LASTEXITCODE); "
+             + "W ('provision done (DEV) total-ms=' + [int]$tr.TotalMilliseconds); "
+             + "exit $LASTEXITCODE"
+             + "\"";
+    }
+#endif
 
     /// <summary>
     /// Default elevation runner: launches PowerShell elevated (UAC) and waits.
