@@ -195,7 +195,8 @@ namespace PowerDisplay.Common.Services
         /// <summary>
         /// Removes complete persisted monitor state entries for any exact DevicePath monitor Id not present in
         /// <paramref name="monitorIds"/>. Removing an entry clears its saved brightness, contrast, volume,
-        /// color temperature, capabilities, and known-good VCP cache.
+        /// color temperature, capabilities, and known-good VCP cache. Legacy entries are retained until
+        /// <see cref="MigrateLegacyKeys"/> can either migrate or explicitly drop them.
         /// </summary>
         /// <param name="monitorIds">The exact DevicePath monitor Ids whose persisted state entries should be retained.</param>
         public void RetainMonitorStates(IEnumerable<string> monitorIds)
@@ -206,7 +207,7 @@ namespace PowerDisplay.Common.Services
 
             foreach (var monitorId in _states.Keys)
             {
-                if (!retained.Contains(monitorId))
+                if (!retained.Contains(monitorId) && !MonitorIdentity.IsLegacyId(monitorId))
                 {
                     removed |= _states.TryRemove(monitorId, out _);
                 }
@@ -257,12 +258,14 @@ namespace PowerDisplay.Common.Services
                     var newKey = MonitorIdMigrator.MatchNewId(legacyKey, discoveredList);
                     if (newKey != null && _states.TryGetValue(legacyKey, out var value))
                     {
-                        // TryAdd is the atomic "add only if absent" we want: a freshly-written
-                        // new-format entry (from concurrent UpdateMonitorParameter) is authoritative.
-                        if (_states.TryAdd(newKey, CloneState(value)))
+                        var legacyState = CloneState(value);
+                        var canonicalState = _states.GetOrAdd(newKey, legacyState);
+                        if (!ReferenceEquals(canonicalState, legacyState))
                         {
-                            migrated++;
+                            MergeMissingState(canonicalState, legacyState);
                         }
+
+                        migrated++;
                     }
                     else if (newKey == null)
                     {
@@ -305,6 +308,26 @@ namespace PowerDisplay.Common.Services
             }
 
             return clone;
+        }
+
+        private static void MergeMissingState(MonitorState canonical, MonitorState legacy)
+        {
+            lock (canonical)
+            {
+                canonical.Brightness ??= legacy.Brightness;
+                canonical.ColorTemperatureVcp ??= legacy.ColorTemperatureVcp;
+                canonical.Contrast ??= legacy.Contrast;
+                canonical.Volume ??= legacy.Volume;
+                canonical.CapabilitiesRaw ??= legacy.CapabilitiesRaw;
+
+                foreach (var feature in legacy.KnownGoodVcpFeatures)
+                {
+                    if (!canonical.KnownGoodVcpFeatures.ContainsKey(feature.Key))
+                    {
+                        canonical.KnownGoodVcpFeatures[feature.Key] = feature.Value.Clone();
+                    }
+                }
+            }
         }
 
         /// <summary>

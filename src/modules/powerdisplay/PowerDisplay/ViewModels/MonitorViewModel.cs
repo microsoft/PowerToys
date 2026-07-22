@@ -292,6 +292,13 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
 
     /// <summary>
+    /// Determines whether an absolute restore should write the requested value. The comparison
+    /// uses the underlying monitor snapshot rather than the optimistic UI backing fields.
+    /// </summary>
+    internal bool ShouldRestoreValue(int targetValue, MonitorReadFlags readFlag)
+        => MonitorRestorePlanner.ShouldWrite(targetValue, _monitor, readFlag);
+
+    /// <summary>
     /// Gets the icon glyph based on communication method
     /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>

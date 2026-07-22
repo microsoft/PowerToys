@@ -14,6 +14,9 @@ namespace PowerDisplay.UnitTests;
 public sealed class VcpDiscoveryEvidenceTests
 {
     private static readonly DateTime CachedUtc = new(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc);
+    private const int VcpNotSupported = unchecked((int)0xC0262584);
+    private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
+    private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
 
     [TestMethod]
     public void Reconcile_LiveObservationOverridesCache()
@@ -61,6 +64,55 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
         Assert.IsFalse(result.InitialValues[0x10].IsLive);
+    }
+
+    [DataTestMethod]
+    [DataRow(InvalidPhysicalMonitorHandle)]
+    [DataRow(MonitorNoLongerExists)]
+    public void Reconcile_PhysicalMonitorUnavailableRejectsAllCapabilitiesAndCache(int errorCode)
+    {
+        var parsedCapabilities = new VcpCapabilities();
+        parsedCapabilities.SupportedVcpCodes[0x12] = new VcpCodeInfo(0x12, "Contrast");
+        var live = new Dictionary<byte, VcpProbeObservation>
+        {
+            [0x10] = VcpProbeObservation.Success(0x10, new VcpFeatureValue(40, 0, 100)),
+            [0x12] = VcpProbeObservation.Indeterminate(0x12, errorCode),
+        };
+        var cache = new Dictionary<byte, KnownGoodVcpFeature>
+        {
+            [0x62] = Cached(0x62, current: 25),
+        };
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: "(vcp(12))",
+            parsedCapabilities: parsedCapabilities,
+            live: live,
+            cached: cache,
+            includeCache: true);
+
+        Assert.IsTrue(result.IsPhysicalMonitorUnavailable);
+        Assert.IsNull(result.Capabilities);
+        Assert.AreEqual(0, result.InitialValues.Count);
+    }
+
+    [TestMethod]
+    public void Reconcile_VcpNotSupportedStillUsesCachedPositiveEvidence()
+    {
+        var live = new Dictionary<byte, VcpProbeObservation>
+        {
+            [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported),
+        };
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: live,
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
+            includeCache: true);
+
+        Assert.IsFalse(result.IsPhysicalMonitorUnavailable);
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
+        Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
     }
 
     [TestMethod]

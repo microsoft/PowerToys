@@ -30,11 +30,13 @@ internal sealed class VcpDiscoveryEvidence
     public VcpDiscoveryEvidence(
         string capabilitiesRaw,
         VcpCapabilities? capabilities,
-        IReadOnlyDictionary<byte, VcpInitialValue> initialValues)
+        IReadOnlyDictionary<byte, VcpInitialValue> initialValues,
+        bool isPhysicalMonitorUnavailable = false)
     {
         CapabilitiesRaw = capabilitiesRaw;
         Capabilities = capabilities;
         InitialValues = initialValues;
+        IsPhysicalMonitorUnavailable = isPhysicalMonitorUnavailable;
     }
 
     public string CapabilitiesRaw { get; }
@@ -43,6 +45,8 @@ internal sealed class VcpDiscoveryEvidence
 
     public IReadOnlyDictionary<byte, VcpInitialValue> InitialValues { get; }
 
+    public bool IsPhysicalMonitorUnavailable { get; }
+
     public static VcpDiscoveryEvidence Reconcile(
         string capabilitiesRaw,
         VcpCapabilities? parsedCapabilities,
@@ -50,6 +54,20 @@ internal sealed class VcpDiscoveryEvidence
         IReadOnlyDictionary<byte, KnownGoodVcpFeature> cached,
         bool includeCache)
     {
+        foreach (var observation in live.Values)
+        {
+            if (observation.Disposition == VcpProbeDisposition.PhysicalMonitorUnavailable)
+            {
+                // A cache entry can establish feature support when a live feature read is
+                // merely inconclusive, but it cannot make an invalid native handle usable.
+                return new VcpDiscoveryEvidence(
+                    capabilitiesRaw,
+                    capabilities: null,
+                    new Dictionary<byte, VcpInitialValue>(),
+                    isPhysicalMonitorUnavailable: true);
+            }
+        }
+
         var capabilities = parsedCapabilities;
         var values = new Dictionary<byte, VcpInitialValue>();
 

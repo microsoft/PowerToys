@@ -15,6 +15,8 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class ContinuousVcpInitializerTests
 {
+    private const int VcpNotSupported = unchecked((int)0xC0262584);
+
     [TestMethod]
     public void Initialize_LiveInitialValueDoesNotReadAgain()
     {
@@ -156,10 +158,68 @@ public sealed class ContinuousVcpInitializerTests
         Assert.IsNull(store.LastFeature);
     }
 
+    [DataTestMethod]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
+    public void Initialize_PhysicalMonitorUnavailableRejectsCacheAndStopsRemainingReads(int errorCode)
+    {
+        var reader = new RecordingReader(VcpReadAttempt.Failure(errorCode));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessAndContrastMonitor();
+        var initialBrightness = monitor.CurrentBrightness;
+        var initialContrast = monitor.CurrentContrast;
+
+        var result = initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedBrightnessAndContrastEvidence());
+
+        Assert.AreEqual(VcpInitializationResult.PhysicalMonitorUnavailable, result);
+        Assert.AreEqual(1, reader.CallCount);
+        CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
+        Assert.AreEqual(initialBrightness, monitor.CurrentBrightness);
+        Assert.AreEqual(initialContrast, monitor.CurrentContrast);
+        Assert.AreEqual(MonitorReadFlags.None, monitor.ReadValues);
+        Assert.IsNull(store.LastFeature);
+    }
+
+    [TestMethod]
+    public void Initialize_VcpNotSupportedUsesCacheAndContinuesRemainingReads()
+    {
+        var reader = new RecordingReader(
+            VcpReadAttempt.Failure(VcpNotSupported),
+            VcpReadAttempt.Success(60, 100));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessAndContrastMonitor();
+
+        var result = initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedBrightnessAndContrastEvidence());
+
+        Assert.AreEqual(VcpInitializationResult.Completed, result);
+        CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
+        Assert.AreEqual(45, monitor.CurrentBrightness);
+        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.AreEqual(60, monitor.CurrentContrast);
+        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast));
+        Assert.AreEqual(0x12, store.LastFeature!.Code);
+    }
+
     private static Monitor BrightnessMonitor() => new()
     {
         Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
         Capabilities = MonitorCapabilities.DdcCi | MonitorCapabilities.Brightness,
+    };
+
+    private static Monitor BrightnessAndContrastMonitor() => new()
+    {
+        Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+        Capabilities = MonitorCapabilities.DdcCi |
+            MonitorCapabilities.Brightness |
+            MonitorCapabilities.Contrast,
     };
 
     private static VcpDiscoveryEvidence Evidence(VcpInitialValue value)
@@ -197,14 +257,38 @@ public sealed class ContinuousVcpInitializerTests
             includeCache: true);
     }
 
-    private sealed class RecordingReader(VcpReadAttempt result) : IVcpFeatureReader
+    private static VcpDiscoveryEvidence CachedBrightnessAndContrastEvidence()
     {
+        var capabilities = new VcpCapabilities();
+        capabilities.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
+        capabilities.SupportedVcpCodes[0x12] = new VcpCodeInfo(0x12, "Contrast");
+
+        return new VcpDiscoveryEvidence(
+            string.Empty,
+            capabilities,
+            new Dictionary<byte, VcpInitialValue>
+            {
+                [0x10] = new VcpInitialValue(
+                    new VcpFeatureValue(45, 0, 100),
+                    VcpObservationSource.MaximumCompatibilityProbe,
+                    IsLive: false,
+                    PreferLiveRead: true),
+            });
+    }
+
+    private sealed class RecordingReader(params VcpReadAttempt[] results) : IVcpFeatureReader
+    {
+        private readonly Queue<VcpReadAttempt> _results = new(results);
+
         public int CallCount { get; private set; }
+
+        public List<byte> Codes { get; } = new();
 
         public VcpReadAttempt Read(IntPtr handle, byte code)
         {
             CallCount++;
-            return result;
+            Codes.Add(code);
+            return _results.Dequeue();
         }
     }
 

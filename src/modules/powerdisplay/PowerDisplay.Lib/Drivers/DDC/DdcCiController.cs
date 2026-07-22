@@ -38,6 +38,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly IVcpFeatureReader _vcpReader;
         private readonly VcpFeatureProbeService _probeService;
         private readonly ContinuousVcpInitializer _continuousInitializer;
+        private readonly DiscreteVcpInitializer _discreteInitializer;
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
         private bool _disposed;
@@ -67,6 +68,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             _vcpReader = reader;
             _probeService = new VcpFeatureProbeService(_vcpReader);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore, _clock);
+            _discreteInitializer = new DiscreteVcpInitializer(_vcpReader);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
@@ -295,8 +297,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Construct a Monitor and initialize its VCP feature values using pre-fetched
         /// evidence (obtained on the async side via <see cref="FetchCapabilitiesWithFallbackAsync"/>).
-        /// Returns null when capabilities are unavailable. Any monitor with at least one supported
-        /// VCP code from capabilities, a live probe, or the exact monitor's cache is kept; the
+        /// Returns null when capabilities are unavailable or the physical-monitor handle becomes
+        /// invalid during initialization. Any monitor with at least one supported VCP code from
+        /// capabilities, a live probe, or the exact monitor's cache is otherwise kept; the
         /// per-feature SupportsXxx flags on Monitor gate UI controls.
         /// </summary>
         /// <remarks>
@@ -310,7 +313,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             string monitorId,
             VcpDiscoveryEvidence evidence)
         {
-            if (evidence.Capabilities == null)
+            if (evidence.IsPhysicalMonitorUnavailable || evidence.Capabilities == null)
             {
                 return null;
             }
@@ -335,21 +338,22 @@ namespace PowerDisplay.Common.Drivers.DDC
                 // support for, ordered continuous-range first (percent-scaled),
                 // then discrete-enum VCPs. Each guard is independent — a controller
                 // can support any subset.
-                _continuousInitializer.Initialize(monitor, physical.HPhysicalMonitor, evidence);
-
-                if (monitor.SupportsColorTemperature)
+                var continuousInitialization =
+                    _continuousInitializer.Initialize(monitor, physical.HPhysicalMonitor, evidence);
+                if (continuousInitialization == VcpInitializationResult.PhysicalMonitorUnavailable)
                 {
-                    InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                    Logger.LogWarning(
+                        $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during continuous VCP initialization");
+                    return null;
                 }
 
-                if (monitor.SupportsInputSource)
+                var discreteInitialization =
+                    _discreteInitializer.Initialize(monitor, physical.HPhysicalMonitor);
+                if (discreteInitialization == VcpInitializationResult.PhysicalMonitorUnavailable)
                 {
-                    InitializeInputSource(monitor, physical.HPhysicalMonitor);
-                }
-
-                if (monitor.SupportsPowerState)
-                {
-                    InitializePowerState(monitor, physical.HPhysicalMonitor);
+                    Logger.LogWarning(
+                        $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during discrete VCP initialization");
+                    return null;
                 }
 
                 return monitor;
@@ -478,42 +482,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return evidence;
-        }
-
-        /// <summary>
-        /// Initialize input source value for a monitor using VCP 0x60.
-        /// </summary>
-        private static void InitializeInputSource(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
-            {
-                monitor.CurrentInputSource = (int)current;
-                monitor.ReadValues |= MonitorReadFlags.InputSource;
-            }
-        }
-
-        /// <summary>
-        /// Initialize color temperature value for a monitor using VCP 0x14.
-        /// </summary>
-        private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
-            {
-                monitor.CurrentColorTemperature = (int)current;
-                monitor.ReadValues |= MonitorReadFlags.ColorTemperature;
-            }
-        }
-
-        /// <summary>
-        /// Initialize power state value for a monitor using VCP 0xD6.
-        /// </summary>
-        private static void InitializePowerState(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
-            {
-                monitor.CurrentPowerState = (int)current;
-                monitor.ReadValues |= MonitorReadFlags.PowerState;
-            }
         }
 
         /// <summary>
@@ -719,6 +687,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                         physical.HPhysicalMonitor,
                         monitorId,
                         cancellationToken);
+
+                    if (evidence.IsPhysicalMonitorUnavailable)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle is no longer valid");
+                        continue;
+                    }
 
                     if (evidence.Capabilities == null)
                     {

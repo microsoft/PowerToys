@@ -179,6 +179,58 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
+    public void RetainMonitorStates_LegacyEntryRemainsAvailableForMigration()
+    {
+        const string legacyId = "DDC_AOCB326_1";
+
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            manager.UpdateMonitorParameter(legacyId, "Brightness", 42);
+
+            manager.RetainMonitorStates(new[] { MonitorA });
+            Assert.AreEqual(42, manager.GetMonitorParameters(legacyId)?.Brightness);
+
+            manager.MigrateLegacyKeys(new[] { (MonitorA, 1) });
+            Assert.AreEqual(42, manager.GetMonitorParameters(MonitorA)?.Brightness);
+            Assert.IsNull(manager.GetMonitorParameters(legacyId));
+        }
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.AreEqual(42, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
+        Assert.IsNull(reloaded.GetMonitorParameters(legacyId));
+    }
+
+    [TestMethod]
+    public void MigrateLegacyKeys_MergesMissingFieldsAndFeaturesIntoCanonicalState()
+    {
+        const string legacyId = "DDC_AOCB326_1";
+
+        using var manager = new MonitorStateManager(_statePath);
+        manager.UpdateMonitorParameter(legacyId, "Brightness", 42);
+        manager.UpdateMonitorParameter(legacyId, "Contrast", 65);
+        manager.UpsertKnownGoodFeature(legacyId, Feature(0x10, current: 42));
+        manager.UpsertKnownGoodFeature(legacyId, Feature(0x12, current: 65));
+
+        manager.UpdateMonitorParameter(MonitorA, "Brightness", 55);
+        manager.UpdateMonitorParameter(MonitorA, "Volume", 25);
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 55));
+
+        manager.MigrateLegacyKeys(new[] { (MonitorA, 1) });
+
+        var parameters = manager.GetMonitorParameters(MonitorA);
+        Assert.AreEqual(55, parameters?.Brightness);
+        Assert.AreEqual(65, parameters?.Contrast);
+        Assert.AreEqual(25, parameters?.Volume);
+
+        var features = manager.GetKnownGoodFeatures(MonitorA);
+        Assert.AreEqual(2, features.Count);
+        Assert.AreEqual(55, features[0x10].Current);
+        Assert.AreEqual(65, features[0x12].Current);
+        Assert.IsNull(manager.GetMonitorParameters(legacyId));
+        Assert.AreEqual(0, manager.GetKnownGoodFeatures(legacyId).Count);
+    }
+
+    [TestMethod]
     public void ConcurrentUpserts_PreserveBothMonitorEntries()
     {
         using var manager = new MonitorStateManager(_statePath);

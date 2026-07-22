@@ -81,10 +81,13 @@ public partial class MainViewModel
         List<Task> tasks,
         int? savedValue,
         bool isVisible,
-        int currentValue,
+        MonitorViewModel monitor,
+        MonitorReadFlags readFlag,
         Func<int, Task> setter)
     {
-        if (savedValue.HasValue && isVisible && savedValue.Value != currentValue)
+        if (savedValue.HasValue &&
+            isVisible &&
+            monitor.ShouldRestoreValue(savedValue.Value, readFlag))
         {
             tasks.Add(setter(savedValue.Value));
         }
@@ -341,16 +344,40 @@ public partial class MainViewModel
             }
 
             // Apply brightness if included in profile
-            TryRestore(updateTasks, setting.Brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
+            TryRestore(
+                updateTasks,
+                setting.Brightness,
+                monitorVm.ShowBrightness,
+                monitorVm,
+                MonitorReadFlags.Brightness,
+                monitorVm.SetBrightnessAsync);
 
             // Apply contrast if supported and value provided
-            TryRestore(updateTasks, setting.Contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
+            TryRestore(
+                updateTasks,
+                setting.Contrast,
+                monitorVm.ShowContrast,
+                monitorVm,
+                MonitorReadFlags.Contrast,
+                monitorVm.SetContrastAsync);
 
             // Apply volume if supported and value provided
-            TryRestore(updateTasks, setting.Volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
+            TryRestore(
+                updateTasks,
+                setting.Volume,
+                monitorVm.ShowVolume,
+                monitorVm,
+                MonitorReadFlags.Volume,
+                monitorVm.SetVolumeAsync);
 
             // Apply color temperature if included in profile
-            TryRestore(updateTasks, setting.ColorTemperatureVcp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
+            TryRestore(
+                updateTasks,
+                setting.ColorTemperatureVcp,
+                monitorVm.ShowColorTemperature,
+                monitorVm,
+                MonitorReadFlags.ColorTemperature,
+                monitorVm.SetColorTemperatureAsync);
         }
 
         // Wait for all updates to complete
@@ -362,7 +389,7 @@ public partial class MainViewModel
 
     /// <summary>
     /// Restore monitor settings from state file - ONLY called at startup when RestoreSettingsOnStartup is enabled.
-    /// Compares saved values with current hardware values and only writes when different.
+    /// Skips a write only when the current hardware value is known and already matches the saved value.
     /// </summary>
     public async Task RestoreMonitorSettingsAsync()
     {
@@ -381,10 +408,34 @@ public partial class MainViewModel
 
                 var (brightness, colorTemp, contrast, volume) = savedState.Value;
 
-                TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
-                TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
-                TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
-                TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
+                TryRestore(
+                    updateTasks,
+                    brightness,
+                    monitorVm.ShowBrightness,
+                    monitorVm,
+                    MonitorReadFlags.Brightness,
+                    monitorVm.SetBrightnessAsync);
+                TryRestore(
+                    updateTasks,
+                    colorTemp,
+                    monitorVm.ShowColorTemperature,
+                    monitorVm,
+                    MonitorReadFlags.ColorTemperature,
+                    monitorVm.SetColorTemperatureAsync);
+                TryRestore(
+                    updateTasks,
+                    contrast,
+                    monitorVm.ShowContrast,
+                    monitorVm,
+                    MonitorReadFlags.Contrast,
+                    monitorVm.SetContrastAsync);
+                TryRestore(
+                    updateTasks,
+                    volume,
+                    monitorVm.ShowVolume,
+                    monitorVm,
+                    MonitorReadFlags.Volume,
+                    monitorVm.SetVolumeAsync);
             }
 
             if (updateTasks.Count > 0)

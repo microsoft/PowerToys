@@ -16,6 +16,8 @@ public sealed class VcpFeatureProbeServiceTests
 {
     private const int InvalidCommand = unchecked((int)0xC0262589);
     private const int VcpNotSupported = unchecked((int)0xC0262584);
+    private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
+    private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
 
     [TestMethod]
     public async Task ProbeAsync_FirstSuccessReturnsValuesWithoutRetry()
@@ -84,6 +86,39 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsFalse(result[0x10].IsSuccess);
         Assert.AreEqual(1, result[0x10].Attempts);
         Assert.AreEqual(VcpNotSupported, result[0x10].LastError);
+    }
+
+    [DataTestMethod]
+    [DataRow(InvalidPhysicalMonitorHandle)]
+    [DataRow(MonitorNoLongerExists)]
+    public async Task ProbeAsync_PhysicalMonitorUnavailableStopsRemainingFeatureProbes(int errorCode)
+    {
+        var reader = new QueueReader(VcpReadAttempt.Failure(errorCode));
+        var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12, 0x62 });
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.AreEqual(1, reader.CallCount);
+        CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(VcpProbeDisposition.PhysicalMonitorUnavailable, result[0x10].Disposition);
+        Assert.AreEqual(errorCode, result[0x10].LastError);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_VcpNotSupportedContinuesWithRemainingFeatures()
+    {
+        var reader = new QueueReader(
+            VcpReadAttempt.Failure(VcpNotSupported),
+            VcpReadAttempt.Success(current: 20, maximum: 100));
+        var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12 });
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.AreEqual(2, reader.CallCount);
+        CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
+        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
+        Assert.AreEqual(VcpProbeDisposition.Success, result[0x12].Disposition);
     }
 
     [TestMethod]

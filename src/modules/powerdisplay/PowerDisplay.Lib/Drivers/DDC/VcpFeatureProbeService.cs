@@ -15,6 +15,13 @@ using static PowerDisplay.Common.Drivers.NativeConstants;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
+    internal enum VcpProbeDisposition
+    {
+        Success,
+        Indeterminate,
+        PhysicalMonitorUnavailable,
+    }
+
     internal readonly record struct VcpReadAttempt(bool IsSuccess, uint Current, uint Maximum, int ErrorCode)
     {
         public static VcpReadAttempt Success(uint current, uint maximum) => new(true, current, maximum, 0);
@@ -39,6 +46,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         int? LastError)
     {
         public bool IsSuccess => Value.IsValid;
+
+        public VcpProbeDisposition Disposition => IsSuccess
+            ? VcpProbeDisposition.Success
+            : LastError is int errorCode && DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode)
+                ? VcpProbeDisposition.PhysicalMonitorUnavailable
+                : VcpProbeDisposition.Indeterminate;
 
         public static VcpProbeObservation Success(
             byte code,
@@ -79,7 +92,15 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             foreach (var code in _codes)
             {
-                observations[code] = await ProbeCodeAsync(handle, code, cancellationToken).ConfigureAwait(false);
+                var observation = await ProbeCodeAsync(handle, code, cancellationToken).ConfigureAwait(false);
+                observations[code] = observation;
+
+                // These errors invalidate the physical-monitor handle, not just the current
+                // VCP feature. Avoid issuing more I2C requests against a stale handle.
+                if (observation.Disposition == VcpProbeDisposition.PhysicalMonitorUnavailable)
+                {
+                    break;
+                }
             }
 
             return observations;
@@ -143,7 +164,12 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         private static VcpProbeObservation Complete(IntPtr handle, VcpProbeObservation observation)
         {
-            var status = observation.IsSuccess ? "success" : "indeterminate";
+            var status = observation.Disposition switch
+            {
+                VcpProbeDisposition.Success => "success",
+                VcpProbeDisposition.PhysicalMonitorUnavailable => "physical-monitor-unavailable",
+                _ => "indeterminate",
+            };
             var message =
                 $"DDC: [max-compat] VCP probe outcome " +
                 $"(handle=0x{handle:X}, code=0x{observation.Code:X2}, attempts={observation.Attempts}, " +

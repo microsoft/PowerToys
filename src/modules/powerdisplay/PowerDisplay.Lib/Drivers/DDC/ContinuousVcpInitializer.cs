@@ -14,6 +14,13 @@ namespace PowerDisplay.Common.Drivers.DDC;
 
 internal sealed class ContinuousVcpInitializer
 {
+    private static readonly byte[] ContinuousCodes =
+    {
+        VcpCodeBrightness,
+        VcpCodeContrast,
+        VcpCodeVolume,
+    };
+
     private readonly IVcpFeatureReader _reader;
     private readonly IKnownGoodVcpStore _store;
     private readonly ISystemClock _clock;
@@ -28,14 +35,24 @@ internal sealed class ContinuousVcpInitializer
         _clock = clock;
     }
 
-    public void Initialize(Monitor monitor, IntPtr handle, VcpDiscoveryEvidence evidence)
+    public VcpInitializationResult Initialize(
+        Monitor monitor,
+        IntPtr handle,
+        VcpDiscoveryEvidence evidence)
     {
-        InitializeFeature(monitor, handle, evidence, VcpCodeBrightness);
-        InitializeFeature(monitor, handle, evidence, VcpCodeContrast);
-        InitializeFeature(monitor, handle, evidence, VcpCodeVolume);
+        foreach (var code in ContinuousCodes)
+        {
+            var result = InitializeFeature(monitor, handle, evidence, code);
+            if (result == VcpInitializationResult.PhysicalMonitorUnavailable)
+            {
+                return result;
+            }
+        }
+
+        return VcpInitializationResult.Completed;
     }
 
-    private void InitializeFeature(
+    private VcpInitializationResult InitializeFeature(
         Monitor monitor,
         IntPtr handle,
         VcpDiscoveryEvidence evidence,
@@ -43,7 +60,7 @@ internal sealed class ContinuousVcpInitializer
     {
         if (!IsSupported(monitor, code))
         {
-            return;
+            return VcpInitializationResult.Completed;
         }
 
         VcpInitialValue? cachedFallback = null;
@@ -52,7 +69,7 @@ internal sealed class ContinuousVcpInitializer
             if (!initial.PreferLiveRead)
             {
                 ApplyValue(monitor, code, initial.Value, markAsRead: initial.IsLive);
-                return;
+                return VcpInitializationResult.Completed;
             }
 
             cachedFallback = initial;
@@ -62,8 +79,13 @@ internal sealed class ContinuousVcpInitializer
         if (!read.IsSuccess)
         {
             Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
+            if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
+            {
+                return VcpInitializationResult.PhysicalMonitorUnavailable;
+            }
+
             ApplyCachedFallback(monitor, code, cachedFallback);
-            return;
+            return VcpInitializationResult.Completed;
         }
 
         var value = new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
@@ -73,7 +95,7 @@ internal sealed class ContinuousVcpInitializer
                 $"DDC: [{monitor.Id}] Ignoring invalid {VcpNames.GetCodeName(code).ToLowerInvariant()} " +
                 $"range current={read.Current}, max={read.Maximum}");
             ApplyCachedFallback(monitor, code, cachedFallback);
-            return;
+            return VcpInitializationResult.Completed;
         }
 
         ApplyValue(monitor, code, value, markAsRead: true);
@@ -87,6 +109,8 @@ internal sealed class ContinuousVcpInitializer
                 Source = VcpObservationSource.CapabilitiesInitialization,
                 LastSuccessfulUtc = _clock.UtcNow,
             });
+
+        return VcpInitializationResult.Completed;
     }
 
     private static void ApplyCachedFallback(
