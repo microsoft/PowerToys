@@ -98,6 +98,36 @@ public sealed class TableTextFormatterTests
             TableTextFormatter.Format(cells, "en-US"));
     }
 
+    [TestMethod]
+    [DataRow("zh-CN")]
+    [DataRow("ja-JP")]
+    public void Format_CjkFragmentsInSameCell_DoesNotInsertSpace(string languageTag)
+    {
+        OcrLineData[] cells =
+        [
+            Cell("你", 0, 0),
+            Cell("好", 10, 0),
+        ];
+
+        Assert.AreEqual(
+            "你好",
+            TableTextFormatter.Format(cells, languageTag));
+    }
+
+    [TestMethod]
+    public void Format_EnglishFragmentsInSameCell_InsertsSpace()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("Hello", 0, 0),
+            Cell("world", 10, 0),
+        ];
+
+        Assert.AreEqual(
+            "Hello world",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
     private static OcrLineData Cell(string text, double x, double y)
         => new(text, new OcrRect(x, y, 40, 20), [new(text, new(x, y, 40, 20))]);
 }

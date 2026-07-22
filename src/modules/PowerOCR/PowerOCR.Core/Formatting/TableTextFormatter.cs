@@ -25,18 +25,20 @@ public static class TableTextFormatter
         List<OcrRect> rows = BuildSegments(cells, bounds, horizontal: true);
         List<OcrRect> columns = BuildSegments(cells, bounds, horizontal: false);
         string[,] values = new string[rows.Count, columns.Count];
+        bool usesSpaces = OcrTextFormatter.UsesSpaces(languageTag);
+        string cellTextSeparator = usesSpaces ? " " : string.Empty;
 
         foreach (OcrLineData cell in cells)
         {
             int row = BestIntersection(rows, cell.Bounds);
             int column = BestIntersection(columns, cell.Bounds);
-            string text = OcrTextFormatter.UsesSpaces(languageTag)
+            string text = usesSpaces
                 ? cell.Text
                 : OcrTextFormatter.JoinCjkAwareWords(cell.Words);
 
             values[row, column] = string.IsNullOrEmpty(values[row, column])
                 ? text
-                : $"{values[row, column]} {text}";
+                : string.Concat(values[row, column], cellTextSeparator, text);
         }
 
         var output = new List<string>(rows.Count);
