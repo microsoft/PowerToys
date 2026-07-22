@@ -25,7 +25,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
     private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
 
-    // Handles the fractional pixels that may occur with scaled displays from truncating the character list.
+    // Prevents the fractional pixels that may occur with scaled displays from truncating the character list.
     private const double LayoutRoundingDip = 1;
 
     private readonly Core.PowerAccent _powerAccent;
