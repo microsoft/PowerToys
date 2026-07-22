@@ -47,10 +47,4 @@ public sealed record JSCmdPalSection
     /// </summary>
     [JsonPropertyName("debugPort")]
     public int? DebugPort { get; init; }
-
-    /// <summary>
-    /// Gets the capabilities declared by the extension (for example, "commands").
-    /// </summary>
-    [JsonPropertyName("capabilities")]
-    public string[]? Capabilities { get; init; }
 }
