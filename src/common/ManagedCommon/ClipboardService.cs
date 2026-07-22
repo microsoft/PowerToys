@@ -5,10 +5,12 @@
 #nullable enable
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +22,8 @@ namespace ManagedCommon
 {
     internal sealed class ClipboardService
     {
+        private const int StreamCopyBufferSize = 81920;
+
         private readonly IClipboardBackend _backend;
         private readonly ClipboardThreadExecutor _executor;
         private readonly int _maxAttempts;
@@ -142,26 +146,16 @@ namespace ManagedCommon
             return TrySetImageAsync(encodedImage, flush).GetAwaiter().GetResult();
         }
 
-        internal async Task<bool> TrySetImageAsync(Stream? encodedImage, bool flush)
+        internal Task<bool> TrySetImageAsync(Stream? encodedImage, bool flush)
         {
             if (encodedImage is null)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
-            byte[] bytes;
-            using (var copy = new MemoryStream())
-            {
-                await encodedImage.CopyToAsync(copy).ConfigureAwait(false);
-                if (copy.Length == 0)
-                {
-                    return false;
-                }
-
-                bytes = copy.ToArray();
-            }
-
-            return await TrySetPackageAsync(() => CreateImagePackageAsync(bytes), flush).ConfigureAwait(false);
+            // Materialize inside the serialized STA work item. Concurrent callers therefore queue
+            // only their source Stream references instead of one full encoded-image byte[] each.
+            return TrySetPackageAsync(() => CreateImagePackageAsync(encodedImage), flush);
         }
 
         internal bool TryGetImage(out RandomAccessStreamReference? image)
@@ -346,47 +340,55 @@ namespace ManagedCommon
             ArgumentNullException.ThrowIfNull(packageFactory);
 
             return TrySetPackageAsync(
-                () => Task.FromResult(packageFactory()),
+                () => Task.FromResult<ClipboardWritePackage?>(packageFactory()),
                 flush);
         }
 
         private Task<bool> TrySetPackageAsync(
-            Func<Task<ClipboardWritePackage>> packageFactoryAsync,
+            Func<Task<ClipboardWritePackage?>> packageFactoryAsync,
             bool flush)
         {
             ArgumentNullException.ThrowIfNull(packageFactoryAsync);
 
             return _executor.InvokeAsync(async () =>
             {
-                for (int attempt = 1; attempt <= _maxAttempts; attempt++)
+                using ClipboardWritePackage? package = await packageFactoryAsync();
+                if (package is null)
                 {
-                    using ClipboardWritePackage package = await packageFactoryAsync();
-
-                    try
-                    {
-                        _backend.SetContent(package.Content);
-                        package.TransferOwnership();
-
-                        if (flush)
-                        {
-                            _backend.Flush();
-                        }
-
-                        return true;
-                    }
-                    catch (Exception ex) when (IsTransientClipboardException(ex))
-                    {
-                        if (attempt == _maxAttempts)
-                        {
-                            return false;
-                        }
-
-                        Thread.Sleep(_retryDelayMilliseconds);
-                    }
+                    return false;
                 }
 
-                return false;
+                if (!TryExecuteWithRetries(() => _backend.SetContent(package.Content)))
+                {
+                    return false;
+                }
+
+                package.TransferOwnership();
+                return !flush || TryExecuteWithRetries(_backend.Flush);
             });
+        }
+
+        private bool TryExecuteWithRetries(Action operation)
+        {
+            for (int attempt = 1; attempt <= _maxAttempts; attempt++)
+            {
+                try
+                {
+                    operation();
+                    return true;
+                }
+                catch (Exception ex) when (IsTransientClipboardException(ex))
+                {
+                    if (attempt == _maxAttempts)
+                    {
+                        return false;
+                    }
+
+                    Thread.Sleep(_retryDelayMilliseconds);
+                }
+            }
+
+            return false;
         }
 
         private Task<ClipboardReadResult<T>> TryGetAsync<T>(
@@ -438,17 +440,32 @@ namespace ManagedCommon
                 fullPath);
         }
 
-        private static async Task<ClipboardWritePackage> CreateImagePackageAsync(byte[] bytes)
+        private static async Task<ClipboardWritePackage?> CreateImagePackageAsync(Stream encodedImage)
         {
             var stream = new InMemoryRandomAccessStream();
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(StreamCopyBufferSize);
 
             try
             {
-                using (var writer = new DataWriter(stream))
+                while (true)
                 {
-                    writer.WriteBytes(bytes);
-                    await writer.StoreAsync().AsTask();
-                    _ = writer.DetachStream();
+                    int bytesRead = await encodedImage.ReadAsync(buffer.AsMemory(0, buffer.Length));
+                    if (bytesRead == 0)
+                    {
+                        break;
+                    }
+
+                    uint bytesWritten = await stream.WriteAsync(buffer.AsBuffer(0, bytesRead)).AsTask();
+                    if (bytesWritten != (uint)bytesRead)
+                    {
+                        throw new IOException("Failed to copy the complete image stream into the clipboard buffer.");
+                    }
+                }
+
+                if (stream.Size == 0)
+                {
+                    stream.Dispose();
+                    return null;
                 }
 
                 stream.Seek(0);
@@ -460,6 +477,10 @@ namespace ManagedCommon
             {
                 stream.Dispose();
                 throw;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
             }
         }
     }

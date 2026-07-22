@@ -19,7 +19,7 @@ namespace Microsoft.ColorPicker.UITests;
 ///   5. Clear the clipboard, move the cursor, send the shortcut chord.
 ///   6. Wait for the picker overlay window and read the displayed HEX from the overlay's
 ///      automation-peer TextBlock (AutomationId="ColorHexAutomationPeer").
-///   7. Zoom to 4x and 8x without moving the cursor, and verify the displayed color is unchanged.
+///   7. Zoom to 4x and 8x, then move across the highlighted source pixel and verify its color is unchanged.
 ///   8. Left-click to capture. ColorPicker writes the captured color to the clipboard.
 ///   9. Read the captured value from the clipboard and assert it matches the overlay HEX.
 ///  10. Wait for the editor window and assert the captured value appears in its tree.
@@ -249,6 +249,10 @@ public class ColorPickerEndToEndTests : UITestBase
                 timeoutMS: 2_500);
             Assert.IsNotNull(zoomWindow, "The zoom magnifier window did not appear after scrolling.");
             long zoomWindowHandle = zoomWindow!.WindowHandle;
+            var (zoomLeft, _, zoomRight, _) = WindowHelper.GetWindowBounds(new IntPtr(zoomWindowHandle));
+            Assert.IsTrue(zoomRight > zoomLeft, "Could not resolve the zoom window bounds.");
+            double zoomDpiScale = (zoomRight - zoomLeft) / 430.0;
+            (int zoomAnchorX, int zoomAnchorY) = MouseHelper.GetMousePosition();
 
             Thread.Sleep(750); // Window show/layout plus at least one color-sampling timer tick.
             string factorOneHex = ReadOverlayColor(overlay);
@@ -265,6 +269,19 @@ public class ColorPickerEndToEndTests : UITestBase
                 factorFourHex,
                 "The 4x magnifier changed the color sampled at the stationary cursor.");
 
+            // At factor 4 the center source cell is four DIPs wide. Moving +3 DIPs stays
+            // inside that same source pixel but lands on the old static highlight's right stroke.
+            MouseHelper.MoveTo(zoomAnchorX + (int)Math.Ceiling(3 * zoomDpiScale), zoomAnchorY);
+            Thread.Sleep(750);
+            string factorFourMovedHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorFourMovedHex,
+                "The 4x magnifier sampled its grid/highlight after the cursor moved.");
+
+            MouseHelper.MoveTo(zoomAnchorX, zoomAnchorY);
+            Thread.Sleep(750);
+
             MouseHelper.ScrollUp();
             Thread.Sleep(750);
             string factorEightHex = ReadOverlayColor(overlay);
@@ -272,10 +289,19 @@ public class ColorPickerEndToEndTests : UITestBase
                 factorOneHex,
                 factorEightHex,
                 "The 8x magnifier changed the color sampled at the stationary cursor.");
-            TestContext.WriteLine("Overlay color remained stable at 4x and 8x zoom.");
+
+            // The equivalent regression point at factor 8 is +7 DIPs within the same source cell.
+            MouseHelper.MoveTo(zoomAnchorX + (int)Math.Ceiling(7 * zoomDpiScale), zoomAnchorY);
+            Thread.Sleep(750);
+            string factorEightMovedHex = ReadOverlayColor(overlay);
+            Assert.AreEqual(
+                factorOneHex,
+                factorEightMovedHex,
+                "The 8x magnifier sampled its grid/highlight after the cursor moved.");
+            TestContext.WriteLine("Overlay color remained stable at 4x and 8x zoom, including pointer movement.");
 
             // Use the latest displayed value for the clipboard cross-check below.
-            overlayHex = factorEightHex;
+            overlayHex = factorEightMovedHex;
 
             // -- 11. Click to capture; ColorPicker writes the configured format to clipboard
             MouseHelper.LeftClick();

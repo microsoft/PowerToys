@@ -145,7 +145,7 @@ namespace ManagedCommon.UnitTests
         }
 
         [TestMethod]
-        public async Task TrySetTextAsync_FlushFailure_RetriesSetAndFlush()
+        public async Task TrySetTextAsync_FlushFailure_RetriesOnlyFlushAfterContentIsSet()
         {
             var backend = new TestClipboardBackend();
             backend.FlushFailures.Enqueue(CreateComException("not owner"));
@@ -153,7 +153,7 @@ namespace ManagedCommon.UnitTests
             var service = CreateService(backend, executor, maxAttempts: 3);
 
             Assert.IsTrue(await service.TrySetTextAsync("value", flush: true));
-            Assert.AreEqual(2, backend.SetContentCallCount);
+            Assert.AreEqual(1, backend.SetContentCallCount);
             Assert.AreEqual(2, backend.FlushCallCount);
         }
 

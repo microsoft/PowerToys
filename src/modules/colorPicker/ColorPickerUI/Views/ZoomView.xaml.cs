@@ -9,8 +9,10 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.UI;
 
@@ -19,7 +21,7 @@ namespace ColorPicker.Views
     /// <summary>
     /// The zoom magnifier surface. A single Win2D <see cref="CanvasControl"/> draws the captured
     /// screen region scaled with nearest-neighbor filtering, then overlays a brightness-adaptive
-    /// pixel grid + center-pixel highlight -- the WinUI 3 replacement for the WPF GridShaderEffect.
+    /// pixel grid + pointer-pixel highlight -- the WinUI 3 replacement for the WPF GridShaderEffect.
     /// </summary>
     public sealed partial class ZoomView : UserControl
     {
@@ -36,6 +38,9 @@ namespace ColorPicker.Views
 
         private Visual _cardVisual;
         private bool _centerPinned;
+        private Vector2 _pointerOffsetFromHostCenter;
+        private bool _suppressOverlays;
+        private int _resizeAnimationGeneration;
 
         public ZoomView()
         {
@@ -50,10 +55,13 @@ namespace ColorPicker.Views
         {
             if (!ReferenceEquals(_zoomBitmap, bitmap))
             {
+                CancelOverlaySuppression();
+
                 // Cache the source pixels once per capture so the brightness-adaptive grid does not
                 // read back from the GPU on every draw.
                 _zoomBitmap = bitmap;
                 _zoomPixels = bitmap?.GetPixelColors();
+                _pointerOffsetFromHostCenter = Vector2.Zero;
             }
 
             _zoomFactor = zoomFactor;
@@ -96,8 +104,10 @@ namespace ColorPicker.Views
             // No size change (or first appearance): snap, no tween.
             if (Math.Abs(startScale - 1f) < 0.001f)
             {
+                CancelOverlaySuppression();
                 _cardVisual.StopAnimation("Scale");
                 _cardVisual.Scale = Vector3.One;
+                ZoomCanvas.Invalidate();
                 return;
             }
 
@@ -116,9 +126,24 @@ namespace ColorPicker.Views
             anim.Duration = ResizeDuration;
 
             // Starting a new Scale animation implicitly replaces any in-flight one (handoff) — a fast
-            // scroll burst never compounds.
+            // scroll burst never compounds. Suppress the grid/highlight while the card is scaled:
+            // their host-relative pointer offset would otherwise scale away from the physical cursor.
+            int animationGeneration = ++_resizeAnimationGeneration;
+            _suppressOverlays = true;
+            ZoomCanvas.Invalidate();
             _cardVisual.StopAnimation("Scale");
+
+            CompositionScopedBatch batch = compositor.CreateScopedBatch(CompositionBatchTypes.Animation);
             _cardVisual.StartAnimation("Scale", anim);
+            batch.Completed += (_, _) => DispatcherQueue.TryEnqueue(() =>
+            {
+                if (animationGeneration == _resizeAnimationGeneration)
+                {
+                    _suppressOverlays = false;
+                    ZoomCanvas.Invalidate();
+                }
+            });
+            batch.End();
         }
 
         /// <summary>
@@ -128,18 +153,38 @@ namespace ColorPicker.Views
         /// </summary>
         public void ClearBitmap()
         {
+            CancelOverlaySuppression();
             _zoomBitmap = null;
             _zoomPixels = null;
+            _pointerOffsetFromHostCenter = Vector2.Zero;
         }
 
         /// <summary>Cancels any in-flight scale and snaps the card to its natural size.</summary>
         public void ResetScale()
         {
+            CancelOverlaySuppression();
             if (_cardVisual != null)
             {
                 _cardVisual.StopAnimation("Scale");
                 _cardVisual.Scale = Vector3.One;
             }
+
+            ZoomCanvas.Invalidate();
+        }
+
+        private void ZoomView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || ActualWidth <= 0 || ActualHeight <= 0)
+            {
+                return;
+            }
+
+            Point position = e.GetCurrentPoint(this).Position;
+            _pointerOffsetFromHostCenter = GetPointerOffsetFromHostCenter(
+                position,
+                new Size(ActualWidth, ActualHeight),
+                XamlRoot?.RasterizationScale ?? 1.0);
+            ZoomCanvas.Invalidate();
         }
 
         private void ZoomCanvas_Draw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -161,27 +206,40 @@ namespace ColorPicker.Views
                 1f,
                 CanvasImageInterpolation.NearestNeighbor);
 
-            // Brightness-adaptive pixel grid + center highlight, only at high zoom (matches the
+            // Brightness-adaptive pixel grid + pointer highlight, only at high zoom (matches the
             // original shader's zoomFactor >= 4 gate). Each grid segment is drawn dark over a
             // light cell and light over a dark cell (a flat gray grid loses contrast on both very
             // light and very dark regions), and faded toward the magnifier edge so the cursor area
-            // reads clearest (the shader's radius reveal). The center cursor pixel gets an adaptive
+            // reads clearest (the shader's radius reveal). The pointer pixel gets an adaptive
             // (dark-or-light) highlight so it stays visible even on a white pixel.
-            if (_zoomFactor < 4 || _zoomPixels == null)
+            if (_zoomFactor < 4 || _zoomPixels == null || _suppressOverlays)
             {
                 return;
             }
 
             const int n = BaseZoomImageSize;
             float cell = w / n;
-            var center = new Vector2(w * 0.5f, h * 0.5f);
-            float maxDist = center.Length();
+            if (!TryGetPointerSample(
+                    w,
+                    h,
+                    _pointerOffsetFromHostCenter,
+                    n,
+                    out Vector2 pointerPosition,
+                    out int pointerPixelX,
+                    out int pointerPixelY))
+            {
+                return;
+            }
+
+            float maxDist = Math.Max(
+                Math.Max(pointerPosition.Length(), Vector2.Distance(pointerPosition, new Vector2(w, 0))),
+                Math.Max(Vector2.Distance(pointerPosition, new Vector2(0, h)), Vector2.Distance(pointerPosition, new Vector2(w, h))));
 
             for (int j = 0; j < n; j++)
             {
                 for (int i = 0; i < n; i++)
                 {
-                    float midDist = Vector2.Distance(new Vector2((i + 0.5f) * cell, (j + 0.5f) * cell), center);
+                    float midDist = Vector2.Distance(new Vector2((i + 0.5f) * cell, (j + 0.5f) * cell), pointerPosition);
                     float fade = 1f - (midDist / maxDist);
                     if (fade <= 0.05f)
                     {
@@ -199,30 +257,72 @@ namespace ColorPicker.Views
                 }
             }
 
-            // The cursor sits at the centre of the captured region; highlight that pixel with a
-            // dark-or-light border chosen from its own brightness so it never disappears.
-            int centerIndex = n / 2;
-            float cc = centerIndex * cell;
-            Color centerPixel = _zoomPixels[(centerIndex * n) + centerIndex];
-            var highlight = IsLight(centerPixel) ? Colors.Black : Colors.White;
-            ds.DrawRectangle(new Rect(cc, cc, cell, cell), highlight, 2f);
+            // Highlight the source cell under the live pointer, then restore a small opaque patch at
+            // the exact pointer position. MouseInfoProvider samples that physical screen pixel, so
+            // drawing the patch last prevents the grid/highlight from becoming the copied color.
+            float cellX = pointerPixelX * cell;
+            float cellY = pointerPixelY * cell;
+            Color pointerPixel = _zoomPixels[(pointerPixelY * n) + pointerPixelX];
+            var highlight = IsLight(pointerPixel) ? Colors.Black : Colors.White;
+            ds.DrawRectangle(new Rect(cellX, cellY, cell, cell), highlight, 2f);
 
-            // MouseInfoProvider continues sampling the physical screen pixel under the cursor while
-            // this top-most window is visible. While the cursor remains at the initial zoom point it
-            // is at the canvas centre, so the grid and highlight above would otherwise replace the
-            // sampled color. Restore an opaque patch of the captured centre pixel last, matching the
-            // old shader's no-overlay sample at that point. Four DIPs remain at least two physical
-            // pixels wide during the roughly 0.5x grow animation and tolerate half-pixel centering.
-            Color cursorSample = Color.FromArgb(byte.MaxValue, centerPixel.R, centerPixel.G, centerPixel.B);
-            ds.FillRectangle(GetCursorSamplePatchBounds(w, h), cursorSample);
+            Color cursorSample = Color.FromArgb(byte.MaxValue, pointerPixel.R, pointerPixel.G, pointerPixel.B);
+            ds.FillRectangle(GetCursorSamplePatchBounds(pointerPosition), cursorSample);
         }
 
-        internal static Rect GetCursorSamplePatchBounds(double width, double height)
+        internal static bool TryGetPointerSample(
+            double canvasWidth,
+            double canvasHeight,
+            Vector2 pointerOffsetFromHostCenter,
+            int bitmapSize,
+            out Vector2 pointerPosition,
+            out int pixelX,
+            out int pixelY)
+        {
+            pointerPosition = new Vector2(
+                (float)((canvasWidth * 0.5) + pointerOffsetFromHostCenter.X),
+                (float)((canvasHeight * 0.5) + pointerOffsetFromHostCenter.Y));
+            pixelX = -1;
+            pixelY = -1;
+
+            if (bitmapSize <= 0 || canvasWidth <= 0 || canvasHeight <= 0 ||
+                pointerPosition.X < 0 || pointerPosition.X >= canvasWidth ||
+                pointerPosition.Y < 0 || pointerPosition.Y >= canvasHeight)
+            {
+                return false;
+            }
+
+            pixelX = Math.Min((int)(pointerPosition.X / (canvasWidth / bitmapSize)), bitmapSize - 1);
+            pixelY = Math.Min((int)(pointerPosition.Y / (canvasHeight / bitmapSize)), bitmapSize - 1);
+            return true;
+        }
+
+        internal static Vector2 GetPointerOffsetFromHostCenter(
+            Point pointerPosition,
+            Size hostSize,
+            double rasterizationScale)
+        {
+            double pixelCenterCorrection = rasterizationScale > 0
+                ? 0.5 / rasterizationScale
+                : 0.5;
+
+            return new Vector2(
+                (float)(pointerPosition.X + pixelCenterCorrection - (hostSize.Width * 0.5)),
+                (float)(pointerPosition.Y + pixelCenterCorrection - (hostSize.Height * 0.5)));
+        }
+
+        internal static Rect GetCursorSamplePatchBounds(Vector2 pointerPosition)
             => new(
-                (width - CursorSamplePatchSize) / 2,
-                (height - CursorSamplePatchSize) / 2,
+                pointerPosition.X - (CursorSamplePatchSize / 2),
+                pointerPosition.Y - (CursorSamplePatchSize / 2),
                 CursorSamplePatchSize,
                 CursorSamplePatchSize);
+
+        private void CancelOverlaySuppression()
+        {
+            _resizeAnimationGeneration++;
+            _suppressOverlays = false;
+        }
 
         // Perceived luminance (Rec. 601) above ~55% — used to pick a contrasting grid/highlight color.
         private static bool IsLight(Color c) => ((0.299 * c.R) + (0.587 * c.G) + (0.114 * c.B)) > 140.0;

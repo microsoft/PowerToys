@@ -42,6 +42,25 @@ namespace ManagedCommon.UnitTests
         }
 
         [TestMethod]
+        public async Task TrySetImageAsync_StreamCopiesMultipleBufferChunks()
+        {
+            var backend = new TestClipboardBackend();
+            using var executor = new ClipboardThreadExecutor();
+            var service = CreateService(backend, executor);
+            var imageBytes = new byte[100_000];
+            for (int i = 0; i < imageBytes.Length; i++)
+            {
+                imageBytes[i] = (byte)(i % 251);
+            }
+
+            using var input = new MemoryStream(imageBytes);
+            Assert.IsTrue(await service.TrySetImageAsync(input, flush: false));
+
+            RandomAccessStreamReference reference = await backend.Content.GetView().GetBitmapAsync();
+            CollectionAssert.AreEqual(imageBytes, await ReadBytesAsync(reference));
+        }
+
+        [TestMethod]
         public async Task TrySetImage_SyncOverAsync_DoesNotCaptureCallerSynchronizationContext()
         {
             var backend = new TestClipboardBackend();
@@ -137,6 +156,46 @@ namespace ManagedCommon.UnitTests
 
             Assert.IsFalse(await service.TrySetImageAsync(input, flush: false));
             Assert.AreEqual(0, backend.SetContentCallCount);
+        }
+
+        [TestMethod]
+        public async Task TrySetImageAsync_ConcurrentCalls_ReadSourcesSerially()
+        {
+            var backend = new TestClipboardBackend();
+            using var executor = new ClipboardThreadExecutor();
+            var service = CreateService(backend, executor);
+            using var firstInput = new ObservedAsyncReadStream(PngBytes, blockFirstRead: true);
+            using var secondInput = new ObservedAsyncReadStream(PngBytes, blockFirstRead: false);
+
+            Task<bool> firstWrite = service.TrySetImageAsync(firstInput, flush: false);
+            Assert.IsTrue(firstInput.ReadStarted.Wait(TimeSpan.FromSeconds(1)));
+
+            Task<bool> secondWrite = service.TrySetImageAsync(secondInput, flush: false);
+            Assert.IsFalse(secondInput.ReadStarted.Wait(TimeSpan.FromMilliseconds(100)));
+
+            firstInput.Release();
+
+            Assert.IsTrue(await firstWrite);
+            Assert.IsTrue(await secondWrite);
+            Assert.IsTrue(secondInput.ReadStarted.IsSet);
+        }
+
+        [TestMethod]
+        public async Task TrySetImageAsync_SetContentRetry_ReusesPreparedPackageAndLeavesInputOpen()
+        {
+            var backend = new TestClipboardBackend();
+            backend.SetContentFailures.Enqueue(new UnauthorizedAccessException("busy"));
+            using var executor = new ClipboardThreadExecutor();
+            var service = CreateService(backend, executor);
+            using var input = new ObservedAsyncReadStream(PngBytes, blockFirstRead: false);
+
+            Assert.IsTrue(await service.TrySetImageAsync(input, flush: false));
+
+            Assert.AreEqual(2, backend.SetContentCallCount);
+            Assert.AreEqual(PngBytes.Length, input.TotalBytesRead);
+            Assert.IsFalse(input.WasDisposed);
+            RandomAccessStreamReference reference = await backend.Content.GetView().GetBitmapAsync();
+            CollectionAssert.AreEqual(PngBytes, await ReadBytesAsync(reference));
         }
 
         private static ClipboardService CreateService(
@@ -249,6 +308,102 @@ namespace ManagedCommon.UnitTests
             public override void Write(byte[] buffer, int offset, int count)
             {
                 throw new NotSupportedException();
+            }
+        }
+
+        private sealed class ObservedAsyncReadStream : Stream
+        {
+            private readonly byte[] _bytes;
+            private readonly TaskCompletionSource<object?> _release =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            private int _position;
+            private int _totalBytesRead;
+
+            internal ObservedAsyncReadStream(byte[] bytes, bool blockFirstRead)
+            {
+                _bytes = bytes;
+                if (!blockFirstRead)
+                {
+                    _release.SetResult(null);
+                }
+            }
+
+            internal ManualResetEventSlim ReadStarted { get; } = new();
+
+            internal int TotalBytesRead => Volatile.Read(ref _totalBytesRead);
+
+            internal bool WasDisposed { get; private set; }
+
+            public override bool CanRead => true;
+
+            public override bool CanSeek => false;
+
+            public override bool CanWrite => false;
+
+            public override long Length => throw new NotSupportedException();
+
+            public override long Position
+            {
+                get => throw new NotSupportedException();
+                set => throw new NotSupportedException();
+            }
+
+            internal void Release() => _release.TrySetResult(null);
+
+            public override void Flush()
+            {
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int remaining = _bytes.Length - _position;
+                int toCopy = Math.Min(remaining, count);
+                if (toCopy <= 0)
+                {
+                    return 0;
+                }
+
+                Array.Copy(_bytes, _position, buffer, offset, toCopy);
+                _position += toCopy;
+                Interlocked.Add(ref _totalBytesRead, toCopy);
+                return toCopy;
+            }
+
+            public override async ValueTask<int> ReadAsync(
+                Memory<byte> buffer,
+                CancellationToken cancellationToken = default)
+            {
+                ReadStarted.Set();
+                await _release.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+                return Read(buffer.Span);
+            }
+
+            public override Task<int> ReadAsync(
+                byte[] buffer,
+                int offset,
+                int count,
+                CancellationToken cancellationToken)
+            {
+                return ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+            public override void SetLength(long value) => throw new NotSupportedException();
+
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing)
+                {
+                    WasDisposed = true;
+                    _release.TrySetResult(null);
+                    ReadStarted.Dispose();
+                }
+
+                base.Dispose(disposing);
             }
         }
 
