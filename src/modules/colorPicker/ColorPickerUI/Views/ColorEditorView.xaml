@@ -233,14 +233,16 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource CaptionTextBlockStyle}"
                                         Text="{x:Bind FormatName, Mode=OneWay}"
-                                        TextTrimming="CharacterEllipsis" />
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTipService.ToolTip="{x:Bind FormatName, Mode=OneWay}" />
                                     <TextBlock
                                         x:Uid="Color_Code"
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
-                                        Text="{x:Bind ColorText, Mode=OneWay}" />
+                                        Text="{x:Bind ColorText, Mode=OneWay}"
+                                        ToolTipService.ToolTip="{x:Bind ColorText, Mode=OneWay}" />
 
                                     <controls:CopyButton
                                         x:Uid="Copy_to_clipboard"

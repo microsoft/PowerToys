@@ -26,7 +26,11 @@
             BorderThickness="1,1,1,0"
             Click="ColorVariationButton_Click"
             CornerRadius="4,4,0,0"
-            Style="{StaticResource ColorShadeButtonStyle}" />
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
         <Button
             x:Name="colorVariation2Button"
             x:Uid="Lighter_color"
@@ -34,7 +38,11 @@
             Background="LightPink"
             BorderThickness="1,0,1,0"
             Click="ColorVariationButton_Click"
-            Style="{StaticResource ColorShadeButtonStyle}" />
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
         <Button
             x:Name="colorVariation3Button"
             x:Uid="Darker_color"
@@ -42,7 +50,11 @@
             Background="LightPink"
             BorderThickness="1,0,1,0"
             Click="ColorVariationButton_Click"
-            Style="{StaticResource ColorShadeButtonStyle}" />
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
         <Button
             x:Name="colorVariation4Button"
             x:Uid="Darkest_color"
@@ -51,7 +63,11 @@
             BorderThickness="1,0,1,1"
             Click="ColorVariationButton_Click"
             CornerRadius="0,0,4,4"
-            Style="{StaticResource ColorShadeButtonStyle}" />
+            Style="{StaticResource ColorShadeButtonStyle}">
+            <ToolTipService.ToolTip>
+                <TextBlock x:Uid="Select_color" />
+            </ToolTipService.ToolTip>
+        </Button>
         <Button
             x:Name="CurrentColorButton"
             x:Uid="Selected_color"

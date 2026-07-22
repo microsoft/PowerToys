@@ -174,7 +174,7 @@
     <value>Value slider</value>
     <comment>Accessible name for the slider that represents the color value (from HSV)</comment>
   </data>
-  <data name="Select_color" xml:space="preserve">
+  <data name="Select_color.Text" xml:space="preserve">
     <value>Select color</value>
   </data>
   <data name="Color_Code.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
