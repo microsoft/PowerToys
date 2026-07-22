@@ -347,6 +347,7 @@ public class PeekFilePreviewTests : UITestBase
                     $"Peek preview readiness attempt {attempt}/{PreviewOpenAttempts} failed for " +
                     $"'{Path.GetFileName(filePath)}': {ex.Message}. Closing Peek and retrying activation.");
                 WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
+                StopPeekProcess();
             }
         }
 
@@ -786,11 +787,12 @@ public class PeekFilePreviewTests : UITestBase
     private void CloseTestWindows()
     {
         var peekClosed = WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
+        var peekSettled = WaitForPeekProcessInputIdle();
         var explorerClosed = CloseExplorerFileWindows();
 
-        if (!peekClosed)
+        if (!peekClosed || !peekSettled)
         {
-            TestContext.WriteLine("Cleanup could not close every visible Peek window within 10 seconds.");
+            TestContext.WriteLine("Cleanup could not close Peek and wait for its UI thread to become idle within 10 seconds.");
         }
 
         if (!explorerClosed)
@@ -799,6 +801,51 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         explorerWindowHandle = 0;
+    }
+
+    private static bool WaitForPeekProcessInputIdle()
+    {
+        var processes = Process.GetProcessesByName(PeekProcessName);
+        try
+        {
+            foreach (var process in processes)
+            {
+                if (!process.WaitForInputIdle(10_000))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
+    }
+
+    private static bool StopPeekProcess()
+    {
+        WindowControl.TryKillProcessByName(PeekProcessName);
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (Process.GetProcessesByName(PeekProcessName).Length == 0)
+            {
+                return true;
+            }
+
+            Thread.Sleep(150);
+        }
+
+        return Process.GetProcessesByName(PeekProcessName).Length == 0;
     }
 
     private static bool CloseExplorerFileWindows()

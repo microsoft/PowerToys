@@ -21,9 +21,11 @@
     <!--
       Engine is winappcli (Microsoft.WinAppCli) — installed once per machine via
       `winget install Microsoft.winappcli`. We shell out to winapp.exe and parse its
-      JSON output. No managed dependency on the engine — only MSTest's attribute surface.
+      JSON output. There is no managed dependency on the engine.
     -->
     <PackageReference Include="MSTest.TestFramework" />
+    <!-- Keep visual baseline comparison byte-for-byte compatible with the legacy UI-test harness. -->
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
     <!--
       ScreenRecorderLib encodes the optional pipeline screen recording (ScreenRecording.cs)
       in realtime via native Media Foundation. Pipeline-only diagnostic; no PATH/FFmpeg setup.

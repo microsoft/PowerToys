@@ -5,13 +5,14 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using CoenM.ImageHash;
+using CoenM.ImageHash.HashAlgorithms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.UITest.Next;
 
 public static class VisualAssert
 {
-    private const int HashSize = 8;
     private const int SimilarityThreshold = 95;
     private const int VisualRetryTimeoutMS = 15_000;
     private const int VisualRetryIntervalMS = 500;
@@ -63,7 +64,7 @@ public static class VisualAssert
 
         using var baselineImage = new Bitmap(stream!);
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(VisualRetryTimeoutMS);
-        var similarity = 0;
+        var similarity = 0d;
         do
         {
             session.Screenshot(testImagePath);
@@ -86,7 +87,7 @@ public static class VisualAssert
         testContext?.AddResultFile(testImagePath);
         Assert.Fail(
             $"Visual result for scenario {scenarioSubname} did not reach {SimilarityThreshold}% similarity " +
-            $"within {VisualRetryTimeoutMS / 1_000}s (last similarity: {similarity}%). " +
+            $"within {VisualRetryTimeoutMS / 1_000}s (last similarity: {similarity:F2}%). " +
             $"Baseline: {baselineImagePath}; test image: {testImagePath}.");
     }
 
@@ -101,41 +102,18 @@ public static class VisualAssert
         return Path.Combine(Path.GetTempPath(), fileName);
     }
 
-    private static int CalculateSimilarity(Bitmap baselineImage, Bitmap testImage)
+    private static double CalculateSimilarity(Bitmap baselineImage, Bitmap testImage)
     {
-        var baselineHash = ComputeAverageHash(baselineImage);
-        var testHash = ComputeAverageHash(testImage);
-        var matchingBits = HashSize * HashSize - System.Numerics.BitOperations.PopCount(baselineHash ^ testHash);
-        return matchingBits * 100 / (HashSize * HashSize);
-    }
+        var hashAlgorithm = new AverageHash();
+        using var baselineStream = new MemoryStream();
+        using var testStream = new MemoryStream();
+        baselineImage.Save(baselineStream, System.Drawing.Imaging.ImageFormat.Png);
+        testImage.Save(testStream, System.Drawing.Imaging.ImageFormat.Png);
+        baselineStream.Position = 0;
+        testStream.Position = 0;
 
-    private static ulong ComputeAverageHash(Bitmap image)
-    {
-        using var scaledImage = new Bitmap(image, new Size(HashSize, HashSize));
-        var luminance = new byte[HashSize * HashSize];
-        var total = 0;
-
-        for (var y = 0; y < HashSize; y++)
-        {
-            for (var x = 0; x < HashSize; x++)
-            {
-                var color = scaledImage.GetPixel(x, y);
-                var value = (byte)((color.R * 299 + color.G * 587 + color.B * 114) / 1000);
-                luminance[y * HashSize + x] = value;
-                total += value;
-            }
-        }
-
-        var average = total / luminance.Length;
-        ulong hash = 0;
-        for (var index = 0; index < luminance.Length; index++)
-        {
-            if (luminance[index] >= average)
-            {
-                hash |= 1UL << index;
-            }
-        }
-
-        return hash;
+        var baselineHash = hashAlgorithm.Hash(baselineStream);
+        var testHash = hashAlgorithm.Hash(testStream);
+        return CompareHash.Similarity(baselineHash, testHash);
     }
 }

@@ -23,6 +23,8 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <!-- ProjectReference does not copy this runtime dependency from UITestAutomation.Next. -->
+    <PackageReference Include="CoenM.ImageSharp.ImageHash" />
   </ItemGroup>
 
   <ItemGroup>
