@@ -122,7 +122,7 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
                           HWND sourceWindow, HMONITOR sourceMonitor,
                           HMONITOR targetMonitor, HWND notifyWindow,
                           std::function<AnnotationState()> annotationQuery,
-                          bool trackWindow )
+                          bool trackWindow, HWND sourceBorderWindow )
 {
     if( IsActive() )
     {
@@ -131,6 +131,7 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
 
     m_sourceRect = sourceRect;
     m_sourceWindow = sourceWindow;
+    m_sourceBorderWindow = sourceBorderWindow;
     m_trackWindow = trackWindow;
     m_notifyWindow = notifyWindow;
     m_annotationQuery = annotationQuery;
@@ -139,6 +140,8 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
     m_sourceTexture = nullptr;
     m_contentSize = item.Size();
     m_poolSize = item.Size();
+    m_sourceMonitor = sourceMonitor;
+    m_targetMonitor = targetMonitor;
     m_targetRect = GetMonitorRect( targetMonitor );
     m_sourceMonitorRect = GetMonitorRect( sourceMonitor );
 
@@ -235,7 +238,6 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
                                             m_targetRect.bottom - m_targetRect.top,
                                             nullptr, nullptr, GetModuleHandle( nullptr ), nullptr );
         THROW_LAST_ERROR_IF_NULL( m_backdropWindow );
-        SetWindowDisplayAffinity( m_backdropWindow, WDA_EXCLUDEFROMCAPTURE );
 
         // No activation and click-through: the mirror is display-only and
         // must never steal focus from the demo app.
@@ -247,8 +249,11 @@ bool MirrorWindow::Start( winrt::GraphicsCaptureItem const& item, RECT sourceRec
                                     nullptr, nullptr, GetModuleHandle( nullptr ), this );
         THROW_LAST_ERROR_IF_NULL( m_window );
 
-        // Never let the mirror feed back into a capture.
-        SetWindowDisplayAffinity( m_window, WDA_EXCLUDEFROMCAPTURE );
+        // The mirror and backdrop stay visible to captures so screen
+        // sharing (e.g. Teams) of the target monitor shows the mirrored
+        // content. Self-capture can't happen: the target monitor is never
+        // the source, and the annotation override below pins monitor
+        // capture to the source monitor.
 
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
         swapChainDesc.Width = m_bufferWidth;
@@ -357,6 +362,9 @@ void MirrorWindow::Stop()
     m_device = nullptr;
     m_winrtDevice = nullptr;
     m_sourceWindow = nullptr;
+    m_sourceBorderWindow = nullptr;
+    m_sourceMonitor = nullptr;
+    m_targetMonitor = nullptr;
     m_notifyWindow = nullptr;
     m_annotationQuery = nullptr;
     m_annotationState = AnnotationState::None;
@@ -410,8 +418,11 @@ bool MirrorWindow::SwitchCapture( winrt::GraphicsCaptureItem const& item, bool e
 // part of the window's surface, so they wouldn't show in the mirror. When
 // one of those modes activates, temporarily mirror the monitor under the
 // cursor (where the annotation UI appears) instead, and switch back to the
-// window when the mode exits. Returns true when the capture was switched so
-// the caller can discard the frame from the previous capture.
+// window when the mode exits. The target monitor is never captured — the
+// mirror is capture-visible and would feed back into itself — so the
+// source monitor stands in when the cursor is there. Returns true when the
+// capture was switched so the caller can discard the frame from the
+// previous capture.
 //
 //----------------------------------------------------------------------------
 bool MirrorWindow::UpdateAnnotationState()
@@ -454,6 +465,14 @@ bool MirrorWindow::UpdateAnnotationState()
         POINT cursorPos;
         GetCursorPos( &cursorPos );
         HMONITOR monitor = MonitorFromPoint( cursorPos, MONITOR_DEFAULTTONEAREST );
+
+        // The mirror is visible to captures, so capturing the target
+        // monitor would feed the mirror back into itself; the annotation
+        // UI is on the source monitor anyway.
+        if( monitor == m_targetMonitor )
+        {
+            monitor = m_sourceMonitor;
+        }
         try
         {
             auto item = util::CreateCaptureItemForMonitor( monitor );
@@ -578,6 +597,22 @@ LRESULT MirrorWindow::WindowProc( HWND window, UINT message, WPARAM wordParam, L
                 // Keep the backdrop directly below the mirror.
                 SetWindowPos( m_backdropWindow, window, 0, 0, 0, 0,
                               SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+            }
+
+            // Static zoom and draw cover the source monitor with a
+            // full-screen topmost window, hiding the green border; reclaim
+            // it like live zoom does for the webcam preview. Skip during
+            // live zoom, whose own reclaim timer would fight this one and
+            // flicker the border.
+            if( m_annotationQuery == nullptr ||
+                m_annotationQuery() != AnnotationState::AnnotatingLiveZoom )
+            {
+                HWND border = m_borderWindow != nullptr ? m_borderWindow : m_sourceBorderWindow;
+                if( border != nullptr && IsWindow( border ))
+                {
+                    SetWindowPos( border, HWND_TOPMOST, 0, 0, 0, 0,
+                                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                }
             }
             return 0;
         }

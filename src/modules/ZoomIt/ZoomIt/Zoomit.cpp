@@ -8837,10 +8837,12 @@ LRESULT APIENTRY MainWndProc(
                 return MirrorWindow::AnnotationState::None;
             };
 
+            HWND mirrorBorderWindow = hWndMirrorSource == NULL ? g_MirrorSelectRectangle.Window() : NULL;
             if( mirrorItem == nullptr ||
                 !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
                                        mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
-                                       mirrorAnnotationQuery, mirrorTrackWindow )) {
+                                       mirrorAnnotationQuery, mirrorTrackWindow,
+                                       mirrorBorderWindow )) {
 
                 g_MirrorSelectRectangle.Stop();
                 MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );

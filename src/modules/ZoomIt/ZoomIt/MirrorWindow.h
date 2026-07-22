@@ -44,6 +44,9 @@ public:
     // the region under the tracked window instead of the window's own
     // surface, so ZoomIt annotations show in place, at the cost of
     // occluding windows becoming visible.
+    // sourceBorderWindow is the caller-owned green border (the region/
+    // monitor SelectRectangle); the topmost timer keeps it above the
+    // full-screen static zoom/draw window.
     bool Start( winrt::GraphicsCaptureItem const& item,
                 RECT sourceRect,
                 HWND sourceWindow,
@@ -51,7 +54,8 @@ public:
                 HMONITOR targetMonitor,
                 HWND notifyWindow,
                 std::function<AnnotationState()> annotationQuery = nullptr,
-                bool trackWindow = false );
+                bool trackWindow = false,
+                HWND sourceBorderWindow = nullptr );
     void Stop();
 
 private:
@@ -75,11 +79,14 @@ private:
     HWND	m_borderWindow = nullptr;
     HWND	m_notifyWindow = nullptr;
     HWND	m_sourceWindow = nullptr;
+    HWND	m_sourceBorderWindow = nullptr;	// caller-owned region/monitor border
     RECT	m_borderTarget{};	// source window rect the border follows
     RECT	m_sourceRect{};		// mirrored region in screen coordinates
     RECT	m_textureCrop{};	// mirrored region in capture-texture coordinates
     RECT	m_targetRect{};		// target monitor rectangle
     RECT	m_sourceMonitorRect{};	// source monitor rectangle (window tracking)
+    HMONITOR	m_sourceMonitor = nullptr;
+    HMONITOR	m_targetMonitor = nullptr;
     bool	m_trackWindow = false;	// monitor capture cropped to the window rect
     int		m_bufferWidth = 0;	// swapchain dimensions
     int		m_bufferHeight = 0;
