@@ -8,17 +8,20 @@ namespace PowerOCR.Core.Imaging;
 
 public sealed class PreparedBitmap : IDisposable
 {
-    public PreparedBitmap(Bitmap bitmap, double scale, int offsetX, int offsetY)
+    public PreparedBitmap(Bitmap bitmap, double scaleX, double scaleY, int offsetX, int offsetY)
     {
         Bitmap = bitmap;
-        Scale = scale;
+        ScaleX = scaleX;
+        ScaleY = scaleY;
         OffsetX = offsetX;
         OffsetY = offsetY;
     }
 
     public Bitmap Bitmap { get; }
 
-    public double Scale { get; }
+    public double ScaleX { get; }
+
+    public double ScaleY { get; }
 
     public int OffsetX { get; }
 

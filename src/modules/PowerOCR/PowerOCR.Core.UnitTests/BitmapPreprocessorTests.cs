@@ -39,7 +39,8 @@ public sealed class BitmapPreprocessorTests
 
         Assert.AreEqual(150, prepared.Bitmap.Width);
         Assert.AreEqual(75, prepared.Bitmap.Height);
-        Assert.AreEqual(1.5, prepared.Scale);
+        Assert.AreEqual(1.5, prepared.ScaleX);
+        Assert.AreEqual(1.5, prepared.ScaleY);
     }
 
     [TestMethod]
@@ -67,5 +68,21 @@ public sealed class BitmapPreprocessorTests
 
         Assert.AreEqual(0, prepared.OffsetX);
         Assert.AreEqual(0, prepared.OffsetY);
+    }
+
+    [TestMethod]
+    public void Prepare_WideShortBitmap_PadsOnlyShortAxis()
+    {
+        using var source = new Bitmap(100, 10, PixelFormat.Format32bppArgb);
+        source.SetPixel(50, 5, Color.Red);
+        var processor = new BitmapPreprocessor();
+
+        using PreparedBitmap prepared = processor.Prepare(source, 1.0);
+
+        Assert.AreEqual(100, prepared.Bitmap.Width);
+        Assert.AreEqual(80, prepared.Bitmap.Height);
+        Assert.AreEqual(0, prepared.OffsetX);
+        Assert.AreEqual(8, prepared.OffsetY);
+        Assert.AreEqual(Color.Red.ToArgb(), prepared.Bitmap.GetPixel(50, 13).ToArgb());
     }
 }

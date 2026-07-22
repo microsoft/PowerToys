@@ -43,7 +43,7 @@ public sealed class TableTextFormatterTests
     }
 
     [TestMethod]
-    public void Format_RowsSeparatedByLessThanGridSpacing_RemainSeparate()
+    public void Format_RowsSeparatedByOnePixelGap_RemainSeparate()
     {
         OcrLineData[] cells =
         [
@@ -57,12 +57,40 @@ public sealed class TableTextFormatterTests
     }
 
     [TestMethod]
-    public void Format_ColumnsSeparatedByLessThanGridSpacing_RemainSeparate()
+    public void Format_ColumnsSeparatedByOnePixelGap_RemainSeparate()
     {
         OcrLineData[] cells =
         [
             Cell("A1", 0, 0),
             Cell("B1", 41, 0),
+        ];
+
+        Assert.AreEqual(
+            "A1\tB1",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_RowsWithOnePixelOverlap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("A2", 0, 19),
+        ];
+
+        Assert.AreEqual(
+            $"A1{Environment.NewLine}A2",
+            TableTextFormatter.Format(cells, "en-US"));
+    }
+
+    [TestMethod]
+    public void Format_ColumnsWithOnePixelOverlap_RemainSeparate()
+    {
+        OcrLineData[] cells =
+        [
+            Cell("A1", 0, 0),
+            Cell("B1", 39, 0),
         ];
 
         Assert.AreEqual(

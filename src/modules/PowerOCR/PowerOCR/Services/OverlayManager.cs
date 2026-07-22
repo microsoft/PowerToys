@@ -39,11 +39,7 @@ internal sealed class OverlayManager : IOverlayManager
     private readonly IClipboardService _clipboardService;
     private readonly IUserSettings _userSettings;
     private readonly IServiceProvider _serviceProvider;
-    private readonly List<OCROverlay> _activeWindows = new();
-    private readonly List<DisplayCapture> _activeCaptures = new();
-    private CancellationTokenSource? _sessionCts;
-    private OverlaySessionViewModel? _viewModel;
-    private bool _sessionActive;
+    private OverlaySession? _session;
     private bool _disposed;
 
     public OverlayManager(
@@ -68,24 +64,22 @@ internal sealed class OverlayManager : IOverlayManager
 
     public async Task ShowAsync()
     {
-        if (_sessionActive)
+        if (_session is not null)
         {
             return;
         }
 
-        _sessionActive = true;
-        _sessionCts = new CancellationTokenSource();
-        var token = _sessionCts.Token;
-
         // Create shared view model for this session
-        _viewModel = _serviceProvider.GetRequiredService<OverlaySessionViewModel>();
-        PopulateLanguages(_viewModel);
+        var viewModel = _serviceProvider.GetRequiredService<OverlaySessionViewModel>();
+        var session = new OverlaySession(viewModel);
+        _session = session;
+        PopulateLanguages(viewModel);
 
         var displays = DisplayArea.FindAll();
         if (displays.Count == 0)
         {
             Logger.LogWarning("No displays found for capture.");
-            CloseAll(cancelled: false);
+            CloseSession(session, cancelled: false);
             return;
         }
 
@@ -99,8 +93,8 @@ internal sealed class OverlayManager : IOverlayManager
             for (int index = 0; index < displays.Count; index++)
             {
                 var display = displays[index];
-                token.ThrowIfCancellationRequested();
-                var capture = await _screenCaptureService.CaptureAsync(display, token);
+                session.Token.ThrowIfCancellationRequested();
+                var capture = await _screenCaptureService.CaptureAsync(display, session.Token);
                 captures.Add(capture);
             }
         }
@@ -111,7 +105,7 @@ internal sealed class OverlayManager : IOverlayManager
                 cap.Dispose();
             }
 
-            CloseAll(cancelled: false);
+            CloseSession(session, cancelled: false);
             return;
         }
         catch (Exception ex)
@@ -123,7 +117,7 @@ internal sealed class OverlayManager : IOverlayManager
         // A terminate/disable request can run on the dispatcher while the awaited captures
         // above complete. If the session was torn down, release every locally captured image
         // and abort before resolving or creating any overlay windows.
-        if (!_sessionActive || token.IsCancellationRequested)
+        if (!IsCurrentSession(session))
         {
             foreach (var cap in captures)
             {
@@ -147,12 +141,18 @@ internal sealed class OverlayManager : IOverlayManager
             try
             {
                 var errorCapture = await CreateErrorCaptureAsync(displays[0]);
-                captures.Add(errorCapture);
-                _activeCaptures.AddRange(captures);
+                if (!IsCurrentSession(session))
+                {
+                    errorCapture.Dispose();
+                    return;
+                }
 
-                var errorWindow = _windowFactory.Create(errorCapture, _viewModel, this);
-                _activeWindows.Add(errorWindow);
-                ActivateAndPositionWindow(errorWindow, bringToForeground: true);
+                captures.Add(errorCapture);
+                session.Captures.AddRange(captures);
+
+                var errorWindow = _windowFactory.Create(errorCapture, viewModel, this);
+                session.Windows.Add(errorWindow);
+                ActivateAndPositionWindow(session, errorWindow, bringToForeground: true);
 
                 string errorMessage = ResourceLoaderInstance.ResourceLoader.GetString("ScreenCaptureFailed");
                 errorWindow.ShowError(errorMessage);
@@ -160,70 +160,76 @@ internal sealed class OverlayManager : IOverlayManager
             catch (Exception ex2)
             {
                 Logger.LogError("Failed to show error overlay", ex2);
-                CloseAll(cancelled: false);
+                CloseSession(session, cancelled: false);
             }
 
             return;
         }
 
         // All captures succeeded – create overlay windows
-        _activeCaptures.AddRange(captures);
+        session.Captures.AddRange(captures);
 
         try
         {
             foreach (var capture in captures)
             {
-                var window = _windowFactory.Create(capture, _viewModel, this);
-                _activeWindows.Add(window);
+                var window = _windowFactory.Create(capture, viewModel, this);
+                session.Windows.Add(window);
             }
 
             // Activate every overlay, then explicitly give the last one foreground focus.
             // Window.Activate alone cannot reliably cross the foreground-process boundary
             // when this session was started by the Runner's named event.
-            for (int index = 0; index < _activeWindows.Count; index++)
+            for (int index = 0; index < session.Windows.Count; index++)
             {
                 ActivateAndPositionWindow(
-                    _activeWindows[index],
-                    bringToForeground: index == _activeWindows.Count - 1);
+                    session,
+                    session.Windows[index],
+                    bringToForeground: index == session.Windows.Count - 1);
             }
 
-            PowerToysTelemetry.Log.WriteEvent(new PowerOCRInvokedEvent());
+            if (IsCurrentSession(session))
+            {
+                PowerToysTelemetry.Log.WriteEvent(new PowerOCRInvokedEvent());
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError("Failed to create or activate overlay windows", ex);
-            CloseAll(cancelled: false);
+            CloseSession(session, cancelled: false);
         }
     }
 
     public async Task CaptureAsync(DisplayCapture capture, PixelSelection selection, bool isClick)
     {
-        if (_viewModel is null || !_sessionActive)
+        var session = _session;
+        if (session is null || !session.Captures.Contains(capture))
         {
             return;
         }
 
+        var viewModel = session.ViewModel;
+
         // Reject a second capture while processing
-        if (_viewModel.IsProcessing)
+        if (viewModel.IsProcessing)
         {
             return;
         }
 
         // Reject if no language is available
-        if (_viewModel.SelectedLanguage is null)
+        var selectedLanguage = viewModel.SelectedLanguage;
+        if (selectedLanguage is null)
         {
             string noLangMsg = ResourceLoaderInstance.ResourceLoader.GetString("NoOcrLanguages");
-            ShowErrorOnAll(noLangMsg);
+            ShowErrorOnAll(session, noLangMsg);
             return;
         }
 
-        _viewModel.IsProcessing = true;
-        _viewModel.HasError = false;
+        viewModel.IsProcessing = true;
+        viewModel.HasError = false;
 
         try
         {
-            var token = _sessionCts?.Token ?? CancellationToken.None;
-
             OcrCaptureMode mode;
             OcrPoint? clickPoint = null;
 
@@ -233,11 +239,11 @@ internal sealed class OverlayManager : IOverlayManager
                 mode = OcrCaptureMode.Word;
                 clickPoint = new OcrPoint(selection.Local.X, selection.Local.Y);
             }
-            else if (_viewModel.IsTable)
+            else if (viewModel.IsTable)
             {
                 mode = OcrCaptureMode.Table;
             }
-            else if (_viewModel.IsSingleLine)
+            else if (viewModel.IsSingleLine)
             {
                 mode = OcrCaptureMode.SingleLine;
             }
@@ -258,11 +264,11 @@ internal sealed class OverlayManager : IOverlayManager
 
                 var request = new OcrExtractionRequest(
                     bitmapForOcr,
-                    _viewModel.SelectedLanguage,
+                    selectedLanguage,
                     mode,
                     clickPoint);
 
-                result = await _textExtractorService.ExtractAsync(request, token);
+                result = await _textExtractorService.ExtractAsync(request, session.Token);
             }
             catch (OperationCanceledException)
             {
@@ -270,8 +276,17 @@ internal sealed class OverlayManager : IOverlayManager
             }
             catch (Exception ex)
             {
-                Logger.LogError("OCR extraction failed", ex);
-                ShowErrorOnAll(ResourceLoaderInstance.ResourceLoader.GetString("OcrFailed"));
+                if (IsCurrentSession(session))
+                {
+                    Logger.LogError("OCR extraction failed", ex);
+                    ShowErrorOnAll(session, ResourceLoaderInstance.ResourceLoader.GetString("OcrFailed"));
+                }
+
+                return;
+            }
+
+            if (!IsCurrentSession(session))
+            {
                 return;
             }
 
@@ -279,7 +294,7 @@ internal sealed class OverlayManager : IOverlayManager
             if (string.IsNullOrWhiteSpace(result))
             {
                 string noTextMsg = ResourceLoaderInstance.ResourceLoader.GetString("NoTextFound");
-                ShowErrorOnAll(noTextMsg);
+                ShowErrorOnAll(session, noTextMsg);
                 return;
             }
 
@@ -295,14 +310,23 @@ internal sealed class OverlayManager : IOverlayManager
             }
             catch (Exception ex)
             {
-                Logger.LogError("Clipboard write failed", ex);
-                ShowErrorOnAll(ResourceLoaderInstance.ResourceLoader.GetString("ClipboardFailed"));
+                if (IsCurrentSession(session))
+                {
+                    Logger.LogError("Clipboard write failed", ex);
+                    ShowErrorOnAll(session, ResourceLoaderInstance.ResourceLoader.GetString("ClipboardFailed"));
+                }
+
+                return;
+            }
+
+            if (!IsCurrentSession(session))
+            {
                 return;
             }
 
             // Emit telemetry and close
             PowerToysTelemetry.Log.WriteEvent(new PowerOCRCaptureEvent());
-            CloseAll(cancelled: false);
+            CloseSession(session, cancelled: false);
         }
         catch (OperationCanceledException)
         {
@@ -312,20 +336,34 @@ internal sealed class OverlayManager : IOverlayManager
         {
             // Defensive net: OCR and clipboard failures are handled at their own boundaries
             // above; this only guards the async void caller against unexpected errors.
-            Logger.LogError("Capture pipeline failed unexpectedly", ex);
+            if (IsCurrentSession(session))
+            {
+                Logger.LogError("Capture pipeline failed unexpectedly", ex);
+            }
         }
         finally
         {
-            if (_sessionActive && _viewModel is not null)
+            if (IsCurrentSession(session))
             {
-                _viewModel.IsProcessing = false;
+                viewModel.IsProcessing = false;
             }
         }
     }
 
     public void CloseAll(bool cancelled)
     {
-        if (!_sessionActive)
+        var session = _session;
+        if (session is null)
+        {
+            return;
+        }
+
+        CloseSession(session, cancelled);
+    }
+
+    private void CloseSession(OverlaySession session, bool cancelled)
+    {
+        if (!ReferenceEquals(_session, session))
         {
             return;
         }
@@ -334,28 +372,31 @@ internal sealed class OverlayManager : IOverlayManager
         // native termination, and external window close paths.
         CursorClipper.UnClip();
 
-        _sessionCts?.Cancel();
-        _sessionCts?.Dispose();
-        _sessionCts = null;
+        session.CancellationSource.Cancel();
 
-        App.Current.EnsureLifetimeWindow();
+        // The hidden lifetime host is only safe to create after WinUI has successfully
+        // activated at least one overlay. Keep that overlay alive until the host exists.
+        if (session.HasActivatedWindow)
+        {
+            App.Current.EnsureLifetimeWindow();
+        }
 
-        foreach (var window in _activeWindows)
+        foreach (var window in session.Windows)
         {
             window.CloseFromManager();
         }
 
-        _activeWindows.Clear();
+        session.Windows.Clear();
 
-        foreach (var capture in _activeCaptures)
+        foreach (var capture in session.Captures)
         {
             capture.Dispose();
         }
 
-        _activeCaptures.Clear();
+        session.Captures.Clear();
 
-        _viewModel = null;
-        _sessionActive = false;
+        session.CancellationSource.Dispose();
+        _session = null;
 
         if (cancelled)
         {
@@ -373,7 +414,7 @@ internal sealed class OverlayManager : IOverlayManager
         _disposed = true;
         _activationService.ActivationRequested -= OnActivationRequested;
 
-        if (_sessionActive)
+        if (_session is not null)
         {
             CloseAll(cancelled: false);
         }
@@ -430,9 +471,13 @@ internal sealed class OverlayManager : IOverlayManager
         viewModel.SelectedLanguage = viewModel.Languages[0];
     }
 
-    private static void ActivateAndPositionWindow(OCROverlay window, bool bringToForeground)
+    private static void ActivateAndPositionWindow(
+        OverlaySession session,
+        OCROverlay window,
+        bool bringToForeground)
     {
         window.Activate();
+        session.HasActivatedWindow = true;
         window.PositionOnDisplay();
 
         if (bringToForeground)
@@ -441,9 +486,19 @@ internal sealed class OverlayManager : IOverlayManager
         }
     }
 
-    private void ShowErrorOnAll(string message)
+    private bool IsCurrentSession(OverlaySession session)
     {
-        foreach (var window in _activeWindows)
+        return ReferenceEquals(_session, session) && !session.Token.IsCancellationRequested;
+    }
+
+    private void ShowErrorOnAll(OverlaySession session, string message)
+    {
+        if (!IsCurrentSession(session))
+        {
+            return;
+        }
+
+        foreach (var window in session.Windows)
         {
             window.ShowError(message);
         }
@@ -451,7 +506,7 @@ internal sealed class OverlayManager : IOverlayManager
 
     private async void OnActivationRequested(object? sender, EventArgs e)
     {
-        if (_sessionActive)
+        if (_session is not null)
         {
             return;
         }
@@ -465,6 +520,27 @@ internal sealed class OverlayManager : IOverlayManager
             Logger.LogError("Overlay activation failed unexpectedly", ex);
             CloseAll(cancelled: false);
         }
+    }
+
+    private sealed class OverlaySession
+    {
+        public OverlaySession(OverlaySessionViewModel viewModel)
+        {
+            ViewModel = viewModel;
+            Token = CancellationSource.Token;
+        }
+
+        public CancellationTokenSource CancellationSource { get; } = new();
+
+        public CancellationToken Token { get; }
+
+        public OverlaySessionViewModel ViewModel { get; }
+
+        public List<OCROverlay> Windows { get; } = new();
+
+        public List<DisplayCapture> Captures { get; } = new();
+
+        public bool HasActivatedWindow { get; set; }
     }
 
     private static async Task<DisplayCapture> CreateErrorCaptureAsync(DisplayArea display)

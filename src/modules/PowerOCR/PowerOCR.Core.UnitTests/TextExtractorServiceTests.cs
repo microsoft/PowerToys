@@ -111,10 +111,7 @@ public sealed class TextExtractorServiceTests
         var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
         using var bitmap = new Bitmap(200, 100, PixelFormat.Format32bppArgb);
 
-        // Click point within "Hello" bounds (0,0,50,20) — use scale=1 (small bitmap triggers padding)
-        // With scale=1 and padding=8, "Hello" shifts to (8,8..58,28) in prepared bitmap
-        // But the service transforms ClickPoint using prepared.Scale and prepared.Offset
-        // The click is in original coordinates, so we click at (25, 10) for "Hello"
+        // The click is expressed in original bitmap coordinates.
         var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Word, new OcrPoint(25, 10));
 
         string result = await service.ExtractAsync(request, CancellationToken.None);
@@ -137,7 +134,7 @@ public sealed class TextExtractorServiceTests
     }
 
     [TestMethod]
-    public async Task ExtractAsync_UpscalingWithPaddingWouldExceedLimit_UsesUnscaledBitmap()
+    public async Task ExtractAsync_ThinBitmap_PadsOnlyShortAxisAndRetainsEnhancedScale()
     {
         int widthAtUpscalingBoundary = (int)Math.Floor(OcrEngine.MaxImageDimension / 1.5);
         var recognizer = new FakeRecognizer { Document = MakeDocument() };
@@ -147,8 +144,62 @@ public sealed class TextExtractorServiceTests
 
         await service.ExtractAsync(request, CancellationToken.None);
 
-        Assert.AreEqual(widthAtUpscalingBoundary + 16, recognizer.ReceivedBitmapWidth);
+        Assert.AreEqual((int)Math.Round(widthAtUpscalingBoundary * 1.5), recognizer.ReceivedBitmapWidth);
         Assert.AreEqual(80, recognizer.ReceivedBitmapHeight);
+    }
+
+    [TestMethod]
+    public async Task ExtractAsync_DefaultScaleNearLimit_DoesNotPadLongAxisPastLimit()
+    {
+        int widthNearLimit = (int)OcrEngine.MaxImageDimension - 10;
+        var recognizer = new FakeRecognizer { Document = MakeDocument() };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(widthNearLimit, 40, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Region);
+
+        await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual(widthNearLimit, recognizer.ReceivedBitmapWidth);
+        Assert.AreEqual(80, recognizer.ReceivedBitmapHeight);
+        Assert.IsTrue(recognizer.ReceivedBitmapWidth <= OcrEngine.MaxImageDimension);
+        Assert.IsTrue(recognizer.ReceivedBitmapHeight <= OcrEngine.MaxImageDimension);
+    }
+
+    [TestMethod]
+    public async Task ExtractAsync_OversizedWordBitmap_DownscalesAndMapsClickPoint()
+    {
+        int maximumDimension = (int)OcrEngine.MaxImageDimension;
+        int sourceWidth = maximumDimension + 100;
+        const int SourceHeight = 200;
+        double expectedScaleX = maximumDimension / (double)sourceWidth;
+        double expectedScaleY = Math.Round(SourceHeight * expectedScaleX) / SourceHeight;
+        var clickedWord = new OcrWordData(
+            "Target",
+            new OcrRect(
+                (maximumDimension / 2d) - 5,
+                (100 * expectedScaleY) - 5,
+                10,
+                10));
+        var recognizer = new FakeRecognizer
+        {
+            Document = new OcrDocument(
+            [
+                new OcrLineData("Target", clickedWord.Bounds, [clickedWord]),
+            ]),
+        };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(sourceWidth, SourceHeight, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(
+            bitmap,
+            EnglishLanguage,
+            OcrCaptureMode.Word,
+            new OcrPoint(sourceWidth / 2d, 100));
+
+        string result = await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual("Target", result);
+        Assert.IsTrue(recognizer.ReceivedBitmapWidth <= maximumDimension);
+        Assert.IsTrue(recognizer.ReceivedBitmapHeight <= maximumDimension);
     }
 
     [TestMethod]

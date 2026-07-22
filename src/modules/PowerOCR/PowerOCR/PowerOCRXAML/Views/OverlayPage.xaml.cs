@@ -320,16 +320,38 @@ public sealed partial class OverlayPage : UserControl
         }
     }
 
-    private void Canvas_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    private void RootGrid_ContextRequested(UIElement sender, ContextRequestedEventArgs e)
     {
-        ContextMenuFlyout.ShowAt(RegionClickCanvas, e.GetPosition(RegionClickCanvas));
+        if (e.TryGetPosition(RegionClickCanvas, out var position))
+        {
+            // Preserve the previous pointer behavior: toolbar controls should handle their
+            // own context requests rather than opening the canvas language menu.
+            if (!ReferenceEquals(e.OriginalSource, RegionClickCanvas))
+            {
+                return;
+            }
+
+            ContextMenuFlyout.ShowAt(RegionClickCanvas, position);
+        }
+        else
+        {
+            ShowContextMenuForKeyboard();
+        }
+
         e.Handled = true;
     }
 
     private void ContextMenuFlyout_Opening(object sender, object e)
     {
-        // Opening also covers keyboard invocation through Shift+F10 or the Menu key.
         PopulateLanguageFlyoutItems();
+    }
+
+    private void ShowContextMenuForKeyboard()
+    {
+        // With no pointer position, place the menu near the toolbar where keyboard focus starts.
+        double x = Math.Max(0, RegionClickCanvas.ActualWidth / 2);
+        double y = Math.Max(0, Toolbar.ActualHeight + Toolbar.Margin.Top);
+        ContextMenuFlyout.ShowAt(RegionClickCanvas, new Windows.Foundation.Point(x, y));
     }
 
     private void PopulateLanguageFlyoutItems()
@@ -350,8 +372,13 @@ public sealed partial class OverlayPage : UserControl
             int idx = 0;
             foreach (var lang in ViewModel.Languages)
             {
-                var item = new MenuFlyoutItem
+                var item = new RadioMenuFlyoutItem
                 {
+                    GroupName = "OCRLanguage",
+                    IsChecked = string.Equals(
+                        lang.LanguageTag,
+                        ViewModel.SelectedLanguage?.LanguageTag,
+                        StringComparison.OrdinalIgnoreCase),
                     Text = lang.NativeName,
                 };
                 item.SetValue(
@@ -369,6 +396,22 @@ public sealed partial class OverlayPage : UserControl
     {
         switch (e.Key)
         {
+            case VirtualKey.Application:
+                ShowContextMenuForKeyboard();
+                e.Handled = true;
+                break;
+
+            case VirtualKey.F10:
+                if (InputKeyboardSource
+                    .GetKeyStateForCurrentThread(VirtualKey.Shift)
+                    .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down))
+                {
+                    ShowContextMenuForKeyboard();
+                    e.Handled = true;
+                }
+
+                break;
+
             case VirtualKey.Escape:
                 _manager?.CloseAll(cancelled: true);
                 e.Handled = true;

@@ -33,7 +33,12 @@ public sealed class BitmapPreprocessor : IBitmapPreprocessor
             new Rectangle(Point.Empty, source.Size),
             GraphicsUnit.Pixel);
 
-        return new PreparedBitmap(output, scale, dimensions.Offset.X, dimensions.Offset.Y);
+        return new PreparedBitmap(
+            output,
+            dimensions.Scaled.Width / (double)source.Width,
+            dimensions.Scaled.Height / (double)source.Height,
+            dimensions.Offset.X,
+            dimensions.Offset.Y);
     }
 
     private static (Size Scaled, Size Output, Point Offset) CalculateDimensions(Bitmap source, double scale)
@@ -41,17 +46,18 @@ public sealed class BitmapPreprocessor : IBitmapPreprocessor
         ArgumentNullException.ThrowIfNull(source);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(scale, 0);
 
-        int scaledWidth = (int)Math.Round(source.Width * scale);
-        int scaledHeight = (int)Math.Round(source.Height * scale);
-        bool requiresPadding = scaledWidth < MinimumDimension || scaledHeight < MinimumDimension;
-        int outputWidth = requiresPadding
+        int scaledWidth = Math.Max(1, (int)Math.Round(source.Width * scale));
+        int scaledHeight = Math.Max(1, (int)Math.Round(source.Height * scale));
+        bool requiresHorizontalPadding = scaledWidth < MinimumDimension;
+        bool requiresVerticalPadding = scaledHeight < MinimumDimension;
+        int outputWidth = requiresHorizontalPadding
             ? Math.Max(scaledWidth + (Padding * 2), MinimumDimension + (Padding * 2))
             : scaledWidth;
-        int outputHeight = requiresPadding
+        int outputHeight = requiresVerticalPadding
             ? Math.Max(scaledHeight + (Padding * 2), MinimumDimension + (Padding * 2))
             : scaledHeight;
-        int offsetX = requiresPadding ? Padding : 0;
-        int offsetY = requiresPadding ? Padding : 0;
+        int offsetX = requiresHorizontalPadding ? Padding : 0;
+        int offsetY = requiresVerticalPadding ? Padding : 0;
 
         return (
             new Size(scaledWidth, scaledHeight),

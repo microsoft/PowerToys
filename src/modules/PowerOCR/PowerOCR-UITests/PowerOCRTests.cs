@@ -182,20 +182,46 @@ public class PowerOCRTests : UITestBase
                 Assert.Inconclusive("At least two installed OCR languages are required to verify a language change.");
             }
 
-            var targetItem = comboBoxItems.First(item => !item.Selected);
+            int selectedLanguageIndex = comboBoxItems.FindIndex(item => item.Selected);
+            int targetLanguageIndex = selectedLanguageIndex == 0 ? 1 : 0;
+            var selectedItem = comboBoxItems[selectedLanguageIndex];
+            var targetItem = comboBoxItems[targetLanguageIndex];
+            var selectedLanguageName = selectedItem.Name;
             var targetLanguageName = targetItem.Name;
             SendKeys(Key.Esc);
 
-            // Select a different language through the canvas context menu.
-            var selectionCanvas = Find<Pane>(By.AccessibilityId("RegionClickCanvas"), 5000, true);
-            selectionCanvas.Click(rightClick: true);
+            // Open the context menu from the focused ComboBox using only the keyboard.
+            // This exercises the routed Shift+F10 path rather than the pointer path.
+            SendKeys(Key.Shift, Key.F10);
+
+            var selectedMenuItem = FindAll<Element>(By.Name(selectedLanguageName), 3000, true)
+                .FirstOrDefault(item =>
+                    item.Displayed
+                    && item.AutomationId.StartsWith("OCRLanguageMenuItem_", StringComparison.Ordinal));
+            Assert.IsNotNull(selectedMenuItem, $"The context menu should contain the selected '{selectedLanguageName}' OCR language.");
+            Assert.AreEqual(
+                "1",
+                selectedMenuItem.GetAttribute("Toggle.ToggleState"),
+                "The current OCR language should be marked as selected in the context menu.");
 
             var targetMenuItem = FindAll<Element>(By.Name(targetLanguageName), 3000, true)
                 .FirstOrDefault(item =>
                     item.Displayed
                     && item.AutomationId.StartsWith("OCRLanguageMenuItem_", StringComparison.Ordinal));
             Assert.IsNotNull(targetMenuItem, $"The context menu should contain the '{targetLanguageName}' OCR language.");
-            targetMenuItem.Click();
+            Assert.AreEqual(
+                "0",
+                targetMenuItem.GetAttribute("Toggle.ToggleState"),
+                "The target OCR language should not be selected before activation.");
+
+            // Navigate from the first language item and activate the target without a pointer.
+            SendKeys(Key.Home);
+            for (int index = 0; index < targetLanguageIndex; index++)
+            {
+                SendKeys(Key.Down);
+            }
+
+            SendKeys(Key.Enter);
 
             // Re-open the toolbar ComboBox and verify its selected item changed.
             languageComboBox = Find<ComboBox>(

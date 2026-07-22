@@ -8,6 +8,12 @@ namespace PowerOCR.Core.Formatting;
 
 public static class TableTextFormatter
 {
+    // The legacy extractor removed six pixels from OCR bounds before projecting them
+    // onto rows and columns. Split that tolerance evenly across both edges so that
+    // small OCR overlaps do not collapse adjacent cells into one segment.
+    private const double OcrBoundsTolerance = 6;
+    private const double MinimumBoundsSizeForTolerance = 10;
+
     public static string Format(IReadOnlyList<OcrLineData> cells, string languageTag)
     {
         if (cells.Count == 0)
@@ -63,6 +69,13 @@ public static class TableTextFormatter
                 ? (Start: cell.Bounds.Y, End: cell.Bounds.Bottom)
                 : (Start: cell.Bounds.X, End: cell.Bounds.Right))
             .Where(segment => segment.End > segment.Start)
+            .Select(segment =>
+            {
+                double inset = (segment.End - segment.Start) > MinimumBoundsSizeForTolerance
+                    ? OcrBoundsTolerance / 2
+                    : 0;
+                return (Start: segment.Start + inset, End: segment.End - inset);
+            })
             .OrderBy(segment => segment.Start)
             .ThenBy(segment => segment.End)
             .ToList();

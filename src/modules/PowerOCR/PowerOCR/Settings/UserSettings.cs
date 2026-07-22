@@ -56,13 +56,8 @@ namespace PowerOCR.Settings
                         {
                             retryCount++;
 
-                            if (!_settingsUtils.SettingsExists(PowerOcrModuleName))
-                            {
-                                Logger.LogInfo("TextExtractor settings.json was missing, creating a new one");
-                                var defaultPowerOcrSettings = new PowerOcrSettings();
-                                defaultPowerOcrSettings.Save(_settingsUtils);
-                            }
-
+                            // This API also creates a source-generated, AOT-safe default file
+                            // when settings.json is missing or corrupt.
                             var settings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrModuleName);
                             if (settings != null)
                             {

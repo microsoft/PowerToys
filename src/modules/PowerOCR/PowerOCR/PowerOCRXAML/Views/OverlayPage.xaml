@@ -30,6 +30,7 @@
         x:Name="RootGrid"
         AutomationProperties.AutomationId="TextExtractorWindow"
         Background="Transparent"
+        ContextRequested="RootGrid_ContextRequested"
         KeyDown="RootGrid_KeyDown">
 
         <!--  Full-window screenshot  -->
@@ -89,8 +90,7 @@
             PointerCaptureLost="Canvas_PointerCaptureLost"
             PointerMoved="Canvas_PointerMoved"
             PointerPressed="Canvas_PointerPressed"
-            PointerReleased="Canvas_PointerReleased"
-            RightTapped="Canvas_RightTapped">
+            PointerReleased="Canvas_PointerReleased">
             <Canvas.ContextFlyout>
                 <MenuFlyout x:Name="ContextMenuFlyout" Opening="ContextMenuFlyout_Opening">
                     <MenuFlyoutSeparator x:Name="LanguageSeparator" />

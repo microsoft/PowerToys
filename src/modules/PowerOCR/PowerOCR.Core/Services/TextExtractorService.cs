@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Drawing;
 using PowerOCR.Core.Formatting;
 using PowerOCR.Core.Imaging;
 using PowerOCR.Core.Models;
@@ -33,20 +34,14 @@ public sealed class TextExtractorService : ITextExtractorService
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
 
-        double scale = DefaultScale;
-        if (request.Mode != OcrCaptureMode.Word
-            && (request.Bitmap.Width * EnhancedScale) <= OcrEngine.MaxImageDimension
-            && (request.Bitmap.Height * EnhancedScale) <= OcrEngine.MaxImageDimension)
-        {
-            var enhancedSize = _preprocessor.GetOutputSize(request.Bitmap, EnhancedScale);
-            if (enhancedSize.Width <= OcrEngine.MaxImageDimension
-                && enhancedSize.Height <= OcrEngine.MaxImageDimension)
-            {
-                scale = EnhancedScale;
-            }
-        }
+        double scale = SelectScale(request.Bitmap, request.Mode);
 
         using PreparedBitmap prepared = _preprocessor.Prepare(request.Bitmap, scale);
+        if (!FitsOcrLimit(prepared.Bitmap.Size))
+        {
+            throw new InvalidOperationException("The prepared bitmap exceeds the OCR engine's maximum dimensions.");
+        }
+
         OcrDocument document = await _recognizer.RecognizeAsync(
             prepared.Bitmap,
             request.Language,
@@ -73,9 +68,41 @@ public sealed class TextExtractorService : ITextExtractorService
         }
 
         return new OcrPoint(
-            (clickPoint.Value.X * prepared.Scale) + prepared.OffsetX,
-            (clickPoint.Value.Y * prepared.Scale) + prepared.OffsetY);
+            (clickPoint.Value.X * prepared.ScaleX) + prepared.OffsetX,
+            (clickPoint.Value.Y * prepared.ScaleY) + prepared.OffsetY);
     }
+
+    private double SelectScale(Bitmap bitmap, OcrCaptureMode mode)
+    {
+        if (mode != OcrCaptureMode.Word
+            && (bitmap.Width * EnhancedScale) <= OcrEngine.MaxImageDimension
+            && (bitmap.Height * EnhancedScale) <= OcrEngine.MaxImageDimension
+            && FitsOcrLimit(_preprocessor.GetOutputSize(bitmap, EnhancedScale)))
+        {
+            return EnhancedScale;
+        }
+
+        if (FitsOcrLimit(_preprocessor.GetOutputSize(bitmap, DefaultScale)))
+        {
+            return DefaultScale;
+        }
+
+        double maximumDimension = OcrEngine.MaxImageDimension;
+        double scale = Math.Min(
+            DefaultScale,
+            Math.Min(maximumDimension / bitmap.Width, maximumDimension / bitmap.Height));
+
+        if (!FitsOcrLimit(_preprocessor.GetOutputSize(bitmap, scale)))
+        {
+            throw new InvalidOperationException("The bitmap could not be scaled within the OCR engine's maximum dimensions.");
+        }
+
+        return scale;
+    }
+
+    private static bool FitsOcrLimit(Size size)
+        => size.Width <= OcrEngine.MaxImageDimension
+            && size.Height <= OcrEngine.MaxImageDimension;
 
     private static string GetClickedWord(OcrDocument document, OcrPoint transformedPoint)
     {
