@@ -315,6 +315,12 @@ namespace Microsoft.CommandPalette.Extensions
         // re-foregrounds Command Palette, and returns the captured parameters.
         // The returned operation is cancelable.
         Windows.Foundation.IAsyncOperation<IAuthorizationResult> RequestAuthorizationAsync(IAuthorizationRequest request);
+
+        // Navigate Command Palette to a page provided by this extension. `page`
+        // is a live page object owned by the extension (typically an IPage). The
+        // host summons its window and navigates to that page. navigationMode
+        // controls stack behavior (Push / GoBack then Push / GoHome then Push).
+        Windows.Foundation.IAsyncAction GoToPageAsync(ICommand page, NavigationMode navigationMode);
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]

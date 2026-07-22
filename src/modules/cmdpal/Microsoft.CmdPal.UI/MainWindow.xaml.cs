@@ -140,6 +140,10 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        // Give host-driven navigation (GoToPageAsync) the UI dispatcher so it can
+        // marshal onto the UI thread when an extension calls it from a background thread.
+        CommandPaletteHost.SetUiDispatcherQueue(this.DispatcherQueue);
+
         // Give the authorization broker a window-aware platform so it can open
         // the browser and re-foreground Command Palette when a redirect lands.
         ViewModels.Auth.AuthBrokerService.Instance.SetPlatform(new WindowAuthBrokerPlatform());
