@@ -75,6 +75,15 @@ public sealed record JSExtensionManifest
     public string EffectiveDisplayName => string.IsNullOrWhiteSpace(DisplayName) ? Name ?? string.Empty : DisplayName;
 
     /// <summary>
+    /// Gets the stable identity key used to compare extensions for uniqueness. The extension
+    /// <see cref="Name"/> is the identity; it is trimmed and lower-cased so that comparisons are
+    /// case-insensitive, matching npm package-name semantics. Cross-extension uniqueness (rejecting a
+    /// second installed extension that resolves to the same key) is enforced during discovery, not by
+    /// the manifest parser. See the discovery-level follow-up noted in <see cref="TryParse"/>.
+    /// </summary>
+    public string NameKey => (Name ?? string.Empty).Trim().ToLowerInvariant();
+
+    /// <summary>
     /// Reads and validates a package.json file as a CmdPal extension manifest.
     /// </summary>
     /// <param name="packageJsonPath">The full path to the package.json file.</param>
@@ -108,6 +117,14 @@ public sealed record JSExtensionManifest
     /// <summary>
     /// Parses and validates a package.json body as a CmdPal extension manifest.
     /// </summary>
+    /// <remarks>
+    /// Unknown JSON fields are ignored rather than treated as errors, so a newer manifest still parses
+    /// on an older host. Missing required fields and malformed value types produce a failed result
+    /// through <see cref="JSExtensionManifestParseResult"/> rather than throwing. The extension
+    /// <see cref="Name"/> is the extension identity (see <see cref="NameKey"/>); enforcing that two
+    /// different installed extensions do not share the same identity is a discovery-level concern and
+    /// is handled by the extension discovery service (phase 4), not by this parser.
+    /// </remarks>
     /// <param name="packageJson">The raw package.json contents.</param>
     /// <param name="extensionDirectory">The directory used to resolve the entry point file, checked for existence.</param>
     /// <returns>A result describing success (with the manifest) or the reason for failure.</returns>
@@ -161,9 +178,24 @@ public sealed record JSExtensionManifest
             return JSExtensionManifestParseResult.Failure(resolutionError!);
         }
 
+        // Rule 4: the entry point must be a JavaScript module Node can execute directly. Only .js,
+        // .mjs, and .cjs are supported; anything else (for example an uncompiled .ts source) is rejected.
+        if (!IsSupportedEntryPointExtension(resolvedEntryPoint))
+        {
+            return JSExtensionManifestParseResult.Failure($"The entry point '{entryPoint}' must be a JavaScript file with a .js, .mjs, or .cjs extension.");
+        }
+
         if (!File.Exists(resolvedEntryPoint))
         {
             return JSExtensionManifestParseResult.Failure($"The entry point '{entryPoint}' does not resolve to an existing file.");
+        }
+
+        // Rule 5: a symbolic link or junction must not redirect the entry point outside the extension
+        // directory, even when the lexical path stays within it. This is checked against the real
+        // filesystem after confirming the file exists.
+        if (!IsEntryPointContainmentTrusted(extensionDirectory, resolvedEntryPoint, out var containmentError))
+        {
+            return JSExtensionManifestParseResult.Failure(containmentError!);
         }
 
         var manifest = new JSExtensionManifest
@@ -283,5 +315,77 @@ public sealed record JSExtensionManifest
         }
 
         return resolved;
+    }
+
+    private static bool IsSupportedEntryPointExtension(string path)
+    {
+        var extension = Path.GetExtension(path.AsSpan());
+        return extension.Equals(".js", StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(".mjs", StringComparison.OrdinalIgnoreCase)
+            || extension.Equals(".cjs", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Confirms that the resolved entry point stays inside the extension directory on the real
+    /// filesystem. The lexical check in <see cref="ResolveEntryPoint"/> only blocks ".." traversal; a
+    /// symbolic link or junction could still redirect a lexically-contained path outside the package.
+    /// Any reparse point encountered between the extension directory and the entry point is rejected.
+    /// </summary>
+    private static bool IsEntryPointContainmentTrusted(string extensionDirectory, string resolvedEntryPoint, out string? error)
+    {
+        error = null;
+
+        try
+        {
+            var baseDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(extensionDirectory));
+            var current = Path.GetFullPath(resolvedEntryPoint);
+
+            // Walk from the entry point up toward the extension directory. The extension directory
+            // itself and everything above it are outside the scope of this check.
+            while (!string.Equals(Path.TrimEndingDirectorySeparator(current), baseDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                if (IsReparsePoint(current))
+                {
+                    error = $"The entry point '{resolvedEntryPoint}' traverses a symbolic link or junction, which is not allowed.";
+                    return false;
+                }
+
+                var parent = Path.GetDirectoryName(current);
+                if (string.IsNullOrEmpty(parent) || string.Equals(parent, current, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Reached a filesystem root without meeting the extension directory. The lexical
+                    // containment check already ran, so this only happens for pathological inputs.
+                    break;
+                }
+
+                current = parent;
+            }
+
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException or PathTooLongException or System.Security.SecurityException)
+        {
+            error = $"The entry point '{resolvedEntryPoint}' could not be validated: {ex.Message}";
+            return false;
+        }
+    }
+
+    private static bool IsReparsePoint(string path)
+    {
+        try
+        {
+            return (File.GetAttributes(path) & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            // A missing segment cannot be a trusted-but-unverified link. Existence of the entry point
+            // was already confirmed by the caller, so treat a vanished segment as not a reparse point.
+            return false;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or System.Security.SecurityException)
+        {
+            // If the segment's attributes cannot be read, err on the side of caution and reject it.
+            return true;
+        }
     }
 }
