@@ -50,12 +50,17 @@ public class PowerDisplay
     public void MouseWheelMode_UnsupportedIndex_IsIgnored()
     {
         using var viewModel = CreateViewModel(out var settings);
+        var changedProperties = new List<string>();
+        viewModel.PropertyChanged += (_, args) => changedProperties.Add(args.PropertyName);
 
         viewModel.MouseWheelControlModeIndex = 99;
 
         Assert.AreEqual(
             MouseWheelControlMode.PrimaryDisplay,
             settings.Properties.MouseWheelControlMode);
+        CollectionAssert.Contains(
+            changedProperties,
+            nameof(PowerDisplayViewModel.MouseWheelControlModeIndex));
     }
 
     private static PowerDisplayViewModel CreateViewModel(out PowerDisplaySettings settings)

@@ -402,6 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 var mode = ((MouseWheelControlMode)value).Normalize();
                 if ((int)mode != value)
                 {
+                    OnPropertyChanged(nameof(MouseWheelControlModeIndex));
                     return;
                 }
 

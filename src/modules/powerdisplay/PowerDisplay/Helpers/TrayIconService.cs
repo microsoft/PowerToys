@@ -281,6 +281,7 @@ namespace PowerDisplay.Helpers
                 GuidItem = Guid.Empty,
             };
 
+            // A successful rectangle lookup for an overflow icon also confirms a live registration.
             return ShellNotifyIconGetRectNative(ref identifier, out _) >= 0;
         }
 
@@ -525,18 +526,38 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            var totalNotches = 0;
             var now = unchecked((uint)Environment.TickCount);
+            var hasStaleSample = false;
+            var shouldDisarm = false;
             foreach (var sample in samples)
             {
                 if (sample.HoverGeneration != _hoverGeneration ||
-                    unchecked(now - sample.Timestamp) > MaxSampleAgeMs ||
                     !currentBounds.Contains(sample.X, sample.Y))
                 {
-                    InvalidateMouseWheelHover(disarm: true);
-                    return;
+                    shouldDisarm = true;
                 }
 
+                if (unchecked(now - sample.Timestamp) > MaxSampleAgeMs)
+                {
+                    hasStaleSample = true;
+                }
+            }
+
+            if (shouldDisarm)
+            {
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            if (hasStaleSample)
+            {
+                _wheelDeltaAccumulator.Reset();
+                return;
+            }
+
+            var totalNotches = 0;
+            foreach (var sample in samples)
+            {
                 totalNotches += _wheelDeltaAccumulator.Add(sample.Delta);
             }
 
