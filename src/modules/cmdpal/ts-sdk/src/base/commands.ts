@@ -4,6 +4,7 @@
 
 import type { CommandResult, IInvokableCommand, IconInfo } from '../types.js';
 import { ExtensionHost } from '../runtime/ExtensionHost.js';
+import { stableId } from '../runtime/hash.js';
 import { openUrlInDefaultBrowser, type UrlOpener } from '../runtime/openUrl.js';
 
 /** A command that performs no action and keeps the palette open. */
@@ -78,12 +79,16 @@ export class CopyTextCommand implements IInvokableCommand {
    * @param name Display name. Defaults to `'Copy'`.
    * @param toastMessage Confirmation shown after copying. Defaults to
    * `'Copied to clipboard'`.
+   * @param id Explicit stable id. When omitted, a collision-resistant id is
+   * derived from the full command payload, so two different strings that share
+   * the same leading characters still receive distinct ids.
    */
-  constructor(text: string, name?: string, toastMessage?: string) {
-    this.id = `copy-text:${text.slice(0, 24)}`;
+  constructor(text: string, name?: string, toastMessage?: string, id?: string) {
     this.name = name ?? 'Copy';
     this.text = text;
     this.toastMessage = toastMessage ?? 'Copied to clipboard';
+    this.id =
+      id ?? stableId('copy-text', { text, name: this.name, toastMessage: this.toastMessage });
   }
 
   /** Copies the text to the clipboard and shows the confirmation toast. */
