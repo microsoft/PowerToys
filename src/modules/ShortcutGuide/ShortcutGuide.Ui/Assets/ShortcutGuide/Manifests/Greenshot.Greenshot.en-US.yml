@@ -39,7 +39,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - <PrtScn>
+              - <PrtScr>
       - Name: Capture Internet Explorer tab
         Shortcut:
           - Win: false
