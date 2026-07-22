@@ -204,6 +204,30 @@ void WorkArea::FlashZones()
     }
 }
 
+void WorkArea::ShowMonitorRotationPreview(const std::vector<RECT>& windowRects, size_t monitorNumber, std::optional<bool> reverse, bool animateRotation)
+{
+    if (!m_zonesOverlay)
+    {
+        return;
+    }
+
+    std::vector<RECT> localWindowRects;
+    localWindowRects.reserve(windowRects.size());
+    for (const auto& rect : windowRects)
+    {
+        localWindowRects.push_back(RECT{
+            .left = rect.left - m_workAreaRect.left(),
+            .top = rect.top - m_workAreaRect.top(),
+            .right = rect.right - m_workAreaRect.left(),
+            .bottom = rect.bottom - m_workAreaRect.top(),
+        });
+    }
+
+    SetWorkAreaWindowAsTopmost(nullptr);
+    m_zonesOverlay->DrawMonitorRotationPreview(localWindowRects, monitorNumber, reverse, animateRotation);
+    m_zonesOverlay->Show();
+}
+
 void WorkArea::InitLayout()
 {
     InitLayout({});
