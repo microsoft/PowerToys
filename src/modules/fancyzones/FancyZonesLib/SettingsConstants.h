@@ -7,6 +7,7 @@ enum class SettingId
     MouseMiddleClickSpanningMultipleZones,
     OverrideSnapHotkeys,
     MoveWindowAcrossMonitors,
+    CycleThroughAllZones,
     MoveWindowsBasedOnPosition,
     OverlappingZonesAlgorithm,
     DisplayOrWorkAreaChangeMoveWindows,

@@ -34,6 +34,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
         Assert::AreEqual(expected.overrideSnapHotkeys, actual.overrideSnapHotkeys);
         Assert::AreEqual(expected.moveWindowAcrossMonitors, actual.moveWindowAcrossMonitors);
+        Assert::AreEqual(expected.cycleThroughAllZones, actual.cycleThroughAllZones);
         Assert::AreEqual(expected.moveWindowsBasedOnPosition, actual.moveWindowsBasedOnPosition);
         Assert::AreEqual(expected.appLastZone_moveWindows, actual.appLastZone_moveWindows);
         Assert::AreEqual(expected.openWindowOnActiveMonitor, actual.openWindowOnActiveMonitor);
@@ -74,6 +75,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", m_defaultSettings.zoneSetChange_moveWindows);
             values.add_property(L"fancyzones_overrideSnapHotkeys", m_defaultSettings.overrideSnapHotkeys);
             values.add_property(L"fancyzones_moveWindowAcrossMonitors", m_defaultSettings.moveWindowAcrossMonitors);
+            values.add_property(L"fancyzones_cycleThroughAllZones", m_defaultSettings.cycleThroughAllZones);
             values.add_property(L"fancyzones_moveWindowsBasedOnPosition", m_defaultSettings.moveWindowsBasedOnPosition);
             values.add_property(L"fancyzones_appLastZone_moveWindows", m_defaultSettings.appLastZone_moveWindows);
             values.add_property(L"fancyzones_openWindowOnActiveMonitor", m_defaultSettings.openWindowOnActiveMonitor);
@@ -117,6 +119,7 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
             values.add_property(L"fancyzones_overrideSnapHotkeys", expected.overrideSnapHotkeys);
             values.add_property(L"fancyzones_moveWindowAcrossMonitors", expected.moveWindowAcrossMonitors);
+            values.add_property(L"fancyzones_cycleThroughAllZones", expected.cycleThroughAllZones);
             values.add_property(L"fancyzones_moveWindowsBasedOnPosition", expected.moveWindowsBasedOnPosition);
             values.add_property(L"fancyzones_appLastZone_moveWindows", expected.appLastZone_moveWindows);
             values.add_property(L"fancyzones_openWindowOnActiveMonitor", expected.openWindowOnActiveMonitor);
