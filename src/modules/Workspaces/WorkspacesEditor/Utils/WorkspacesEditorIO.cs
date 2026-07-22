@@ -44,9 +44,9 @@ namespace WorkspacesEditor.Utils
                 WorkspacesData parser = new();
                 WorkspacesData.WorkspacesListWrapper workspaces;
 
-                // v6: read the settings through the service (GetBlob).  Fall back to
-                // the legacy %LocalAppData% file only when no service is installed
-                // (no-admin / declined-UAC).
+                // v6: read the settings through the service (GetBlob).  There is
+                // no plaintext fallback — on Unavailable we surface a "set up
+                // protection" message instead of reading the stale legacy file.
                 var rc = PTSettingsClient.GetBlob(out var blob);
                 switch (rc)
                 {

@@ -232,6 +232,11 @@ public static class ServiceProvisioner
     /// another MSIX deployment, e.g. the PowerToys upgrade itself, is in flight,
     /// because AppX deployment is serialized machine-wide).
     /// </summary>
+    // Escapes a value for embedding inside a PowerShell single-quoted literal:
+    // a lone ' would otherwise terminate the string and break the command (e.g. a
+    // user profile path such as C:\Users\O'Brien\...).
+    private static string PsLit(string s) => (s ?? string.Empty).Replace("'", "''");
+
     public static string BuildInstallArguments(string serviceMsix, string userSid)
     {
         // NB: kept as a single -Command; Measure-Command times each phase and the
@@ -244,12 +249,12 @@ public static class ServiceProvisioner
              + "New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null; "
              + "function W($m){ Add-Content -Path $log -Value ((Get-Date).ToString('o') + ' ' + $m) }; "
              + "W 'provision start (elevated)'; "
-             + "$ta = Measure-Command { Add-AppxPackage -Path '" + serviceMsix + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown }; "
+             + "$ta = Measure-Command { Add-AppxPackage -Path '" + PsLit(serviceMsix) + "' -ForceUpdateFromAnyVersion -ForceApplicationShutdown }; "
              + "W ('Add-AppxPackage ms=' + [int]$ta.TotalMilliseconds); "
              + "$loc = (Get-AppxPackage -Name 'Microsoft.PowerToys.SettingsService' | Select-Object -First 1).InstallLocation; "
              + "if (-not $loc) { W 'ERROR: package InstallLocation not found'; exit 3 }; "
              + "$exe = Join-Path $loc 'PowerToys.PTSettingsSvc.exe'; "
-             + "$tr = Measure-Command { & $exe --register '" + userSid + "' }; "
+             + "$tr = Measure-Command { & $exe --register '" + PsLit(userSid) + "' }; "
              + "W ('register ms=' + [int]$tr.TotalMilliseconds + ' exit=' + $LASTEXITCODE); "
              + "W ('provision done total-ms=' + [int]($ta.TotalMilliseconds + $tr.TotalMilliseconds)); "
              + "exit $LASTEXITCODE"
@@ -274,8 +279,8 @@ public static class ServiceProvisioner
              + "New-Item -ItemType Directory -Force (Split-Path $log) | Out-Null; "
              + "function W($m){ Add-Content -Path $log -Value ((Get-Date).ToString('o') + ' ' + $m) }; "
              + "W 'provision start (elevated, DEV direct --register, no MSIX)'; "
-             + "$exe = '" + serviceBinary + "'; "
-             + "$tr = Measure-Command { & $exe --register '" + userSid + "' }; "
+             + "$exe = '" + PsLit(serviceBinary) + "'; "
+             + "$tr = Measure-Command { & $exe --register '" + PsLit(userSid) + "' }; "
              + "W ('register ms=' + [int]$tr.TotalMilliseconds + ' exit=' + $LASTEXITCODE); "
              + "W ('provision done (DEV) total-ms=' + [int]$tr.TotalMilliseconds); "
              + "exit $LASTEXITCODE"

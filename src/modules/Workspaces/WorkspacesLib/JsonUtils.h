@@ -19,9 +19,9 @@ namespace JsonUtils
 
     // v6: read/write the workspaces list through the PTSettingsSvc service
     // (PTSettingsClient GetBlob/PutBlob) so the protected %ProgramData% store is
-    // the single source of truth.  Both fall back to direct file IO on
-    // WorkspacesData::WorkspacesFile() only when the service is unavailable
-    // (no-admin / declined-UAC).
+    // the single source of truth.  There is NO plaintext fallback: when the
+    // service is unavailable the read returns ServiceAccessError and the write is
+    // skipped, so a stale user-writable file can never shadow the protected store.
     Result<std::vector<WorkspacesData::WorkspacesProject>, WorkspacesFileError> ReadWorkspacesFromService();
     bool WriteWorkspacesToService(const std::vector<WorkspacesData::WorkspacesProject>& projects);
 

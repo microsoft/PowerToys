@@ -23,18 +23,15 @@ namespace PTSettingsSvc
     // Successful authentication means ALL of the following hold:
     //   * Caller token is a real interactive user (not SYSTEM / SERVICE /
     //     ANONYMOUS), so we have a SID to scope the per-user data folder.
-    //   * Caller image is trusted by EITHER anchor:
-    //       - PATH anchor: image resolves under %ProgramFiles%\PowerToys and
-    //         that folder's DACL is admin-only writable (per-machine), OR
-    //       - BINARY-IDENTITY anchor: image is Microsoft-signed AND its version
-    //         equals the service's own version (per-user, user-writable folder).
+    //   * Caller image is trusted by the BINARY-IDENTITY anchor: the image is
+    //     Microsoft-signed AND its file version EXACTLY equals the service's own
+    //     version.  This is the single load-bearing runtime check (per-user
+    //     callers live in a user-writable folder, so a path/DACL anchor is not a
+    //     substitute).  Install-folder DACL hardening still happens at install
+    //     time as defense-in-depth, but the service does not rely on it here.
     //   * Caller image basename is in the CallerBinding allow-list — and the
     //     matched binding is returned in outIdentity.binding so the dispatch
     //     layer knows which namespace this caller may operate on.
-    //
-    // The path anchor is preferred where available (smaller privileged surface,
-    // immutability); the signature+version anchor is the fallback used only
-    // when the path cannot be trusted.
     //
     // The function ImpersonateNamedPipeClient()s internally and reverts
     // before returning, regardless of success.

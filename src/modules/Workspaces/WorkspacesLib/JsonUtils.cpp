@@ -35,7 +35,7 @@ namespace JsonUtils
                     return Error(WorkspacesFileError::IncorrectFileError);
                 }
             }
-            catch (std::exception ex)
+            catch (const std::exception& ex)
             {
                 Logger::critical("Exception on reading Workspaces file: {}", ex.what());
                 return Error(WorkspacesFileError::FileReadingError);
@@ -69,7 +69,7 @@ namespace JsonUtils
                 return Error(WorkspacesFileError::IncorrectFileError);
             }
         }
-        catch (std::exception ex)
+        catch (const std::exception& ex)
         {
             Logger::critical("Exception on reading Workspaces file: {}", ex.what());
             return Error(WorkspacesFileError::FileReadingError);
@@ -82,7 +82,7 @@ namespace JsonUtils
         {
             json::to_file(fileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
         }
-        catch (std::exception ex)
+        catch (const std::exception& ex)
         {
             Logger::error("Error writing workspaces file. {}", ex.what());
             return false;
@@ -112,7 +112,7 @@ namespace JsonUtils
                 Logger::critical("Incorrect Workspaces blob from service");
                 return Error(WorkspacesFileError::IncorrectFileError);
             }
-            catch (std::exception ex)
+            catch (const std::exception& ex)
             {
                 Logger::critical("Exception parsing Workspaces blob: {}", ex.what());
                 return Error(WorkspacesFileError::FileReadingError);
@@ -171,7 +171,7 @@ namespace JsonUtils
             Logger::error("PutBlob failed ({}) writing workspaces.", static_cast<int>(rc));
             return false;
         }
-        catch (std::exception ex)
+        catch (const std::exception& ex)
         {
             Logger::error("Exception writing workspaces via service: {}", ex.what());
             return false;
@@ -184,7 +184,7 @@ namespace JsonUtils
         {
             json::to_file(fileName, WorkspacesData::WorkspacesProjectJSON::ToJson(project));
         }
-        catch (std::exception ex)
+        catch (const std::exception& ex)
         {
             Logger::error("Error writing workspaces file. {}", ex.what());
             return false;
