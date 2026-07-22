@@ -2,8 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +19,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 {
     private readonly HttpClient _http = CreateClient();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _hostLocks = new();
     private bool _disposed;
 
     private static HttpClient CreateClient()
@@ -35,36 +41,71 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
     public async Task<IRandomAccessStream?> TryGetFaviconAsync(Uri siteUri, CancellationToken ct = default)
     {
-        if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
+        var hostLock = _hostLocks.GetOrAdd(siteUri.Host, _ => new SemaphoreSlim(1));
+        await hostLock.WaitAsync(ct);
+        try
         {
-            return null;
+            if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
+            {
+                return null;
+            }
+
+            var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+            directory = Path.Combine(directory, "icons");
+            Directory.CreateDirectory(directory);
+
+            // The icon filename is a short hexadecimal hash of the hostname
+            var hostHash = SHA256.HashData(Encoding.UTF8.GetBytes(siteUri.Host));
+            var iconFileName = $"{Convert.ToHexString(hostHash)}.ico";
+            var iconPath = Path.Combine(directory, iconFileName);
+
+            if (File.Exists(iconPath))
+            {
+                var iconBytes = await File.ReadAllBytesAsync(iconPath, ct).ConfigureAwait(false);
+                var iconStream = new InMemoryRandomAccessStream();
+                await iconStream.WriteAsync(iconBytes.AsBuffer());
+                iconStream.Seek(0);
+                return iconStream;
+            }
+
+            // 1) First attempt: favicon on the original authority (preserves port).
+            var first = BuildFaviconUri(siteUri);
+
+            // Try download; if this fails (non-image or path lost), retry on final host.
+            var inputStream = await TryDownloadImageAsync(first, ct).ConfigureAwait(false);
+            if (inputStream is null)
+            {
+                // 2) If the server redirected and "lost" the path, try /favicon.ico on the *final* host.
+                // We discover the final host by doing a HEAD/GET to the original URL and inspecting the final RequestUri.
+                var finalAuthority = await ResolveFinalAuthorityAsync(first, ct).ConfigureAwait(false);
+                if (finalAuthority is null || UriEqualsAuthority(first, finalAuthority))
+                {
+                    return null;
+                }
+
+                var second = BuildFaviconUri(finalAuthority);
+                if (second == first)
+                {
+                    return null; // nothing new to try
+                }
+
+                inputStream = await TryDownloadImageAsync(second, ct).ConfigureAwait(false);
+            }
+
+            var writeStream = inputStream.AsStreamForRead();
+            using var outputStream = File.Create(iconPath);
+            await writeStream.CopyToAsync(outputStream, ct);
+            if (inputStream is not null)
+            {
+                inputStream.Seek(0);
+            }
+
+            return inputStream;
         }
-
-        // 1) First attempt: favicon on the original authority (preserves port).
-        var first = BuildFaviconUri(siteUri);
-
-        // Try download; if this fails (non-image or path lost), retry on final host.
-        var stream = await TryDownloadImageAsync(first, ct).ConfigureAwait(false);
-        if (stream is not null)
+        finally
         {
-            return stream;
+            hostLock.Release();
         }
-
-        // 2) If the server redirected and "lost" the path, try /favicon.ico on the *final* host.
-        // We discover the final host by doing a HEAD/GET to the original URL and inspecting the final RequestUri.
-        var finalAuthority = await ResolveFinalAuthorityAsync(first, ct).ConfigureAwait(false);
-        if (finalAuthority is null || UriEqualsAuthority(first, finalAuthority))
-        {
-            return null;
-        }
-
-        var second = BuildFaviconUri(finalAuthority);
-        if (second == first)
-        {
-            return null; // nothing new to try
-        }
-
-        return await TryDownloadImageAsync(second, ct).ConfigureAwait(false);
     }
 
     private static Uri BuildFaviconUri(Uri anyUriOnSite)
@@ -151,6 +192,12 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
         }
 
         _http.Dispose();
+
+        foreach (var semaphore in _hostLocks.Values)
+        {
+            semaphore.Dispose();
+        }
+
         _disposed = true;
         GC.SuppressFinalize(this);
     }
