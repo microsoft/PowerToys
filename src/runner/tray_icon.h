@@ -13,6 +13,10 @@ void set_tray_icon_theme_adaptive(bool theme_adaptive);
 void set_tray_icon_update_available(bool available);
 // Stop the Tray Icon
 void stop_tray_icon();
+// True after the runner observed an OS-confirmed WM_ENDSESSION (wparam == TRUE).
+// Callers can use this to skip blocking cross-process cleanup the OS is already
+// reaping in parallel during shutdown / sign-off / restart.
+bool is_session_ending();
 // Open the Settings Window
 void open_settings_window(std::optional<std::wstring> settings_window);
 // Update Quick Access Hotkey
