@@ -433,18 +433,19 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void ValidateUsageEventuallyHelps()
+    public void ValidateUsageDoesNotCrossTierBoundary()
     {
+        // "C" is a prefix of "Command Prompt" (Prefix tier) but only a word-boundary
+        // match for "Visual Studio Code" (AcronymWordBoundary tier). Frecency only
+        // reorders items WITHIN a tier, so no amount of usage may lift a word-boundary
+        // match above a prefix match. This is the core "logical ordering" contract.
         var items = CreateMockHistoryItems();
-        var emptyHistory = CreateMockHistoryService(new());
         var history = CreateMockHistoryService(items);
         var fuzzyMatcher = CreateMatcher();
         var q = fuzzyMatcher.PrecomputeQuery("C");
 
-        // We're gonna run this test and keep adding more uses of VS Code till
-        // it breaks past Command Prompt
         var vsCodeId = items[1].Id;
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < 25; i++)
         {
             history = history.WithHistoryItem(vsCodeId);
 
@@ -452,10 +453,88 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             var weightedMatches = GetMatches(items, weightedScores).ToList();
             Assert.AreEqual(4, weightedMatches.Count);
 
-            var expectedCmdIndex = i < 5 ? 0 : 1;
-            var expectedCodeIndex = i < 5 ? 1 : 0;
-            Assert.AreEqual("Command Prompt", weightedMatches[expectedCmdIndex].Title);
-            Assert.AreEqual("Visual Studio Code", weightedMatches[expectedCodeIndex].Title);
+            Assert.AreEqual("Command Prompt", weightedMatches[0].Title, "A prefix match must stay above a word-boundary match regardless of usage");
+            Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VS Code should be the top of the word-boundary tier once used");
         }
+    }
+
+    [TestMethod]
+    public void ValidateUsageReordersWithinTier()
+    {
+        // Both "Visual Studio 2022" and "Visual Studio Code" share the same tier for the
+        // query "studio" (a word-boundary match on the second word, neither is a prefix).
+        // Heavy usage of one should be able to reorder it above its peer within that tier.
+        var items = new List<ListItemMock>
+        {
+            new("Visual Studio 2022", GivenId: "vs2022"),
+            new("Visual Studio Code", GivenId: "vscode"),
+        };
+
+        var history = CreateHistory(items.Reverse<ListItemMock>().ToList());
+        var fuzzyMatcher = CreateMatcher();
+        var q = fuzzyMatcher.PrecomputeQuery("studio");
+
+        // Both are equal word-boundary matches; give Code many uses so it climbs.
+        for (var i = 0; i < 10; i++)
+        {
+            history = history.WithHistoryItem("vscode");
+        }
+
+        var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
+
+        // Same tier for both, so the frequently-used one should not be below the other.
+        Assert.IsTrue(
+            MainListRanker.TierOf(scores[0]) == MainListRanker.TierOf(scores[1]),
+            "Both items should be classified into the same tier");
+        Assert.IsTrue(scores[1] >= scores[0], "The frequently-used item should reorder up within its tier");
+    }
+
+    [TestMethod]
+    public void AliasSubstringOnlyMatchIsNotDropped()
+    {
+        // Regression: an item whose alias merely starts with the query, but whose title,
+        // subtitle, and extension do not match at all, must still surface. A partial alias
+        // is an explicit, user-assigned shortcut that may be intentionally unrelated to the
+        // title (e.g. alias "term" on "Windows PowerShell", query "ter"). Before the fix,
+        // ClassifyTier returned RankTier.None for this case, Pack produced 0, and the item
+        // was filtered out by the "score > 0" gate in FilterListWithScores.
+        var tier = MainListRanker.ClassifyTier(
+            query: "ter",
+            title: "Windows PowerShell",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: true,
+            matchedLexically: false);
+
+        Assert.AreNotEqual(RankTier.None, tier, "A partial-alias-only match must not be classified as None");
+        Assert.AreEqual(RankTier.Fuzzy, tier, "A partial-alias-only match should floor to the Fuzzy tier");
+        Assert.IsTrue(
+            MainListRanker.Pack(tier, 0.0) > 0,
+            "The packed score must be positive so the item survives the score > 0 filter");
+    }
+
+    [TestMethod]
+    public void AliasSubstringFloorIsOnlyAFloor()
+    {
+        // The alias-substring floor never demotes a stronger title relationship: an exact
+        // title match with a partial alias stays ExactTitle rather than dropping to Fuzzy.
+        var exactWithAlias = MainListRanker.ClassifyTier(
+            query: "settings",
+            title: "Settings",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: true,
+            matchedLexically: true);
+        Assert.AreEqual(RankTier.ExactTitle, exactWithAlias, "A title exact match still wins over the alias floor");
+
+        // With neither a lexical match nor any alias match, the item is still filtered out.
+        var nothing = MainListRanker.ClassifyTier(
+            query: "zzz",
+            title: "Windows PowerShell",
+            isFallback: false,
+            isAliasExact: false,
+            isAliasSubstringMatch: false,
+            matchedLexically: false);
+        Assert.AreEqual(RankTier.None, nothing, "With neither a lexical nor an alias match the item is None");
     }
 }
