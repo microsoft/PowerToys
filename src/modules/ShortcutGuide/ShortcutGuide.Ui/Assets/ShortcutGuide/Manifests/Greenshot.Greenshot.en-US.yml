@@ -47,7 +47,7 @@ Shortcuts:
             Shift: true
             Alt: false
             Keys:
-              - <PrtScn>
+              - <PrtScr>
   - SectionName: While selecting a region
     Properties:
       - Name: Switch between region and window mode
