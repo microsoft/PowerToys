@@ -30,22 +30,44 @@ export class ExtensionHost {
     return ExtensionHost.instance !== null;
   }
 
-  /** Sends a log message to the host. */
+  /**
+   * Sends a log message to the host. No-op until the runtime installs a host.
+   *
+   * @param message Text to log.
+   * @param state Severity of the message. Defaults to `info`.
+   */
   static log(message: string, state: MessageState = 'info'): void {
     ExtensionHost.instance?.log(message, state);
   }
 
-  /** Shows a status message in the Command Palette status bar. */
+  /**
+   * Shows a status message in the Command Palette status bar. No-op until the
+   * runtime installs a host.
+   *
+   * @param message Text to display.
+   * @param state Severity of the message. Defaults to `info`.
+   * @param progress Optional progress shown alongside the message.
+   */
   static showStatus(message: string, state: MessageState = 'info', progress?: ProgressState): void {
     ExtensionHost.instance?.showStatus(message, state, progress);
   }
 
-  /** Hides a previously shown status message. */
+  /**
+   * Hides a previously shown status message. No-op until the runtime installs a
+   * host.
+   *
+   * @param messageId Identifier of the status message to hide.
+   */
   static hideStatus(messageId: string): void {
     ExtensionHost.instance?.hideStatus(messageId);
   }
 
-  /** Asks the host to copy text to the system clipboard. */
+  /**
+   * Asks the host to copy text to the system clipboard. No-op until the runtime
+   * installs a host.
+   *
+   * @param text Text to place on the clipboard.
+   */
   static copyToClipboard(text: string): void {
     ExtensionHost.instance?.copyToClipboard(text);
   }
