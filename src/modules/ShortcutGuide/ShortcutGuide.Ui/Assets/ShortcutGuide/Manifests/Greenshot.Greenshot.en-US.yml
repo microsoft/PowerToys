@@ -22,7 +22,7 @@ Shortcuts:
             Shift: true
             Alt: false
             Keys:
-              - <PrtScn>
+              - <PrtScr>
       - Name: Capture window
         Recommended: true
         Shortcut:
