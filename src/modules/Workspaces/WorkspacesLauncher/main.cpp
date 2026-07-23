@@ -101,7 +101,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
         // check the temp file in case the project is just created and not saved to the workspaces.json yet
         auto file = WorkspacesData::TempWorkspacesFile();
         auto res = JsonUtils::ReadSingleWorkspace(file);
-        if (res.isOk() && projectToLaunch.id == cmdArgs.workspaceId)
+        if (res.isOk() && res.getValue().id == cmdArgs.workspaceId)
         {
             projectToLaunch = res.getValue();
         }
@@ -116,6 +116,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
                 break;
+            case JsonUtils::WorkspacesFileError::ServiceAccessError:
+                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
+                break;
             }
 
             MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
@@ -126,7 +129,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (projectToLaunch.id.empty())
     {
         auto file = WorkspacesData::WorkspacesFile();
-        auto res = JsonUtils::ReadWorkspaces(file);
+        auto res = JsonUtils::ReadWorkspacesFromService();
         if (res.isOk())
         {
             workspaces = res.getValue();
@@ -141,6 +144,9 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
                 break;
             case JsonUtils::WorkspacesFileError::IncorrectFileError:
                 formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
+                break;
+            case JsonUtils::WorkspacesFileError::ServiceAccessError:
+                formattedMessage = GET_RESOURCE_STRING(IDS_SERVICE_ACCESS_ERROR);
                 break;
             }
 
@@ -201,7 +207,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
             }
         }
 
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
+        JsonUtils::WriteWorkspacesToService(workspaces);
     }
 
     // launch

@@ -95,7 +95,19 @@ namespace WorkspacesEditor
                 _mainViewModel = new MainViewModel(WorkspacesEditorIO);
             }
 
-            var parseResult = WorkspacesEditorIO.ParseWorkspaces(_mainViewModel);
+            // Fast, non-blocking initial load so the window appears immediately
+            // (reads via the service if it is already up, otherwise the legacy
+            // file).  Dialogs suppressed here so a transient upgrade-time rejection
+            // doesn't pop before the background provisioning has had a chance to
+            // heal it.  First-run provisioning — UAC + MSIX deploy, which is
+            // serialized machine-wide and can queue behind a PowerToys upgrade —
+            // runs OFF the UI thread below so the editor never appears hung.
+            WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: false);
+
+            // If the fast load already produced workspaces, the service was up and
+            // provisioning is a no-op — a later reload would only risk clobbering
+            // the user's edits, so we suppress it (see the guard below).
+            bool initialListEmpty = _mainViewModel.Workspaces.Count == 0;
 
             // normal start of editor
             if (_mainWindow == null)
@@ -110,6 +122,46 @@ namespace WorkspacesEditor
 
             // we can reset topmost flag after it's opened
             _mainWindow.Topmost = false;
+
+            // Deferred per-user service provisioning + legacy migration, OFF the UI
+            // thread.  When it completes we reload ONLY when it is safe to do so —
+            // never while the user is mid-edit, and only when the initial load was
+            // empty (so the reload can add newly migrated/protected workspaces but
+            // can never destroy user work).  IsProvisioning drives an optional
+            // "Setting up protection…" affordance in the UI.
+            _mainViewModel.IsProvisioning = true;
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    // Provision the per-user service + migrate legacy data.  The
+                    // reload below reads the result from the protected store (or
+                    // surfaces the "set up protection" message); we no longer branch
+                    // on the return value here.
+                    WorkspacesEditorIO.EnsureSettingsProvisioned();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Background settings provisioning failed: {ex.Message}");
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    _mainViewModel.IsProvisioning = false;
+
+                    // Reload from the protected store once provisioning settled,
+                    // guarded so it never clobbers in-progress edits or an
+                    // already-populated list.  We reload even when the service is
+                    // NOT available: with no unprotected fallback, that path now
+                    // surfaces the "set up protection" message instead of leaving a
+                    // silently-empty editor.  When the service IS available it loads
+                    // the (possibly just-migrated) protected workspaces.
+                    if (initialListEmpty && !_mainViewModel.IsEditInProgress)
+                    {
+                        WorkspacesEditorIO.ParseWorkspaces(_mainViewModel, runBootstrap: false, showDialogs: true);
+                    }
+                });
+            });
         }
 
         public static Theme GetCurrentTheme()

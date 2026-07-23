@@ -439,6 +439,15 @@ namespace WorkspacesEditor.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Setting up Workspaces protection….
+        /// </summary>
+        public static string Provisioning_Status {
+            get {
+                return ResourceManager.GetString("Provisioning_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The application cannot be found.
         /// </summary>
         public static string NotFoundTooltip {

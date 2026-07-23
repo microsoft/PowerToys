@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MSIX package for the PowerToys Settings Service.  The package STAGES THE BINARY ONLY into the immutable, signed
+  WindowsApps store so a non-admin same-user attacker cannot replace it.  It does
+  NOT use the windows.service extension: that extension's StartAccount is a closed
+  enum (localSystem/localService/networkService) and cannot express the dedicated
+  low-privilege VIRTUAL ACCOUNT (NT SERVICE\PTSettingsSvc_[SID]) the design
+  requires.  The service is instead SELF-REGISTERED per user by an elevated actor
+  (the service exe's own "register [SID]" verb, launched by the installer CA or
+  the per-user provisioner).  Data is written to real %ProgramData% by the
+  service, not virtualized.
+
+  Publisher must match the signing certificate subject.  For production this
+  is the Microsoft cert; for local validation the dev cert subject is used.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+
+  <Identity Name="Microsoft.PowerToys.SettingsService"
+            Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+            Version="0.0.1.0"
+            ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>PowerToys Settings Service</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <Logo>logo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+  <Applications>
+    <Application Id="PTSettingsSvc"
+                 Executable="PowerToys.PTSettingsSvc.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="PowerToys Settings Service"
+        Description="Sole writer of the protected PowerToys settings store (EoP defense)."
+        BackgroundColor="transparent" Square150x150Logo="logo.png" Square44x44Logo="logo.png"
+        AppListEntry="none" />
+    </Application>
+  </Applications>
+</Package>
+
+
+

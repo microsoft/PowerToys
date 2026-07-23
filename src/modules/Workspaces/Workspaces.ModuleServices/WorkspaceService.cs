@@ -9,6 +9,7 @@ using ManagedCommon;
 using PowerToys.Interop;
 using PowerToys.ModuleContracts;
 using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.SettingsService;
 
 namespace Workspaces.ModuleServices;
 
@@ -52,6 +53,8 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
 
         try
         {
+            EnsureSettingsInitialized(SettingsBootstrapper.TriggerReason.WorkspaceLaunching);
+
             var powertoysBaseDir = PowerToysPathResolver.GetPowerToysInstallPath();
             if (string.IsNullOrEmpty(powertoysBaseDir))
             {
@@ -84,6 +87,12 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
     {
         try
         {
+            // Enumeration is a PASSIVE read (e.g. the Command Palette listing
+            // workspaces at startup).  It must NOT trigger provisioning: doing so
+            // popped a UAC right after install, before the user had even engaged
+            // with Workspaces.  Provisioning is reserved for EXPLICIT actions
+            // (opening the editor, saving, launching a workspace).  If the service
+            // isn't up yet, Load returns empty (protected-only, never plaintext).
             var items = WorkspacesStorage.Load();
 
             return Task.FromResult(OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items));
@@ -91,6 +100,29 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         catch (Exception ex)
         {
             return Task.FromResult(OperationResults.Fail<IReadOnlyList<ProjectWrapper>>($"Failed to read workspaces: {ex.Message}"));
+        }
+    }
+
+    // Deferred settings initialization.  Composes the
+    // service-initialization and legacy-migration blocks behind one call so new
+    // trigger points only have to invoke SettingsBootstrapper.EnsureInitialized.
+    // On a per-machine install the service is already up, so provisioning is a
+    // no-op and only the migration backstop runs.  On a per-user install with no
+    // service yet, this performs the one-time elevation to register + harden it.
+    private static void EnsureSettingsInitialized(
+        SettingsBootstrapper.TriggerReason reason = SettingsBootstrapper.TriggerReason.EditorOpened)
+    {
+        try
+        {
+            SettingsBootstrapper.EnsureInitialized(new BootstrapRequest
+            {
+                Reason = reason,
+                InstallFolder = PowerToysPathResolver.GetPowerToysInstallPath(),
+            });
+        }
+        catch (Exception)
+        {
+            // Best-effort; on failure reads fall back per WorkspacesStorage.
         }
     }
 }

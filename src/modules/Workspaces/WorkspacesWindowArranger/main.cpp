@@ -64,7 +64,7 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cm
     if (projectToLaunch.id.empty())
     {
         auto file = WorkspacesData::WorkspacesFile();
-        auto res = JsonUtils::ReadWorkspaces(file);
+        auto res = JsonUtils::ReadWorkspacesFromService();
         if (res.isOk())
         {
             workspaces = res.getValue();
