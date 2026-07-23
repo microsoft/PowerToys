@@ -23,16 +23,23 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// Items are fetched with <c>listPage/getItems</c> and the extension can push
 /// <c>listPage/itemsChanged</c> notifications to refresh the view.
 /// </summary>
-internal sealed partial class JSListPageProxy : BaseObservable, IListPage
+internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisposable
 {
     // Routing is scoped per connection so that identical page ids from different
-    // extensions never collide. Proxies are held weakly so they can be collected
-    // without the registry keeping them alive.
+    // extensions never collide. Each page id maps to the set of live proxies that
+    // share it, so a notification reaches every visible reference (the same page
+    // can be materialized more than once) instead of only the most recent proxy.
+    // Proxies are held weakly so they can be collected without the registry
+    // keeping them alive, and dead references are pruned on dispatch and dispose.
     private static readonly ConditionalWeakTable<JsonRpcConnection, PageRegistry> Registries = new();
 
     private readonly string _pageId;
     private readonly JsonRpcConnection _connection;
     private readonly JsonElement _pageData;
+    private readonly PageRegistry _registry;
+    private readonly object _stateLock = new();
+    private bool? _hasMoreItemsState;
+    private bool _disposed;
 
     public JSListPageProxy(string pageId, JsonRpcConnection connection, JsonElement pageData = default)
     {
@@ -40,14 +47,18 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _pageData = pageData;
 
-        var registry = Registries.GetValue(_connection, static conn =>
+        _registry = Registries.GetValue(_connection, static conn =>
         {
             var created = new PageRegistry();
             conn.RegisterNotificationHandler("listPage/itemsChanged", paramsElement => DispatchItemsChanged(created, paramsElement));
             return created;
         });
 
-        registry.Pages[_pageId] = new WeakReference<JSListPageProxy>(this);
+        var list = _registry.Pages.GetOrAdd(_pageId, static _ => new List<WeakReference<JSListPageProxy>>());
+        lock (list)
+        {
+            list.Add(new WeakReference<JSListPageProxy>(this));
+        }
     }
 
     public event TypedEventHandler<object, IItemsChangedEventArgs>? ItemsChanged;
@@ -62,7 +73,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
 
     public bool IsLoading => JSModelMapper.GetBool(_pageData, "isLoading", false);
 
-    public OptionalColor AccentColor => ColorHelpers.NoColor();
+    public OptionalColor AccentColor => JSModelMapper.ParseColor(_pageData, "accentColor", "AccentColor");
 
     public string SearchText => JSModelMapper.GetString(_pageData, "searchText") ?? string.Empty;
 
@@ -86,7 +97,20 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
 
     public IGridProperties? GridProperties => JSModelMapper.ParseGridProperties(_pageData);
 
-    public bool HasMoreItems => JSModelMapper.GetBool(_pageData, "hasMoreItems", false);
+    // Pagination state is mutable: the extension reports whether more pages
+    // remain via the getItems / loadMore responses and itemsChanged
+    // notifications. The seeded page metadata is only the initial value; once the
+    // extension reports the final page we stop and never issue another loadMore.
+    public bool HasMoreItems
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return _hasMoreItemsState ?? JSModelMapper.GetBool(_pageData, "hasMoreItems", false);
+            }
+        }
+    }
 
     public ICommandItem? EmptyContent
     {
@@ -117,6 +141,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
                 return [];
             }
 
+            UpdatePageState(response.Result);
             return ParseListItems(response.Result);
         }
         catch (Exception ex)
@@ -128,16 +153,97 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
 
     public void LoadMore()
     {
+        lock (_stateLock)
+        {
+            // The extension has already reported the final page; do not ask again.
+            if (_hasMoreItemsState == false)
+            {
+                return;
+            }
+        }
+
         try
         {
-            _connection.SendRequestAsync(
+            var response = _connection.SendRequestAsync(
                 "listPage/loadMore",
                 new JsonObject { ["pageId"] = _pageId },
                 CancellationToken.None).GetAwaiter().GetResult();
+
+            if (response.Error != null)
+            {
+                Logger.LogWarning($"LoadMore error for page {_pageId}: {response.Error.Message}");
+                return;
+            }
+
+            UpdatePageState(response.Result);
         }
         catch (Exception ex)
         {
             Logger.LogWarning($"Failed to load more items for page {_pageId}: {ex.Message}");
+        }
+    }
+
+    // Reads the mutable page state (currently HasMoreItems) from a getItems /
+    // loadMore response envelope and raises a change notification when it moves.
+    private void UpdatePageState(JsonElement? envelope)
+    {
+        if (!envelope.HasValue || envelope.Value.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        if (!JSModelMapper.TryGetAnyCase(envelope.Value, "hasMoreItems", "HasMoreItems", out var hasMoreProp))
+        {
+            return;
+        }
+
+        bool? parsed = hasMoreProp.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => null,
+        };
+
+        if (parsed is null)
+        {
+            return;
+        }
+
+        var changed = false;
+        lock (_stateLock)
+        {
+            if (_hasMoreItemsState != parsed)
+            {
+                _hasMoreItemsState = parsed;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            OnPropertyChanged(nameof(HasMoreItems));
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        if (_registry.Pages.TryGetValue(_pageId, out var list))
+        {
+            lock (list)
+            {
+                list.RemoveAll(weak => !weak.TryGetTarget(out var target) || ReferenceEquals(target, this));
+                if (list.Count == 0)
+                {
+                    _registry.Pages.TryRemove(_pageId, out _);
+                }
+            }
         }
     }
 
@@ -152,15 +258,8 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
             }
 
             var pageId = pageProp.GetString();
-            if (pageId == null || !registry.Pages.TryGetValue(pageId, out var weakProxy))
+            if (pageId == null || !registry.Pages.TryGetValue(pageId, out var proxyRefs))
             {
-                return;
-            }
-
-            if (!weakProxy.TryGetTarget(out var proxy))
-            {
-                // The proxy has been collected; drop the stale entry.
-                registry.Pages.TryRemove(pageId, out _);
                 return;
             }
 
@@ -171,11 +270,36 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
                 totalItems = totalItemsProp.GetInt32();
             }
 
-            var args = new ItemsChangedEventArgs(totalItems);
-            var handler = proxy.ItemsChanged;
-            if (handler != null)
+            // Snapshot the live proxies and prune any that were collected so the
+            // registry does not grow without bound as pages come and go.
+            List<JSListPageProxy> targets = new();
+            lock (proxyRefs)
             {
-                _ = Task.Run(() => handler.Invoke(proxy, args));
+                proxyRefs.RemoveAll(weak => !weak.TryGetTarget(out _));
+                foreach (var weak in proxyRefs)
+                {
+                    if (weak.TryGetTarget(out var proxy))
+                    {
+                        targets.Add(proxy);
+                    }
+                }
+
+                if (proxyRefs.Count == 0)
+                {
+                    registry.Pages.TryRemove(pageId, out _);
+                }
+            }
+
+            foreach (var proxy in targets)
+            {
+                proxy.UpdatePageState(paramsElement);
+
+                var args = new ItemsChangedEventArgs(totalItems);
+                var handler = proxy.ItemsChanged;
+                if (handler != null)
+                {
+                    _ = Task.Run(() => handler.Invoke(proxy, args));
+                }
             }
         }
         catch (Exception ex)
@@ -222,6 +346,6 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage
 
     private sealed class PageRegistry
     {
-        public ConcurrentDictionary<string, WeakReference<JSListPageProxy>> Pages { get; } = new();
+        public ConcurrentDictionary<string, List<WeakReference<JSListPageProxy>>> Pages { get; } = new();
     }
 }
