@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -15,8 +15,6 @@ namespace EnvironmentVariablesUILib.Helpers
 {
     public sealed class EnvironmentVariablesService : IEnvironmentVariablesService
     {
-        private const string ProfilesJsonFileSubPath = "Microsoft\\PowerToys\\EnvironmentVariables\\";
-
         private readonly string _profilesJsonFilePath;
 
         private readonly IFileSystem _fileSystem;
@@ -32,7 +30,7 @@ namespace EnvironmentVariablesUILib.Helpers
         {
             _fileSystem = fileSystem;
 
-            _profilesJsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProfilesJsonFileSubPath, "profiles.json");
+            _profilesJsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "EnvironmentVariables", "profiles.json");
         }
 
         public void Dispose()

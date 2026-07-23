@@ -22,6 +22,6 @@ public class FolderUtils
     // Note: the same path should be used in SnapshotTool and Launcher
     public static string DataFolder()
     {
-        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\Workspaces";
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Workspaces");
     }
 }

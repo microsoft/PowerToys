@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -39,7 +39,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string DownloadedInstallerFilename { get; set; }
 
         // Non-localizable strings: Files
-        public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
         public const string SettingsFile = "UpdateState.json";
 
         public string NewVersion
@@ -106,7 +105,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             FileSystem fileSystem = new FileSystem();
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = localAppDataDir + SettingsFilePath + SettingsFile;
+            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", SettingsFile);
 
             if (fileSystem.File.Exists(file))
             {

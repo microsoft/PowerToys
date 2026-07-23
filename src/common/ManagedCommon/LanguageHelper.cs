@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,7 +12,6 @@ namespace ManagedCommon
 {
     public static class LanguageHelper
     {
-        public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
         public const string SettingsFile = "language.json";
 
         internal sealed class OutGoingLanguageSettings
@@ -24,7 +23,7 @@ namespace ManagedCommon
         public static string LoadLanguage()
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = localAppDataDir + SettingsFilePath + SettingsFile;
+            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", SettingsFile);
 
             if (File.Exists(file))
             {
