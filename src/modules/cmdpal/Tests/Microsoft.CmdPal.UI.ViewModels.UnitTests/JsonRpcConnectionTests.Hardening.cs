@@ -229,12 +229,16 @@ public partial class JsonRpcConnectionTests
             await gated.AfterFirstWrite.WaitAsync(cts.Token);
 
             // Dispose concurrently while the writer is blocked mid-frame.
+            var stopwatch = Stopwatch.StartNew();
             var disposeTask = Task.Run(host.Dispose);
 
-            // Let the body finish so the writer releases the lock and Dispose can drain.
+            // Let the body write proceed so the writer can observe the disposal and release the lock.
             gated.ReleaseBody();
 
             await disposeTask.WaitAsync(cts.Token);
+            stopwatch.Stop();
+
+            Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), "Dispose during an active write must not block on the write indefinitely.");
 
             Exception? sendException = null;
             try
@@ -246,12 +250,10 @@ public partial class JsonRpcConnectionTests
                 sendException = ex;
             }
 
+            // Disposal abandons the in-flight frame and tears the connection down, so the send either
+            // completes or fails with a transport error, but must never surface ObjectDisposedException.
             Assert.IsFalse(sendException is ObjectDisposedException, "Dispose during an active write must not surface ObjectDisposedException.");
-
-            // The frame that was mid-flight is intact, not a corrupt partial frame.
-            var (_, body) = await ReadFramedAsync(outputPipe.Reader.AsStream(), cts.Token);
-            using var document = JsonDocument.Parse(body);
-            Assert.AreEqual("during-dispose", document.RootElement.GetProperty("method").GetString());
+            Assert.IsTrue(sendException is null or JsonRpcException, $"An abandoned write must fail with a transport error, not '{sendException?.GetType().Name}'.");
         }
         finally
         {
@@ -259,6 +261,231 @@ public partial class JsonRpcConnectionTests
             input.Writer.Complete();
             outputPipe.Writer.Complete();
         }
+    }
+
+    [TestMethod]
+    public async Task WriteThatNeverDrains_TimesOut_AndClosesConnection()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var input = new Pipe();
+        var stuck = new BlockingWriteStream();
+        var host = new JsonRpcConnection(
+            input.Reader.AsStream(),
+            stuck,
+            errorStream: null,
+            requestTimeout: TimeSpan.FromSeconds(30),
+            writeTimeout: TimeSpan.FromMilliseconds(500));
+
+        var disconnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.Disconnected += (_, _) => disconnected.TrySetResult();
+        host.StartListening();
+
+        try
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            // The child never drains stdin, so the frame write blocks. It must be abandoned at the
+            // write timeout instead of hanging forever.
+            await Assert.ThrowsExceptionAsync<JsonRpcException>(async () =>
+                await host.SendNotificationAsync("stuck", null, cts.Token));
+            stopwatch.Stop();
+
+            Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), "A write that never drains must be abandoned at the write timeout, not hang.");
+
+            // The stalled write tears the connection down so the owner can terminate the child.
+            await disconnected.Task.WaitAsync(cts.Token);
+        }
+        finally
+        {
+            host.Dispose();
+            input.Writer.Complete();
+        }
+    }
+
+    [TestMethod]
+    public async Task Dispose_WhileWriteNeverDrains_CompletesAndFailsTheWrite()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var input = new Pipe();
+        var stuck = new BlockingWriteStream();
+
+        // A long write timeout guarantees it is disposal, not the timeout, that unblocks the write.
+        var host = new JsonRpcConnection(
+            input.Reader.AsStream(),
+            stuck,
+            errorStream: null,
+            requestTimeout: TimeSpan.FromSeconds(30),
+            writeTimeout: TimeSpan.FromSeconds(30));
+        host.StartListening();
+
+        var sendTask = host.SendNotificationAsync("stuck", null, cts.Token);
+
+        try
+        {
+            // Wait until the frame write has begun and is blocked on the never-draining stream.
+            await stuck.WriteStarted.WaitAsync(cts.Token);
+
+            var stopwatch = Stopwatch.StartNew();
+            var disposeTask = Task.Run(host.Dispose);
+            await disposeTask.WaitAsync(cts.Token);
+            stopwatch.Stop();
+
+            Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), "Dispose must abandon a stuck write rather than block on it indefinitely.");
+
+            // Disposal cancels the in-flight write, which fails rather than hanging forever.
+            await Assert.ThrowsExceptionAsync<JsonRpcException>(async () => await sendTask.WaitAsync(cts.Token));
+        }
+        finally
+        {
+            input.Writer.Complete();
+        }
+    }
+
+    [TestMethod]
+    public void TruncateForLog_BoundsOversizedPayloads()
+    {
+        var oversized = new string('x', 5_000_000);
+        var truncated = JsonRpcConnection.TruncateForLog(oversized);
+
+        Assert.IsTrue(truncated.Length < oversized.Length, "An oversized payload must be shortened before logging.");
+        Assert.IsTrue(truncated.Length <= JsonRpcConnection.MaxLoggedBodyChars + 128, "The truncated payload must stay near the logging cap.");
+        StringAssert.Contains(truncated, "truncated");
+
+        const string small = "{\"jsonrpc\":\"2.0\"}";
+        Assert.AreEqual(small, JsonRpcConnection.TruncateForLog(small), "A payload under the cap must be logged verbatim.");
+    }
+
+    [TestMethod]
+    public async Task OversizedMalformedBody_IsTruncatedInLogPath_AndRaisesError()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness();
+
+        var errorRaised = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+        harness.Host.Error += (_, e) => errorRaised.TrySetResult(e.Exception);
+
+        try
+        {
+            // A large, validly framed but unparseable body. It exercises the truncated log path and
+            // must be reported through the Error event without hanging.
+            var malformed = "{" + new string('a', 2_000_000);
+            await WriteFramedAsync(harness.ExtensionWrites, malformed, cts.Token);
+
+            var exception = await errorRaised.Task.WaitAsync(cts.Token);
+            Assert.IsInstanceOfType(exception, typeof(JsonException));
+        }
+        finally
+        {
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task InboundRequests_AreConcurrencyBounded_AndDisposeCompletes()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness(TimeSpan.FromSeconds(30));
+
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var saturated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var running = 0;
+        var maxObserved = 0;
+
+        harness.Host.RegisterRequestHandler("block", async (_, token) =>
+        {
+            var current = Interlocked.Increment(ref running);
+
+            int observed;
+            do
+            {
+                observed = Volatile.Read(ref maxObserved);
+            }
+            while (current > observed && Interlocked.CompareExchange(ref maxObserved, current, observed) != observed);
+
+            if (current >= JsonRpcConnection.InboundRequestWorkerCount)
+            {
+                saturated.TrySetResult();
+            }
+
+            try
+            {
+                await release.Task.WaitAsync(token).ConfigureAwait(false);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref running);
+            }
+
+            return new JsonObject { ["ok"] = true };
+        });
+
+        try
+        {
+            // Flood the host with far more inbound requests than there are workers.
+            var total = JsonRpcConnection.InboundRequestWorkerCount * 2;
+            for (var i = 0; i < total; i++)
+            {
+                await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(i + 1, "block", null), cts.Token);
+            }
+
+            // Wait until every worker is busy, then give any excess a chance to (wrongly) start.
+            await saturated.Task.WaitAsync(cts.Token);
+            await Task.Delay(250, cts.Token);
+
+            Assert.IsTrue(
+                Volatile.Read(ref maxObserved) <= JsonRpcConnection.InboundRequestWorkerCount,
+                $"Inbound request concurrency {Volatile.Read(ref maxObserved)} exceeded the bound of {JsonRpcConnection.InboundRequestWorkerCount}.");
+        }
+        finally
+        {
+            // Release the handlers so the workers drain, then confirm disposal completes cleanly.
+            release.TrySetResult();
+            harness.Host.Dispose();
+        }
+    }
+
+    private sealed class BlockingWriteStream : Stream
+    {
+        private readonly TaskCompletionSource _writeStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task WriteStarted => _writeStarted.Task;
+
+        public override bool CanRead => false;
+
+        public override bool CanSeek => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => throw new NotSupportedException();
+
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            _writeStarted.TrySetResult();
+
+            // Never accept the bytes, but honor cancellation the way a real cancellable stream does,
+            // so the write timeout and disposal can abandon the write.
+            await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken) => Task.Delay(Timeout.Infinite, cancellationToken);
+
+        public override void Flush()
+        {
+        }
+
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+        public override void SetLength(long value) => throw new NotSupportedException();
     }
 
     private sealed class ThrowingWriteStream : Stream
