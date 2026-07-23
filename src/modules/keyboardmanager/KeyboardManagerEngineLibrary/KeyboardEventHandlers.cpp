@@ -88,6 +88,35 @@ namespace
 
 namespace KeyboardEventHandlers
 {
+    // Append a key event for an alone key's ORIGINAL (source) key while preserving its numpad origin.
+    // Alone keys are tracked by the value of `data->lParam->vkCode`, which is stored numpad-origin
+    // encoded (see EncodeKeyNumpadOrigin in KeyboardManager.cpp): the marker rides in bit 31, so a bare
+    // `static_cast<WORD>` would drop it and re-inject e.g. a NumLock-off numpad navigation key as its
+    // extended (arrow-cluster) twin. Clear the marker to recover the real VK, then force the injected
+    // event's extended flag to match the physical origin.
+    void AppendAloneSourceKeyEvent(std::vector<INPUT>& keyEventList, DWORD encodedKey, bool keyUp) noexcept
+    {
+        const DWORD plainKey = Helpers::ClearKeyNumpadOrigin(encodedKey);
+        const DWORD flags = keyUp ? KEYEVENTF_KEYUP : 0;
+        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(plainKey), flags, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+
+        if (Helpers::IsNumpadOriginated(encodedKey))
+        {
+            // Numpad origin: override SetKeyEvent's VK-based extended default. This is the inverse of
+            // EncodeKeyNumpadOrigin -- for the navigation keys a numpad origin means NOT extended, while
+            // for VK_RETURN / VK_DIVIDE it means extended.
+            INPUT& injected = keyEventList.back();
+            if (plainKey == VK_RETURN || plainKey == VK_DIVIDE)
+            {
+                injected.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+            }
+            else
+            {
+                injected.ki.dwFlags &= ~KEYEVENTF_EXTENDEDKEY;
+            }
+        }
+    }
+
     // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
     // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
     // modifier held. Its matching real key-up is injected later when the alone key is released.
@@ -102,8 +131,14 @@ namespace KeyboardEventHandlers
             }
 
             std::vector<INPUT> keyEventList;
-            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(pendingKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-            ii.SendVirtualInput(keyEventList);
+            AppendAloneSourceKeyEvent(keyEventList, pendingKey, /*keyUp*/ false);
+            if (!ii.SendVirtualInput(keyEventList))
+            {
+                // Injection was blocked (e.g. by UIPI). Don't mark this as a started combination,
+                // otherwise the eventual key-up would inject an unmatched real key-up while the physical
+                // key-down was swallowed. Mirrors the injection-failure handling in HandleSingleKeyRemapEvent.
+                continue;
+            }
 
             state.SetAloneCombination(pendingKey);
         }
@@ -164,8 +199,15 @@ namespace KeyboardEventHandlers
                         // Inject the real key-down now and mark it a combination so its release only
                         // releases the real key and never fires the alone action.
                         std::vector<INPUT> keyEventList;
-                        Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(vk), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                        ii.SendVirtualInput(keyEventList);
+                        AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ false);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            // Injection was blocked (e.g. by UIPI): let the physical key-down through
+                            // instead of suppressing it into a combination we could not start, so it is
+                            // not swallowed with no matching injected key. Its later physical key-up then
+                            // also passes through (the key is neither pending nor a combination).
+                            return 0;
+                        }
                         state.SetAloneCombination(vk);
                     }
                     else
@@ -224,9 +266,10 @@ namespace KeyboardEventHandlers
 
                 if (state.IsAloneCombination(vk))
                 {
-                    // Was used in combination: release the real key we injected on its key-down.
+                    // Was used in combination: release the real key we injected on its key-down (matching
+                    // its numpad origin, so a numpad-originated key is released as the same key we pressed).
                     std::vector<INPUT> keyEventList;
-                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(vk), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                    AppendAloneSourceKeyEvent(keyEventList, vk, /*keyUp*/ true);
                     ii.SendVirtualInput(keyEventList);
 
                     state.ClearAloneKeyState(vk);

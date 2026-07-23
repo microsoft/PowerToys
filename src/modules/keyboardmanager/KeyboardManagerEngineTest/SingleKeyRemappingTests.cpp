@@ -11,6 +11,7 @@
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
+#include <keyboardmanager/common/Helpers.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -855,6 +856,77 @@ namespace RemappingLogicTests
 
             // No alone (IME) action fired at any point.
             Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // If injecting the promoted real key is blocked (e.g. by UIPI / SendInput failure), the alone key
+        // must NOT be recorded as a started combination -- otherwise its release would inject an unmatched
+        // real key-up while the physical key-down was swallowed. It instead stays a tap candidate and fires
+        // its alone action on release. Regression test for the promotion path ignoring SendVirtualInput's
+        // result.
+        TEST_METHOD (AloneRemap_PromotionInjectionBlocked_DoesNotStrandCombination)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, (DWORD)VK_IME_ON);
+
+            // Block only the KBM-injected real Right Ctrl (the promotion), identified by the single-key
+            // injection marker, so the test's own driving Right Ctrl events still reach the hook and the
+            // alone action (IME On) still succeeds.
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                for (const INPUT& i : inputs)
+                {
+                    if (i.ki.wVk == VK_RCONTROL && i.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            // Count IME On (the alone action) injections.
+            CountImeOnInjections();
+
+            // Right Ctrl down (tap candidate), then H down triggers promotion whose injection is blocked.
+            std::vector<INPUT> rctrlDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL } } };
+            mockedInputHandler.SendVirtualInput(rctrlDown);
+            std::vector<INPUT> hDown{ { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x48 } } };
+            mockedInputHandler.SendVirtualInput(hDown);
+
+            // Right Ctrl was never injected as a real modifier (the injection was blocked).
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            // Because the blocked promotion left Right Ctrl a tap candidate (not a stranded combination),
+            // releasing it fires the alone action (IME On down + up = 2) rather than injecting an unmatched
+            // real Right Ctrl key-up.
+            std::vector<INPUT> rctrlUp{ { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RCONTROL, .dwFlags = KEYEVENTF_KEYUP } } };
+            mockedInputHandler.SendVirtualInput(rctrlUp);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        // A numpad-originated alone key must be re-injected preserving its origin. Alone keys are tracked
+        // by the numpad-origin-encoded vkCode (marker in bit 31); a bare WORD cast would drop it and turn
+        // e.g. a NumLock-off numpad navigation key into its extended (arrow-cluster) twin. Verifies the
+        // extended flag AppendAloneSourceKeyEvent produces.
+        TEST_METHOD (AppendAloneSourceKeyEvent_PreservesNumpadOrigin)
+        {
+            // NumLock-off numpad navigation key: VK_LEFT arriving NOT extended encodes as numpad-origin.
+            const DWORD numpadLeft = Helpers::EncodeKeyNumpadOrigin(VK_LEFT, /*extended*/ false);
+            Assert::IsTrue(Helpers::IsNumpadOriginated(numpadLeft), L"numpad-origin bit should be set");
+
+            std::vector<INPUT> numpadEvent;
+            KeyboardEventHandlers::AppendAloneSourceKeyEvent(numpadEvent, numpadLeft, /*keyUp*/ false);
+            Assert::AreEqual((size_t)1, numpadEvent.size());
+            // The real VK is recovered (marker cleared) and the event is NOT extended (numpad, not arrow).
+            Assert::AreEqual((WORD)VK_LEFT, numpadEvent[0].ki.wVk);
+            Assert::AreEqual((DWORD)0, numpadEvent[0].ki.dwFlags & KEYEVENTF_EXTENDEDKEY);
+
+            // Contrast: the real arrow (extended) VK_LEFT carries no origin marker and IS injected extended.
+            const DWORD arrowLeft = Helpers::EncodeKeyNumpadOrigin(VK_LEFT, /*extended*/ true);
+            Assert::IsFalse(Helpers::IsNumpadOriginated(arrowLeft), L"arrow key should carry no numpad-origin bit");
+
+            std::vector<INPUT> arrowEvent;
+            KeyboardEventHandlers::AppendAloneSourceKeyEvent(arrowEvent, arrowLeft, /*keyUp*/ false);
+            Assert::AreEqual((size_t)1, arrowEvent.size());
+            Assert::AreEqual((WORD)VK_LEFT, arrowEvent[0].ki.wVk);
+            Assert::AreNotEqual((DWORD)0, arrowEvent[0].ki.dwFlags & KEYEVENTF_EXTENDEDKEY);
         }
     };
 }

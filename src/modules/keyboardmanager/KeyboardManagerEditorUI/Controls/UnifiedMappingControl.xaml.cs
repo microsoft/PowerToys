@@ -1072,9 +1072,11 @@ namespace KeyboardManagerEditorUI.Controls
 
         /// <summary>
         /// Shows the single-key remap "Condition" (Always / Alone) combo box only when the mapping is a
-        /// single-key remap whose action is a key/shortcut — the only case where the alone condition is
-        /// meaningful and supported by the engine. Only toggles visibility; never changes the selection,
-        /// so a condition set via <see cref="SetCondition"/> during load is preserved.
+        /// single-key remap whose action is a key/shortcut or Disable — the cases where the alone
+        /// condition is meaningful and supported by the engine (a key/shortcut alone target, or an
+        /// "alone-disable" that swallows a solo tap while the key still works in combination). Only
+        /// toggles visibility; never changes the selection, so a condition set via
+        /// <see cref="SetCondition"/> during load is preserved.
         /// </summary>
         private void UpdateConditionVisibility()
         {
@@ -1086,7 +1088,7 @@ namespace KeyboardManagerEditorUI.Controls
             int nonEmptyTriggerKeys = _triggerKeys.Count(k => !string.IsNullOrEmpty(k));
             bool isSingleKeyRemap = CurrentTriggerType == TriggerType.KeyOrShortcut
                 && nonEmptyTriggerKeys == 1
-                && CurrentActionType == ActionType.KeyOrShortcut;
+                && (CurrentActionType == ActionType.KeyOrShortcut || CurrentActionType == ActionType.Disable);
 
             ConditionComboBox.Visibility = isSingleKeyRemap
                 ? Visibility.Visible

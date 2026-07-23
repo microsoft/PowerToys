@@ -33,6 +33,13 @@ namespace KeyboardEventHandlers
     // pass 0 to promote all pending keys.
     void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0) noexcept;
 
+    // Append a key event that re-injects an "Alone" key's ORIGINAL (source) key while preserving its
+    // numpad origin. Alone keys are tracked by the numpad-origin-encoded value of
+    // `LowlevelKeyboardEvent::vkCode` (see EncodeKeyNumpadOrigin), whose marker rides in bit 31; a bare
+    // `WORD` cast would drop it and re-inject e.g. a NumLock-off numpad navigation key as its extended
+    // (arrow-cluster) twin. Exposed for unit testing.
+    void AppendAloneSourceKeyEvent(std::vector<INPUT>& keyEventList, DWORD encodedKey, bool keyUp) noexcept;
+
     /* This feature has not been enabled (code from proof of concept stage)
         // Function to change a key's behavior from toggle to modifier
         __declspec(dllexport) intptr_t HandleSingleKeyToggleToModEvent(InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
