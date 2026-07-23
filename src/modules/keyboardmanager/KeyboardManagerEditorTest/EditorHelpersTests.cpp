@@ -297,5 +297,31 @@ namespace EditorHelpersTests
             // Assert
             Assert::IsTrue(result == ShortcutErrorType::NoError);
         }
+
+        // Test if the IsShortcutIllegal method returns NoError on passing Win+L
+        TEST_METHOD (IsShortcutIllegal_ShouldReturnNoError_OnPassingWinL)
+        {
+            // Arrange
+            Shortcut s(std::vector<int32_t>{ VK_LWIN, 0x4C });
+
+            // Act
+            auto result = EditorHelpers::IsShortcutIllegal(s);
+
+            // Assert
+            Assert::IsTrue(result == ShortcutErrorType::NoError);
+        }
+
+        // Test if the IsShortcutIllegal method returns CtrlAltDel on passing Ctrl+Alt+Delete
+        TEST_METHOD (IsShortcutIllegal_ShouldReturnCtrlAltDel_OnPassingCtrlAltDel)
+        {
+            // Arrange
+            Shortcut s(std::vector<int32_t>{ VK_CONTROL, VK_MENU, VK_DELETE });
+
+            // Act
+            auto result = EditorHelpers::IsShortcutIllegal(s);
+
+            // Assert
+            Assert::IsTrue(result == ShortcutErrorType::CtrlAltDel);
+        }
     };
 }
