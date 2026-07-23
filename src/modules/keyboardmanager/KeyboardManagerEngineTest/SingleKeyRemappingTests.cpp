@@ -572,4 +572,55 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LMENU));
         }
     };
+
+    TEST_CLASS (TextReplacementTests)
+    {
+    private:
+        KeyboardManagerInput::MockedInput mockedInputHandler;
+        State testState;
+
+    public:
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
+        {
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldReplaceSingleCharacterTrigger)
+        {
+            testState.AddTextReplacement(L" ", L"hello");
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* keyEvent) {
+                return keyEvent->lParam->vkCode == 0;
+            });
+
+            KBDLLHOOKSTRUCT lParam{};
+            lParam.vkCode = VK_SPACE;
+            LowlevelKeyboardEvent keyEvent{};
+            keyEvent.wParam = WM_KEYDOWN;
+            keyEvent.lParam = &lParam;
+
+            intptr_t result = KeyboardEventHandlers::HandleTextReplacementEvent(mockedInputHandler, &keyEvent, testState);
+
+            Assert::AreEqual(1, static_cast<int>(result));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::IsTrue(mockedInputHandler.GetSendVirtualInputCallCount() > 0);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldClearBufferAndIgnoreInput_WhenShortcutModifierIsPressed)
+        {
+            testState.AddTextReplacement(L" ", L"hello");
+            testState.textReplacementBuffer = L"partial";
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+
+            KBDLLHOOKSTRUCT lParam{};
+            lParam.vkCode = VK_SPACE;
+            LowlevelKeyboardEvent keyEvent{};
+            keyEvent.wParam = WM_KEYDOWN;
+            keyEvent.lParam = &lParam;
+
+            intptr_t result = KeyboardEventHandlers::HandleTextReplacementEvent(mockedInputHandler, &keyEvent, testState);
+
+            Assert::AreEqual(0, static_cast<int>(result));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+        }
+    };
 }

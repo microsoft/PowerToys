@@ -47,6 +47,12 @@
                         <TextBlock x:Uid="TriggerType_KeyOrShortcut_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="TriggerType_Text" Tag="Text">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
+                        <TextBlock x:Uid="TriggerType_Text_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="TriggerType_Mouse" Tag="Mouse">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -126,6 +132,18 @@
                         <ComboBoxItem x:Uid="MouseButton_Button1" Tag="Button1" />
                         <ComboBoxItem x:Uid="MouseButton_Button2" Tag="Button2" />
                     </ComboBox>
+                </tkcontrols:Case>
+                <!--  Text Trigger  -->
+                <tkcontrols:Case Value="Text">
+                    <TextBox
+                        x:Name="TextTriggerBox"
+                        x:Uid="TextTriggerBox"
+                        MinHeight="86"
+                        Background="{ThemeResource TextControlBackgroundFocused}"
+                        BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                        GotFocus="TextTriggerBox_GotFocus"
+                        TextChanged="TextTriggerBox_TextChanged"
+                        TextWrapping="Wrap" />
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
             <CheckBox

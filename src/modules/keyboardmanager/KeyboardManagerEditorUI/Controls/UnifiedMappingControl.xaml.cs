@@ -65,6 +65,7 @@ namespace KeyboardManagerEditorUI.Controls
         public enum TriggerType
         {
             KeyOrShortcut,
+            Text,
             Mouse,
         }
 
@@ -107,6 +108,7 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     return item.Tag?.ToString() switch
                     {
+                        "Text" => TriggerType.Text,
                         "Mouse" => TriggerType.Mouse,
                         _ => TriggerType.KeyOrShortcut,
                     };
@@ -200,11 +202,23 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 string? tag = item.Tag?.ToString();
 
-                // Cleanup keyboard hook when switching to mouse
-                if (tag == "Mouse")
+                // Cleanup keyboard hook when switching away from key input.
+                if (tag != "KeyOrShortcut")
                 {
                     CleanupKeyboardHook();
                     UncheckAllToggleButtons();
+                    AppSpecificCheckBox.IsChecked = false;
+                    AppSpecificCheckBox.IsEnabled = false;
+                    AppNameTextBox.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    UpdateAppSpecificCheckBoxState();
+                }
+
+                if (tag == "Text")
+                {
+                    SetActionType(ActionType.Text);
                 }
             }
         }
@@ -590,6 +604,17 @@ namespace KeyboardManagerEditorUI.Controls
             RaiseValidationStateChanged();
         }
 
+        private void TextTriggerBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void TextTriggerBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RaiseValidationStateChanged();
+        }
+
         private void UrlPathInput_GotFocus(object sender, RoutedEventArgs e)
         {
             CleanupKeyboardHook();
@@ -723,6 +748,11 @@ namespace KeyboardManagerEditorUI.Controls
         public List<string> GetActionKeys() => _actionKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
 
         /// <summary>
+        /// Gets the text trigger.
+        /// </summary>
+        public string GetTriggerText() => TextTriggerBox?.Text ?? string.Empty;
+
+        /// <summary>
         /// Gets the selected mouse trigger.
         /// </summary>
         public MouseButton? GetMouseTrigger()
@@ -807,8 +837,19 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool IsInputComplete()
         {
-            // Trigger keys are always required
-            if (_triggerKeys.Count == 0)
+            if (CurrentTriggerType == TriggerType.Text)
+            {
+                if (CurrentActionType != ActionType.Text)
+                {
+                    return false;
+                }
+
+                if (string.IsNullOrEmpty(TextTriggerBox?.Text))
+                {
+                    return false;
+                }
+            }
+            else if (_triggerKeys.Count == 0)
             {
                 return false;
             }
@@ -843,6 +884,44 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             UpdateAppSpecificCheckBoxState();
+        }
+
+        /// <summary>
+        /// Sets the trigger type.
+        /// </summary>
+        public void SetTriggerType(TriggerType triggerType)
+        {
+            if (TriggerTypeComboBox == null)
+            {
+                return;
+            }
+
+            string tag = triggerType switch
+            {
+                TriggerType.Text => "Text",
+                TriggerType.Mouse => "Mouse",
+                _ => "KeyOrShortcut",
+            };
+
+            foreach (var item in TriggerTypeComboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
+                {
+                    TriggerTypeComboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the text trigger.
+        /// </summary>
+        public void SetTriggerText(string text)
+        {
+            if (TextTriggerBox != null)
+            {
+                TextTriggerBox.Text = text;
+            }
         }
 
         /// <summary>
@@ -1129,6 +1208,11 @@ namespace KeyboardManagerEditorUI.Controls
             if (MouseTriggerComboBox != null)
             {
                 MouseTriggerComboBox.SelectedIndex = -1;
+            }
+
+            if (TextTriggerBox != null)
+            {
+                TextTriggerBox.Text = string.Empty;
             }
 
             // Reset text inputs

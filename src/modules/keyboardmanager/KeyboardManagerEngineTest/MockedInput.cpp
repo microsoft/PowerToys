@@ -133,6 +133,11 @@ intptr_t MockedInput::MockedKeyboardHook(LowlevelKeyboardEvent* data)
 // Function to get the state of a particular key
 bool MockedInput::GetVirtualKeyState(int key)
 {
+    if (key < 0 || static_cast<size_t>(key) >= keyboardState.size())
+    {
+        return false;
+    }
+
     return keyboardState[key];
 }
 

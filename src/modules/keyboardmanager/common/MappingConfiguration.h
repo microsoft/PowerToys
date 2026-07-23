@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/utils/json.h>
+#include <string_view>
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Shortcut.h>
@@ -10,6 +11,18 @@ using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutTextUnion>;
 using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
+
+struct TextReplacementTriggerCompare
+{
+    using is_transparent = void;
+
+    bool operator()(std::wstring_view lhs, std::wstring_view rhs) const
+    {
+        return lhs < rhs;
+    }
+};
+
+using TextReplacementTable = std::map<std::wstring, std::wstring, TextReplacementTriggerCompare>;
 
 class MappingConfiguration
 {
@@ -31,6 +44,9 @@ public:
     // Function to clear the Keys to text remapping table
     void ClearSingleKeyToTextRemaps();
 
+    // Function to clear typed text replacement mappings
+    void ClearTextReplacements();
+
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
@@ -39,6 +55,9 @@ public:
 
     // Function to add a new single key to unicode string remapping
     bool AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text);
+
+    // Function to add a new typed text replacement
+    bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
@@ -58,6 +77,10 @@ public:
     // Stores single key to text remappings
     SingleKeyToTextRemapTable singleKeyToTextReMap;
 
+    // Stores typed text replacements
+    TextReplacementTable textReplacements;
+    size_t maxTextReplacementTriggerLength = 0;
+
     // Stores the os level shortcut remappings
     ShortcutRemapTable osLevelShortcutReMap;
     std::vector<Shortcut> osLevelShortcutReMapSortedKeys;
@@ -72,6 +95,7 @@ public:
 private:
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
+    bool LoadTextReplacements(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
 };
