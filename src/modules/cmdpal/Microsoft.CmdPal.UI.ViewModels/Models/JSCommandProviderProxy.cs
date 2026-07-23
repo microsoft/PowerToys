@@ -25,18 +25,24 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 {
     private readonly JsonRpcConnection _connection;
     private readonly JSExtensionManifest _manifest;
+    private readonly JsonElement _providerMetadata;
     private readonly IconInfo _icon;
-    private readonly Dictionary<(string Message, int State), StatusMessage> _shownStatusMessages = new();
+
+    // Host status messages are tracked by their client-minted statusId so an
+    // update to the same status refreshes the existing message in place instead
+    // of creating a duplicate, and a hide targets exactly the right message.
+    private readonly Dictionary<string, StatusMessage> _shownStatusMessages = new();
     private readonly ConcurrentDictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;
     private bool _settingsQueried;
     private bool _isDisposed;
 
-    public JSCommandProviderProxy(JsonRpcConnection connection, JSExtensionManifest manifest)
+    public JSCommandProviderProxy(JsonRpcConnection connection, JSExtensionManifest manifest, JsonElement providerMetadata = default)
     {
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
+        _providerMetadata = providerMetadata;
         _icon = new IconInfo(_manifest.Icon ?? string.Empty);
 
         RegisterNotificationHandlers();
@@ -50,7 +56,10 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     public IIconInfo Icon => _icon;
 
-    public bool Frozen => true;
+    // Whether the provider's top-level command set is fixed. The value is carried
+    // from the initialize handshake metadata; the wire default is true when the
+    // extension does not specify it.
+    public bool Frozen => ReadFrozen(_providerMetadata);
 
     public ICommandSettings? Settings
     {
@@ -80,7 +89,7 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 var pageId = JSModelMapper.GetString(response.Result.Value, "id") ?? string.Empty;
                 if (!string.IsNullOrEmpty(pageId))
                 {
-                    _settingsCache = new JSCommandSettingsProxy(pageId, _connection);
+                    _settingsCache = new JSCommandSettingsProxy(pageId, _connection, response.Result.Value.Clone());
                 }
             }
             catch (Exception ex)
@@ -183,8 +192,48 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         }
 
         _isDisposed = true;
+
+        // Detach every notification handler this proxy registered so late
+        // notifications from the connection are no longer routed here. Process
+        // teardown and the protocol dispose request are owned by the extension
+        // service, so this proxy only releases its own subscriptions and host
+        // references. See the W4 coordination note in the remediation report.
+        foreach (var method in RegisteredNotificationMethods)
+        {
+            _connection.UnregisterNotificationHandler(method);
+        }
+
+        // Hide any status messages that are still visible so a disposed provider
+        // does not leave stale status in the host UI.
+        var host = _host;
+        if (host != null)
+        {
+            foreach (var status in _shownStatusMessages.Values)
+            {
+                try
+                {
+                    _ = host.HideStatus(status);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Error hiding status during dispose for {DisplayName}: {ex.Message}");
+                }
+            }
+        }
+
+        _shownStatusMessages.Clear();
         _host = null;
     }
+
+    private static readonly string[] RegisteredNotificationMethods =
+    [
+        "provider/itemsChanged",
+        "command/propChanged",
+        "host/logMessage",
+        "host/showStatus",
+        "host/hideStatus",
+        "host/copyText",
+    ];
 
     private void RegisterNotificationHandlers()
     {
@@ -198,6 +247,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleItemsChangedNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             var totalItems = -1;
@@ -218,6 +272,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleCommandPropChangedNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             var commandId = JSModelMapper.GetString(paramsElement, "commandId") ?? string.Empty;
@@ -245,6 +304,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleLogMessageNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             var message = JSModelMapper.GetString(paramsElement, "message");
@@ -287,6 +351,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleShowStatusNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             if (_host == null)
@@ -300,13 +369,32 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 return;
             }
 
+            var statusId = ReadStatusId(paramsElement);
+            var progress = ReadProgress(paramsElement);
+
+            if (!string.IsNullOrEmpty(statusId) &&
+                _shownStatusMessages.TryGetValue(statusId, out var existing))
+            {
+                // Same status shown again: refresh it in place so the host keeps a
+                // single message rather than stacking duplicates.
+                existing.Message = message;
+                existing.State = (MessageState)state;
+                existing.Progress = progress;
+                return;
+            }
+
             var statusMessage = new StatusMessage
             {
                 Message = message,
                 State = (MessageState)state,
+                Progress = progress,
             };
 
-            _shownStatusMessages[(message, state)] = statusMessage;
+            if (!string.IsNullOrEmpty(statusId))
+            {
+                _shownStatusMessages[statusId] = statusMessage;
+            }
+
             _ = _host.ShowStatus(statusMessage, ReadStatusContext(paramsElement));
         }
         catch (Exception ex)
@@ -317,6 +405,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleHideStatusNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             if (_host == null)
@@ -324,13 +417,15 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 return;
             }
 
-            var (message, state) = ReadStatusMessage(paramsElement);
-            var key = (message, state);
-            if (_shownStatusMessages.TryGetValue(key, out var originalMessage))
+            var statusId = ReadStatusId(paramsElement);
+            if (string.IsNullOrEmpty(statusId) ||
+                !_shownStatusMessages.TryGetValue(statusId, out var statusMessage))
             {
-                _shownStatusMessages.Remove(key);
-                _ = _host.HideStatus(originalMessage);
+                return;
             }
+
+            _shownStatusMessages.Remove(statusId);
+            _ = _host.HideStatus(statusMessage);
         }
         catch (Exception ex)
         {
@@ -340,6 +435,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
     private void HandleCopyTextNotification(JsonElement paramsElement)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         try
         {
             var text = JSModelMapper.GetString(paramsElement, "text");
@@ -357,13 +457,73 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
     private static int ReadState(JsonElement paramsElement)
     {
         if (paramsElement.ValueKind == JsonValueKind.Object &&
-            paramsElement.TryGetProperty("state", out var stateProp) &&
+            JSModelMapper.TryGetAnyCase(paramsElement, "state", "State", out var stateProp) &&
             stateProp.ValueKind == JsonValueKind.Number)
         {
             return stateProp.GetInt32();
         }
 
         return 0;
+    }
+
+    private static string ReadStatusId(JsonElement paramsElement)
+    {
+        if (paramsElement.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(paramsElement, "statusId", "StatusId", out var idProp) &&
+            idProp.ValueKind == JsonValueKind.String)
+        {
+            return idProp.GetString() ?? string.Empty;
+        }
+
+        return string.Empty;
+    }
+
+    // Maps a status progress payload (indeterminate spinner or a percentage) onto
+    // a toolkit progress state. Returns null when no progress is reported.
+    private static IProgressState? ReadProgress(JsonElement paramsElement)
+    {
+        if (paramsElement.ValueKind != JsonValueKind.Object ||
+            !JSModelMapper.TryGetAnyCase(paramsElement, "progress", "Progress", out var progressProp) ||
+            progressProp.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var progress = new ProgressState();
+
+        if (JSModelMapper.TryGetAnyCase(progressProp, "isIndeterminate", "IsIndeterminate", out var indeterminateProp))
+        {
+            progress.IsIndeterminate = indeterminateProp.ValueKind == JsonValueKind.True;
+        }
+
+        if (JSModelMapper.TryGetAnyCase(progressProp, "progressPercent", "ProgressPercent", out var percentProp) &&
+            percentProp.ValueKind == JsonValueKind.Number &&
+            percentProp.TryGetUInt32(out var percent))
+        {
+            progress.ProgressPercent = percent;
+        }
+
+        return progress;
+    }
+
+    private static bool ReadFrozen(JsonElement metadata)
+    {
+        if (metadata.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(metadata, "frozen", "Frozen", out var frozenProp))
+        {
+            if (frozenProp.ValueKind == JsonValueKind.False)
+            {
+                return false;
+            }
+
+            if (frozenProp.ValueKind == JsonValueKind.True)
+            {
+                return true;
+            }
+        }
+
+        // The wire default when the extension omits the flag is frozen.
+        return true;
     }
 
     private static (string Message, int State) ReadStatusMessage(JsonElement paramsElement)
