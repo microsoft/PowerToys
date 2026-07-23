@@ -8,10 +8,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.Storage;
-using Windows.Storage.Pickers;
+using Microsoft.Windows.Storage.Pickers;
 using Windows.System;
 using WinRT.Interop;
 using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
@@ -632,36 +632,55 @@ namespace KeyboardManagerEditorUI.Controls
 
         private async void ProgramPathSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FileOpenPicker();
-
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            picker.FileTypeFilter.Add(".exe");
-
-            StorageFile file = await picker.PickSingleFileAsync();
-
-            if (file != null)
+            try
             {
-                ProgramPathInput.Text = file.Path;
-                RaiseValidationStateChanged();
+                var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+
+                var picker = new FileOpenPicker(windowId)
+                {
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+
+                picker.FileTypeFilter.Add(".exe");
+
+                var file = await picker.PickSingleFileAsync();
+
+                if (file != null)
+                {
+                    ProgramPathInput.Text = file.Path;
+                    RaiseValidationStateChanged();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to pick program path", ex);
             }
         }
 
         private async void StartInSelectButton_Click(object sender, RoutedEventArgs e)
         {
-            var picker = new FolderPicker();
-
-            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-
-            picker.FileTypeFilter.Add("*");
-
-            StorageFolder folder = await picker.PickSingleFolderAsync();
-
-            if (folder != null)
+            try
             {
-                StartInPathInput.Text = folder.Path;
+                var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+                var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
+
+                var picker = new FolderPicker(windowId)
+                {
+                    SuggestedStartLocation = PickerLocationId.ComputerFolder,
+                };
+                picker.FileTypeFilter.Add("*");
+
+                var folder = await picker.PickSingleFolderAsync();
+
+                if (folder != null)
+                {
+                    StartInPathInput.Text = folder.Path;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to pick start-in folder", ex);
             }
         }
 
