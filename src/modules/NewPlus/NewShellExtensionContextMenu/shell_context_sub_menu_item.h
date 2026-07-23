@@ -12,7 +12,7 @@ using namespace newplus;
 class shell_context_sub_menu_item : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IExplorerCommand>
 {
 public:
-    shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder);
+    shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke);
 
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title);
@@ -35,6 +35,7 @@ protected:
     shell_context_sub_menu_item();
     const template_item* template_entry;
     ComPtr<IUnknown> site_of_folder;
+    POINT mouse_position_at_time_of_invoke;
 };
 
 // Sub-context-menu separator between the list of templates menu-items and "Open templates" menu-item
