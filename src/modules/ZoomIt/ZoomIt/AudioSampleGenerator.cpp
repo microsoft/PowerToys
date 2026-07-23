@@ -78,6 +78,38 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         }
         m_audioGraph = audioGraphResult.Graph();
 
+        // The default graph format follows the audio engine's processing format
+        // for the default render device, which can be multichannel (e.g. 7.1
+        // when spatial sound is enabled). Feeding more than two channels into
+        // the AAC encoding profile produces a multichannel HE-AAC track that
+        // most decoders, including the Media Foundation AAC decoder (max 5.1),
+        // cannot play, so recordings sound silent. Re-create the graph with an
+        // explicit stereo format at the device sample rate.
+        if (m_audioGraph.EncodingProperties().ChannelCount() > 2)
+        {
+            auto defaultProps = m_audioGraph.EncodingProperties();
+            auto stereoProps = winrt::AudioEncodingProperties();
+            stereoProps.Subtype(defaultProps.Subtype());
+            stereoProps.SampleRate(defaultProps.SampleRate());
+            stereoProps.BitsPerSample(defaultProps.BitsPerSample());
+            stereoProps.ChannelCount(2);
+            stereoProps.Bitrate(defaultProps.SampleRate() * 2 * defaultProps.BitsPerSample());
+
+            auto stereoSettings = winrt::AudioGraphSettings(winrt::AudioRenderCategory::Media);
+            stereoSettings.EncodingProperties(stereoProps);
+            auto stereoResult = co_await winrt::AudioGraph::CreateAsync(stereoSettings);
+            if (stereoResult.Status() == winrt::AudioGraphCreationStatus::Success)
+            {
+                m_audioGraph.Close();
+                m_audioGraph = stereoResult.Graph();
+                OutputDebugStringA("AudioGraph re-created with stereo format\n");
+            }
+            else
+            {
+                OutputDebugStringA("WARNING: Failed to re-create AudioGraph with stereo format, keeping default\n");
+            }
+        }
+
         // Get AudioGraph encoding properties for resampling
         auto graphProps = m_audioGraph.EncodingProperties();
         m_graphSampleRate = graphProps.SampleRate();
