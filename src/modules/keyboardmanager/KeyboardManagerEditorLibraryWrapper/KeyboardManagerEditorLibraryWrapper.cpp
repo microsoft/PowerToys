@@ -326,6 +326,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         std::wstring origKeysStr = origShortcut.ToHstringVK().c_str();
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -429,6 +430,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         mapping->originalKeys = AllocateAndCopyString(origKeysStr);
 
         mapping->targetApp = AllocateAndCopyString(app);
+        mapping->exactMatch = origShortcut.exactMatch ? 1 : 0;
 
         if (targetShortcutUnion.index() == 0)
         {
@@ -533,11 +535,13 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                           const wchar_t* startDirectory,
                           int elevation,
                           int ifRunningAction,
-                          int visibility)
+                          int visibility,
+                          int exactMatch)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
         Shortcut originalShortcut(originalKeys);
+        originalShortcut.exactMatch = (exactMatch != 0);
 
         KeyShortcutTextUnion targetShortcut;
 

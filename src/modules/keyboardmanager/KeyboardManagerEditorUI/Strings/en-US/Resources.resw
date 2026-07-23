@@ -486,6 +486,14 @@
   <data name="Warning_Title" xml:space="preserve">
     <value>Warning</value>
   </data>
+  <data name="Warning_OrphanedKeys" xml:space="preserve">
+    <value>The key {0} is now remapped, so it can no longer be typed directly unless another key is mapped to it.</value>
+    <comment>{0} is the name of the key that will be left without an assignment.</comment>
+  </data>
+  <data name="OrphanedKeyInfo_Title" xml:space="preserve">
+    <value>A key is no longer directly available</value>
+    <comment>Title of the non-blocking notice shown after remapping a single key away.</comment>
+  </data>
   <data name="Error_UnknownValidation_Title" xml:space="preserve">
     <value>Validation error</value>
   </data>

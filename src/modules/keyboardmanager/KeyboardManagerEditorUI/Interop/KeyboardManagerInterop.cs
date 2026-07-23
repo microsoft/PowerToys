@@ -83,7 +83,8 @@ namespace KeyboardManagerEditorUI.Interop
             [MarshalAs(UnmanagedType.LPWStr)] string? startDirectory = null,
             int elevation = 0,
             int ifRunningAction = 0,
-            int visibility = 0);
+            int visibility = 0,
+            int exactMatch = 0);
 
         // Delete Mapping Functions
         [DllImport(DllName, CallingConvention = Convention)]
@@ -165,6 +166,7 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+        public int ExactMatch;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

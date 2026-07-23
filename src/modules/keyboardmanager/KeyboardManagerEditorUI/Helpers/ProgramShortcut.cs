@@ -34,5 +34,7 @@ namespace KeyboardManagerEditorUI.Helpers
         public string IfRunningAction { get; set; } = string.Empty;
 
         public string Visibility { get; set; } = string.Empty;
+
+        public bool ExactMatch { get; set; }
     }
 }

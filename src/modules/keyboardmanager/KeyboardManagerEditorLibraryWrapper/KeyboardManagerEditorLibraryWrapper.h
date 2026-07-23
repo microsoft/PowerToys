@@ -33,6 +33,7 @@ struct ShortcutMapping
     wchar_t* programPath;
     wchar_t* programArgs;
     wchar_t* uriToOpen;
+    int exactMatch;
 };
 
 extern "C"
@@ -69,7 +70,8 @@ extern "C"
                                                 const wchar_t* startDirectory = nullptr,
                                                 int elevation = 0,
                                                 int ifRunningAction = 0,
-                                                int visibility = 0);
+                                                int visibility = 0,
+                                                int exactMatch = 0);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);

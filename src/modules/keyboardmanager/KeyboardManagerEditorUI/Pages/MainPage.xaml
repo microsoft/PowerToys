@@ -76,16 +76,25 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!--  Service Down Banner  -->
-        <InfoBar
-            x:Name="ServiceDownBanner"
-            x:Uid="ServiceDownBanner"
-            Grid.Row="0"
-            Margin="16,16,16,0"
-            IsClosable="False"
-            IsOpen="True"
-            Severity="Error"
-            Visibility="Collapsed" />
+        <StackPanel Grid.Row="0">
+            <!--  Service Down Banner  -->
+            <InfoBar
+                x:Name="ServiceDownBanner"
+                x:Uid="ServiceDownBanner"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="True"
+                Severity="Error"
+                Visibility="Collapsed" />
+
+            <!--  Orphaned-key notice (non-blocking, shown after a single-key remap)  -->
+            <InfoBar
+                x:Name="OrphanedKeyBanner"
+                Margin="16,16,16,0"
+                IsClosable="True"
+                IsOpen="False"
+                Severity="Informational" />
+        </StackPanel>
 
         <ContentControl
             x:Name="MainContentControl"
