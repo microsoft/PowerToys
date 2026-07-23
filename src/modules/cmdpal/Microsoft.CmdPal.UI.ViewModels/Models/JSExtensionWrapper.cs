@@ -144,6 +144,12 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     internal string ManifestDirectory => _manifestDirectory;
 
     /// <summary>
+    /// Gets the normalized identity key for this extension, used to enforce cross-extension
+    /// uniqueness during discovery.
+    /// </summary>
+    internal string NameKey => _manifest.NameKey;
+
+    /// <summary>
     /// Gets the number of times this extension has recorded a consecutive crash
     /// without a successful start in between.
     /// </summary>
@@ -257,7 +263,12 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
                 _stopping = false;
                 _nodeProcess = nodeProcess;
                 _connection = connection;
-                _commandProviderProxy = null;
+
+                // Create the provider proxy before the initialize handshake so its host
+                // notification handlers are registered in time to receive notifications
+                // (logs, statuses, clipboard requests, items-changed) that the extension
+                // emits while it activates during initialize.
+                _commandProviderProxy = new JSCommandProviderProxy(connection, _manifest);
             }
 
             connection.StartListening();
@@ -275,6 +286,20 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             }
 
             RecordAdvertisedCapabilities(initResponse.Result);
+
+            // Thread the real provider metadata from the handshake into the proxy so the
+            // author-specified frozen value flows through instead of the wire default.
+            var providerMetadata = ExtractProviderMetadata(initResponse.Result);
+            if (providerMetadata is { } metadata)
+            {
+                JSCommandProviderProxy? proxy;
+                lock (_lock)
+                {
+                    proxy = _commandProviderProxy;
+                }
+
+                proxy?.SetProviderMetadata(metadata);
+            }
 
             // A successful start clears the consecutive-crash history.
             ResetCrashCount();
@@ -305,6 +330,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     {
         Process? process;
         JsonRpcConnection? connection;
+        JSCommandProviderProxy? proxy;
 
         lock (_lock)
         {
@@ -312,12 +338,13 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
             _stopping = true;
             process = _nodeProcess;
             connection = _connection;
+            proxy = _commandProviderProxy;
             _nodeProcess = null;
             _connection = null;
             _commandProviderProxy = null;
         }
 
-        TearDown(process, connection);
+        TearDown(process, connection, proxy);
     }
 
     public void Dispose() => SignalDispose();
@@ -416,6 +443,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     {
         Process? process;
         JsonRpcConnection? connection;
+        JSCommandProviderProxy? proxy;
 
         lock (_lock)
         {
@@ -436,6 +464,7 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
 
             process = _nodeProcess;
             connection = _connection;
+            proxy = _commandProviderProxy;
             _nodeProcess = null;
             _connection = null;
             _commandProviderProxy = null;
@@ -446,13 +475,29 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
         // thread to avoid a self-join and to keep the read loop from blocking on itself.
         _ = Task.Run(() =>
         {
-            TearDown(process, connection);
+            TearDown(process, connection, proxy);
             ProcessExited?.Invoke(this, EventArgs.Empty);
         });
     }
 
-    private void TearDown(Process? process, JsonRpcConnection? connection)
+    private void TearDown(Process? process, JsonRpcConnection? connection, JSCommandProviderProxy? proxy)
     {
+        // Dispose the provider proxy first so it detaches its notification handlers and
+        // hides any active statuses while the host is still valid, including when the
+        // extension process exits unexpectedly. The proxy is idempotent, so this does not
+        // double-dispose if the service also disposes it during provider teardown.
+        if (proxy is not null)
+        {
+            try
+            {
+                proxy.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug($"Error disposing provider proxy for {_manifest.Name}: {ex.Message}");
+            }
+        }
+
         if (connection is not null)
         {
             connection.Error -= OnConnectionError;
@@ -500,6 +545,25 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
 
             process.Dispose();
         }
+    }
+
+    private static JsonElement? ExtractProviderMetadata(JsonElement? result)
+    {
+        if (result is not { } initResult ||
+            initResult.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        if ((initResult.TryGetProperty("provider", out var provider) ||
+             initResult.TryGetProperty("Provider", out provider)) &&
+            provider.ValueKind == JsonValueKind.Object)
+        {
+            // Clone so the metadata survives the disposal of the response document.
+            return provider.Clone();
+        }
+
+        return null;
     }
 
     private void RecordAdvertisedCapabilities(JsonElement? result)
