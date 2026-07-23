@@ -323,8 +323,12 @@ namespace KeyboardManagerEditorUI.Helpers
 
                     int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
 
-                    // Same modifier type (e.g., Ctrl and LCtrl) = conflict
-                    if (existingKeyType == keyType)
+                    // Same modifier family but a different key code. This is only a genuine (ambiguous)
+                    // conflict when one side is the generic, side-agnostic modifier (e.g. Ctrl vs Left
+                    // Ctrl): the generic one matches either physical side, so mapping both is ambiguous.
+                    // Two DISTINCT specific sides (e.g. Left Ctrl vs Right Ctrl) are separate physical
+                    // keys and can coexist (this is exactly the left/right ⌘ -> 英数/かな use case).
+                    if (existingKeyType == keyType && (IsGenericModifier(keyCode) || IsGenericModifier(existingKeyCode)))
                     {
                         conflictCount++;
                         if (conflictCount > upperLimit)
@@ -336,6 +340,20 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Whether the key code is a generic, side-agnostic modifier (Ctrl/Alt/Shift, or the
+        /// "both Windows keys" pseudo-key). These match either physical side at the hook level, so
+        /// pairing one with a specific side of the same family is ambiguous; two specific sides are not.
+        /// </summary>
+        private static bool IsGenericModifier(int keyCode)
+        {
+            const int VK_SHIFT = 0x10;
+            const int VK_CONTROL = 0x11;
+            const int VK_MENU = 0x12;    // Alt
+            const int VK_WIN_BOTH = 0x104; // CommonSharedConstants::VK_WIN_BOTH
+            return keyCode == VK_SHIFT || keyCode == VK_CONTROL || keyCode == VK_MENU || keyCode == VK_WIN_BOTH;
         }
 
         private static string BuildKeyCodeString(List<string> keys, KeyboardMappingService mappingService)

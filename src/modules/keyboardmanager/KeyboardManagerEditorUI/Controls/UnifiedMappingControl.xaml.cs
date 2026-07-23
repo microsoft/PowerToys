@@ -154,6 +154,7 @@ namespace KeyboardManagerEditorUI.Controls
             _triggerKeys.CollectionChanged += (_, _) =>
             {
                 UpdatePlaceholderVisibility();
+                UpdateConditionVisibility();
                 RaiseValidationStateChanged();
             };
 
@@ -207,6 +208,8 @@ namespace KeyboardManagerEditorUI.Controls
                     UncheckAllToggleButtons();
                 }
             }
+
+            UpdateConditionVisibility();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -264,6 +267,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             HideValidationMessage();
+            UpdateConditionVisibility();
             RaiseValidationStateChanged();
         }
 
@@ -789,6 +793,12 @@ namespace KeyboardManagerEditorUI.Controls
         public ElevationLevel GetElevationLevel() => (ElevationLevel)(ElevationComboBox?.SelectedIndex ?? 0);
 
         /// <summary>
+        /// Gets the single-key remap condition (Always/Alone). Only meaningful for single-key remaps.
+        /// </summary>
+        public KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition GetCondition() =>
+            (KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition)(ConditionComboBox?.SelectedIndex ?? 0);
+
+        /// <summary>
         /// Gets the window visibility (for OpenApp action type).
         /// </summary>
         public StartWindowType GetVisibility() => (StartWindowType)(VisibilityComboBox?.SelectedIndex ?? 0);
@@ -957,6 +967,17 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         /// <summary>
+        /// Sets the single-key remap condition (Always/Alone).
+        /// </summary>
+        public void SetCondition(KeyboardManagerEditorUI.Interop.SingleKeyRemapCondition condition)
+        {
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = (int)condition;
+            }
+        }
+
+        /// <summary>
         /// Sets the window visibility (for OpenApp action type).
         /// </summary>
         public void SetVisibility(StartWindowType visibility)
@@ -1047,6 +1068,31 @@ namespace KeyboardManagerEditorUI.Controls
                     ? Microsoft.UI.Xaml.Visibility.Visible
                     : Microsoft.UI.Xaml.Visibility.Collapsed;
             }
+        }
+
+        /// <summary>
+        /// Shows the single-key remap "Condition" (Always / Alone) combo box only when the mapping is a
+        /// single-key remap whose action is a key/shortcut or Disable — the cases where the alone
+        /// condition is meaningful and supported by the engine (a key/shortcut alone target, or an
+        /// "alone-disable" that swallows a solo tap while the key still works in combination). Only
+        /// toggles visibility; never changes the selection, so a condition set via
+        /// <see cref="SetCondition"/> during load is preserved.
+        /// </summary>
+        private void UpdateConditionVisibility()
+        {
+            if (ConditionComboBox == null)
+            {
+                return;
+            }
+
+            int nonEmptyTriggerKeys = _triggerKeys.Count(k => !string.IsNullOrEmpty(k));
+            bool isSingleKeyRemap = CurrentTriggerType == TriggerType.KeyOrShortcut
+                && nonEmptyTriggerKeys == 1
+                && (CurrentActionType == ActionType.KeyOrShortcut || CurrentActionType == ActionType.Disable);
+
+            ConditionComboBox.Visibility = isSingleKeyRemap
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
 
         private void RaiseValidationStateChanged()
@@ -1174,6 +1220,11 @@ namespace KeyboardManagerEditorUI.Controls
             if (ElevationComboBox != null)
             {
                 ElevationComboBox.SelectedIndex = 0;
+            }
+
+            if (ConditionComboBox != null)
+            {
+                ConditionComboBox.SelectedIndex = 0;
             }
 
             if (IfRunningComboBox != null)
