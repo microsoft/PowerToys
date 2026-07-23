@@ -214,7 +214,7 @@ public class PeekFilePreviewTests : UITestBase
 
         ClickPinButton(pinnedWindow);
         ClickPinButton(pinnedWindow);
-        CloseTestWindows();
+        CloseTestWindows(preservePeekProcess: false);
 
         var unpinnedWindow = OpenPeekWindow(secondFilePath);
         var unpinnedBounds = GetWindowBounds(unpinnedWindow);
@@ -239,7 +239,7 @@ public class PeekFilePreviewTests : UITestBase
 
         ClickPinButton(initialWindow);
         ClickPinButton(initialWindow);
-        CloseTestWindows();
+        CloseTestWindows(preservePeekProcess: false);
 
         var reopenedWindow = OpenPeekWindow(imagePath);
         var reopenedBounds = GetWindowBounds(reopenedWindow);
@@ -935,15 +935,18 @@ public class PeekFilePreviewTests : UITestBase
             .ToList();
     }
 
-    private void CloseTestWindows()
+    private void CloseTestWindows(bool preservePeekProcess = true)
     {
         var peekClosed = WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
-        var peekSettled = WaitForPeekProcessInputIdle();
+        var peekSettled = preservePeekProcess ? WaitForPeekProcessInputIdle() : StopPeekProcess();
         var explorerClosed = CloseExplorerFileWindows();
 
         if (!peekClosed || !peekSettled)
         {
-            TestContext.WriteLine("Cleanup could not close Peek and wait for its UI thread to become idle within 10 seconds.");
+            TestContext.WriteLine(
+                preservePeekProcess
+                    ? "Cleanup could not close Peek and wait for its UI thread to become idle within 10 seconds."
+                    : "Cleanup could not close and stop Peek within 10 seconds.");
         }
 
         if (!explorerClosed)
