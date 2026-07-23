@@ -104,8 +104,9 @@ The window never activates, never accepts input, does not appear in Alt+Tab, and
   - notification identity, current bounds, callback messages, registration health, and dispatcher
 - `FlyoutWindowHelper`
   - display DPI and cross-monitor `MoveAndResizeOnDisplay`
-- `WindowEx`
-  - borderless WinUI window foundation
+- `TransparentWindow`
+  - transparent backdrop, stripped frame, tool-window behavior, task-switcher exclusion, and
+    `SW_SHOWNA` display
 
 ## Native Notification Registration
 
@@ -217,12 +218,9 @@ Add:
 
 ### XAML
 
-Use a borderless `WindowEx`:
-
-- `IsTitleBarVisible="False"`
-- `IsResizable="False"`
-- `IsMinimizable="False"`
-- `IsMaximizable="False"`
+Derive from the shared `TransparentWindow`, which already strips the native frame/title bar, uses a
+transparent backdrop, marks the HWND as a tool window, stays out of task switchers, and implements
+`Show()` through `SW_SHOWNA`.
 
 Content:
 
@@ -240,42 +238,40 @@ Content:
 After obtaining the HWND, preserve existing extended styles and add:
 
 - `WS_EX_NOACTIVATE`
-- `WS_EX_TOOLWINDOW`
 - `WS_EX_TRANSPARENT`
 
 Set topmost without activation.
 
-Subclass the overlay window procedure and return `HTTRANSPARENT` for `WM_NCHITTEST`. This combines
-with `WS_EX_TRANSPARENT` so the window never becomes a mouse target even when it overlaps a Shell
-surface from another process.
+Store and root a local WndProc delegate in the overlay window, subclass the HWND, and return
+`HTTRANSPARENT` for `WM_NCHITTEST`. The shared `WindowMessageHook` is not used because its boolean
+API can only return zero for handled messages, while click-through requires `HTTRANSPARENT (-1)`.
+This combines with `WS_EX_TRANSPARENT` so the window never becomes a mouse target even when it
+overlaps a Shell surface from another process.
 
-Show through:
-
-- `ShowWindow(SW_SHOWNOACTIVATE)`
-- `SetWindowPos(HWND_TOPMOST, ..., SWP_NOACTIVATE)`
-
-Never call `Activate()` to show this window.
-
-Use `SetIsShownInSwitchers(false)` and best-effort rounded DWM corners. DWM corner APIs may be
-unavailable on older Windows and must not block display.
+Use inherited `TransparentWindow.Show()` and `Hide()`. Set `IsAlwaysOnTop = true`; never call
+`Activate()` to show this window. The root XAML border supplies visible rounding because
+`TransparentWindow` intentionally disables native DWM corners for its transparent host.
 
 ### Measurement and DPI
 
 `ShowText`:
 
-1. Set the `TextBlock` text.
-2. Measure the root content in DIP.
-3. Clamp measured width to 120-420 DIP.
-4. Obtain the target `DisplayArea` from the notification icon center.
-5. Use `FlyoutWindowHelper.GetDpiScale(displayArea)`.
-6. Convert measured width, height, and the 8 DIP gap to physical pixels.
-7. Calculate the final physical rectangle with `TrayWheelFeedbackPlacement`.
-8. Use `FlyoutWindowHelper.MoveAndResizeOnDisplay`.
-9. Call `ShowWindow(SW_SHOWNOACTIVATE)` and enforce topmost/no-activate positioning.
+1. If text, icon rectangle, and visible state are unchanged, return without measuring, moving,
+   announcing, or showing again.
+2. Set the `TextBlock` text.
+3. Measure the root content in DIP.
+4. Clamp measured width to 120-420 DIP.
+5. Obtain the target `DisplayArea` from the notification icon center.
+6. Use `FlyoutWindowHelper.GetDpiScale(displayArea)`.
+7. Convert measured width, height, and the 8 DIP gap to physical pixels.
+8. Calculate the final physical rectangle with `TrayWheelFeedbackPlacement`.
+9. Use `FlyoutWindowHelper.MoveAndResizeOnDisplay`.
+10. Call inherited `Show()` only when transitioning from hidden to visible.
 
 `Hide` uses `ShowWindow(SW_HIDE)` and retains the window for reuse.
 
-`Dispose` hides, clears event/timer references, closes the WindowEx, and is idempotent.
+`Dispose` hides, restores the original WndProc, clears the rooted delegate and event references,
+closes the `TransparentWindow`, and is idempotent.
 
 ## Accessibility
 

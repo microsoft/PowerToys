@@ -2,6 +2,10 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+> **Superseded after Task 2.** The Task 3 native-tooltip go/no-go failed on the modern overflow
+> XAML Shell. Continue with `2026-07-22-powerdisplay-tray-feedback-overlay.md`. Task 1 and Task 2
+> outputs remain valid prerequisites.
+
 **Goal:** Show native, localized target-and-percentage feedback while brightness is adjusted by scrolling over the PowerDisplay tray icon.
 
 **Architecture:** `MainViewModel` returns an immutable feedback payload built from the same planner results applied to monitor brightness. A pure formatter converts that payload and localized templates into bounded native tooltip text. `TrayIconService` updates `NOTIFYICONDATA.szTip` through `NIM_MODIFY`, best-effort forces the existing Shell tooltip with the EarTrumpet `TB_GETTOOLTIPS`/`TTM_POPUP` pattern, and restores the application name after two seconds.
