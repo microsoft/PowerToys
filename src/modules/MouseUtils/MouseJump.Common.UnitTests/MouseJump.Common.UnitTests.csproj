@@ -1,44 +1,40 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
-  <PropertyGroup>
+    <PropertyGroup>
+        <ProjectGuid>{D5E42C63-57C5-4EF6-AECE-1E2FCA725B77}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.Common.UnitTests</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.Common.UnitTests</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.Common.UnitTests</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
-    <ProjectGuid>{D5E42C63-57C5-4EF6-AECE-1E2FCA725B77}</ProjectGuid>
-    <AssemblyName>PowerToys.MouseJump.Common.UnitTests</AssemblyName>
-    <AssemblyTitle>PowerToys.MouseJump.Common.UnitTests</AssemblyTitle>
-    <AssemblyDescription>PowerToys MouseJump.Common.UnitTests</AssemblyDescription>
-    <OutputType>Exe</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\MouseJump.Common.UnitTests\</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ItemGroup>
+        <None Remove="Helpers\_test-4grid-desktop.png" />
+        <None Remove="Helpers\_test-4grid-expected.png" />
+        <None Remove="Helpers\_test-win11-desktop.png" />
+        <None Remove="Helpers\_test-win11-expected.png" />
+    </ItemGroup>
 
-  </PropertyGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="Helpers\_test-4grid-desktop.png" />
+        <EmbeddedResource Include="Helpers\_test-4grid-expected.png" />
+        <EmbeddedResource Include="Helpers\_test-win11-desktop.png" />
+        <EmbeddedResource Include="Helpers\_test-win11-expected.png" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Helpers\_test-4grid-desktop.png" />
-    <None Remove="Helpers\_test-4grid-expected.png" />
-    <None Remove="Helpers\_test-win11-desktop.png" />
-    <None Remove="Helpers\_test-win11-expected.png" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Helpers\_test-4grid-desktop.png" />
-    <EmbeddedResource Include="Helpers\_test-4grid-expected.png" />
-    <EmbeddedResource Include="Helpers\_test-win11-desktop.png" />
-    <EmbeddedResource Include="Helpers\_test-win11-expected.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MSTest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
-  </ItemGroup>
-
+    <ItemGroup>
+        <PackageReference Include="MSTest" />
+    </ItemGroup>
 </Project>

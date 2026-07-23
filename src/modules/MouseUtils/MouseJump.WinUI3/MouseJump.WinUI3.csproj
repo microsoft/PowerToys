@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+    <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <RootNamespace>MouseJump.WinUI3</RootNamespace>
+        <AssemblyName>PowerToys.MouseJump.WinUI3</AssemblyName>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <UseWinUI>true</UseWinUI>
+        <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+        <WindowsPackageType>None</WindowsPackageType>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Manifest Include="$(ApplicationManifest)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.WindowsAppSDK" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    </ItemGroup>
+
+    <!--
+      GPOWrapper is a C++ WinRT component - by default these can't be accessed from C# projects.
+      The CsWinRTIncludes property generates a C# projection of the C++ WinRT component so that it can be used in this project.
+      See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info
+    -->
+    <PropertyGroup>
+        <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+        <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+        <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+        <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+        <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+        <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+        <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
+        <ProjectReference Include="..\MouseJump.HotKeys\MouseJump.HotKeys.csproj" />
+        <ProjectReference Include="..\MouseJump.Models\MouseJump.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Windows.CsWin32">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AdditionalFiles Include="NativeMethods.txt" />
+    </ItemGroup>
+</Project>
