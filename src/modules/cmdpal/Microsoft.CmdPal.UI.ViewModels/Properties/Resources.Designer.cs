@@ -727,6 +727,303 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to npm.
+        /// </summary>
+        public static string gallery_item_source_name_jsonrpc {
+            get {
+                return ResourceManager.GetString("gallery_item_source_name_jsonrpc", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installing....
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_installing {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_installing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstalling....
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstalling {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstalling", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Extension installed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_installed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_installed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Extension uninstalled.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstalled {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstalled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The installation failed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_install_failed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_install_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The uninstall failed.
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_uninstall_failed {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_uninstall_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall.
+        /// </summary>
+        public static string gallery_item_jsonrpc_uninstall_action {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_uninstall_action", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        public static string gallery_item_jsonrpc_cancel_action {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_cancel_action", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Canceling....
+        /// </summary>
+        public static string gallery_item_jsonrpc_action_canceling {
+            get {
+                return ResourceManager.GetString("gallery_item_jsonrpc_action_canceling", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The extension name is not valid.
+        /// </summary>
+        public static string npm_installer_invalid_name {
+            get {
+                return ResourceManager.GetString("npm_installer_invalid_name", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its listing does not specify an npm package.
+        /// </summary>
+        public static string npm_installer_package_missing {
+            get {
+                return ResourceManager.GetString("npm_installer_package_missing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its npm package name is not valid.
+        /// </summary>
+        public static string npm_installer_package_invalid {
+            get {
+                return ResourceManager.GetString("npm_installer_package_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its listing does not specify an exact version.
+        /// </summary>
+        public static string npm_installer_version_missing {
+            get {
+                return ResourceManager.GetString("npm_installer_version_missing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its listing does not specify a single exact version.
+        /// </summary>
+        public static string npm_installer_version_invalid {
+            get {
+                return ResourceManager.GetString("npm_installer_version_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its listing does not include an integrity hash.
+        /// </summary>
+        public static string npm_installer_integrity_missing {
+            get {
+                return ResourceManager.GetString("npm_installer_integrity_missing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because its integrity hash is not a supported format.
+        /// </summary>
+        public static string npm_installer_integrity_invalid {
+            get {
+                return ResourceManager.GetString("npm_installer_integrity_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension cannot be installed because it requests a registry that is not allowed.
+        /// </summary>
+        public static string npm_installer_registry_invalid {
+            get {
+                return ResourceManager.GetString("npm_installer_registry_invalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This extension is already installed. Uninstall it first to install a different version.
+        /// </summary>
+        public static string npm_installer_already_installed {
+            get {
+                return ResourceManager.GetString("npm_installer_already_installed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The downloaded package did not match the expected integrity hash and was not installed.
+        /// </summary>
+        public static string npm_installer_integrity_mismatch {
+            get {
+                return ResourceManager.GetString("npm_installer_integrity_mismatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The downloaded package did not match the expected extension and was not installed.
+        /// </summary>
+        public static string npm_installer_identity_mismatch {
+            get {
+                return ResourceManager.GetString("npm_installer_identity_mismatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The downloaded package did not match the expected version and was not installed.
+        /// </summary>
+        public static string npm_installer_version_mismatch {
+            get {
+                return ResourceManager.GetString("npm_installer_version_mismatch", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The package was downloaded but does not contain a usable Command Palette extension.
+        /// </summary>
+        public static string npm_installer_not_an_extension {
+            get {
+                return ResourceManager.GetString("npm_installer_not_an_extension", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The extension was installed but could not be loaded, so it was removed.
+        /// </summary>
+        public static string npm_installer_not_discoverable {
+            get {
+                return ResourceManager.GetString("npm_installer_not_discoverable", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The operation was canceled.
+        /// </summary>
+        public static string npm_installer_canceled {
+            get {
+                return ResourceManager.GetString("npm_installer_canceled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The extension files could not be removed. Close anything using them and try again.
+        /// </summary>
+        public static string npm_installer_remove_failed {
+            get {
+                return ResourceManager.GetString("npm_installer_remove_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The installation failed.
+        /// </summary>
+        public static string npm_installer_install_failed {
+            get {
+                return ResourceManager.GetString("npm_installer_install_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to npm was not found. Install Node.js to add JavaScript extensions.
+        /// </summary>
+        public static string npm_runner_npm_not_found {
+            get {
+                return ResourceManager.GetString("npm_runner_npm_not_found", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to npm could not be started.
+        /// </summary>
+        public static string npm_runner_start_failed {
+            get {
+                return ResourceManager.GetString("npm_runner_start_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A temporary install folder could not be created: {0}.
+        /// </summary>
+        public static string npm_runner_create_staging_failed {
+            get {
+                return ResourceManager.GetString("npm_runner_create_staging_failed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The install timed out after {0} minutes.
+        /// </summary>
+        public static string npm_runner_timed_out {
+            get {
+                return ResourceManager.GetString("npm_runner_timed_out", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to npm install failed with exit code {0}.
+        /// </summary>
+        public static string npm_runner_failed_exit {
+            get {
+                return ResourceManager.GetString("npm_runner_failed_exit", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The install was blocked because a dependency was not resolved from the approved registry with a verified integrity hash.
+        /// </summary>
+        public static string npm_runner_lockfile_untrusted {
+            get {
+                return ResourceManager.GetString("npm_runner_lockfile_untrusted", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to WinGet.
         /// </summary>
         public static string gallery_item_source_name_winget {

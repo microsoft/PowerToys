@@ -133,6 +133,19 @@ public class JsonRpcExtensionServiceDiscoveryTests
         Assert.IsFalse(JsonRpcExtensionService.IsUnderDirectory(_root, string.Empty));
     }
 
+    [TestMethod]
+    public void IsExtensionPresentOnDisk_ReportsPresentDirectory()
+    {
+        // A crash-disabled or corrupt install leaves the directory on disk even when the provider
+        // never loaded. Present-on-disk detection is what lets the gallery still offer Uninstall.
+        var present = Path.Combine(_root, "present-but-unloaded");
+        Directory.CreateDirectory(present);
+
+        Assert.IsTrue(JsonRpcExtensionService.IsExtensionPresentOnDisk(present));
+        Assert.IsFalse(JsonRpcExtensionService.IsExtensionPresentOnDisk(Path.Combine(_root, "missing")));
+        Assert.IsFalse(JsonRpcExtensionService.IsExtensionPresentOnDisk(string.Empty));
+    }
+
     private void CreateExtension(string dirName, string packageJson, string? entryPointRelativePath)
     {
         var dir = Path.Combine(_root, dirName);

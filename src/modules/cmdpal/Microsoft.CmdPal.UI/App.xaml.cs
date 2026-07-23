@@ -267,7 +267,9 @@ public partial class App : Application, IDisposable
         // Load IExtensionServices here
         services.AddSingleton<IExtensionService, BuiltInExtensionService>();
         services.AddSingleton<IExtensionService, WinRTExtensionService>();
-        services.AddSingleton<IExtensionService, JsonRpcExtensionService>();
+        services.AddSingleton<JsonRpcExtensionService>();
+        services.AddSingleton<IExtensionService>(static sp => sp.GetRequiredService<JsonRpcExtensionService>());
+        services.AddSingleton<IJsExtensionHost>(static sp => sp.GetRequiredService<JsonRpcExtensionService>());
 
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
