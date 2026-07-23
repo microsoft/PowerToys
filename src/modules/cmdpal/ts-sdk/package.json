@@ -29,6 +29,7 @@
     "pretest": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify:pack": "node scripts/verify-pack.mjs",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
     "prepublishOnly": "npm run clean && npm run build"
   },

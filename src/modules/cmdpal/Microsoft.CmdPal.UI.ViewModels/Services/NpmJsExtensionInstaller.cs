@@ -164,12 +164,17 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
                 return JsExtensionInstallResult.Fail(Resources.npm_installer_integrity_mismatch);
             }
 
-            var packageDirectory = GetInstalledPackageDirectory(stagingDirectory, artifact.Package);
-            if (!Directory.Exists(packageDirectory))
+            // Resolve the exact approved package identity and reject an ambiguous layout. The
+            // identity-aware resolution and the hoisting below are single-sourced in
+            // JsExtensionPackageLayout so the installer and the discovery layout never diverge.
+            var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDirectory, artifact.Package);
+            if (!resolution.Succeeded || resolution.PackageDirectory is null)
             {
-                Logger.LogError($"Installed npm package '{artifact.Package}' but its directory was not found under {stagingDirectory}.");
+                Logger.LogError($"Installed npm package '{artifact.Package}' could not be resolved to a single Command Palette extension: {resolution.ErrorMessage}");
                 return JsExtensionInstallResult.Fail(Resources.npm_installer_not_an_extension);
             }
+
+            var packageDirectory = resolution.PackageDirectory;
 
             // Validate that this is the approved package and version, and that it is a loadable
             // CmdPal manifest (the parser enforces the entry point, the .js/.mjs/.cjs allowlist, and
@@ -197,7 +202,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
             // Assemble the discovery layout inside staging: the package at the root with its (hoisted)
             // dependencies under its own node_modules.
-            var assembledDirectory = AssembleDiscoveryLayout(stagingDirectory, packageDirectory);
+            var assembledDirectory = JsExtensionPackageLayout.AssembleDiscoveryLayout(stagingDirectory, packageDirectory);
 
             // Atomic promote onto the same volume. The target does not exist (blocked above), so this
             // is a plain rename; the watched root only ever sees the fully validated tree.
@@ -249,66 +254,6 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
                 Logger.LogWarning($"Failed to clean up staging directory {stagingDirectory}.");
             }
         }
-    }
-
-    /// <summary>
-    /// Materializes the discovery layout for a promoted extension inside the staging tree. The
-    /// installed package becomes the extension root, and the sibling dependencies npm hoisted to the
-    /// top-level node_modules are moved under the package's own node_modules so Node.js can resolve
-    /// them after promotion.
-    /// </summary>
-    private static string AssembleDiscoveryLayout(string stagingDirectory, string packageDirectory)
-    {
-        var assembledDirectory = Path.Combine(stagingDirectory, "__cmdpal_assembled");
-        if (Directory.Exists(assembledDirectory))
-        {
-            Directory.Delete(assembledDirectory, recursive: true);
-        }
-
-        // Move the package itself to the assembled root.
-        Directory.Move(packageDirectory, assembledDirectory);
-
-        // Move every remaining hoisted dependency into the package's own node_modules.
-        var topLevelNodeModules = Path.Combine(stagingDirectory, "node_modules");
-        if (Directory.Exists(topLevelNodeModules))
-        {
-            var assembledNodeModules = Path.Combine(assembledDirectory, "node_modules");
-            Directory.CreateDirectory(assembledNodeModules);
-
-            foreach (var entry in Directory.EnumerateFileSystemEntries(topLevelNodeModules))
-            {
-                var name = Path.GetFileName(entry);
-                if (string.IsNullOrEmpty(name))
-                {
-                    continue;
-                }
-
-                var destination = Path.Combine(assembledNodeModules, name);
-                if (Directory.Exists(entry))
-                {
-                    if (!Directory.Exists(destination))
-                    {
-                        Directory.Move(entry, destination);
-                    }
-                }
-                else if (!File.Exists(destination))
-                {
-                    File.Move(entry, destination);
-                }
-            }
-        }
-
-        return assembledDirectory;
-    }
-
-    /// <summary>
-    /// Resolves the directory npm installed the top-level package into, handling both scoped
-    /// (@scope/name) and unscoped package names.
-    /// </summary>
-    private static string GetInstalledPackageDirectory(string stagingDirectory, string package)
-    {
-        var relative = package.Replace('/', Path.DirectorySeparatorChar);
-        return Path.Combine(stagingDirectory, "node_modules", relative);
     }
 
     /// <summary>

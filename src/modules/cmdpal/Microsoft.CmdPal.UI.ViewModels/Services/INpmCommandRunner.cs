@@ -58,6 +58,8 @@ public interface INpmCommandRunner
 /// </param>
 public readonly record struct NpmCommandResult(bool Succeeded, string? ErrorMessage, string? ResolvedIntegrity)
 {
+    public static NpmCommandResult Ok() => new(true, null, null);
+
     public static NpmCommandResult Ok(string? resolvedIntegrity) => new(true, null, resolvedIntegrity);
 
     public static NpmCommandResult Fail(string errorMessage) => new(false, errorMessage, null);
