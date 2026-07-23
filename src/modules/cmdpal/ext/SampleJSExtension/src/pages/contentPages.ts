@@ -144,6 +144,12 @@ export class SampleTreeContentPage extends ContentPageBase {
   override getContent(): Content[] {
     const nestedForm: FormContent = {
       type: 'form',
+      // A stable formId lets the host route this form's submit back to this
+      // handler even though it is nested several levels deep in a tree whose
+      // children are produced lazily. Without it the form would rely on the
+      // serializer's positional fallback id, which is not stable when only part
+      // of the tree has been expanded.
+      formId: 'tree-nested-form',
       templateJson: JSON.stringify({
         $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
         type: 'AdaptiveCard',

@@ -57,7 +57,10 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _manifest = manifest ?? throw new ArgumentNullException(nameof(manifest));
         _providerMetadata = providerMetadata;
-        _icon = new IconInfo(_manifest.Icon ?? string.Empty);
+
+        // Resolve the manifest icon against the package directory so a relative icon path loads
+        // from disk; a glyph is carried through unchanged. Containment is enforced by the parser.
+        _icon = new IconInfo(_manifest.IconPath ?? string.Empty);
 
         RegisterNotificationHandlers();
 

@@ -17,5 +17,15 @@ export default tseslint.config(
       '@typescript-eslint/consistent-type-imports': 'error',
     },
   },
+  {
+    // Node-run maintenance scripts (for example the packed-SDK smoke test).
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
   prettier,
 );

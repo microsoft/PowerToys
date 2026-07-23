@@ -47,15 +47,20 @@ const postTemplate = JSON.stringify({
 /**
  * A single post in the comment tree. Mirrors the C# `PostContent`/`PostForm`.
  *
- * Approximation: the C# version raises an items-changed event so newly posted
- * replies appear immediately. The JS `FormContent` has no such push, so a reply
- * is stored and shown the next time the tree is expanded.
+ * Each post owns a stable `formId` so the host can route a reply submission back
+ * to this exact post even though the post's form lives deep in a lazily expanded
+ * tree. The ids are minted once per post instance, and the page keeps its post
+ * instances alive (see `SampleCommentsPage`), so a reply pushed onto a post is
+ * shown the next time that branch of the tree is expanded.
  */
 class Post implements TreeContent {
   readonly type = 'tree';
   readonly replies: Post[] = [];
+  readonly formId: string;
 
-  constructor(private readonly body: string) {}
+  constructor(private readonly body: string) {
+    this.formId = `comment-form-${nextPostId()}`;
+  }
 
   get rootContent(): Content {
     const dataJson = JSON.stringify({
@@ -71,6 +76,7 @@ class Post implements TreeContent {
 
     const form: FormContent = {
       type: 'form',
+      formId: this.formId,
       templateJson: postTemplate,
       dataJson,
       submitForm: (inputs: string): CommandResult => {
@@ -95,6 +101,12 @@ class Post implements TreeContent {
   }
 }
 
+let postCounter = 0;
+function nextPostId(): number {
+  postCounter += 1;
+  return postCounter;
+}
+
 function post(body: string, replies: string[] = []): Post {
   const p = new Post(body);
   for (const reply of replies) {
@@ -111,6 +123,12 @@ export class SampleCommentsPage extends ContentPageBase {
 
   override icon = icon('\uE90A');
 
+  private readonly posts: Post[] = [
+    post('First', ["Oh very insightful. I hadn't considered that", 'Second', 'ah the ol switcheroo']),
+    post('First\nEDIT: shoot', ['delete this']),
+    post('Do you think they get the picture', ['Probably! Now go build and be happy']),
+  ];
+
   private readonly tree: TreeContent = {
     type: 'tree',
     rootContent: {
@@ -122,11 +140,7 @@ export class SampleCommentsPage extends ContentPageBase {
         'The forms on this page use the AdaptiveCard `Action.ShowCard` action to show a nested, hidden card on the form.',
       ].join('\n'),
     },
-    getChildren: (): Content[] => [
-      post('First', ["Oh very insightful. I hadn't considered that", 'Second', 'ah the ol switcheroo']),
-      post('First\nEDIT: shoot', ['delete this']),
-      post('Do you think they get the picture', ['Probably! Now go build and be happy']),
-    ],
+    getChildren: (): Content[] => [...this.posts],
   };
 
   override getContent(): Content[] {

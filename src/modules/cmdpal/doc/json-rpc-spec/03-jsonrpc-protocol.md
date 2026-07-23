@@ -446,17 +446,23 @@ State values: 0 = Info, 1 = Success, 2 = Warning, 3 = Error
 
 ### `host/showStatus`
 
-Shows a status message in the CmdPal status bar.
+Shows a status message in the CmdPal status bar. The extension mints a stable
+`statusId` and includes it so the same status can later be updated or hidden by id.
+Re-sending `host/showStatus` with an existing `statusId` updates that status in place
+(this is what `ExtensionHost.updateStatus` does). The `message` object is retained for
+compatibility with a host that still matches on message text.
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "host/showStatus",
   "params": {
+    "statusId": "status-1",
     "message": {
       "Message": "Loading data...",
       "State": 0
     },
+    "progress": { "isIndeterminate": true },
     "context": "extension"
   }
 }
@@ -466,13 +472,16 @@ Shows a status message in the CmdPal status bar.
 
 ### `host/hideStatus`
 
-Hides a previously shown status message.
+Hides a previously shown status message, identified by the `statusId` returned when it
+was shown. The `message` object is included for compatibility with a host that still
+matches on message text.
 
 ```json
 {
   "jsonrpc": "2.0",
   "method": "host/hideStatus",
   "params": {
+    "statusId": "status-1",
     "message": {
       "Message": "Loading data...",
       "State": 0

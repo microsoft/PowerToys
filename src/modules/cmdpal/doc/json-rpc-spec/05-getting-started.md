@@ -391,8 +391,9 @@ Use `ExtensionHost` to send messages to the CmdPal log and to show inline status
 import { ExtensionHost } from '@microsoft/cmdpal-sdk';
 
 ExtensionHost.log('Fetching items...');
-ExtensionHost.showStatus('Working...', 'info', { isIndeterminate: true });
-ExtensionHost.hideStatus('Working...');
+// showStatus returns a stable id; keep it to hide the same status later.
+const statusId = ExtensionHost.showStatus('Working...', 'info', { isIndeterminate: true });
+ExtensionHost.hideStatus(statusId);
 ```
 
 ### Common issues

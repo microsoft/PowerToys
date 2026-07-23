@@ -183,10 +183,17 @@ Extended list item with metadata.
 interface IListItem extends ICommandItem {
   tags?: Tag[];
   details?: Details;
-  section?: string;          // Section header text (creates visual grouping)
+  section?: string;          // See note below: only labels a command-less header row
   textToSuggest?: string;    // Text to fill into search box on selection
 }
 ```
+
+> **Grouping note:** `section` does **not** group a command-bearing item. The host
+> renders a list item that has a command as a normal item and ignores its `section`.
+> `section` takes effect only on an item that has no command, where it turns that row
+> into a section header. To visually group command items, insert a standalone
+> [`Separator('Title')`](#separator) row before the group instead of setting `section`
+> on the items.
 
 ### IFallbackCommandItem
 
@@ -220,7 +227,8 @@ interface ContextItem {
 
 ### Separator
 
-A visual divider in lists.
+A standalone row that divides a list. With a title it renders as a section header,
+which is the supported way to group command items.
 
 ```typescript
 import { Separator } from '@microsoft/cmdpal-sdk';
@@ -231,6 +239,25 @@ new Separator()
 // Section header separator
 new Separator('Section Title')
 ```
+
+To group items, return `Separator('Title')` rows interleaved with your items. Each
+separator begins a new visual group that runs until the next separator:
+
+```typescript
+getItems(): (IListItem | Separator)[] {
+  return [
+    new Separator('Recent'),
+    recentItemA,
+    recentItemB,
+    new Separator('All commands'),
+    commandA,
+    commandB,
+  ];
+}
+```
+
+Setting `section` on the command items themselves does not group them; the host only
+uses `Separator` rows for grouping (see the [grouping note](#ilistitem) above).
 
 ---
 
@@ -346,6 +373,7 @@ interface MarkdownContent {
 
 interface FormContent {
   type: 'form';
+  formId?: string;         // Stable id for routing form/submit; see note below
   templateJson: string;   // Adaptive Card JSON template
   dataJson: string;        // Form data values JSON
   stateJson?: string;
@@ -372,6 +400,15 @@ interface TreeContent {
   getChildren(): Content[] | Promise<Content[]>;
 }
 ```
+
+> **`formId` note:** The SDK gives every form a stable id and routes an incoming
+> `form/submit` back to that form's `submitForm` handler by `(pageId, formId)`. When
+> you omit `formId`, the serializer assigns one positionally in traversal order. That
+> positional fallback is fine for a page with a fixed set of top-level forms, but it
+> can drift for a form nested in a `tree` whose children are produced lazily or whose
+> shape changes between serializations (for example, a comment thread that gains a
+> reply). Set an explicit, stable `formId` on any nested or dynamically produced form
+> so its submissions always route correctly.
 
 ---
 
@@ -560,8 +597,13 @@ ExtensionHost.log('Something happened');
 ExtensionHost.log('Error occurred', 'error');
 
 // Status bar
-ExtensionHost.showStatus('Loading...', 'info', { isIndeterminate: true });
-ExtensionHost.hideStatus('loading-id');
+// showStatus returns a stable status id. Keep it to update or hide that exact
+// status later, rather than matching on the message text.
+const statusId = ExtensionHost.showStatus('Loading...', 'info', { isIndeterminate: true });
+// Replace the working status in place once the work is done...
+ExtensionHost.updateStatus(statusId, 'Done', 'success');
+// ...then clear it by id so the spinner is not left behind.
+ExtensionHost.hideStatus(statusId);
 
 // Clipboard
 ExtensionHost.copyToClipboard('Hello, clipboard!');
