@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -250,6 +250,33 @@ namespace Microsoft.AdvancedPaste.UITests
                 Path.Combine(testFilesFolderPath, pasteAsJsonResultFile),
                 compareFormatting: true);
             Assert.IsTrue(result.IsConsistent, "Paste as Json using shortcut failed.");
+        }
+
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("PasteAsRichText")]
+        [Ignore("Needs baseline RTF file to be generated locally by running the test once")]
+        public void TestCasePasteAsRichText()
+        {
+            if (_notepadSettingsChanged == false)
+            {
+                ChangeNotePadSettings();
+            }
+
+            string pasteAsRichTextSrcFile = "PasteAsRichTextFile.txt";
+            string pasteAsRichTextResultFile = "PasteAsRichTextResultFile.rtf";
+
+            // Copy markdown text
+            // Open Advanced Paste window using hotkey, click Paste as Rich Text button and confirm it is converted to formatted RTF
+            DeleteAndCopyFile(pasteAsRichTextSrcFile, tempTxtFileName);
+            ContentCopyAndPasteAsRichText(tempTxtFileName);
+            
+            // Compare the resulting RTF (which WordPad saves) with the baseline RTF
+            var result = FileReader.CompareRtfFiles(
+                Path.Combine(testFilesFolderPath, tempTxtFileName),
+                Path.Combine(testFilesFolderPath, pasteAsRichTextResultFile),
+                compareFormatting: true);
+            Assert.IsTrue(result.IsConsistent, "Paste as Rich Text failed.");
         }
 
         /*
@@ -857,6 +884,47 @@ namespace Microsoft.AdvancedPaste.UITests
 
             this.SendKeys(Key.LCtrl, Key.Num3);
             Thread.Sleep(1000);
+
+            this.SendKeys(Key.LCtrl, Key.S);
+            Thread.Sleep(1000);
+
+            window.Close();
+        }
+
+        private void ContentCopyAndPasteAsRichText(string fileName)
+        {
+            // Open the txt file with notepad
+            string tempFile = Path.Combine(testFilesFolderPath, fileName);
+
+            Process process = Process.Start("notepad.exe", tempFile);
+            if (process == null)
+            {
+                throw new InvalidOperationException("Failed to start Notepad.");
+            }
+
+            Thread.Sleep(15000);
+
+            var window = FindWindowWithFlexibleTitle(Path.GetFileName(tempFile), false);
+
+            window.Click();
+            Thread.Sleep(1000);
+
+            this.SendKeys(Key.LCtrl, Key.A);
+            Thread.Sleep(1000);
+            this.SendKeys(Key.LCtrl, Key.C);
+            Thread.Sleep(1000);
+            
+            // Delete content so we can paste over it
+            this.SendKeys(Key.Delete);
+            Thread.Sleep(1000);
+
+            // Open Advanced Paste window using hotkey
+            this.SendKeys(Key.Win, Key.Shift, Key.V);
+            Thread.Sleep(15000);
+
+            // click Paste as Rich Text button
+            var apWind = this.Find<Window>("Advanced Paste", global: true);
+            apWind.Find<TextBlock>("Paste as Rich Text").Click();
 
             this.SendKeys(Key.LCtrl, Key.S);
             Thread.Sleep(1000);
