@@ -181,7 +181,8 @@ namespace PowerDisplay
                     OpenSettings);
                 _trayIconService.MouseWheelScrolled += notches =>
                 {
-                    _ = mainWindow.ViewModel.AdjustBrightnessFromTrayWheel(notches);
+                    var feedback = mainWindow.ViewModel.AdjustBrightnessFromTrayWheel(notches);
+                    _trayIconService.UpdateAdjustmentFeedback(feedback);
                 };
                 _trayIconService.CanProcessMouseWheel =
                     () => mainWindow.ViewModel.IsInitialized &&

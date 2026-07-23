@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using ManagedCommon;
@@ -12,6 +13,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Models;
+using PowerDisplay.PowerDisplayXAML;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -40,6 +42,7 @@ namespace PowerDisplay.Helpers
         private const uint MaxSampleAgeMs = 500;
         private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
+        private static readonly TimeSpan FeedbackPollInterval = TimeSpan.FromMilliseconds(100);
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
@@ -49,6 +52,7 @@ namespace PowerDisplay.Helpers
         private readonly DispatcherQueue _dispatcherQueue;
         private readonly WheelDeltaAccumulator _wheelDeltaAccumulator = new();
         private readonly TrayIconRegistrationBackoff _registrationBackoff = new();
+        private readonly TrayWheelFeedbackSession _feedbackSession = new();
 
         private Window? _window;
         private nint _hwnd;
@@ -59,8 +63,11 @@ namespace PowerDisplay.Helpers
         private nint _popupMenu;
         private TrayIconMouseWheelListener? _mouseWheelListener;
         private DispatcherQueueTimer? _registrationTimer;
+        private DispatcherQueueTimer? _feedbackPollTimer;
+        private TrayWheelFeedbackWindow? _feedbackWindow;
         private MouseWheelControlMode _mouseWheelControlMode;
         private TrayIconBounds? _cachedBounds;
+        private TrayIconBounds? _feedbackIconBounds;
         private long _boundsCacheTimestamp;
         private long _hoverGeneration;
         private bool _desiredTrayIconVisible;
@@ -68,6 +75,7 @@ namespace PowerDisplay.Helpers
         private bool _registrationFailureLogged;
         private bool _sampleDispatchFailureLogged;
         private bool _boundsFailureLogged;
+        private bool _feedbackWindowFailureLogged;
 
         internal event Action<int>? MouseWheelScrolled;
 
@@ -117,6 +125,7 @@ namespace PowerDisplay.Helpers
             _desiredTrayIconVisible = false;
             StopRegistrationRecovery();
             DisposeMouseWheelListener();
+            DisposeFeedbackWindow();
             _mouseWheelControlMode = MouseWheelControlMode.Disabled;
             InvalidateMouseWheelHover(disarm: false);
 
@@ -182,10 +191,9 @@ namespace PowerDisplay.Helpers
                     cbSize = (uint)sizeof(NOTIFYICONDATAW),
                     hWnd = new HWND(_hwnd),
                     uID = MyNotifyId,
-                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
+                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON,
                     uCallbackMessage = WmTrayIcon,
                     hIcon = new HICON(_largeIcon),
-                    szTip = GetString("AppName"),
                 };
             }
         }
@@ -248,6 +256,8 @@ namespace PowerDisplay.Helpers
 
         private void MarkTrayIconRegistrationStale(bool resetBackoff, bool scheduleRecovery)
         {
+            StopHoverFeedback();
+
             if (_isTrayIconRegistered)
             {
                 _isTrayIconRegistered = false;
@@ -390,13 +400,9 @@ namespace PowerDisplay.Helpers
 
         private void HandleTrayMouseMove()
         {
-            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
-            {
-                return;
-            }
-
             if (!GetCursorPos(out var cursor))
             {
+                StopHoverFeedback();
                 if (!_boundsFailureLogged)
                 {
                     Logger.LogWarning("[TrayWheel] GetCursorPos failed while arming tray hover");
@@ -411,6 +417,15 @@ namespace PowerDisplay.Helpers
                 now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
                 cached.Contains(cursor.X, cursor.Y))
             {
+                _feedbackIconBounds = cached;
+                ApplyFeedbackPresentation(_feedbackSession.StartHover(now), cached);
+                EnsureFeedbackPollTimer();
+
+                if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+                {
+                    return;
+                }
+
                 EnsureMouseWheelListener();
                 if (_mouseWheelListener?.IsArmed != true)
                 {
@@ -429,7 +444,19 @@ namespace PowerDisplay.Helpers
             if (!TryGetCurrentIconBounds(out var bounds) ||
                 !bounds.Contains(cursor.X, cursor.Y))
             {
+                StopHoverFeedback();
                 InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            _feedbackIconBounds = bounds;
+            ApplyFeedbackPresentation(_feedbackSession.StartHover(now), bounds);
+            EnsureFeedbackPollTimer();
+
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                _cachedBounds = bounds;
+                _boundsCacheTimestamp = now;
                 return;
             }
 
@@ -456,7 +483,33 @@ namespace PowerDisplay.Helpers
 
         private unsafe bool TryGetCurrentIconBounds(out TrayIconBounds bounds)
         {
+            if (!TryQueryTrayIconBounds(out bounds, out var result))
+            {
+                if (result < 0)
+                {
+                    MarkTrayIconRegistrationStale(resetBackoff: true, scheduleRecovery: true);
+                }
+                else if (_isTrayIconRegistered && _hwnd != 0 && _trayIconData is not null)
+                {
+                    if (!_boundsFailureLogged)
+                    {
+                        Logger.LogWarning(
+                            $"[TrayWheel] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
+                        _boundsFailureLogged = true;
+                    }
+                }
+
+                return false;
+            }
+
+            _boundsFailureLogged = false;
+            return true;
+        }
+
+        private unsafe bool TryQueryTrayIconBounds(out TrayIconBounds bounds, out int result)
+        {
             bounds = default;
+            result = 0;
             if (!_isTrayIconRegistered || _hwnd == 0 || _trayIconData is null)
             {
                 return false;
@@ -469,29 +522,174 @@ namespace PowerDisplay.Helpers
                 Id = MyNotifyId,
                 GuidItem = Guid.Empty,
             };
+            result = ShellNotifyIconGetRectNative(ref identifier, out var rect);
+            bounds = new TrayIconBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
+            return result >= 0 && bounds.IsValid;
+        }
 
-            var result = ShellNotifyIconGetRectNative(ref identifier, out var rect);
-            if (result < 0)
+        private void EnsureFeedbackPollTimer()
+        {
+            _feedbackPollTimer ??= _dispatcherQueue.CreateTimer();
+            _feedbackPollTimer.Interval = FeedbackPollInterval;
+            _feedbackPollTimer.IsRepeating = true;
+            _feedbackPollTimer.Tick -= OnFeedbackPollTimerTick;
+            _feedbackPollTimer.Tick += OnFeedbackPollTimerTick;
+            if (!_feedbackPollTimer.IsRunning)
             {
-                MarkTrayIconRegistrationStale(resetBackoff: true, scheduleRecovery: true);
-                return false;
+                _feedbackPollTimer.Start();
+            }
+        }
+
+        private void OnFeedbackPollTimerTick(DispatcherQueueTimer sender, object args)
+        {
+            if (!GetCursorPos(out var cursor) ||
+                !TryQueryTrayIconBounds(out var bounds, out _) ||
+                !bounds.Contains(cursor.X, cursor.Y))
+            {
+                StopHoverFeedback();
+                return;
             }
 
-            bounds = new TrayIconBounds(rect.Left, rect.Top, rect.Right, rect.Bottom);
-            if (!bounds.IsValid)
+            _feedbackIconBounds = bounds;
+            ApplyFeedbackPresentation(
+                _feedbackSession.Tick(Environment.TickCount64, pointerInside: true),
+                bounds);
+        }
+
+        private void ApplyFeedbackPresentation(
+            TrayWheelFeedbackSession.Presentation presentation,
+            TrayIconBounds bounds)
+        {
+            switch (presentation.Kind)
             {
-                if (!_boundsFailureLogged)
+                case TrayWheelFeedbackSession.PresentationKind.AppName:
+                    ShowFeedbackOverlay(GetString("AppName"), bounds);
+                    break;
+                case TrayWheelFeedbackSession.PresentationKind.Adjustment:
+                    if (!string.IsNullOrEmpty(presentation.Text))
+                    {
+                        ShowFeedbackOverlay(presentation.Text, bounds);
+                    }
+                    else
+                    {
+                        _feedbackWindow?.HideFeedback();
+                    }
+
+                    break;
+                default:
+                    _feedbackWindow?.HideFeedback();
+                    break;
+            }
+        }
+
+        private void ShowFeedbackOverlay(string text, TrayIconBounds bounds)
+        {
+            if (_feedbackWindowFailureLogged && _feedbackWindow is null)
+            {
+                return;
+            }
+
+            try
+            {
+                _feedbackWindow ??= new TrayWheelFeedbackWindow();
+                if (_feedbackWindow.ShowText(text, bounds))
                 {
-                    Logger.LogWarning(
-                        $"[TrayWheel] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
-                    _boundsFailureLogged = true;
+                    _feedbackWindowFailureLogged = false;
+                }
+                else
+                {
+                    _feedbackWindow.HideFeedback();
+                }
+            }
+            catch (Exception ex) when (
+                ex is System.ComponentModel.Win32Exception or
+                System.Runtime.InteropServices.COMException or
+                InvalidOperationException)
+            {
+                _feedbackWindow?.HideFeedback();
+                if (!_feedbackWindowFailureLogged)
+                {
+                    Logger.LogWarning($"[TrayFeedback] Unable to show overlay: {ex.Message}");
+                    _feedbackWindowFailureLogged = true;
+                }
+            }
+        }
+
+        internal void UpdateAdjustmentFeedback(TrayWheelAdjustmentFeedback? feedback)
+        {
+            var now = Environment.TickCount64;
+            TrayIconBounds bounds = default;
+            var pointerInside =
+                GetCursorPos(out var cursor) &&
+                TryQueryTrayIconBounds(out bounds, out _) &&
+                bounds.Contains(cursor.X, cursor.Y);
+            if (pointerInside)
+            {
+                _feedbackIconBounds = bounds;
+            }
+
+            if (!pointerInside)
+            {
+                StopHoverFeedback();
+                return;
+            }
+
+            if (feedback is null)
+            {
+                var presentation = _feedbackSession.ClearAdjustment(now, pointerInside: true);
+                if (_feedbackIconBounds is TrayIconBounds currentBounds)
+                {
+                    ApplyFeedbackPresentation(presentation, currentBounds);
+                }
+                else
+                {
+                    _feedbackWindow?.HideFeedback();
                 }
 
-                return false;
+                EnsureFeedbackPollTimer();
+                return;
             }
 
-            _boundsFailureLogged = false;
-            return true;
+            var templates = new TrayWheelFeedbackTemplates(
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryFormat"),
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryPluralFormat"),
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackAllFormat"),
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPercentageFormat"),
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackRangeFormat"),
+                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackListSeparator"));
+            var text = TrayWheelFeedbackFormatter.Format(
+                feedback,
+                templates,
+                CultureInfo.CurrentCulture);
+            if (text is null || !pointerInside || !_feedbackIconBounds.HasValue)
+            {
+                StopHoverFeedback();
+                return;
+            }
+
+            ApplyFeedbackPresentation(
+                _feedbackSession.ShowAdjustment(text, now),
+                _feedbackIconBounds.Value);
+            EnsureFeedbackPollTimer();
+        }
+
+        private void StopHoverFeedback()
+        {
+            _feedbackPollTimer?.Stop();
+            _feedbackSession.Stop();
+            _feedbackIconBounds = null;
+            _feedbackWindow?.HideFeedback();
+        }
+
+        private void DisposeFeedbackWindow()
+        {
+            StopHoverFeedback();
+            if (_feedbackWindow is not null)
+            {
+                _feedbackWindow.Dispose();
+                _feedbackWindow.Close();
+                _feedbackWindow = null;
+            }
         }
 
         private void OnWheelSampleBatch(TrayWheelSample[] samples)
