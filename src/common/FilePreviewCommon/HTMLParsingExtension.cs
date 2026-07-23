@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+
 using Markdig;
 using Markdig.Extensions.Figures;
 using Markdig.Extensions.Tables;
@@ -42,6 +46,155 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// Gets or sets path to directory containing markdown file.
         /// </summary>
         public string FilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the base path used for path validation and relative URL computation.
+        /// For local files this equals FilePath. For UNC paths this is the share root.
+        /// </summary>
+        public string? AllowedBasePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether local images should be rendered.
+        /// </summary>
+        public bool AllowLocalImages { get; set; }
+
+        private static bool IsLocalImage([NotNullWhen(true)] string? url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            // Reject any URI-like scheme (http:, https:, data:, javascript:, file:, ...).
+            // A colon is only permitted as part of a drive path like "C:\" or "C:/".
+            int colonIndex = url.IndexOf(':');
+            if (colonIndex >= 0)
+            {
+                bool isDrivePath = colonIndex == 1 && char.IsLetter(url[0]) && url.Length > 2 && (url[2] == '\\' || url[2] == '/');
+                if (!isDrivePath)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that a local image URL resolves to a path inside the allowed base path and
+        /// computes the corresponding virtual host URL. Returns false for remote URLs, URI schemes
+        /// (data:, javascript:, file:, ...), path traversal outside the base path and malformed paths.
+        /// </summary>
+        /// <param name="url">Image URL from the markdown document.</param>
+        /// <param name="markdownDirectory">Directory containing the markdown file; relative URLs resolve against it.</param>
+        /// <param name="allowedBasePath">Base path the resolved path must be contained in. Falls back to <paramref name="markdownDirectory"/> if empty.</param>
+        /// <param name="virtualUrl">The rewritten virtual host URL on success.</param>
+        /// <returns>True if the URL is a contained local image and <paramref name="virtualUrl"/> was set.</returns>
+        public static bool TryGetLocalImageVirtualUrl(string? url, string markdownDirectory, string? allowedBasePath, [NotNullWhen(true)] out string? virtualUrl)
+        {
+            virtualUrl = null;
+
+            if (!IsLocalImage(url))
+            {
+                return false;
+            }
+
+            try
+            {
+                string basePath = Path.GetFullPath(string.IsNullOrEmpty(allowedBasePath) ? markdownDirectory : allowedBasePath);
+                string resolvedPath = Path.GetFullPath(Path.Combine(markdownDirectory, url));
+                string relativePath = Path.GetRelativePath(basePath, resolvedPath);
+
+                if (relativePath == "." || relativePath == ".." ||
+                    relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+                    relativePath.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal) ||
+                    Path.IsPathRooted(relativePath))
+                {
+                    return false;
+                }
+
+                virtualUrl = "https://localmdimages/" + relativePath.Replace('\\', '/');
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Resolves a virtual host image request URL back to a file path and validates that it is
+        /// contained in the allowed base path. Used when serving the image bytes for a WebView2
+        /// resource request. Returns false for foreign hosts, empty paths, path traversal outside
+        /// the base path (including percent-encoded traversal) and malformed paths.
+        /// </summary>
+        /// <param name="requestUri">The request URL, expected on the localmdimages virtual host.</param>
+        /// <param name="allowedBasePath">Base path the resolved file must be contained in.</param>
+        /// <param name="resolvedPath">The validated absolute file path on success.</param>
+        /// <returns>True if the URL maps to a contained file path and <paramref name="resolvedPath"/> was set.</returns>
+        public static bool TryResolveVirtualUrl(string? requestUri, string? allowedBasePath, [NotNullWhen(true)] out string? resolvedPath)
+        {
+            resolvedPath = null;
+
+            if (string.IsNullOrEmpty(requestUri) || string.IsNullOrEmpty(allowedBasePath))
+            {
+                return false;
+            }
+
+            try
+            {
+                var uri = new Uri(requestUri);
+                if (!string.Equals(uri.Host, "localmdimages", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                string relativePath = Uri.UnescapeDataString(uri.AbsolutePath).TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+                if (relativePath.Length == 0)
+                {
+                    return false;
+                }
+
+                string basePath = Path.GetFullPath(allowedBasePath);
+                string fullPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
+                string containmentCheck = Path.GetRelativePath(basePath, fullPath);
+
+                if (containmentCheck == "." || containmentCheck == ".." ||
+                    containmentCheck.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal) ||
+                    containmentCheck.StartsWith(".." + Path.AltDirectorySeparatorChar, StringComparison.Ordinal) ||
+                    Path.IsPathRooted(containmentCheck))
+                {
+                    return false;
+                }
+
+                resolvedPath = fullPath;
+                return true;
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch (UriFormatException)
+            {
+                return false;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+            catch (NotSupportedException)
+            {
+                return false;
+            }
+        }
 
         /// <inheritdoc/>
         public void Setup(MarkdownPipelineBuilder pipeline)
@@ -92,9 +245,17 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     {
                         if (link.IsImage)
                         {
-                            link.Url = "#";
-                            link.GetAttributes().AddClass("img-fluid");
-                            imagesBlockedCallBack();
+                            if (AllowLocalImages && TryGetLocalImageVirtualUrl(link.Url, FilePath, AllowedBasePath, out string? virtualUrl))
+                            {
+                                link.Url = virtualUrl;
+                                link.GetAttributes().AddClass("img-fluid");
+                            }
+                            else
+                            {
+                                link.Url = "#";
+                                link.GetAttributes().AddClass("img-fluid");
+                                imagesBlockedCallBack();
+                            }
                         }
                     }
                 }

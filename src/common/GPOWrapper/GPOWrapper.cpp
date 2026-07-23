@@ -56,6 +56,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredMarkdownLocalImagesEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMarkdownLocalImagesEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredMonacoPreviewEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue());

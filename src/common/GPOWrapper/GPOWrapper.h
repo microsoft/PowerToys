@@ -20,6 +20,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
+        static GpoRuleConfigured GetConfiguredMarkdownLocalImagesEnabledValue();
         static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
         static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
         static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();

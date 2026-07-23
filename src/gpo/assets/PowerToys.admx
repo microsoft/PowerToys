@@ -30,6 +30,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_97_0" displayName="$(string.SUPPORTED_POWERTOYS_0_97_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_98_0" displayName="$(string.SUPPORTED_POWERTOYS_0_98_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_99_0" displayName="$(string.SUPPORTED_POWERTOYS_0_99_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -54,6 +55,9 @@
       <parentCategory ref="PowerToys" />
     </category>
     <category name="DeprecatedPolicies" displayName="$(string.DeprecatedPolicies)">
+      <parentCategory ref="PowerToys" />
+    </category>
+    <category name="FileExplorerPreview" displayName="$(string.FileExplorerPreview)">
       <parentCategory ref="PowerToys" />
     </category>
   </categories>
@@ -204,6 +208,16 @@
     <policy name="ConfigureEnabledUtilityFileExplorerMarkdownPreview" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownPreview)" explainText="$(string.ConfigureEnabledUtilityDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownPreview">
       <parentCategory ref="PowerToys" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_64_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="MarkdownAllowLocalImages" class="Both" displayName="$(string.MarkdownAllowLocalImages)" explainText="$(string.MarkdownAllowLocalImagesDescription)" key="Software\Policies\PowerToys" valueName="MarkdownAllowLocalImages">
+      <parentCategory ref="FileExplorerPreview" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_100_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

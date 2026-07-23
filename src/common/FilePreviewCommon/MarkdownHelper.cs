@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
+using System.Text.RegularExpressions;
 
 using Markdig;
 
@@ -25,13 +27,15 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// </summary>
         private static readonly string HtmlFooter = "</div></body></html>";
 
-        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack)
+        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack, bool allowLocalImages = false, string? allowedBasePath = null)
         {
             var htmlHeader = theme == "dark" ? HtmlDarkHeader : HtmlLightHeader;
 
             // Extension to modify markdown AST.
             HTMLParsingExtension extension = new HTMLParsingExtension(imagesBlockedCallBack);
             extension.FilePath = Path.GetDirectoryName(filePath) ?? string.Empty;
+            extension.AllowedBasePath = allowedBasePath ?? extension.FilePath;
+            extension.AllowLocalImages = allowLocalImages;
 
             // if you have a string with double space, some people view it as a new line.
             // while this is against spec, even GH supports this. Technically looks like GH just trims whitespace
@@ -45,6 +49,35 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
             MarkdownPipeline pipeline = pipelineBuilder.Build();
             string parsedMarkdown = Markdown.ToHtml(fileContent, pipeline);
+
+            if (allowLocalImages)
+            {
+                // Rewrite src attributes of raw HTML <img> tags with the same path validation as the
+                // Markdig AST layer. Markdown images were already rewritten there (to the virtual host
+                // URL or "#") and pass through unchanged; everything else is either validated and
+                // rewritten or blocked.
+                parsedMarkdown = Regex.Replace(
+                    parsedMarkdown,
+                    @"(<img\b[^>]*?\ssrc\s*=\s*"")([^""]+)("")",
+                    m =>
+                    {
+                        string src = m.Groups[2].Value;
+
+                        if (src == "#" || src.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return m.Value;
+                        }
+
+                        if (HTMLParsingExtension.TryGetLocalImageVirtualUrl(src, extension.FilePath, extension.AllowedBasePath, out string? virtualUrl))
+                        {
+                            return m.Groups[1].Value + virtualUrl + m.Groups[3].Value;
+                        }
+
+                        imagesBlockedCallBack();
+                        return m.Groups[1].Value + "#" + m.Groups[3].Value;
+                    },
+                    RegexOptions.IgnoreCase);
+            }
 
             string markdownHTML = $"{htmlHeader}{parsedMarkdown}{HtmlFooter}";
             return markdownHTML;

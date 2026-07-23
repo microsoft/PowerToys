@@ -125,6 +125,10 @@
     <value>The markdown could not be preview due to an internal error.</value>
     <comment>This text is displayed if markdown fails to preview</comment>
   </data>
+  <data name="RemoteImagesBlockedInfoText" xml:space="preserve">
+    <value>Some online images have been blocked. Only local and network images from the document's folder are shown.</value>
+    <comment>This text is displayed when local images are enabled but the document contains remote/online image URLs that were blocked.</comment>
+  </data>
   <data name="GpoDisabledErrorText" xml:space="preserve">
     <value>Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.</value>
     <comment>GPO stands for the Windows Group Policy Object feature.</comment>
