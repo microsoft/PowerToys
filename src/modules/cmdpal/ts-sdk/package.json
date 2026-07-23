@@ -1,0 +1,64 @@
+{
+  "name": "@microsoft/cmdpal-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for building PowerToys Command Palette extensions that run as isolated Node.js processes over JSON-RPC 2.0.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bootstrap": {
+      "types": "./dist/runtime/bootstrap.d.ts",
+      "default": "./dist/runtime/bootstrap.js"
+    }
+  },
+  "bin": {
+    "cmdpal-bootstrap": "./dist/runtime/bootstrap.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "clean": "node -e \"const{rmSync}=require('node:fs');rmSync('dist',{recursive:true,force:true})\"",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pretest": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "powertoys",
+    "command-palette",
+    "cmdpal",
+    "extension",
+    "jsonrpc"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.7.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.10.0",
+    "vitest": "^2.1.0"
+  }
+}

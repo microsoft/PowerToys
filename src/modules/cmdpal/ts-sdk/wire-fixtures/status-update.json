@@ -1,0 +1,12 @@
+{
+  "context": "extension",
+  "message": {
+    "Message": "Almost done",
+    "State": 1
+  },
+  "progress": {
+    "isIndeterminate": false,
+    "progressPercent": 80
+  },
+  "statusId": "status-1"
+}

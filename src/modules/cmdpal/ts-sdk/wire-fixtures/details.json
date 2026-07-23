@@ -1,0 +1,80 @@
+{
+  "body": "**Body** text",
+  "heroImage": {
+    "dark": {
+      "data": "aGVsbG8="
+    },
+    "light": {
+      "data": "aGVsbG8="
+    }
+  },
+  "metadata": [
+    {
+      "data": {
+        "tags": [
+          {
+            "background": {
+              "color": {
+                "a": 255,
+                "b": 215,
+                "g": 120,
+                "r": 0
+              },
+              "hasValue": true
+            },
+            "foreground": {
+              "color": {
+                "a": 255,
+                "b": 255,
+                "g": 255,
+                "r": 255
+              },
+              "hasValue": true
+            },
+            "text": "New",
+            "toolTip": "Recently added"
+          },
+          {
+            "background": {
+              "hasValue": false
+            },
+            "foreground": {
+              "hasValue": false
+            },
+            "text": "Beta"
+          }
+        ],
+        "type": "tags"
+      },
+      "key": "Tags"
+    },
+    {
+      "data": {
+        "link": "https://example.com",
+        "text": "Open",
+        "type": "link"
+      },
+      "key": "Link"
+    },
+    {
+      "data": {
+        "commands": [
+          {
+            "displayName": "Act",
+            "id": "act-1",
+            "name": "Act"
+          }
+        ],
+        "type": "commands"
+      },
+      "key": "Actions"
+    },
+    {
+      "data": {
+        "type": "separator"
+      },
+      "key": "Divider"
+    }
+  ],
+  "title": "Details title"
+}
