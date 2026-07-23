@@ -1,0 +1,108 @@
+PackageName: Anthropic.Claude
+Name: Claude
+WindowFilter: "Claude.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: Quick chat or search
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - K
+      - Name: Incognito chat
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - I
+      - Name: Toggle sidebar
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - .
+      - Name: Keyboard shortcuts
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - /
+      - Name: Settings
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - ','
+      - Name: Open Claude from anywhere
+        Recommended: true
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: true
+            Keys:
+              - "<Space>"
+
+  - SectionName: In chats
+    Properties:
+      - Name: Send message
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - '<Enter>'
+      - Name: New line in message
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: true
+            Alt: false
+            Keys:
+              - '<Enter>'
+      - Name: Toggle extended thinking
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: true
+            Alt: false
+            Keys:
+              - E
+      - Name: Upload file
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - U
+      - Name: Open in external editor
+        Shortcut:
+          - Win: false
+            Ctrl: true
+            Shift: false
+            Alt: false
+            Keys:
+              - G
+      - Name: Stop Claude's response
+        Shortcut:
+          - Win: false
+            Ctrl: false
+            Shift: false
+            Alt: false
+            Keys:
+              - '<Esc>'
