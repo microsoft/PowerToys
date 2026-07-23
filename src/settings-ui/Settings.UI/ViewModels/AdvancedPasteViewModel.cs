@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -131,6 +131,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PasteAsPlainTextShortcut,
                 AdvancedPasteUIShortcut,
                 PasteAsMarkdownShortcut,
+                PasteAsRichTextShortcut,
                 PasteAsJsonShortcut,
             };
 
@@ -460,6 +461,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings PasteAsRichTextShortcut
+        {
+            get => _advancedPasteSettings.Properties.PasteAsRichTextShortcut;
+            set
+            {
+                if (_advancedPasteSettings.Properties.PasteAsRichTextShortcut != value)
+                {
+                    _advancedPasteSettings.Properties.PasteAsRichTextShortcut = value ?? new HotkeySettings();
+                    OnPropertyChanged(nameof(IsConflictingCopyShortcut));
+                    OnPropertyChanged(nameof(PasteAsRichTextShortcut));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public HotkeySettings PasteAsJsonShortcut
         {
             get => _advancedPasteSettings.Properties.PasteAsJsonShortcut;
@@ -597,7 +613,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsConflictingCopyShortcut =>
             _customActions.Select(customAction => customAction.Shortcut)
-                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
+                          .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsRichTextShortcut, PasteAsJsonShortcut])
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
         public bool IsAdditionalActionConflictingCopyShortcut =>

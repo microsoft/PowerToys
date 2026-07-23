@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -148,6 +148,12 @@
   </data>
   <data name="Microsoft_plugin_command_name_shutdown" xml:space="preserve">
     <value>Shutdown</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_update_and_restart" xml:space="preserve">
+    <value>Update and restart</value>
+  </data>
+  <data name="Microsoft_plugin_command_name_update_and_shutdown" xml:space="preserve">
+    <value>Update and shut down</value>
   </data>
   <data name="Microsoft_plugin_ext_connection_details" xml:space="preserve">
     <value>Connection details</value>
@@ -326,6 +332,22 @@
   <data name="Microsoft_plugin_sys_shutdown_computer_confirmation" xml:space="preserve">
     <value>You are about to shut down this computer, are you sure?</value>
     <comment>This should align to the action in Windows of a shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_restart_computer" xml:space="preserve">
+    <value>Update and restart computer</value>
+    <comment>This should align to the action in Windows of updating and restarting your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_restart_computer_confirmation" xml:space="preserve">
+    <value>You are about to update and restart this computer. Are you sure?</value>
+    <comment>This should align to the action in Windows of updating and restarting your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_shutdown_computer" xml:space="preserve">
+    <value>Update and shut down computer</value>
+    <comment>This should align to the action in Windows of updating and shutting down your computer.</comment>
+  </data>
+  <data name="Microsoft_plugin_sys_update_and_shutdown_computer_confirmation" xml:space="preserve">
+    <value>You are about to update and shut down this computer, are you sure?</value>
+    <comment>This should align to the action in Windows of updating and shutting down your computer.</comment>
   </data>
   <data name="Microsoft_plugin_sys_sign_out" xml:space="preserve">
     <value>Sign out of computer</value>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -371,5 +371,11 @@
   <data name="FoundryLocal_UnableToLoadModel" xml:space="preserve">
     <value>Unable to load Foundry Local model: {0}</value>
     <comment>{0} is the model identifier. Do not translate {0}.</comment>
+  </data>
+  <data name="PasteAsRichText" xml:space="preserve">
+    <value>Paste as Rich Text</value>
+  </data>
+  <data name="PasteAsRichText_Description" xml:space="preserve">
+    <value>Format the copied Markdown or plain text into rich text.</value>
   </data>
 </root>

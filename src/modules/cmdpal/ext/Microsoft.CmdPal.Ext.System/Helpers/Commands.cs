@@ -98,6 +98,32 @@ internal static class Commands
             },
         });
 
+        // Add update and restart/shutdown if there are updates pending
+        if (IsUpdatePending())
+        {
+            results.AddRange(new[]
+            {
+                new ListItem(
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_update_and_shutdown, confirmCommands, Resources.Microsoft_plugin_sys_update_and_shutdown_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/s /hybrid /t 0", runWithHiddenWindow: true))
+                    {
+                        Id = "com.microsoft.cmdpal.builtin.system.update_and_shutdown",
+                    })
+                {
+                    Title = Resources.Microsoft_plugin_sys_update_and_shutdown_computer,
+                    Icon = Icons.ShutdownIcon,
+                },
+                new ListItem(
+                    new ExecuteCommandConfirmation(Resources.Microsoft_plugin_command_name_update_and_restart, confirmCommands, Resources.Microsoft_plugin_sys_update_and_restart_computer_confirmation, () => OpenInShellHelper.OpenInShell("shutdown", "/g /t 0", runWithHiddenWindow: true))
+                    {
+                        Id = "com.microsoft.cmdpal.builtin.system.update_and_restart",
+                    })
+                {
+                    Title = Resources.Microsoft_plugin_sys_update_and_restart_computer,
+                    Icon = Icons.RestartIcon,
+                },
+            });
+        }
+
         // Show Recycle Bin results based on setting.
         if (!hideEmptyRecycleBin)
         {
@@ -253,5 +279,39 @@ internal static class Commands
         list.AddRange(networkConnectionResults);
 
         return list;
+    }
+
+    private static bool IsUpdatePending()
+    {
+        try
+        {
+            // Check Windows Update key
+            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"))
+            {
+                if (key != null)
+                {
+                    return true;
+                }
+            }
+
+            // Check Component Based Servicing key
+            using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"))
+            {
+                if (key != null)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (System.Security.SecurityException)
+        {
+            // Ignore access denied, standard behavior.
+        }
+        catch (Exception)
+        {
+            // Default to not showing update items on error.
+        }
+
+        return false;
     }
 }

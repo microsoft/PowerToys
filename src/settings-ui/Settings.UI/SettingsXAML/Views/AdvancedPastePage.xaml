@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.AdvancedPastePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -207,6 +207,15 @@
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
                                 AllowDisable="True"
                                 HotkeySettings="{x:Bind Path=ViewModel.PasteAsMarkdownShortcut, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            Name="PasteAsRichTextShortcut"
+                            x:Uid="PasteAsRichText_Shortcut"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}">
+                            <controls:ShortcutControl
+                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AllowDisable="True"
+                                HotkeySettings="{x:Bind Path=ViewModel.PasteAsRichTextShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard
                             Name="PasteAsJsonShortcut"
