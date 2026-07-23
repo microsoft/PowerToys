@@ -90,7 +90,23 @@ function asFilterablePage(command: ICommand): FilterablePage | null {
 /** Handles the extension side of the Command Palette JSON-RPC protocol. */
 export class ExtensionRuntime {
   private provider: ICommandProvider | null = null;
-  private readonly providerCommands = new Map<string, ICommand>();
+  /**
+   * Commands for the current top-level generation. Replaced wholesale each time
+   * the host requests top-level commands, so ids that disappear after a refresh
+   * are released rather than accumulating.
+   */
+  private providerScope = new Map<string, ICommand>();
+  /**
+   * Commands for the current fallback generation. Replaced wholesale each time
+   * the host requests fallback commands.
+   */
+  private fallbackScope = new Map<string, ICommand>();
+  /**
+   * Commands resolved on demand (a `provider/getCommand` result, the settings
+   * page, or a nested command carried by a command result). Keyed by id, so
+   * re-resolving the same id overwrites rather than growing the registry.
+   */
+  private readonly resolved = new Map<string, ICommand>();
   private readonly pageScopes = new Map<string, PageScope>();
   private readonly fallbacks = new Map<string, IFallbackCommandItem>();
   private readonly serializer: WireSerializer;
@@ -110,10 +126,12 @@ export class ExtensionRuntime {
    * Where the serializer registers each command it encounters. Reassigned for
    * the duration of a page serialization so page-scoped commands land in that
    * page's scope; the server processes one message at a time, so this mutable
-   * routing is race-free.
+   * routing is race-free. The default target is the on-demand
+   * {@link ExtensionRuntime.resolved} map, which holds nested commands emitted
+   * while serializing a command result.
    */
   private sink: (command: ICommand) => void = (command) => {
-    this.providerCommands.set(command.id, command);
+    this.resolved.set(command.id, command);
   };
 
   constructor(options: ExtensionRuntimeOptions) {
@@ -290,7 +308,9 @@ export class ExtensionRuntime {
       process.stderr.write(`cmdpal-sdk: provider disposal failed: ${describeError(error)}\n`);
     } finally {
       this.provider = null;
-      this.providerCommands.clear();
+      this.providerScope.clear();
+      this.fallbackScope.clear();
+      this.resolved.clear();
       this.pageScopes.clear();
       this.fallbacks.clear();
       this.onDispose?.();
@@ -298,7 +318,22 @@ export class ExtensionRuntime {
   }
 
   private handleInitialize(id: number | string, params: Record<string, unknown>): void {
-    this.hostProtocolVersion = numberField(params, 'protocolVersion');
+    const rawProtocolVersion = params.protocolVersion;
+    if (rawProtocolVersion !== undefined && !isValidProtocolVersion(rawProtocolVersion)) {
+      // A present-but-malformed version (wrong type or a non-integer number) is
+      // a protocol violation, distinct from an absent version, which is legacy.
+      const message = `Invalid protocol version: expected an integer, received ${describeValue(
+        rawProtocolVersion,
+      )}.`;
+      this.initState = 'failed';
+      this.initError = { code: JsonRpcErrorCode.InvalidRequest, message };
+      this.reportFatal?.(1);
+      this.respondError(id, JsonRpcErrorCode.InvalidRequest, message);
+      return;
+    }
+
+    this.hostProtocolVersion =
+      rawProtocolVersion === undefined ? undefined : (rawProtocolVersion as number);
     this.hostVersion = stringField(params, 'hostVersion');
 
     if (!isProtocolCompatible(this.hostProtocolVersion)) {
@@ -356,7 +391,10 @@ export class ExtensionRuntime {
       return;
     }
     const items = await provider.topLevelCommands();
-    const serialized = await this.withProviderSink(() => this.serializer.commandItems(items));
+    const scope = new Map<string, ICommand>();
+    const serialized = await this.withMapSink(scope, () => this.serializer.commandItems(items));
+    // Replace the previous generation, releasing commands that are gone.
+    this.providerScope = scope;
     this.respond(id, serialized);
   }
 
@@ -371,29 +409,36 @@ export class ExtensionRuntime {
       this.respond(id, null);
       return;
     }
+    const scope = new Map<string, ICommand>();
+    this.fallbacks.clear();
     for (const item of items) {
       this.fallbacks.set(item.command.id, item);
     }
-    const serialized = await this.withProviderSink(() => this.serializer.commandItems(items));
+    const serialized = await this.withMapSink(scope, () => this.serializer.commandItems(items));
+    // Replace the previous fallback generation, releasing commands that are gone.
+    this.fallbackScope = scope;
     this.respond(id, serialized);
   }
 
   private async getCommand(id: number | string, commandId: string): Promise<void> {
     const command = await this.resolveCommand(commandId);
     const serialized = command
-      ? await this.withProviderSink(() => this.serializer.command(command))
+      ? await this.withMapSink(this.resolved, () => this.serializer.command(command))
       : null;
     this.respond(id, serialized);
   }
 
   private getSettings(id: number | string): void {
     const settings = this.provider?.settings ?? null;
-    if (!settings?.settingsPage) {
+    const page = settings?.settingsPage;
+    if (!page) {
       this.respond(id, null);
       return;
     }
-    this.registerProviderCommand(settings.settingsPage);
-    this.respond(id, { id: settings.settingsPage.id });
+    // Serialize the full settings page (not just its id) so the host can render
+    // it without a second fetch. `serializer.command` registers the page via the
+    // active sink, so a later content/form request resolves it.
+    this.respond(id, this.serializer.command(page));
   }
 
   private async invokeCommand(id: number | string, commandId: string): Promise<void> {
@@ -415,13 +460,13 @@ export class ExtensionRuntime {
     const command = await this.resolveCommand(pageId);
     const page = command ? asListPage(command) : null;
     if (!page) {
-      this.respond(id, { items: [] });
+      this.respond(id, { items: [], hasMoreItems: false });
       return;
     }
     const items = await page.getItems();
     const scope = this.beginPageScope(pageId);
     const serialized = await this.withScopeSink(scope, () => this.serializer.listItems(items));
-    this.respond(id, { items: serialized });
+    this.respond(id, { items: serialized, hasMoreItems: page.hasMoreItems ?? false });
   }
 
   private async setSearchText(
@@ -449,10 +494,19 @@ export class ExtensionRuntime {
   private async loadMore(id: number | string, pageId: string): Promise<void> {
     const command = await this.resolveCommand(pageId);
     const page = command ? asListPage(command) : null;
-    if (page?.loadMore) {
+    if (!page) {
+      this.respond(id, { items: [], hasMoreItems: false });
+      return;
+    }
+    if (page.loadMore) {
       await page.loadMore();
     }
-    this.respond(id, null);
+    // Re-serialize the page's current items so the host receives the appended
+    // page as a continuation, along with whether further pages remain.
+    const items = await page.getItems();
+    const scope = this.beginPageScope(pageId);
+    const serialized = await this.withScopeSink(scope, () => this.serializer.listItems(items));
+    this.respond(id, { items: serialized, hasMoreItems: page.hasMoreItems ?? false });
   }
 
   private async getContent(id: number | string, pageId: string): Promise<void> {
@@ -548,17 +602,18 @@ export class ExtensionRuntime {
     }
     const commands = await provider.topLevelCommands();
     for (const item of commands) {
-      this.registerProviderCommand(item.command);
+      this.providerScope.set(item.command.id, item.command);
     }
     const fallbacks = (await provider.fallbackCommands?.()) ?? null;
     if (fallbacks) {
       for (const item of fallbacks) {
-        this.registerProviderCommand(item.command);
+        this.fallbackScope.set(item.command.id, item.command);
         this.fallbacks.set(item.command.id, item);
       }
     }
     if (provider.settings?.settingsPage) {
-      this.registerProviderCommand(provider.settings.settingsPage);
+      const page = provider.settings.settingsPage;
+      this.resolved.set(page.id, page);
     }
   }
 
@@ -573,13 +628,12 @@ export class ExtensionRuntime {
     return scope;
   }
 
-  private registerProviderCommand(command: ICommand): void {
-    this.providerCommands.set(command.id, command);
-  }
-
-  private async withProviderSink<T>(produce: () => T | Promise<T>): Promise<T> {
+  private async withMapSink<T>(
+    target: Map<string, ICommand>,
+    produce: () => T | Promise<T>,
+  ): Promise<T> {
     return this.withSink((command) => {
-      this.providerCommands.set(command.id, command);
+      target.set(command.id, command);
     }, produce);
   }
 
@@ -622,24 +676,29 @@ export class ExtensionRuntime {
   }
 
   private async resolveCommand(commandId: string): Promise<ICommand | null> {
-    const cached = this.providerCommands.get(commandId);
-    if (cached) {
-      return cached;
-    }
-    const scoped = this.findScopedCommand(commandId);
-    if (scoped) {
-      return scoped;
+    const direct = this.lookupCommand(commandId);
+    if (direct) {
+      return direct;
     }
     const command = (await this.provider?.getCommand?.(commandId)) ?? null;
     if (command) {
-      this.registerProviderCommand(command);
+      this.resolved.set(command.id, command);
       return command;
     }
     if (!this.primed) {
       await this.primeCaches();
-      return this.providerCommands.get(commandId) ?? this.findScopedCommand(commandId);
+      return this.lookupCommand(commandId);
     }
     return null;
+  }
+
+  private lookupCommand(commandId: string): ICommand | null {
+    return (
+      this.providerScope.get(commandId) ??
+      this.fallbackScope.get(commandId) ??
+      this.resolved.get(commandId) ??
+      this.findScopedCommand(commandId)
+    );
   }
 
   private findScopedCommand(commandId: string): ICommand | null {
@@ -680,7 +739,15 @@ function createFormCollector(scope: PageScope): FormCollector {
 }
 
 function withTimeout(work: Promise<void>, timeoutMs: number): Promise<void> {
-  if (!(timeoutMs > 0) || !Number.isFinite(timeoutMs)) {
+  if (!(timeoutMs > 0)) {
+    // A non-positive bound means dispose immediately: do not await the work.
+    // Swallow any later rejection so it does not surface as an unhandled
+    // rejection after the caller has already moved on.
+    void work.catch(() => undefined);
+    return Promise.resolve();
+  }
+  if (!Number.isFinite(timeoutMs)) {
+    // An explicit, non-finite bound (Infinity) means wait without a deadline.
     return work;
   }
   return new Promise<void>((resolve, reject) => {
@@ -703,6 +770,20 @@ function withTimeout(work: Promise<void>, timeoutMs: number): Promise<void> {
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function isValidProtocolVersion(value: unknown): boolean {
+  return typeof value === 'number' && Number.isInteger(value);
+}
+
+function describeValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return `"${value}"`;
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+  return typeof value;
 }
 
 // Re-exported so consumers importing the runtime keep access to the result type.

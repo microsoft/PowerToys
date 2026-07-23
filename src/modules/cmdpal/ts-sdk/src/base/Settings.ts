@@ -39,6 +39,8 @@ export class ToggleSetting {
   value: boolean;
   /** Whether the user must set this value. */
   isRequired?: boolean;
+  /** Message shown when a required value is missing. */
+  errorMessage?: string;
 
   /**
    * Creates a toggle setting.
@@ -72,6 +74,8 @@ export class TextSetting {
   multiline?: boolean;
   /** Whether the user must set this value. */
   isRequired?: boolean;
+  /** Message shown when a required value is missing. */
+  errorMessage?: string;
 
   /**
    * Creates a text setting.
@@ -103,6 +107,8 @@ export class ChoiceSetSetting {
   choices: SettingChoice[];
   /** Whether the user must set this value. */
   isRequired?: boolean;
+  /** Message shown when a required value is missing. */
+  errorMessage?: string;
 
   /**
    * Creates a choice set setting.
@@ -262,24 +268,28 @@ export class Settings implements ICommandSettings {
       }
 
       if (setting instanceof ToggleSetting) {
-        body.push({
+        const input: Record<string, unknown> = {
           type: 'Input.Toggle',
           id: setting.key,
           title: '',
           value: String(setting.value),
           valueOn: 'true',
           valueOff: 'false',
-        });
+        };
+        applyRequired(input, setting);
+        body.push(input);
       } else if (setting instanceof TextSetting) {
-        body.push({
+        const input: Record<string, unknown> = {
           type: 'Input.Text',
           id: setting.key,
           placeholder: setting.placeholder ?? '',
           value: setting.value,
           isMultiline: setting.multiline ?? false,
-        });
+        };
+        applyRequired(input, setting);
+        body.push(input);
       } else {
-        body.push({
+        const input: Record<string, unknown> = {
           type: 'Input.ChoiceSet',
           id: setting.key,
           value: setting.value,
@@ -287,7 +297,9 @@ export class Settings implements ICommandSettings {
             title: choice.title,
             value: choice.value,
           })),
-        });
+        };
+        applyRequired(input, setting);
+        body.push(input);
       }
     }
 
@@ -338,6 +350,15 @@ class SettingsPage implements IContentPage {
       },
     };
     return [form];
+  }
+}
+
+function applyRequired(input: Record<string, unknown>, setting: AnySetting): void {
+  if (setting.isRequired) {
+    input.isRequired = true;
+    if (setting.errorMessage !== undefined) {
+      input.errorMessage = setting.errorMessage;
+    }
   }
 }
 
