@@ -186,6 +186,34 @@
   <data name="BUGREPORT_SUCCESS" xml:space="preserve">
     <value>Bug report .zip file has been created on your Desktop.</value>
   </data>
+  <data name="BUGREPORT_DIALOG_TITLE" xml:space="preserve">
+    <value>PowerToys Bug Report</value>
+  </data>
+  <data name="BUGREPORT_GENERATING" xml:space="preserve">
+    <value>Generating bug report</value>
+    <comment>Shown while the bug report is being created. A few animated dots are appended at runtime.</comment>
+  </data>
+  <data name="BUGREPORT_GENERATING_HINT" xml:space="preserve">
+    <value>Collecting logs and diagnostics. This can take up to a minute.</value>
+  </data>
+  <data name="BUGREPORT_DONE_HEADER" xml:space="preserve">
+    <value>Your bug report is ready.</value>
+  </data>
+  <data name="BUGREPORT_DONE_HINT" xml:space="preserve">
+    <value>After the GitHub issue page opens, drag the highlighted .zip file into the report to attach it.</value>
+  </data>
+  <data name="BUGREPORT_FAILED" xml:space="preserve">
+    <value>Could not create the bug report. Please try again.</value>
+  </data>
+  <data name="BUGREPORT_OPEN_FOLDER" xml:space="preserve">
+    <value>Open folder</value>
+  </data>
+  <data name="BUGREPORT_CREATE_ISSUE" xml:space="preserve">
+    <value>Report on GitHub</value>
+  </data>
+  <data name="BUGREPORT_CLOSE" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="PT_VERSION_CHANGE_ASK_FOR_COMPUTER_RESTART" xml:space="preserve">
     <value>A new PowerToys version has been installed. Please restart the computer, when possible, to fully reload File Explorer extensions.</value>
     <comment>File Explorer refers to the Windows File Explorer application.</comment>
