@@ -5,8 +5,12 @@
 | Parent issue | [microsoft/PowerToys#49410](https://github.com/microsoft/PowerToys/issues/49410) |
 | Pull request | [microsoft/PowerToys#49446](https://github.com/microsoft/PowerToys/pull/49446) |
 | Parent design | `docs/superpowers/specs/2026-07-21-issue-49410-design.md` |
-| Status | Approved design amendment |
+| Status | Superseded after native-tooltip go/no-go failure |
 | Date | 2026-07-22 |
+
+> Superseded by `2026-07-22-powerdisplay-tray-feedback-overlay-design.md`. Runtime probing proved
+> that modern overflow UI has no classic `SysPager/ToolbarWindow32` tooltip HWND and does not
+> refresh visible tooltip text after `NIM_MODIFY` during the same hover.
 
 ## Summary
 
