@@ -69,6 +69,7 @@
                         Text="{Binding ColorText}" />
                     <TextBlock
                         x:Name="ColorNameTextBlock"
+                        AutomationProperties.AccessibilityView="Raw"
                         Style="{StaticResource CaptionTextBlockStyle}"
                         Text="{Binding ColorName}"
                         Visibility="{Binding ShowColorName, Converter={StaticResource BoolToVisibilityConverter}}" />

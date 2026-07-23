@@ -11,7 +11,7 @@ namespace Microsoft.ColorPicker.UITests;
 
 /// <summary>
 /// Full end-to-end Color Picker scenario, driven entirely through the Settings UI:
-///   1. From the Settings app, navigate to the Color Picker page via the utilities stack.
+///   1. From the Settings app, expand System Tools and navigate to the Color Picker page.
 ///   2. On the page, toggle the module OFF and verify <c>PowerToys.ColorPickerUI</c> exits.
 ///   3. Toggle it back ON and verify <c>PowerToys.ColorPickerUI</c> respawns.
 ///   4. Read the activation shortcut from the page's <c>ShortcutControl</c> (the EditButton
@@ -34,9 +34,123 @@ namespace Microsoft.ColorPicker.UITests;
 [TestClass]
 public class ColorPickerEndToEndTests : UITestBase
 {
+    // Enum wire values used by the settings schema: OpenColorPicker = 1 and
+    // PickColorThenEditor = 0. The fixed shortcut keeps the Runner and UI test in sync.
+    private const string DeterministicColorPickerSettings = """
+        {
+          "name": "ColorPicker",
+          "version": "2.1",
+          "properties": {
+            "ActivationShortcut": {
+              "win": true,
+              "ctrl": false,
+              "alt": false,
+              "shift": true,
+              "code": 67,
+              "key": ""
+            },
+            "copiedcolorrepresentation": "HEX",
+            "activationaction": 1,
+            "primaryclickaction": 0,
+            "colorhistorylimit": 20,
+            "visiblecolorformats": {
+              "HEX": {
+                "Key": true,
+                "Value": "%Rex%Grx%Blx"
+              }
+            }
+          }
+        }
+        """;
+
+    private static readonly string ColorPickerSettingsDirectory = Path.Combine(
+        SettingsConfigHelper.PowerToysSettingsRoot,
+        "ColorPicker");
+
+    private static readonly string ColorPickerSettingsPath = Path.Combine(
+        ColorPickerSettingsDirectory,
+        "settings.json");
+
+    private static readonly string ColorPickerHistoryPath = Path.Combine(
+        ColorPickerSettingsDirectory,
+        "colorHistory.json");
+
+    private static readonly string[] EnabledModules = ["ColorPicker"];
+
+    private static byte[]? originalSettingsContent;
+    private static byte[]? originalHistoryContent;
+    private static bool snapshotsCaptured;
+
     public ColorPickerEndToEndTests()
-        : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "ColorPicker" })
+        : base(PowerToysModule.PowerToysSettings, enableModules: EnabledModules)
     {
+    }
+
+    [ClassInitialize]
+    public static void PrepareColorPickerState(TestContext testContext)
+    {
+        ArgumentNullException.ThrowIfNull(testContext);
+        StopPowerToysProcesses();
+
+        originalSettingsContent = ReadFileIfPresent(ColorPickerSettingsPath);
+        originalHistoryContent = ReadFileIfPresent(ColorPickerHistoryPath);
+        snapshotsCaptured = true;
+
+        try
+        {
+            Directory.CreateDirectory(ColorPickerSettingsDirectory);
+            File.WriteAllText(ColorPickerSettingsPath, DeterministicColorPickerSettings);
+            File.WriteAllText(ColorPickerHistoryPath, "[]");
+        }
+        catch (Exception setupError)
+        {
+            try
+            {
+                RestoreOriginalColorPickerFiles();
+            }
+            catch (Exception restoreError)
+            {
+                throw new AggregateException(
+                    "Could not prepare or restore the Color Picker test state.",
+                    setupError,
+                    restoreError);
+            }
+
+            throw;
+        }
+    }
+
+    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    public static void RestoreColorPickerState()
+    {
+        if (!snapshotsCaptured)
+        {
+            return;
+        }
+
+        Exception? cleanupError = null;
+        try
+        {
+            StopPowerToysProcesses();
+        }
+        catch (Exception ex)
+        {
+            cleanupError = ex;
+        }
+
+        try
+        {
+            RestoreOriginalColorPickerFiles();
+        }
+        catch (Exception ex)
+        {
+            cleanupError = cleanupError is null ? ex : new AggregateException(cleanupError, ex);
+        }
+
+        if (cleanupError is not null)
+        {
+            throw new IOException("Could not clean up the Color Picker test state.", cleanupError);
+        }
     }
 
     [TestMethod]
@@ -60,41 +174,19 @@ public class ColorPickerEndToEndTests : UITestBase
 
     private void RunTest()
     {
-        // -- 1. Navigate via the utilities stack on the right of the dashboard ----------------
-        // The Dashboard's right-side ModuleList renders each utility as a clickable SettingsCard
-        // whose header is a TextBlock with the module's Label (e.g. "Color Picker"). The
-        // SettingsCard itself isn't surfaced by name "Color Picker" in winappcli's search — only
-        // its inner TextBlock label is — and the TextBlock has no InvokePattern (the click is
-        // handled by the SettingsCard's OnSettingsCardClick).
-        //
-        // A "Color Picker" search returns 4 elements: the Quick-Access tile (Button) and its
-        // label (TextBlock with invokableAncestor) on the left, plus the utility-stack label
-        // (TextBlock) and ToggleSwitch on the right. We pick the rightmost TextBlock (largest
-        // X coordinate) — that's the utility-stack label — and mouse-click it (winapp ui click
-        // uses real mouse simulation, which triggers the ancestor SettingsCard's click).
-        var matches = Session.FindAll<Element>(By.Name("Color Picker"));
-        TestContext.WriteLine($"'Color Picker' search returned {matches.Count} elements:");
-        foreach (var m in matches)
+        // -- 1. Navigate through the stable NavigationView automation contract ----------------
+        // System Tools is collapsed by default, so expand it only when Color Picker is not yet
+        // present in the UIA tree. These IDs are independent of display text and dashboard layout.
+        if (!Session.Has(By.AccessibilityId("ColorPickerNavItem"), timeoutMS: 500))
         {
-            TestContext.WriteLine($"  [{m.ControlType,-10}] class='{m.ClassName}' at ({m.X},{m.Y}) {m.Width}x{m.Height} sel='{m.Selector}'");
+            Find<NavigationViewItem>(By.AccessibilityId("SystemToolsNavItem"), timeoutMS: 5_000).Click(msPostAction: 500);
         }
 
-        var utilityItem = matches
-            .Where(m => m.ClassName.Equals("TextBlock", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(m => m.X)
-            .FirstOrDefault();
-        Assert.IsNotNull(
-            utilityItem,
-            "Could not find a 'Color Picker' TextBlock to click. Is the dashboard visible? See element dump above.");
-        TestContext.WriteLine($"Clicking utility-stack 'Color Picker' TextBlock at x={utilityItem!.X}, y={utilityItem.Y}");
-        utilityItem.MouseClick(msPostAction: 800);
-        TestContext.WriteLine("Navigated to Color Picker page (clicked utility-stack item).");
+        Find<NavigationViewItem>(By.AccessibilityId("ColorPickerNavItem"), timeoutMS: 5_000).Click(msPostAction: 800);
+        TestContext.WriteLine("Navigated to the Color Picker settings page.");
 
         // -- 2. Find the page-level enable toggle ---------------------------------------------
-        // After navigation, the dashboard is gone and the page's enable toggle is the only
-        // "Color Picker" ToggleSwitch in the tree. The ToggleSwitch wrapper pins
-        // ClassName="ToggleSwitch" so the search is unambiguous.
-        var toggle = Find<ToggleSwitch>(By.Name("Color Picker"));
+        var toggle = Find<ToggleSwitch>(By.AccessibilityId("Toggle_ColorPicker"), timeoutMS: 5_000);
         var initialIsOn = toggle.IsOn;
         TestContext.WriteLine($"Initial toggle state: IsOn={initialIsOn}");
 
@@ -308,10 +400,12 @@ public class ColorPickerEndToEndTests : UITestBase
             TestContext.WriteLine("Sent left-click to capture color.");
 
             var capturedColor = ClipboardHelper.WaitForText(ignoredValue: string.Empty, timeoutMS: 3_000);
+            const string captureFailureMessage =
+                "Nothing was written to the clipboard within 3s after the click. " +
+                "Did the picker actually capture? (Check that left-click is mapped to a 'PickColor' action.)";
             Assert.IsFalse(
                 string.IsNullOrEmpty(capturedColor),
-                "Nothing was written to the clipboard within 3s after the click. " +
-                "Did the picker actually capture? (Check that left-click is mapped to a 'PickColor' action.)");
+                captureFailureMessage);
             TestContext.WriteLine($"Captured color (clipboard): '{capturedColor}'");
 
             // Cross-check: the clipboard value should be the same HEX the overlay was showing.
@@ -452,7 +546,20 @@ public class ColorPickerEndToEndTests : UITestBase
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
         while (DateTime.UtcNow < deadline)
         {
-            var running = Process.GetProcessesByName(name).Length > 0;
+            var processes = Process.GetProcessesByName(name);
+            bool running;
+            try
+            {
+                running = processes.Length > 0;
+            }
+            finally
+            {
+                foreach (Process process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+
             if (running == expected)
             {
                 return true;
@@ -462,6 +569,100 @@ public class ColorPickerEndToEndTests : UITestBase
         }
 
         return false;
+    }
+
+    private static void StopPowerToysProcesses()
+    {
+        string[] processNames =
+        {
+            "PowerToys",
+            "PowerToys.Settings",
+            "PowerToys.ColorPickerUI",
+        };
+
+        foreach (string processName in processNames)
+        {
+            WindowControl.TryKillProcessByName(processName);
+        }
+
+        foreach (string processName in processNames)
+        {
+            if (!WaitForProcess(processName, expected: false, timeoutMS: 5_000))
+            {
+                throw new InvalidOperationException($"Could not stop '{processName}' before changing the Color Picker test state.");
+            }
+        }
+    }
+
+    private static byte[]? ReadFileIfPresent(string path)
+    {
+        return File.Exists(path) ? File.ReadAllBytes(path) : null;
+    }
+
+    private static void RestoreOriginalColorPickerFiles()
+    {
+        if (!snapshotsCaptured)
+        {
+            return;
+        }
+
+        Exception? restoreError = null;
+        try
+        {
+            RestoreFile(ColorPickerSettingsPath, originalSettingsContent);
+        }
+        catch (Exception ex)
+        {
+            restoreError = ex;
+        }
+
+        try
+        {
+            RestoreFile(ColorPickerHistoryPath, originalHistoryContent);
+        }
+        catch (Exception ex)
+        {
+            restoreError = restoreError is null ? ex : new AggregateException(restoreError, ex);
+        }
+
+        if (restoreError is not null)
+        {
+            throw new IOException("Could not restore the original Color Picker test files.", restoreError);
+        }
+
+        snapshotsCaptured = false;
+        originalSettingsContent = null;
+        originalHistoryContent = null;
+    }
+
+    private static void RestoreFile(string path, byte[]? originalContent)
+    {
+        const int maxAttempts = 5;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                if (originalContent is null)
+                {
+                    File.Delete(path);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                    File.WriteAllBytes(path, originalContent);
+                }
+
+                return;
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100);
+            }
+            catch (UnauthorizedAccessException) when (attempt < maxAttempts)
+            {
+                Thread.Sleep(100);
+            }
+        }
     }
 
     /// <summary>
