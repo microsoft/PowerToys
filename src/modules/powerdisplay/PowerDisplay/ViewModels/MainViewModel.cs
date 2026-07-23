@@ -104,7 +104,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _stateManager = new MonitorStateManager();
 
         // Initialize the monitor manager
-        _monitorManager = new MonitorManager();
+        _monitorManager = new MonitorManager(_stateManager);
 
         // Load UI display settings (profile switcher, identify button, color temp switcher)
         LoadUIDisplaySettings();
