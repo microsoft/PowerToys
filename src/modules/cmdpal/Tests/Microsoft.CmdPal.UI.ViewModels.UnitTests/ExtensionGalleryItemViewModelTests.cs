@@ -691,7 +691,13 @@ public class ExtensionGalleryItemViewModelTests
                 new GalleryInstallSource
                 {
                     Type = "jsonrpc",
-                    Npm = new GalleryNpmPackage { Package = "@contoso/sample", Registry = "https://registry.example.com" },
+                    Npm = new GalleryNpmPackage
+                    {
+                        Package = "@contoso/sample",
+                        Version = "1.2.3",
+                        Integrity = "sha512-abc123==",
+                        Registry = "https://registry.example.com",
+                    },
                 },
             ],
         };
@@ -700,6 +706,8 @@ public class ExtensionGalleryItemViewModelTests
 
         Assert.IsTrue(viewModel.HasJsonRpcSource);
         Assert.AreEqual("@contoso/sample", viewModel.JsonRpcPackageId);
+        Assert.AreEqual("1.2.3", viewModel.JsonRpcVersion);
+        Assert.AreEqual("sha512-abc123==", viewModel.JsonRpcIntegrity);
         Assert.AreEqual("https://registry.example.com", viewModel.JsonRpcRegistry);
         Assert.IsTrue(viewModel.Sources.Any(s => s.Kind == "jsonrpc"));
     }
@@ -753,13 +761,13 @@ public class ExtensionGalleryItemViewModelTests
     {
         var viewModel = CreateJsonRpcViewModel(out var installer);
         installer
-            .Setup(x => x.InstallAsync("sample-js-extension", "@contoso/sample", "https://registry.example.com", It.IsAny<CancellationToken>()))
+            .Setup(x => x.InstallAsync("sample-js-extension", "@contoso/sample", "1.2.3", "sha512-abc123==", "https://registry.example.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(JsExtensionInstallResult.Ok());
 
         await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
 
         installer.Verify(
-            x => x.InstallAsync("sample-js-extension", "@contoso/sample", "https://registry.example.com", It.IsAny<CancellationToken>()),
+            x => x.InstallAsync("sample-js-extension", "@contoso/sample", "1.2.3", "sha512-abc123==", "https://registry.example.com", It.IsAny<CancellationToken>()),
             Times.Once);
         Assert.IsTrue(viewModel.IsInstalled);
         Assert.IsTrue(viewModel.ShowUninstallJsonRpcButton);
@@ -771,7 +779,7 @@ public class ExtensionGalleryItemViewModelTests
     {
         var viewModel = CreateJsonRpcViewModel(out var installer);
         installer
-            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.InstallAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(JsExtensionInstallResult.Fail("npm was not found"));
 
         await viewModel.InstallViaNpmCommand.ExecuteAsync(null);
@@ -813,7 +821,13 @@ public class ExtensionGalleryItemViewModelTests
                 new GalleryInstallSource
                 {
                     Type = "jsonrpc",
-                    Npm = new GalleryNpmPackage { Package = "@contoso/sample", Registry = "https://registry.example.com" },
+                    Npm = new GalleryNpmPackage
+                    {
+                        Package = "@contoso/sample",
+                        Version = "1.2.3",
+                        Integrity = "sha512-abc123==",
+                        Registry = "https://registry.example.com",
+                    },
                 },
             ],
         };

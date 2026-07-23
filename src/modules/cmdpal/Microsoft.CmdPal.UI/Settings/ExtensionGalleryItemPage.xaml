@@ -343,6 +343,16 @@
                         IsEnabled="{x:Bind ViewModel.CanUninstallJsonRpc, Mode=OneWay}"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowUninstallJsonRpcButton), Mode=OneWay, FallbackValue=Collapsed}" />
 
+                    <Button
+                        MinWidth="172"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_CancelJsonRpcAction"
+                        Command="{x:Bind ViewModel.CancelJsonRpcActionCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.CancelJsonRpcActionText, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanCancelJsonRpcAction, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelJsonRpcActionButton), Mode=OneWay, FallbackValue=Collapsed}" />
+
                     <TextBlock
                         VerticalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
