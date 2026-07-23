@@ -40,6 +40,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     // Source-file extensions that trigger a hot-reload, per the manifest contract.
     private static readonly string[] WatchedSourceExtensions = [".js", ".mjs", ".cjs"];
 
+    // Path segments that never carry a relevant manifest or source change. Churn under
+    // these (npm writing hundreds of files under node_modules during an install, or git
+    // metadata) must not drive discovery or hot-reload, or it causes a restart storm.
+    private static readonly string[] IgnoredDirectorySegments = ["node_modules", ".git"];
+
     // How many times a newly appeared package is re-checked for a parseable manifest
     // before giving up, and how long to wait between checks. This lets a slow install
     // (directory created first, manifest written later) settle before it is loaded.
@@ -53,6 +58,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     private readonly List<JSExtensionWrapper> _extensions = [];
     private readonly List<CommandProviderWrapper> _providerWrappers = [];
     private readonly HashSet<string> _disabledExtensions = new(StringComparer.Ordinal);
+
+    // Provider-id (normalized manifest name key) reservations shared by every
+    // registration path. Consulted and claimed atomically under _extensionsLock so a
+    // duplicate id can never register regardless of how it arrives (initial scan,
+    // refresh, dynamic install, hot-reload, or crash-restart).
+    private readonly ProviderIdReservations _providerIds = new();
 
     // Consecutive crash-restart attempts per canonical extension directory. Reset when
     // an extension is (re)loaded through a non-crash path (initial discovery, install,
@@ -93,6 +104,22 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
         /// <summary>Stop restarting the extension and leave it disabled.</summary>
         Disable,
+    }
+
+    /// <summary>
+    /// The result of attempting to register a freshly started extension into the service's
+    /// in-memory collections under the extensions lock.
+    /// </summary>
+    private enum RegistrationOutcome
+    {
+        /// <summary>The extension was added and its provider id reserved.</summary>
+        Added,
+
+        /// <summary>Another extension is already loaded from the same directory.</summary>
+        DuplicateDirectory,
+
+        /// <summary>Another directory already owns this extension's provider id.</summary>
+        DuplicateId,
     }
 
     public async Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
@@ -159,6 +186,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             _extensions.Clear();
             _providerWrappers.Clear();
             _crashCounts.Clear();
+            _providerIds.Clear();
         }
 
         foreach (var ext in toStop)
@@ -218,9 +246,53 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
                     OnProviderRemoved?.Invoke(this, [removed]);
                 }
             }
+
+            // Reload any still-present extension whose manifest changed on disk since it
+            // was loaded. A plain re-enumeration only adds/removes directories, so a manifest
+            // edit (new entry point, version, icon, and so on) would otherwise be ignored by
+            // an explicit refresh.
+            await ReloadChangedManifestsAsync(accepted).ConfigureAwait(false);
         }
 
         return await GetInstalledExtensionsAsync(includeDisabledExtensions).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Compares each currently loaded extension's manifest against the accepted manifest on
+    /// disk and hot-reloads any whose manifest changed. The caller passes the already
+    /// discovered/accepted set so the comparison uses the same duplicate-id policy as the
+    /// rest of the refresh.
+    /// </summary>
+    private async Task ReloadChangedManifestsAsync(
+        IReadOnlyList<(string Directory, JSExtensionManifest Manifest)> accepted)
+    {
+        List<(string Directory, JSExtensionManifest Loaded)> loaded;
+        lock (_extensionsLock)
+        {
+            loaded = _extensions
+                .Select(e => (e.ManifestDirectory, e.Manifest))
+                .ToList();
+        }
+
+        foreach (var (directory, current) in accepted)
+        {
+            if (IsStopping(CancellationToken.None))
+            {
+                break;
+            }
+
+            var match = loaded.FirstOrDefault(l => PathsEqual(l.Directory, directory));
+            if (match.Loaded is null)
+            {
+                continue;
+            }
+
+            if (ManifestChanged(match.Loaded, current))
+            {
+                Logger.LogInfo($"Refresh: manifest changed for {current.EffectiveDisplayName}; reloading.");
+                await HotReloadExtensionAsync(directory).ConfigureAwait(false);
+            }
+        }
     }
 
     public IExtensionWrapper? GetInstalledExtension(string extensionUniqueId)
@@ -268,6 +340,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             _extensions.Clear();
             _providerWrappers.Clear();
             _crashCounts.Clear();
+            _providerIds.Clear();
         }
 
         foreach (var ext in toDispose)
@@ -513,6 +586,53 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     }
 
     /// <summary>
+    /// Returns true when any directory segment of <paramref name="path"/> is one the
+    /// watchers must ignore (for example <c>node_modules</c> or <c>.git</c>). This is a
+    /// segment-aware check, so a directory named "node_modules_backup" is not matched.
+    /// Extracted as a pure helper so it can be tested without a live watcher.
+    /// </summary>
+    /// <param name="path">The path reported by a watcher.</param>
+    /// <returns>True when the path lies under an ignored directory segment.</returns>
+    internal static bool HasIgnoredDirectorySegment(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        var segments = path.Split(
+            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+            StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var segment in segments)
+        {
+            foreach (var ignored in IgnoredDirectorySegments)
+            {
+                if (string.Equals(segment, ignored, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns true when a change to <paramref name="fullPath"/> should trigger a
+    /// source hot-reload: it is a watched source file, is not filtered by the debouncer,
+    /// and is not under an ignored directory segment. Extracted as a pure helper so the
+    /// routing decision can be tested without a live watcher.
+    /// </summary>
+    /// <param name="fullPath">The full path of the changed source file.</param>
+    /// <returns>True when the change should trigger a hot-reload.</returns>
+    internal static bool ShouldReloadForSourceChange(string fullPath) =>
+        !string.IsNullOrEmpty(fullPath)
+        && IsWatchedSourceFile(fullPath)
+        && HotReloadDebouncer.IsRelevantChange(fullPath)
+        && !HasIgnoredDirectorySegment(fullPath);
+
+    /// <summary>
     /// Discovers manifests and applies the duplicate-id collision policy, logging any
     /// rejected duplicates. All full (re)load and reconciliation paths go through here so
     /// they agree on the same deterministic winner.
@@ -687,7 +807,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             var wrapper = new CommandProviderWrapper(extensionWrapper, provider, _taskScheduler);
             extensionWrapper.ProcessExited += OnExtensionProcessExited;
 
-            var isDuplicate = false;
+            var outcome = RegistrationOutcome.Added;
             lock (_extensionsLock)
             {
                 // The per-directory gate prevents concurrent loads for one directory, but
@@ -695,7 +815,15 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
                 // two live processes if a duplicate ever slips through.
                 if (_extensions.Any(e => PathsEqual(e.ManifestDirectory, directory)))
                 {
-                    isDuplicate = true;
+                    outcome = RegistrationOutcome.DuplicateDirectory;
+                }
+                else if (!_providerIds.TryReserve(extensionWrapper.NameKey, CanonicalKey(directory)))
+                {
+                    // Another directory already owns this provider id. Claiming the id and
+                    // adding to _extensions happen as one atomic step under this lock, so no
+                    // interleaving install, hot-reload, or crash-restart can register a
+                    // second provider with the same id.
+                    outcome = RegistrationOutcome.DuplicateId;
                 }
                 else
                 {
@@ -708,14 +836,32 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
                 }
             }
 
-            if (isDuplicate)
+            if (outcome != RegistrationOutcome.Added)
             {
+                if (outcome == RegistrationOutcome.DuplicateId)
+                {
+                    Logger.LogWarning(
+                        $"Skipping JS extension at {directory}: provider id '{extensionWrapper.NameKey}' is already reserved by another extension.");
+                }
+
                 extensionWrapper.ProcessExited -= OnExtensionProcessExited;
                 extensionWrapper.SignalDispose();
                 return null;
             }
 
             StartSourceFileWatcher(directory);
+
+            // A process can exit immediately after init (for example a provider that faults
+            // on first use). If that exit fired before we subscribed to ProcessExited above,
+            // the event was missed; detect the dead process here and drive the same crash
+            // path so an immediate post-init crash is handled (restart or disable) instead
+            // of being registered as healthy. The handler runs on a separate task so it
+            // acquires the directory gate only after this registration releases it, and it is
+            // idempotent, so racing the real event is harmless.
+            if (!extensionWrapper.IsRunning())
+            {
+                OnExtensionProcessExited(extensionWrapper, EventArgs.Empty);
+            }
 
             Logger.LogInfo($"Loaded JS extension: {manifest.EffectiveDisplayName}");
             return wrapper;
@@ -781,6 +927,10 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
                 _crashCounts.TryGetValue(key, out crashCount);
                 crashCount++;
                 _crashCounts[key] = crashCount;
+
+                // Free the provider id as part of the same atomic removal so a different
+                // extension can claim it, and so the restart below can re-reserve it.
+                _providerIds.Release(wrapper.NameKey, key);
             }
 
             wrapper.ProcessExited -= OnExtensionProcessExited;
@@ -792,8 +942,11 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
             if (DecideCrashAction(crashCount, MaxRestartAttempts) == CrashAction.Disable)
             {
-                Logger.LogError($"JS extension at {directory} crashed {crashCount} times consecutively; disabling it. Reinstall or edit the source to re-enable.");
-                StopSourceFileWatcher(directory);
+                Logger.LogError($"JS extension at {directory} crashed {crashCount} times consecutively; disabling it. Edit the source or reinstall to re-enable.");
+
+                // Keep the source-file watcher alive so a developer source edit fires a
+                // hot-reload, which resets the crash count and retries the load. Stopping it
+                // here would strand the extension disabled until a full reinstall.
                 return;
             }
 
@@ -828,6 +981,34 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     /// <returns><see cref="CrashAction.Restart"/> while at or below the limit; otherwise <see cref="CrashAction.Disable"/>.</returns>
     internal static CrashAction DecideCrashAction(int crashCount, int maxRestartAttempts) =>
         crashCount > maxRestartAttempts ? CrashAction.Disable : CrashAction.Restart;
+
+    /// <summary>
+    /// Returns true when the salient fields of <paramref name="current"/> differ from
+    /// <paramref name="loaded"/>, i.e. an edit to the manifest that would change how the
+    /// extension runs or presents. Extracted as a pure function so an explicit refresh can
+    /// decide to reload a changed manifest without touching the filesystem in tests.
+    /// </summary>
+    /// <param name="loaded">The manifest the extension is currently running with.</param>
+    /// <param name="current">The manifest as it now exists on disk.</param>
+    /// <returns>True when the manifest changed in a way that warrants a reload.</returns>
+    internal static bool ManifestChanged(JSExtensionManifest loaded, JSExtensionManifest current)
+    {
+        if (loaded is null || current is null)
+        {
+            return false;
+        }
+
+        return !string.Equals(loaded.Name, current.Name, StringComparison.Ordinal)
+            || !string.Equals(loaded.DisplayName, current.DisplayName, StringComparison.Ordinal)
+            || !string.Equals(loaded.Version, current.Version, StringComparison.Ordinal)
+            || !string.Equals(loaded.Description, current.Description, StringComparison.Ordinal)
+            || !string.Equals(loaded.Icon, current.Icon, StringComparison.Ordinal)
+            || !string.Equals(loaded.Publisher, current.Publisher, StringComparison.Ordinal)
+            || !string.Equals(loaded.Main, current.Main, StringComparison.Ordinal)
+            || !string.Equals(loaded.EntryPointPath, current.EntryPointPath, StringComparison.OrdinalIgnoreCase)
+            || loaded.Debug != current.Debug
+            || loaded.DebugPort != current.DebugPort;
+    }
 
     private void StartDirectoryWatcher()
     {
@@ -878,6 +1059,13 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
     private void OnDirectoryWatcherUpsert(object sender, FileSystemEventArgs e)
     {
+        // Ignore churn under node_modules/.git (for example npm writing many package.json
+        // files during an install) so it cannot drive a discovery or hot-reload storm.
+        if (HasIgnoredDirectorySegment(e.FullPath))
+        {
+            return;
+        }
+
         // Only manifests and (newly created) directories drive discovery here; source
         // file edits are handled by the per-extension source watcher.
         if (IsManifestPath(e.FullPath) || Directory.Exists(e.FullPath))
@@ -890,17 +1078,25 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
     {
         // A rename can be an atomic promotion (temp -> final) or a demotion/uninstall
         // (final -> temp). Treat the new name as a possible install and the old name as
-        // a possible removal.
-        if (IsManifestPath(e.FullPath) || Directory.Exists(e.FullPath))
+        // a possible removal, ignoring either side that sits under an ignored segment.
+        if (!HasIgnoredDirectorySegment(e.FullPath) && (IsManifestPath(e.FullPath) || Directory.Exists(e.FullPath)))
         {
             HandleDirectoryEntryUpsert(e.FullPath);
         }
 
-        HandleDirectoryEntryRemoved(e.OldFullPath);
+        if (!HasIgnoredDirectorySegment(e.OldFullPath))
+        {
+            HandleDirectoryEntryRemoved(e.OldFullPath);
+        }
     }
 
     private void OnDirectoryWatcherDeleted(object sender, FileSystemEventArgs e)
     {
+        if (HasIgnoredDirectorySegment(e.FullPath))
+        {
+            return;
+        }
+
         HandleDirectoryEntryRemoved(e.FullPath);
     }
 
@@ -1051,22 +1247,33 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             extensionToRemove = _extensions.FirstOrDefault(e => PathsEqual(e.ManifestDirectory, directory));
             if (extensionToRemove is null)
             {
-                return null;
+                wrapperToRemove = null;
             }
-
-            _extensions.Remove(extensionToRemove);
-            wrapperToRemove = _providerWrappers.FirstOrDefault(w => ReferenceEquals(w.Extension, extensionToRemove));
-            if (wrapperToRemove is not null)
+            else
             {
-                _providerWrappers.Remove(wrapperToRemove);
-            }
+                _extensions.Remove(extensionToRemove);
+                wrapperToRemove = _providerWrappers.FirstOrDefault(w => ReferenceEquals(w.Extension, extensionToRemove));
+                if (wrapperToRemove is not null)
+                {
+                    _providerWrappers.Remove(wrapperToRemove);
+                }
 
-            _crashCounts.Remove(CanonicalKey(directory));
+                _crashCounts.Remove(CanonicalKey(directory));
+                _providerIds.Release(extensionToRemove.NameKey, CanonicalKey(directory));
+            }
         }
 
-        extensionToRemove.ProcessExited -= OnExtensionProcessExited;
+        // Always tear down the source watcher for the directory, even when no live
+        // extension matched (for example a crash-disabled extension that was already
+        // removed from the list but whose watcher was intentionally kept alive), so an
+        // uninstall never leaks a watcher.
         StopSourceFileWatcher(directory);
-        extensionToRemove.SignalDispose();
+
+        if (extensionToRemove is not null)
+        {
+            extensionToRemove.ProcessExited -= OnExtensionProcessExited;
+            extensionToRemove.SignalDispose();
+        }
 
         return wrapperToRemove;
     }
@@ -1094,6 +1301,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
                 watcher.Changed += OnSourceFileChanged;
                 watcher.Created += OnSourceFileChanged;
 
+                // Editors commonly save atomically (write a temp file, then rename it over
+                // the target) and also delete/recreate files. Subscribe to Renamed and
+                // Deleted as well so those changes reload instead of being missed.
+                watcher.Renamed += OnSourceFileRenamed;
+                watcher.Deleted += OnSourceFileChanged;
+
                 _sourceFileWatchers[directory] = watcher;
                 Logger.LogDebug($"Started source file watcher at {directory}");
             }
@@ -1112,6 +1325,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             {
                 watcher.Changed -= OnSourceFileChanged;
                 watcher.Created -= OnSourceFileChanged;
+                watcher.Renamed -= OnSourceFileRenamed;
+                watcher.Deleted -= OnSourceFileChanged;
                 watcher.Dispose();
                 _sourceFileWatchers.Remove(directory);
             }
@@ -1128,6 +1343,8 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
             {
                 watcher.Changed -= OnSourceFileChanged;
                 watcher.Created -= OnSourceFileChanged;
+                watcher.Renamed -= OnSourceFileRenamed;
+                watcher.Deleted -= OnSourceFileChanged;
                 watcher.Dispose();
             }
 
@@ -1137,15 +1354,29 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IDispos
 
     private void OnSourceFileChanged(object sender, FileSystemEventArgs e)
     {
-        if (!IsWatchedSourceFile(e.FullPath) || !HotReloadDebouncer.IsRelevantChange(e.FullPath))
+        RouteSourceChange(e.FullPath);
+    }
+
+    private void OnSourceFileRenamed(object sender, RenamedEventArgs e)
+    {
+        // An atomic save writes a temp file and renames it over the target, so the new
+        // path is the real source file. Route both the new and old paths so a rename into
+        // or out of a watched source name reloads.
+        RouteSourceChange(e.FullPath);
+        RouteSourceChange(e.OldFullPath);
+    }
+
+    private void RouteSourceChange(string fullPath)
+    {
+        if (!ShouldReloadForSourceChange(fullPath))
         {
             return;
         }
 
-        var directory = FindWatchedDirectory(e.FullPath);
+        var directory = FindWatchedDirectory(fullPath);
         if (directory is not null)
         {
-            _hotReloadDebouncer.Notify(directory, e.FullPath);
+            _hotReloadDebouncer.Notify(directory, fullPath);
         }
     }
 

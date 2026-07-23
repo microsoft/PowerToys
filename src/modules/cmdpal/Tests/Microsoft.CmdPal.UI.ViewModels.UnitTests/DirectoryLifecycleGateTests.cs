@@ -113,6 +113,88 @@ public class DirectoryLifecycleGateTests
     }
 
     [TestMethod]
+    public async Task Remove_WhileHeld_NewAcquireSerializesBehindPriorGeneration()
+    {
+        using var gate = new DirectoryLifecycleGate();
+        const string Dir = @"C:\temp\overlap-dir";
+
+        var aEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseA = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var cEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var aTask = Task.Run(async () =>
+        {
+            using (await gate.AcquireAsync(Dir, CancellationToken.None))
+            {
+                aEntered.SetResult();
+                await releaseA.Task;
+            }
+        });
+
+        await aEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Remove the directory while the prior generation (A) still holds it. A new
+        // generation must strictly supersede it, never overlap it.
+        gate.Remove(Dir);
+
+        var cTask = Task.Run(async () =>
+        {
+            using (await gate.AcquireAsync(Dir, CancellationToken.None))
+            {
+                cEntered.SetResult();
+            }
+        });
+
+        // C must not enter while A still holds the gate, even though Remove was called in
+        // between. Before the fix, Remove evicted the entry immediately, so C would create
+        // a fresh entry with a new semaphore and run concurrently with A.
+        var enteredEarly = await Task.WhenAny(cEntered.Task, Task.Delay(200)) == cEntered.Task;
+        Assert.IsFalse(enteredEarly, "A new generation after Remove must serialize behind the still-live prior generation.");
+
+        releaseA.SetResult();
+        await cEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Task.WhenAll(aTask, cTask).WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public async Task Remove_WhileHeld_OverlappingCycles_NeverRunConcurrently()
+    {
+        using var gate = new DirectoryLifecycleGate();
+        const string Dir = @"C:\temp\overlap-cycles";
+
+        var running = 0;
+        var maxConcurrent = 0;
+        var sync = new object();
+
+        async Task Cycle()
+        {
+            using (await gate.AcquireAsync(Dir, CancellationToken.None))
+            {
+                lock (sync)
+                {
+                    running++;
+                    maxConcurrent = Math.Max(maxConcurrent, running);
+                }
+
+                await Task.Delay(15);
+
+                // Marking the directory for removal mid-cycle starts a fresh generation for
+                // any queued acquire; it must still not overlap this one.
+                gate.Remove(Dir);
+
+                lock (sync)
+                {
+                    running--;
+                }
+            }
+        }
+
+        await Task.WhenAll(Cycle(), Cycle(), Cycle(), Cycle()).WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual(1, maxConcurrent, "Overlapping begin/complete cycles for one directory must never run concurrently.");
+    }
+
+    [TestMethod]
     public async Task AcquireAsync_AfterDispose_Throws()
     {
         var gate = new DirectoryLifecycleGate();

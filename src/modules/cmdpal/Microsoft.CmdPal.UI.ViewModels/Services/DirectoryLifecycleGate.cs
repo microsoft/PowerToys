@@ -97,10 +97,14 @@ internal sealed partial class DirectoryLifecycleGate : IDisposable
     }
 
     /// <summary>
-    /// Marks a directory's gate entry for removal. The backing semaphore is disposed
-    /// immediately when no one holds or awaits it; otherwise it is disposed when the
-    /// last reference is released. A subsequent <see cref="AcquireAsync"/> for the same
-    /// directory transparently creates a fresh entry.
+    /// Marks a directory's gate entry for removal. When no one holds or awaits it the
+    /// entry is evicted and its semaphore disposed immediately. When a holder or waiter
+    /// still exists the entry is left in place (marked removed) so that any operation
+    /// already queued behind it, and any operation that arrives before it drains, keep
+    /// serializing on the same semaphore. The entry is evicted only once its last
+    /// reference is released (see <see cref="ReleaseReference"/>). This guarantees a new
+    /// generation for the directory strictly supersedes the prior one and can never run
+    /// concurrently with it.
     /// </summary>
     /// <param name="directory">The directory whose gate entry should be released.</param>
     public void Remove(string directory)
@@ -110,12 +114,15 @@ internal sealed partial class DirectoryLifecycleGate : IDisposable
         {
             if (_entries.TryGetValue(key, out var entry))
             {
-                _entries.Remove(key);
                 entry.Removed = true;
                 if (entry.Refs == 0)
                 {
+                    _entries.Remove(key);
                     entry.Semaphore.Dispose();
                 }
+
+                // Otherwise keep the entry in the map so later acquires reuse it and stay
+                // serialized behind the drain; ReleaseReference evicts it at Refs == 0.
             }
         }
     }
@@ -162,6 +169,16 @@ internal sealed partial class DirectoryLifecycleGate : IDisposable
             entry.Refs--;
             if (entry.Refs == 0 && entry.Removed)
             {
+                // The last reference to a removed entry is gone; evict it so the next
+                // acquire for this directory starts a fresh generation, and dispose the
+                // semaphore. Guard against evicting a different entry that may have taken
+                // this key (belt and suspenders; a removed entry is never replaced while
+                // it is still present).
+                if (_entries.TryGetValue(key, out var current) && ReferenceEquals(current, entry))
+                {
+                    _entries.Remove(key);
+                }
+
                 entry.Semaphore.Dispose();
             }
         }

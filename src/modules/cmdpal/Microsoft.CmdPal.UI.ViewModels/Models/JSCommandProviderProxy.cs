@@ -210,7 +210,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
     {
         ArgumentNullException.ThrowIfNull(host);
 
-        List<Action<IExtensionHost>> pending;
         lock (_hostLock)
         {
             if (_isDisposed)
@@ -219,23 +218,25 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
             }
 
             _host = host;
-            pending = [.. _pendingHostActions];
-            _pendingHostActions.Clear();
-        }
 
-        // Deliver, in arrival order, the host actions that the extension emitted while it
-        // was activating (before the host was attached), such as startup logs, statuses,
-        // and clipboard requests.
-        foreach (var action in pending)
-        {
-            try
+            // Deliver, in arrival order, the host actions that the extension emitted while
+            // it was activating (before the host was attached), such as startup logs,
+            // statuses, and clipboard requests. Replaying under the lock keeps this delivery
+            // ordered against a concurrent dispose or disconnect so a buffered show cannot
+            // land after teardown has already hidden everything.
+            foreach (var action in _pendingHostActions)
             {
-                action(host);
+                try
+                {
+                    action(host);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Error flushing buffered host action for {DisplayName}: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"Error flushing buffered host action for {DisplayName}: {ex.Message}");
-            }
+
+            _pendingHostActions.Clear();
         }
 
         Logger.LogDebug($"JSCommandProviderProxy initialized with host for {DisplayName}");
@@ -262,7 +263,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
     /// </summary>
     private void RunWithHost(Action<IExtensionHost> action)
     {
-        IExtensionHost? host;
         lock (_hostLock)
         {
             if (_isDisposed)
@@ -270,21 +270,25 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 return;
             }
 
-            host = _host;
+            var host = _host;
             if (host is null)
             {
                 _pendingHostActions.Add(action);
                 return;
             }
-        }
 
-        action(host);
+            // Invoke the host action while holding the lock so status show and hide calls
+            // run in the same order as their lock acquisition. Host status methods are
+            // fire-and-forget (they return an async operation immediately), so the lock is
+            // held only briefly. This keeps a hide from being reordered ahead of a late
+            // show, and, because Dispose sets _isDisposed under this same lock, keeps a show
+            // from resurrecting status after teardown has hidden everything.
+            action(host);
+        }
     }
 
     public void Dispose()
     {
-        IExtensionHost? host;
-        List<StatusMessage> activeStatuses;
         lock (_hostLock)
         {
             if (_isDisposed)
@@ -294,11 +298,17 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
 
             _isDisposed = true;
 
-            host = _host;
+            var host = _host;
             _host = null;
             _pendingHostActions.Clear();
-            activeStatuses = [.. _shownStatusMessages.Values];
+            var activeStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
             _shownStatusMessages.Clear();
+
+            // Hide any status still visible while holding the lock so the hide is ordered
+            // after every show already dispatched and cannot be overtaken by a late show.
+            // Once _isDisposed is set here, RunWithHost is a no-op, so no show can resurrect
+            // status after teardown has hidden it.
+            HideStatuses(host, activeStatuses);
         }
 
         _connection.Disconnected -= OnConnectionDisconnected;
@@ -312,10 +322,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         {
             _connection.UnregisterNotificationHandler(method);
         }
-
-        // Hide any status messages that are still visible so a disposed provider, or an
-        // extension whose process has exited, does not leave stale status in the host UI.
-        HideStatuses(host, activeStatuses);
     }
 
     private void OnConnectionDisconnected(object? sender, EventArgs e)
@@ -324,8 +330,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         // they do not linger in the host UI even though no explicit hide arrived. The
         // notification handlers stay registered; the connection is gone so they cannot
         // fire again, and Dispose still unregisters them during full teardown.
-        IExtensionHost? host;
-        List<StatusMessage> activeStatuses;
         lock (_hostLock)
         {
             if (_isDisposed || _shownStatusMessages.Count == 0)
@@ -333,12 +337,14 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
                 return;
             }
 
-            host = _host;
-            activeStatuses = [.. _shownStatusMessages.Values];
+            var host = _host;
+            var activeStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
             _shownStatusMessages.Clear();
-        }
 
-        HideStatuses(host, activeStatuses);
+            // Hide under the lock so this teardown hide is ordered against any concurrent
+            // show or dispose and cannot strand or resurrect status.
+            HideStatuses(host, activeStatuses);
+        }
     }
 
     private void HideStatuses(IExtensionHost? host, List<StatusMessage> statuses)

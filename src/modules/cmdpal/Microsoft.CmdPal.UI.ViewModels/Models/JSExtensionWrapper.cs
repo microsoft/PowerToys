@@ -144,6 +144,12 @@ public sealed partial class JSExtensionWrapper : IExtensionWrapper, IDisposable
     internal string ManifestDirectory => _manifestDirectory;
 
     /// <summary>
+    /// Gets the manifest this extension was loaded with. Used by the service to detect a
+    /// manifest edit during an explicit refresh and reload the extension when it changed.
+    /// </summary>
+    internal JSExtensionManifest Manifest => _manifest;
+
+    /// <summary>
     /// Gets the normalized identity key for this extension, used to enforce cross-extension
     /// uniqueness during discovery.
     /// </summary>
