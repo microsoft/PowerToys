@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -27,6 +27,16 @@ public enum PasteFormats
         SupportedClipboardFormats = ClipboardFormat.Text,
         KernelFunctionDescription = "Takes clipboard text and formats it as markdown text.")]
     Markdown,
+
+    [PasteFormatMetadata(
+        IsCoreAction = true,
+        ResourceId = "PasteAsRichText",
+        IconGlyph = "\uE8D2", // Using a rich text / formatting icon (can adjust later, maybe \uE8D2 which is text icon)
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes markdown or plain text from the clipboard and formats it as rich HTML text.")]
+    RichText,
 
     [PasteFormatMetadata(
         IsCoreAction = true,

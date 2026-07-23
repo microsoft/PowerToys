@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -1991,6 +1991,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="PasteAsMarkdown_Shortcut.Header" xml:space="preserve">
     <value>Paste as Markdown directly</value>
+  </data>
+  <data name="PasteAsRichText_Shortcut.Header" xml:space="preserve">
+    <value>Paste as Rich Text directly</value>
   </data>
   <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
     <value>Paste as JSON directly</value>

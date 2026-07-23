@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,6 +44,12 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             if (PasteAsMarkdownHotkeyControl.Keys.Count > 0)
             {
                 PasteAsMarkdownHotkeyControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
+
+            PasteAsRichTextHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsRichTextShortcut.GetKeysList();
+            if (PasteAsRichTextHotkeyControl.Keys.Count > 0)
+            {
+                PasteAsRichTextHotkeyControl.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
             }
 
             PasteAsJsonHotkeyControl.Keys = SettingsRepository<AdvancedPasteSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.PasteAsJsonShortcut.GetKeysList();
