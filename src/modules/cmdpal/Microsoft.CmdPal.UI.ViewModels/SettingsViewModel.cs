@@ -141,6 +141,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         set
         {
             _settingsService.UpdateSettings(s => s with { ShowSystemTrayIcon = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowThemeAdaptiveTrayIcon)));
+        }
+    }
+
+    public bool ShowThemeAdaptiveTrayIcon
+    {
+        get => _settingsService.Settings.ShowThemeAdaptiveTrayIcon;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ShowThemeAdaptiveTrayIcon = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowThemeAdaptiveTrayIcon)));
         }
     }
 
