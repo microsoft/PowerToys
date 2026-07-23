@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services.JsonRpc;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Storage.Streams;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
@@ -81,6 +82,24 @@ internal static class JSModelMapper
         }
 
         return new IconInfo(string.Empty);
+    }
+
+    /// <summary>
+    /// Materializes an icon only when the payload actually carries the field.
+    /// Returns <c>true</c> when an icon key is present (even if it resolves to an
+    /// empty glyph), so callers can distinguish an explicitly empty icon from an
+    /// absent one and fall back to another source when it is absent.
+    /// </summary>
+    internal static bool TryGetIcon(JsonElement parent, string camel, string pascal, out IIconInfo icon)
+    {
+        if (TryGetAnyCase(parent, camel, pascal, out var iconProp))
+        {
+            icon = ParseIconInfo(iconProp);
+            return true;
+        }
+
+        icon = new IconInfo(string.Empty);
+        return false;
     }
 
     internal static IIconInfo ParseIconInfo(JsonElement iconJson)
@@ -326,7 +345,54 @@ internal static class JSModelMapper
             item.MoreCommands = moreCommands;
         }
 
+        if (TryParseKeyChord(element, out var shortcut))
+        {
+            item.RequestedShortcut = shortcut;
+        }
+
         return item;
+    }
+
+    /// <summary>
+    /// Parses a requested context-menu shortcut (modifiers, virtual key and scan
+    /// code) into a <see cref="KeyChord"/>. Returns <c>false</c> when the field is
+    /// absent or malformed so the caller leaves the default (no) shortcut. Never
+    /// throws on unexpected shapes.
+    /// </summary>
+    internal static bool TryParseKeyChord(JsonElement parent, out KeyChord keyChord)
+    {
+        keyChord = default;
+
+        if (!TryGetAnyCase(parent, "requestedShortcut", "RequestedShortcut", out var chordProp) ||
+            chordProp.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var vkey = ReadInt32OrNull(chordProp, "vkey", "Vkey") ?? ReadInt32OrNull(chordProp, "vKey", "VKey");
+        if (vkey is null)
+        {
+            // A shortcut with no virtual key is not actionable; treat as absent.
+            return false;
+        }
+
+        var modifiers = ReadInt32OrNull(chordProp, "modifiers", "Modifiers") ?? 0;
+        var scanCode = ReadInt32OrNull(chordProp, "scanCode", "ScanCode") ?? 0;
+
+        keyChord = new KeyChord((VirtualKeyModifiers)modifiers, vkey.Value, scanCode);
+        return true;
+    }
+
+    private static int? ReadInt32OrNull(JsonElement element, string camel, string pascal)
+    {
+        if (TryGetAnyCase(element, camel, pascal, out var prop) &&
+            prop.ValueKind == JsonValueKind.Number &&
+            prop.TryGetInt32(out var value))
+        {
+            return value;
+        }
+
+        return null;
     }
 
     internal static IGridProperties? ParseGridProperties(JsonElement parent)
