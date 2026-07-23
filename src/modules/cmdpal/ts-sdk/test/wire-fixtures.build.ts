@@ -189,7 +189,7 @@ export async function buildFixtures(): Promise<Record<string, unknown>> {
   fixtures['content-plainText'] = await serializer.content({
     type: 'plainText',
     text: 'Hello',
-    fontFamily: 'Consolas',
+    fontFamily: 'monospace',
     wrapWords: true,
   });
   fixtures['content-image'] = await serializer.content({
