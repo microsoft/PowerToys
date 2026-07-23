@@ -110,14 +110,15 @@ public sealed partial class TrayWheelFeedbackWindow : TransparentWindow, IDispos
         var dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
         var width = FlyoutWindowHelper.ScaleToPhysicalPixels(widthDip, dpiScale);
         var height = FlyoutWindowHelper.ScaleToPhysicalPixels(heightDip, dpiScale);
-        var gap = FlyoutWindowHelper.ScaleToPhysicalPixels(8, dpiScale);
+
+        // FeedbackRoot's 8-DIP shadow padding supplies the visible Border-to-icon gap.
         var rect = TrayWheelFeedbackPlacement.Calculate(
             iconBounds,
             displayArea.OuterBounds,
             displayArea.WorkArea,
             width,
             height,
-            gap);
+            gap: 0);
 
         FlyoutWindowHelper.MoveAndResizeOnDisplay(this, displayArea, rect);
         if (!_isVisible)
@@ -200,6 +201,11 @@ public sealed partial class TrayWheelFeedbackWindow : TransparentWindow, IDispos
 
     private void Announce(string text)
     {
+        if (_disposed || !_isVisible)
+        {
+            return;
+        }
+
         var peer = FrameworkElementAutomationPeer.FromElement(FeedbackText) ??
             FrameworkElementAutomationPeer.CreatePeerForElement(FeedbackText);
         peer?.RaiseNotificationEvent(

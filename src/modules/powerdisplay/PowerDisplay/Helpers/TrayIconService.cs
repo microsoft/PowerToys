@@ -76,6 +76,7 @@ namespace PowerDisplay.Helpers
         private bool _sampleDispatchFailureLogged;
         private bool _boundsFailureLogged;
         private bool _feedbackWindowFailureLogged;
+        private bool _feedbackPresentationFailureLogged;
 
         internal event Action<int>? MouseWheelScrolled;
 
@@ -650,26 +651,45 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            var templates = new TrayWheelFeedbackTemplates(
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryFormat"),
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryPluralFormat"),
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackAllFormat"),
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPercentageFormat"),
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackRangeFormat"),
-                ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackListSeparator"));
-            var text = TrayWheelFeedbackFormatter.Format(
-                feedback,
-                templates,
-                CultureInfo.CurrentCulture);
-            if (text is null || !pointerInside || !_feedbackIconBounds.HasValue)
+            try
+            {
+                var templates = new TrayWheelFeedbackTemplates(
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryPluralFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackAllFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPercentageFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackRangeFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackListSeparator"));
+                var text = TrayWheelFeedbackFormatter.Format(
+                    feedback,
+                    templates,
+                    CultureInfo.CurrentCulture);
+                if (text is null || !_feedbackIconBounds.HasValue)
+                {
+                    StopHoverFeedback();
+                    return;
+                }
+
+                ApplyFeedbackPresentation(
+                    _feedbackSession.ShowAdjustment(text, now),
+                    _feedbackIconBounds.Value);
+            }
+            catch (Exception ex) when (
+                ex is COMException or
+                InvalidOperationException or
+                FormatException or
+                ArgumentException)
             {
                 StopHoverFeedback();
+                if (!_feedbackPresentationFailureLogged)
+                {
+                    Logger.LogWarning($"[TrayFeedback] Unable to prepare overlay feedback: {ex.Message}");
+                    _feedbackPresentationFailureLogged = true;
+                }
+
                 return;
             }
 
-            ApplyFeedbackPresentation(
-                _feedbackSession.ShowAdjustment(text, now),
-                _feedbackIconBounds.Value);
             EnsureFeedbackPollTimer();
         }
 

@@ -40,4 +40,4 @@ Implemented pure hover-session timing and physical-pixel placement logic for tra
   - Adjacent dependency timestamps: `PowerDisplay.Lib.dll` `2026-07-23 02:53:40`, `PowerDisplay.Models.dll` `2026-07-23 02:53:03`, `PowerToys.Interop.dll` `2026-07-23 02:53:37`, `PowerToys.ManagedCommon.dll` `2026-07-23 02:53:38`, `PowerToys.Settings.UI.Lib.dll` `2026-07-23 02:53:42`
   - Focused tray wheel run: `21/21`
   - Full suite run: `242/242`
-- Fix commit: `663464112`
+- Fix commit: `ff0442310`
