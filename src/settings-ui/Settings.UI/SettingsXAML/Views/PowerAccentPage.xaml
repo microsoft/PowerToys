@@ -164,6 +164,17 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="QuickAccent_ReferenceGuide" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="QuickAccent_ReferenceGuide_Card"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE736;}">
+                        <Button
+                            x:Uid="QuickAccent_ReferenceGuide_Button"
+                            Click="ReferenceGuideButton_Click"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="QuickAccentToolbarPosition"
