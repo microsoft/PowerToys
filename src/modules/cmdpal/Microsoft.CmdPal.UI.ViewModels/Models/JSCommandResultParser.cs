@@ -55,7 +55,7 @@ internal static class JSCommandResultParser
                 return ParseGoToPage(hasArgs ? argsProp : default);
 
             case CommandResultKind.ShowToast:
-                return ParseShowToast(hasArgs ? argsProp : default);
+                return ParseShowToast(hasArgs ? argsProp : default, connection);
 
             case CommandResultKind.Confirm:
                 return ParseConfirm(hasArgs ? argsProp : default, connection);
@@ -84,7 +84,7 @@ internal static class JSCommandResultParser
         return CommandResult.GoToPage(new GoToPageArgs { PageId = pageId, NavigationMode = navigationMode });
     }
 
-    private static ICommandResult ParseShowToast(JsonElement args)
+    private static ICommandResult ParseShowToast(JsonElement args, JsonRpcConnection? connection)
     {
         var message = string.Empty;
         if (args.ValueKind == JsonValueKind.Object)
@@ -92,7 +92,20 @@ internal static class JSCommandResultParser
             message = JSModelMapper.GetString(args, "message") ?? JSModelMapper.GetString(args, "Message") ?? string.Empty;
         }
 
-        return CommandResult.ShowToast(new ToastArgs { Message = message });
+        var toastArgs = new ToastArgs { Message = message };
+
+        // A toast can carry a nested continuation result that the shell executes
+        // after the toast is shown. Parse it recursively so every nested kind
+        // (including confirm, which needs the connection for its primary command,
+        // and even another toast) round-trips faithfully.
+        if (args.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(args, "result", "Result", out var resultProp) &&
+            resultProp.ValueKind == JsonValueKind.Object)
+        {
+            toastArgs.Result = ParseCommandResult(resultProp, connection);
+        }
+
+        return CommandResult.ShowToast(toastArgs);
     }
 
     private static ICommandResult ParseConfirm(JsonElement args, JsonRpcConnection? connection)

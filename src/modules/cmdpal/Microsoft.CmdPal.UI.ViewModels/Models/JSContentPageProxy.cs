@@ -48,7 +48,7 @@ internal sealed partial class JSContentPageProxy : BaseObservable, IContentPage
 
     public bool IsLoading => JSModelMapper.GetBool(_pageData, "isLoading", false);
 
-    public OptionalColor AccentColor => ColorHelpers.NoColor();
+    public OptionalColor AccentColor => JSModelMapper.ParseColor(_pageData, "accentColor", "AccentColor");
 
     public IDetails? Details => JSModelMapper.ParseDetails(_pageData, _connection);
 

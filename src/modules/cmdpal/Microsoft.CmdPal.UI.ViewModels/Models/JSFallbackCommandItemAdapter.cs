@@ -58,7 +58,9 @@ internal sealed partial class JSFallbackCommandItemAdapter : BaseObservable, IFa
 
     public IContextItem[] MoreCommands => JSModelMapper.ParseContextItems(_data, "moreCommands", "MoreCommands", _connection);
 
-    public IIconInfo Icon => JSModelMapper.GetIcon(_data, "icon", "Icon");
+    public IIconInfo Icon => JSModelMapper.TryGetIcon(_data, "icon", "Icon", out var icon)
+        ? icon
+        : Command?.Icon ?? new IconInfo(string.Empty);
 
     public string Title => JSModelMapper.GetString(_data, "displayName") ?? JSModelMapper.GetString(_data, "title") ?? string.Empty;
 
