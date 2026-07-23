@@ -1,5 +1,5 @@
 {
-  "fontFamily": "Consolas",
+  "fontFamily": "monospace",
   "text": "Hello",
   "type": "plainText",
   "wrapWords": true
