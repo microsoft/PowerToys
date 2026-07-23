@@ -24,7 +24,7 @@ public class PeekFilePreviewTests : UITestBase
     private const int ExplorerOpenAttempts = 3;
     private const int PeekWindowTimeoutMS = 30_000;
     private const int PreviewLoadTimeoutMS = 60_000;
-    private const int PreviewOpenAttempts = 2;
+    private const int PreviewOpenAttempts = 3;
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
 
@@ -256,7 +256,7 @@ public class PeekFilePreviewTests : UITestBase
         var zipPath = Path.GetFullPath(@".\TestAssets\7.zip");
         var peekWindow = OpenPeekWindow(zipPath);
 
-        peekWindow.Find<Button>(By.AccessibilityId("LaunchAppButton"), 5_000).Click();
+        peekWindow.Find<Button>(By.AccessibilityId("LaunchAppButton"), 5_000).Invoke();
 
         Assert.IsTrue(
             WaitForExplorerTitle(Path.GetFileNameWithoutExtension(zipPath), 10_000),
@@ -338,19 +338,19 @@ public class PeekFilePreviewTests : UITestBase
 
         for (var attempt = 1; attempt <= PreviewOpenAttempts; attempt++)
         {
-            var peekWindow = SendPeekHotkeyWithRetry(filePath);
             try
             {
+                var peekWindow = SendPeekHotkeyWithRetry(filePath);
                 EnsurePeekReady(peekWindow);
                 return peekWindow;
             }
             catch (AssertFailedException ex) when (attempt < PreviewOpenAttempts)
             {
                 TestContext.WriteLine(
-                    $"Peek preview readiness attempt {attempt}/{PreviewOpenAttempts} failed for " +
-                    $"'{Path.GetFileName(filePath)}': {ex.Message}. Closing Peek and retrying activation.");
+                    $"Peek activation/readiness attempt {attempt}/{PreviewOpenAttempts} failed for " +
+                    $"'{Path.GetFileName(filePath)}': {ex.Message}. Restarting Peek before retrying activation.");
                 WindowControl.TryCloseByApp(PeekProcessName, timeoutMS: 10_000);
-                StopPeekProcess();
+                Assert.IsTrue(StopPeekProcess(), "Peek did not stop before the next activation attempt.");
             }
         }
 
@@ -600,6 +600,7 @@ public class PeekFilePreviewTests : UITestBase
             $"session={GetProcessSessionId(processId)}, elevated={FormatElevation(isElevated)}. " +
             $"Waiting for expected title without resending the hotkey.");
 
+        EnsurePeekWindowForeground(windowHandle);
         var initializedWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS);
         if (initializedWindow is not null)
         {
@@ -803,22 +804,27 @@ public class PeekFilePreviewTests : UITestBase
 
     private void EnsurePeekWindowForeground(Session peekWindow)
     {
-        var windowHandle = new IntPtr(peekWindow.WindowHandle);
+        EnsurePeekWindowForeground(peekWindow.WindowHandle);
+    }
+
+    private void EnsurePeekWindowForeground(long windowHandle)
+    {
+        var nativeWindowHandle = new IntPtr(windowHandle);
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(PeekWindowTimeoutMS);
 
         while (DateTime.UtcNow < deadline)
         {
-            if (WindowControl.GetForegroundWindowHandle() == windowHandle)
+            if (WindowControl.GetForegroundWindowHandle() == nativeWindowHandle)
             {
                 return;
             }
 
-            WindowControl.TryBringToForeground(windowHandle);
+            WindowControl.TryBringToForeground(nativeWindowHandle);
             Thread.Sleep(250);
         }
 
         Assert.Fail(
-            $"Peek HWND {peekWindow.WindowHandle} did not become the foreground window within " +
+            $"Peek HWND {windowHandle} did not become the foreground window within " +
             $"{PeekWindowTimeoutMS / 1_000}s." + Environment.NewLine +
             GetActivationDiagnostics("Peek foreground activation failed"));
     }
@@ -987,19 +993,48 @@ public class PeekFilePreviewTests : UITestBase
 
     private static bool StopPeekProcess()
     {
-        WindowControl.TryKillProcessByName(PeekProcessName);
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(10);
         while (DateTime.UtcNow < deadline)
         {
-            if (Process.GetProcessesByName(PeekProcessName).Length == 0)
+            var processes = Process.GetProcessesByName(PeekProcessName);
+            if (processes.Length == 0)
             {
                 return true;
             }
 
-            Thread.Sleep(150);
+            try
+            {
+                foreach (var process in processes)
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
+
+                foreach (var process in processes)
+                {
+                    var remaining = Math.Max(0, (int)(deadline - DateTime.UtcNow).TotalMilliseconds);
+                    if (!process.WaitForExit(remaining))
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
         }
 
-        return Process.GetProcessesByName(PeekProcessName).Length == 0;
+        return false;
     }
 
     private static bool CloseExplorerFileWindows()
