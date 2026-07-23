@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using ManagedCommon;
 
@@ -26,6 +27,17 @@ public sealed partial class JsonRpcConnection : IDisposable
     private const int MaxHeaderBytes = 16 * 1024;
     private const int MaxMessageBytes = 32 * 1024 * 1024;
 
+    // The connection has not been closed.
+    private const int StateOpen = 0;
+
+    // The connection has reached its terminal closed state: the reader exited, a write failed,
+    // or the connection was disposed. No further protocol traffic is possible.
+    private const int StateClosed = 1;
+
+    // Upper bound on the number of inbound notifications buffered for the serialized consumer.
+    // The reader never blocks on this queue: when it is full the oldest notification is dropped.
+    private const int NotificationQueueCapacity = 1024;
+
     private readonly Stream _input;
     private readonly Stream _output;
     private readonly Stream? _errorStream;
@@ -35,13 +47,25 @@ public sealed partial class JsonRpcConnection : IDisposable
     private readonly ConcurrentDictionary<string, Action<JsonElement>> _notificationHandlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<JsonElement, CancellationToken, Task<JsonNode?>>> _requestHandlers = new(StringComparer.Ordinal);
 
+    private readonly Channel<NotificationEnvelope> _notificationQueue = Channel.CreateBounded<NotificationEnvelope>(
+        new BoundedChannelOptions(NotificationQueueCapacity)
+        {
+            SingleReader = true,
+            SingleWriter = true,
+            FullMode = BoundedChannelFullMode.Wait,
+        });
+
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly CancellationTokenSource _disposalCts = new();
 
     private int _nextRequestId;
+    private int _connectionState = StateOpen;
+    private long _droppedNotifications;
     private Task? _readLoopTask;
     private Task? _errorPumpTask;
+    private Task? _notificationConsumerTask;
     private volatile bool _disposed;
+    private int _disconnectedRaised;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="JsonRpcConnection"/> class.
@@ -81,6 +105,7 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
 
         _readLoopTask = Task.Run(ReadLoopAsync);
+        _notificationConsumerTask = Task.Run(ConsumeNotificationsAsync);
 
         if (_errorStream is not null)
         {
@@ -99,6 +124,12 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
+        // Fail fast once the connection is closed rather than waiting for the request timeout.
+        if (Volatile.Read(ref _connectionState) != StateOpen)
+        {
+            throw new JsonRpcException("The JSON-RPC connection is closed.");
+        }
+
         var id = Interlocked.Increment(ref _nextRequestId);
         var request = new JsonRpcRequest
         {
@@ -109,6 +140,16 @@ public sealed partial class JsonRpcConnection : IDisposable
 
         var tcs = new TaskCompletionSource<JsonRpcResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         _pendingRequests[id] = tcs;
+
+        // Close the add/disconnect race: the reader may have exited between the check above and the
+        // add. The terminal state is set before FailAllPending runs, so re-reading it here guarantees
+        // that either FailAllPending already observed this entry or we observe the closed state and
+        // fail immediately, never waiting the full timeout for a response that can never arrive.
+        if (Volatile.Read(ref _connectionState) != StateOpen)
+        {
+            _pendingRequests.TryRemove(id, out _);
+            throw new JsonRpcException("The JSON-RPC connection was closed before the request could be sent.");
+        }
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposalCts.Token);
         timeoutCts.CancelAfter(_requestTimeout);
@@ -130,7 +171,7 @@ public sealed partial class JsonRpcConnection : IDisposable
                 throw;
             }
 
-            if (_disposed || _disposalCts.IsCancellationRequested)
+            if (_disposed || _disposalCts.IsCancellationRequested || Volatile.Read(ref _connectionState) != StateOpen)
             {
                 throw new JsonRpcException("The JSON-RPC connection was closed before a response was received.");
             }
@@ -230,6 +271,75 @@ public sealed partial class JsonRpcConnection : IDisposable
 
         _disposed = true;
 
+        // (a) Enter the terminal closed state so new writes are rejected before they touch the
+        // write lock, (b) cancel the disposal token, fail every pending request, and raise
+        // Disconnected exactly once.
+        Close("The JSON-RPC connection was disposed.");
+
+        // (c) Complete the notification queue so its consumer drains and exits.
+        _notificationQueue.Writer.TryComplete();
+
+        // (d) Drain any writer that is mid-frame by acquiring the write lock once. Writes emit their
+        // header, body, and flush under CancellationToken.None, so an in-flight write completes the
+        // whole frame rather than leaving a corrupt partial frame behind.
+        var acquiredWriteLock = false;
+        try
+        {
+            acquiredWriteLock = _writeLock.Wait(TimeSpan.FromSeconds(2));
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        WaitForBackgroundTask(_readLoopTask);
+        WaitForBackgroundTask(_errorPumpTask);
+        WaitForBackgroundTask(_notificationConsumerTask);
+
+        if (acquiredWriteLock)
+        {
+            try
+            {
+                _writeLock.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (SemaphoreFullException)
+            {
+            }
+        }
+
+        // (e) Dispose the write lock only after draining, so no in-flight writer can still release it.
+        _writeLock.Dispose();
+        _disposalCts.Dispose();
+    }
+
+    private static void WaitForBackgroundTask(Task? task)
+    {
+        try
+        {
+            task?.Wait(TimeSpan.FromSeconds(2));
+        }
+        catch (AggregateException)
+        {
+        }
+    }
+
+    /// <summary>
+    /// Transitions the connection to its terminal closed state exactly once: cancels the disposal
+    /// token, fails every pending request, and raises <see cref="Disconnected"/>. Safe to call from
+    /// the reader, a failed writer, or Dispose; repeated calls are no-ops.
+    /// </summary>
+    /// <param name="reason">A human-readable reason recorded on failed pending requests.</param>
+    private void Close(string reason)
+    {
+        // The state flag is flipped before FailAllPending so that a request racing the close either
+        // has already been observed by FailAllPending or observes the closed state on its own re-check.
+        if (Interlocked.Exchange(ref _connectionState, StateClosed) == StateClosed)
+        {
+            return;
+        }
+
         try
         {
             _disposalCts.Cancel();
@@ -238,43 +348,70 @@ public sealed partial class JsonRpcConnection : IDisposable
         {
         }
 
-        FailAllPending("The JSON-RPC connection was disposed.");
+        _notificationQueue.Writer.TryComplete();
 
-        try
-        {
-            _readLoopTask?.Wait(TimeSpan.FromSeconds(2));
-        }
-        catch (AggregateException)
-        {
-        }
-
-        try
-        {
-            _errorPumpTask?.Wait(TimeSpan.FromSeconds(2));
-        }
-        catch (AggregateException)
-        {
-        }
-
-        _writeLock.Dispose();
-        _disposalCts.Dispose();
+        FailAllPending(reason);
+        RaiseDisconnected();
     }
 
     private async Task WriteFramedAsync(string json, CancellationToken cancellationToken)
     {
+        if (Volatile.Read(ref _connectionState) != StateOpen)
+        {
+            throw new JsonRpcException("The JSON-RPC connection is closed.");
+        }
+
         var body = Encoding.UTF8.GetBytes(json);
         var header = Encoding.ASCII.GetBytes($"Content-Length: {body.Length}\r\n\r\n");
 
-        await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            await _output.WriteAsync(header, cancellationToken).ConfigureAwait(false);
-            await _output.WriteAsync(body, cancellationToken).ConfigureAwait(false);
-            await _output.FlushAsync(cancellationToken).ConfigureAwait(false);
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException)
+        {
+            // The connection was disposed while waiting for the write lock.
+            throw new JsonRpcException("The JSON-RPC connection is closed.");
+        }
+
+        try
+        {
+            // Re-check after acquiring the lock: the connection may have closed while we waited.
+            if (Volatile.Read(ref _connectionState) != StateOpen)
+            {
+                throw new JsonRpcException("The JSON-RPC connection is closed.");
+            }
+
+            // Once frame emission begins the header, body, and flush must be written as one unit.
+            // Passing the caller's cancellation token here would let a cancellation between the header
+            // and body write a corrupt frame and leave the connection reusable, so a non-cancellable
+            // token is used. Cancellation is still honored while acquiring the lock above.
+            try
+            {
+                await _output.WriteAsync(header, CancellationToken.None).ConfigureAwait(false);
+                await _output.WriteAsync(body, CancellationToken.None).ConfigureAwait(false);
+                await _output.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not JsonRpcException)
+            {
+                // A partial frame may have reached the peer. The stream can no longer be trusted, so
+                // the connection transitions to its terminal closed state and is never reused.
+                Close("The JSON-RPC connection failed while writing a message.");
+                throw new JsonRpcException("The JSON-RPC connection failed while writing a message.", ex);
+            }
         }
         finally
         {
-            _writeLock.Release();
+            try
+            {
+                _writeLock.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            catch (SemaphoreFullException)
+            {
+            }
         }
     }
 
@@ -315,8 +452,9 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
         finally
         {
-            FailAllPending("The JSON-RPC connection was closed.");
-            RaiseDisconnected();
+            // The reader has exited: EOF, a protocol failure, or disposal. Enter the terminal closed
+            // state so pending requests fail and new requests are rejected without waiting.
+            Close("The JSON-RPC connection was closed.");
         }
     }
 
@@ -482,13 +620,65 @@ public sealed partial class JsonRpcConnection : IDisposable
 
     private void DispatchNotification(string method, JsonElement root)
     {
-        if (!_notificationHandlers.TryGetValue(method, out var handler))
+        if (!_notificationHandlers.ContainsKey(method))
         {
             Logger.LogDebug($"No handler registered for JSON-RPC notification '{method}'.");
             return;
         }
 
         var parameters = root.TryGetProperty("params", out var p) ? p.Clone() : default;
+
+        // Enqueue rather than invoke inline so a slow or reentrant handler never blocks the read loop
+        // or delays response correlation. The read loop is the only producer for this queue.
+        if (_notificationQueue.Writer.TryWrite(new NotificationEnvelope(method, parameters)))
+        {
+            return;
+        }
+
+        // The queue is full because the consumer is behind. Drop the oldest buffered notification to
+        // make room for the newest, so the reader stays responsive and the freshest state wins.
+        // Notifications are advisory, so losing an older one is preferable to blocking the transport.
+        _notificationQueue.Reader.TryRead(out _);
+
+        if (!_notificationQueue.Writer.TryWrite(new NotificationEnvelope(method, parameters)))
+        {
+            // The queue completed (the connection is closing); nothing further to do.
+            return;
+        }
+
+        var dropped = Interlocked.Increment(ref _droppedNotifications);
+        if ((dropped & 0x3F) == 1)
+        {
+            Logger.LogWarning($"The JSON-RPC notification queue is saturated; {dropped} notification(s) have been dropped (oldest first).");
+        }
+    }
+
+    private async Task ConsumeNotificationsAsync()
+    {
+        try
+        {
+            while (await _notificationQueue.Reader.WaitToReadAsync(_disposalCts.Token).ConfigureAwait(false))
+            {
+                while (_notificationQueue.Reader.TryRead(out var envelope))
+                {
+                    InvokeNotificationHandler(envelope.Method, envelope.Parameters);
+                }
+            }
+        }
+        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        {
+        }
+        catch (ChannelClosedException)
+        {
+        }
+    }
+
+    private void InvokeNotificationHandler(string method, JsonElement parameters)
+    {
+        if (!_notificationHandlers.TryGetValue(method, out var handler))
+        {
+            return;
+        }
 
         try
         {
@@ -576,20 +766,8 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         try
         {
-            using var reader = new StreamReader(_errorStream!, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true);
-            while (!_disposalCts.IsCancellationRequested)
-            {
-                var line = await reader.ReadLineAsync(_disposalCts.Token).ConfigureAwait(false);
-                if (line is null)
-                {
-                    break;
-                }
-
-                if (!string.IsNullOrWhiteSpace(line))
-                {
-                    Logger.LogWarning($"[extension stderr] {line}");
-                }
-            }
+            var reader = new BoundedStderrReader(line => Logger.LogWarning($"[extension stderr] {line}"));
+            await reader.PumpAsync(_errorStream!, _disposalCts.Token).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
         {
@@ -613,11 +791,19 @@ public sealed partial class JsonRpcConnection : IDisposable
 
     private void RaiseDisconnected()
     {
-        Disconnected?.Invoke(this, EventArgs.Empty);
+        if (Interlocked.Exchange(ref _disconnectedRaised, 1) == 0)
+        {
+            Disconnected?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void RaiseError(Exception exception)
     {
         Error?.Invoke(this, new JsonRpcErrorEventArgs(exception));
     }
+
+    /// <summary>
+    /// A buffered inbound notification: the method name plus a detached clone of its parameters.
+    /// </summary>
+    private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters);
 }
