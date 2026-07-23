@@ -168,6 +168,14 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();
+
+                // UI-thread model callback (not slow-init). Selection also refreshes via
+                // ListViewModel.SelectedItemPropertyChanged.
+                if (IsSelectedInitialized && IsListHoverActionsEnabled)
+                {
+                    RefreshHoverActions();
+                }
+
                 break;
             case nameof(model.Title):
                 UpdateProperty(nameof(Title));
@@ -293,6 +301,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 OnPropertyChanged(nameof(Tags));
                 OnPropertyChanged(nameof(HasTags));
                 OnPropertyChanged(nameof(VisibleTags));
+                OnPropertyChanged(nameof(ShowTags));
             });
     }
 

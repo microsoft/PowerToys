@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -106,6 +106,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         try
         {
             var model = _commandProvider.Unsafe!;
+
+            ExtensionHost.SetCommandProvider(model);
 
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);

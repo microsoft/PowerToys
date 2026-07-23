@@ -96,6 +96,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool EnableListHoverActions
+    {
+        get => _settingsService.Settings.EnableListHoverActions;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { EnableListHoverActions = value });
+        }
+    }
+
     public bool HighlightSearchOnActivate
     {
         get => _settingsService.Settings.HighlightSearchOnActivate;

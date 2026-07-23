@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -344,6 +345,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     private AppExtensionHost _extensionHost;
     private ICommandProviderContext _providerContext;
     private IContextMenuFactory _contextMenuFactory;
+    private ISettingsService? _settingsService;
 
     public bool IsListParameter => _listViewModel != null;
 
@@ -404,13 +406,14 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         set => SetSearchText(value);
     }
 
-    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, ISettingsService? settingsService = null)
         : base(commandRun, context)
     {
         _model = new(commandRun);
         _extensionHost = extensionHost;
         _providerContext = providerContext;
         _contextMenuFactory = contextMenuFactory;
+        _settingsService = settingsService;
     }
 
     public override void InitializeProperties()
@@ -437,7 +440,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
-                _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
+                _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory, _settingsService);
                 _listViewModel.InitializeProperties();
             }
         }
@@ -586,11 +589,14 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private readonly IContextMenuFactory _contextMenuFactory;
 
-    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    private readonly ISettingsService? _settingsService;
+
+    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, ISettingsService? settingsService = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
+        _settingsService = settingsService;
         Command = new(new(null), PageContext, _contextMenuFactory);
     }
 
@@ -628,7 +634,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     ILabelRun labelRun => new LabelRunViewModel(labelRun, PageContext),
                     IStringParameterRun stringRun => new StringParameterRunViewModel(stringRun, PageContext),
-                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost, this.ProviderContext, _contextMenuFactory),
+                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost, this.ProviderContext, _contextMenuFactory, _settingsService),
                     _ => null,
                 };
                 var t = itemVm?.ToString() ?? "unknown";

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -261,6 +261,8 @@
             x:Key="ListSingleRowItemContainerStyle"
             BasedOn="{StaticResource DefaultListViewItemStyle}"
             TargetType="ListViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
             <Setter Property="MinHeight" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="Height" Value="{StaticResource SingleRowListViewItemHeight}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -349,6 +351,79 @@
             Separator="{StaticResource GridViewSeparatorItemStyle}"
             Small="{StaticResource IconGridViewItemStyle}" />
 
+        <DataTemplate x:Key="ListItemHoverActionTemplate" x:DataType="viewModels:CommandContextItemViewModel">
+            <Grid
+                Width="28"
+                Height="28"
+                AutomationProperties.AccessibilityView="Raw"
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
+                <!-- Idle outline -->
+                <Border
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    IsHitTestVisible="False"
+                    Visibility="{x:Bind help:BindTransformers.BoolToInvertedVisibility(IsHoverKeyboardSelected), Mode=OneWay}" />
+                <!-- Keyboard Tab target: full white outline (same family as row Tab outline) -->
+                <Border
+                    BorderBrush="{ThemeResource FocusStrokeColorOuterBrush}"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    IsHitTestVisible="False"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsHoverKeyboardSelected), Mode=OneWay, FallbackValue=Collapsed}" />
+                <cpcontrols:IconBox
+                    Width="16"
+                    Height="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+            </Grid>
+        </DataTemplate>
+
+        <ControlTemplate x:Key="ListItemHoverActionItemTemplate" TargetType="ListViewItem">
+            <!--
+                Presenter stays fill-free. Real keyboard outline is the Border in
+                ListItemHoverActionTemplate (SelectionIndicator is the left accent bar — do not use it).
+            -->
+            <ListViewItemPresenter
+                x:Name="Root"
+                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                ContentMargin="{TemplateBinding Padding}"
+                ContentTransitions="{TemplateBinding ContentTransitions}"
+                Control.IsTemplateFocusTarget="True"
+                CornerRadius="4"
+                DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                PlaceholderBackground="Transparent"
+                PointerOverBackground="Transparent"
+                PointerOverForeground="{ThemeResource TextFillColorPrimaryBrush}"
+                PressedBackground="Transparent"
+                SelectedBackground="Transparent"
+                SelectedDisabledBackground="Transparent"
+                SelectedForeground="{ThemeResource TextFillColorPrimaryBrush}"
+                SelectedPointerOverBackground="Transparent"
+                SelectedPressedBackground="Transparent"
+                SelectionCheckMarkVisualEnabled="False"
+                SelectionIndicatorVisualEnabled="False" />
+        </ControlTemplate>
+
+        <Style
+            x:Key="ListItemHoverActionContainerStyle"
+            TargetType="ListViewItem">
+            <Setter Property="AllowFocusOnInteraction" Value="False" />
+            <Setter Property="IsTabStop" Value="False" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="1" />
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="MinWidth" Value="28" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+            <Setter Property="Template" Value="{StaticResource ListItemHoverActionItemTemplate}" />
+        </Style>
+
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
@@ -359,6 +434,21 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
+
+                <!--
+                    Row Tab step: outline only (no fill). A filled background read as a
+                    second "textbox" selection under the title and competed with icons.
+                    Tab order: this outline first, then hover buttons.
+                -->
+                <Border
+                    Grid.ColumnSpan="3"
+                    Margin="-4,0"
+                    Background="Transparent"
+                    BorderBrush="{ThemeResource FocusStrokeColorOuterBrush}"
+                    BorderThickness="2"
+                    CornerRadius="4"
+                    IsHitTestVisible="False"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(IsRowTabFocused), Mode=OneWay, FallbackValue=Collapsed}" />
 
                 <cpcontrols:IconBox
                     x:Name="IconBorder"
@@ -406,24 +496,63 @@
                 </Grid>
 
                 <!--
-                    An 8px right margin is added to visually match the spacing between the icon
-                    and the left margin of the list.
-                    Tags are capped at 3 with a [+N] overflow badge to prevent
-                    unbounded growth that pushes the title out of view.
+                    Tags and hover actions live in the same trailing column but no longer
+                    overlap: tags stay visible at all times and hover actions render
+                    alongside them (to their right) instead of covering them. The column
+                    grows to fit both instead of swapping one for the other.
                 -->
-                <ItemsRepeater
+                <StackPanel
                     Grid.Column="2"
                     Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
                     VerticalAlignment="Center"
-                    IsHitTestVisible="False"
-                    IsTabStop="False"
-                    ItemTemplate="{StaticResource TagTemplate}"
-                    ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
-                    Visibility="{x:Bind HasTags, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Horizontal" Spacing="4" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ItemsRepeater
+                        HorizontalAlignment="Right"
+                        IsHitTestVisible="False"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource TagTemplate}"
+                        ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowTags), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="4" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+
+                    <ListView
+                        x:Name="HoverActionsList"
+                        x:Load="{x:Bind IsListHoverActionsEnabled, Mode=OneWay}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        AllowFocusOnInteraction="False"
+                        AutomationProperties.AccessibilityView="Raw"
+                        AutomationProperties.LiveSetting="Off"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        IsHitTestVisible="True"
+                        IsItemClickEnabled="True"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
+                        ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        SelectedIndex="{x:Bind HoverActionSelectedIndex, Mode=OneWay}"
+                        SelectionMode="Single"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerStyle>
+                            <Style BasedOn="{StaticResource ListItemHoverActionContainerStyle}" TargetType="ListViewItem" />
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
+                </StackPanel>
             </Grid>
         </DataTemplate>
 
@@ -616,6 +745,7 @@
                             x:Name="ItemsList"
                             Padding="0,2,0,0"
                             CanDragItems="True"
+                            ContainerContentChanging="ItemsList_ContainerContentChanging"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
                             DoubleTapped="Items_DoubleTapped"

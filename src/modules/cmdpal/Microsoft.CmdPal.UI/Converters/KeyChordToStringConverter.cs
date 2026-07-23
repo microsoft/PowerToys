@@ -2,10 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.UI.Xaml.Data;
-using Windows.System;
-using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI;
 
@@ -13,28 +12,9 @@ public partial class KeyChordToStringConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is KeyChord shortcut && (VirtualKey)shortcut.Vkey != VirtualKey.None)
+        if (value is KeyChord shortcut)
         {
-            var result = string.Empty;
-
-            if (shortcut.Modifiers.HasFlag(VirtualKeyModifiers.Control))
-            {
-                result += "Ctrl+";
-            }
-
-            if (shortcut.Modifiers.HasFlag(VirtualKeyModifiers.Shift))
-            {
-                result += "Shift+";
-            }
-
-            if (shortcut.Modifiers.HasFlag(VirtualKeyModifiers.Menu))
-            {
-                result += "Alt+";
-            }
-
-            result += (VirtualKey)shortcut.Vkey;
-
-            return result;
+            return UIHelper.FormatKeyChordForDisplay(shortcut);
         }
 
         return string.Empty;
