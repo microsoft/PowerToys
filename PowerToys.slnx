@@ -64,6 +64,12 @@
     <Project Path="src/common/updating/updating.vcxproj" Id="17da04df-e393-4397-9cf0-84dabe11032e" />
     <Project Path="src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   </Folder>
+  <Folder Name="/common/Tests/">
+    <Project Path="src/common/ManagedCommon.UnitTests/ManagedCommon.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/common/interop/">
     <Project Path="src/common/interop/interop-tests/Common.Interop.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1198,4 +1204,3 @@
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
-

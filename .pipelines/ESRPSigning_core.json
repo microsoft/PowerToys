@@ -38,8 +38,8 @@
 
 
             "PowerToys.ColorPicker.dll",
-            "PowerToys.ColorPickerUI.dll",
-            "PowerToys.ColorPickerUI.exe",
+            "WinUI3Apps\\PowerToys.ColorPickerUI.dll",
+            "WinUI3Apps\\PowerToys.ColorPickerUI.exe",
 
             "PowerToys.CropAndLockModuleInterface.dll",
             "PowerToys.CropAndLock.exe",

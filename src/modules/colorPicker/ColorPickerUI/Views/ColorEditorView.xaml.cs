@@ -1,26 +1,34 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 
 using ColorPicker.Helpers;
 using ColorPicker.ViewModels;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace ColorPicker.Views
 {
     /// <summary>
     /// Interaction logic for ColorEditorView.xaml
     /// </summary>
-    public partial class ColorEditorView : UserControl
+    public sealed partial class ColorEditorView : UserControl
     {
         public ColorEditorView()
         {
             InitializeComponent();
             Loaded += OnLoaded;
+        }
+
+        private void HistoryContextFlyout_Opening(object sender, object e)
+        {
+            bool hasSelection = HistoryColors.SelectedItems.Count > 0;
+            RemoveMenuItem.IsEnabled = hasSelection;
+            ExportMenuItem.IsEnabled = hasSelection;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -29,12 +37,17 @@ namespace ColorPicker.Views
         }
 
         /// <summary>
-        /// Updating SelectedColorIndex will not refresh ListView viewport.
-        /// We listen for SelectedColorIndex property change and in case of a value <= 0 (new color is added) a call to ScrollIntoView is made so ListView will scroll up.
+        /// Updating SelectedColorIndex will not refresh the ListView viewport. We listen for the
+        /// SelectedColorIndex property change and, when a new color is added (value &lt;= 0), call
+        /// ScrollIntoView so the ListView scrolls back to the start.
         /// </summary>
         private void EnableHistoryColorsScrollIntoView()
         {
-            ColorEditorViewModel colorEditorViewModel = (ColorEditorViewModel)this.DataContext;
+            if (DataContext is not ColorEditorViewModel colorEditorViewModel)
+            {
+                return;
+            }
+
             ((INotifyPropertyChanged)colorEditorViewModel).PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName == nameof(colorEditorViewModel.SelectedColorIndex) && colorEditorViewModel.SelectedColorIndex <= 0)
@@ -45,66 +58,41 @@ namespace ColorPicker.Views
         }
 
         /// <summary>
-        /// Handles the mouse wheel scroll event on the HistoryColors ListView.
-        /// Scrolls the ListView horizontally based on the direction of the mouse wheel scroll.
+        /// Scrolls the history ListView horizontally on mouse wheel. WinUI has no MouseWheel; use
+        /// PointerWheelChanged and the wheel delta from the pointer point.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The mouse wheel event data.</param>
-        private void HistoryColors_OnMouseWheelScroll(object sender, System.Windows.Input.MouseWheelEventArgs e)
+        private void HistoryColors_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             var scrollViewer = FindVisualChild<ScrollViewer>(HistoryColors);
-
             if (scrollViewer != null)
             {
-                if (e.Delta > 0)
-                {
-                    scrollViewer.LineLeft();
-                }
-                else
-                {
-                    scrollViewer.LineRight();
-                }
+                var delta = e.GetCurrentPoint(HistoryColors).Properties.MouseWheelDelta;
 
+                // Positive delta scrolls left (towards the most-recent color), matching the WPF behavior.
+                scrollViewer.ChangeView(scrollViewer.HorizontalOffset - delta, null, null);
                 e.Handled = true;
             }
         }
 
-        /// <summary>
-        /// Finds a visual child of a specified type within a given dependency object.
-        /// </summary>
-        /// <typeparam name="T">The type of the child element to find.</typeparam>
-        /// <param name="obj">The parent dependency object.</param>
-        /// <returns>The first child element of the specified type, or null if no such element is found.</returns>
         private static T FindVisualChild<T>(DependencyObject obj)
             where T : DependencyObject
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(obj, i);
-                if (child != null && child is T tChild)
+                if (child is T tChild)
                 {
                     return tChild;
                 }
-                else
+
+                T childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
                 {
-                    T childOfChild = FindVisualChild<T>(child);
-                    if (childOfChild != null)
-                    {
-                        return childOfChild;
-                    }
+                    return childOfChild;
                 }
             }
 
             return null;
         }
-
-        /*
-        private void HistoryColors_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            // Note: it does not handle clicking on the same color.
-            // More appropriate event would be SelectionChanged but we cannot distinguish between user action and program action inside of it.
-            SessionEventHelper.Event.EditorHistoryColorPicked = true;
-        }
-        */
     }
 }

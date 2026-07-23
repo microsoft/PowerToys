@@ -1,183 +1,173 @@
-﻿<UserControl
+<UserControl
     x:Class="ColorPicker.Views.ColorEditorView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:ColorPicker.Controls"
+    xmlns:controls="using:ColorPicker.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:p="clr-namespace:ColorPicker.Properties"
+    xmlns:models="using:ColorPicker.Models"
     x:Name="colorEditorControl"
     mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
+            <RowDefinition Height="56" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <!--  Side bar  -->
-        <Grid Margin="16,16,16,0">
+        <Grid Margin="16,0,16,8" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Button
-                Height="36"
-                VerticalAlignment="Top"
-                AutomationProperties.Name="{x:Static p:Resources.Pick_color}"
-                Command="{Binding OpenColorPickerCommand}"
-                TabIndex="0"
-                ToolTipService.ToolTip="{x:Static p:Resources.Pick_color}">
-
-                <StackPanel Orientation="Horizontal">
+                x:Name="PickColorButton"
+                x:Uid="Pick_color"
+                VerticalAlignment="Center"
+                Command="{Binding OpenColorPickerCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon FontSize="14" Glyph="&#xef3c;" />
                     <TextBlock
-                        Margin="0,4,0,0"
-                        FontFamily="{StaticResource IconFontFamily}"
-                        Text="&#xef3c;" />
-
-                    <!--  The label text  -->
-                    <TextBlock
-                        Margin="8,0,0,0"
-                        VerticalAlignment="Center"
-                        Text="{x:Static p:Resources.New_Label}" />
+                        x:Name="PickColorLabel"
+                        x:Uid="New_Label"
+                        VerticalAlignment="Center" />
                 </StackPanel>
             </Button>
 
             <ListView
                 x:Name="HistoryColors"
+                x:Uid="Color_History"
                 Grid.Column="1"
-                Height="48"
-                Margin="12,4,12,0"
-                VerticalAlignment="Top"
-                VerticalContentAlignment="Top"
-                AutomationProperties.Name="{x:Static p:Resources.Color_History}"
-                Background="Transparent"
-                BorderBrush="Transparent"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
+                ItemContainerTransitions="{x:Null}"
                 ItemsSource="{Binding ColorsHistory}"
-                KeyboardNavigation.DirectionalNavigation="Contained"
-                MouseWheel="HistoryColors_OnMouseWheelScroll"
-                ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                SelectedIndex="{Binding SelectedColorIndex}"
-                SelectionMode="Extended"
-                TabIndex="2">
+                PointerWheelChanged="HistoryColors_OnPointerWheelChanged"
+                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                SelectedIndex="{Binding SelectedColorIndex, Mode=TwoWay}"
+                SelectionMode="Extended">
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <VirtualizingStackPanel VerticalAlignment="Top" Orientation="Horizontal" />
+                        <ItemsStackPanel VerticalAlignment="Top" Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
-                <ListView.ContextMenu>
-                    <ContextMenu Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
-                        <MenuItem
+                <ListView.ContextFlyout>
+                    <MenuFlyout x:Name="HistoryContextFlyout" Opening="HistoryContextFlyout_Opening">
+                        <MenuFlyoutItem
+                            x:Name="RemoveMenuItem"
+                            x:Uid="Remove"
                             Command="{Binding RemoveColorsCommand}"
-                            CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
-                            Header="{x:Static p:Resources.Remove}">
-                            <MenuItem.Icon>
-                                <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE74D;" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem Header="{x:Static p:Resources.Export_by}">
-                            <MenuItem.Icon>
-                                <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xEDE1;" />
-                            </MenuItem.Icon>
-                            <MenuItem
+                            CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74D;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSubItem x:Name="ExportMenuItem" x:Uid="Export_by">
+                            <MenuFlyoutSubItem.Icon>
+                                <FontIcon Glyph="&#xEDE1;" />
+                            </MenuFlyoutSubItem.Icon>
+                            <MenuFlyoutItem
+                                x:Name="ExportByColorMenuItem"
+                                x:Uid="Export_by_color"
                                 Command="{Binding ExportColorsGroupedByColorCommand}"
-                                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
-                                Header="{x:Static p:Resources.Export_by_color}">
-                                <MenuItem.Icon>
-                                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE790;" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                            <MenuItem
+                                CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE790;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                            <MenuFlyoutItem
+                                x:Name="ExportByFormatMenuItem"
+                                x:Uid="Export_by_format"
                                 Command="{Binding ExportColorsGroupedByFormatCommand}"
-                                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.SelectedItems}"
-                                Header="{x:Static p:Resources.Export_by_format}">
-                                <MenuItem.Icon>
-                                    <TextBlock FontFamily="{StaticResource IconFontFamily}" Text="&#xE943;" />
-                                </MenuItem.Icon>
-                            </MenuItem>
-                        </MenuItem>
-                    </ContextMenu>
-                </ListView.ContextMenu>
+                                CommandParameter="{Binding SelectedItems, ElementName=HistoryColors}">
+                                <MenuFlyoutItem.Icon>
+                                    <FontIcon Glyph="&#xE943;" />
+                                </MenuFlyoutItem.Icon>
+                            </MenuFlyoutItem>
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid Width="28" Height="28">
                             <Ellipse
                                 Width="20"
                                 Height="20"
-                                Stroke="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                                Stroke="{ThemeResource SurfaceStrokeColorDefaultBrush}"
                                 StrokeThickness="1">
                                 <Ellipse.Fill>
-                                    <SolidColorBrush Color="{Binding Path=.}" />
+                                    <SolidColorBrush Color="{Binding}" />
                                 </Ellipse.Fill>
                             </Ellipse>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
                 <ListView.ItemContainerStyle>
-                    <Style TargetType="{x:Type ListViewItem}">
-                        <Setter Property="KeyboardNavigation.TabNavigation" Value="Local" />
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="MinWidth" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                        <Setter Property="Margin" Value="4,0" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
-                                    <Grid x:Name="RootGrid" Height="30">
-                                        <Ellipse
-                                            x:Name="SelectionStroke"
-                                            Width="28"
-                                            Height="28"
-                                            Fill="Transparent"
-                                            Opacity="0"
-                                            StrokeThickness="2">
-                                            <Ellipse.Stroke>
-                                                <SolidColorBrush Color="{Binding Path=.}" />
-                                            </Ellipse.Stroke>
-                                        </Ellipse>
+                                    <Grid
+                                        x:Name="RootGrid"
+                                        Width="32"
+                                        Height="32">
                                         <ContentPresenter
                                             x:Name="ContentPresenter"
                                             Margin="{TemplateBinding Padding}"
                                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                        <Ellipse
+                                            x:Name="SelectionStroke"
+                                            Width="28"
+                                            Height="28"
+                                            DataContext="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                                            Fill="Transparent"
+                                            StrokeThickness="2"
+                                            Visibility="Collapsed">
+                                            <Ellipse.Stroke>
+                                                <SolidColorBrush Color="{Binding}" />
+                                            </Ellipse.Stroke>
+                                        </Ellipse>
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal" />
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Opacity" Value="0.8" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed" />
+                                                <VisualState x:Name="Disabled">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Opacity" Value="{ThemeResource ListViewItemDisabledThemeOpacity}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOverSelected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="RootGrid.Opacity" Value="0.8" />
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PressedSelected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionStroke.Visibility" Value="Visible" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
                                     </Grid>
-
-                                    <ControlTemplate.Triggers>
-                                        <!--  Focused  -->
-                                        <!--
-                                        <Trigger Property="ui:FocusVisualHelper.ShowFocusVisual" Value="True">
-                                            <Setter TargetName="BorderRectangle" Property="Visibility" Value="Collapsed" />
-                                        </Trigger>-->
-
-                                        <!--  PointerOver  -->
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="IsMouseOver" Value="True" />
-                                                <Condition Property="IsSelected" Value="False" />
-                                            </MultiTrigger.Conditions>
-                                            <Setter TargetName="RootGrid" Property="Opacity" Value="0.8" />
-
-                                        </MultiTrigger>
-                                        <!--  Selected  -->
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="IsMouseOver" Value="False" />
-                                                <Condition Property="IsSelected" Value="True" />
-                                            </MultiTrigger.Conditions>
-                                            <Setter TargetName="SelectionStroke" Property="Opacity" Value="1" />
-
-                                        </MultiTrigger>
-                                        <!--  PointerOverSelected  -->
-                                        <MultiTrigger>
-                                            <MultiTrigger.Conditions>
-                                                <Condition Property="IsMouseOver" Value="True" />
-                                                <Condition Property="IsSelected" Value="True" />
-                                            </MultiTrigger.Conditions>
-                                            <Setter TargetName="SelectionStroke" Property="Opacity" Value="1" />
-                                            <Setter TargetName="RootGrid" Property="Opacity" Value="0.8" />
-                                        </MultiTrigger>
-                                        <!--  Disabled  -->
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter TargetName="RootGrid" Property="Opacity" Value="{DynamicResource ListViewItemDisabledThemeOpacity}" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -186,83 +176,88 @@
             </ListView>
 
             <Button
+                x:Name="OpenSettingsButton"
+                x:Uid="Open_settings"
                 Grid.Column="2"
-                Width="36"
-                Height="36"
-                Padding="0"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                AutomationProperties.Name="{x:Static p:Resources.Open_settings}"
-                Background="Transparent"
-                BorderBrush="Transparent"
+                VerticalAlignment="Center"
                 Command="{Binding OpenSettingsCommand}"
-                Style="{StaticResource SubtleButtonStyle}"
-                TabIndex="2"
-                ToolTipService.ToolTip="{x:Static p:Resources.Open_settings}">
+                Style="{StaticResource SubtleButtonStyle}">
                 <Button.Content>
-                    <TextBlock
-                        FontFamily="{StaticResource IconFontFamily}"
-                        FontSize="18"
-                        Text="&#xE713;" />
+                    <FontIcon FontSize="16" Glyph="&#xE713;" />
                 </Button.Content>
             </Button>
         </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="40" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <Border
-                Grid.ColumnSpan="2"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0" />
-
             <controls:ColorPickerControl
-                Margin="16,0,12,0"
-                HorizontalAlignment="Center"
+                Margin="16,0,0,0"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 IsTabStop="True"
-                KeyboardNavigation.DirectionalNavigation="Contained"
                 SelectedColor="{Binding SelectedColor}"
                 SelectedColorChangedCommand="{Binding SelectedColorChangedCommand}"
-                TabIndex="2"
                 Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}" />
 
             <!--  Main grid  -->
-            <Grid
-                Grid.Column="1"
-                Margin="0,2,0,0"
-                Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
-                <ScrollViewer IsTabStop="False">
-                    <ItemsControl
-                        FocusManager.IsFocusScope="True"
-                        IsTabStop="False"
-                        ItemsSource="{Binding ColorRepresentations}"
-                        KeyboardNavigation.DirectionalNavigation="Contained"
-                        TabIndex="4">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <controls:ColorFormatControl
-                                    ColorCopiedNotificationBorder="{Binding ElementName=CopiedBorderIndicator}"
-                                    ColorFormatModel="{Binding}"
-                                    SelectedColor="{Binding ElementName=colorEditorControl, Path=DataContext.SelectedColor}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel
-                                    Margin="0,14,12,10"
-                                    Background="Transparent"
-                                    Orientation="Vertical" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </ScrollViewer>
+            <Grid Grid.Column="1" Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}}">
+                <ScrollViewer Padding="12" IsTabStop="False">
+                    <ItemsRepeater ItemsSource="{Binding ColorRepresentations}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="8" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="models:ColorFormatModel">
+                                <Grid
+                                    Height="48"
+                                    Padding="12,0,4,0"
+                                    HorizontalAlignment="Stretch"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{ThemeResource ControlCornerRadius}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="48" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind FormatName, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        ToolTipService.ToolTip="{x:Bind FormatName, Mode=OneWay}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        IsTextSelectionEnabled="True"
+                                        Text="{x:Bind ColorText, Mode=OneWay}"
+                                        ToolTipService.ToolTip="{x:Bind ColorText, Mode=OneWay}" />
 
+                                    <controls:CopyButton
+                                        x:Uid="Copy_to_clipboard"
+                                        Grid.Column="2"
+                                        AutomationProperties.HelpText="{x:Bind CopyHelperText, Mode=OneWay}"
+                                        Command="{Binding DataContext.CopyColorTextCommand, ElementName=colorEditorControl}"
+                                        CommandParameter="{x:Bind}"
+                                        Content="&#xE8C8;" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
             </Grid>
         </Grid>
+
         <!--  Empty history  -->
         <StackPanel
             Grid.Row="1"
@@ -270,50 +265,20 @@
             Margin="0,-12,0,0"
             VerticalAlignment="Center"
             Orientation="Vertical"
-            Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToInvertedVisibilityConverter}}">
-            <TextBlock
+            Visibility="{Binding ColorsHistory.Count, Converter={StaticResource numberToVisibilityConverter}, ConverterParameter=True}">
+            <FontIcon
                 HorizontalAlignment="Center"
-                FontFamily="{StaticResource IconFontFamily}"
                 FontSize="36"
-                Text="&#xEF3C;" />
+                Glyph="&#xEF3C;" />
             <TextBlock
+                x:Name="NoColorsLabel"
+                x:Uid="No_colors_yet"
                 Margin="24,16,24,16"
                 HorizontalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Static p:Resources.No_colors_yet}"
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
         </StackPanel>
-
-        <Border
-            x:Name="CopiedBorderIndicator"
-            Grid.Row="1"
-            Grid.ColumnSpan="2"
-            Height="0"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Bottom"
-            Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}"
-            BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0"
-            Opacity="0">
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.LiveSetting="Assertive"
-                AutomationProperties.Name="{x:Static p:Resources.Copied_to_clipboard}"
-                Orientation="Horizontal">
-                <TextBlock
-                    Margin="0,0,8,0"
-                    FontFamily="{StaticResource IconFontFamily}"
-                    FontSize="20"
-                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                    Text="&#xE8C8;" />
-                <TextBlock
-                    FontSize="16"
-                    Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
-                    Text="{x:Static p:Resources.Copied_to_clipboard}" />
-            </StackPanel>
-        </Border>
     </Grid>
 </UserControl>

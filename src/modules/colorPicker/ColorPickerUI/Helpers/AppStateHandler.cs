@@ -1,41 +1,38 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel.Composition;
-using System.Threading;
-using System.Windows;
-using System.Windows.Interop;
 
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
 using Common.UI;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+using Microsoft.UI.Xaml;
+using WinUIEx;
 
 using static ColorPicker.Helpers.NativeMethodsHelper;
 
 namespace ColorPicker.Helpers
 {
-    [Export(typeof(AppStateHandler))]
     public class AppStateHandler
     {
         private readonly IColorEditorViewModel _colorEditorViewModel;
         private readonly IUserSettings _userSettings;
+        private readonly object _colorPickerVisibilityLock = new object();
         private ColorEditorWindow _colorEditorWindow;
         private bool _colorPickerShown;
-        private Lock _colorPickerVisibilityLock = new Lock();
+        private IntPtr _mainWindowHandle;
 
-        private HwndSource _hwndSource;
-        private const int _globalHotKeyId = 0x0001;
-
-        // Blocks using the escape key to close the color picker editor when the adjust color flyout is open.
-        public static bool BlockEscapeKeyClosingColorPickerEditor { get; set; }
-
-        [ImportingConstructor]
         public AppStateHandler(IColorEditorViewModel colorEditorViewModel, IUserSettings userSettings)
         {
-            Application.Current.MainWindow.Closed += MainWindow_Closed;
+            // App.Window (the picking overlay) is created and assigned before the DI graph that
+            // resolves this handler, so it is available here.
+            if (App.Window != null)
+            {
+                App.Window.Closed += MainWindow_Closed;
+            }
+
             _colorEditorViewModel = colorEditorViewModel;
             _userSettings = userSettings;
         }
@@ -71,7 +68,7 @@ namespace ColorPicker.Helpers
                     ShowColorPicker();
                 }
 
-                if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+                if (!((App)Application.Current).IsRunningDetachedFromPowerToys())
                 {
                     UserSessionStarted?.Invoke(this, EventArgs.Empty);
                 }
@@ -93,7 +90,7 @@ namespace ColorPicker.Helpers
                         HideColorPicker();
                     }
 
-                    if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+                    if (!((App)Application.Current).IsRunningDetachedFromPowerToys())
                     {
                         UserSessionEnded?.Invoke(this, EventArgs.Empty);
                     }
@@ -117,19 +114,12 @@ namespace ColorPicker.Helpers
             ShowColorPickerEditor();
         }
 
-        public static void SetTopMost()
-        {
-            Application.Current.MainWindow.Topmost = false;
-            Application.Current.MainWindow.Topmost = true;
-        }
-
         private void ShowColorPicker()
         {
             if (!_colorPickerShown)
             {
                 AppShown?.Invoke(this, EventArgs.Empty);
-                Application.Current.MainWindow.Opacity = 0;
-                Application.Current.MainWindow.Visibility = Visibility.Visible;
+                (App.Window as ColorPickerOverlayWindow)?.Show();
                 _colorPickerShown = true;
             }
         }
@@ -138,8 +128,7 @@ namespace ColorPicker.Helpers
         {
             if (_colorPickerShown)
             {
-                Application.Current.MainWindow.Opacity = 0;
-                Application.Current.MainWindow.Visibility = Visibility.Collapsed;
+                (App.Window as ColorPickerOverlayWindow)?.Hide();
                 AppHidden?.Invoke(this, EventArgs.Empty);
                 _colorPickerShown = false;
             }
@@ -150,7 +139,11 @@ namespace ColorPicker.Helpers
             if (_colorEditorWindow == null)
             {
                 _colorEditorWindow = new ColorEditorWindow(this);
-                _colorEditorWindow.contentPresenter.Content = _colorEditorViewModel;
+
+                // The export commands' FileSavePicker needs the editor window's HWND
+                // (InitializeWithWindow); assign it here, once the window exists.
+                _colorEditorViewModel.WindowHandle = _colorEditorWindow.GetWindowHandle();
+                _colorEditorWindow.ContentPresenter.Content = new Views.ColorEditorView { DataContext = _colorEditorViewModel };
                 _colorEditorViewModel.OpenColorPickerRequested += ColorEditorViewModel_OpenColorPickerRequested;
                 _colorEditorViewModel.OpenSettingsRequested += ColorEditorViewModel_OpenSettingsRequested;
                 _colorEditorViewModel.OpenColorPickerRequested += (object sender, EventArgs e) =>
@@ -161,26 +154,18 @@ namespace ColorPicker.Helpers
 
             _colorEditorViewModel.Initialize();
             _colorEditorWindow.Show();
+            _colorEditorWindow.Activate();
             SessionEventHelper.Event.EditorOpened = true;
         }
 
         private void HideColorPickerEditor()
         {
-            if (_colorEditorWindow != null)
-            {
-                _colorEditorWindow.Hide();
-            }
+            _colorEditorWindow?.Hide();
         }
 
         public bool IsColorPickerEditorVisible()
         {
-            if (_colorEditorWindow != null)
-            {
-                // Check if we are visible and on top. Using focus producing unreliable results the first time the picker is opened.
-                return _colorEditorWindow.Topmost && _colorEditorWindow.IsVisible;
-            }
-
-            return false;
+            return _colorEditorWindow != null && _colorEditorWindow.AppWindow.IsVisible;
         }
 
         public bool IsColorPickerVisible()
@@ -188,7 +173,7 @@ namespace ColorPicker.Helpers
             return _colorPickerShown;
         }
 
-        private void MainWindow_Closed(object sender, EventArgs e)
+        private void MainWindow_Closed(object sender, WindowEventArgs e)
         {
             AppClosed?.Invoke(this, EventArgs.Empty);
         }
@@ -200,7 +185,7 @@ namespace ColorPicker.Helpers
                 ShowColorPicker();
             }
 
-            _colorEditorWindow.Hide();
+            _colorEditorWindow?.Hide();
         }
 
         private void ColorEditorViewModel_OpenSettingsRequested(object sender, EventArgs e)
@@ -208,9 +193,9 @@ namespace ColorPicker.Helpers
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ColorPicker);
         }
 
-        internal void RegisterWindowHandle(System.Windows.Interop.HwndSource hwndSource)
+        internal void RegisterWindowHandle(IntPtr hwnd)
         {
-            _hwndSource = hwndSource;
+            _mainWindowHandle = hwnd;
         }
 
         public bool HandleEnterPressed()
@@ -226,8 +211,8 @@ namespace ColorPicker.Helpers
 
         public bool HandleEscPressed()
         {
-            if (!BlockEscapeKeyClosingColorPickerEditor
-                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActive)))
+            if (!EditorState.BlockEscapeKeyClosingColorPickerEditor
+                && (_colorPickerShown || (_colorEditorWindow != null && _colorEditorWindow.IsActiveWindow)))
             {
                 return EndUserSession();
             }
@@ -237,13 +222,12 @@ namespace ColorPicker.Helpers
 
         internal void MoveCursor(int xOffset, int yOffset)
         {
-            POINT lpPoint;
-            GetCursorPos(out lpPoint);
+            GetCursorPos(out POINT lpPoint);
             lpPoint.X += xOffset;
             lpPoint.Y += yOffset;
             SetCursorPos(lpPoint.X, lpPoint.Y);
         }
 
-        internal IntPtr GetMainWindowHandle() => _hwndSource?.Handle ?? IntPtr.Zero;
+        internal IntPtr GetMainWindowHandle() => _mainWindowHandle;
     }
 }
