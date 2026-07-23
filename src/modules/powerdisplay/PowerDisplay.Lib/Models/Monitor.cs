@@ -255,6 +255,13 @@ namespace PowerDisplay.Common.Models
         public MonitorCapabilities Capabilities { get; set; } = MonitorCapabilities.None;
 
         /// <summary>
+        /// Gets or sets the set of current values successfully read from the device during
+        /// discovery. Callers (e.g. the CLI) use this to avoid reporting a default/stale value
+        /// as the live "before" value. The GUI ignores this.
+        /// </summary>
+        public MonitorReadFlags ReadValues { get; set; } = MonitorReadFlags.None;
+
+        /// <summary>
         /// Gets or sets raw DDC/CI capabilities string (MCCS format)
         /// </summary>
         public string? CapabilitiesRaw { get; set; }

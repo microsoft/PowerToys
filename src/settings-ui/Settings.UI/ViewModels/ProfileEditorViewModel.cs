@@ -18,11 +18,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     /// </summary>
     public class ProfileEditorViewModel : INotifyPropertyChanged
     {
+        private readonly int _profileId;
         private string _profileName = string.Empty;
         private ObservableCollection<MonitorSelectionItem> _monitors;
 
-        public ProfileEditorViewModel(ObservableCollection<MonitorInfo> availableMonitors, string defaultName = "")
+        public ProfileEditorViewModel(
+            ObservableCollection<MonitorInfo> availableMonitors,
+            string defaultName = "",
+            int profileId = 0)
         {
+            _profileId = profileId;
             _profileName = defaultName;
             _monitors = new ObservableCollection<MonitorSelectionItem>();
 
@@ -103,7 +108,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     m.IncludeVolume && m.SupportsVolume ? (int?)m.Volume : null))
                 .ToList();
 
-            return new PowerDisplayProfile(_profileName, settings);
+            return new PowerDisplayProfile(_profileName, settings) { Id = _profileId };
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

@@ -14,15 +14,19 @@ namespace PowerAccent.UI;
 
 public sealed partial class MainWindow : TransparentWindow, IDisposable
 {
-    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip), not
+    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip) plus
+    // HorizontalSurfaceOverheadDip (Surface outer margin + its 1px border on each side), not
     // measured from the ListView: its DesiredSize (wrapped in a ScrollViewer) is racy while item
-    // containers realize and intermittently reports 0, yielding a blank/clipped bar. The one-row bar
-    // hugs its content like the WPF original, capped at the monitor width; beyond that it scrolls
-    // and ScrollIntoView reveals the selected glyph.
+    // containers realize and intermittently reports 0, yielding a blank/clipped bar.
+    // The one-row bar hugs its content like the WPF original, capped at the monitor width; beyond
+    // that it scrolls and ScrollIntoView reveals the selected glyph.
     private const double RowHeightDip = 92;          // one row of accent pills (item Height=48 + card border)
     private const double DescriptionHeightDip = 36;  // extra row shown when the Unicode description is on
     private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
     private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
+
+    // Prevents the fractional pixels that may occur with scaled displays from truncating the character list.
+    private const double LayoutRoundingDip = 1;
 
     private readonly Core.PowerAccent _powerAccent;
     private int _selectedIndex = -1;
@@ -133,10 +137,11 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
     private void SizeAndPosition()
     {
-        // Width hugs the content: item count * ItemWidthDip (see the class-level note on why the
-        // ListView is not measured), capped at the monitor's max usable width so long lists scroll.
+        // Width hugs the content: item count * ItemWidthDip plus the space outside the ListView (see
+        // the class-level note on why the ListView is not measured), capped at the monitor's max
+        // usable width so long lists scroll.
         double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
-        double contentWidthDip = ViewModel.Characters.Count * ItemWidthDip;
+        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceOverheadDip + LayoutRoundingDip;
 
         // The Unicode description row needs room for a readable line; the WPF original gave it a
         // 600px MinWidth. Widen a short accent bar to match when the row is shown (the accent bar

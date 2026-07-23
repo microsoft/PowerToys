@@ -186,6 +186,7 @@ CARETBLINKING
 carlos
 Carlseibert
 cascadia
+caseinsensitive
 caub
 CBN
 cch
@@ -432,6 +433,7 @@ downsampling
 downscale
 DPICHANGED
 DPIs
+dpm
 DPMS
 DPSAPI
 DQTAT
@@ -679,6 +681,7 @@ hcursor
 hcwhite
 hdc
 HDEVNOTIFY
+hdmi
 hdr
 HDROP
 hdwwiz
@@ -1315,6 +1318,7 @@ PARENTRELATIVEFORADDRESSBAR
 PARENTRELATIVEFORUI
 PARENTRELATIVEPARSING
 parray
+parseable
 PARTIALCONFIRMATIONDIALOGTITLE
 PATHMUSTEXIST
 pbc
@@ -1550,6 +1554,7 @@ Removelnk
 renamable
 RENAMEONCOLLISION
 RENDERFULLCONTENT
+renumbers
 reparented
 reparenting
 reportfileaccesses
@@ -1563,6 +1568,7 @@ RESIZETOFIT
 resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
+resx
 RETURNONLYFSDIRS
 Revalidates
 RGBQUAD
@@ -1958,6 +1964,7 @@ ums
 uncompilable
 UNCPRIORITY
 UNDNAME
+unescaped
 ungroup
 UNICODETEXT
 UNINITMENUPOPUP
