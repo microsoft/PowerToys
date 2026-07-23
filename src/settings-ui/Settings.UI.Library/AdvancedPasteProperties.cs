@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -21,6 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AdvancedPasteUIShortcut = DefaultAdvancedPasteUIShortcut;
             PasteAsPlainTextShortcut = DefaultPasteAsPlainTextShortcut;
             PasteAsMarkdownShortcut = new();
+            PasteAsRichTextShortcut = new();
             PasteAsJsonShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
@@ -95,6 +96,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-as-markdown-hotkey")]
         public HotkeySettings PasteAsMarkdownShortcut { get; set; }
+
+        [JsonPropertyName("paste-as-richtext-hotkey")]
+        public HotkeySettings PasteAsRichTextShortcut { get; set; }
 
         [JsonPropertyName("paste-as-json-hotkey")]
         public HotkeySettings PasteAsJsonShortcut { get; set; }
