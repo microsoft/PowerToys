@@ -179,6 +179,7 @@ export class WireSerializer {
     assign(result, 'heroImage', details.heroImage ?? undefined);
     assign(result, 'title', details.title);
     assign(result, 'body', details.body);
+    assign(result, 'size', details.size);
 
     if (details.metadata) {
       result.metadata = details.metadata.map((element) => {

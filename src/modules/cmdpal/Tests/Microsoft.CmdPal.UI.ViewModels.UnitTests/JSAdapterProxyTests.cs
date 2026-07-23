@@ -140,6 +140,168 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public void ListPage_MapsDetailsSizeFromStringAndNumber()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Large by name", "details": { "title": "A", "size": "large" } },
+                { "title": "Medium by number", "details": { "title": "B", "size": 1 } },
+                { "title": "Default size", "details": { "title": "C" } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Large, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Medium, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+    }
+
+    private static int GetDetailsSize(IDetails? details)
+    {
+        Assert.IsNotNull(details);
+        var provider = details as IExtendedAttributesProvider;
+        Assert.IsNotNull(provider, "Details should expose extended attributes for its size.");
+        var properties = provider!.GetProperties();
+        Assert.IsNotNull(properties);
+        Assert.IsTrue(properties!.TryGetValue("Size", out var size));
+        return (int)size!;
+    }
+
+    [TestMethod]
+    public void ListPage_DetailsSizeFallsBackToSmallForMalformedUnknownAndFutureValues()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+
+        // The C# path (JSModelMapper.ParseContentSize) accepts small/medium/large by name and
+        // 0/1/2 by number, and defaults everything else to Small. These cases confirm the safe
+        // fallback for wire values that a future or misbehaving author might emit: a wrong JSON
+        // type (boolean, object), an unknown string name, and an unknown numeric value.
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Boolean size", "details": { "title": "A", "size": true } },
+                { "title": "Object size", "details": { "title": "B", "size": { "unexpected": 1 } } },
+                { "title": "Unknown string", "details": { "title": "C", "size": "huge" } },
+                { "title": "Future numeric", "details": { "title": "D", "size": 99 } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[3].Details));
+    }
+
+    [TestMethod]
+    public void ListPage_MapsTextToSuggestThroughAdapter()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+
+        // JSListItemAdapter.TextToSuggest maps the wire "textToSuggest" field and defaults to
+        // string.Empty when the field is absent. An explicit empty string must also survive as
+        // string.Empty rather than becoming null.
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Prefixed", "textToSuggest": "@Person 1 " },
+                { "title": "Omitted" },
+                { "title": "Empty", "textToSuggest": "" }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual("@Person 1 ", items[0].TextToSuggest);
+        Assert.AreEqual(string.Empty, items[1].TextToSuggest);
+        Assert.AreEqual(string.Empty, items[2].TextToSuggest);
+    }
+
+    [TestMethod]
+    public void ListPage_DetailsCommandInvokeSendsCommandInvokeWithId()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+        var itemsJson =
+            """
+            {
+              "items": [
+                {
+                  "title": "Item with detail buttons",
+                  "details": {
+                    "title": "Detail",
+                    "metadata": [
+                      {
+                        "key": "actions",
+                        "data": {
+                          "type": "commands",
+                          "commands": [
+                            { "id": "details-cmd-1", "name": "Do It" }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        string? invokedCommandId = null;
+        fake.OnRequest("command/invoke", element =>
+        {
+            invokedCommandId = element.GetProperty("commandId").GetString();
+            return new JsonObject { ["Kind"] = 4 };
+        });
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        var details = items[0].Details;
+        Assert.IsNotNull(details, "The list item should carry details.");
+
+        var commandsElement = Array.Find(
+            details!.Metadata,
+            e => e.Data is IDetailsCommands);
+        Assert.IsNotNull(commandsElement, "The details metadata should include a commands element.");
+
+        var detailsCommands = (IDetailsCommands)commandsElement!.Data!;
+        Assert.AreEqual(1, detailsCommands.Commands.Length);
+
+        var invokable = (IInvokableCommand)detailsCommands.Commands[0];
+        Assert.AreEqual("details-cmd-1", invokable.Id);
+
+        var result = invokable.Invoke(null);
+
+        Assert.AreEqual("details-cmd-1", invokedCommandId, "Invoking a details command should send command/invoke with the command id.");
+        Assert.AreEqual(CommandResultKind.KeepOpen, result.Kind);
+    }
+
+    [TestMethod]
     public void ContextItems_ParseNestedMoreCommandsRecursively()
     {
         using var fake = new JSFakeExtension();
@@ -265,6 +427,39 @@ public class JSAdapterProxyTests
 
         var submitResult = ((IFormContent)content[3]).SubmitForm("{}", "{}");
         Assert.AreEqual(CommandResultKind.Hide, submitResult.Kind);
+    }
+
+    [TestMethod]
+    public void ContentPage_ImageContentPreservesImagePathIntoIconInfo()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult(
+            "provider/getCommand",
+            """{ "id": "content1", "pageType": "contentPage", "name": "Content" }""");
+
+        // JSModelMapper.ParseContentItem builds an image content item as
+        // new ImageContent(GetIcon(element, "image", "Image")), so a wire image path must
+        // survive verbatim into the materialized ImageContent's Image.Light.Icon (the IIconInfo
+        // path), not merely produce an IImageContent. Content images are not resolved against
+        // the package directory here: relative paths are carried through unchanged. Containment
+        // (lexical plus real-filesystem) lives at the installed-package manifest-icon layer, in
+        // JSExtensionManifest.ResolveManifestIcon, not on this content-image path.
+        var contentJson =
+            """
+            [
+              { "type": "image", "image": { "light": { "icon": "assets/preview.png" } } }
+            ]
+            """;
+        fake.OnResult("contentPage/getContent", contentJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IContentPage)provider.GetCommand("content1")!;
+        var content = page.GetContent();
+
+        Assert.AreEqual(1, content.Length);
+        var image = content[0] as IImageContent;
+        Assert.IsNotNull(image, "Image content should materialize as IImageContent.");
+        Assert.AreEqual("assets/preview.png", image!.Image.Light.Icon);
     }
 
     [TestMethod]

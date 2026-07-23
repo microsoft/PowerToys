@@ -69,6 +69,24 @@ Each JS extension runs in its own Node.js process. The host spawns the process, 
 
 ---
 
+## Known Gaps and Deferred Work
+
+The following capabilities are intentionally not part of the current JS/TS extension surface. They are documented here so contributors know the boundary and the likely shape of a future solution. Each is deferred rather than rejected.
+
+### Per-page load and unload lifecycle
+
+There is no per-page unload notification. A JS page learns it has become active implicitly, because the first `getItems` fetch after navigation acts as a de facto load signal, but there is no equivalent signal when the user navigates away and a page is popped from the stack. The WinRT `IPage` interface has no `OnLoad` or `OnUnload` member, so there is no C# ABI parity to mirror.
+
+A future solution would be additive and JS-only: a host to extension JSON-RPC notification (for example `page/unloaded` carrying the page id, and optionally a symmetric `page/loaded`), emitted from the host where a page is torn down. `PageViewModel.UnsafeCleanup` is the natural single choke point, since back-navigation and other disposal paths all pass through it. The TS SDK would expose an optional `onUnload` (and optionally `onLoad`) hook on the page base classes, following the existing `loadMore` lifecycle pattern. Because it is additive with no reply expected, older extensions that do not register the hook are unaffected. The item is deferred because it introduces JS-only surface with no C# ABI equivalent, and that asymmetry needs a broader decision.
+
+### Drag and drop (DataPackage)
+
+The C# extension ABI already models a draggable payload; the gap is that the JS surface cannot yet declare one. On the C# side an item that implements `IExtendedAttributesProvider` can expose a `WellKnownExtensionAttributes.DataPackage` attribute, and the host reads it into `CommandItemViewModel.DataPackage` (a `DataPackageView`) when the item initializes or raises a `DataPackage` property change. The host list is already a drag source: when the user drags an item that carries a `DataPackage`, `ListItemsView` copies its properties and wires each available format as a deferred renderer so a drop reads the data on demand. In-process extensions such as the file indexer already use this path. JS extensions cannot reach it only because there is no wire representation of a `DataPackage` and nothing that materializes one on the C# side.
+
+A future solution would be additive and JS-only, mirroring the existing C# shape rather than changing it. Three pieces are needed. First, a TypeScript SDK surface that lets an author declare a `DataPackage`-style payload on an item (for example text, an image reference, or a file path), following the same optional-property pattern the SDK already uses for icons and details. Second, JSON-RPC transport of that declared payload as part of the item wire shape, so the host receives it alongside the item's other fields. Third, adapter materialization on the C# side that maps the wire payload into a real `DataPackageView` and surfaces it through the existing `WellKnownExtensionAttributes.DataPackage` attribute, so the current `CommandItemViewModel.DataPackage` and the `ListItemsView` drag source light up unchanged. No new WinRT ABI members and no new WinUI drag source or drop target work are required, because those already exist. The item is deferred until there is concrete demand, at which point the payload types the SDK should expose (text only, or images and files as well) can be decided against real requirements.
+
+---
+
 ## Feedback Requested
 
 We are seeking feedback on the following areas:

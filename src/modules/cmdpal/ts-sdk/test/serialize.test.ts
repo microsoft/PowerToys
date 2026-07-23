@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import { describe, expect, it } from 'vitest';
-import type { ContextItem } from '../src/types.js';
+import type { ContextItem, Details, IListItem } from '../src/types.js';
 import { WireSerializer } from '../src/runtime/serialize.js';
 
 describe('WireSerializer.contextItems', () => {
@@ -68,5 +68,65 @@ describe('WireSerializer.contextItems', () => {
 
     expect(registered).toContain('outer');
     expect(registered).toContain('inner');
+  });
+});
+
+describe('WireSerializer.details', () => {
+  it('serializes a string size', () => {
+    const details: Details = { title: 'A', size: 'large' };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire.size).toBe('large');
+  });
+
+  it('serializes a numeric ContentSize', () => {
+    const details: Details = { title: 'B', size: 1 };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire.size).toBe(1);
+  });
+
+  it('omits size when it is not set', () => {
+    const details: Details = { title: 'C' };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire).not.toHaveProperty('size');
+  });
+});
+
+describe('WireSerializer.listItem', () => {
+  it('serializes textToSuggest when set', () => {
+    const item: IListItem = {
+      command: { id: 'pick', name: 'Pick' },
+      title: 'Person 1',
+      textToSuggest: '@Person 1 ',
+    };
+
+    const wire = new WireSerializer().listItem(item);
+
+    expect(wire.textToSuggest).toBe('@Person 1 ');
+  });
+
+  it('omits textToSuggest when not set', () => {
+    const item: IListItem = { command: { id: 'plain', name: 'Plain' }, title: 'Plain' };
+
+    const wire = new WireSerializer().listItem(item);
+
+    expect(wire).not.toHaveProperty('textToSuggest');
+  });
+
+  it('serializes an empty textToSuggest', () => {
+    const item: IListItem = {
+      command: { id: 'empty', name: 'Empty' },
+      title: 'Empty',
+      textToSuggest: '',
+    };
+
+    const wire = new WireSerializer().listItem(item);
+
+    expect(wire.textToSuggest).toBe('');
   });
 });

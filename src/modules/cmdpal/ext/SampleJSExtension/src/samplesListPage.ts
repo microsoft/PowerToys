@@ -16,7 +16,6 @@ import { SampleGridsListPage } from './pages/gridsPages.js';
 import { OnLoadPage } from './pages/onLoadPage.js';
 import { SampleIconPage } from './pages/iconPage.js';
 import { SlowListPage } from './pages/slowListPage.js';
-import { SampleSuggestionsPage } from './pages/suggestionsPage.js';
 import {
   SampleContentPage,
   SampleImageContentPage,
@@ -100,8 +99,8 @@ export class SamplesListPage extends ListPageBase {
       }),
       new ListItemBase({
         command: new OnLoadPage(),
-        title: 'Demo of OnLoad/OnUnload',
-        subtitle: 'Changes the list of items every time the page is opened / closed',
+        title: 'Demo of OnLoad',
+        subtitle: 'Changes the list of items every time the page is opened',
       }),
       new ListItemBase({
         command: new SampleIconPage(),
@@ -112,11 +111,6 @@ export class SamplesListPage extends ListPageBase {
         command: new SlowListPage(),
         title: 'Slow loading list page',
         subtitle: 'A demo of a list page that takes a while to load',
-      }),
-      new ListItemBase({
-        command: new SampleSuggestionsPage(),
-        title: 'Sample Prefix Suggestions',
-        subtitle: "A demo of using 'nested' pages to provide 'suggestions' as the user types",
       }),
       new ListItemBase({
         command: new SampleContentPage(),
@@ -172,8 +166,8 @@ export class SamplesListPage extends ListPageBase {
       }),
       new ListItemBase({
         command: new SampleDataTransferPage(),
-        title: 'Clipboard and Drag-and-Drop Demo',
-        subtitle: 'Demonstrates clipboard integration and drag-and-drop functionality',
+        title: 'Clipboard Demo',
+        subtitle: 'Demonstrates clipboard integration',
       }),
     ];
   }
