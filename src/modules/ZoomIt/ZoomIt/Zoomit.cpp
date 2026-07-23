@@ -17,6 +17,7 @@
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
 #include "WebcamPreviewWindow.h"
+#include "MirrorWindow.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
 #include "ImageEncoder.h"
@@ -102,6 +103,9 @@ COLORREF	g_CustomColors[16];
 #define SNIP_PANORAMA_HOTKEY     19
 #define SNIP_PANORAMA_SAVE_HOTKEY 20
 #define WEBCAM_TOGGLE_HOTKEY     21
+#define MIRROR_HOTKEY            22
+#define MIRROR_WINDOW_HOTKEY     23
+#define MIRROR_CROP_HOTKEY       24
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -117,6 +121,7 @@ COLORREF	g_CustomColors[16];
 #define RECORD_PAGE	  6
 #define SNIP_PAGE	  7
 #define PANORAMA_PAGE 8
+#define MIRROR_PAGE	  9
 
 OPTION_TABS g_OptionsTabs[] = {
     { _T("Zoom"), NULL },
@@ -127,7 +132,8 @@ OPTION_TABS g_OptionsTabs[] = {
     { _T("Break"), NULL },
     { _T("Record"), NULL },
     { _T("Snip"), NULL },
-    { _T("Panorama"), NULL }
+    { _T("Panorama"), NULL },
+    { _T("DemoMirror"), NULL }
 };
 
 static const TCHAR* g_RecordingFormats[] = {
@@ -176,6 +182,7 @@ DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
 DWORD   g_SnipSaveToggleMod;
 DWORD   g_SnipPanoramaSaveToggleMod;
+DWORD   g_MirrorToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -214,6 +221,8 @@ BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 WebcamPreviewWindow g_WebcamPreview;
+SelectRectangle g_MirrorSelectRectangle;
+MirrorWindow g_MirrorWindow;
 // The full path of the last saved recording file.
 std::wstring	g_RecordingSaveLocation;
 // The last user-chosen recording filename. Used to construct unique recording filenames.
@@ -418,6 +427,9 @@ const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
     case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
     case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
     case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
+    case MIRROR_HOTKEY: return L"MIRROR_HOTKEY";
+    case MIRROR_WINDOW_HOTKEY: return L"MIRROR_WINDOW_HOTKEY";
+    case MIRROR_CROP_HOTKEY: return L"MIRROR_CROP_HOTKEY";
     default: return L"UNKNOWN_HOTKEY";
     }
 }
@@ -3559,6 +3571,9 @@ void UnregisterAllHotkeys( HWND hWnd )
     unregisterHotkey( SAVE_CROP_HOTKEY );
     unregisterHotkey( COPY_IMAGE_HOTKEY );
     unregisterHotkey( COPY_CROP_HOTKEY );
+    unregisterHotkey( MIRROR_HOTKEY );
+    unregisterHotkey( MIRROR_WINDOW_HOTKEY );
+    unregisterHotkey( MIRROR_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -3610,6 +3625,17 @@ void RegisterAllHotkeys(HWND hWnd)
         }
         if ( windowMod != 0 ) {
             registerHotkey( RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        }
+    }
+    if (g_MirrorToggleKey) {
+        registerHotkey( MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+        UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+        if ( mirrorCropMod != 0 ) {
+            registerHotkey( MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
+        }
+        if ( mirrorWindowMod != 0 ) {
+            registerHotkey( MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF );
         }
     }
 
@@ -4828,6 +4854,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
     DWORD			newSnipPanoramaSaveToggleKey, newSnipPanoramaSaveToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
+    DWORD			newMirrorToggleKey, newMirrorToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
 
     auto CleanupFonts = [&]()
@@ -5065,6 +5092,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
         if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
+        if( g_MirrorToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_SETHOTKEY, g_MirrorToggleKey, 0 );
+        CheckDlgButton( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW,
+            g_MirrorTrackWindow ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -5529,6 +5559,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipPanoramaSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newMirrorToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
             newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -5541,6 +5572,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
             newSnipPanoramaSaveToggleMod = GetKeyMod( newSnipPanoramaSaveToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
+            newMirrorToggleMod = GetKeyMod( newMirrorToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
@@ -5552,6 +5584,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
             g_NoiseCancellation = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION) == BST_CHECKED;
             g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
+            g_MirrorTrackWindow = IsDlgButtonChecked(g_OptionsTabs[MIRROR_PAGE].hPage, IDC_MIRROR_TRACK_WINDOW) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -5662,6 +5695,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                     APPNAME, MB_ICONERROR);
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
+            }
+            else if( UINT mirrorCropMod = newMirrorToggleMod ^ MOD_SHIFT, mirrorWindowMod = newMirrorToggleMod ^ MOD_ALT; newMirrorToggleKey &&
+                (!RegisterHotKey(GetParent(hDlg), MIRROR_HOTKEY, newMirrorToggleMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(GetParent(hDlg), MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, newMirrorToggleKey & 0xFF)))) {
+
+                MessageBox(hDlg, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
             } else {
 
                 g_BreakTimeout = newTimeout;
@@ -5686,6 +5729,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_SnipPanoramaSaveToggleMod = newSnipPanoramaSaveToggleMod;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
+                g_MirrorToggleKey = newMirrorToggleKey;
+                g_MirrorToggleMod = newMirrorToggleMod;
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
@@ -6960,6 +7005,45 @@ auto GetUniqueScreenshotFilename()
 
 //----------------------------------------------------------------------------
 //
+// FindMirrorTargetMonitor
+//
+// Picks the monitor to mirror onto: the one showing a PowerPoint slide show
+// if there is one, otherwise the first monitor that isn't the source.
+//
+//----------------------------------------------------------------------------
+HMONITOR FindMirrorTargetMonitor( HMONITOR sourceMonitor )
+{
+    HWND hWndSlideShow = FindWindow( L"screenClass", NULL );
+    if( hWndSlideShow != NULL && IsWindowVisible( hWndSlideShow ) ) {
+
+        HMONITOR hMonitor = MonitorFromWindow( hWndSlideShow, MONITOR_DEFAULTTONEAREST );
+        if( hMonitor != sourceMonitor ) {
+
+            return hMonitor;
+        }
+    }
+
+    struct MONITOR_SEARCH {
+        HMONITOR	sourceMonitor;
+        HMONITOR	targetMonitor;
+    } search = { sourceMonitor, NULL };
+
+    EnumDisplayMonitors( NULL, NULL, []( HMONITOR hMonitor, HDC, LPRECT, LPARAM lParam ) -> BOOL {
+
+        auto search = reinterpret_cast<MONITOR_SEARCH *>( lParam );
+        if( hMonitor != search->sourceMonitor && search->targetMonitor == NULL ) {
+
+            search->targetMonitor = hMonitor;
+            return FALSE;
+        }
+        return TRUE;
+    }, reinterpret_cast<LPARAM>( &search ));
+
+    return search.targetMonitor;
+}
+
+//----------------------------------------------------------------------------
+//
 // StartRecordingAsync
 //
 // Initiates screen recording and handles the save dialog workflow.
@@ -7754,6 +7838,7 @@ LRESULT APIENTRY MainWndProc(
         g_SnipPanoramaSaveToggleMod = GetKeyMod( g_SnipPanoramaSaveToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_MirrorToggleMod = GetKeyMod( g_MirrorToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
             // First run should show options when running as standalone. If not running as standalone,
@@ -7850,6 +7935,18 @@ LRESULT APIENTRY MainWndProc(
                     (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
 
                     MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
+            }
+            if (showOptions == FALSE && g_MirrorToggleKey) {
+                UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+                UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                    (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                    (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF))) {
+
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.",
                         APPNAME, MB_ICONERROR);
                     showOptions = TRUE;
                 }
@@ -8611,6 +8708,147 @@ LRESULT APIENTRY MainWndProc(
                 StopRecording();
             }
             break;
+
+        case MIRROR_HOTKEY:
+        case MIRROR_CROP_HOTKEY:
+        case MIRROR_WINDOW_HOTKEY: {
+
+            //
+            // DemoMirror: mirror the screen, a region (Shift), or a window
+            // (Alt), including the mouse cursor, onto a second monitor on
+            // top of a slide show so the audience can follow a demo without
+            // the presenter leaving the presentation. Entered once to start
+            // mirroring and again to stop.
+            //
+            if( g_MirrorWindow.IsActive() ) {
+
+                g_MirrorWindow.Stop();
+                g_MirrorSelectRectangle.Stop();
+                break;
+            }
+
+            if( g_RecordCropping == TRUE || g_bSaveInProgress ) {
+
+                break;
+            }
+
+            bool mirrorCaptureSupported = false;
+            try {
+
+                mirrorCaptureSupported = winrt::GraphicsCaptureSession::IsSupported();
+            }
+            catch( const winrt::hresult_error& ) {}
+            if( !mirrorCaptureSupported ) {
+
+                MessageBox( hWnd, L"Screen mirroring requires Windows 10, May 2019 Update or higher.", APPNAME, MB_OK );
+                break;
+            }
+
+            HWND		hWndMirrorSource = NULL;
+            HMONITOR	mirrorSourceMonitor = NULL;
+            RECT		mirrorSourceRect = {};
+
+            if( wParam == MIRROR_WINDOW_HOTKEY ) {
+
+                // Mirror the top-level window under the cursor.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                hWndMirrorSource = WindowFromPoint( mirrorPoint );
+                while( hWndMirrorSource != NULL && GetParent( hWndMirrorSource ) != NULL ) {
+
+                    hWndMirrorSource = GetParent( hWndMirrorSource );
+                }
+                if( hWndMirrorSource == NULL || hWndMirrorSource == GetDesktopWindow() ||
+                    hWndMirrorSource == hWnd ) {
+
+                    break;
+                }
+                mirrorSourceMonitor = MonitorFromWindow( hWndMirrorSource, MONITOR_DEFAULTTONEAREST );
+                mirrorSourceRect = MirrorWindow::GetWindowFrameRect( hWndMirrorSource );
+
+            } else if( wParam == MIRROR_CROP_HOTKEY ) {
+
+                // Select the region to mirror. The selection border stays up
+                // to show what's being mirrored; it is excluded from capture.
+                g_RecordCropping = TRUE;
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                bool mirrorCanceled = !g_MirrorSelectRectangle.Start( nullptr );
+                g_RecordCropping = FALSE;
+                if( mirrorCanceled ) {
+
+                    break;
+                }
+                mirrorSourceRect = g_MirrorSelectRectangle.SelectedRect();
+                mirrorSourceMonitor = MonitorFromRect( &mirrorSourceRect, MONITOR_DEFAULTTONEAREST );
+
+                // The selection border defaults to translucent; make the
+                // mirror border fully opaque so it reads bright green.
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+
+            } else {
+
+                // Mirror the entire monitor under the cursor, with a
+                // full-monitor border showing that mirroring is active.
+                POINT mirrorPoint;
+                GetCursorPos( &mirrorPoint );
+                mirrorSourceMonitor = MonitorFromPoint( mirrorPoint, MONITOR_DEFAULTTONEAREST );
+                MONITORINFO mirrorMonitorInfo = { sizeof( mirrorMonitorInfo ) };
+                GetMonitorInfo( mirrorSourceMonitor, &mirrorMonitorInfo );
+                mirrorSourceRect = mirrorMonitorInfo.rcMonitor;
+
+                g_MirrorSelectRectangle.BorderColor( MIRROR_BORDER_COLOR );
+                g_MirrorSelectRectangle.AspectRatio( 0.0 );
+                g_MirrorSelectRectangle.Start( nullptr, true );
+                SetLayeredWindowAttributes( g_MirrorSelectRectangle.Window(), 0, 255, LWA_ALPHA );
+            }
+
+            HMONITOR mirrorTargetMonitor = FindMirrorTargetMonitor( mirrorSourceMonitor );
+            if( mirrorTargetMonitor == NULL ) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Screen mirroring requires a second monitor.", APPNAME, MB_OK );
+                break;
+            }
+
+            // With window tracking, mirror the monitor region under the
+            // window instead of the window's own surface so ZoomIt zoom and
+            // draw annotations show in place.
+            bool mirrorTrackWindow = ( hWndMirrorSource != NULL && g_MirrorTrackWindow );
+
+            winrt::Windows::Graphics::Capture::GraphicsCaptureItem mirrorItem{ nullptr };
+            try {
+
+                if( hWndMirrorSource != NULL && !mirrorTrackWindow )
+                    mirrorItem = util::CreateCaptureItemForWindow( hWndMirrorSource );
+                else
+                    mirrorItem = util::CreateCaptureItemForMonitor( mirrorSourceMonitor );
+            }
+            catch( const winrt::hresult_error& ) {}
+
+            // Reports when a zoom/draw/live-zoom mode is active so a window
+            // mirror can temporarily capture the monitor instead - those
+            // modes render in overlay windows a window capture can't see.
+            auto mirrorAnnotationQuery = []() {
+                if( g_hWndLiveZoom != NULL && IsWindowVisible( g_hWndLiveZoom ))
+                    return MirrorWindow::AnnotationState::AnnotatingLiveZoom;
+                if( g_Zoomed )
+                    return MirrorWindow::AnnotationState::Annotating;
+                return MirrorWindow::AnnotationState::None;
+            };
+
+            HWND mirrorBorderWindow = hWndMirrorSource == NULL ? g_MirrorSelectRectangle.Window() : NULL;
+            if( mirrorItem == nullptr ||
+                !g_MirrorWindow.Start( mirrorItem, mirrorSourceRect, hWndMirrorSource,
+                                       mirrorSourceMonitor, mirrorTargetMonitor, hWnd,
+                                       mirrorAnnotationQuery, mirrorTrackWindow,
+                                       mirrorBorderWindow )) {
+
+                g_MirrorSelectRectangle.Stop();
+                MessageBox( hWnd, L"Unable to start screen mirroring.", APPNAME, MB_OK );
+            }
+            break;
+        }
 
         case ZOOM_HOTKEY:
             //
@@ -10295,6 +10533,12 @@ LRESULT APIENTRY MainWndProc(
         StopRecording();
         break;
 
+    case WM_USER_MIRROR_STOP:
+        // The mirrored window closed.
+        g_MirrorWindow.Stop();
+        g_MirrorSelectRectangle.Stop();
+        break;
+
     case WM_USER_RECORDING_STARTED:
         // The first video frame has been captured.  Change the selection
         // border from yellow to orange so the user knows recording is live.
@@ -10424,6 +10668,7 @@ LRESULT APIENTRY MainWndProc(
         g_SnipPanoramaSaveToggleMod = GetKeyMod(g_SnipPanoramaSaveToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_MirrorToggleMod = GetKeyMod(g_MirrorToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
@@ -10549,6 +10794,21 @@ LRESULT APIENTRY MainWndProc(
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_MirrorToggleKey)
+        {
+            UINT mirrorCropMod = g_MirrorToggleMod ^ MOD_SHIFT;
+            UINT mirrorWindowMod = g_MirrorToggleMod ^ MOD_ALT;
+            if (!RegisterHotKey(hWnd, MIRROR_HOTKEY, g_MirrorToggleMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF) ||
+                (mirrorCropMod != 0 && !RegisterHotKey(hWnd, MIRROR_CROP_HOTKEY, mirrorCropMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)) ||
+                (mirrorWindowMod != 0 && !RegisterHotKey(hWnd, MIRROR_WINDOW_HOTKEY, mirrorWindowMod | MOD_NOREPEAT, g_MirrorToggleKey & 0xFF)))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified mirror hotkey is already in use.\nSelect a different mirror hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }

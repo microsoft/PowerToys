@@ -36,7 +36,7 @@ static void SelectRectangleDebugLog( const wchar_t* format, ... )
 bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor )
 {
     m_stopping = false;
-    m_borderColor = RGB( 255, 222, 0 ); // Reset to yellow; turns orange once first frame is captured.
+    m_borderColor = m_configuredBorderColor; // Reset from the recording-active orange.
     m_recordingActive = false;           // Reset so SetRecordingActive fires on next recording.
     m_fullMonitor = fullMonitor;
 
