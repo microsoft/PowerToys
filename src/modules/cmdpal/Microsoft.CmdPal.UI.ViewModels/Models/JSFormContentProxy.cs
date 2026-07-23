@@ -21,6 +21,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
 {
     private readonly string _pageId;
+    private readonly string _formId;
     private readonly JsonElement _data;
     private readonly JsonRpcConnection _connection;
 
@@ -29,6 +30,12 @@ internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
         _pageId = pageId;
         _data = data;
         _connection = connection;
+
+        // Each serialized form carries a required formId that is unique within its
+        // page. Capturing it here lets a page with multiple forms, or a form nested
+        // inside tree content, route its submission back to the correct handler
+        // instead of relying on the SDK first-form fallback.
+        _formId = JSModelMapper.GetString(_data, "formId") ?? JSModelMapper.GetString(_data, "FormId") ?? string.Empty;
     }
 
     public string TemplateJson => GetJsonProperty("template", "templateJson");
@@ -41,9 +48,15 @@ internal sealed partial class JSFormContentProxy : BaseObservable, IFormContent
     {
         try
         {
+            var request = new JsonObject { ["pageId"] = _pageId, ["inputs"] = inputs, ["data"] = data };
+            if (!string.IsNullOrEmpty(_formId))
+            {
+                request["formId"] = _formId;
+            }
+
             var response = _connection.SendRequestAsync(
                 "form/submit",
-                new JsonObject { ["pageId"] = _pageId, ["inputs"] = inputs, ["data"] = data },
+                request,
                 CancellationToken.None).GetAwaiter().GetResult();
 
             if (response.Error != null)
