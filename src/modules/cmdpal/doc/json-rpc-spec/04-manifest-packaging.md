@@ -77,7 +77,7 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `displayName` | `string` | ❌ | Human-readable name shown in CmdPal UI. Falls back to `name` if not provided. |
-| `icon` | `string` | ❌ | Icon glyph character (e.g., `"\uE943"`) or relative path to an icon file (PNG recommended). |
+| `icon` | `string` | ❌ | Icon glyph character (e.g., `"\uE943"`) or a relative path to an icon file (PNG recommended) inside the package. A relative path is resolved against the package's own directory and must stay inside it; see [Icon resolution](#icon-resolution). |
 | `publisher` | `string` | ❌ | Author or publisher name. When omitted, the top-level npm `author` name is used as a fallback. |
 | `debug` | `boolean` | ❌ | When `true`, starts Node.js with `--inspect` for debugger attachment. Default: `false`. |
 | `debugPort` | `integer` | ❌ | Inspector port when `debug` is `true`. If not specified, auto-assigned starting at 9229. |
@@ -88,7 +88,28 @@ CmdPal discovers extensions by finding directories with a `package.json` that co
 A `package.json` is recognized as a CmdPal extension if:
 1. It contains a `cmdpal` object (even if empty: `"cmdpal": {}`)
 2. `name` is present and non-empty
-3. Either `cmdpal.main` or top-level `main` resolves to an existing built file. For TypeScript extensions, run `tsc` before discovery so `dist/index.js` exists.
+### Icon resolution
+
+The `cmdpal.icon` value is interpreted as follows:
+
+- A **glyph** (for example, `"\uE943"`) or an **absolute URI** (for example, an
+  `https://` or `ms-appx://` value) is used exactly as written.
+- A **relative file path** (for example, `"icon.png"` or `"assets/icon.png"`) is
+  resolved against the extension's own installed directory, which is the folder that
+  contains its `package.json`.
+
+A resolved relative icon must stay **inside** the package directory. The path is
+rejected (and the extension shows no icon rather than loading an out-of-package file)
+when:
+
+- it escapes the package with `..`,
+- it is redirected outside the package by a symbolic link, junction, or other reparse
+  point, or
+- the target file does not exist.
+
+Keep icon files inside your package (and list them in `files`) so they are present in
+the installed directory. There is a single `icon` value; separate light and dark
+variants are not currently expressed in the manifest.
 
 ---
 
@@ -117,14 +138,21 @@ JSExtensions/
 ### Discovery
 
 The `JsonRpcExtensionService` watches this directory with a `FileSystemWatcher`:
-- **New directory with valid `package.json`** → extension is loaded automatically
-- **Directory removed** → extension is unloaded, Node.js process is terminated
-- **`*.js` file changed** within an extension → hot-reload (500ms debounce)
+- **New directory with valid `package.json`** (for example, a sideloaded extension copied in) is loaded automatically
+- **Directory removed** unloads the extension and terminates its Node.js process
+- **`*.js` file changed** within an extension triggers hot-reload (500ms debounce)
 
-This means:
-- Installing an extension = copying its directory to `JSExtensions/`
+This means for sideloaded development:
+- Installing an extension = copying a fully prepared directory into `JSExtensions/`
 - Uninstalling = deleting the directory
 - Updating = replacing files (hot-reload handles `*.js` changes)
+
+Gallery installs do not rely on the watcher observing a half-written directory. The
+installer prepares the extension in a staging location outside `JSExtensions/`,
+verifies it, and then moves the finished directory into place in a single atomic
+step. See [Installation Flow](#installation-flow) for the full sequence. Because the
+directory only ever appears complete, the watcher never sees a partially copied
+extension.
 
 ---
 
@@ -213,9 +241,34 @@ With a junction link, changes to your source files are reflected immediately (af
 
 ## Production Packaging
 
+### SDK distribution status
+
+Registry distribution of `@microsoft/cmdpal-sdk` is **not yet supported**: the SDK
+is not published to a public npm registry, so a published package cannot depend on
+it by version. Until the SDK is published, a production extension must **bundle** the
+SDK into its own output rather than declaring it as an installed dependency.
+
+Two supported approaches:
+
+1. **Bundle the SDK into `dist/`** (recommended). Use a bundler (for example,
+   `esbuild` or `rollup`) so the SDK is inlined into the files you ship under
+   `dist/`. The published package then has no runtime dependency on
+   `@microsoft/cmdpal-sdk`, and `npm install <your-package>` needs no access to this
+   repository.
+2. **Vendor a packed SDK tarball.** Run `npm pack` in `ts-sdk`, commit the resulting
+   `microsoft-cmdpal-sdk-<version>.tgz` alongside your extension, and reference it as
+   `"@microsoft/cmdpal-sdk": "file:./microsoft-cmdpal-sdk-<version>.tgz"`. This
+   installs on a machine that does not have the PowerToys repository.
+
+Do not ship a production package whose only path to the SDK is
+`"file:../../ts-sdk"`: that relative path exists only inside this repository, so the
+package cannot install anywhere else. That form is for **local development only** (see
+[Development Setup](#development-setup)).
+
 ### npm Package Structure
 
-Extensions are distributed as standard npm packages. The recommended `package.json`:
+Extensions are distributed as standard npm packages. The recommended `package.json`
+for a bundled production build:
 
 ```json
 {
@@ -230,17 +283,16 @@ Extensions are distributed as standard npm packages. The recommended `package.js
     "publisher": "your-name"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && esbuild dist/index.js --bundle --platform=node --format=esm --outfile=dist/index.js --allow-overwrite",
     "prepublishOnly": "npm run build"
   },
   "files": [
     "dist/",
     "icon.png"
   ],
-  "dependencies": {
-    "@microsoft/cmdpal-sdk": "file:../../ts-sdk"
-  },
   "devDependencies": {
+    "@microsoft/cmdpal-sdk": "file:../../ts-sdk",
+    "esbuild": "^0.23.0",
     "typescript": "^5.8.0"
   },
   "keywords": ["cmdpal", "powertoys", "command-palette"],
@@ -250,11 +302,30 @@ Extensions are distributed as standard npm packages. The recommended `package.js
 }
 ```
 
-The `@microsoft/cmdpal-sdk` package is not yet published to a public npm
-registry, so extensions reference it through a relative `file:` dependency that
-points at the SDK inside this repository (adjust the path to match where your
-extension lives). Once the SDK is published, replace that reference with a
-semantic version range such as `^0.1.0`.
+The SDK appears only under `devDependencies` because the build step inlines it into
+`dist/`. The shipped package therefore lists no runtime dependency on
+`@microsoft/cmdpal-sdk`. If you vendor a packed tarball instead of bundling, move the
+tarball reference into `dependencies` and include the `.tgz` in `files`.
+
+### Validating a clean install
+
+To confirm your package installs without the PowerToys repository present, pack it
+and install it into a throwaway directory:
+
+```powershell
+npm pack                     # produces publisher-cmdpal-my-extension-1.0.0.tgz
+$temp = New-Item -ItemType Directory -Path (Join-Path $env:TEMP ("cmdpal-smoke-" + [guid]::NewGuid()))
+Copy-Item .\publisher-cmdpal-my-extension-1.0.0.tgz $temp
+Push-Location $temp
+npm init -y | Out-Null
+npm install .\publisher-cmdpal-my-extension-1.0.0.tgz
+node -e "import('@publisher/cmdpal-my-extension').then(() => console.log('loaded'))"
+Pop-Location
+```
+
+A bundled package resolves with no reference back to `ts-sdk`. The `ts-sdk` package
+ships its own equivalent check (`npm run verify:pack`) that packs the SDK, installs
+the tarball into a temporary project, and type-checks against it.
 
 ### Naming Convention
 
@@ -269,37 +340,64 @@ The `cmdpal-` prefix helps with discoverability and could be used for future npm
 
 ### Gallery Manifest Entry
 
-The existing CmdPal extension gallery pulls from a manifest that lists available extensions. For JavaScript extensions, the manifest entry includes npm package details:
+The existing CmdPal extension gallery pulls from a feed that lists available extensions. The feed is a wrapped document with an `extensions` array; each entry describes one extension and how to install it. For a JavaScript/TypeScript extension, the install information lives in an `installSources` entry whose `type` is `"jsonrpc"`:
 
 ```json
 {
-  "name": "my-extension",
-  "displayName": "My Extension",
-  "description": "Does amazing things",
-  "publisher": "your-name",
-  "version": "1.0.0",
-  "icon": "https://example.com/icon.png",
-  "type": "jsonrpc",
-  "npm": {
-    "package": "@publisher/cmdpal-my-extension",
-    "registry": "https://registry.npmjs.org"
-  }
+  "extensions": [
+    {
+      "id": "publisher.cmdpal-my-extension",
+      "title": "My Extension",
+      "description": "Does amazing things from the Command Palette.",
+      "shortDescription": "Does amazing things.",
+      "author": {
+        "name": "Your Name",
+        "url": "https://example.com"
+      },
+      "homepage": "https://example.com/my-extension",
+      "tags": ["cmdpal", "productivity"],
+      "installSources": [
+        {
+          "type": "jsonrpc",
+          "npm": {
+            "package": "@publisher/cmdpal-my-extension",
+            "version": "1.0.0",
+            "integrity": "sha512-3sxT2b3Ea2u2vLXA7Yl0dOZH3Rm9j1p3T0i8b9m2wJ0kZ8t2K1cQ0f8p7L6r5S4d3F2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w==",
+            "registry": "https://registry.npmjs.org"
+          }
+        }
+      ]
+    }
+  ]
 }
 ```
 
-The `type: "jsonrpc"` field distinguishes JavaScript extensions from COM-based extensions.
+Fields on the `jsonrpc` install source's `npm` object:
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `package` | Yes | npm package identifier to install. |
+| `version` | Yes | Exact version to install. Ranges and dist-tags (such as `latest`) are rejected so the installed bytes always match the approved artifact. |
+| `integrity` | Yes | Subresource Integrity (`sha512-...`) of the approved tarball. The installer verifies the resolved package against this value before promoting it. |
+| `registry` | No | Absolute HTTPS registry URL. When present it must be on the approved allowlist. When omitted, the machine's default registry is used. |
+
+An install source that does not pin both `version` and `integrity` is **not installable**: the installer fails closed rather than fetching an unverified package. Optional presentation fields (`shortDescription`, `homepage`, `iconUrl`, `screenshotUrls`, `readme`, `tags`) and the COM `detection` block are documented with the gallery models and are not required for a `jsonrpc` extension.
+
+The `type: "jsonrpc"` install source distinguishes JavaScript extensions from COM-based extensions.
 
 ### Installation Flow
 
-When a user clicks "Install" for a JavaScript extension in the gallery:
+When a user clicks "Install" for a JavaScript extension in the gallery, the installer prepares the extension out of sight of the watcher and only reveals it once it is verified and complete:
 
-1. CmdPal creates `JSExtensions\<name>` and runs `npm install <pkg>` with that directory as the working directory.
-2. npm initially places the package under `JSExtensions\<name>\node_modules\<pkg>`.
-3. After npm exits successfully, `NpmCommandRunner` calls `JsExtensionPackageLayout.Materialize(targetDirectory)`.
-4. `Materialize` finds the installed package whose `package.json` contains a valid `cmdpal` section and hoists that package to `JSExtensions\<name>`.
-5. The discoverable root then contains `package.json`, `dist\`, and `node_modules\`.
-6. `FileSystemWatcher` detects the prepared directory, the manifest is parsed, and the extension loads automatically.
-7. The extension appears in the main CmdPal list
+1. The `version` and `integrity` fields are validated, and any `registry` is checked against the HTTPS allowlist. A source that omits `version` or `integrity` is rejected before anything is downloaded.
+2. `npm install <package>@<version>` runs in a staging directory (a fresh GUID-named folder) that lives **outside** the watched `JSExtensions/` root, on the same volume so the later move is atomic.
+3. The resolved package's integrity is compared against the `integrity` value from the feed. A mismatch aborts the install.
+4. The installer resolves the exact requested package under the staged `node_modules`, parses its `package.json`, and confirms the manifest identity (package name) and `version` match what the feed approved. An ambiguous layout (more than one valid CmdPal package) is rejected.
+5. The staged package's dependencies are assembled into a self-contained discovery layout.
+6. The finished directory is promoted into `JSExtensions\<id>` with a single atomic `Directory.Move`, so the directory only ever appears complete.
+7. The host is asked to refresh and **awaits provider registration** (`OnProviderAdded`) before the install is reported as successful. The staging directory is cleaned up regardless of outcome.
+
+Because promotion is atomic and registration is awaited, a completed gallery install is guaranteed to be loadable when the install call returns; the `FileSystemWatcher` is not relied upon to catch a partially written directory.
 
 ### Uninstallation Flow
 

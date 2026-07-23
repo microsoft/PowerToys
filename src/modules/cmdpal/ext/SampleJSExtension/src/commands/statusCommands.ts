@@ -79,27 +79,31 @@ export class SingleMessageCommand extends InvokableCommandBase {
   readonly id = 'single-message';
   name = 'Show';
 
-  private shown = false;
+  // The stable handle the host minted for the shown status. Hiding targets this
+  // exact status rather than matching on the message text.
+  private statusId: string | null = null;
 
   get isShown(): boolean {
-    return this.shown;
+    return this.statusId !== null;
   }
 
   override invoke(): CommandResult {
-    if (this.shown) {
-      ExtensionHost.hideStatus('I am a status message');
+    if (this.statusId !== null) {
+      ExtensionHost.hideStatus(this.statusId);
+      this.statusId = null;
     } else {
-      ExtensionHost.showStatus('I am a status message', 'info');
+      this.statusId = ExtensionHost.showStatus('I am a status message', 'info');
     }
-    this.shown = !this.shown;
-    this.name = this.shown ? 'Hide' : 'Show';
+
+    this.name = this.statusId !== null ? 'Hide' : 'Show';
     return { kind: 'keepOpen' };
   }
 }
 
 /**
- * Shows an indeterminate progress status, then completes it after a short
- * delay. Mirrors the C# `IndeterminateProgressMessageCommand`.
+ * Shows an indeterminate progress status, then resolves it in place to a
+ * completion message after a short delay. Mirrors the C#
+ * `IndeterminateProgressMessageCommand`.
  */
 export class IndeterminateProgressMessageCommand extends InvokableCommandBase {
   readonly id = 'indeterminate-progress';
@@ -110,23 +114,29 @@ export class IndeterminateProgressMessageCommand extends InvokableCommandBase {
   override invoke(): CommandResult {
     if (!this.running) {
       this.running = true;
-      ExtensionHost.showStatus('Doing the thing...', 'info', { isIndeterminate: true });
+
+      // Keep the stable status handle the host returns. The working status is
+      // updated in place to the completion message and then hidden by the same
+      // id, so the spinner is never left behind next to the result.
+      const statusId = ExtensionHost.showStatus('Doing the thing...', 'info', { isIndeterminate: true });
       setTimeout(() => {
-        ExtensionHost.showStatus('Did the thing!', 'success');
+        ExtensionHost.updateStatus(statusId, 'Did the thing!', 'success');
         setTimeout(() => {
-          ExtensionHost.hideStatus('Did the thing!');
+          ExtensionHost.hideStatus(statusId);
           this.running = false;
         }, 3000);
       }, 3000);
     }
+
     return { kind: 'keepOpen' };
   }
 }
 
 /**
- * Shows an indeterminate progress status and then resolves it to a success
- * message after a short delay. Used by the details command buttons to make the
- * status banner and its spinner obviously visible when the button is invoked.
+ * Shows an indeterminate progress status and then resolves it in place to a
+ * success message after a short delay. Used by the details command buttons to
+ * make the status banner and its spinner obviously visible when the button is
+ * invoked.
  */
 export class ProgressStatusCommand extends InvokableCommandBase {
   readonly id: string;
@@ -147,15 +157,19 @@ export class ProgressStatusCommand extends InvokableCommandBase {
   override invoke(): CommandResult {
     if (!this.running) {
       this.running = true;
-      ExtensionHost.showStatus(this.workingMessage, 'info', { isIndeterminate: true });
+
+      // Update the working status in place to the completion message, then hide
+      // that same status, instead of stacking a second banner on top of it.
+      const statusId = ExtensionHost.showStatus(this.workingMessage, 'info', { isIndeterminate: true });
       setTimeout(() => {
-        ExtensionHost.showStatus(this.doneMessage, 'success');
+        ExtensionHost.updateStatus(statusId, this.doneMessage, 'success');
         setTimeout(() => {
-          ExtensionHost.hideStatus(this.doneMessage);
+          ExtensionHost.hideStatus(statusId);
           this.running = false;
         }, 3000);
       }, 2000);
     }
+
     return { kind: 'keepOpen' };
   }
 }

@@ -558,6 +558,162 @@ public class JSExtensionManifestTests
         }
     }
 
+    [TestMethod]
+    public void TryParse_RelativeIcon_ResolvesToContainedAbsolutePath()
+    {
+        CreateEntryPoint("dist/index.js");
+        CreateEntryPoint("assets/icon.png");
+        const string Json = """
+        {
+            "name": "relative-icon",
+            "main": "dist/index.js",
+            "cmdpal": { "icon": "assets/icon.png" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        var expected = Path.GetFullPath(Path.Combine(_testDirectory, "assets", "icon.png"));
+        Assert.AreEqual(expected, result.Manifest!.IconPath);
+    }
+
+    [TestMethod]
+    public void TryParse_RootDirectory_IsResolvedToPackageRoot()
+    {
+        CreateEntryPoint("dist/index.js");
+        const string Json = """
+        {
+            "name": "root-directory",
+            "main": "dist/index.js",
+            "cmdpal": {}
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        var expected = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_testDirectory));
+        Assert.AreEqual(expected, result.Manifest!.RootDirectory);
+    }
+
+    [TestMethod]
+    public void TryParse_RelativeIcon_ThatEscapesPackage_ResolvesToEmpty()
+    {
+        CreateEntryPoint("dist/index.js");
+        const string Json = """
+        {
+            "name": "escaping-icon",
+            "main": "dist/index.js",
+            "cmdpal": { "icon": "../outside-icon.png" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual(string.Empty, result.Manifest!.IconPath);
+    }
+
+    [TestMethod]
+    public void TryParse_RelativeIcon_ThatDoesNotExist_ResolvesToEmpty()
+    {
+        CreateEntryPoint("dist/index.js");
+        const string Json = """
+        {
+            "name": "missing-icon",
+            "main": "dist/index.js",
+            "cmdpal": { "icon": "assets/missing.png" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual(string.Empty, result.Manifest!.IconPath);
+    }
+
+    [TestMethod]
+    public void TryParse_GlyphIcon_IsPreservedUnchanged()
+    {
+        CreateEntryPoint("dist/index.js");
+        const string Json = """
+        {
+            "name": "glyph-icon",
+            "main": "dist/index.js",
+            "cmdpal": { "icon": "\uE700" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("\uE700", result.Manifest!.IconPath);
+    }
+
+    [TestMethod]
+    public void TryParse_UriIcon_IsPreservedUnchanged()
+    {
+        CreateEntryPoint("dist/index.js");
+        const string Json = """
+        {
+            "name": "uri-icon",
+            "main": "dist/index.js",
+            "cmdpal": { "icon": "https://example.com/icon.png" }
+        }
+        """;
+
+        var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+        Assert.IsTrue(result.IsValid, result.FailureReason);
+        Assert.AreEqual("https://example.com/icon.png", result.Manifest!.IconPath);
+    }
+
+    [TestMethod]
+    public void TryParse_IconThroughJunction_ResolvesToEmpty()
+    {
+        // An icon whose lexical path stays inside the package but traverses a junction that
+        // redirects outside the package must resolve to empty rather than load the outside file.
+        CreateEntryPoint("dist/index.js");
+
+        var outsideDirectory = Path.Combine(Path.GetTempPath(), $"JSExtensionIconJunctionTarget_{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDirectory);
+        File.WriteAllText(Path.Combine(outsideDirectory, "icon.png"), "// icon bytes");
+
+        var junctionPath = Path.Combine(_testDirectory, "linked-assets");
+        if (!TryCreateJunction(junctionPath, outsideDirectory))
+        {
+            Directory.Delete(outsideDirectory, recursive: true);
+            Assert.Inconclusive("A directory junction could not be created in this environment.");
+            return;
+        }
+
+        try
+        {
+            const string Json = """
+            {
+                "name": "junction-icon",
+                "main": "dist/index.js",
+                "cmdpal": { "icon": "linked-assets/icon.png" }
+            }
+            """;
+
+            var result = JSExtensionManifest.TryParse(Json, _testDirectory);
+
+            Assert.IsTrue(result.IsValid, result.FailureReason);
+            Assert.AreEqual(string.Empty, result.Manifest!.IconPath);
+        }
+        finally
+        {
+            if (Directory.Exists(junctionPath))
+            {
+                Directory.Delete(junctionPath, recursive: false);
+            }
+
+            Directory.Delete(outsideDirectory, recursive: true);
+        }
+    }
+
     private static bool TryCreateJunction(string junctionPath, string targetPath)
     {
         try

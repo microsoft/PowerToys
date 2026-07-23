@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
-using System.Linq;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,33 +11,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 [TestClass]
 public class JsExtensionPackageLayoutTests
 {
-    private const string ScopedManifest = """
-        {
-          "name": "@contoso/sample",
-          "version": "1.2.3",
-          "main": "dist/extension.js",
-          "cmdpal": { "displayName": "Contoso Sample" }
-        }
-        """;
-
-    private const string NestedManifest = """
-        {
-          "name": "sample-ext",
-          "version": "1.0.0",
-          "main": "dist/extension.js",
-          "cmdpal": {}
-        }
-        """;
-
-    private const string RootManifest = """
-        {
-          "name": "already",
-          "version": "1.0.0",
-          "main": "dist/extension.js",
-          "cmdpal": {}
-        }
-        """;
-
     private string _root = string.Empty;
 
     [TestInitialize]
@@ -58,102 +30,158 @@ public class JsExtensionPackageLayoutTests
     }
 
     [TestMethod]
-    public void Materialize_HoistsScopedPackage_AndDiscoveryFindsIt()
+    public void ResolveRequestedPackage_ResolvesScopedPackage()
     {
-        var extensionDir = Path.Combine(_root, "contoso-sample");
-        var packageDir = Path.Combine(extensionDir, "node_modules", "@contoso", "sample");
+        var stagingDir = Path.Combine(_root, "staging");
+        var packageDir = CreateCmdPalPackage(stagingDir, "@contoso/sample", "1.2.3", "Contoso Sample");
 
-        // The manifest npm writes at the install-target root does not carry a cmdpal section.
-        Directory.CreateDirectory(extensionDir);
-        File.WriteAllText(
-            Path.Combine(extensionDir, "package.json"),
-            """{ "dependencies": { "@contoso/sample": "1.2.3" } }""");
+        // A hoisted runtime dependency that is not a Command Palette extension must not confuse
+        // the resolution.
+        CreatePlainDependency(stagingDir, "left-pad");
 
-        // The real extension lands under node_modules/<package>.
-        Directory.CreateDirectory(Path.Combine(packageDir, "dist"));
-        File.WriteAllText(Path.Combine(packageDir, "package.json"), ScopedManifest);
-        File.WriteAllText(Path.Combine(packageDir, "dist", "extension.js"), "// entry");
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "@contoso/sample");
 
-        // A hoisted runtime dependency sits directly under the top node_modules.
-        var depDir = Path.Combine(extensionDir, "node_modules", "left-pad");
-        Directory.CreateDirectory(depDir);
-        File.WriteAllText(Path.Combine(depDir, "index.js"), "module.exports = {};");
-
-        var result = JsExtensionPackageLayout.Materialize(extensionDir);
-
-        Assert.IsTrue(result.Succeeded, result.ErrorMessage);
-        Assert.IsTrue(File.Exists(Path.Combine(extensionDir, "package.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(extensionDir, "dist", "extension.js")));
-        Assert.IsTrue(Directory.Exists(depDir), "The hoisted dependency should be preserved.");
-        Assert.IsFalse(Directory.Exists(Path.Combine(extensionDir, "node_modules", "@contoso")), "The scoped package folder should be removed after hoisting.");
-
-        var discovered = JsonRpcExtensionService.DiscoverManifests(_root);
-        Assert.AreEqual(1, discovered.Count);
-        Assert.AreEqual("@contoso/sample", discovered[0].Manifest.Name);
-        Assert.AreEqual("Contoso Sample", discovered[0].Manifest.DisplayName);
+        Assert.IsTrue(resolution.Succeeded, resolution.ErrorMessage);
+        Assert.AreEqual(
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(packageDir)),
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(resolution.PackageDirectory!)));
     }
 
     [TestMethod]
-    public void Materialize_MergesNestedNodeModules_IntoTopLevel()
+    public void ResolveRequestedPackage_ResolvesUnscopedPackage()
     {
-        var extensionDir = Path.Combine(_root, "nested-sample");
-        var packageDir = Path.Combine(extensionDir, "node_modules", "sample-ext");
+        var stagingDir = Path.Combine(_root, "staging");
+        var packageDir = CreateCmdPalPackage(stagingDir, "sample-ext", "1.0.0", "Sample");
 
-        Directory.CreateDirectory(Path.Combine(packageDir, "dist"));
-        File.WriteAllText(Path.Combine(packageDir, "package.json"), NestedManifest);
-        File.WriteAllText(Path.Combine(packageDir, "dist", "extension.js"), "// entry");
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "sample-ext");
+
+        Assert.IsTrue(resolution.Succeeded, resolution.ErrorMessage);
+        Assert.AreEqual(
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(packageDir)),
+            Path.TrimEndingDirectorySeparator(Path.GetFullPath(resolution.PackageDirectory!)));
+    }
+
+    [TestMethod]
+    public void ResolveRequestedPackage_RejectsAmbiguousLayout()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        CreateCmdPalPackage(stagingDir, "sample-ext", "1.0.0", "Sample");
+        CreateCmdPalPackage(stagingDir, "other-ext", "2.0.0", "Other");
+
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "sample-ext");
+
+        Assert.IsFalse(resolution.Succeeded);
+        Assert.IsNull(resolution.PackageDirectory);
+        StringAssert.Contains(resolution.ErrorMessage, "ambiguous");
+    }
+
+    [TestMethod]
+    public void ResolveRequestedPackage_RejectsAmbiguousScopedAndUnscopedLayout()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        CreateCmdPalPackage(stagingDir, "@contoso/sample", "1.0.0", "Scoped");
+        CreateCmdPalPackage(stagingDir, "plain-ext", "1.0.0", "Unscoped");
+
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "@contoso/sample");
+
+        Assert.IsFalse(resolution.Succeeded);
+        StringAssert.Contains(resolution.ErrorMessage, "ambiguous");
+    }
+
+    [TestMethod]
+    public void ResolveRequestedPackage_Fails_WhenRequestedPackageIsNotThePresentOne()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        CreateCmdPalPackage(stagingDir, "other-ext", "1.0.0", "Other");
+
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "sample-ext");
+
+        Assert.IsFalse(resolution.Succeeded);
+        Assert.IsNull(resolution.PackageDirectory);
+    }
+
+    [TestMethod]
+    public void ResolveRequestedPackage_Fails_WhenInstalledPackageIsNotACmdPalExtension()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        CreatePlainDependency(stagingDir, "plain-lib");
+
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "plain-lib");
+
+        Assert.IsFalse(resolution.Succeeded);
+    }
+
+    [TestMethod]
+    public void ResolveRequestedPackage_Fails_WhenIdentityEscapesNodeModules()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        CreateCmdPalPackage(stagingDir, "sample-ext", "1.0.0", "Sample");
+
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "../../escape");
+
+        Assert.IsFalse(resolution.Succeeded);
+    }
+
+    [TestMethod]
+    public void AssembleDiscoveryLayout_ProducesDiscoverableTree_WithHoistedDependencies()
+    {
+        var stagingDir = Path.Combine(_root, "staging");
+        var packageDir = CreateCmdPalPackage(stagingDir, "sample-ext", "1.0.0", "Sample");
+        CreatePlainDependency(stagingDir, "left-pad");
 
         // A version-pinned dependency nested inside the package's own node_modules.
         var nestedDep = Path.Combine(packageDir, "node_modules", "nested-dep");
         Directory.CreateDirectory(nestedDep);
         File.WriteAllText(Path.Combine(nestedDep, "index.js"), "module.exports = 1;");
 
-        // A hoisted dependency already at the top node_modules.
-        var topDep = Path.Combine(extensionDir, "node_modules", "top-dep");
-        Directory.CreateDirectory(topDep);
-        File.WriteAllText(Path.Combine(topDep, "index.js"), "module.exports = 2;");
+        var resolution = JsExtensionPackageLayout.ResolveRequestedPackage(stagingDir, "sample-ext");
+        Assert.IsTrue(resolution.Succeeded, resolution.ErrorMessage);
 
-        var result = JsExtensionPackageLayout.Materialize(extensionDir);
+        var assembled = JsExtensionPackageLayout.AssembleDiscoveryLayout(stagingDir, resolution.PackageDirectory!);
 
-        Assert.IsTrue(result.Succeeded, result.ErrorMessage);
-        Assert.IsTrue(Directory.Exists(Path.Combine(extensionDir, "node_modules", "top-dep")));
-        Assert.IsTrue(Directory.Exists(Path.Combine(extensionDir, "node_modules", "nested-dep")), "The nested dependency should be merged into the top node_modules.");
-        Assert.IsFalse(Directory.Exists(Path.Combine(extensionDir, "node_modules", "sample-ext")));
-    }
+        Assert.IsTrue(File.Exists(Path.Combine(assembled, "package.json")));
+        Assert.IsTrue(File.Exists(Path.Combine(assembled, "dist", "extension.js")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(assembled, "node_modules", "left-pad")), "The hoisted dependency should be moved under the package node_modules.");
+        Assert.IsTrue(Directory.Exists(Path.Combine(assembled, "node_modules", "nested-dep")), "The package's own nested dependency should be preserved.");
 
-    [TestMethod]
-    public void Materialize_IsNoOp_WhenRootAlreadyHasManifest()
-    {
-        var extensionDir = Path.Combine(_root, "already-materialized");
-        Directory.CreateDirectory(Path.Combine(extensionDir, "dist"));
-        File.WriteAllText(Path.Combine(extensionDir, "package.json"), RootManifest);
-        File.WriteAllText(Path.Combine(extensionDir, "dist", "extension.js"), "// entry");
+        // Promote the assembled tree into a discovery root and confirm the scan finds exactly it.
+        var discoveryRoot = Path.Combine(_root, "discovery");
+        Directory.CreateDirectory(discoveryRoot);
+        var target = Path.Combine(discoveryRoot, "sample-ext");
+        Directory.Move(assembled, target);
 
-        var result = JsExtensionPackageLayout.Materialize(extensionDir);
-
-        Assert.IsTrue(result.Succeeded, result.ErrorMessage);
-        var discovered = JsonRpcExtensionService.DiscoverManifests(_root);
+        var discovered = JsonRpcExtensionService.DiscoverManifests(discoveryRoot);
         Assert.AreEqual(1, discovered.Count);
-        Assert.AreEqual("already", discovered[0].Manifest.Name);
+        Assert.AreEqual("sample-ext", discovered[0].Manifest.Name);
+        Assert.AreEqual("Sample", discovered[0].Manifest.DisplayName);
     }
 
-    [TestMethod]
-    public void Materialize_Fails_WhenInstalledPackageIsNotACmdPalExtension()
+    private static string CreateCmdPalPackage(string stagingDir, string packageName, string version, string displayName)
     {
-        var extensionDir = Path.Combine(_root, "not-cmdpal");
-        var packageDir = Path.Combine(extensionDir, "node_modules", "plain-lib");
-        Directory.CreateDirectory(packageDir);
+        var relative = packageName.Replace('/', Path.DirectorySeparatorChar);
+        var packageDir = Path.Combine(stagingDir, "node_modules", relative);
+        Directory.CreateDirectory(Path.Combine(packageDir, "dist"));
 
-        // No cmdpal section anywhere.
-        File.WriteAllText(Path.Combine(extensionDir, "package.json"), """{ "dependencies": {} }""");
+        var manifest = $$"""
+            {
+              "name": "{{packageName}}",
+              "version": "{{version}}",
+              "main": "dist/extension.js",
+              "cmdpal": { "displayName": "{{displayName}}" }
+            }
+            """;
+        File.WriteAllText(Path.Combine(packageDir, "package.json"), manifest);
+        File.WriteAllText(Path.Combine(packageDir, "dist", "extension.js"), "// entry");
+        return packageDir;
+    }
+
+    private static void CreatePlainDependency(string stagingDir, string packageName)
+    {
+        var depDir = Path.Combine(stagingDir, "node_modules", packageName);
+        Directory.CreateDirectory(depDir);
         File.WriteAllText(
-            Path.Combine(packageDir, "package.json"),
-            """{ "name": "plain-lib", "version": "1.0.0", "main": "index.js" }""");
-        File.WriteAllText(Path.Combine(packageDir, "index.js"), "module.exports = {};");
-
-        var result = JsExtensionPackageLayout.Materialize(extensionDir);
-
-        Assert.IsFalse(result.Succeeded);
-        Assert.IsFalse(JsonRpcExtensionService.DiscoverManifests(_root).Any());
+            Path.Combine(depDir, "package.json"),
+            $$"""{ "name": "{{packageName}}", "version": "1.0.0", "main": "index.js" }""");
+        File.WriteAllText(Path.Combine(depDir, "index.js"), "module.exports = {};");
     }
 }
