@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WorkspacesEditor.Views.WorkspacesEditorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WorkspacesEditor.Models"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Converters"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <toolkit:BoolToVisibilityConverter x:Key="BoolToVis" />
+
+        <DataTemplate x:Key="headerTemplate" x:DataType="models:MonitorHeaderRow">
+            <Border HorizontalAlignment="Stretch">
+                <TextBlock
+                    Margin="0,16,0,8"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{x:Bind MonitorName, Mode=OneWay}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="appTemplate" x:DataType="models:Application">
+            <Grid>
+                <tkcontrols:SettingsExpander
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    AutomationProperties.AutomationId="{x:Bind AppName, Mode=OneWay}"
+                    AutomationProperties.Name="{x:Bind AppName, Mode=OneWay}"
+                    IsEnabled="{x:Bind IsIncluded, Mode=OneWay}"
+                    IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <ImageIcon Source="{x:Bind IconImage, Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind AppName, Mode=OneWay}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind RepeatIndexString, Mode=OneWay}" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                Text="&#xE7BA;"
+                                Visibility="{x:Bind IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                        </StackPanel>
+                    </tkcontrols:SettingsExpander.Header>
+                    <tkcontrols:SettingsExpander.Description>
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                            Text="{x:Bind AppMainParams, Mode=OneWay}"
+                            Visibility="{x:Bind IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.Description>
+                    <Button
+                        Grid.Column="4"
+                        Width="Auto"
+                        Margin="12,4"
+                        AutomationProperties.Name="{x:Bind DeleteButtonAccessibleName, Mode=OneWay}"
+                        Click="DeleteButtonClicked"
+                        Content="{x:Bind DeleteButtonContent, Mode=OneWay}"
+                        IsEnabled="True" />
+                    <tkcontrols:SettingsExpander.Items>
+
+                        <tkcontrols:SettingsCard ContentAlignment="Left">
+                            <CheckBox
+                                x:Uid="LaunchAsAdminLabel"
+                                MinWidth="12"
+                                IsChecked="{x:Bind IsElevated, Mode=TwoWay}"
+                                IsEnabled="{x:Bind CanLaunchElevated, Mode=OneWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="CliArgsTextBox">
+
+                            <TextBox
+                                MinWidth="200"
+                                Margin="12,0,0,0"
+                                HorizontalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                Text="{x:Bind CommandLineArguments, Mode=TwoWay}"
+                                TextChanged="CommandLineTextBox_TextChanged" />
+                        </tkcontrols:SettingsCard>
+
+                        <tkcontrols:SettingsCard x:Uid="WindowPositionComboBox">
+                            <ComboBox VerticalAlignment="Center" SelectedIndex="{x:Bind PositionComboboxIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="CustomItem" />
+                                <ComboBoxItem x:Uid="MaximizedItem" />
+                                <ComboBoxItem x:Uid="MinimizedItem" />
+                            </ComboBox>
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="PositionHeader" Visibility="{x:Bind EditPositionEnabled, Mode=OneWay, Converter={StaticResource BoolToVis}}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock
+                                    x:Uid="LeftLabel"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBox
+                                    x:Uid="LeftTextBox"
+                                    MinWidth="60"
+                                    Margin="0,0,8,0"
+                                    Text="{x:Bind Position.X, Mode=OneWay}"
+                                    TextChanged="LeftTextBox_TextChanged" />
+                                <TextBlock
+                                    x:Uid="TopLabel"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBox
+                                    x:Uid="TopTextBox"
+                                    MinWidth="60"
+                                    Margin="0,0,8,0"
+                                    Text="{x:Bind Position.Y, Mode=OneWay}"
+                                    TextChanged="TopTextBox_TextChanged" />
+                                <TextBlock
+                                    x:Uid="WidthLabel"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBox
+                                    x:Uid="WidthTextBox"
+                                    MinWidth="60"
+                                    Margin="0,0,8,0"
+                                    Text="{x:Bind Position.Width, Mode=OneWay}"
+                                    TextChanged="WidthTextBox_TextChanged" />
+                                <TextBlock
+                                    x:Uid="HeightLabel"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource CaptionTextBlockStyle}" />
+                                <TextBox
+                                    x:Uid="HeightTextBox"
+                                    MinWidth="60"
+                                    Text="{x:Bind Position.Height, Mode=OneWay}"
+                                    TextChanged="HeightTextBox_TextChanged" />
+                            </StackPanel>
+                        </tkcontrols:SettingsCard>
+                    </tkcontrols:SettingsExpander.Items>
+                </tkcontrols:SettingsExpander>
+            </Grid>
+        </DataTemplate>
+
+        <models:AppListDataTemplateSelector
+            x:Key="AppListDataTemplateSelector"
+            AppTemplate="{StaticResource appTemplate}"
+            HeaderTemplate="{StaticResource headerTemplate}" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid MaxWidth="1000" Margin="24">
+            <StackPanel
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Name="RevertButton"
+                    x:Uid="RevertButton"
+                    Click="RevertButtonClicked"
+                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay}"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="RevertButtonToolTip" />
+                    </ToolTipService.ToolTip>
+                    <FontIcon FontSize="16" Glyph="&#xE7A7;" />
+                </Button>
+                <Button
+                    x:Name="LaunchEditButton"
+                    x:Uid="LaunchEditButton"
+                    Click="LaunchEditButtonClicked">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE8A7;" />
+                        <TextBlock x:Uid="LaunchEditLabel" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+
+            <StackPanel
+                HorizontalAlignment="Left"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Name="SaveButton"
+                    x:Uid="SaveBtn"
+                    Click="SaveButtonClicked"
+                    IsEnabled="{Binding CanBeSaved, Mode=OneWay}"
+                    Style="{ThemeResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="&#xE74E;" />
+                        <TextBlock
+                            x:Uid="SaveLabel"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    x:Name="DeleteWorkspaceButton"
+                    x:Uid="DeleteWorkspaceButton"
+                    Click="DeleteWorkspaceButtonClicked"
+                    Style="{StaticResource SubtleButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Uid="DeleteWorkspaceButtonToolTip" />
+                    </ToolTipService.ToolTip>
+                    <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                </Button>
+            </StackPanel>
+        </Grid>
+        <!--  app list  -->
+        <ScrollViewer
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalScrollBarVisibility="Auto">
+            <Grid Margin="24">
+                <Grid MaxWidth="1000" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid
+                        Padding="16"
+                        HorizontalAlignment="Stretch"
+                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        ColumnSpacing="24"
+                        CornerRadius="{StaticResource ControlCornerRadius}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid
+                            Width="160"
+                            Height="120"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Background="{ThemeResource ControlAltFillColorTertiaryBrush}"
+                            CornerRadius="8">
+                            <!--  THIS IS JUST A PLACEHOLDER.. SNAPSHOT IMAGE GOES HERE  -->
+                        </Grid>
+                        <StackPanel
+                            Grid.Column="1"
+                            Orientation="Vertical"
+                            Spacing="8">
+                            <TextBox
+                                x:Name="EditNameTextBox"
+                                x:Uid="EditNameTextBox"
+                                Width="224"
+                                HorizontalAlignment="Left"
+                                GotFocus="EditNameTextBox_GotFocus"
+                                KeyDown="EditNameTextBoxKeyDown"
+                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                TextChanged="EditNameTextBox_TextChanged" />
+                            <CheckBox
+                                x:Uid="CreateShortcutCheckBox"
+                                Margin="0,4,0,0"
+                                IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}" />
+                            <CheckBox x:Uid="MoveExistingWindowsCheckBox" IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
+                        </StackPanel>
+                    </Grid>
+                    <ItemsRepeater
+                        x:Name="CapturedAppList"
+                        x:Uid="CapturedAppListControl"
+                        Grid.Row="1"
+                        ItemTemplate="{StaticResource AppListDataTemplateSelector}"
+                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="4" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </Grid>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</Page>
+
+

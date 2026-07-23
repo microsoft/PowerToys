@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -12,24 +11,16 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Windows.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Management.Deployment;
 
 namespace WorkspacesCsharpLibrary.Models
 {
-    public partial class BaseApplication : INotifyPropertyChanged, IDisposable
+    public partial class BaseApplication : ObservableObject, IDisposable
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public string PwaAppId { get; set; }
 
         public string AppPath { get; set; }
-
-        private bool _isNotFound;
 
         public string PackagedId { get; set; }
 
@@ -39,23 +30,9 @@ namespace WorkspacesCsharpLibrary.Models
 
         public string Aumid { get; set; }
 
-        [JsonIgnore]
-        public bool IsNotFound
-        {
-            get
-            {
-                return _isNotFound;
-            }
-
-            set
-            {
-                if (_isNotFound != value)
-                {
-                    _isNotFound = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsNotFound)));
-                }
-            }
-        }
+        [ObservableProperty]
+        [property: JsonIgnore]
+        private bool _isNotFound;
 
         private Icon _icon;
 
