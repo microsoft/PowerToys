@@ -3,7 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 import { describe, expect, it } from 'vitest';
-import type { CommandResult, IListItem, IListPage, ICommandProvider } from '../src/types.js';
+import type {
+  CommandResult,
+  IInvokableCommand,
+  IListItem,
+  IListPage,
+  ICommandProvider,
+} from '../src/types.js';
 import { ExtensionRuntime } from '../src/runtime/runtime.js';
 import {
   JSONRPC_VERSION,
@@ -26,16 +32,14 @@ function responseFor(sent: JsonRpcMessage[], id: number): JsonRpcResponse | unde
 }
 
 function item(id: string): IListItem {
-  return {
-    command: {
-      id,
-      name: id,
-      invoke(): CommandResult {
-        return { kind: 'keepOpen' };
-      },
+  const command: IInvokableCommand = {
+    id,
+    name: id,
+    invoke(): CommandResult {
+      return { kind: 'keepOpen' };
     },
-    title: id,
   };
+  return { command, title: id };
 }
 
 describe('bounded command registry eviction', () => {

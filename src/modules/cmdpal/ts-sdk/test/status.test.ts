@@ -22,7 +22,10 @@ describe('client-side status identity', () => {
   it('mints a statusId and carries both id and message text', () => {
     const { bridge, sent } = createBridge();
 
-    const statusId = bridge.showStatus('Working', 'info', { current: 1, total: 4 });
+    const statusId = bridge.showStatus('Working', 'info', {
+      isIndeterminate: false,
+      progressPercent: 25,
+    });
 
     expect(statusId).toBe('status-1');
     expect(sent).toHaveLength(1);
@@ -30,7 +33,7 @@ describe('client-side status identity', () => {
     expect(sent[0]?.params).toMatchObject({
       statusId: 'status-1',
       message: { Message: 'Working', State: 0 },
-      progress: { current: 1, total: 4 },
+      progress: { isIndeterminate: false, progressPercent: 25 },
     });
   });
 
@@ -42,16 +45,22 @@ describe('client-side status identity', () => {
 
   it('updates an existing status by id without duplicating it', () => {
     const { bridge, sent } = createBridge();
-    const statusId = bridge.showStatus('Working', 'info', { current: 1, total: 4 });
+    const statusId = bridge.showStatus('Working', 'info', {
+      isIndeterminate: false,
+      progressPercent: 25,
+    });
 
-    bridge.updateStatus(statusId, 'Almost done', 'warning', { current: 3, total: 4 });
+    bridge.updateStatus(statusId, 'Almost done', 'warning', {
+      isIndeterminate: false,
+      progressPercent: 75,
+    });
 
     const shows = sent.filter((n) => n.method === 'host/showStatus');
     expect(shows).toHaveLength(2);
     expect(shows[1]?.params).toMatchObject({
       statusId: 'status-1',
       message: { Message: 'Almost done', State: 2 },
-      progress: { current: 3, total: 4 },
+      progress: { isIndeterminate: false, progressPercent: 75 },
     });
   });
 
