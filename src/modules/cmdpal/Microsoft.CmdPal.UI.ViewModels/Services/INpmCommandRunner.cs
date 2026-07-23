@@ -9,8 +9,8 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
 /// Abstracts the npm command line and the directory side effects the installer relies on. This
-/// is the seam that lets tests exercise install/uninstall path resolution without invoking npm
-/// or touching disk.
+/// is the seam that lets tests exercise the install/uninstall transaction without invoking npm
+/// or touching a real registry.
 /// </summary>
 public interface INpmCommandRunner
 {
@@ -21,25 +21,28 @@ public interface INpmCommandRunner
     bool IsNpmAvailable();
 
     /// <summary>
-    /// Runs "npm install &lt;package&gt;" in <paramref name="targetDirectory"/>, creating the
-    /// directory if needed.
+    /// Installs the approved artifact into <paramref name="stagingDirectory"/> using npm. The exact
+    /// spec "name@version" is passed as a single argument, package lifecycle scripts are disabled, and
+    /// the exact version is pinned. On success the result carries the integrity value npm resolved for
+    /// the top-level package so the caller can verify it against the approved value before promoting.
     /// </summary>
-    /// <param name="targetDirectory">The extension directory the package is installed into.</param>
-    /// <param name="package">The npm package identifier to install.</param>
-    /// <param name="registry">Optional npm registry URL. When null or empty, the default registry is used.</param>
+    /// <param name="stagingDirectory">A directory outside the watched extensions root that npm installs into.</param>
+    /// <param name="artifact">The validated artifact to install.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>The result of running npm.</returns>
-    Task<NpmCommandResult> InstallAsync(string targetDirectory, string package, string? registry, CancellationToken cancellationToken);
+    /// <returns>The result of running npm, including the resolved integrity on success.</returns>
+    Task<NpmCommandResult> InstallAsync(string stagingDirectory, NpmArtifact artifact, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Deletes <paramref name="targetDirectory"/> and everything under it. Safe to call when the
-    /// directory does not exist.
+    /// Deletes <paramref name="targetDirectory"/> and everything under it. Refuses to delete when the
+    /// top-level directory is a symbolic link or junction (a reparse point), and retries briefly to
+    /// tolerate a file handle that is still being released. Safe to call when the directory does not
+    /// exist.
     /// </summary>
-    /// <param name="targetDirectory">The extension directory to remove.</param>
+    /// <param name="targetDirectory">The directory to remove.</param>
     /// <returns>
     /// <see langword="true"/> when the directory no longer exists after the call (either it was
-    /// deleted or it never existed); <see langword="false"/> when deletion failed and the
-    /// directory remains on disk.
+    /// deleted or it never existed); <see langword="false"/> when deletion failed or was refused and
+    /// the directory remains on disk.
     /// </returns>
     bool RemoveDirectory(string targetDirectory);
 }
@@ -49,9 +52,13 @@ public interface INpmCommandRunner
 /// </summary>
 /// <param name="Succeeded">Whether the command exited successfully.</param>
 /// <param name="ErrorMessage">A user-visible error message when the command failed; otherwise null.</param>
-public readonly record struct NpmCommandResult(bool Succeeded, string? ErrorMessage)
+/// <param name="ResolvedIntegrity">
+/// The Subresource Integrity value npm resolved for the installed top-level package, read from the
+/// generated lockfile. Null when the command failed or the value could not be determined.
+/// </param>
+public readonly record struct NpmCommandResult(bool Succeeded, string? ErrorMessage, string? ResolvedIntegrity)
 {
-    public static NpmCommandResult Ok() => new(true, null);
+    public static NpmCommandResult Ok(string? resolvedIntegrity) => new(true, null, resolvedIntegrity);
 
-    public static NpmCommandResult Fail(string errorMessage) => new(false, errorMessage);
+    public static NpmCommandResult Fail(string errorMessage) => new(false, errorMessage, null);
 }

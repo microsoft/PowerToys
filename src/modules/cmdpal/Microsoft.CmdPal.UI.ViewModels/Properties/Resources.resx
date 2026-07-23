@@ -517,6 +517,84 @@
   <data name="gallery_item_jsonrpc_uninstall_action" xml:space="preserve">
     <value>Uninstall</value>
   </data>
+  <data name="gallery_item_jsonrpc_cancel_action" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button that cancels an in-progress extension install or uninstall.</comment>
+  </data>
+  <data name="gallery_item_jsonrpc_action_canceling" xml:space="preserve">
+    <value>Canceling...</value>
+  </data>
+  <data name="npm_installer_invalid_name" xml:space="preserve">
+    <value>The extension name is not valid.</value>
+  </data>
+  <data name="npm_installer_package_missing" xml:space="preserve">
+    <value>This extension cannot be installed because its listing does not specify an npm package.</value>
+  </data>
+  <data name="npm_installer_package_invalid" xml:space="preserve">
+    <value>This extension cannot be installed because its npm package name is not valid.</value>
+  </data>
+  <data name="npm_installer_version_missing" xml:space="preserve">
+    <value>This extension cannot be installed because its listing does not specify an exact version.</value>
+  </data>
+  <data name="npm_installer_version_invalid" xml:space="preserve">
+    <value>This extension cannot be installed because its listing does not specify a single exact version.</value>
+  </data>
+  <data name="npm_installer_integrity_missing" xml:space="preserve">
+    <value>This extension cannot be installed because its listing does not include an integrity hash.</value>
+  </data>
+  <data name="npm_installer_integrity_invalid" xml:space="preserve">
+    <value>This extension cannot be installed because its integrity hash is not a supported format.</value>
+  </data>
+  <data name="npm_installer_registry_invalid" xml:space="preserve">
+    <value>This extension cannot be installed because it requests a registry that is not allowed.</value>
+  </data>
+  <data name="npm_installer_already_installed" xml:space="preserve">
+    <value>This extension is already installed. Uninstall it first to install a different version.</value>
+  </data>
+  <data name="npm_installer_integrity_mismatch" xml:space="preserve">
+    <value>The downloaded package did not match the expected integrity hash and was not installed.</value>
+  </data>
+  <data name="npm_installer_identity_mismatch" xml:space="preserve">
+    <value>The downloaded package did not match the expected extension and was not installed.</value>
+  </data>
+  <data name="npm_installer_version_mismatch" xml:space="preserve">
+    <value>The downloaded package did not match the expected version and was not installed.</value>
+  </data>
+  <data name="npm_installer_not_an_extension" xml:space="preserve">
+    <value>The package was downloaded but does not contain a usable Command Palette extension.</value>
+  </data>
+  <data name="npm_installer_not_discoverable" xml:space="preserve">
+    <value>The extension was installed but could not be loaded, so it was removed.</value>
+  </data>
+  <data name="npm_installer_canceled" xml:space="preserve">
+    <value>The operation was canceled.</value>
+  </data>
+  <data name="npm_installer_remove_failed" xml:space="preserve">
+    <value>The extension files could not be removed. Close anything using them and try again.</value>
+  </data>
+  <data name="npm_installer_install_failed" xml:space="preserve">
+    <value>The installation failed.</value>
+  </data>
+  <data name="npm_runner_npm_not_found" xml:space="preserve">
+    <value>npm was not found. Install Node.js to add JavaScript extensions.</value>
+    <comment>Do not translate "npm" or "Node.js".</comment>
+  </data>
+  <data name="npm_runner_start_failed" xml:space="preserve">
+    <value>npm could not be started.</value>
+    <comment>Do not translate "npm".</comment>
+  </data>
+  <data name="npm_runner_create_staging_failed" xml:space="preserve">
+    <value>A temporary install folder could not be created: {0}</value>
+    <comment>{0}=underlying error message</comment>
+  </data>
+  <data name="npm_runner_timed_out" xml:space="preserve">
+    <value>The install timed out after {0} minutes.</value>
+    <comment>{0}=number of minutes</comment>
+  </data>
+  <data name="npm_runner_failed_exit" xml:space="preserve">
+    <value>npm install failed with exit code {0}.</value>
+    <comment>{0}=process exit code. Do not translate "npm install".</comment>
+  </data>
   <data name="gallery_item_source_name_unknown" xml:space="preserve">
     <value>Source: {0}</value>
     <comment>{0}=unsupported source type name from the gallery feed</comment>

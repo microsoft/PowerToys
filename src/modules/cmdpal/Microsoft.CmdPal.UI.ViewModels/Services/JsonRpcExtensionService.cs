@@ -138,6 +138,65 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         return parseResult.IsValid && parseResult.Manifest is not null;
     }
 
+    /// <inheritdoc />
+    public bool IsExtensionInstalled(string extensionName)
+    {
+        if (string.IsNullOrEmpty(extensionName))
+        {
+            return false;
+        }
+
+        var directory = Path.Combine(ExtensionsPath, extensionName);
+        return IsExtensionLoadedInDirectory(directory);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RefreshAndAwaitProviderAsync(string extensionDirectory, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(extensionDirectory))
+        {
+            return false;
+        }
+
+        if (!EnsureExtensionsDirectory())
+        {
+            return false;
+        }
+
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        if (timeout > TimeSpan.Zero)
+        {
+            timeoutCts.CancelAfter(timeout);
+        }
+
+        try
+        {
+            // Loading is awaited synchronously per directory through the lifecycle gate, so by the
+            // time this returns the promoted directory is either loaded and registered or it failed.
+            // Firing OnProviderAdded keeps the rest of the host (and the gallery) in sync.
+            var added = await AddDiscoveredNotLoadedAsync(timeoutCts.Token).ConfigureAwait(false);
+            foreach (var wrapper in added)
+            {
+                OnProviderAdded?.Invoke(this, [wrapper]);
+            }
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // The timeout elapsed before the extension finished loading.
+            return false;
+        }
+
+        return IsExtensionLoadedInDirectory(extensionDirectory);
+    }
+
+    private bool IsExtensionLoadedInDirectory(string extensionDirectory)
+    {
+        lock (_extensionsLock)
+        {
+            return _extensions.Any(e => PathsEqual(e.ManifestDirectory, extensionDirectory));
+        }
+    }
+
     public async Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
     {
         if (ct.IsCancellationRequested)
