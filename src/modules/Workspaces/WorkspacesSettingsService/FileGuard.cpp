@@ -210,6 +210,74 @@ namespace PTSettingsSvc
         return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
     }
 
+    HRESULT HardenStagingDirAdminOnly(const std::wstring& dir)
+    {
+        if (!CreateDirectoryW(dir.c_str(), nullptr))
+        {
+            DWORD err = GetLastError();
+            if (err != ERROR_ALREADY_EXISTS)
+            {
+                return HRESULT_FROM_WIN32(err);
+            }
+        }
+
+        PSID adminSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-32-544", &adminSid)) // BUILTIN\Administrators
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> adminGuard(adminSid);
+
+        PSID systemSid = nullptr;
+        if (!ConvertStringSidToSidW(L"S-1-5-18", &systemSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        std::unique_ptr<void, LocalFreeDeleter> systemGuard(systemSid);
+
+        // SYSTEM Full + Administrators Full ONLY.  No Authenticated-Users ACE and
+        // — combined with PROTECTED below — no inherited %ProgramData% ACEs, so a
+        // non-admin who pre-created this dir keeps nothing.  Owner is reset to
+        // SYSTEM so a non-admin creator's CREATOR-OWNER rights are reclaimed.
+        // The virtual account / Users RX ACEs are added later by
+        // ProtectServiceBinDir, once the service (hence the account) exists.
+        EXPLICIT_ACCESS_W ea[2] = {};
+        ea[0].grfAccessPermissions = GENERIC_ALL;
+        ea[0].grfAccessMode = SET_ACCESS;
+        ea[0].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
+        ea[0].Trustee.ptstrName = static_cast<LPWSTR>(systemSid);
+
+        ea[1].grfAccessPermissions = GENERIC_ALL;
+        ea[1].grfAccessMode = SET_ACCESS;
+        ea[1].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+        ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        ea[1].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+        ea[1].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
+
+        PACL acl = nullptr;
+        DWORD rc = SetEntriesInAclW(ARRAYSIZE(ea), ea, nullptr, &acl);
+        if (rc != ERROR_SUCCESS)
+        {
+            return HRESULT_FROM_WIN32(rc);
+        }
+        std::unique_ptr<void, LocalFreeDeleter> aclGuard(acl);
+
+        EnablePrivilege(SE_RESTORE_NAME);
+        EnablePrivilege(SE_TAKE_OWNERSHIP_NAME);
+
+        std::vector<wchar_t> mutableName(dir.begin(), dir.end());
+        mutableName.push_back(L'\0');
+        rc = SetNamedSecurityInfoW(mutableName.data(),
+                                   SE_FILE_OBJECT,
+                                   OWNER_SECURITY_INFORMATION |
+                                       DACL_SECURITY_INFORMATION |
+                                       PROTECTED_DACL_SECURITY_INFORMATION,
+                                   systemSid, nullptr, acl, nullptr);
+        return rc == ERROR_SUCCESS ? S_OK : HRESULT_FROM_WIN32(rc);
+    }
+
     HRESULT EnsureUserFolder(const std::wstring& folder,
                              const std::wstring& userSidString,
                              const std::wstring& serviceAccountName)

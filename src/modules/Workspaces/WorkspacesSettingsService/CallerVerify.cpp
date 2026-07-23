@@ -40,8 +40,9 @@ namespace PTSettingsSvc
             WINTRUST_DATA wd = {};
             wd.cbStruct = sizeof(wd);
             wd.dwUIChoice = WTD_UI_NONE;
-            // Prototype: skip network revocation on the hot path.  Production
-            // should use WTD_REVOKE_WHOLECHAIN with a cached/offline policy.
+            // Pass 1 establishes chain validity + trusted root + signer identity
+            // WITHOUT network revocation (kept off the hot path).  Revocation is
+            // then checked separately, cached-only, by CachedRevocationSaysRevoked.
             wd.fdwRevocationChecks = WTD_REVOKE_NONE;
             wd.dwUnionChoice = WTD_CHOICE_FILE;
             wd.pFile = &fileInfo;
@@ -89,6 +90,41 @@ namespace PTSettingsSvc
 
             return isMicrosoft;
         }
+
+        // Cached-only whole-chain revocation, evaluated in the service's own
+        // (SYSTEM) context via the already-open handle.  Returns true ONLY when a
+        // certificate in the chain is DEFINITIVELY revoked per locally cached
+        // revocation data.  WTD_CACHE_ONLY_URL_RETRIEVAL keeps this off the
+        // network; when revocation info isn't cached the result is "offline /
+        // unknown", which we deliberately treat as NOT revoked so a legitimate
+        // Microsoft-signed caller is never rejected just because a CRL wasn't
+        // cached (fail-open on unknown, fail-closed only on a real revocation).
+        bool CachedRevocationSaysRevoked(HANDLE hFile, const std::wstring& pathForDisplay)
+        {
+            WINTRUST_FILE_INFO fileInfo = {};
+            fileInfo.cbStruct = sizeof(fileInfo);
+            fileInfo.pcwszFilePath = pathForDisplay.c_str();
+            fileInfo.hFile = hFile;
+
+            GUID action = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+
+            WINTRUST_DATA wd = {};
+            wd.cbStruct = sizeof(wd);
+            wd.dwUIChoice = WTD_UI_NONE;
+            wd.fdwRevocationChecks = WTD_REVOKE_WHOLECHAIN;
+            wd.dwUnionChoice = WTD_CHOICE_FILE;
+            wd.pFile = &fileInfo;
+            wd.dwStateAction = WTD_STATEACTION_VERIFY;
+            wd.dwProvFlags = WTD_SAFER_FLAG | WTD_CACHE_ONLY_URL_RETRIEVAL;
+
+            HWND noWindow = static_cast<HWND>(INVALID_HANDLE_VALUE);
+            LONG status = WinVerifyTrust(noWindow, &action, &wd);
+
+            wd.dwStateAction = WTD_STATEACTION_CLOSE;
+            WinVerifyTrust(noWindow, &action, &wd);
+
+            return status == static_cast<LONG>(CERT_E_REVOKED);
+        }
     }
 
     bool VerifyMicrosoftSignature(HANDLE hImage, const std::wstring& pathForDisplay)
@@ -97,7 +133,9 @@ namespace PTSettingsSvc
         {
             return false;
         }
-        return ImageIsMicrosoftSigned(hImage, pathForDisplay);
+        // Valid Microsoft-signed chain AND not definitively revoked (cached-only).
+        return ImageIsMicrosoftSigned(hImage, pathForDisplay) &&
+               !CachedRevocationSaysRevoked(hImage, pathForDisplay);
     }
 
     unsigned long long GetBinaryVersion(const std::wstring& path)

@@ -21,6 +21,15 @@ namespace PTSettingsSvc
     // Users RX (traverse so each user reaches their own <sid> node).  Idempotent.
     HRESULT EnsureStoreRoot(const std::wstring& root);
 
+    // Creates `dir` if needed and applies a PROTECTED, SYSTEM-owned DACL granting
+    // ONLY SYSTEM + BUILTIN\Administrators Full.  PROTECTED strips inherited
+    // %ProgramData% ACEs and the owner reset reclaims control, so a non-admin who
+    // pre-created the directory (plain dir or reparse point handled by the
+    // caller) keeps nothing.  Used to harden a bin-staging dir BEFORE the elevated
+    // exe is copied in, ahead of ProtectServiceBinDir (which later adds the
+    // virtual-account / Users RX ACEs).  Requires SeRestore/SeTakeOwnership.
+    HRESULT HardenStagingDirAdminOnly(const std::wstring& dir);
+
     // Creates `folder` (the per-user <sid> node) if needed and applies the
     // PROTECTED DACL that locks it to:
     //   * owner                                = SYSTEM (recovery; low-priv svc

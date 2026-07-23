@@ -108,12 +108,12 @@ namespace PTSettingsSvc
         // Prepares a staging directory to receive the elevated exe copy.  A
         // non-admin could pre-create SettingsSvcBin (or the version subdir) as a
         // junction/symlink to redirect our privileged CopyFile, or as a plain
-        // directory with attacker-friendly permissions.  So: refuse to follow a
-        // pre-existing reparse point (remove it), then create + apply the
-        // admin-only store DACL (SYSTEM/Admins Full, Authenticated Users RX,
-        // protected/no-inherit) BEFORE anything is written into it.  The final
-        // per-account DACL (adds the virtual account RX, owner=SYSTEM) is applied
-        // by ProtectServiceBinDir once the service — hence the account — exists.
+        // directory that keeps CREATOR-OWNER control / inherited %ProgramData%
+        // ACEs.  So: refuse to follow a pre-existing reparse point (remove it),
+        // then apply a PROTECTED, SYSTEM-owned, admin-only DACL — stripping any
+        // inherited ACEs and reclaiming ownership — BEFORE anything is written.
+        // The final per-account DACL (virtual account RX, Users RX) is applied by
+        // ProtectServiceBinDir once the service — hence the account — exists.
         HRESULT EnsureHardenedStagingDir(const std::wstring& dir)
         {
             DWORD attr = GetFileAttributesW(dir.c_str());
@@ -124,7 +124,7 @@ namespace PTSettingsSvc
                     return HRESULT_FROM_WIN32(GetLastError());
                 }
             }
-            return EnsureStoreRoot(dir);
+            return HardenStagingDirAdminOnly(dir);
         }
 
         // Upgrade tidy-up: remove every version subfolder under SettingsSvcBin
