@@ -248,7 +248,7 @@ describe('form identity and routing', () => {
         ];
       },
     };
-    const { runtime, sent } = createHarness();
+    const { runtime } = createHarness();
     runtime.setProvider(providerWith(page));
 
     await runtime.handleRequest({
