@@ -316,7 +316,7 @@ public class PeekFilePreviewTests : UITestBase
         {
             var previousTitle = peekWindow.WindowTitle;
             EnsurePeekWindowInteractive(peekWindow);
-            peekWindow.EnsureForeground();
+            EnsurePeekWindowForeground(peekWindow);
             KeyboardHelper.SendKeys(Key.Left);
             peekWindow = WaitForSelectedFileChange(previousTitle, expectedNames, PeekWindowTimeoutMS)
                 ?? throw new AssertFailedException("Peek did not switch to another selected file.");
@@ -504,6 +504,7 @@ public class PeekFilePreviewTests : UITestBase
         var initializedWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS);
         if (initializedWindow is not null)
         {
+            EnsurePeekWindowForeground(initializedWindow);
             TestContext.WriteLine(
                 $"Peek initialized after hotkey attempt {hotkeyAttempt}: hwnd={initializedWindow.WindowHandle}, " +
                 $"pid={initializedWindow.ProcessId}, title='{initializedWindow.WindowTitle}', " +
@@ -674,7 +675,7 @@ public class PeekFilePreviewTests : UITestBase
                title.StartsWith(name + " -", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static Session NavigateToFileWithRetry(Session peekWindow, Key key, string expectedPath)
+    private Session NavigateToFileWithRetry(Session peekWindow, Key key, string expectedPath)
     {
         for (var attempt = 1; attempt <= MaxNavigationAttempts; attempt++)
         {
@@ -685,7 +686,7 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             EnsurePeekWindowInteractive(peekWindow);
-            peekWindow.EnsureForeground();
+            EnsurePeekWindowForeground(peekWindow);
             KeyboardHelper.SendKeys(key);
 
             expectedWindow = WaitForPeekWindow(expectedPath, PeekWindowTimeoutMS);
@@ -699,6 +700,28 @@ public class PeekFilePreviewTests : UITestBase
             $"Peek did not navigate to {Path.GetFileName(expectedPath)} after " +
             $"{MaxNavigationAttempts} {key} key attempts.");
         return null!;
+    }
+
+    private void EnsurePeekWindowForeground(Session peekWindow)
+    {
+        var windowHandle = new IntPtr(peekWindow.WindowHandle);
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(PeekWindowTimeoutMS);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (WindowControl.GetForegroundWindowHandle() == windowHandle)
+            {
+                return;
+            }
+
+            WindowControl.TryBringToForeground(windowHandle);
+            Thread.Sleep(250);
+        }
+
+        Assert.Fail(
+            $"Peek HWND {peekWindow.WindowHandle} did not become the foreground window within " +
+            $"{PeekWindowTimeoutMS / 1_000}s." + Environment.NewLine +
+            GetActivationDiagnostics("Peek foreground activation failed"));
     }
 
     private static void EnsurePeekReady(Session peekWindow)
