@@ -77,11 +77,34 @@ internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
     public string TextToSuggest => JSModelMapper.GetString(Data, "textToSuggest") ?? string.Empty;
 
     /// <summary>
-    /// Derives a stable identity for a list item payload so adapters can be
-    /// reused across refreshes. Mirrors the <see cref="Title"/> resolution.
+    /// Derives a stable identity for a list item payload so adapters can be reused
+    /// across refreshes. Prefers the stable item id (and then the nested command id)
+    /// that the SDK emits, falling back to the title only when no id is present. Keying
+    /// by id keeps each item bound to its own command when a refresh reorders items that
+    /// share a title, instead of swapping actions between same-titled rows. The result
+    /// is namespaced so an id can never collide with a title of the same text.
     /// </summary>
     internal static string ComputeKey(JsonElement data)
-        => JSModelMapper.GetString(data, "displayName") ?? JSModelMapper.GetString(data, "title") ?? string.Empty;
+    {
+        var id = JSModelMapper.GetString(data, "id") ?? JSModelMapper.GetString(data, "Id");
+        if (!string.IsNullOrEmpty(id))
+        {
+            return "id:" + id;
+        }
+
+        if (JSModelMapper.TryGetAnyCase(data, "command", "Command", out var commandElement) &&
+            commandElement.ValueKind == JsonValueKind.Object)
+        {
+            var commandId = JSModelMapper.GetString(commandElement, "id") ?? JSModelMapper.GetString(commandElement, "Id");
+            if (!string.IsNullOrEmpty(commandId))
+            {
+                return "cmd:" + commandId;
+            }
+        }
+
+        var title = JSModelMapper.GetString(data, "displayName") ?? JSModelMapper.GetString(data, "title") ?? string.Empty;
+        return "title:" + title;
+    }
 
     /// <summary>
     /// Refreshes the backing payload in place. When the content actually changes
