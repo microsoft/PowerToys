@@ -514,6 +514,11 @@
                             x:Name="PasteAIApiKeyPasswordBox"
                             x:Uid="AdvancedPaste_APIKey"
                             MinWidth="200" />
+                        <TextBlock
+                            x:Name="PasteAIValidationErrorTextBlock"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
                         <TextBox
                             x:Name="PasteAIApiVersionTextBox"
                             x:Uid="AdvancedPaste_APIVersion"

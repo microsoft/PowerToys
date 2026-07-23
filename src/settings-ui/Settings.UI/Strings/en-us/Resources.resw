@@ -643,6 +643,9 @@ opera.exe</value>
   <data name="AdvancedPaste_OpenAI_LegalDescription" xml:space="preserve">
     <value>Your API key connects directly to OpenAI services. By setting up this provider, you agree to comply with OpenAI's usage policies and data handling practices.</value>
   </data>
+  <data name="AdvancedPaste_OpenAICompatible_LegalDescription" xml:space="preserve">
+    <value>Clipboard content is sent to the configured OpenAI-compatible endpoint. Review that service's data handling practices before using this provider, and use HTTPS unless you trust the local network connection.</value>
+  </data>
   <data name="AdvancedPaste_OpenAI_TermsLabel" xml:space="preserve">
     <value>Terms of Use</value>
   </data>
@@ -6037,6 +6040,15 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_APIKey.PlaceholderText" xml:space="preserve">
     <value>Enter API key</value>
+  </data>
+  <data name="AdvancedPaste_OpenAICompatible_ModelRequired" xml:space="preserve">
+    <value>Enter a model name.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAICompatible_EndpointInvalid" xml:space="preserve">
+    <value>Enter an absolute HTTP or HTTPS endpoint.</value>
+  </data>
+  <data name="AdvancedPaste_OpenAICompatible_TokenRequired" xml:space="preserve">
+    <value>Enter an API token.</value>
   </data>
   <data name="AdvancedPaste_APIVersion.Header" xml:space="preserve">
     <value>API version</value>

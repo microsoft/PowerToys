@@ -29,6 +29,7 @@ namespace AdvancedPaste.Services.CustomActions
             AIServiceType.Google,
             AIServiceType.AzureAIInference,
             AIServiceType.Ollama,
+            AIServiceType.OpenAICompatible,
         };
 
         public static PasteAIProviderRegistration Registration { get; } = new(SupportedTypes, config => new SemanticKernelPasteProvider(config));
@@ -144,6 +145,13 @@ namespace AdvancedPaste.Services.CustomActions
                 case AIServiceType.OpenAI:
                     kernelBuilder.AddOpenAIChatCompletion(_config.Model, apiKey, serviceId: _config.Model);
                     break;
+                case AIServiceType.OpenAICompatible:
+                    var compatibleModelName = RequireOpenAICompatibleModelName(_config.Model);
+                    var compatibleApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
+#pragma warning disable SKEXP0010 // OpenAI-compatible custom endpoints are experimental in Semantic Kernel.
+                    kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), compatibleApiKey, serviceId: compatibleModelName);
+#pragma warning restore SKEXP0010
+                    break;
                 case AIServiceType.AzureOpenAI:
                     var deploymentName = string.IsNullOrWhiteSpace(_config.DeploymentName) ? _config.Model : _config.DeploymentName;
                     kernelBuilder.AddAzureOpenAIChatCompletion(deploymentName, RequireEndpoint(endpoint, _serviceType), apiKey, serviceId: _config.Model);
@@ -172,7 +180,7 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return _serviceType switch
             {
-                AIServiceType.OpenAI or AIServiceType.AzureOpenAI => new OpenAIPromptExecutionSettings
+                AIServiceType.OpenAI or AIServiceType.AzureOpenAI or AIServiceType.OpenAICompatible => new OpenAIPromptExecutionSettings
                 {
                     FunctionChoiceBehavior = null,
                 },
@@ -184,7 +192,7 @@ namespace AdvancedPaste.Services.CustomActions
         {
             return serviceType switch
             {
-                AIServiceType.Ollama => false,
+                AIServiceType.Ollama or AIServiceType.OpenAICompatible => false,
                 _ => true,
             };
         }
@@ -197,6 +205,26 @@ namespace AdvancedPaste.Services.CustomActions
             }
 
             throw new InvalidOperationException($"Endpoint is required for {serviceType} but was not provided.");
+        }
+
+        private static Uri RequireOpenAICompatibleEndpoint(string endpoint)
+        {
+            if (PasteAIProviderValidation.TryGetOpenAICompatibleEndpoint(endpoint, out var endpointUri))
+            {
+                return endpointUri;
+            }
+
+            throw new InvalidOperationException("A valid HTTP or HTTPS endpoint is required for OpenAICompatible.");
+        }
+
+        private static string RequireOpenAICompatibleModelName(string modelName)
+        {
+            if (PasteAIProviderValidation.IsValidOpenAICompatibleModelName(modelName))
+            {
+                return modelName.Trim();
+            }
+
+            throw new InvalidOperationException("A model name is required for OpenAICompatible.");
         }
     }
 }

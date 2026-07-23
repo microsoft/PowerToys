@@ -952,6 +952,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 "mistral" => "https://console.mistral.ai/account/api-keys",
                 "google" => "https://ai.google.dev/",
                 "ollama" => "https://ollama.com/",
+                "openaicompatible" => "PowerToys_AdvancedPaste_OpenAICompatible",
                 _ => "https://platform.openai.com/api-keys",
             };
         }

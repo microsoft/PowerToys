@@ -52,16 +52,11 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         var runtimeConfig = GetRuntimeConfiguration();
         var serviceType = runtimeConfig.ServiceType;
         var modelName = runtimeConfig.ModelName;
-        var requiresApiKey = RequiresApiKey(serviceType);
-        var apiKey = string.Empty;
-        if (requiresApiKey)
+        this.credentialsProvider.Refresh();
+        var apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
+        if (RequiresApiKey(serviceType) && string.IsNullOrWhiteSpace(apiKey))
         {
-            this.credentialsProvider.Refresh();
-            apiKey = (this.credentialsProvider.GetKey() ?? string.Empty).Trim();
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
-            }
+            throw new InvalidOperationException($"An API key is required for {serviceType} but none was found in the credential vault.");
         }
 
         var endpoint = string.IsNullOrWhiteSpace(runtimeConfig.Endpoint) ? null : runtimeConfig.Endpoint.Trim();
@@ -71,6 +66,13 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         {
             case AIServiceType.OpenAI:
                 kernelBuilder.AddOpenAIChatCompletion(modelName, apiKey, serviceId: modelName);
+                break;
+            case AIServiceType.OpenAICompatible:
+                var compatibleModelName = RequireOpenAICompatibleModelName(modelName);
+                var compatibleApiKey = string.IsNullOrWhiteSpace(apiKey) ? null : apiKey;
+#pragma warning disable SKEXP0010 // OpenAI-compatible custom endpoints are experimental in Semantic Kernel.
+                kernelBuilder.AddOpenAIChatCompletion(compatibleModelName, RequireOpenAICompatibleEndpoint(endpoint), compatibleApiKey, serviceId: compatibleModelName);
+#pragma warning restore SKEXP0010
                 break;
             case AIServiceType.AzureOpenAI:
                 kernelBuilder.AddAzureOpenAIChatCompletion(deployment, RequireEndpoint(endpoint, serviceType), apiKey, serviceId: modelName);
@@ -99,10 +101,10 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
     {
         if (!string.IsNullOrWhiteSpace(config?.ModelName))
         {
-            return config.ModelName;
+            return config.ServiceTypeKind == AIServiceType.OpenAICompatible ? config.ModelName.Trim() : config.ModelName;
         }
 
-        return "gpt-4o";
+        return config?.ServiceTypeKind == AIServiceType.OpenAICompatible ? string.Empty : "gpt-4o";
     }
 
     protected override IKernelRuntimeConfiguration GetRuntimeConfiguration()
@@ -184,9 +186,9 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         return IsServiceTypeSupported(serviceType);
     }
 
-    private static bool IsServiceTypeSupported(AIServiceType serviceType)
+    internal static bool IsServiceTypeSupported(AIServiceType serviceType)
     {
-        return serviceType is AIServiceType.OpenAI or AIServiceType.AzureOpenAI;
+        return serviceType is AIServiceType.OpenAI or AIServiceType.AzureOpenAI or AIServiceType.OpenAICompatible;
     }
 
     private static AIServiceType NormalizeServiceType(AIServiceType serviceType)
@@ -196,7 +198,7 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
 
     private static bool RequiresApiKey(AIServiceType serviceType)
     {
-        return true;
+        return serviceType != AIServiceType.OpenAICompatible;
     }
 
     private static string RequireEndpoint(string endpoint, AIServiceType serviceType)
@@ -207,6 +209,26 @@ public sealed class AdvancedAIKernelService : KernelServiceBase
         }
 
         throw new InvalidOperationException($"Endpoint is required for {serviceType} configuration but was not provided.");
+    }
+
+    private static Uri RequireOpenAICompatibleEndpoint(string endpoint)
+    {
+        if (PasteAIProviderValidation.TryGetOpenAICompatibleEndpoint(endpoint, out var endpointUri))
+        {
+            return endpointUri;
+        }
+
+        throw new InvalidOperationException("A valid HTTP or HTTPS endpoint is required for OpenAICompatible.");
+    }
+
+    private static string RequireOpenAICompatibleModelName(string modelName)
+    {
+        if (PasteAIProviderValidation.IsValidOpenAICompatibleModelName(modelName))
+        {
+            return modelName.Trim();
+        }
+
+        throw new InvalidOperationException("A model name is required for OpenAICompatible.");
     }
 
     private PromptExecutionSettings CreatePromptExecutionSettings()

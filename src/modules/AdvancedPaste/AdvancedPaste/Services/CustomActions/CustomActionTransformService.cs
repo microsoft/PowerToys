@@ -110,7 +110,10 @@ namespace AdvancedPaste.Services.CustomActions
                 Logger.LogError($"{nameof(CustomActionTransformService)}.{nameof(TransformAsync)} failed", ex);
                 var statusCode = ExtractStatusCode(ex);
                 var modelName = providerConfig.Model ?? string.Empty;
-                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message);
+                var telemetryError = providerConfig.ProviderType == AIServiceType.OpenAICompatible
+                    ? "OpenAICompatibleRequestFailed"
+                    : ex is PasteActionModeratedException ? PasteActionModeratedException.ErrorDescription : ex.Message;
+                AdvancedPasteCustomActionErrorEvent errorEvent = new(providerConfig.ProviderType, modelName, statusCode, telemetryError);
                 PowerToysTelemetry.Log.WriteEvent(errorEvent);
 
                 if (ex is PasteActionException or OperationCanceledException)
@@ -120,6 +123,7 @@ namespace AdvancedPaste.Services.CustomActions
 
                 var failureMessage = providerConfig.ProviderType switch
                 {
+                    AIServiceType.OpenAICompatible => ErrorHelpers.TranslateOpenAICompatibleError(ex, statusCode),
                     AIServiceType.OpenAI or AIServiceType.AzureOpenAI => ErrorHelpers.TranslateErrorText(statusCode),
                     _ => ResourceLoaderInstance.ResourceLoader.GetString("PasteError"),
                 };
@@ -194,7 +198,7 @@ namespace AdvancedPaste.Services.CustomActions
             };
         }
 
-        private static bool ShouldModerate(PasteAIConfig providerConfig)
+        internal static bool ShouldModerate(PasteAIConfig providerConfig)
         {
             if (providerConfig is null || !providerConfig.ModerationEnabled)
             {
