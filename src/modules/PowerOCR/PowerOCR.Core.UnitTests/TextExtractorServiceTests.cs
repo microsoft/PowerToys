@@ -18,6 +18,7 @@ namespace PowerOCR.Core.UnitTests;
 public sealed class TextExtractorServiceTests
 {
     private static readonly Language EnglishLanguage = new("en-US");
+    private static readonly Language ChineseLanguage = new("zh-CN");
 
     private static OcrDocument MakeDocument()
     {
@@ -39,6 +40,9 @@ public sealed class TextExtractorServiceTests
                 ]),
         ]);
     }
+
+    private static OcrLineData MakeCell(string text, double x, double y)
+        => new(text, new OcrRect(x, y, 40, 20), [new(text, new OcrRect(x, y, 40, 20))]);
 
     private sealed class FakeRecognizer : IOcrRecognizer
     {
@@ -92,16 +96,47 @@ public sealed class TextExtractorServiceTests
     }
 
     [TestMethod]
+    public async Task ExtractAsync_SingleLineMode_ChineseJoinsAcrossOcrLinesWithoutSpaces()
+    {
+        var document = new OcrDocument(
+        [
+            new OcrLineData(
+                "你 好",
+                new OcrRect(0, 0, 40, 20),
+                [new("你", new(0, 0, 20, 20)), new("好", new(20, 0, 20, 20))]),
+            new OcrLineData(
+                "世 界",
+                new OcrRect(0, 30, 40, 20),
+                [new("世", new(0, 30, 20, 20)), new("界", new(20, 30, 20, 20))]),
+        ]);
+        var recognizer = new FakeRecognizer { Document = document };
+        var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
+        using var bitmap = new Bitmap(200, 100, PixelFormat.Format32bppArgb);
+        var request = new OcrExtractionRequest(bitmap, ChineseLanguage, OcrCaptureMode.SingleLine);
+
+        string result = await service.ExtractAsync(request, CancellationToken.None);
+
+        Assert.AreEqual("你好世界", result);
+    }
+
+    [TestMethod]
     public async Task ExtractAsync_TableMode_ReturnsTabbedText()
     {
-        var recognizer = new FakeRecognizer { Document = MakeDocument() };
+        var document = new OcrDocument(
+        [
+            MakeCell("A1", 0, 0),
+            MakeCell("B1", 100, 0),
+            MakeCell("A2", 0, 40),
+            MakeCell("B2", 100, 40),
+        ]);
+        var recognizer = new FakeRecognizer { Document = document };
         var service = new TextExtractorService(new BitmapPreprocessor(), recognizer);
         using var bitmap = new Bitmap(200, 100, PixelFormat.Format32bppArgb);
         var request = new OcrExtractionRequest(bitmap, EnglishLanguage, OcrCaptureMode.Table);
 
         string result = await service.ExtractAsync(request, CancellationToken.None);
 
-        Assert.IsFalse(string.IsNullOrEmpty(result));
+        Assert.AreEqual($"A1\tB1{Environment.NewLine}A2\tB2", result);
     }
 
     [TestMethod]

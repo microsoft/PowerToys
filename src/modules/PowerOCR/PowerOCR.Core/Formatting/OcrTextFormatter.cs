@@ -37,6 +37,16 @@ public static partial class OcrTextFormatter
         return string.Join(Environment.NewLine, lines).Trim();
     }
 
+    public static string FormatSingleLine(OcrDocument document, string languageTag)
+    {
+        if (UsesSpaces(languageTag))
+        {
+            return CollapseToSingleLine(FormatDocument(document, languageTag));
+        }
+
+        return JoinCjkAwareWords(document.Words.ToList()).Trim();
+    }
+
     public static string CollapseToSingleLine(string text)
     {
         if (string.IsNullOrWhiteSpace(text))

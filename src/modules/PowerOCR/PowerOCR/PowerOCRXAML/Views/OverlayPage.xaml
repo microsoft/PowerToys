@@ -88,6 +88,8 @@
             Background="Transparent"
             PointerCanceled="Canvas_PointerCanceled"
             PointerCaptureLost="Canvas_PointerCaptureLost"
+            PointerEntered="Canvas_PointerEntered"
+            PointerExited="Canvas_PointerExited"
             PointerMoved="Canvas_PointerMoved"
             PointerPressed="Canvas_PointerPressed"
             PointerReleased="Canvas_PointerReleased">
@@ -201,7 +203,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             IsClosable="True"
-            IsOpen="{x:Bind ViewModel.HasError, Mode=OneWay}"
+            IsOpen="{x:Bind ViewModel.HasError, Mode=TwoWay}"
             Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
             Severity="Error" />
     </Grid>

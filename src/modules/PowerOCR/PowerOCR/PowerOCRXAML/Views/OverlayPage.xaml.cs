@@ -28,6 +28,7 @@ public sealed partial class OverlayPage : UserControl
     private IOverlayManager? _manager;
     private DisplayCapture? _capture;
     private SettingsDeepLink? _settingsDeepLink;
+    private InputCursor? _selectionCursor;
 
     private bool _isSelecting;
     private double _anchorX;
@@ -45,6 +46,7 @@ public sealed partial class OverlayPage : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         SizeChanged += OnSizeChanged;
     }
 
@@ -84,6 +86,13 @@ public sealed partial class OverlayPage : UserControl
     {
         RootGrid.Focus(FocusState.Programmatic);
         RefreshMasks();
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        ProtectedCursor = null;
+        _selectionCursor?.Dispose();
+        _selectionCursor = null;
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -186,8 +195,8 @@ public sealed partial class OverlayPage : UserControl
         // Initialize selection
         _selX = _anchorX;
         _selY = _anchorY;
-        _selWidth = 1;
-        _selHeight = 1;
+        _selWidth = 0;
+        _selHeight = 0;
         _isSelecting = true;
 
         UpdateMasks();
@@ -218,10 +227,21 @@ public sealed partial class OverlayPage : UserControl
             double deltaX = currentX - _lastPointerX;
             double deltaY = currentY - _lastPointerY;
 
-            _selX = Math.Clamp(_selX + deltaX, 0, pageWidth - _selWidth);
-            _selY = Math.Clamp(_selY + deltaY, 0, pageHeight - _selHeight);
-            _anchorX += deltaX;
-            _anchorY += deltaY;
+            double newSelectionX = Math.Clamp(
+                _selX + deltaX,
+                0,
+                Math.Max(0, pageWidth - _selWidth));
+            double newSelectionY = Math.Clamp(
+                _selY + deltaY,
+                0,
+                Math.Max(0, pageHeight - _selHeight));
+            double appliedDeltaX = newSelectionX - _selX;
+            double appliedDeltaY = newSelectionY - _selY;
+
+            _selX = newSelectionX;
+            _selY = newSelectionY;
+            _anchorX += appliedDeltaX;
+            _anchorY += appliedDeltaY;
         }
         else
         {
@@ -339,6 +359,25 @@ public sealed partial class OverlayPage : UserControl
         }
 
         e.Handled = true;
+    }
+
+    private void Canvas_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse)
+        {
+            return;
+        }
+
+        _selectionCursor ??= InputSystemCursor.Create(InputSystemCursorShape.Cross);
+        ProtectedCursor = _selectionCursor;
+    }
+
+    private void Canvas_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
+        {
+            ProtectedCursor = null;
+        }
     }
 
     private void ContextMenuFlyout_Opening(object sender, object e)

@@ -177,17 +177,10 @@ public class PowerOCRTests : UITestBase
 
             var selectedItems = comboBoxItems.Where(item => item.Selected).ToList();
             Assert.AreEqual(1, selectedItems.Count, "The overlay language ComboBox should have one selected language.");
-            if (comboBoxItems.Count < 2)
-            {
-                Assert.Inconclusive("At least two installed OCR languages are required to verify a language change.");
-            }
 
             int selectedLanguageIndex = comboBoxItems.FindIndex(item => item.Selected);
-            int targetLanguageIndex = selectedLanguageIndex == 0 ? 1 : 0;
             var selectedItem = comboBoxItems[selectedLanguageIndex];
-            var targetItem = comboBoxItems[targetLanguageIndex];
             var selectedLanguageName = selectedItem.Name;
-            var targetLanguageName = targetItem.Name;
             SendKeys(Key.Esc);
 
             // Open the context menu from the focused ComboBox using only the keyboard.
@@ -204,6 +197,15 @@ public class PowerOCRTests : UITestBase
                 selectedMenuItem.GetAttribute("Toggle.ToggleState"),
                 "The current OCR language should be marked as selected in the context menu.");
 
+            if (comboBoxItems.Count < 2)
+            {
+                Assert.Inconclusive(
+                    "The context menu was verified, but at least two installed OCR languages are required to verify a language change.");
+            }
+
+            int targetLanguageIndex = selectedLanguageIndex == 0 ? 1 : 0;
+            var targetItem = comboBoxItems[targetLanguageIndex];
+            var targetLanguageName = targetItem.Name;
             var targetMenuItem = FindAll<Element>(By.Name(targetLanguageName), 3000, true)
                 .FirstOrDefault(item =>
                     item.Displayed

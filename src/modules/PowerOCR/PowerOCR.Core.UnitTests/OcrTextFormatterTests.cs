@@ -68,6 +68,24 @@ public sealed class OcrTextFormatterTests
     }
 
     [TestMethod]
+    public void FormatSingleLine_ChineseLanguage_PreservesSpaceBetweenLatinWordsAcrossLines()
+    {
+        var document = new OcrDocument(
+        [
+            new OcrLineData(
+                "Power",
+                new OcrRect(0, 0, 50, 20),
+                [new("Power", new(0, 0, 50, 20))]),
+            new OcrLineData(
+                "Toys",
+                new OcrRect(0, 30, 40, 20),
+                [new("Toys", new(0, 30, 40, 20))]),
+        ]);
+
+        Assert.AreEqual("Power Toys", OcrTextFormatter.FormatSingleLine(document, "zh-CN"));
+    }
+
+    [TestMethod]
     public void CollapseToSingleLine_EmptyText_ReturnsEmpty()
     {
         Assert.AreEqual(string.Empty, OcrTextFormatter.CollapseToSingleLine(string.Empty));

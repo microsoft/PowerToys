@@ -27,6 +27,7 @@ public sealed partial class OCROverlay : WindowEx
     private readonly DisplayCapture _capture;
     private readonly IOverlayManager _manager;
     private bool _closingFromManager;
+    private bool _closeAllQueued;
 
     public OCROverlay(
         DisplayCapture capture,
@@ -86,11 +87,34 @@ public sealed partial class OCROverlay : WindowEx
 
     private void OnAppWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        if (!_closingFromManager)
+        if (_closingFromManager)
         {
-            // User-initiated close (e.g., Alt+F4) – cancel all overlays
-            args.Cancel = true;
-            _manager.CloseAll(cancelled: true);
+            return;
+        }
+
+        // Let the native closing callback return before closing this and the other overlays.
+        // Closing the current Window synchronously from AppWindow.Closing would re-enter
+        // destruction of the same HWND.
+        args.Cancel = true;
+        if (_closeAllQueued)
+        {
+            return;
+        }
+
+        _closeAllQueued = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            _closeAllQueued = false;
+            if (!_closingFromManager)
+            {
+                _manager.CloseAll(cancelled: true);
+            }
+        }))
+        {
+            // A dispatcher that rejects new work is shutting down. Allow the native close
+            // instead of leaving a window that can no longer be serviced.
+            _closeAllQueued = false;
+            args.Cancel = false;
         }
     }
 
