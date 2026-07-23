@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D4B0ED68-867D-46B4-A03F-EC52B9FBEBE5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>PowerToysCliShimUnitTests</RootNamespace>
+    <ProjectName>CliShim.UnitTests</ProjectName>
+    <ProjectSubType>NativeUnitTestProject</ProjectSubType>
+    <IsTestProject>true</IsTestProject>
+    <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\CliShim\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgManifestEnabled>false</VcpkgManifestEnabled>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..\CliShim;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <!-- Compile the parser directly; the project reference supplies the integration-test executable. -->
+    <ClCompile Include="..\CliShim\CommandLine.cpp" />
+    <ClCompile Include="CommandLineTests.cpp" />
+    <ClCompile Include="LauncherIntegrationTests.cpp" />
+    <ClInclude Include="..\CliShim\CommandLine.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CliShim\CliShim.vcxproj">
+      <Project>{8A7FB7FA-65EA-4004-BA73-1B237435A57B}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="CopyCliShimUnderTest"
+          AfterTargets="Build"
+          Condition="'$(_IsSkippedTestProject)' != 'true'">
+    <PropertyGroup>
+      <_CliShimUnderTest>$(RepoRoot)$(Platform)\$(Configuration)\CliShim\PowerToys.CliShim.exe</_CliShimUnderTest>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_CliShimUnderTest)')"
+           Text="CLI shim under test was not built: '$(_CliShimUnderTest)'." />
+    <Copy SourceFiles="$(_CliShimUnderTest)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

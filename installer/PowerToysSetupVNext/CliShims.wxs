@@ -1,0 +1,70 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <!-- PATH-visible shims forward to the installed PowerToys CLIs. -->
+  <Fragment>
+    <DirectoryRef Id="CliFolder">
+      <Component Id="CliShim_fancyzonescli_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_fancyzonescli_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FancyZones.CLI.exe" Id="CliShim_fancyzonescli.exe" Checksum="yes" />
+      </Component>
+      <Component Id="CliShim_imageresizercli_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_imageresizercli_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.ImageResizer.CLI.exe" Id="CliShim_imageresizercli.exe" Checksum="yes" />
+      </Component>
+      <Component Id="CliShim_filelocksmithcli_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_filelocksmithcli_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FileLocksmith.CLI.exe" Id="CliShim_filelocksmithcli.exe" Checksum="yes" />
+      </Component>
+      <Component Id="CliShim_powerdisplaycli_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="CliShim_powerdisplaycli_exe" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.PowerDisplay.CLI.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
+      </Component>
+
+      <!-- MSI broadcasts WM_SETTINGCHANGE; terminals open before install must be reopened. -->
+      <?if $(var.PerUser) = "true" ?>
+      <Component Id="cli_env_path_user" Guid="87AA86E8-81E8-44CB-9519-FC70CF7BEA56" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="cli_env_path_user" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <Environment Id="AddCliToUserPath" Name="PATH" Action="set" Part="last" System="no" Value="[CliFolder]" />
+      </Component>
+      <?else?>
+      <Component Id="cli_env_path_machine" Guid="739F3916-2247-4F1B-8BBD-0949A5B870F7" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="cli_env_path_machine" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <Environment Id="AddCliToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[CliFolder]" />
+      </Component>
+      <?endif?>
+    </DirectoryRef>
+
+    <ComponentGroup Id="CliShimsComponentGroup">
+      <Component Id="RemoveCliFolder" Guid="831C56D8-9FEB-41B2-8A8C-BD49487479BB" Directory="CliFolder">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveCliFolder" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderCliFolder" Directory="CliFolder" On="uninstall" />
+      </Component>
+      <ComponentRef Id="CliShim_fancyzonescli_exe" />
+      <ComponentRef Id="CliShim_imageresizercli_exe" />
+      <ComponentRef Id="CliShim_filelocksmithcli_exe" />
+      <ComponentRef Id="CliShim_powerdisplaycli_exe" />
+      <?if $(var.PerUser) = "true" ?>
+      <ComponentRef Id="cli_env_path_user" />
+      <?else?>
+      <ComponentRef Id="cli_env_path_machine" />
+      <?endif?>
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

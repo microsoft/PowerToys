@@ -131,6 +131,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
     <Compile Include="Tools.wxs" />
+    <Compile Include="CliShims.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
     <Compile Include="MonacoSRC.wxs" />
