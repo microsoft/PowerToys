@@ -264,4 +264,28 @@
   <data name="ColorTemperatureHeader.Text" xml:space="preserve">
     <value>Color temperature</value>
   </data>
+  <data name="TrayWheelFeedbackPrimaryFormat" xml:space="preserve">
+    <value>Primary display · {0}</value>
+    <comment>{0} is the formatted brightness value, for example "55%".</comment>
+  </data>
+  <data name="TrayWheelFeedbackPrimaryPluralFormat" xml:space="preserve">
+    <value>Primary displays · {0}</value>
+    <comment>{0} is a list or range of brightness values, for example "35%, 70%".</comment>
+  </data>
+  <data name="TrayWheelFeedbackAllFormat" xml:space="preserve">
+    <value>All displays · {0}</value>
+    <comment>{0} is a list or range of brightness values, for example "35%, 70%".</comment>
+  </data>
+  <data name="TrayWheelFeedbackPercentageFormat" xml:space="preserve">
+    <value>{0}%</value>
+    <comment>{0} is an integer brightness percentage from 0 through 100.</comment>
+  </data>
+  <data name="TrayWheelFeedbackRangeFormat" xml:space="preserve">
+    <value>{0}–{1} ({2} displays)</value>
+    <comment>{0} is the minimum formatted percentage, {1} is the maximum formatted percentage, and {2} is the physical display count.</comment>
+  </data>
+  <data name="TrayWheelFeedbackListSeparator" xml:space="preserve">
+    <value>, </value>
+    <comment>Separator between brightness percentages in tray feedback.</comment>
+  </data>
 </root>

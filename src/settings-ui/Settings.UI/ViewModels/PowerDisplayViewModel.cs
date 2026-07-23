@@ -391,6 +391,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
         /// <summary>
+        /// Gets or sets the selected mouse-wheel mode as the ComboBox index.
+        /// Enum values intentionally match the displayed item order.
+        /// </summary>
+        public int MouseWheelControlModeIndex
+        {
+            get => (int)_settings.Properties.MouseWheelControlMode.Normalize();
+            set
+            {
+                var mode = ((MouseWheelControlMode)value).Normalize();
+                if ((int)mode != value)
+                {
+                    OnPropertyChanged(nameof(MouseWheelControlModeIndex));
+                    return;
+                }
+
+                if (SetSettingsProperty(
+                    _settings.Properties.MouseWheelControlMode,
+                    mode,
+                    v => _settings.Properties.MouseWheelControlMode = v))
+                {
+                    OnPropertyChanged(nameof(IsMouseWheelControlEnabled));
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether PowerDisplay mouse-wheel control is enabled.
+        /// </summary>
+        public bool IsMouseWheelControlEnabled
+            => _settings.Properties.MouseWheelControlMode.Normalize() !=
+               MouseWheelControlMode.Disabled;
+
+        /// <summary>
         /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
         /// </summary>
         public int MouseWheelIncrement

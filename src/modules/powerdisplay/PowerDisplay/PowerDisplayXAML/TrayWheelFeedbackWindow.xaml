@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<common:TransparentWindow
+    x:Class="PowerDisplay.PowerDisplayXAML.TrayWheelFeedbackWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window">
+    <Grid x:Name="FeedbackRoot" Padding="8">
+        <Grid.Resources>
+            <ThemeShadow x:Key="FeedbackShadow" />
+        </Grid.Resources>
+        <Border
+            x:Name="FeedbackSurface"
+            MinWidth="120"
+            MaxWidth="420"
+            Padding="12,8"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Shadow="{StaticResource FeedbackShadow}"
+            Translation="0,0,32">
+            <TextBlock
+                x:Name="FeedbackText"
+                VerticalAlignment="Center"
+                AutomationProperties.LiveSetting="Polite"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="NoWrap" />
+        </Border>
+    </Grid>
+</common:TransparentWindow>

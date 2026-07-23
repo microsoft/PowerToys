@@ -84,7 +84,17 @@
                                             ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
                                             SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement">
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelControlMode">
+                                        <ComboBox
+                                            x:Uid="PowerDisplay_MouseWheelControlModeComboBox"
+                                            MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
+                                            SelectedIndex="{x:Bind ViewModel.MouseWheelControlModeIndex, Mode=TwoWay}">
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_Off" />
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_PrimaryDisplay" />
+                                            <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_AllDisplays" />
+                                        </ComboBox>
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement" IsEnabled="{x:Bind ViewModel.IsMouseWheelControlEnabled, Mode=OneWay}">
                                         <ComboBox
                                             MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
                                             ItemsSource="{x:Bind ViewModel.MouseWheelIncrementOptions}"

@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
             MouseWheelIncrement = 5;
+            MouseWheelControlMode = MouseWheelControlMode.PrimaryDisplay;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
@@ -55,6 +56,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("mouse_wheel_increment")]
         public int MouseWheelIncrement { get; set; }
+
+        /// <summary>
+        /// Gets or sets how PowerDisplay handles mouse-wheel input. The selected display target
+        /// applies to tray-icon scrolling; Disabled also turns off wheel input for flyout sliders.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_control_mode")]
+        public MouseWheelControlMode MouseWheelControlMode { get; set; }
 
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }
