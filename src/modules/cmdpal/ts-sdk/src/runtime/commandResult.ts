@@ -19,6 +19,7 @@ import type {
   ConfirmationArgs,
   GoToPageArgs,
   ICommand,
+  NavigationMode,
   ToastArgs,
 } from '../types.js';
 
@@ -92,11 +93,22 @@ function rejectForeignArgs(kind: CommandResultKind, result: CommandResult): void
   }
 }
 
+/** Navigation modes accepted by a `goToPage` result. */
+const NavigationModeValues = new Set<NavigationMode>(['push', 'goBack', 'goHome']);
+
 function serializeGoToPage(args: Record<string, unknown>): Record<string, unknown> {
   const typed = args as Partial<GoToPageArgs>;
   const wire: Record<string, unknown> = { PageId: requireString('goToPage', args, 'pageId') };
   if (typed.navigationMode !== undefined) {
-    wire.NavigationMode = requireString('goToPage', args, 'navigationMode');
+    const mode = requireString('goToPage', args, 'navigationMode');
+    if (!NavigationModeValues.has(mode as NavigationMode)) {
+      const allowed = [...NavigationModeValues].join(', ');
+      throw new InvalidCommandResultError(
+        `Command result "goToPage" has an unknown navigationMode "${mode}". ` +
+          `Expected one of: ${allowed}.`,
+      );
+    }
+    wire.NavigationMode = mode;
   }
   return wire;
 }

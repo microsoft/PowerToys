@@ -56,6 +56,19 @@ describe('CommandResult kind mapping', () => {
     });
   });
 
+  it('serializes each valid navigation mode', () => {
+    for (const mode of ['push', 'goBack', 'goHome'] as const) {
+      const result: CommandResult = {
+        kind: 'goToPage',
+        args: { pageId: 'p', navigationMode: mode },
+      };
+      expect(serializeCommandResult(result)).toEqual({
+        Kind: 5,
+        Args: { PageId: 'p', NavigationMode: mode },
+      });
+    }
+  });
+
   it('serializes a nested toast result recursively', () => {
     const result: CommandResult = {
       kind: 'showToast',
@@ -111,6 +124,15 @@ describe('CommandResult validation of untyped shapes', () => {
   it('rejects goToPage without a pageId', () => {
     expect(() =>
       serializeCommandResult({ kind: 'goToPage', args: {} } as unknown as CommandResult),
+    ).toThrow(InvalidCommandResultError);
+  });
+
+  it('rejects goToPage with an unknown navigation mode', () => {
+    expect(() =>
+      serializeCommandResult({
+        kind: 'goToPage',
+        args: { pageId: 'p', navigationMode: 'sideways' },
+      } as unknown as CommandResult),
     ).toThrow(InvalidCommandResultError);
   });
 

@@ -9,7 +9,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./bootstrap": {
+      "types": "./dist/runtime/bootstrap.d.ts",
+      "default": "./dist/runtime/bootstrap.js"
     }
+  },
+  "bin": {
+    "cmdpal-bootstrap": "./dist/runtime/bootstrap.js"
   },
   "files": [
     "dist",
