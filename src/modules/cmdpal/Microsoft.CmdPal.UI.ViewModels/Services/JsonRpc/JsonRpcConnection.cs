@@ -248,6 +248,21 @@ public sealed partial class JsonRpcConnection : IDisposable
     }
 
     /// <summary>
+    /// Removes the notification handler registered for a method, if any. Safe to
+    /// call when no handler is registered.
+    /// </summary>
+    /// <param name="method">The notification method name.</param>
+    public void UnregisterNotificationHandler(string method)
+    {
+        if (string.IsNullOrEmpty(method))
+        {
+            return;
+        }
+
+        _notificationHandlers.TryRemove(method, out _);
+    }
+
+    /// <summary>
     /// Registers a handler for inbound requests of a specific method. Replaces any existing handler.
     /// The handler returns the result payload, which is sent back as the response.
     /// </summary>

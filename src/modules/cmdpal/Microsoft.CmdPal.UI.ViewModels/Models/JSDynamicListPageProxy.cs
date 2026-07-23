@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 /// Setting the search text forwards a <c>listPage/setSearchText</c> request so the
 /// extension can perform its own filtering.
 /// </summary>
-internal sealed partial class JSDynamicListPageProxy : IDynamicListPage
+internal sealed partial class JSDynamicListPageProxy : IDynamicListPage, IDisposable
 {
     private readonly JSListPageProxy _inner;
     private readonly string _pageId;
@@ -90,4 +90,6 @@ internal sealed partial class JSDynamicListPageProxy : IDynamicListPage
     public IListItem[] GetItems() => _inner.GetItems();
 
     public void LoadMore() => _inner.LoadMore();
+
+    public void Dispose() => _inner.Dispose();
 }

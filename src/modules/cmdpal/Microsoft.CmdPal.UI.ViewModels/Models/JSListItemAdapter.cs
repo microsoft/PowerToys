@@ -60,7 +60,9 @@ internal sealed partial class JSListItemAdapter : BaseObservable, IListItem
 
     public IContextItem[] MoreCommands => JSModelMapper.ParseContextItems(Data, "moreCommands", "MoreCommands", _connection);
 
-    public IIconInfo Icon => JSModelMapper.GetIcon(Data, "icon", "Icon");
+    public IIconInfo Icon => JSModelMapper.TryGetIcon(Data, "icon", "Icon", out var icon)
+        ? icon
+        : Command?.Icon ?? new IconInfo(string.Empty);
 
     public string Title => JSModelMapper.GetString(Data, "displayName") ?? JSModelMapper.GetString(Data, "title") ?? string.Empty;
 
