@@ -874,8 +874,8 @@ namespace RemappingUITests
                 });
             }
 
-            // Test if the ValidateShortcutBufferElement method returns WinL error on setting a drop down to Win or L on a column resulting in Win+L
-            TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnWinLError_OnSettingDropDownToWinOrLOnColumnResultingInWinL)
+            // Test if the ValidateShortcutBufferElement method allows Win+L on setting a drop down to Win or L on a column resulting in Win+L
+            TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingDropDownToWinOrLOnColumnResultingInWinL)
             {
                 std::vector<ValidateShortcutBufferElementArgs> testCases;
                 // Case 1: Validate the element when selecting L (0x4C) on second dropdown of first column of LWin+Empty shortcut
@@ -905,13 +905,13 @@ namespace RemappingUITests
                     // Act
                     std::pair<ShortcutErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
-                    // Assert that the element is invalid
-                    Assert::AreEqual(true, result.first == ShortcutErrorType::WinL);
+                    // Assert that the element is valid
+                    Assert::AreEqual(true, result.first == ShortcutErrorType::NoError);
                 });
             }
 
-            // Test if the ValidateShortcutBufferElement method returns WinL error on setting a drop down to null or none on a column resulting in Win+L
-            TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnWinLError_OnSettingDropDownToNullOrNoneOnColumnResultingInWinL)
+            // Test if the ValidateShortcutBufferElement method allows Win+L on setting a drop down to null or none on a column resulting in Win+L
+            TEST_METHOD (ValidateShortcutBufferElement_ShouldReturnNoError_OnSettingDropDownToNullOrNoneOnColumnResultingInWinL)
             {
                 std::vector<ValidateShortcutBufferElementArgs> testCases;
                 // Case 1: Validate the element when selecting Null (-1) on second dropdown of first column of LWin + Ctrl + L shortcut
@@ -935,8 +935,8 @@ namespace RemappingUITests
                     // Act
                     std::pair<ShortcutErrorType, BufferValidationHelpers::DropDownAction> result = BufferValidationHelpers::ValidateShortcutBufferElement(testCase.elementRowIndex, testCase.elementColIndex, testCase.indexOfDropDownLastModified, testCase.selectedCodesOnDropDowns, testCase.targetAppNameInTextBox, testCase.isHybridColumn, remapBuffer, true);
 
-                    // Assert that the element is invalid
-                    Assert::AreEqual(true, result.first == ShortcutErrorType::WinL);
+                    // Assert that the element is valid
+                    Assert::AreEqual(true, result.first == ShortcutErrorType::NoError);
                 });
             }
 

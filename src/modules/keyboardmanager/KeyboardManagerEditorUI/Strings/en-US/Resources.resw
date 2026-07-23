@@ -406,7 +406,7 @@
     <value>Reserved system shortcut</value>
   </data>
   <data name="Validation_IllegalShortcut_Message" xml:space="preserve">
-    <value>Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.</value>
+    <value>Ctrl+Alt+Delete is a reserved system shortcut and cannot be remapped.</value>
   </data>
   <data name="Validation_DuplicateMapping_Title" xml:space="preserve">
     <value>Duplicate remapping</value>
