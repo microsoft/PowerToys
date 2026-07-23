@@ -29,6 +29,7 @@ namespace FancyZonesUnitTests
     {
         Assert::AreEqual(expected.shiftDrag, actual.shiftDrag);
         Assert::AreEqual(expected.mouseSwitch, actual.mouseSwitch);
+        Assert::AreEqual(expected.mouseWheelLayoutSwitch, actual.mouseWheelLayoutSwitch);
         Assert::AreEqual(expected.displayOrWorkAreaChange_moveWindows, actual.displayOrWorkAreaChange_moveWindows);
         Assert::AreEqual(expected.zoneSetChange_flashZones, actual.zoneSetChange_flashZones);
         Assert::AreEqual(expected.zoneSetChange_moveWindows, actual.zoneSetChange_moveWindows);
@@ -47,6 +48,13 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.zoneBorderColor.c_str(), actual.zoneBorderColor.c_str());
         Assert::AreEqual(expected.zoneHighlightColor.c_str(), actual.zoneHighlightColor.c_str());
         Assert::AreEqual(expected.zoneHighlightOpacity, actual.zoneHighlightOpacity);
+        Assert::AreEqual(expected.layoutNameLabelEnabled, actual.layoutNameLabelEnabled);
+        Assert::AreEqual((int)expected.layoutNameLabelPlacement, (int)actual.layoutNameLabelPlacement);
+        Assert::AreEqual(expected.layoutNameLabelTextColor.c_str(), actual.layoutNameLabelTextColor.c_str());
+        Assert::AreEqual(expected.layoutNameLabelBackgroundColor.c_str(), actual.layoutNameLabelBackgroundColor.c_str());
+        Assert::AreEqual(expected.layoutNameLabelFontSize, actual.layoutNameLabelFontSize);
+        Assert::AreEqual(expected.layoutNameLabelPadding, actual.layoutNameLabelPadding);
+        Assert::AreEqual(expected.layoutNameLabelDuration, actual.layoutNameLabelDuration);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
         Assert::AreEqual(expected.excludedAppsArray.size(), actual.excludedAppsArray.size());
         for (int i = 0; i < expected.excludedAppsArray.size(); i++)
@@ -69,6 +77,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", m_defaultSettings.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", m_defaultSettings.mouseSwitch);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", m_defaultSettings.mouseWheelLayoutSwitch);
             values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", m_defaultSettings.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", m_defaultSettings.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", m_defaultSettings.zoneSetChange_moveWindows);
@@ -86,6 +95,13 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_zoneBorderColor", m_defaultSettings.zoneBorderColor);
             values.add_property(L"fancyzones_zoneHighlightColor", m_defaultSettings.zoneHighlightColor);
             values.add_property(L"fancyzones_highlight_opacity", m_defaultSettings.zoneHighlightOpacity);
+            values.add_property(L"fancyzones_layoutNameLabelEnabled", m_defaultSettings.layoutNameLabelEnabled);
+            values.add_property(L"fancyzones_layoutNameLabelPlacement", static_cast<int>(m_defaultSettings.layoutNameLabelPlacement));
+            values.add_property(L"fancyzones_layoutNameLabelTextColor", m_defaultSettings.layoutNameLabelTextColor);
+            values.add_property(L"fancyzones_layoutNameLabelBackgroundColor", m_defaultSettings.layoutNameLabelBackgroundColor);
+            values.add_property(L"fancyzones_layoutNameLabelFontSize", m_defaultSettings.layoutNameLabelFontSize);
+            values.add_property(L"fancyzones_layoutNameLabelPadding", m_defaultSettings.layoutNameLabelPadding);
+            values.add_property(L"fancyzones_layoutNameLabelDuration", m_defaultSettings.layoutNameLabelDuration);
             values.add_property(L"fancyzones_editor_hotkey", m_defaultSettings.editorHotkey.get_json());
             values.add_property(L"fancyzones_windowSwitching", m_defaultSettings.windowSwitching);
             values.add_property(L"fancyzones_nextTab_hotkey", m_defaultSettings.nextTabHotkey.get_json());
@@ -112,6 +128,7 @@ namespace FancyZonesUnitTests
             PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
             values.add_property(L"fancyzones_shiftDrag", expected.shiftDrag);
             values.add_property(L"fancyzones_mouseSwitch", expected.mouseSwitch);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", expected.mouseWheelLayoutSwitch);
             values.add_property(L"fancyzones_displayOrWorkAreaChange_moveWindows", expected.displayOrWorkAreaChange_moveWindows);
             values.add_property(L"fancyzones_zoneSetChange_flashZones", expected.zoneSetChange_flashZones);
             values.add_property(L"fancyzones_zoneSetChange_moveWindows", expected.zoneSetChange_moveWindows);
@@ -140,6 +157,53 @@ namespace FancyZonesUnitTests
             FancyZonesSettings::instance().LoadSettings();
             auto actual = FancyZonesSettings::settings();
             compareSettings(expected, actual);
+        }
+
+        TEST_METHOD (ParseLayoutNameLabelSettings)
+        {
+            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
+            values.add_property(L"fancyzones_layoutNameLabelEnabled", false);
+            values.add_property(L"fancyzones_layoutNameLabelPlacement", static_cast<int>(LayoutNameLabelPlacement::BottomCenter));
+            values.add_property(L"fancyzones_layoutNameLabelTextColor", std::wstring(L"#000000"));
+            values.add_property(L"fancyzones_layoutNameLabelBackgroundColor", std::wstring(L"#ABCDEF"));
+            values.add_property(L"fancyzones_layoutNameLabelFontSize", 48);
+            values.add_property(L"fancyzones_layoutNameLabelPadding", 200); // above the maximum, clamped to 64
+            values.add_property(L"fancyzones_layoutNameLabelDuration", 100); // below the minimum, clamped to 300
+
+            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
+
+            FancyZonesSettings::instance().LoadSettings();
+            auto actual = FancyZonesSettings::settings();
+            Assert::IsFalse(actual.layoutNameLabelEnabled);
+            Assert::AreEqual(static_cast<int>(LayoutNameLabelPlacement::BottomCenter), static_cast<int>(actual.layoutNameLabelPlacement));
+            Assert::AreEqual(L"#000000", actual.layoutNameLabelTextColor.c_str());
+            Assert::AreEqual(L"#ABCDEF", actual.layoutNameLabelBackgroundColor.c_str());
+            Assert::AreEqual(48, actual.layoutNameLabelFontSize);
+            Assert::AreEqual(64, actual.layoutNameLabelPadding);
+            Assert::AreEqual(300, actual.layoutNameLabelDuration);
+        }
+
+        TEST_METHOD (ParseLayoutNameLabelPlacementOutOfRange)
+        {
+            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
+            values.add_property(L"fancyzones_layoutNameLabelPlacement", 99);
+
+            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
+
+            FancyZonesSettings::instance().LoadSettings();
+            // Invalid values are ignored, the default is kept
+            Assert::AreEqual(static_cast<int>(m_defaultSettings.layoutNameLabelPlacement), static_cast<int>(FancyZonesSettings::settings().layoutNameLabelPlacement));
+        }
+
+        TEST_METHOD (ParseMouseWheelLayoutSwitch)
+        {
+            PowerToysSettings::PowerToyValues values(NonLocalizable::ModuleKey, NonLocalizable::ModuleKey);
+            values.add_property(L"fancyzones_mouseWheelLayoutSwitch", true);
+
+            json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
+
+            FancyZonesSettings::instance().LoadSettings();
+            Assert::IsTrue(FancyZonesSettings::settings().mouseWheelLayoutSwitch);
         }
 
         TEST_METHOD (ParseInvalid)

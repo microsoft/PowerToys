@@ -4,18 +4,19 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/util.h>
 
-DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
+DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback, const std::function<bool(bool)>& layoutSwitchByWheelCallback) :
     m_secondaryMouseState(false),
     m_middleMouseState(false),
-    m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
+    m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this), std::bind(&DraggingState::OnMouseWheel, this, std::placeholders::_1)),
     m_ctrlKeyState(keyUpdateCallback),
-    m_keyUpdateCallback(keyUpdateCallback)
+    m_keyUpdateCallback(keyUpdateCallback),
+    m_layoutSwitchByWheelCallback(layoutSwitchByWheelCallback)
 {
 }
 
 void DraggingState::Enable()
 {
-    if (FancyZonesSettings::settings().mouseSwitch)
+    if (FancyZonesSettings::settings().mouseSwitch || FancyZonesSettings::settings().mouseWheelLayoutSwitch)
     {
         m_mouseHook.enable();
     }
@@ -51,6 +52,18 @@ void DraggingState::OnSecondaryMouseDown()
 {
     m_secondaryMouseState = !m_secondaryMouseState;
     m_keyUpdateCallback();
+}
+
+bool DraggingState::OnMouseWheel(bool up)
+{
+    // Layout switching by wheel is active only while zones are shown, so the wheel
+    // keeps scrolling normally in any other state
+    if (m_dragging && FancyZonesSettings::settings().mouseWheelLayoutSwitch)
+    {
+        return m_layoutSwitchByWheelCallback(up);
+    }
+
+    return false;
 }
 
 void DraggingState::OnMiddleMouseDown()

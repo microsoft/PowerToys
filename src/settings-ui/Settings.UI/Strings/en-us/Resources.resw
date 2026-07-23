@@ -863,11 +863,59 @@ opera.exe</value>
   <data name="FancyZones_MakeDraggedWindowTransparentCheckBoxControl.Content" xml:space="preserve">
     <value>Make the dragged window transparent</value>
   </data>
+  <data name="FancyZones_LayoutNameLabel_GroupSettings.Header" xml:space="preserve">
+    <value>Layout name indicator</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabel_GroupSettings.Description" xml:space="preserve">
+    <value>Appearance of the layout name shown when switching layouts while dragging a window</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacement.Header" xml:space="preserve">
+    <value>Position on screen</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopCenter.Content" xml:space="preserve">
+    <value>Top center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementTopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementCenter.Content" xml:space="preserve">
+    <value>Center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomCenter.Content" xml:space="preserve">
+    <value>Bottom center</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPlacementBottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelTextColor.Header" xml:space="preserve">
+    <value>Text color</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelBackgroundColor.Header" xml:space="preserve">
+    <value>Background color</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelFontSize.Header" xml:space="preserve">
+    <value>Text size</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelPadding.Header" xml:space="preserve">
+    <value>Padding</value>
+  </data>
+  <data name="FancyZones_LayoutNameLabelDuration.Header" xml:space="preserve">
+    <value>Display duration (ms)</value>
+  </data>
   <data name="FancyZones_MouseDragCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use a non-primary mouse button to toggle zone activation</value>
   </data>
   <data name="FancyZones_MouseMiddleClickSpanningMultipleZonesCheckBoxControl_Header.Content" xml:space="preserve">
     <value>Use middle-click mouse button to toggle multiple zones spanning</value>
+  </data>
+  <data name="FancyZones_MouseWheelLayoutSwitchCheckBoxControl_Header.Content" xml:space="preserve">
+    <value>Use mouse wheel while dragging to switch between layouts</value>
   </data>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
