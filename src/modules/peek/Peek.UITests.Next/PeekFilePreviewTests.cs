@@ -22,13 +22,20 @@ public class PeekFilePreviewTests : UITestBase
     private const string AppsUseLightThemeValueName = "AppsUseLightTheme";
     private const int ExplorerOpenTimeoutMS = 30_000;
     private const int ExplorerOpenAttempts = 3;
+    private const int ExplorerSelectionStableSamples = 4;
     private const int PeekWindowTimeoutMS = 30_000;
     private const int PreviewLoadTimeoutMS = 60_000;
     private const int PreviewOpenAttempts = 3;
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
+    private const int ShellViewSelect = 0x1;
+    private const int ShellViewDeselectOthers = 0x4;
+    private const int ShellViewEnsureVisible = 0x8;
+    private const int ShellViewFocused = 0x10;
 
     private long explorerWindowHandle;
+    private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
+    private string? expectedExplorerFocusedPath;
 
     private static bool appsUseLightThemeValueExisted;
     private static object? originalAppsUseLightThemeValue;
@@ -302,10 +309,7 @@ public class PeekFilePreviewTests : UITestBase
     {
         var selectedFiles = GetTestAssetFiles().Take(3).ToList();
         var explorerWindow = OpenExplorerAndSelect(selectedFiles[0]);
-
-        explorerWindow.EnsureForeground();
-        KeyboardHelper.SendKeys(Key.Shift, Key.Down);
-        KeyboardHelper.SendKeys(Key.Shift, Key.Down);
+        SetExplorerSelection(explorerWindow, selectedFiles, selectedFiles[^1]);
 
         var peekWindow = SendPeekHotkeyWithRetry(selectedFiles[2]);
         EnsurePeekWindowInteractive(peekWindow);
@@ -405,7 +409,12 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
-            if (!WaitForExplorerSelection(explorerWindow.WindowHandle, normalizedPath, ExplorerOpenTimeoutMS))
+            if (!WindowControl.TryBringToForeground(new IntPtr(explorerWindow.WindowHandle)) ||
+                !SetAndWaitForExplorerSelection(
+                    explorerWindow.WindowHandle,
+                    [normalizedPath],
+                    normalizedPath,
+                    ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
                     GetActivationDiagnostics(
@@ -414,6 +423,8 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             explorerWindowHandle = explorerWindow.WindowHandle;
+            expectedExplorerSelection = [normalizedPath];
+            expectedExplorerFocusedPath = normalizedPath;
             TestContext.WriteLine(
                 $"Explorer ready for '{selectedItemName}': hwnd={explorerWindow.WindowHandle}, " +
                 $"pid={explorerWindow.ProcessId}, title='{explorerWindow.WindowTitle}', " +
@@ -447,14 +458,56 @@ public class PeekFilePreviewTests : UITestBase
         return false;
     }
 
-    private static bool WaitForExplorerSelection(long windowHandle, string expectedPath, int timeoutMS)
+    private void SetExplorerSelection(
+        Session explorerWindow,
+        IReadOnlyList<string> selectedPaths,
+        string focusedPath)
     {
+        var normalizedPaths = selectedPaths.Select(NormalizePath).ToList();
+        var normalizedFocusedPath = NormalizePath(focusedPath);
+
+        Assert.IsTrue(
+            WindowControl.TryBringToForeground(new IntPtr(explorerWindow.WindowHandle)) &&
+            SetAndWaitForExplorerSelection(
+                explorerWindow.WindowHandle,
+                normalizedPaths,
+                normalizedFocusedPath,
+                ExplorerOpenTimeoutMS),
+            $"Explorer did not establish the expected selection [{string.Join(", ", normalizedPaths.Select(Path.GetFileName))}] " +
+            $"with '{Path.GetFileName(normalizedFocusedPath)}' focused.");
+
+        explorerWindowHandle = explorerWindow.WindowHandle;
+        expectedExplorerSelection = normalizedPaths;
+        expectedExplorerFocusedPath = normalizedFocusedPath;
+    }
+
+    private static bool SetAndWaitForExplorerSelection(
+        long windowHandle,
+        IReadOnlyList<string> selectedPaths,
+        string focusedPath,
+        int timeoutMS)
+    {
+        var expectedPaths = selectedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        var stableSamples = 0;
+
         while (DateTime.UtcNow < deadline)
         {
-            if (ExplorerSelectionContains(windowHandle, expectedPath))
+            var snapshot = GetExplorerSelection(windowHandle);
+            if (snapshot is not null &&
+                snapshot.SelectedPaths.SetEquals(expectedPaths) &&
+                string.Equals(snapshot.FocusedPath, focusedPath, StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                stableSamples++;
+                if (stableSamples >= ExplorerSelectionStableSamples)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                stableSamples = 0;
+                TrySetExplorerSelection(windowHandle, selectedPaths, focusedPath);
             }
 
             Thread.Sleep(250);
@@ -463,7 +516,10 @@ public class PeekFilePreviewTests : UITestBase
         return false;
     }
 
-    private static bool ExplorerSelectionContains(long windowHandle, string expectedPath)
+    private static bool TrySetExplorerSelection(
+        long windowHandle,
+        IReadOnlyList<string> selectedPaths,
+        string focusedPath)
     {
         object? shellObject = null;
         ShellWindows? shellWindows = null;
@@ -483,31 +539,65 @@ public class PeekFilePreviewTests : UITestBase
                         continue;
                     }
 
-                    var selectedItems = folderView.SelectedItems();
+                    var folder = folderView.Folder;
+                    var folderItems = folder.Items();
+                    var retainedItems = new List<Shell32.FolderItem>();
                     try
                     {
-                        for (var index = 0; index < selectedItems.Count; index++)
+                        var itemsByPath = new Dictionary<string, Shell32.FolderItem>(StringComparer.OrdinalIgnoreCase);
+                        for (var index = 0; index < folderItems.Count; index++)
                         {
-                            var item = selectedItems.Item(index);
-                            try
+                            var item = folderItems.Item(index);
+                            var normalizedPath = NormalizePath(item.Path);
+                            if (selectedPaths.Contains(normalizedPath, StringComparer.OrdinalIgnoreCase))
                             {
-                                if (string.Equals(
-                                        Path.GetFullPath(item.Path),
-                                        Path.GetFullPath(expectedPath),
-                                        StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return true;
-                                }
+                                itemsByPath[normalizedPath] = item;
+                                retainedItems.Add(item);
                             }
-                            finally
+                            else
                             {
                                 Marshal.ReleaseComObject(item);
                             }
                         }
+
+                        if (itemsByPath.Count != selectedPaths.Count)
+                        {
+                            return false;
+                        }
+
+                        var orderedPaths = selectedPaths
+                            .Where(path => !string.Equals(path, focusedPath, StringComparison.OrdinalIgnoreCase))
+                            .Append(focusedPath)
+                            .ToList();
+
+                        for (var index = 0; index < orderedPaths.Count; index++)
+                        {
+                            var path = orderedPaths[index];
+                            var flags = ShellViewSelect | ShellViewEnsureVisible;
+                            if (index == 0)
+                            {
+                                flags |= ShellViewDeselectOthers;
+                            }
+
+                            if (string.Equals(path, focusedPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                flags |= ShellViewFocused;
+                            }
+
+                            folderView.SelectItem(itemsByPath[path], flags);
+                        }
+
+                        return true;
                     }
                     finally
                     {
-                        Marshal.ReleaseComObject(selectedItems);
+                        foreach (var item in retainedItems)
+                        {
+                            Marshal.ReleaseComObject(item);
+                        }
+
+                        Marshal.ReleaseComObject(folderItems);
+                        Marshal.ReleaseComObject(folder);
                     }
                 }
                 finally
@@ -535,6 +625,93 @@ public class PeekFilePreviewTests : UITestBase
         return false;
     }
 
+    private static ExplorerSelectionSnapshot? GetExplorerSelection(long windowHandle)
+    {
+        object? shellObject = null;
+        ShellWindows? shellWindows = null;
+
+        try
+        {
+            var shellType = Type.GetTypeFromCLSID(ShellApplicationClassId, throwOnError: true)!;
+            shellObject = Activator.CreateInstance(shellType);
+            var shell = (Shell32.IShellDispatch2)shellObject!;
+            shellWindows = shell.Windows();
+            foreach (IWebBrowserApp browser in shellWindows)
+            {
+                try
+                {
+                    if (browser.HWND != windowHandle || browser.Document is not Shell32.IShellFolderViewDual2 folderView)
+                    {
+                        continue;
+                    }
+
+                    var selectedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    var selectedItems = folderView.SelectedItems();
+                    try
+                    {
+                        for (var index = 0; index < selectedItems.Count; index++)
+                        {
+                            var item = selectedItems.Item(index);
+                            try
+                            {
+                                selectedPaths.Add(NormalizePath(item.Path));
+                            }
+                            finally
+                            {
+                                Marshal.ReleaseComObject(item);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        Marshal.ReleaseComObject(selectedItems);
+                    }
+
+                    var focusedItem = folderView.FocusedItem;
+                    if (focusedItem is null)
+                    {
+                        return new ExplorerSelectionSnapshot(selectedPaths, null);
+                    }
+
+                    try
+                    {
+                        return new ExplorerSelectionSnapshot(selectedPaths, NormalizePath(focusedItem.Path));
+                    }
+                    finally
+                    {
+                        Marshal.ReleaseComObject(focusedItem);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(browser);
+                }
+            }
+        }
+        catch (COMException)
+        {
+        }
+        finally
+        {
+            if (shellWindows is not null)
+            {
+                Marshal.ReleaseComObject(shellWindows);
+            }
+
+            if (shellObject is not null)
+            {
+                Marshal.ReleaseComObject(shellObject);
+            }
+        }
+
+        return null;
+    }
+
+    private static string NormalizePath(string path)
+    {
+        return Path.GetFullPath(path.TrimEnd(Path.DirectorySeparatorChar));
+    }
+
     private Session SendPeekHotkeyWithRetry(string expectedPath)
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
@@ -551,11 +728,19 @@ public class PeekFilePreviewTests : UITestBase
                     attempt);
             }
 
-            var foregrounded = false;
-            if (explorerWindowHandle != 0)
-            {
-                foregrounded = WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
-            }
+            Assert.IsFalse(
+                expectedExplorerSelection.Count == 0 || string.IsNullOrEmpty(expectedExplorerFocusedPath),
+                "Explorer selection expectations were not initialized before Peek activation.");
+            var foregrounded = explorerWindowHandle != 0 &&
+                               WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
+            Assert.IsTrue(
+                foregrounded &&
+                SetAndWaitForExplorerSelection(
+                    explorerWindowHandle,
+                    expectedExplorerSelection,
+                    expectedExplorerFocusedPath!,
+                    ExplorerOpenTimeoutMS),
+                $"Explorer did not retain the expected selection before Peek hotkey attempt {attempt}.");
 
             TestContext.WriteLine(
                 $"Peek hotkey attempt {attempt}/{MaxHotkeyAttempts} for '{Path.GetFileName(expectedPath)}': " +
@@ -961,6 +1146,8 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         explorerWindowHandle = 0;
+        expectedExplorerSelection = Array.Empty<string>();
+        expectedExplorerFocusedPath = null;
     }
 
     private static bool WaitForPeekProcessInputIdle()
@@ -1051,4 +1238,6 @@ public class PeekFilePreviewTests : UITestBase
     {
         public (int X, int Y) Center => (Left + (Width / 2), Top + (Height / 2));
     }
+
+    private sealed record ExplorerSelectionSnapshot(HashSet<string> SelectedPaths, string? FocusedPath);
 }
