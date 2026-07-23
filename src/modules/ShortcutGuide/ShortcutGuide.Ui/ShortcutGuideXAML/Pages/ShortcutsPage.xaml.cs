@@ -6,52 +6,91 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using ShortcutGuide.Controls;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.ViewModels;
 
 namespace ShortcutGuide.Pages
 {
-    /// <summary>
-    /// Displays every category of shortcuts for the selected application as a single,
-    /// flat virtualized list (Pinned, Recommended, each category, Taskbar).
-    /// The list is flat — header / subtitle / shortcut / empty-placeholder rows share one
-    /// ItemsRepeater — so virtualization realizes only rows in the viewport instead of
-    /// every row of every realized section.
-    /// </summary>
     public sealed partial class ShortcutsPage : Page
     {
         private const string TaskbarSectionMarker = "<TASKBAR1-9>";
 
         private ShortcutFile? _shortcutFile;
         private string _appName = string.Empty;
+        private bool _isEventSubscribed;
 
         public ObservableCollection<ShortcutListItem> Rows { get; } = new();
 
         public ShortcutsPage()
         {
             this.InitializeComponent();
-            this.Unloaded += (_, _) => PinnedShortcutsHelper.PinnedShortcutsChanged -= this.OnPinnedShortcutsChanged;
+
+            this.Unloaded += (_, _) =>
+            {
+                UnsubscribeFromEvents();
+                ClearData();
+            };
+        }
+
+        private void MainItemsRepeater_ElementClearing(ItemsRepeater sender, ItemsRepeaterElementClearingEventArgs args)
+        {
+            // Aggressively clean up elements as they're being cleared
+            if (args.Element is FrameworkElement element)
+            {
+                // Clear DataContext to break binding references
+                element.DataContext = null;
+                if (element is ShortcutItemView shortcutView)
+                {
+                    shortcutView.ClearValue(ShortcutItemView.ShortcutProperty);
+                }
+            }
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is ShortcutPageNavParam param)
-            {
-                this._appName = param.AppName;
-                this._shortcutFile = param.ShortcutFile;
-                this.RebuildRows();
-            }
-
-            PinnedShortcutsHelper.PinnedShortcutsChanged -= this.OnPinnedShortcutsChanged;
+            UnsubscribeFromEvents();
             PinnedShortcutsHelper.PinnedShortcutsChanged += this.OnPinnedShortcutsChanged;
+            _isEventSubscribed = true;
+        }
+
+        /// <summary>
+        /// Refreshes the page to show the shortcuts for the given app. The page
+        /// (and its <c>ItemsRepeater</c>) is reused across opens instead of
+        /// being recreated, so only the <see cref="Rows"/> collection changes.
+        /// </summary>
+        public void SetShortcuts(ShortcutFile file, string appName)
+        {
+            this._appName = appName;
+            this._shortcutFile = file;
+            this.RebuildRows();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            PinnedShortcutsHelper.PinnedShortcutsChanged -= this.OnPinnedShortcutsChanged;
+            UnsubscribeFromEvents();
+            ClearData();
+        }
+
+        public void ClearData()
+        {
+            // Clear the collection to trigger ElementClearing for all items
+            this.Rows.Clear();
+            _shortcutFile = null;
+            _appName = string.Empty;
+        }
+
+        private void UnsubscribeFromEvents()
+        {
+            if (_isEventSubscribed)
+            {
+                PinnedShortcutsHelper.PinnedShortcutsChanged -= this.OnPinnedShortcutsChanged;
+                _isEventSubscribed = false;
+            }
         }
 
         private void RebuildRows()
@@ -105,8 +144,6 @@ namespace ShortcutGuide.Pages
                 {
                     string name = category.SectionName ?? string.Empty;
 
-                    // Taskbar marker may carry trailing text in the manifest (e.g. "<TASKBAR1-9>Taskbar Shortcuts");
-                    // detect it by prefix and hand it off to the dedicated Taskbar section below.
                     if (name.StartsWith(TaskbarSectionMarker, StringComparison.Ordinal))
                     {
                         taskbarCategory = category;

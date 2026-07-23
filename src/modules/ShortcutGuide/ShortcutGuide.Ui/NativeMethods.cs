@@ -11,7 +11,18 @@ namespace ShortcutGuide;
 internal static partial class NativeMethods
 {
     internal const int GWL_STYLE = -16;
+    internal const int GWL_EXSTYLE = -20;
     internal const int WS_CAPTION = 0x00C00000;
+    internal const int WS_EX_TOOLWINDOW = 0x00000080;
+    internal const int WS_EX_WINDOWEDGE = 0x00000100;
+    internal const int WS_EX_CLIENTEDGE = 0x00000200;
+    internal const int WS_EX_DLGMODALFRAME = 0x00000001;
+
+    internal const uint ABM_GETTASKBARPOS = 0x00000005;
+    internal const uint ABE_LEFT = 0;
+    internal const uint ABE_TOP = 1;
+    internal const uint ABE_RIGHT = 2;
+    internal const uint ABE_BOTTOM = 3;
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -29,6 +40,13 @@ internal static partial class NativeMethods
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
 
+    [LibraryImport("User32.dll")]
+    internal static partial IntPtr MonitorFromPoint(POINT pt, int dwFlags);
+
+    [LibraryImport("User32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool GetMonitorInfoW(IntPtr hMonitor, ref MONITORINFO lpmi);
+
     [LibraryImport("Shcore.dll")]
     internal static partial long GetDpiForMonitor(IntPtr hmonitor, int dpiType, ref int dpiX, ref int dpiY);
 
@@ -39,6 +57,21 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial IntPtr GetForegroundWindow();
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool SetForegroundWindow(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool BringWindowToTop(IntPtr hWnd);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+
+    [LibraryImport("kernel32.dll")]
+    internal static partial uint GetCurrentThreadId();
+
     [LibraryImport("user32.dll", SetLastError = true)]
     internal static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
@@ -47,6 +80,9 @@ internal static partial class NativeMethods
 
     [DllImport("../PowerToys.Interop.dll", EntryPoint = "get_buttons")]
     internal static extern IntPtr GetTasklistButtons(IntPtr monitor, out int size);
+
+    [LibraryImport("shell32.dll", EntryPoint = "SHAppBarMessage")]
+    internal static partial IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
 
     [LibraryImport("../PowerToys.Interop.dll", EntryPoint = "IsCurrentWindowExcludedFromShortcutGuide")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -57,6 +93,58 @@ internal static partial class NativeMethods
     internal static partial bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, MonitorEnumDelegate lpfnEnum, IntPtr dwData);
 
     internal delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
+
+    [LibraryImport("user32.dll")]
+    internal static partial void CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, LPARAM lParam);
+
+    [DllImport("user32.dll")]
+    internal static extern void SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
+
+    internal struct INPUT
+    {
+        public uint Type;
+        public MOUSEKEYBDHARDWAREINPUT Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct MOUSEKEYBDHARDWAREINPUT
+    {
+        [FieldOffset(0)]
+        public MOUSEINPUT Mouse;
+        [FieldOffset(0)]
+        public KEYBDINPUT Keyboard;
+        [FieldOffset(0)]
+        public HARDWAREINPUT Hardware;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MOUSEINPUT
+    {
+        public int Dx;
+        public int Dy;
+        public uint MouseData;
+        public uint DwFlags;
+        public uint Time;
+        public IntPtr DwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct KEYBDINPUT
+    {
+        public ushort WVk;
+        public ushort WScan;
+        public uint DwFlags;
+        public uint Time;
+        public IntPtr DwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct HARDWAREINPUT
+    {
+        public uint Msg;
+        public ushort ParamL;
+        public ushort ParamH;
+    }
 
     internal struct LPARAM(IntPtr value)
     {
@@ -101,6 +189,26 @@ internal static partial class NativeMethods
         {
             return new PointInt32(point.X, point.Y);
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MONITORINFO
+    {
+        public uint CbSize;
+        public RECT RcMonitor;
+        public RECT RcWork;
+        public uint DwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct APPBARDATA
+    {
+        public uint CbSize;
+        public IntPtr HWnd;
+        public uint UCallbackMessage;
+        public uint UEdge;
+        public RECT Rc;
+        public IntPtr LParam;
     }
 
     public enum MonitorFromWindowDwFlags
