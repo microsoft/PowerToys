@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
+using SHDocVw;
 
 namespace Peek.UITests;
 
@@ -15,6 +17,7 @@ namespace Peek.UITests;
 public class PeekFilePreviewTests : UITestBase
 {
     private const string PeekProcessName = "PowerToys.Peek.UI";
+    private static readonly Guid ShellApplicationClassId = new("13709620-C279-11CE-A49E-444553540000");
     private const string PersonalizeRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
     private const string AppsUseLightThemeValueName = "AppsUseLightTheme";
     private const int ExplorerOpenTimeoutMS = 30_000;
@@ -402,6 +405,14 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
+            if (!WaitForExplorerSelection(explorerWindow.WindowHandle, normalizedPath, ExplorerOpenTimeoutMS))
+            {
+                TestContext.WriteLine(
+                    GetActivationDiagnostics(
+                        $"Explorer HWND {explorerWindow.WindowHandle} did not select '{selectedItemName}' after launch attempt {attempt}"));
+                continue;
+            }
+
             explorerWindowHandle = explorerWindow.WindowHandle;
             TestContext.WriteLine(
                 $"Explorer ready for '{selectedItemName}': hwnd={explorerWindow.WindowHandle}, " +
@@ -431,6 +442,94 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             Thread.Sleep(250);
+        }
+
+        return false;
+    }
+
+    private static bool WaitForExplorerSelection(long windowHandle, string expectedPath, int timeoutMS)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (ExplorerSelectionContains(windowHandle, expectedPath))
+            {
+                return true;
+            }
+
+            Thread.Sleep(250);
+        }
+
+        return false;
+    }
+
+    private static bool ExplorerSelectionContains(long windowHandle, string expectedPath)
+    {
+        object? shellObject = null;
+        ShellWindows? shellWindows = null;
+
+        try
+        {
+            var shellType = Type.GetTypeFromCLSID(ShellApplicationClassId, throwOnError: true)!;
+            shellObject = Activator.CreateInstance(shellType);
+            var shell = (Shell32.IShellDispatch2)shellObject!;
+            shellWindows = shell.Windows();
+            foreach (IWebBrowserApp browser in shellWindows)
+            {
+                try
+                {
+                    if (browser.HWND != windowHandle || browser.Document is not Shell32.IShellFolderViewDual2 folderView)
+                    {
+                        continue;
+                    }
+
+                    var selectedItems = folderView.SelectedItems();
+                    try
+                    {
+                        for (var index = 0; index < selectedItems.Count; index++)
+                        {
+                            var item = selectedItems.Item(index);
+                            try
+                            {
+                                if (string.Equals(
+                                        Path.GetFullPath(item.Path),
+                                        Path.GetFullPath(expectedPath),
+                                        StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return true;
+                                }
+                            }
+                            finally
+                            {
+                                Marshal.ReleaseComObject(item);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        Marshal.ReleaseComObject(selectedItems);
+                    }
+                }
+                finally
+                {
+                    Marshal.ReleaseComObject(browser);
+                }
+            }
+        }
+        catch (COMException)
+        {
+        }
+        finally
+        {
+            if (shellWindows is not null)
+            {
+                Marshal.ReleaseComObject(shellWindows);
+            }
+
+            if (shellObject is not null)
+            {
+                Marshal.ReleaseComObject(shellObject);
+            }
         }
 
         return false;
