@@ -6,7 +6,82 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Settings, ToggleSetting, JsonSettingsStore } from '../src/index.js';
+import {
+  Settings,
+  ToggleSetting,
+  TextSetting,
+  ChoiceSetSetting,
+  JsonSettingsStore,
+} from '../src/index.js';
+
+function cardInputs(settings: Settings): Record<string, Record<string, unknown>> {
+  const card = JSON.parse(settings.toTemplateJson()) as { body: Record<string, unknown>[] };
+  const byId: Record<string, Record<string, unknown>> = {};
+  for (const element of card.body) {
+    const type = element.type as string | undefined;
+    const id = element.id as string | undefined;
+    if (typeof type === 'string' && type.startsWith('Input.') && typeof id === 'string') {
+      byId[id] = element;
+    }
+  }
+  return byId;
+}
+
+describe('Settings Adaptive Card required inputs', () => {
+  it('emits isRequired only for required inputs', () => {
+    const settings = new Settings();
+    const required = new TextSetting('name', 'Name');
+    required.isRequired = true;
+    settings.add(required);
+    settings.add(new TextSetting('nickname', 'Nickname'));
+
+    const inputs = cardInputs(settings);
+    expect(inputs.name?.isRequired).toBe(true);
+    expect(inputs.nickname).not.toHaveProperty('isRequired');
+  });
+
+  it('emits errorMessage alongside isRequired when provided', () => {
+    const settings = new Settings();
+    const required = new TextSetting('name', 'Name');
+    required.isRequired = true;
+    required.errorMessage = 'Name is required';
+    settings.add(required);
+
+    const inputs = cardInputs(settings);
+    expect(inputs.name?.isRequired).toBe(true);
+    expect(inputs.name?.errorMessage).toBe('Name is required');
+  });
+
+  it('omits errorMessage when isRequired is not set', () => {
+    const settings = new Settings();
+    const optional = new TextSetting('name', 'Name');
+    optional.errorMessage = 'ignored when optional';
+    settings.add(optional);
+
+    const inputs = cardInputs(settings);
+    expect(inputs.name).not.toHaveProperty('isRequired');
+    expect(inputs.name).not.toHaveProperty('errorMessage');
+  });
+
+  it('supports required toggles and choice sets', () => {
+    const settings = new Settings();
+    const toggle = new ToggleSetting('agree', 'Agree');
+    toggle.isRequired = true;
+    settings.add(toggle);
+    const choice = new ChoiceSetSetting('theme', 'Theme', [
+      { title: 'Light', value: 'light' },
+      { title: 'Dark', value: 'dark' },
+    ]);
+    choice.isRequired = true;
+    settings.add(choice);
+
+    const inputs = cardInputs(settings);
+    expect(inputs.agree?.type).toBe('Input.Toggle');
+    expect(inputs.agree?.isRequired).toBe(true);
+    expect(inputs.theme?.type).toBe('Input.ChoiceSet');
+    expect(inputs.theme?.isRequired).toBe(true);
+  });
+});
 
 describe('Settings change notification', () => {
   it('fires subscribers and updates values on submit', async () => {

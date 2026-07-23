@@ -105,4 +105,94 @@ describe('bounded command registry eviction', () => {
     });
     expect(responseFor(sent, 5)?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
   });
+
+  it('retires provider-level commands that disappear across top-level refreshes', async () => {
+    let generation = 0;
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands() {
+        generation += 1;
+        return [{ command: item(`cmd-${String(generation)}`).command, title: 'C' }];
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(provider);
+
+    let messageId = 0;
+    const getTopLevel = async (): Promise<void> => {
+      messageId += 1;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: messageId,
+        method: 'provider/getTopLevelCommands',
+      });
+    };
+    const invoke = async (commandId: string): Promise<JsonRpcResponse | undefined> => {
+      messageId += 1;
+      const thisId = messageId;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: thisId,
+        method: 'command/invoke',
+        params: { commandId },
+      });
+      return responseFor(sent, thisId);
+    };
+
+    // Walk several generations; each refresh must retire the prior id.
+    await getTopLevel();
+    expect((await invoke('cmd-1'))?.result).toEqual({ Kind: 4 });
+
+    await getTopLevel();
+    // The current generation resolves; the retired one is rejected.
+    expect((await invoke('cmd-2'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('cmd-1'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
+  });
+
+  it('retires fallback commands that disappear across fallback refreshes', async () => {
+    let generation = 0;
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands() {
+        return [];
+      },
+      fallbackCommands() {
+        generation += 1;
+        const command = item(`fb-${String(generation)}`).command;
+        return [{ command, title: 'Fallback' }];
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(provider);
+
+    let messageId = 0;
+    const getFallbacks = async (): Promise<void> => {
+      messageId += 1;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: messageId,
+        method: 'provider/getFallbackCommands',
+      });
+    };
+    const invoke = async (commandId: string): Promise<JsonRpcResponse | undefined> => {
+      messageId += 1;
+      const thisId = messageId;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: thisId,
+        method: 'command/invoke',
+        params: { commandId },
+      });
+      return responseFor(sent, thisId);
+    };
+
+    await getFallbacks();
+    expect((await invoke('fb-1'))?.result).toEqual({ Kind: 4 });
+
+    await getFallbacks();
+    expect((await invoke('fb-2'))?.result).toEqual({ Kind: 4 });
+    expect((await invoke('fb-1'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
+  });
 });

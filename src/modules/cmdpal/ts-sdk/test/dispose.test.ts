@@ -69,21 +69,51 @@ describe('graceful async disposal', () => {
     expect(runtime.isDisposed).toBe(true);
   });
 
-  it('is idempotent across repeated dispose calls', async () => {
-    const dispose = vi.fn();
+  it('disposes immediately without awaiting when the timeout is zero or negative', async () => {
+    let settled = false;
     const provider: ICommandProvider = {
       id: 'ext',
       displayName: 'Ext',
       topLevelCommands: () => [],
-      dispose,
+      // Never settles: a zero timeout must not await this.
+      dispose: () =>
+        new Promise<void>((resolve) => {
+          setTimeout(() => {
+            settled = true;
+            resolve();
+          }, 10_000).unref?.();
+        }),
     };
     const { runtime, onDispose } = createRuntime();
     runtime.setProvider(provider);
 
-    await runtime.dispose();
-    await runtime.dispose();
+    const start = Date.now();
+    await runtime.dispose(0);
+    const elapsed = Date.now() - start;
 
-    expect(dispose).toHaveBeenCalledTimes(1);
+    // Resolved immediately, before the provider's disposal could settle.
+    expect(elapsed).toBeLessThan(1000);
+    expect(settled).toBe(false);
     expect(onDispose).toHaveBeenCalledTimes(1);
+    expect(runtime.isDisposed).toBe(true);
+  });
+
+  it('treats a negative timeout as immediate disposal', async () => {
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands: () => [],
+      dispose: () => new Promise<void>(() => {}),
+    };
+    const { runtime, onDispose } = createRuntime();
+    runtime.setProvider(provider);
+
+    const start = Date.now();
+    await runtime.dispose(-1);
+    const elapsed = Date.now() - start;
+
+    expect(elapsed).toBeLessThan(1000);
+    expect(onDispose).toHaveBeenCalledTimes(1);
+    expect(runtime.isDisposed).toBe(true);
   });
 });

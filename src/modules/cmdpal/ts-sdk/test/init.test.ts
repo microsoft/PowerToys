@@ -127,4 +127,39 @@ describe('handshake and version negotiation', () => {
     expect(error?.message).toContain('Incompatible protocol version');
     expect(fatal).toHaveBeenCalledWith(1);
   });
+
+  it('rejects a present-but-malformed protocol version distinctly from an absent one', async () => {
+    const { runtime, sent, fatal } = createHarness();
+    runtime.setProvider(provider);
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'initialize',
+      params: { protocolVersion: 'not-a-number' },
+    });
+
+    const error = responseFor(sent, 1)?.error as { code: number; message: string } | undefined;
+    expect(error?.code).toBe(JsonRpcErrorCode.InvalidRequest);
+    expect(error?.message).toContain('Invalid protocol version');
+    expect(error?.message).not.toContain('Incompatible protocol version');
+    expect(fatal).toHaveBeenCalledWith(1);
+  });
+
+  it('rejects a non-integer numeric protocol version', async () => {
+    const { runtime, sent, fatal } = createHarness();
+    runtime.setProvider(provider);
+
+    await runtime.handleRequest({
+      jsonrpc: JSONRPC_VERSION,
+      id: 1,
+      method: 'initialize',
+      params: { protocolVersion: 1.5 },
+    });
+
+    const error = responseFor(sent, 1)?.error as { code: number; message: string } | undefined;
+    expect(error?.code).toBe(JsonRpcErrorCode.InvalidRequest);
+    expect(error?.message).toContain('Invalid protocol version');
+    expect(fatal).toHaveBeenCalledWith(1);
+  });
 });

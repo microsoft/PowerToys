@@ -278,7 +278,14 @@ describe('ExtensionRuntime settings integration', () => {
       id: 1,
       method: 'provider/getSettings',
     });
-    expect(responseFor(sent, 1)?.result).toEqual({ id: '__settings__' });
+    expect(responseFor(sent, 1)?.result).toEqual({
+      id: '__settings__',
+      name: 'Settings',
+      displayName: 'Settings',
+      pageType: 'contentPage',
+      title: 'Extension Settings',
+      isLoading: false,
+    });
 
     await runtime.handleRequest({
       jsonrpc: JSONRPC_VERSION,

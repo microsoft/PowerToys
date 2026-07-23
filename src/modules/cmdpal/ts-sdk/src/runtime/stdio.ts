@@ -26,13 +26,28 @@ export interface ProtocolStdout {
 type ConsoleMethod = (...args: unknown[]) => void;
 
 /**
+ * The single active claim, if any. Kept at module scope so the claim is
+ * idempotent: the bootstrap loader claims `stdout` before the extension is
+ * imported, and a later {@link startJsonRpcServer} call reuses that same claim
+ * instead of capturing an already-redirected writer. The framing writer must
+ * own the pristine `fd1` writer captured at the first claim.
+ */
+let activeClaim: ProtocolStdout | null = null;
+
+/**
  * Claims `stdout` for the protocol. Call this before loading or running any
  * extension author code, so early logging never lands on the protocol stream.
+ * The claim is idempotent: if `stdout` is already claimed, the existing handle
+ * is returned so the raw writer stays anchored to the pristine `fd1` captured
+ * by the first claim.
  *
  * @returns A handle whose `writeRaw` writes protocol frames to the real
  * `stdout`, and whose `restore` undoes the redirects during shutdown.
  */
 export function claimProtocolStdout(): ProtocolStdout {
+  if (activeClaim) {
+    return activeClaim;
+  }
   const rawWrite = process.stdout.write.bind(process.stdout);
   const writeRaw = (chunk: Uint8Array | string): void => {
     rawWrite(chunk);
@@ -61,7 +76,12 @@ export function claimProtocolStdout(): ProtocolStdout {
     console.log = originalLog;
     console.info = originalInfo;
     console.debug = originalDebug;
+    if (activeClaim === claim) {
+      activeClaim = null;
+    }
   };
 
-  return { writeRaw, restore };
+  const claim: ProtocolStdout = { writeRaw, restore };
+  activeClaim = claim;
+  return claim;
 }

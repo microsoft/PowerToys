@@ -58,3 +58,4 @@ export {
 } from './runtime/server.js';
 export { PROTOCOL_VERSION, getSdkVersion, isProtocolCompatible } from './runtime/protocol.js';
 export { InvalidCommandResultError } from './runtime/commandResult.js';
+export { bootstrap } from './runtime/bootstrap.js';
