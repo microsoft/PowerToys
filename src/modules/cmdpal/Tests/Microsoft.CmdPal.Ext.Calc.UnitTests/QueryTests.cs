@@ -49,11 +49,11 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("max(123,456)", "456")]
     [DataRow("max(123,min(12,pow(2,6)))", "123")]
     [DataRow("max    (    12, 34  )", "34")]
-    [DataRow("ceil(123,456.23)", "123457")]
-    [DataRow("max(ceil(123,456.23),2)", "123457")]
-    [DataRow("pow(round(1,234.5),2)", "1525225")]
-    [DataRow("max(1e3,2e3)", "2000")]
-    [DataRow("pow(1.5e2,2)", "22500")]
+    [DataRow("ceil(123,456.23)", "123,457")]
+    [DataRow("max(ceil(123,456.23),2)", "123,457")]
+    [DataRow("pow(round(1,234.5),2)", "1,525,225")]
+    [DataRow("max(1e3,2e3)", "2,000")]
+    [DataRow("pow(1.5e2,2)", "22,500")]
     [DataRow("max(0b1010,0o12)", "10")]
     public void TopLevelPageQueryTest(string input, string expectedResult)
     {
@@ -158,8 +158,43 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [DataTestMethod]
-    [DataRow("2^64", "18446744073709551616", "0x10000000000000000")]
-    [DataRow("0-(2^64)", "-18446744073709551616", "-0x10000000000000000")]
+    [DataRow(false, PrimaryAction.Copy)]
+    [DataRow(false, PrimaryAction.Paste)]
+    [DataRow(true, PrimaryAction.Copy)]
+    [DataRow(true, PrimaryAction.Paste)]
+    public void GroupedResultContinuationUsesRawValue(bool useEquals, PrimaryAction primaryAction)
+    {
+        CultureInfo.CurrentCulture = new CultureInfo("hi-IN", false);
+        var settings = new Settings(primaryAction: primaryAction);
+        var page = new CalculatorListPage(settings);
+
+        if (useEquals)
+        {
+            page.UpdateSearchText(string.Empty, "12345678=");
+        }
+        else
+        {
+            page.UpdateSearchText(string.Empty, "12345678");
+            var result = page.GetItems().Single();
+            var replaceCommand = result.MoreCommands
+                .OfType<CommandItem>()
+                .Select(item => item.Command)
+                .OfType<ReplaceQueryCommand>()
+                .Single();
+
+            replaceCommand.Invoke();
+        }
+
+        Assert.AreEqual("12345678", page.SearchText);
+
+        page.UpdateSearchText(page.SearchText, page.SearchText + "+1");
+
+        Assert.AreEqual("1,23,45,679", page.GetItems().Single().Title);
+    }
+
+    [DataTestMethod]
+    [DataRow("2^64", "18,446,744,073,709,551,616", "0x10000000000000000")]
+    [DataRow("0-(2^64)", "-18,446,744,073,709,551,616", "-0x10000000000000000")]
     public void TopLevelPageQuery_ReturnsResult_WhenIntegerExceedsInt64Bounds(string input, string expectedTitle, string expectedHexContext)
     {
         var settings = new Settings(outputUseEnglishFormat: true);
