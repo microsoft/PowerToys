@@ -5,6 +5,7 @@
 #include <comdef.h>
 #include <common/interop/shared_constants.h>
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/elevation.h>
 #include <common/utils/logger_helper.h>
@@ -434,11 +435,23 @@ private:
 
     void launch_process()
     {
+        if (is_viewer_running())
+        {
+            return;
+        }
+
+        if (m_hProcess != 0)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = 0;
+            m_processPid = 0;
+        }
+
         Logger::trace(L"Starting Peek.UI process");
 
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"";
+        std::wstring executable_args = PTSettingsHelper::is_low_memory_mode_enabled(get_key()) ? L"--exit-after-close " : L"";
         executable_args.append(std::to_wstring(powertoys_pid));
 
         if (m_alwaysRunNotElevated && is_process_elevated(false))
@@ -561,7 +574,13 @@ public:
     {
         Logger::trace("Peek::enable()");
         ResetEvent(m_hInvokeEvent);
-        launch_process();
+        ResetEvent(m_hTerminateEvent);
+        PTSettingsHelper::refresh_low_memory_settings_cache();
+        if (!PTSettingsHelper::is_low_memory_mode_enabled(get_key()))
+        {
+            launch_process();
+        }
+
         m_enabled = true;
         Trace::EnablePeek(true);
         manage_space_mode_hook();
@@ -574,23 +593,23 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
-            SetEvent(m_hTerminateEvent);
-
-            HANDLE hProcess = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, m_processPid);
-            if (WaitForSingleObject(hProcess, 1500) == WAIT_TIMEOUT)
+            if (m_hProcess != 0)
             {
-                auto result = TerminateProcess(hProcess, 1);
-                if (result == 0)
+                SetEvent(m_hTerminateEvent);
+                if (WaitForSingleObject(m_hProcess, 1500) == WAIT_TIMEOUT)
                 {
-                    int error = GetLastError();
-                    Logger::trace("Couldn't terminate the process. Last error: {}", error);
+                    auto result = TerminateProcess(m_hProcess, 1);
+                    if (result == 0)
+                    {
+                        int error = GetLastError();
+                        Logger::trace("Couldn't terminate the process. Last error: {}", error);
+                    }
                 }
-            }
 
-            CloseHandle(hProcess);
-            CloseHandle(m_hProcess);
-            m_hProcess = 0;
-            m_processPid = 0;
+                CloseHandle(m_hProcess);
+                m_hProcess = 0;
+                m_processPid = 0;
+            }
         }
 
         m_enabled = false;
