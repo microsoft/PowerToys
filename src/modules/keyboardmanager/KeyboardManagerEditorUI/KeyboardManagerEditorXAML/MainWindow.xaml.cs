@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -27,6 +28,8 @@ namespace KeyboardManagerEditorUI
 {
     public sealed partial class MainWindow : WindowEx
     {
+        private const int ErrorAlreadyInitialized = unchecked((int)0x800704DF);
+
         public MainWindow()
         {
             this.InitializeComponent();
@@ -37,10 +40,22 @@ namespace KeyboardManagerEditorUI
 
         private void SetTitleBar()
         {
-            ExtendsContentIntoTitleBar = true;
             this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
-            this.SetTitleBar(titleBar);
             Title = "Keyboard Manager";
+
+            try
+            {
+                if (AppWindowTitleBar.IsCustomizationSupported())
+                {
+                    ExtendsContentIntoTitleBar = true;
+                    this.SetTitleBar(titleBar);
+                }
+            }
+            catch (Exception ex) when (ex.HResult == ErrorAlreadyInitialized)
+            {
+                // Windows App SDK can report this error while initializing a custom title bar on Windows 10.
+                Logger.LogError("Failed to customize the title bar; falling back to the default system title bar.", ex);
+            }
         }
 
         private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
