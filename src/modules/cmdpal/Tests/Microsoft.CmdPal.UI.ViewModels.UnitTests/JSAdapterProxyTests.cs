@@ -177,6 +177,69 @@ public class JSAdapterProxyTests
     }
 
     [TestMethod]
+    public void ListPage_DetailsSizeFallsBackToSmallForMalformedUnknownAndFutureValues()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+
+        // The C# path (JSModelMapper.ParseContentSize) accepts small/medium/large by name and
+        // 0/1/2 by number, and defaults everything else to Small. These cases confirm the safe
+        // fallback for wire values that a future or misbehaving author might emit: a wrong JSON
+        // type (boolean, object), an unknown string name, and an unknown numeric value.
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Boolean size", "details": { "title": "A", "size": true } },
+                { "title": "Object size", "details": { "title": "B", "size": { "unexpected": 1 } } },
+                { "title": "Unknown string", "details": { "title": "C", "size": "huge" } },
+                { "title": "Future numeric", "details": { "title": "D", "size": 99 } }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[0].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[1].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[2].Details));
+        Assert.AreEqual((int)ContentSize.Small, GetDetailsSize(items[3].Details));
+    }
+
+    [TestMethod]
+    public void ListPage_MapsTextToSuggestThroughAdapter()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult("provider/getCommand", """{ "id": "list1", "pageType": "listPage", "name": "My List" }""");
+
+        // JSListItemAdapter.TextToSuggest maps the wire "textToSuggest" field and defaults to
+        // string.Empty when the field is absent. An explicit empty string must also survive as
+        // string.Empty rather than becoming null.
+        var itemsJson =
+            """
+            {
+              "items": [
+                { "title": "Prefixed", "textToSuggest": "@Person 1 " },
+                { "title": "Omitted" },
+                { "title": "Empty", "textToSuggest": "" }
+              ]
+            }
+            """;
+        fake.OnResult("listPage/getItems", itemsJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IListPage)provider.GetCommand("list1")!;
+        var items = page.GetItems();
+
+        Assert.AreEqual("@Person 1 ", items[0].TextToSuggest);
+        Assert.AreEqual(string.Empty, items[1].TextToSuggest);
+        Assert.AreEqual(string.Empty, items[2].TextToSuggest);
+    }
+
+    [TestMethod]
     public void ListPage_DetailsCommandInvokeSendsCommandInvokeWithId()
     {
         using var fake = new JSFakeExtension();
@@ -364,6 +427,39 @@ public class JSAdapterProxyTests
 
         var submitResult = ((IFormContent)content[3]).SubmitForm("{}", "{}");
         Assert.AreEqual(CommandResultKind.Hide, submitResult.Kind);
+    }
+
+    [TestMethod]
+    public void ContentPage_ImageContentPreservesImagePathIntoIconInfo()
+    {
+        using var fake = new JSFakeExtension();
+        fake.OnResult(
+            "provider/getCommand",
+            """{ "id": "content1", "pageType": "contentPage", "name": "Content" }""");
+
+        // JSModelMapper.ParseContentItem builds an image content item as
+        // new ImageContent(GetIcon(element, "image", "Image")), so a wire image path must
+        // survive verbatim into the materialized ImageContent's Image.Light.Icon (the IIconInfo
+        // path), not merely produce an IImageContent. Content images are not resolved against
+        // the package directory here: relative paths are carried through unchanged. Containment
+        // (lexical plus real-filesystem) lives at the installed-package manifest-icon layer, in
+        // JSExtensionManifest.ResolveManifestIcon, not on this content-image path.
+        var contentJson =
+            """
+            [
+              { "type": "image", "image": { "light": { "icon": "assets/preview.png" } } }
+            ]
+            """;
+        fake.OnResult("contentPage/getContent", contentJson);
+
+        var provider = CreateProvider(fake);
+        var page = (IContentPage)provider.GetCommand("content1")!;
+        var content = page.GetContent();
+
+        Assert.AreEqual(1, content.Length);
+        var image = content[0] as IImageContent;
+        Assert.IsNotNull(image, "Image content should materialize as IImageContent.");
+        Assert.AreEqual("assets/preview.png", image!.Image.Light.Icon);
     }
 
     [TestMethod]

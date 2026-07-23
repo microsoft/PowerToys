@@ -117,4 +117,16 @@ describe('WireSerializer.listItem', () => {
 
     expect(wire).not.toHaveProperty('textToSuggest');
   });
+
+  it('serializes an empty textToSuggest', () => {
+    const item: IListItem = {
+      command: { id: 'empty', name: 'Empty' },
+      title: 'Empty',
+      textToSuggest: '',
+    };
+
+    const wire = new WireSerializer().listItem(item);
+
+    expect(wire.textToSuggest).toBe('');
+  });
 });
