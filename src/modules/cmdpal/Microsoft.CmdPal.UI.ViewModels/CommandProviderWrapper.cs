@@ -125,6 +125,51 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         isValid = true;
     }
 
+    /// <summary>
+    /// Creates a wrapper for a JavaScript extension where the <see cref="ICommandProvider"/>
+    /// is obtained directly over JSON-RPC (not through <see cref="IExtensionWrapper.GetExtensionObject"/>).
+    /// </summary>
+    /// <param name="extension">The JS extension wrapper managing the Node.js process.</param>
+    /// <param name="provider">The command provider proxy backed by the JSON-RPC connection.</param>
+    /// <param name="mainThread">The UI thread scheduler.</param>
+    public CommandProviderWrapper(IExtensionWrapper extension, ICommandProvider provider, TaskScheduler mainThread)
+    {
+        _taskScheduler = mainThread;
+        TopLevelPageContext = new(this, _taskScheduler);
+
+        Extension = extension;
+        ExtensionHost = new CommandPaletteHost(extension);
+        _commandProvider = new(provider);
+
+        try
+        {
+            var model = _commandProvider.Unsafe!;
+
+            // Hook the extension back into us
+            model.InitializeWithHost(ExtensionHost);
+            model.ItemsChanged += CommandProvider_ItemsChanged;
+
+            Id = provider.Id;
+            DisplayName = provider.DisplayName;
+            Icon = new(provider.Icon);
+            Icon.InitializeProperties();
+
+            // Note: explicitly not InitializeProperties()ing the settings here. If
+            // we do that, then we'd regress GH #38321
+            Settings = new(provider.Settings, this, _taskScheduler);
+
+            isValid = true;
+
+            Logger.LogDebug($"Initialized JS extension command provider {Extension.PackageFamilyName}:{Extension.ExtensionUniqueId}");
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to initialize CommandProvider for JS extension.");
+            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
+            Logger.LogError(e.ToString());
+        }
+    }
+
     private ProviderSettings GetProviderSettings(SettingsModel settings)
     {
         if (!settings.ProviderSettings.TryGetValue(ProviderId, out var ps))
