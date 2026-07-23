@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Services;
 using Kind = PowerDisplay.Common.Services.TrayWheelFeedbackSession.PresentationKind;
@@ -50,6 +51,14 @@ public class TrayWheelFeedbackSessionTests
 
         Assert.AreEqual(Kind.Adjustment, result.Kind);
         Assert.AreEqual("Primary display · 55%", result.Text);
+    }
+
+    [TestMethod]
+    public void ShowAdjustment_Whitespace_ThrowsArgumentException()
+    {
+        var session = new TrayWheelFeedbackSession();
+
+        Assert.ThrowsException<ArgumentException>(() => session.ShowAdjustment("   ", 1000));
     }
 
     [TestMethod]

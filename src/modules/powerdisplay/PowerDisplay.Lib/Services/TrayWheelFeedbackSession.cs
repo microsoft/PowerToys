@@ -58,7 +58,7 @@ public sealed class TrayWheelFeedbackSession
     /// </summary>
     public Presentation ShowAdjustment(string text, long now)
     {
-        ArgumentNullException.ThrowIfNull(text);
+        ArgumentException.ThrowIfNullOrWhiteSpace(text);
 
         if (!_isHovering)
         {

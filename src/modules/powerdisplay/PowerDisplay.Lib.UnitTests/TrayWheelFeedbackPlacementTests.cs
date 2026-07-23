@@ -57,6 +57,14 @@ public class TrayWheelFeedbackPlacementTests
     [TestMethod]
     public void Calculate_OverflowIconStillUsesNearestOuterEdge()
     {
+        var result = Calculate(new TrayIconBounds(800, 650, 840, 690));
+
+        Assert.AreEqual(new RectInt32(720, 592, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_OverflowIconStillUsesNearestOuterEdge_NegativeCoordinates()
+    {
         var result = TrayWheelFeedbackPlacement.Calculate(
             new TrayIconBounds(-1940, 100, -1900, 140),
             new RectInt32(-1920, 0, 1920, 1080),
