@@ -15,15 +15,20 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 public interface IJsExtensionInstaller
 {
     /// <summary>
-    /// Installs the npm package for a jsonrpc extension into JSExtensions/&lt;extensionName&gt;/.
-    /// The Phase 4 FileSystemWatcher then loads the extension automatically.
+    /// Installs the approved npm artifact for a jsonrpc extension into JSExtensions/&lt;extensionName&gt;/.
+    /// The install is a fail-closed transaction: the package, exact version, integrity, and optional
+    /// registry are validated up front, the package is installed into a staging directory outside the
+    /// watched root, verified, and only then atomically promoted and awaited for registration. A failed
+    /// or cancelled install never corrupts an existing install of the same extension.
     /// </summary>
     /// <param name="extensionName">The directory name for the extension under the JSExtensions root.</param>
     /// <param name="npmPackage">The npm package identifier to install.</param>
+    /// <param name="version">The exact version to install.</param>
+    /// <param name="integrity">The sha512 Subresource Integrity value of the approved tarball.</param>
     /// <param name="registry">Optional npm registry URL. When null or empty, the default registry is used.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The result of the install.</returns>
-    Task<JsExtensionInstallResult> InstallAsync(string extensionName, string npmPackage, string? registry, CancellationToken cancellationToken = default);
+    Task<JsExtensionInstallResult> InstallAsync(string extensionName, string npmPackage, string? version, string? integrity, string? registry, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Terminates the extension's Node.js process and deletes JSExtensions/&lt;extensionName&gt;/.
@@ -33,6 +38,15 @@ public interface IJsExtensionInstaller
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>The result of the uninstall.</returns>
     Task<JsExtensionInstallResult> UninstallAsync(string extensionName, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Determines whether an extension named <paramref name="extensionName"/> is currently installed
+    /// and loaded by the host. Used to seed the gallery item's installed state from the host truth
+    /// rather than the catalog status.
+    /// </summary>
+    /// <param name="extensionName">The directory name for the extension under the JSExtensions root.</param>
+    /// <returns><see langword="true"/> when the extension is installed; otherwise, <see langword="false"/>.</returns>
+    bool IsInstalled(string extensionName);
 }
 
 /// <summary>
