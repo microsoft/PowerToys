@@ -393,17 +393,18 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
-            if (!SelectExplorerItem(explorerWindow, normalizedPath, ExplorerOpenTimeoutMS))
+            var expectedExplorerTitle = Path.GetFileName(Path.GetDirectoryName(normalizedPath));
+            if (!WaitForExplorerWindowTitle(explorerWindow.WindowHandle, expectedExplorerTitle, ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
                     GetActivationDiagnostics(
-                        $"Explorer HWND {explorerWindow.WindowHandle} did not expose '{selectedItemName}' after launch attempt {attempt}"));
+                        $"Explorer HWND {explorerWindow.WindowHandle} did not navigate to '{expectedExplorerTitle}' after launch attempt {attempt}"));
                 continue;
             }
 
             explorerWindowHandle = explorerWindow.WindowHandle;
             TestContext.WriteLine(
-                $"Explorer ready with '{selectedItemName}' selected: hwnd={explorerWindow.WindowHandle}, " +
+                $"Explorer ready for '{selectedItemName}': hwnd={explorerWindow.WindowHandle}, " +
                 $"pid={explorerWindow.ProcessId}, title='{explorerWindow.WindowTitle}', " +
                 $"session={GetProcessSessionId(explorerWindow.ProcessId)}, elevated={FormatElevation(explorerWindow.IsElevated)}.");
             return explorerWindow;
@@ -415,29 +416,18 @@ public class PeekFilePreviewTests : UITestBase
         return null!;
     }
 
-    private static bool SelectExplorerItem(Session explorerWindow, string selectedPath, int timeoutMS)
+    private static bool WaitForExplorerWindowTitle(long windowHandle, string expectedTitle, int timeoutMS)
     {
-        var fileName = Path.GetFileName(selectedPath);
-        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(selectedPath);
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
 
         while (DateTime.UtcNow < deadline)
         {
-            foreach (var searchName in new[] { fileName, fileNameWithoutExtension }.Distinct(StringComparer.OrdinalIgnoreCase))
+            var window = WindowControl.EnumerateAllWindows()
+                .FirstOrDefault(candidate => candidate.Hwnd.ToInt64() == windowHandle);
+            if (window.Hwnd != IntPtr.Zero &&
+                window.Title.Contains(expectedTitle, StringComparison.OrdinalIgnoreCase))
             {
-                var item = explorerWindow
-                    .FindAll<Element>(By.Name(searchName), timeoutMS: 500)
-                    .FirstOrDefault(element =>
-                        (string.Equals(element.Name, fileName, StringComparison.OrdinalIgnoreCase) ||
-                         string.Equals(element.Name, fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase)) &&
-                        element.Width > 0 &&
-                        element.Height > 0);
-
-                if (item is not null)
-                {
-                    item.Click(msPostAction: 500);
-                    return true;
-                }
+                return true;
             }
 
             Thread.Sleep(250);
