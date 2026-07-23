@@ -138,6 +138,11 @@ public class NpmArtifactTests
     [DataRow("ftp://registry.npmjs.org/")]
     [DataRow("registry.npmjs.org")]
     [DataRow("not a url")]
+    [DataRow("https://registry.npmjs.org/?x=1&calc")]
+    [DataRow("https://registry.npmjs.org/#frag")]
+    [DataRow("https://user:pass@registry.npmjs.org/")]
+    [DataRow("https://registry.npmjs.org:8443/")]
+    [DataRow("https://registry.npmjs.org/some/path")]
     public void TryCreate_UnapprovedRegistry_FailsClosed(string registry)
     {
         var ok = NpmArtifact.TryCreate("left-pad", "1.3.0", ValidIntegrity, registry, out _, out var error);
@@ -145,4 +150,36 @@ public class NpmArtifactTests
         Assert.IsFalse(ok);
         Assert.AreEqual(NpmArtifactValidationError.RegistryInvalid, error);
     }
+
+    [DataTestMethod]
+    [DataRow("https://registry.npmjs.org/", "https://registry.npmjs.org/")]
+    [DataRow("https://registry.npmjs.org", "https://registry.npmjs.org/")]
+    [DataRow("  https://registry.npmjs.org/  ", "https://registry.npmjs.org/")]
+    [DataRow("https://REGISTRY.NPMJS.ORG/", "https://registry.npmjs.org/")]
+    public void TryCreate_ApprovedRegistry_IsCanonicalized(string registry, string expected)
+    {
+        var ok = NpmArtifact.TryCreate("left-pad", "1.3.0", ValidIntegrity, registry, out var artifact, out var error);
+
+        Assert.IsTrue(ok);
+        Assert.AreEqual(NpmArtifactValidationError.None, error);
+        Assert.AreEqual(expected, artifact!.Registry);
+    }
+
+    [DataTestMethod]
+    [DataRow("https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz", true)]
+    [DataRow("http://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz", false)]
+    [DataRow("https://evil.example.com/left-pad/-/left-pad-1.3.0.tgz", false)]
+    [DataRow("git+https://github.com/foo/bar.git", false)]
+    [DataRow("file:../local", false)]
+    [DataRow("", false)]
+    public void IsRegistrySourcedHttps_AcceptsOnlyApprovedHttpsHosts(string url, bool expected) =>
+        Assert.AreEqual(expected, NpmArtifact.IsRegistrySourcedHttps(url));
+
+    [DataTestMethod]
+    [DataRow("sha512-abc123==", true)]
+    [DataRow("sha1-abc123=", false)]
+    [DataRow("abc123", false)]
+    [DataRow("", false)]
+    public void IsSupportedIntegrity_AcceptsOnlySha512(string integrity, bool expected) =>
+        Assert.AreEqual(expected, NpmArtifact.IsSupportedIntegrity(integrity));
 }

@@ -595,6 +595,10 @@
     <value>npm install failed with exit code {0}.</value>
     <comment>{0}=process exit code. Do not translate "npm install".</comment>
   </data>
+  <data name="npm_runner_lockfile_untrusted" xml:space="preserve">
+    <value>The install was blocked because a dependency was not resolved from the approved registry with a verified integrity hash.</value>
+    <comment>Shown when a transitive dependency in the generated lockfile lacks an approved HTTPS registry source or an integrity hash.</comment>
+  </data>
   <data name="gallery_item_source_name_unknown" xml:space="preserve">
     <value>Source: {0}</value>
     <comment>{0}=unsupported source type name from the gallery feed</comment>

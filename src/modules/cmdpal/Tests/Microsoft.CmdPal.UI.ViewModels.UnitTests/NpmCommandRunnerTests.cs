@@ -122,6 +122,132 @@ public class NpmCommandRunnerTests
     private static string[] NpmCommandRunnerArguments(NpmArtifact artifact) =>
         NpmCommandRunner.BuildInstallArguments(artifact).ToArray();
 
+    [TestMethod]
+    public void ResolveNpmInvocation_UsesNodeExeAndNpmCliJs_NotNpmCmd()
+    {
+        // Lay out a fake Node.js install: node.exe on PATH with npm-cli.js under its node_modules.
+        var nodeDir = CreateTempDirectory();
+        var nodeExe = Path.Combine(nodeDir, "node.exe");
+        File.WriteAllText(nodeExe, "binary");
+
+        // A sibling npm.cmd must be ignored in favor of the JavaScript entry point.
+        File.WriteAllText(Path.Combine(nodeDir, "npm.cmd"), "@echo off");
+
+        var npmCli = Path.Combine(nodeDir, "node_modules", "npm", "bin", "npm-cli.js");
+        Directory.CreateDirectory(Path.GetDirectoryName(npmCli)!);
+        File.WriteAllText(npmCli, "// npm");
+
+        var invocation = NpmCommandRunner.ResolveNpmInvocation(new[] { nodeDir });
+
+        Assert.IsNotNull(invocation);
+        Assert.AreEqual(nodeExe, invocation.Value.FileName);
+        Assert.AreEqual(1, invocation.Value.LauncherArguments.Count);
+        Assert.AreEqual(npmCli, invocation.Value.LauncherArguments[0]);
+        Assert.IsFalse(invocation.Value.FileName.EndsWith("npm.cmd", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void ResolveNpmInvocation_ReturnsNull_WhenNpmCliMissing()
+    {
+        var nodeDir = CreateTempDirectory();
+        File.WriteAllText(Path.Combine(nodeDir, "node.exe"), "binary");
+
+        // No npm-cli.js anywhere reachable from this directory.
+        var invocation = NpmCommandRunner.ResolveNpmInvocation(new[] { nodeDir });
+
+        Assert.IsNull(invocation);
+    }
+
+    [TestMethod]
+    public void VerifyLockfileIntegrity_AcceptsRegistrySourcedTreeWithIntegrity()
+    {
+        var dir = CreateTempDirectory();
+        var lockfile = """
+        {
+          "lockfileVersion": 3,
+          "packages": {
+            "": { "name": "root" },
+            "node_modules/left-pad": {
+              "resolved": "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz",
+              "integrity": "sha512-abc123=="
+            }
+          }
+        }
+        """;
+        File.WriteAllText(Path.Combine(dir, "package-lock.json"), lockfile);
+
+        Assert.IsNull(NpmCommandRunner.VerifyLockfileIntegrity(dir));
+    }
+
+    [TestMethod]
+    public void VerifyLockfileIntegrity_RejectsNonRegistryResolution()
+    {
+        var dir = CreateTempDirectory();
+        var lockfile = """
+        {
+          "lockfileVersion": 3,
+          "packages": {
+            "": { "name": "root" },
+            "node_modules/evil": {
+              "resolved": "https://evil.example.com/evil/-/evil-1.0.0.tgz",
+              "integrity": "sha512-abc123=="
+            }
+          }
+        }
+        """;
+        File.WriteAllText(Path.Combine(dir, "package-lock.json"), lockfile);
+
+        Assert.IsNotNull(NpmCommandRunner.VerifyLockfileIntegrity(dir));
+    }
+
+    [TestMethod]
+    public void VerifyLockfileIntegrity_RejectsIntegrityLessResolution()
+    {
+        var dir = CreateTempDirectory();
+        var lockfile = """
+        {
+          "lockfileVersion": 3,
+          "packages": {
+            "": { "name": "root" },
+            "node_modules/left-pad": {
+              "resolved": "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz"
+            }
+          }
+        }
+        """;
+        File.WriteAllText(Path.Combine(dir, "package-lock.json"), lockfile);
+
+        Assert.IsNotNull(NpmCommandRunner.VerifyLockfileIntegrity(dir));
+    }
+
+    [TestMethod]
+    public void VerifyLockfileIntegrity_FailsClosed_WhenLockfileMissing()
+    {
+        var dir = CreateTempDirectory();
+
+        Assert.IsNotNull(NpmCommandRunner.VerifyLockfileIntegrity(dir));
+    }
+
+    [TestMethod]
+    public void VerifyLockfileIntegrity_RejectsLegacyFileResolution()
+    {
+        var dir = CreateTempDirectory();
+        var lockfile = """
+        {
+          "lockfileVersion": 1,
+          "dependencies": {
+            "left-pad": {
+              "version": "file:../left-pad",
+              "resolved": "file:../left-pad"
+            }
+          }
+        }
+        """;
+        File.WriteAllText(Path.Combine(dir, "package-lock.json"), lockfile);
+
+        Assert.IsNotNull(NpmCommandRunner.VerifyLockfileIntegrity(dir));
+    }
+
     private static string CreateTempDirectory()
     {
         var dir = Path.Combine(Path.GetTempPath(), "cmdpal-runner-tests", Guid.NewGuid().ToString("N"));

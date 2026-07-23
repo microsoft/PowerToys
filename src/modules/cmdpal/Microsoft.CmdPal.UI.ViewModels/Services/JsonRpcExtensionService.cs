@@ -99,7 +99,7 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
     public string ExtensionsRootPath => ExtensionsPath;
 
     /// <inheritdoc />
-    public void StopExtension(string extensionDirectory)
+    public void StopExtension(string extensionDirectory, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(extensionDirectory))
         {
@@ -112,8 +112,9 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         // gate entry). The gallery calls this synchronously before deleting the
         // directory, so block until the removal completes; all awaits on this path use
         // ConfigureAwait(false) and the path is never entered from within a held gate,
-        // so there is no reentrant deadlock.
-        var removed = RemoveExtensionByDirectoryGatedAsync(extensionDirectory).GetAwaiter().GetResult();
+        // so there is no reentrant deadlock. The token lets an uninstall Cancel abandon
+        // the wait for a contended gate.
+        var removed = RemoveExtensionByDirectoryGatedAsync(extensionDirectory, cancellationToken).GetAwaiter().GetResult();
         if (removed is not null)
         {
             OnProviderRemoved?.Invoke(this, [removed]);
@@ -147,8 +148,16 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         }
 
         var directory = Path.Combine(ExtensionsPath, extensionName);
-        return IsExtensionLoadedInDirectory(directory);
+
+        // Report installed when the extension is either live in the host or merely present on disk.
+        // A crash-disabled or corrupt install can leave the directory in place without a loaded
+        // provider; treating that as installed lets the gallery still offer Uninstall (and therefore
+        // repair-by-reinstall) instead of stranding the package with no way to remove it.
+        return IsExtensionLoadedInDirectory(directory) || IsExtensionPresentOnDisk(directory);
     }
+
+    internal static bool IsExtensionPresentOnDisk(string extensionDirectory) =>
+        !string.IsNullOrEmpty(extensionDirectory) && Directory.Exists(extensionDirectory);
 
     /// <inheritdoc />
     public async Task<bool> RefreshAndAwaitProviderAsync(string extensionDirectory, TimeSpan timeout, CancellationToken cancellationToken)
@@ -1118,12 +1127,12 @@ public sealed partial class JsonRpcExtensionService : IExtensionService, IJsExte
         }
     }
 
-    private async Task<CommandProviderWrapper?> RemoveExtensionByDirectoryGatedAsync(string directory)
+    private async Task<CommandProviderWrapper?> RemoveExtensionByDirectoryGatedAsync(string directory, CancellationToken cancellationToken = default)
     {
         IDisposable? gate = null;
         try
         {
-            gate = await _directoryGate.AcquireAsync(directory, CancellationToken.None).ConfigureAwait(false);
+            gate = await _directoryGate.AcquireAsync(directory, cancellationToken).ConfigureAwait(false);
         }
         catch (ObjectDisposedException)
         {

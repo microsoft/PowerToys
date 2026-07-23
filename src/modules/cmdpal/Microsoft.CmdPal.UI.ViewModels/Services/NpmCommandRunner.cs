@@ -24,8 +24,16 @@ namespace Microsoft.CmdPal.UI.ViewModels.Services;
 /// </summary>
 public sealed class NpmCommandRunner : INpmCommandRunner
 {
-    // npm on Windows is a batch shim; probe the common executable names on PATH.
-    private static readonly string[] NpmExecutableNames = ["npm.cmd", "npm.exe", "npm"];
+    // npm on Windows ships as an npm.cmd batch shim. Passing an argument that contains a shell
+    // metacharacter to a .cmd file can let cmd.exe reinterpret it, even through ProcessStartInfo's
+    // ArgumentList. To keep untrusted arguments off any batch/cmd command line, the runner instead
+    // resolves node.exe and npm's JavaScript entry point (npm-cli.js) and launches
+    // "node.exe npm-cli.js install ...". node.exe is a real executable, so its ArgumentList is passed
+    // verbatim with no shell in the middle.
+    private const string NodeExecutableName = "node.exe";
+
+    // npm-cli.js relative to a directory that contains node.exe, and to a global npm prefix.
+    private static readonly string NpmCliRelativePath = Path.Combine("node_modules", "npm", "bin", "npm-cli.js");
 
     // Upper bound on a single npm install so the gallery cannot stay on "Installing..."
     // forever when npm hangs (for example, an unreachable registry with no output).
@@ -41,14 +49,14 @@ public sealed class NpmCommandRunner : INpmCommandRunner
     private static readonly CompositeFormat TimedOutFormat = CompositeFormat.Parse(Resources.npm_runner_timed_out);
     private static readonly CompositeFormat FailedExitFormat = CompositeFormat.Parse(Resources.npm_runner_failed_exit);
 
-    public bool IsNpmAvailable() => ResolveNpmExecutable() is not null;
+    public bool IsNpmAvailable() => ResolveNpmInvocation() is not null;
 
     public async Task<NpmCommandResult> InstallAsync(string stagingDirectory, NpmArtifact artifact, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(artifact);
 
-        var npmExecutable = ResolveNpmExecutable();
-        if (npmExecutable is null)
+        var invocation = ResolveNpmInvocation();
+        if (invocation is null)
         {
             return NpmCommandResult.Fail(Resources.npm_runner_npm_not_found);
         }
@@ -65,13 +73,20 @@ public sealed class NpmCommandRunner : INpmCommandRunner
 
         var psi = new ProcessStartInfo
         {
-            FileName = npmExecutable,
+            FileName = invocation.Value.FileName,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
             WorkingDirectory = stagingDirectory,
         };
+
+        // Launcher arguments first (npm-cli.js), so node.exe runs npm itself. These are trusted,
+        // runner-resolved paths.
+        foreach (var launcherArgument in invocation.Value.LauncherArguments)
+        {
+            psi.ArgumentList.Add(launcherArgument);
+        }
 
         // The spec is the single validated "name@version" token. Passing it through ArgumentList
         // (never string concatenation) keeps npm from ever reading it as a flag or a second argument.
@@ -129,6 +144,19 @@ public sealed class NpmCommandRunner : INpmCommandRunner
                     : error);
             }
 
+            // The top-level artifact is pinned by exact version, but npm resolves transitive
+            // dependency ranges at install time. Before the package is trusted, require that every
+            // resolved dependency in the lockfile npm just produced came from an approved registry
+            // over HTTPS and carries a Subresource Integrity hash. This fails closed: a lockfile that
+            // is missing, malformed, or contains a file:/git:/http:/integrity-less resolution is
+            // rejected, and the committed lockfile then pins the verified set.
+            var lockfileError = VerifyLockfileIntegrity(stagingDirectory);
+            if (lockfileError is not null)
+            {
+                Logger.LogError($"npm install {artifact.InstallSpec} produced an untrusted lockfile: {lockfileError}");
+                return NpmCommandResult.Fail(lockfileError);
+            }
+
             var resolvedIntegrity = ReadResolvedIntegrity(stagingDirectory, artifact.Package);
             return NpmCommandResult.Ok(resolvedIntegrity);
         }
@@ -170,7 +198,7 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         return arguments;
     }
 
-    public bool RemoveDirectory(string targetDirectory)
+    public bool RemoveDirectory(string targetDirectory, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(targetDirectory) || !Directory.Exists(targetDirectory))
         {
@@ -187,6 +215,8 @@ public sealed class NpmCommandRunner : INpmCommandRunner
 
         for (var attempt = 1; attempt <= DeleteAttempts; attempt++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 Directory.Delete(targetDirectory, recursive: true);
@@ -285,36 +315,202 @@ public sealed class NpmCommandRunner : INpmCommandRunner
         }
     }
 
-    private static string? ResolveNpmExecutable()
+    /// <summary>
+    /// A resolved npm launcher: the executable to start (node.exe) and the leading arguments that
+    /// make it run npm (the path to npm-cli.js). The install spec and flags are appended after these.
+    /// </summary>
+    internal readonly record struct NpmInvocation(string FileName, IReadOnlyList<string> LauncherArguments);
+
+    /// <summary>
+    /// Verifies that every resolved dependency in the lockfile npm generated in
+    /// <paramref name="stagingDirectory"/> was fetched from an approved registry over HTTPS and
+    /// carries a supported Subresource Integrity hash. Returns null when the whole tree is trusted, or
+    /// a localized error message describing the first untrusted resolution. Fails closed: a missing or
+    /// unreadable lockfile is treated as untrusted.
+    /// </summary>
+    internal static string? VerifyLockfileIntegrity(string stagingDirectory)
     {
-        var pathVariable = Environment.GetEnvironmentVariable("PATH");
-        if (string.IsNullOrEmpty(pathVariable))
+        var lockfilePath = Path.Combine(stagingDirectory, "package-lock.json");
+        if (!File.Exists(lockfilePath))
         {
-            return null;
+            return Resources.npm_runner_lockfile_untrusted;
         }
 
-        foreach (var directory in pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        try
         {
-            foreach (var executableName in NpmExecutableNames)
+            using var stream = File.OpenRead(lockfilePath);
+            using var document = JsonDocument.Parse(stream);
+            var root = document.RootElement;
+
+            // lockfileVersion 2/3: a "packages" map keyed by install path. The root package has an
+            // empty key and no resolution of its own; a "link": true entry points at a local
+            // workspace and is skipped. Every other entry must carry a trusted resolved URL + hash.
+            if (root.TryGetProperty("packages", out var packages) && packages.ValueKind == JsonValueKind.Object)
             {
-                string candidate;
-                try
+                foreach (var package in packages.EnumerateObject())
                 {
-                    candidate = Path.Combine(directory, executableName);
-                }
-                catch (ArgumentException)
-                {
-                    // Malformed PATH entry; skip it.
-                    continue;
+                    if (package.Name.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (package.Value.TryGetProperty("link", out var link)
+                        && link.ValueKind == JsonValueKind.True)
+                    {
+                        continue;
+                    }
+
+                    if (!IsTrustedResolution(package.Value))
+                    {
+                        return Resources.npm_runner_lockfile_untrusted;
+                    }
                 }
 
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
+                return null;
+            }
+
+            // lockfileVersion 1: a nested "dependencies" tree. Walk it recursively.
+            if (root.TryGetProperty("dependencies", out var dependencies) && dependencies.ValueKind == JsonValueKind.Object)
+            {
+                return VerifyLegacyDependencies(dependencies) ? null : Resources.npm_runner_lockfile_untrusted;
+            }
+
+            // Neither shape present: nothing was pinned, so the tree cannot be trusted.
+            return Resources.npm_runner_lockfile_untrusted;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+        {
+            Logger.LogError($"Failed to verify lockfile integrity at {lockfilePath}: {ex.Message}");
+            return Resources.npm_runner_lockfile_untrusted;
+        }
+    }
+
+    private static bool VerifyLegacyDependencies(JsonElement dependencies)
+    {
+        foreach (var dependency in dependencies.EnumerateObject())
+        {
+            var entry = dependency.Value;
+            if (entry.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            // A "bundled" dependency ships inside its parent's tarball and has no resolution of its
+            // own; it was already covered by the parent's integrity. Anything else must be trusted.
+            var isBundled = entry.TryGetProperty("bundled", out var bundled) && bundled.ValueKind == JsonValueKind.True;
+            if (!isBundled && !IsTrustedResolution(entry))
+            {
+                return false;
+            }
+
+            if (entry.TryGetProperty("dependencies", out var nested) && nested.ValueKind == JsonValueKind.Object
+                && !VerifyLegacyDependencies(nested))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool IsTrustedResolution(JsonElement entry)
+    {
+        var resolved = entry.TryGetProperty("resolved", out var resolvedElement) && resolvedElement.ValueKind == JsonValueKind.String
+            ? resolvedElement.GetString()
+            : null;
+        var integrity = entry.TryGetProperty("integrity", out var integrityElement) && integrityElement.ValueKind == JsonValueKind.String
+            ? integrityElement.GetString()
+            : null;
+
+        return NpmArtifact.IsRegistrySourcedHttps(resolved) && NpmArtifact.IsSupportedIntegrity(integrity);
+    }
+
+    /// <summary>
+    /// Resolves node.exe and npm's npm-cli.js so npm can be launched without the npm.cmd batch shim.
+    /// Probes PATH for node.exe, then looks for npm-cli.js next to node.exe (a standard Node.js
+    /// install) and under the global npm prefix reported by the environment. Returns null when either
+    /// piece cannot be located.
+    /// </summary>
+    internal static NpmInvocation? ResolveNpmInvocation() =>
+        ResolveNpmInvocation(GetPathDirectories());
+
+    internal static NpmInvocation? ResolveNpmInvocation(IReadOnlyList<string> pathDirectories)
+    {
+        ArgumentNullException.ThrowIfNull(pathDirectories);
+
+        foreach (var directory in pathDirectories)
+        {
+            string nodeCandidate;
+            try
+            {
+                nodeCandidate = Path.Combine(directory, NodeExecutableName);
+            }
+            catch (ArgumentException)
+            {
+                // Malformed PATH entry; skip it.
+                continue;
+            }
+
+            if (!File.Exists(nodeCandidate))
+            {
+                continue;
+            }
+
+            var npmCli = FindNpmCli(directory);
+            if (npmCli is not null)
+            {
+                return new NpmInvocation(nodeCandidate, new[] { npmCli });
             }
         }
 
         return null;
+    }
+
+    private static string? FindNpmCli(string nodeDirectory)
+    {
+        // Standard Windows Node.js layout: npm-cli.js sits under the same directory as node.exe.
+        foreach (var candidateRoot in EnumerateNpmPrefixCandidates(nodeDirectory))
+        {
+            string npmCli;
+            try
+            {
+                npmCli = Path.Combine(candidateRoot, NpmCliRelativePath);
+            }
+            catch (ArgumentException)
+            {
+                continue;
+            }
+
+            if (File.Exists(npmCli))
+            {
+                return npmCli;
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> EnumerateNpmPrefixCandidates(string nodeDirectory)
+    {
+        // node.exe's own directory (Program Files\nodejs) is the usual prefix on Windows.
+        yield return nodeDirectory;
+
+        // A user-level npm prefix (npm config's default on Windows) lives under APPDATA\npm.
+        var appData = Environment.GetEnvironmentVariable("APPDATA");
+        if (!string.IsNullOrEmpty(appData))
+        {
+            yield return Path.Combine(appData, "npm");
+        }
+    }
+
+    private static IReadOnlyList<string> GetPathDirectories()
+    {
+        var pathVariable = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrEmpty(pathVariable))
+        {
+            return [];
+        }
+
+        return pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }

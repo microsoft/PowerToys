@@ -36,7 +36,7 @@ public enum NpmArtifactValidationError
     /// <summary>The integrity value is not a supported Subresource Integrity (sha512) hash.</summary>
     IntegrityInvalid,
 
-    /// <summary>The registry is present but is not an approved absolute HTTPS URL.</summary>
+    /// <summary>The registry is present but is not an approved canonical HTTPS origin.</summary>
     RegistryInvalid,
 }
 
@@ -96,7 +96,7 @@ public sealed class NpmArtifact
     /// <summary>Gets the sha512 Subresource Integrity value of the approved tarball.</summary>
     public string Integrity { get; }
 
-    /// <summary>Gets the approved registry URL, or null to use the machine default.</summary>
+    /// <summary>Gets the approved canonical registry origin ("https://host/"), or null to use the machine default.</summary>
     public string? Registry { get; }
 
     /// <summary>
@@ -171,13 +171,11 @@ public sealed class NpmArtifact
         var trimmedRegistry = registry?.Trim();
         if (!string.IsNullOrEmpty(trimmedRegistry))
         {
-            if (!IsApprovedRegistry(trimmedRegistry))
+            if (!TryCanonicalizeRegistry(trimmedRegistry, out normalizedRegistry))
             {
                 error = NpmArtifactValidationError.RegistryInvalid;
                 return false;
             }
-
-            normalizedRegistry = trimmedRegistry;
         }
 
         // Defense in depth: the join must not resolve to a flag even if the regexes ever loosen.
@@ -193,9 +191,50 @@ public sealed class NpmArtifact
         return true;
     }
 
-    private static bool IsApprovedRegistry(string registry)
+    private static bool TryCanonicalizeRegistry(string registry, out string? canonical)
     {
+        canonical = null;
+
         if (!Uri.TryCreate(registry, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        // A registry value is later passed to npm as the "--registry" argument. Restricting it to a
+        // canonical origin (scheme, host, and nothing else) closes the door on a value that smuggles
+        // shell metacharacters or extra request parts through a userinfo, port, path, query, or
+        // fragment. Anything richer than "https://<approved-host>/" is rejected, and the value that is
+        // stored is reconstructed from the host alone rather than echoing the caller's raw string.
+        var pathIsRoot = uri.AbsolutePath.Length == 0 || uri.AbsolutePath == "/";
+        var isCanonicalOrigin =
+            string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
+            && ApprovedRegistryHosts.Contains(uri.Host)
+            && string.IsNullOrEmpty(uri.UserInfo)
+            && uri.IsDefaultPort
+            && string.IsNullOrEmpty(uri.Query)
+            && string.IsNullOrEmpty(uri.Fragment)
+            && pathIsRoot;
+
+        if (!isCanonicalOrigin)
+        {
+            return false;
+        }
+
+        canonical = $"https://{uri.Host}/";
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether <paramref name="url"/> is an absolute HTTPS URL served by an approved
+    /// registry host. Unlike <see cref="TryCanonicalizeRegistry"/> this accepts any path, because a
+    /// resolved tarball URL in a lockfile carries the package path (for example
+    /// "https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz"). Used by the lockfile-integrity
+    /// gate to reject a dependency resolved from file:, git:, http:, or any host that is not on the
+    /// allowlist.
+    /// </summary>
+    internal static bool IsRegistrySourcedHttps(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
             return false;
         }
@@ -203,4 +242,12 @@ public sealed class NpmArtifact
         return string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
             && ApprovedRegistryHosts.Contains(uri.Host);
     }
+
+    /// <summary>
+    /// Determines whether <paramref name="integrity"/> is a supported sha512 Subresource Integrity
+    /// value. Used by the lockfile-integrity gate to reject a dependency that npm resolved without an
+    /// integrity hash.
+    /// </summary>
+    internal static bool IsSupportedIntegrity(string? integrity) =>
+        !string.IsNullOrWhiteSpace(integrity) && IntegrityRegex.IsMatch(integrity.Trim());
 }

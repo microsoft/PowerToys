@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -315,6 +316,154 @@ public class NpmJsExtensionInstallerTests
     }
 
     [TestMethod]
+    public async Task UninstallAsync_CancelDuringStop_ReturnsCanceled_AndDoesNotRemove()
+    {
+        var host = CreateHost();
+        var target = Path.Combine(host.ExtensionsRootPath, ExtensionName);
+        Directory.CreateDirectory(target);
+        File.WriteAllText(Path.Combine(target, "package.json"), "{}");
+
+        using var stopStarted = new ManualResetEventSlim(false);
+        host.StopHook = token =>
+        {
+            // Simulate the host blocking while it stops the provider, then observe the cancel that
+            // arrives after the operation has already begun. This mirrors the real host threading the
+            // uninstall token into its stop/delete steps.
+            stopStarted.Set();
+            Assert.IsTrue(token.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)), "Cancellation was not observed during stop.");
+            token.ThrowIfCancellationRequested();
+        };
+
+        var runner = new FakeRunner();
+        var installer = new NpmJsExtensionInstaller(host, runner);
+
+        using var cts = new CancellationTokenSource();
+        var task = Task.Run(() => installer.UninstallAsync(ExtensionName, cts.Token));
+
+        Assert.IsTrue(stopStarted.Wait(TimeSpan.FromSeconds(5)), "Uninstall did not reach the stop step.");
+        cts.Cancel();
+
+        var result = await task;
+
+        Assert.IsFalse(result.Succeeded);
+        Assert.AreEqual(0, runner.RemoveCallCount, "Cancel during stop must not proceed to delete.");
+        Assert.IsTrue(Directory.Exists(target), "The extension directory must remain when uninstall is canceled.");
+    }
+
+    [TestMethod]
+    public async Task UninstallAsync_JunctionedRoot_IsRefused()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "cmdpal-installer-tests", Guid.NewGuid().ToString("N"));
+        _tempRoots.Add(root);
+        var realRoot = Path.Combine(root, "real");
+        var junctionRoot = Path.Combine(root, "JSExtensions");
+        Directory.CreateDirectory(realRoot);
+
+        if (!TryCreateJunction(junctionRoot, realRoot))
+        {
+            Assert.Inconclusive("Could not create a junction on this machine.");
+            return;
+        }
+
+        var host = new FakeHost(junctionRoot);
+        var runner = new FakeRunner();
+        var installer = new NpmJsExtensionInstaller(host, runner);
+
+        var result = await installer.UninstallAsync(ExtensionName, CancellationToken.None);
+
+        Assert.IsFalse(result.Succeeded, "A reparse-point extensions root must be refused.");
+        Assert.AreEqual(0, host.StopCallCount);
+        Assert.AreEqual(0, runner.RemoveCallCount);
+    }
+
+    [TestMethod]
+    public async Task InstallAsync_JunctionedRoot_IsRefused()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "cmdpal-installer-tests", Guid.NewGuid().ToString("N"));
+        _tempRoots.Add(root);
+        var realRoot = Path.Combine(root, "real");
+        var junctionRoot = Path.Combine(root, "JSExtensions");
+        Directory.CreateDirectory(realRoot);
+
+        if (!TryCreateJunction(junctionRoot, realRoot))
+        {
+            Assert.Inconclusive("Could not create a junction on this machine.");
+            return;
+        }
+
+        var host = new FakeHost(junctionRoot);
+        var runner = new FakeRunner();
+        var installer = new NpmJsExtensionInstaller(host, runner);
+
+        var result = await installer.InstallAsync(ExtensionName, Package, Version, ValidIntegrity, null, CancellationToken.None);
+
+        Assert.IsFalse(result.Succeeded, "A reparse-point extensions root must be refused.");
+        Assert.AreEqual(0, runner.InstallCallCount, "npm must not run when the root is refused.");
+    }
+
+    [TestMethod]
+    public async Task InstallAsync_CanceledDuringRegistration_RollsBack_StopThenRemove()
+    {
+        var order = new ConcurrentQueue<string>();
+        var host = CreateHost();
+        host.OrderLog = order;
+
+        // Hold registration open long enough to cancel while the extension is already promoted.
+        host.RegistrationDelay = TimeSpan.FromSeconds(30);
+        using var registrationStarted = new ManualResetEventSlim(false);
+        host.RegistrationStarted = registrationStarted;
+
+        var runner = new FakeRunner { OrderLog = order };
+        var installer = new NpmJsExtensionInstaller(host, runner);
+
+        using var cts = new CancellationTokenSource();
+        var task = Task.Run(() => installer.InstallAsync(ExtensionName, Package, Version, ValidIntegrity, null, cts.Token));
+
+        Assert.IsTrue(registrationStarted.Wait(TimeSpan.FromSeconds(5)), "Install did not reach provider registration.");
+        cts.Cancel();
+
+        var result = await task;
+
+        Assert.IsFalse(result.Succeeded, "A canceled install must not report success.");
+
+        // Rollback must stop the host before removing the promoted directory so nothing is left both
+        // installed and running.
+        var log = order.ToArray();
+        Assert.IsTrue(log.Length >= 2, "Rollback did not run stop and remove.");
+        Assert.AreEqual("stop", log[0]);
+        Assert.AreEqual("remove", log[1]);
+        Assert.AreEqual(1, host.StopCallCount);
+
+        var target = Path.Combine(host.ExtensionsRootPath, ExtensionName);
+        Assert.IsFalse(Directory.Exists(target), "The promoted directory must be removed on rollback.");
+        Assert.IsFalse(host.IsExtensionInstalled(ExtensionName), "Nothing must remain installed after a canceled install.");
+    }
+
+    [TestMethod]
+    public async Task InstallAsync_PreservesMixedScopedAndUnscopedDependencies()
+    {
+        // Evidence for r2-p5-07: phase-5 AssembleDiscoveryLayout moves whole top-level node_modules
+        // entries, including @scope directories, so scoped, unscoped, and mixed dependencies all
+        // survive promotion. The scoped-merge discard defect lives only in the phase-6
+        // JsExtensionPackageLayout, which is absent from phase-5.
+        var host = CreateHost();
+        var runner = new FakeRunner
+        {
+            HoistedDependencies = ["left-pad", Path.Combine("@scope", "dep-a"), Path.Combine("@scope", "dep-b")],
+        };
+        var installer = new NpmJsExtensionInstaller(host, runner);
+
+        var result = await installer.InstallAsync(ExtensionName, Package, Version, ValidIntegrity, null, CancellationToken.None);
+
+        Assert.IsTrue(result.Succeeded, result.ErrorMessage);
+
+        var nodeModules = Path.Combine(host.ExtensionsRootPath, ExtensionName, "node_modules");
+        Assert.IsTrue(Directory.Exists(Path.Combine(nodeModules, "left-pad")), "Unscoped dependency was dropped.");
+        Assert.IsTrue(Directory.Exists(Path.Combine(nodeModules, "@scope", "dep-a")), "Scoped dependency dep-a was dropped.");
+        Assert.IsTrue(Directory.Exists(Path.Combine(nodeModules, "@scope", "dep-b")), "Scoped dependency dep-b was dropped.");
+    }
+
+    [TestMethod]
     public void IsInstalled_DelegatesToHost()
     {
         var host = CreateHost();
@@ -435,6 +584,39 @@ public class NpmJsExtensionInstallerTests
         }
     }
 
+    private static bool TryCreateJunction(string junctionPath, string targetPath)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            psi.ArgumentList.Add("/c");
+            psi.ArgumentList.Add("mklink");
+            psi.ArgumentList.Add("/J");
+            psi.ArgumentList.Add(junctionPath);
+            psi.ArgumentList.Add(targetPath);
+
+            using var process = Process.Start(psi);
+            if (process is null)
+            {
+                return false;
+            }
+
+            process.WaitForExit();
+            return process.ExitCode == 0 && Directory.Exists(junctionPath);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
     private sealed class FakeHost : IJsExtensionHost
     {
         private readonly HashSet<string> _installed = new(StringComparer.OrdinalIgnoreCase);
@@ -455,6 +637,10 @@ public class NpmJsExtensionInstallerTests
 
         public ConcurrentQueue<string>? OrderLog { get; set; }
 
+        public Action<CancellationToken>? StopHook { get; set; }
+
+        public ManualResetEventSlim? RegistrationStarted { get; set; }
+
         public void MarkInstalled(string name)
         {
             lock (_installedGate)
@@ -463,10 +649,11 @@ public class NpmJsExtensionInstallerTests
             }
         }
 
-        public void StopExtension(string extensionDirectory)
+        public void StopExtension(string extensionDirectory, CancellationToken cancellationToken = default)
         {
             OrderLog?.Enqueue("stop");
             StopCallCount++;
+            StopHook?.Invoke(cancellationToken);
         }
 
         public bool IsExtensionDiscoverable(string extensionDirectory) =>
@@ -482,6 +669,8 @@ public class NpmJsExtensionInstallerTests
 
         public async Task<bool> RefreshAndAwaitProviderAsync(string extensionDirectory, TimeSpan timeout, CancellationToken cancellationToken)
         {
+            RegistrationStarted?.Set();
+
             if (RegistrationDelay > TimeSpan.Zero)
             {
                 await Task.Delay(RegistrationDelay, cancellationToken).ConfigureAwait(false);
@@ -530,6 +719,8 @@ public class NpmJsExtensionInstallerTests
 
         public int InstallCallCount { get; private set; }
 
+        public int RemoveCallCount { get; private set; }
+
         public List<string> StagingDirectories { get; } = new();
 
         public bool IsNpmAvailable() => NpmAvailable;
@@ -570,9 +761,12 @@ public class NpmJsExtensionInstallerTests
             return NpmCommandResult.Ok(ResolvedIntegrityOverride ?? artifact.Integrity);
         }
 
-        public bool RemoveDirectory(string targetDirectory)
+        public bool RemoveDirectory(string targetDirectory, CancellationToken cancellationToken = default)
         {
             OrderLog?.Enqueue("remove");
+            RemoveCallCount++;
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (!RemoveSucceeds)
             {

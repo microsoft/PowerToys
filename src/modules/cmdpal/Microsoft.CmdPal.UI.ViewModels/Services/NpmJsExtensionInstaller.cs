@@ -103,12 +103,14 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
             try
             {
                 // Terminate the Node.js process and wait for its handles to be released before
-                // deleting; the Phase 4 StopExtension blocks until the process has exited.
-                _host.StopExtension(targetDirectory);
+                // deleting; the Phase 4 StopExtension blocks until the process has exited. The token
+                // lets Cancel abandon a wait for a contended lifecycle gate.
+                _host.StopExtension(targetDirectory, cancellationToken);
 
                 // RemoveDirectory refuses to follow a junction or symbolic link out of the root and
-                // retries briefly to tolerate a handle that is still being released.
-                if (!_npmCommandRunner.RemoveDirectory(targetDirectory))
+                // retries briefly to tolerate a handle that is still being released. The token stops
+                // the retry loop so Cancel is honored between attempts.
+                if (!_npmCommandRunner.RemoveDirectory(targetDirectory, cancellationToken))
                 {
                     Logger.LogError($"Uninstall of JS extension '{extensionName}' failed: could not delete {targetDirectory}.");
                     return JsExtensionInstallResult.Fail(Resources.npm_installer_remove_failed);
@@ -210,7 +212,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
             if (!registered)
             {
                 Logger.LogError($"Promoted '{extensionName}' but the host did not register a provider within {RegistrationTimeout.TotalSeconds:0} seconds.");
-                if (_npmCommandRunner.RemoveDirectory(targetDirectory))
+                if (RollbackPromotedInstall(targetDirectory))
                 {
                     promoted = false;
                 }
@@ -223,10 +225,11 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
         catch (OperationCanceledException)
         {
-            // A cancel after promotion must not leave a half-registered extension behind.
+            // A cancel after promotion must not leave a half-registered extension behind: stop the
+            // host process/provider first, then remove the promoted tree.
             if (promoted)
             {
-                _npmCommandRunner.RemoveDirectory(targetDirectory);
+                RollbackPromotedInstall(targetDirectory);
             }
 
             return JsExtensionInstallResult.Fail(Resources.npm_installer_canceled);
@@ -235,7 +238,7 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         {
             if (promoted)
             {
-                _npmCommandRunner.RemoveDirectory(targetDirectory);
+                RollbackPromotedInstall(targetDirectory);
             }
 
             Logger.LogError($"Install of '{extensionName}' failed: {ex.Message}");
@@ -243,12 +246,26 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
         finally
         {
-            // Clean the staging tree on every path. Surface a cleanup failure rather than swallowing it.
-            if (!_npmCommandRunner.RemoveDirectory(stagingDirectory))
+            // Clean the staging tree on every path, even when the install was canceled, so the staging
+            // cleanup must not observe the caller's token: pass CancellationToken.None explicitly.
+            if (!_npmCommandRunner.RemoveDirectory(stagingDirectory, CancellationToken.None))
             {
                 Logger.LogWarning($"Failed to clean up staging directory {stagingDirectory}.");
             }
         }
+    }
+
+    /// <summary>
+    /// Rolls back a promoted install. Stops the host process/provider that may have started for the
+    /// promoted directory, then removes the promoted tree, in that order, so a canceled or failed
+    /// install can never leave the extension both installed on disk and running. Uses no cancellation
+    /// token so cleanup always runs to completion, even on the cancel path.
+    /// </summary>
+    /// <returns><see langword="true"/> when the promoted directory was removed; otherwise, <see langword="false"/>.</returns>
+    private bool RollbackPromotedInstall(string targetDirectory)
+    {
+        _host.StopExtension(targetDirectory);
+        return _npmCommandRunner.RemoveDirectory(targetDirectory);
     }
 
     /// <summary>
@@ -406,8 +423,20 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
         }
 
         var root = _host.ExtensionsRootPath;
-        var candidate = Path.GetFullPath(Path.Combine(root, trimmed));
         var normalizedRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+
+        // The extensions root must be a real directory, not a reparse point. If a junction or symbolic
+        // link is used as the root, a candidate that passes the textual containment check below can
+        // still resolve on disk to a path outside the intended tree, so an uninstall delete could
+        // escape containment. Resolve reparse points on the root and refuse when it does not resolve
+        // to itself.
+        if (!RootResolvesToItself(normalizedRoot))
+        {
+            Logger.LogError($"Refusing to resolve a target under extensions root '{normalizedRoot}' because the root is a reparse point (junction or symbolic link).");
+            return false;
+        }
+
+        var candidate = Path.GetFullPath(Path.Combine(normalizedRoot, trimmed));
         if (!candidate.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
         {
             return false;
@@ -415,5 +444,28 @@ public sealed class NpmJsExtensionInstaller : IJsExtensionInstaller
 
         targetDirectory = candidate;
         return true;
+    }
+
+    private static bool RootResolvesToItself(string normalizedRoot)
+    {
+        // A root that does not exist yet cannot redirect anywhere; install creates it as a real
+        // directory before promoting into it.
+        if (!Directory.Exists(normalizedRoot))
+        {
+            return true;
+        }
+
+        try
+        {
+            // ResolveLinkTarget returns null when the path is not a reparse point, and the final
+            // target otherwise. Any reparse point on the root is treated as unsafe.
+            return Directory.ResolveLinkTarget(normalizedRoot, returnFinalTarget: true) is null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            // If the root cannot be inspected, err on the side of caution and refuse.
+            Logger.LogError($"Failed to inspect extensions root '{normalizedRoot}' for reparse points: {ex.Message}");
+            return false;
+        }
     }
 }

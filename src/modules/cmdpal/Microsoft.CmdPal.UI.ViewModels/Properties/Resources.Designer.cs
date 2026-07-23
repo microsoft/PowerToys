@@ -1015,6 +1015,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to The install was blocked because a dependency was not resolved from the approved registry with a verified integrity hash.
+        /// </summary>
+        public static string npm_runner_lockfile_untrusted {
+            get {
+                return ResourceManager.GetString("npm_runner_lockfile_untrusted", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to WinGet.
         /// </summary>
         public static string gallery_item_source_name_winget {

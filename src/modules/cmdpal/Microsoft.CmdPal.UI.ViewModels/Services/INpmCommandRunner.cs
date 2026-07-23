@@ -39,12 +39,13 @@ public interface INpmCommandRunner
     /// exist.
     /// </summary>
     /// <param name="targetDirectory">The directory to remove.</param>
+    /// <param name="cancellationToken">A token to cancel the retry loop between attempts.</param>
     /// <returns>
     /// <see langword="true"/> when the directory no longer exists after the call (either it was
     /// deleted or it never existed); <see langword="false"/> when deletion failed or was refused and
     /// the directory remains on disk.
     /// </returns>
-    bool RemoveDirectory(string targetDirectory);
+    bool RemoveDirectory(string targetDirectory, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
