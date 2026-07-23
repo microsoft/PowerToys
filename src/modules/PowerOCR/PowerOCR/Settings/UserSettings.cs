@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
@@ -11,10 +10,10 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerOCR.Helpers;
 
 namespace PowerOCR.Settings
 {
-    [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
         private readonly SettingsUtils _settingsUtils;
@@ -26,8 +25,7 @@ namespace PowerOCR.Settings
         private readonly IFileSystemWatcher _watcher;
         private readonly Lock _loadingSettingsLock = new();
 
-        [ImportingConstructor]
-        public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
+        public UserSettings(IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = SettingsUtils.Default;
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
@@ -58,13 +56,8 @@ namespace PowerOCR.Settings
                         {
                             retryCount++;
 
-                            if (!_settingsUtils.SettingsExists(PowerOcrModuleName))
-                            {
-                                Logger.LogInfo("TextExtractor settings.json was missing, creating a new one");
-                                var defaultPowerOcrSettings = new PowerOcrSettings();
-                                defaultPowerOcrSettings.Save(_settingsUtils);
-                            }
-
+                            // This API also creates a source-generated, AOT-safe default file
+                            // when settings.json is missing or corrupt.
                             var settings = _settingsUtils.GetSettingsOrDefault<PowerOcrSettings>(PowerOcrModuleName);
                             if (settings != null)
                             {
@@ -109,17 +102,12 @@ namespace PowerOCR.Settings
                 Logger.LogError("Failed to send settings telemetry");
                 return;
             }
+        }
 
-            // TODO: Send Telemetry when settings change
-            // var telemetrySettings = new Telemetry.PowerOcrSettings(properties.VisibleColorFormats)
-            // {
-            //     ActivationShortcut = properties.ActivationShortcut.ToString(),
-            //     ActivationBehavior = properties.ActivationAction.ToString(),
-            //     ColorFormatForClipboard = properties.CopiedColorRepresentation.ToString(),
-            //     ShowColorName = properties.ShowColorName,
-            // };
-            //
-            // PowerToysTelemetry.Log.WriteEvent(telemetrySettings);
+        public void Dispose()
+        {
+            _watcher?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

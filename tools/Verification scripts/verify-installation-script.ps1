@@ -341,8 +341,6 @@ function Test-CoreFiles {
         'PowerToys.CropAndLockModuleInterface.dll',
         'PowerToys.CropAndLock.exe',
         'PowerToys.PowerOCRModuleInterface.dll',
-        'PowerToys.PowerOCR.dll',
-        'PowerToys.PowerOCR.exe',
         'PowerToys.AdvancedPasteModuleInterface.dll',
         'PowerToys.AwakeModuleInterface.dll',
         'PowerToys.Awake.exe',
@@ -504,7 +502,17 @@ function Test-CoreFiles {
         'PowerAccent.Common.dll',
         'PowerToys.PowerAccent.dll',
         'PowerToys.PowerAccent.exe',
-        'PowerToys.PowerAccentKeyboardService.dll'
+        'PowerToys.PowerAccentKeyboardService.dll',
+
+        # PowerOCR (Text Extractor) - managed app moved to WinUI3Apps
+        'PowerToys.PowerOCR.Core.dll',
+        'PowerToys.PowerOCR.dll',
+        'PowerToys.PowerOCR.exe'
+    )
+
+    # Required unsigned files in the WinUI3Apps subdirectory
+    $winUI3RequiredUnsignedFiles = @(
+        'PowerToys.PowerOCR.pri'
     )
     
     # Tools signed files (in Tools subdirectory)
@@ -567,6 +575,14 @@ function Test-CoreFiles {
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
         Add-CheckResult -Category "Signed Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $status -Message "WinUI3 signed file: $filePath"
+    }
+
+    # Check required unsigned WinUI3Apps files
+    Write-StatusMessage "Checking required unsigned WinUI3Apps files..." -Level Info
+    foreach ($file in $winUI3RequiredUnsignedFiles) {
+        $filePath = Join-Path $InstallPath "WinUI3Apps\$file"
+        $exists = Test-Path $filePath
+        Add-CheckResult -Category "Required Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $(if ($exists) { 'Pass' } else { 'Fail' }) -Message "Required WinUI3 file: $filePath"
     }
     
     # Check Tools signed files

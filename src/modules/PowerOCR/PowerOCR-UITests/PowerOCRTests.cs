@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium.Interactions;
 using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace PowerOCR.UITests;
@@ -162,43 +161,154 @@ public class PowerOCRTests : UITestBase
         var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
         Assert.IsNotNull(textExtractorWindow, "TextExtractor window should be found after hotkey activation");
 
-        // Right-click on the canvas to open context menu
-        textExtractorWindow.Click(rightClick: true);
-
-        // Look for language options that should appear after Cancel menu item
-        var allMenuItems = FindAll<Element>(By.ClassName("MenuItem"), 2000, true);
-        if (allMenuItems.Count > 4)
+        try
         {
-            // Find the Cancel menu item first
-            Element? cancelItem = null;
-            int cancelIndex = -1;
-            for (int i = 0; i < allMenuItems.Count; i++)
+            // Read the current language from the overlay toolbar ComboBox.
+            var languageComboBox = Find<ComboBox>(
+                By.AccessibilityId("OCROverlayLanguagesComboBox"),
+                5000,
+                true);
+            languageComboBox.Click();
+
+            var comboBoxItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
+                .Where(item => item.Displayed)
+                .ToList();
+            Assert.IsTrue(comboBoxItems.Count > 0, "The overlay language ComboBox should contain OCR languages.");
+
+            var selectedItems = comboBoxItems.Where(item => item.Selected).ToList();
+            Assert.AreEqual(1, selectedItems.Count, "The overlay language ComboBox should have one selected language.");
+
+            int selectedLanguageIndex = comboBoxItems.FindIndex(item => item.Selected);
+            var selectedItem = comboBoxItems[selectedLanguageIndex];
+            var selectedLanguageName = selectedItem.Name;
+            SendKeys(Key.Esc);
+
+            // Open the context menu from the focused ComboBox using only the keyboard.
+            // This exercises the routed Shift+F10 path rather than the pointer path.
+            SendKeys(Key.Shift, Key.F10);
+
+            var selectedMenuItem = FindAll<Element>(By.Name(selectedLanguageName), 3000, true)
+                .FirstOrDefault(item =>
+                    item.Displayed
+                    && item.AutomationId.StartsWith("OCRLanguageMenuItem_", StringComparison.Ordinal));
+            Assert.IsNotNull(selectedMenuItem, $"The context menu should contain the selected '{selectedLanguageName}' OCR language.");
+            Assert.AreEqual(
+                "1",
+                selectedMenuItem.GetAttribute("Toggle.ToggleState"),
+                "The current OCR language should be marked as selected in the context menu.");
+
+            if (comboBoxItems.Count < 2)
             {
-                if (allMenuItems[i].GetAttribute("AutomationId") == "CancelMenuItem")
-                {
-                    cancelItem = allMenuItems[i];
-                    cancelIndex = i;
-                    break;
-                }
+                Assert.Inconclusive(
+                    "The context menu was verified, but at least two installed OCR languages are required to verify a language change.");
             }
 
-            Assert.IsNotNull(cancelItem, "Cancel menu item should be found");
+            int targetLanguageIndex = selectedLanguageIndex == 0 ? 1 : 0;
+            var targetItem = comboBoxItems[targetLanguageIndex];
+            var targetLanguageName = targetItem.Name;
+            var targetMenuItem = FindAll<Element>(By.Name(targetLanguageName), 3000, true)
+                .FirstOrDefault(item =>
+                    item.Displayed
+                    && item.AutomationId.StartsWith("OCRLanguageMenuItem_", StringComparison.Ordinal));
+            Assert.IsNotNull(targetMenuItem, $"The context menu should contain the '{targetLanguageName}' OCR language.");
+            Assert.AreEqual(
+                "0",
+                targetMenuItem.GetAttribute("Toggle.ToggleState"),
+                "The target OCR language should not be selected before activation.");
 
-            // Look for language options after Cancel menu item
-            if (cancelIndex >= 0 && cancelIndex < allMenuItems.Count - 1)
+            // Navigate from the first language item and activate the target without a pointer.
+            SendKeys(Key.Home);
+            for (int index = 0; index < targetLanguageIndex; index++)
             {
-                // Select the first language option after Cancel
-                var languageOption = allMenuItems[cancelIndex + 1];
-                languageOption.Click();
-                Thread.Sleep(1000);
+                SendKeys(Key.Down);
+            }
 
-                Assert.IsTrue(true, "Language selection changed successfully through right-click menu");
+            SendKeys(Key.Enter);
+
+            // Re-open the toolbar ComboBox and verify its selected item changed.
+            languageComboBox = Find<ComboBox>(
+                By.AccessibilityId("OCROverlayLanguagesComboBox"),
+                5000,
+                true);
+            languageComboBox.Click();
+
+            var updatedSelectedItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
+                .Where(item => item.Displayed)
+                .Where(item => item.Selected)
+                .ToList();
+            Assert.AreEqual(1, updatedSelectedItems.Count, "The overlay language ComboBox should keep one selected language.");
+            Assert.AreEqual(
+                targetLanguageName,
+                updatedSelectedItems[0].Name,
+                "Selecting a context-menu language should update the toolbar ComboBox selection.");
+        }
+        finally
+        {
+            // Escape dismisses an open flyout first. Only send it again when the overlay
+            // is still present so the underlying Settings window never receives the key.
+            SendKeys(Key.Esc);
+            Thread.Sleep(250);
+            if (FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 1000, true).Count > 0)
+            {
+                SendKeys(Key.Esc);
+                Thread.Sleep(1000);
             }
         }
+    }
 
-        // Close the TextExtractor overlay
+    [TestMethod("PowerOCR.ToolbarModes")]
+    [TestCategory("PowerOCR Toolbar")]
+    public void ToolbarModesTest()
+    {
+        // Activate Text Extractor overlay
+        SendKeys(Key.Win, Key.Shift, Key.T);
+        Thread.Sleep(3000);
+
+        var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
+        Assert.IsNotNull(textExtractorWindow, "TextExtractor window should appear after hotkey activation");
+
+        // Verify SingleLine mode is independent of its initial state
+        var singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
+        Assert.IsNotNull(singleLineButton, "SingleLine toggle button should be found on the toolbar");
+        if (singleLineButton.Selected)
+        {
+            singleLineButton.Click();
+            Thread.Sleep(500);
+
+            singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
+            Assert.IsFalse(singleLineButton.Selected, "SingleLine toggle button should be deselected after the reset click");
+        }
+
+        singleLineButton.Click();
+        Thread.Sleep(500);
+
+        singleLineButton = Find<Element>(By.AccessibilityId("SingleLineToggleButton"), 5000, true);
+        Assert.IsTrue(singleLineButton.Selected, "SingleLine toggle button should be selected after click");
+
+        // Verify Table mode is independent of its initial state
+        var tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
+        Assert.IsNotNull(tableButton, "Table toggle button should be found on the toolbar");
+        if (tableButton.Selected)
+        {
+            tableButton.Click();
+            Thread.Sleep(500);
+
+            tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
+            Assert.IsFalse(tableButton.Selected, "Table toggle button should be deselected after the reset click");
+        }
+
+        tableButton.Click();
+        Thread.Sleep(500);
+
+        tableButton = Find<Element>(By.AccessibilityId("TableToggleButton"), 5000, true);
+        Assert.IsTrue(tableButton.Selected, "Table toggle button should be selected after click");
+
+        // Dismiss the overlay and verify it disappears
         SendKeys(Key.Esc);
-        Thread.Sleep(1000);
+        Thread.Sleep(3000);
+
+        var windowsAfterEscape = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 2000, true);
+        Assert.AreEqual(0, windowsAfterEscape.Count, "TextExtractor window should be dismissed after pressing Escape");
     }
 
     [TestMethod("PowerOCR.TextSelectionAndClipboardTest")]
@@ -216,26 +326,17 @@ public class PowerOCRTests : UITestBase
         var textExtractorWindow = Find<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
         Assert.IsNotNull(textExtractorWindow, "TextExtractor window should be found after hotkey activation");
 
-        // Click on the TextExtractor window to position cursor
-        textExtractorWindow.Click();
-        Thread.Sleep(500);
-
-        // Get screen dimensions for full screen selection
-        var primaryScreen = System.Windows.Forms.Screen.PrimaryScreen;
-        Assert.IsNotNull(primaryScreen, "Primary screen should be available");
-
-        var screenWidth = primaryScreen.Bounds.Width;
-        var screenHeight = primaryScreen.Bounds.Height;
-
-        // Define full screen selection area
-        var startX = 0;
-        var startY = 0;
-        var endX = screenWidth;
-        var endY = screenHeight;
-
-        // Perform continuous mouse drag to select entire screen
-        PerformSeleniumDrag(startX, startY, endX, endY);
-        Thread.Sleep(3000); // Wait longer for full screen OCR processing
+        // Use the selection canvas for a stable, bounds-aware drag
+        var selectionCanvas = Find<Pane>(
+            By.AccessibilityId("RegionClickCanvas"),
+            5000,
+            true);
+        Assert.IsNotNull(selectionCanvas.Rect, "Selection canvas bounds should be available.");
+        var bounds = selectionCanvas.Rect.Value;
+        selectionCanvas.Drag(
+            Math.Min(300, Math.Max(50, bounds.Width / 4)),
+            Math.Min(200, Math.Max(50, bounds.Height / 4)));
+        Thread.Sleep(3000); // Wait for OCR processing to complete
 
         // Verify text was copied to clipboard using STA thread
         var clipboardText = GetClipboardTextSafely();
@@ -276,19 +377,5 @@ public class PowerOCRTests : UITestBase
         thread.Start();
         thread.Join();
         return result;
-    }
-
-    private void PerformSeleniumDrag(int startX, int startY, int endX, int endY)
-    {
-        // Use Selenium Actions for proper drag and drop operation
-        var actions = new Actions(Session.Root);
-
-        // Move to start position, click and hold, drag to end position, then release
-        actions.MoveByOffset(startX, startY)
-               .ClickAndHold()
-               .MoveByOffset(endX - startX, endY - startY)
-               .Release()
-               .Build()
-               .Perform();
     }
 }

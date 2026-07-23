@@ -1,23 +1,22 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using PowerOCR.Services;
 using PowerOCR.Settings;
-using PowerOCR.Utilities;
 
 using static PowerOCR.OSInterop;
 
 namespace PowerOCR.Keyboard;
 
-[Export(typeof(KeyboardMonitor))]
-public class KeyboardMonitor : IDisposable
+internal sealed class KeyboardMonitor : IDisposable
 {
     private readonly IUserSettings _userSettings;
+    private readonly IActivationService _activationService;
     private List<string> _previouslyPressedKeys = new List<string>();
 
     private List<string> _activationKeys = new List<string>();
@@ -25,10 +24,10 @@ public class KeyboardMonitor : IDisposable
     private bool disposedValue;
     private bool _activationShortcutPressed;
 
-    [ImportingConstructor]
-    public KeyboardMonitor(IUserSettings userSettings)
+    public KeyboardMonitor(IUserSettings userSettings, IActivationService activationService)
     {
         _userSettings = userSettings;
+        _activationService = activationService;
         _userSettings.ActivationShortcut.PropertyChanged -= ActivationShortcut_PropertyChanged;
         _userSettings.ActivationShortcut.PropertyChanged += ActivationShortcut_PropertyChanged;
         SetActivationKeys();
@@ -101,7 +100,7 @@ public class KeyboardMonitor : IDisposable
             {
                 _activationShortcutPressed = true;
                 e.Handled = true;
-                WindowUtilities.LaunchOCROverlayOnEveryScreen();
+                _activationService.RequestActivation();
             }
         }
     }
@@ -147,7 +146,7 @@ public class KeyboardMonitor : IDisposable
         }
     }
 
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!disposedValue)
         {
