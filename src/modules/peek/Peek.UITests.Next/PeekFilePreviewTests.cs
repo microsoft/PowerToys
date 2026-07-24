@@ -409,8 +409,7 @@ public class PeekFilePreviewTests : UITestBase
                 continue;
             }
 
-            if (!WindowControl.TryBringToForeground(new IntPtr(explorerWindow.WindowHandle)) ||
-                !SetAndWaitForExplorerSelection(
+            if (!SetAndWaitForExplorerSelection(
                     explorerWindow.WindowHandle,
                     [normalizedPath],
                     normalizedPath,
@@ -418,7 +417,7 @@ public class PeekFilePreviewTests : UITestBase
             {
                 TestContext.WriteLine(
                     GetActivationDiagnostics(
-                        $"Explorer HWND {explorerWindow.WindowHandle} did not select '{selectedItemName}' after launch attempt {attempt}"));
+                        $"Explorer HWND {explorerWindow.WindowHandle} did not become foreground with a stable '{selectedItemName}' selection after launch attempt {attempt}"));
                 continue;
             }
 
@@ -467,7 +466,6 @@ public class PeekFilePreviewTests : UITestBase
         var normalizedFocusedPath = NormalizePath(focusedPath);
 
         Assert.IsTrue(
-            WindowControl.TryBringToForeground(new IntPtr(explorerWindow.WindowHandle)) &&
             SetAndWaitForExplorerSelection(
                 explorerWindow.WindowHandle,
                 normalizedPaths,
@@ -488,11 +486,20 @@ public class PeekFilePreviewTests : UITestBase
         int timeoutMS)
     {
         var expectedPaths = selectedPaths.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var nativeWindowHandle = new IntPtr(windowHandle);
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
         var stableSamples = 0;
 
         while (DateTime.UtcNow < deadline)
         {
+            if (WindowControl.GetForegroundWindowHandle() != nativeWindowHandle)
+            {
+                stableSamples = 0;
+                WindowControl.TryBringToForeground(nativeWindowHandle);
+                Thread.Sleep(250);
+                continue;
+            }
+
             var snapshot = GetExplorerSelection(windowHandle);
             if (snapshot is not null &&
                 snapshot.SelectedPaths.SetEquals(expectedPaths) &&
@@ -731,20 +738,19 @@ public class PeekFilePreviewTests : UITestBase
             Assert.IsFalse(
                 expectedExplorerSelection.Count == 0 || string.IsNullOrEmpty(expectedExplorerFocusedPath),
                 "Explorer selection expectations were not initialized before Peek activation.");
-            var foregrounded = explorerWindowHandle != 0 &&
-                               WindowControl.TryBringToForeground(new IntPtr(explorerWindowHandle));
-            Assert.IsTrue(
-                foregrounded &&
-                SetAndWaitForExplorerSelection(
+            var explorerReady = explorerWindowHandle != 0 &&
+                                SetAndWaitForExplorerSelection(
                     explorerWindowHandle,
                     expectedExplorerSelection,
                     expectedExplorerFocusedPath!,
-                    ExplorerOpenTimeoutMS),
-                $"Explorer did not retain the expected selection before Peek hotkey attempt {attempt}.");
+                    ExplorerOpenTimeoutMS);
+            Assert.IsTrue(
+                explorerReady,
+                $"Explorer did not become foreground with the expected stable selection before Peek hotkey attempt {attempt}.");
 
             TestContext.WriteLine(
                 $"Peek hotkey attempt {attempt}/{MaxHotkeyAttempts} for '{Path.GetFileName(expectedPath)}': " +
-                $"explorerHwnd={explorerWindowHandle}, foregrounded={foregrounded}, " +
+                $"explorerHwnd={explorerWindowHandle}, explorerReady={explorerReady}, " +
                 $"foregroundHwnd={WindowControl.GetForegroundWindowHandle().ToInt64()}.");
             KeyboardHelper.SendKeys(Key.Ctrl, Key.Space);
             var appearedWindow = WindowsFinder.WaitForWindowByApp(
