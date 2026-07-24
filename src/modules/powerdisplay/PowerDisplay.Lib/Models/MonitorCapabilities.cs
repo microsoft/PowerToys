@@ -48,5 +48,10 @@ namespace PowerDisplay.Common.Models
         /// Supports volume control
         /// </summary>
         Volume = 1 << 6,
+
+        /// <summary>
+        /// Supports changing the Windows SDR content brightness while HDR is active.
+        /// </summary>
+        SdrContentBrightness = 1 << 7,
     }
 }

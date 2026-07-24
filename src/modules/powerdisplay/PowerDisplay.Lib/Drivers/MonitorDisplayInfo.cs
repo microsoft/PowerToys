@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Windows.Win32.Foundation;
+
 namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
@@ -35,5 +37,31 @@ namespace PowerDisplay.Common.Drivers
         /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
         /// </summary>
         public int MonitorNumber { get; init; }
+
+        /// <summary>
+        /// Gets the display adapter identifier used by DisplayConfig device-info calls.
+        /// </summary>
+        public LUID AdapterId { get; init; }
+
+        /// <summary>
+        /// Gets the DisplayConfig target identifier on <see cref="AdapterId"/>.
+        /// </summary>
+        public uint TargetId { get; init; }
+
+        /// <summary>
+        /// Gets a value indicating whether the active path reports HDR support.
+        /// </summary>
+        public bool IsHdrSupported { get; init; }
+
+        /// <summary>
+        /// Gets a value indicating whether HDR is currently active on this path.
+        /// </summary>
+        public bool IsHdrEnabled { get; init; }
+
+        /// <summary>
+        /// Gets the current Windows SDR content brightness percentage when HDR is active
+        /// and the SDR white level could be read; otherwise, <see langword="null"/>.
+        /// </summary>
+        public int? SdrContentBrightness { get; init; }
     }
 }

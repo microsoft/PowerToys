@@ -823,7 +823,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerDisplay_ToggleWindow"), Shortcut = settings.Properties.ActivationShortcut.GetKeysList() },
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/PowerDisplay.png", ButtonClickHandler = PowerDisplayLaunchClicked },
             };
+
+            AddShortcutIfBound("PowerDisplay_IncreaseBrightnessShortcut/Header", settings.Properties.IncreaseBrightnessShortcut);
+            AddShortcutIfBound("PowerDisplay_DecreaseBrightnessShortcut/Header", settings.Properties.DecreaseBrightnessShortcut);
+            AddShortcutIfBound("PowerDisplay_IncreaseContrastShortcut/Header", settings.Properties.IncreaseContrastShortcut);
+            AddShortcutIfBound("PowerDisplay_DecreaseContrastShortcut/Header", settings.Properties.DecreaseContrastShortcut);
+            AddShortcutIfBound("PowerDisplay_IncreaseVolumeShortcut/Header", settings.Properties.IncreaseVolumeShortcut);
+            AddShortcutIfBound("PowerDisplay_DecreaseVolumeShortcut/Header", settings.Properties.DecreaseVolumeShortcut);
+            AddShortcutIfBound("PowerDisplay_IncreaseSdrContentBrightnessShortcut/Header", settings.Properties.IncreaseSdrContentBrightnessShortcut);
+            AddShortcutIfBound("PowerDisplay_DecreaseSdrContentBrightnessShortcut/Header", settings.Properties.DecreaseSdrContentBrightnessShortcut);
+
             return new ObservableCollection<DashboardModuleItem>(list);
+
+            void AddShortcutIfBound(string resourceKey, HotkeySettings shortcut)
+            {
+                if (shortcut?.IsValid() == true)
+                {
+                    list.Insert(
+                        list.Count - 1,
+                        new DashboardModuleShortcutItem()
+                        {
+                            Label = resourceLoader.GetString(resourceKey),
+                            Shortcut = shortcut.GetKeysList(),
+                        });
+                }
+            }
         }
 
         internal void SWVersionButtonClicked()

@@ -131,11 +131,17 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Id = monitorId,
                     Name = name.Trim(),
                     CurrentBrightness = 50, // Initial placeholder; overwritten if the VCP read succeeds
+                    CurrentSdrContentBrightness = monitorInfo.SdrContentBrightness ?? 0,
                     Handle = physicalMonitor.HPhysicalMonitor,
-                    Capabilities = MonitorCapabilities.DdcCi,
+                    Capabilities = MonitorCapabilities.DdcCi
+                        | (monitorInfo.IsHdrSupported ? MonitorCapabilities.Hdr : MonitorCapabilities.None)
+                        | (monitorInfo.IsHdrEnabled && monitorInfo.SdrContentBrightness.HasValue
+                            ? MonitorCapabilities.SdrContentBrightness
+                            : MonitorCapabilities.None),
                     CommunicationMethod = "DDC/CI",
                     MonitorNumber = monitorInfo.MonitorNumber,
                     GdiDeviceName = monitorInfo.GdiDeviceName ?? string.Empty,
+                    IsHdrEnabled = monitorInfo.IsHdrEnabled,
                     Orientation = DmdoDefault, // Orientation will be set separately if needed
                 };
 

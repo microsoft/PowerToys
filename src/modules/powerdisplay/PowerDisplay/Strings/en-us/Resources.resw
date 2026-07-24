@@ -142,6 +142,13 @@
   <data name="BrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Brightness</value>
   </data>
+  <data name="SdrContentBrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>SDR content brightness (HDR mode)</value>
+  </data>
+  <data name="SdrContentBrightnessTooltip.Text" xml:space="preserve">
+    <value>SDR</value>
+    <comment>Short label for the SDR content brightness control. SDR is an industry-standard acronym.</comment>
+  </data>
   <data name="ContrastTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Contrast</value>
   </data>
@@ -183,6 +190,9 @@
   </data>
   <data name="BrightnessAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Brightness</value>
+  </data>
+  <data name="SdrContentBrightnessAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>SDR content brightness in HDR mode</value>
   </data>
   <data name="AppName" xml:space="preserve">
     <value>Power Display</value>

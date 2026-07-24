@@ -26,6 +26,7 @@ namespace PowerDisplay.Common.Models
     public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
         private int _currentBrightness;
+        private int _currentSdrContentBrightness;
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
         private int _currentInputSource; // VCP 0x60 value
         private int _currentPowerState = 0x01; // Default to On (VCP 0xD6 value)
@@ -58,6 +59,24 @@ namespace PowerDisplay.Common.Models
                 if (_currentBrightness != clamped)
                 {
                     _currentBrightness = clamped;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Windows HDR SDR-content-brightness balance as a percentage (0-100).
+        /// This controls the SDR reference white level and does not change the monitor backlight.
+        /// </summary>
+        public int CurrentSdrContentBrightness
+        {
+            get => _currentSdrContentBrightness;
+            set
+            {
+                var clamped = Math.Clamp(value, 0, 100);
+                if (_currentSdrContentBrightness != clamped)
+                {
+                    _currentSdrContentBrightness = clamped;
                     OnPropertyChanged();
                 }
             }
@@ -184,6 +203,18 @@ namespace PowerDisplay.Common.Models
         /// Gets a value indicating whether the monitor supports volume adjustment (for audio-capable monitors)
         /// </summary>
         public bool SupportsVolume => Capabilities.HasFlag(MonitorCapabilities.Volume);
+
+        /// <summary>
+        /// Gets a value indicating whether HDR is currently active and Windows exposed an
+        /// SDR reference-white level for this display.
+        /// </summary>
+        public bool SupportsSdrContentBrightness =>
+            Capabilities.HasFlag(MonitorCapabilities.SdrContentBrightness);
+
+        /// <summary>
+        /// Gets or sets a value indicating whether HDR is currently active on this display path.
+        /// </summary>
+        public bool IsHdrEnabled { get; set; }
 
         private int _currentContrast = 50;
         private int _currentVolume = 50;

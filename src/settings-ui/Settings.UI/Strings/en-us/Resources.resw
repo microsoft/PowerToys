@@ -5562,6 +5562,54 @@ The break timer font matches the text font.</value>
     <value>Activation shortcut</value>
     <comment>Header for the PowerDisplay activation shortcut setting</comment>
   </data>
+  <data name="PowerDisplay_IncreaseBrightnessShortcut.Header" xml:space="preserve">
+    <value>Increase display brightness</value>
+  </data>
+  <data name="PowerDisplay_IncreaseBrightnessShortcut.Description" xml:space="preserve">
+    <value>Increase brightness on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_DecreaseBrightnessShortcut.Header" xml:space="preserve">
+    <value>Decrease display brightness</value>
+  </data>
+  <data name="PowerDisplay_DecreaseBrightnessShortcut.Description" xml:space="preserve">
+    <value>Decrease brightness on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_IncreaseContrastShortcut.Header" xml:space="preserve">
+    <value>Increase display contrast</value>
+  </data>
+  <data name="PowerDisplay_IncreaseContrastShortcut.Description" xml:space="preserve">
+    <value>Increase contrast on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_DecreaseContrastShortcut.Header" xml:space="preserve">
+    <value>Decrease display contrast</value>
+  </data>
+  <data name="PowerDisplay_DecreaseContrastShortcut.Description" xml:space="preserve">
+    <value>Decrease contrast on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_IncreaseVolumeShortcut.Header" xml:space="preserve">
+    <value>Increase display volume</value>
+  </data>
+  <data name="PowerDisplay_IncreaseVolumeShortcut.Description" xml:space="preserve">
+    <value>Increase volume on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_DecreaseVolumeShortcut.Header" xml:space="preserve">
+    <value>Decrease display volume</value>
+  </data>
+  <data name="PowerDisplay_DecreaseVolumeShortcut.Description" xml:space="preserve">
+    <value>Decrease volume on all supported displays.</value>
+  </data>
+  <data name="PowerDisplay_IncreaseSdrContentBrightnessShortcut.Header" xml:space="preserve">
+    <value>Increase SDR content brightness</value>
+  </data>
+  <data name="PowerDisplay_IncreaseSdrContentBrightnessShortcut.Description" xml:space="preserve">
+    <value>Increase SDR content brightness on all displays currently using HDR.</value>
+  </data>
+  <data name="PowerDisplay_DecreaseSdrContentBrightnessShortcut.Header" xml:space="preserve">
+    <value>Decrease SDR content brightness</value>
+  </data>
+  <data name="PowerDisplay_DecreaseSdrContentBrightnessShortcut.Description" xml:space="preserve">
+    <value>Decrease SDR content brightness on all displays currently using HDR.</value>
+  </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
     <comment>{Locked="Power Display"}</comment>
@@ -5588,10 +5636,16 @@ The break timer font matches the text font.</value>
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
   <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
-    <value>Mouse wheel increment</value>
+    <value>Adjustment increment</value>
   </data>
   <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
-    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
+    <value>How much brightness, contrast, and volume change per mouse wheel notch or adjustment shortcut.</value>
+  </data>
+  <data name="PowerDisplay_SdrContentBrightnessReplacesPrimarySlider.Header" xml:space="preserve">
+    <value>SDR Replaces Primary Slider</value>
+  </data>
+  <data name="PowerDisplay_SdrContentBrightnessReplacesPrimarySlider.Description" xml:space="preserve">
+    <value>Control SDR brightness from main brightness slider while HDR is active.</value>
   </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>

@@ -367,11 +367,108 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings IncreaseBrightnessShortcut
+        {
+            get => _settings.Properties.IncreaseBrightnessShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.IncreaseBrightnessShortcut,
+                value,
+                v => _settings.Properties.IncreaseBrightnessShortcut = v);
+        }
+
+        public HotkeySettings DecreaseBrightnessShortcut
+        {
+            get => _settings.Properties.DecreaseBrightnessShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.DecreaseBrightnessShortcut,
+                value,
+                v => _settings.Properties.DecreaseBrightnessShortcut = v);
+        }
+
+        public HotkeySettings IncreaseContrastShortcut
+        {
+            get => _settings.Properties.IncreaseContrastShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.IncreaseContrastShortcut,
+                value,
+                v => _settings.Properties.IncreaseContrastShortcut = v);
+        }
+
+        public HotkeySettings DecreaseContrastShortcut
+        {
+            get => _settings.Properties.DecreaseContrastShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.DecreaseContrastShortcut,
+                value,
+                v => _settings.Properties.DecreaseContrastShortcut = v);
+        }
+
+        public HotkeySettings IncreaseVolumeShortcut
+        {
+            get => _settings.Properties.IncreaseVolumeShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.IncreaseVolumeShortcut,
+                value,
+                v => _settings.Properties.IncreaseVolumeShortcut = v);
+        }
+
+        public HotkeySettings DecreaseVolumeShortcut
+        {
+            get => _settings.Properties.DecreaseVolumeShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.DecreaseVolumeShortcut,
+                value,
+                v => _settings.Properties.DecreaseVolumeShortcut = v);
+        }
+
+        public HotkeySettings IncreaseSdrContentBrightnessShortcut
+        {
+            get => _settings.Properties.IncreaseSdrContentBrightnessShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.IncreaseSdrContentBrightnessShortcut,
+                value,
+                v => _settings.Properties.IncreaseSdrContentBrightnessShortcut = v);
+        }
+
+        public HotkeySettings DecreaseSdrContentBrightnessShortcut
+        {
+            get => _settings.Properties.DecreaseSdrContentBrightnessShortcut;
+            set => SetPowerDisplayHotkey(
+                _settings.Properties.DecreaseSdrContentBrightnessShortcut,
+                value,
+                v => _settings.Properties.DecreaseSdrContentBrightnessShortcut = v);
+        }
+
+        private void SetPowerDisplayHotkey(
+            HotkeySettings currentValue,
+            HotkeySettings newValue,
+            Action<HotkeySettings> setter,
+            [CallerMemberName] string propertyName = null)
+        {
+            newValue ??= new HotkeySettings();
+            if (SetSettingsProperty(currentValue, newValue, setter, propertyName))
+            {
+                SignalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                Logger.LogInfo($"{propertyName} changed, signaled HotkeyUpdatedPowerDisplayEvent");
+            }
+        }
+
         public override Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()
         {
             var hotkeysDict = new Dictionary<string, HotkeySettings[]>
             {
-                [ModuleName] = [ActivationShortcut],
+                [ModuleName] =
+                [
+                    ActivationShortcut,
+                    IncreaseBrightnessShortcut,
+                    DecreaseBrightnessShortcut,
+                    IncreaseContrastShortcut,
+                    DecreaseContrastShortcut,
+                    IncreaseVolumeShortcut,
+                    DecreaseVolumeShortcut,
+                    IncreaseSdrContentBrightnessShortcut,
+                    DecreaseSdrContentBrightnessShortcut,
+                ],
             };
 
             return hotkeysDict;
@@ -391,7 +488,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
         /// <summary>
-        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// Gets or sets the step shared by PowerDisplay flyout sliders and adjustment shortcuts.
         /// </summary>
         public int MouseWheelIncrement
         {
@@ -409,6 +506,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
 
         public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the primary brightness control targets SDR
+        /// content brightness while HDR is active.
+        /// </summary>
+        public bool SdrContentBrightnessReplacesPrimarySlider
+        {
+            get => _settings.Properties.SdrContentBrightnessReplacesPrimarySlider;
+            set
+            {
+                if (SetSettingsProperty(
+                    _settings.Properties.SdrContentBrightnessReplacesPrimarySlider,
+                    value,
+                    v => _settings.Properties.SdrContentBrightnessReplacesPrimarySlider = v))
+                {
+                    SignalSettingsUpdated();
+                }
+            }
+        }
 
         public ObservableCollection<MonitorInfo> Monitors
         {
