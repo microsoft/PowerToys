@@ -96,32 +96,38 @@
             VerticalContentAlignment="Stretch">
             <Grid RowSpacing="16">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="48" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid VerticalAlignment="Top">
+
+                <!--  Add remapping (always visible) + search / filter / bulk-select bar  -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <!--  "Add new remapping" is a list-level action, so it sits at the leading edge of the list
+                          toolbar (aligned with the list below). Kept outside the HasAnyData filter cluster so the
+                          first remapping can still be added from the empty state.  -->
                     <Button
                         x:Name="NewRemappingBtn"
-                        VerticalAlignment="Top"
-                        Click="NewRemappingBtn_Click">
+                        Grid.Column="0"
+                        Margin="0,0,8,0"
+                        VerticalAlignment="Center"
+                        Click="NewRemappingBtn_Click"
+                        Style="{StaticResource AccentButtonStyle}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="14" Glyph="&#xE710;" />
                             <TextBlock x:Uid="NewRemappingBtn_Text" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                </Grid>
-
-                <!--  Search / filter / bulk-select bar  -->
-                <Grid Grid.Row="1" Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
                     <ScrollViewer
+                        Grid.Column="1"
                         HorizontalScrollBarVisibility="Auto"
                         HorizontalScrollMode="Auto"
-                        VerticalScrollMode="Disabled">
+                        VerticalScrollMode="Disabled"
+                        Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel
                             Orientation="Horizontal"
                             Spacing="8"
@@ -167,11 +173,12 @@
                         </StackPanel>
                     </ScrollViewer>
                     <StackPanel
-                        Grid.Column="1"
+                        Grid.Column="2"
                         Margin="8,0,0,0"
                         Orientation="Horizontal"
                         Spacing="8"
-                        VerticalAlignment="Center">
+                        VerticalAlignment="Center"
+                        Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleButton
                             x:Name="SelectionModeToggle"
                             x:Uid="SelectModeToggle"
@@ -187,7 +194,7 @@
                 </Grid>
 
                 <Grid
-                    Grid.Row="2"
+                    Grid.Row="1"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
