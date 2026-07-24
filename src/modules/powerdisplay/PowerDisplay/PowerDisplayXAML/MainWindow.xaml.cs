@@ -69,7 +69,10 @@ namespace PowerDisplay
                 // 5. Initialize HotkeyService for in-process hotkey handling (CmdPal pattern)
                 Logger.LogTrace("MainWindow constructor: Initializing HotkeyService");
                 var hwnd = this.GetWindowHandle();
-                _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
+                _hotkeyService = new HotkeyService(
+                    _settingsUtils,
+                    ToggleWindow,
+                    action => _ = ViewModel.HandleAdjustmentHotkeyAsync(action));
                 _hotkeyService.Initialize(hwnd);
 
                 // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService.

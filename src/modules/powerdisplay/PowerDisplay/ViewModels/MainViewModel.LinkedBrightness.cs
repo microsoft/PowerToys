@@ -34,12 +34,12 @@ public partial class MainViewModel
     private DispatcherQueueTimer? _linkedBrightnessCommitTimer;
 
     /// <summary>
-    /// Returns true when the monitor is currently driven by linked brightness — it supports
-    /// brightness and the user has not excluded it. This mirrors the planner's linked-target rule
-    /// for live ViewModels on the broadcast and optimistic-update hot paths.
+    /// Returns true when the monitor is currently driven by linked brightness — it supports its
+    /// current primary brightness target and the user has not excluded it. In SDR replacement
+    /// mode, an HDR-active monitor's primary target is SDR content brightness.
     /// </summary>
     private bool IsLinkedTarget(MonitorViewModel monitor) =>
-        monitor.SupportsBrightness && !_excludedMonitorIds.Contains(monitor.Id);
+        monitor.SupportsPrimaryBrightness && !_excludedMonitorIds.Contains(monitor.Id);
 
     /// <summary>
     /// Snapshot the currently included brightness-capable monitors as
@@ -50,7 +50,7 @@ public partial class MainViewModel
             .Select(m => new LinkedBrightnessPlanner.LinkTarget(
             m.Id,
             m.MonitorNumber,
-            m.Brightness))
+            m.PrimaryBrightness))
             .ToList();
 
     /// <summary>
@@ -147,6 +147,17 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Rebuilds linked-brightness state when HDR monitors switch between physical brightness and
+    /// SDR content brightness as their primary control.
+    /// </summary>
+    partial void OnSdrContentBrightnessReplacesPrimarySliderChanged(bool value)
+    {
+        CancelPendingLinkedBrightnessCommit();
+        RecomputeLinkedBrightnessAvailability();
+        OnPropertyChanged(nameof(ShowLinkLevelsToggle));
+    }
+
+    /// <summary>
     /// Partial change hook fired by the source-generator for <see cref="LinkedBrightness"/>.
     /// Optimistically updates every linked monitor's brightness value to match the master value
     /// that will be broadcast to hardware, so it is correct if the monitor is later excluded or
@@ -172,7 +183,7 @@ public partial class MainViewModel
         {
             if (IsLinkedTarget(vm))
             {
-                vm.UpdateBrightnessDisplay(value);
+                vm.UpdatePrimaryBrightnessDisplay(value);
             }
         }
 
@@ -252,7 +263,7 @@ public partial class MainViewModel
 
     /// <summary>
     /// Broadcast the linked brightness value to every linked target via
-    /// <see cref="MonitorViewModel.SetBrightnessAsync"/>. Each per-VM call already wraps hardware
+    /// <see cref="MonitorViewModel.SetPrimaryBrightnessAsync"/>. Each per-VM call already wraps hardware
     /// errors in its own try/catch, so a single failing monitor does not break the others.
     /// </summary>
     private async Task BroadcastLinkedBrightnessAsync(int value)
@@ -266,7 +277,7 @@ public partial class MainViewModel
         {
             var writes = Monitors
                 .Where(IsLinkedTarget)
-                .Select(m => m.SetBrightnessAsync(value))
+                .Select(m => m.SetPrimaryBrightnessAsync(value))
                 .ToList();
 
             if (writes.Count > 0)

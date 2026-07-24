@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -16,19 +17,41 @@ namespace PowerDisplay.Helpers
     /// </summary>
     internal sealed partial class HotkeyService : IDisposable
     {
-        private const int HotkeyId = 9001;
+        private const int ToggleWindowHotkeyId = 9001;
+        private const int IncreaseBrightnessHotkeyId = 9002;
+        private const int DecreaseBrightnessHotkeyId = 9003;
+        private const int IncreaseContrastHotkeyId = 9004;
+        private const int DecreaseContrastHotkeyId = 9005;
+        private const int IncreaseVolumeHotkeyId = 9006;
+        private const int DecreaseVolumeHotkeyId = 9007;
+        private const int IncreaseSdrContentBrightnessHotkeyId = 9008;
+        private const int DecreaseSdrContentBrightnessHotkeyId = 9009;
 
         private readonly SettingsUtils _settingsUtils;
-        private readonly Action _hotkeyAction;
+        private readonly Dictionary<int, Action> _hotkeyActions;
+        private readonly HashSet<int> _registeredHotkeyIds = new();
 
         private nint _hwnd;
-        private bool _isRegistered;
         private bool _disposed;
 
-        public HotkeyService(SettingsUtils settingsUtils, Action hotkeyAction)
+        public HotkeyService(
+            SettingsUtils settingsUtils,
+            Action toggleWindowAction,
+            Action<PowerDisplayHotkeyAction> adjustmentAction)
         {
             _settingsUtils = settingsUtils;
-            _hotkeyAction = hotkeyAction;
+            _hotkeyActions = new Dictionary<int, Action>
+            {
+                [ToggleWindowHotkeyId] = toggleWindowAction,
+                [IncreaseBrightnessHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.IncreaseBrightness),
+                [DecreaseBrightnessHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.DecreaseBrightness),
+                [IncreaseContrastHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.IncreaseContrast),
+                [DecreaseContrastHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.DecreaseContrast),
+                [IncreaseVolumeHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.IncreaseVolume),
+                [DecreaseVolumeHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.DecreaseVolume),
+                [IncreaseSdrContentBrightnessHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.IncreaseSdrContentBrightness),
+                [DecreaseSdrContentBrightnessHotkeyId] = () => adjustmentAction(PowerDisplayHotkeyAction.DecreaseSdrContentBrightness),
+            };
         }
 
         /// <summary>
@@ -47,47 +70,55 @@ namespace PowerDisplay.Helpers
         /// <returns>True if the message was handled.</returns>
         public bool HandleMessage(uint uMsg, nuint wParam)
         {
-            if (uMsg == WmHotkey && (int)wParam == HotkeyId)
+            var hotkeyId = (int)wParam;
+            if (uMsg != WmHotkey ||
+                !_registeredHotkeyIds.Contains(hotkeyId) ||
+                !_hotkeyActions.TryGetValue(hotkeyId, out var action))
             {
-                try
-                {
-                    _hotkeyAction?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"[HotkeyService] Hotkey action failed: {ex.Message}");
-                }
-
-                return true;
+                return false;
             }
 
-            return false;
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[HotkeyService] Hotkey action failed: {ex.Message}");
+            }
+
+            return true;
         }
 
         /// <summary>
-        /// Reload settings and re-register hotkey.
+        /// Reload settings and re-register all configured hotkeys.
         /// Call this when settings change.
         /// </summary>
         public void ReloadSettings()
         {
-            UnregisterHotkey();
+            UnregisterHotkeys();
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-            var hotkey = settings?.Properties?.ActivationShortcut;
-
-            if (hotkey == null || !hotkey.IsValid())
+            if (settings?.Properties == null)
             {
                 return;
             }
 
-            RegisterHotkey(hotkey);
+            RegisterHotkey(ToggleWindowHotkeyId, settings.Properties.ActivationShortcut);
+            RegisterHotkey(IncreaseBrightnessHotkeyId, settings.Properties.IncreaseBrightnessShortcut);
+            RegisterHotkey(DecreaseBrightnessHotkeyId, settings.Properties.DecreaseBrightnessShortcut);
+            RegisterHotkey(IncreaseContrastHotkeyId, settings.Properties.IncreaseContrastShortcut);
+            RegisterHotkey(DecreaseContrastHotkeyId, settings.Properties.DecreaseContrastShortcut);
+            RegisterHotkey(IncreaseVolumeHotkeyId, settings.Properties.IncreaseVolumeShortcut);
+            RegisterHotkey(DecreaseVolumeHotkeyId, settings.Properties.DecreaseVolumeShortcut);
+            RegisterHotkey(IncreaseSdrContentBrightnessHotkeyId, settings.Properties.IncreaseSdrContentBrightnessShortcut);
+            RegisterHotkey(DecreaseSdrContentBrightnessHotkeyId, settings.Properties.DecreaseSdrContentBrightnessShortcut);
         }
 
-        private void RegisterHotkey(HotkeySettings hotkey)
+        private void RegisterHotkey(int hotkeyId, HotkeySettings? hotkey)
         {
-            if (_hwnd == 0)
+            if (_hwnd == 0 || hotkey == null || !hotkey.IsValid())
             {
-                Logger.LogWarning("[HotkeyService] Cannot register hotkey: window handle not set");
                 return;
             }
 
@@ -98,32 +129,35 @@ namespace PowerDisplay.Helpers
                 | (hotkey.Alt ? ModAlt : 0)
                 | (hotkey.Shift ? ModShift : 0);
 
-            if (RegisterHotKeyNative(_hwnd, HotkeyId, modifiers, (uint)hotkey.Code))
+            if (RegisterHotKeyNative(_hwnd, hotkeyId, modifiers, (uint)hotkey.Code))
             {
-                _isRegistered = true;
+                _registeredHotkeyIds.Add(hotkeyId);
             }
             else
             {
-                Logger.LogError($"[HotkeyService] Failed to register hotkey: {hotkey}, error={Marshal.GetLastWin32Error()}");
+                Logger.LogError(
+                    $"[HotkeyService] Failed to register hotkey id={hotkeyId}: {hotkey}, error={Marshal.GetLastWin32Error()}");
             }
         }
 
-        private void UnregisterHotkey()
+        private void UnregisterHotkeys()
         {
-            if (!_isRegistered || _hwnd == 0)
+            if (_hwnd == 0)
             {
                 return;
             }
 
-            bool success = UnregisterHotKeyNative(_hwnd, HotkeyId);
-
-            if (!success)
+            foreach (var hotkeyId in _registeredHotkeyIds)
             {
-                var error = Marshal.GetLastWin32Error();
-                Logger.LogWarning($"[HotkeyService] Failed to unregister hotkey, error={error}");
+                if (!UnregisterHotKeyNative(_hwnd, hotkeyId))
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    Logger.LogWarning(
+                        $"[HotkeyService] Failed to unregister hotkey id={hotkeyId}, error={error}");
+                }
             }
 
-            _isRegistered = false;
+            _registeredHotkeyIds.Clear();
         }
 
         public void Dispose()
@@ -133,7 +167,7 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            UnregisterHotkey();
+            UnregisterHotkeys();
             _disposed = true;
         }
 

@@ -17,8 +17,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public PowerDisplayProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
+            IncreaseBrightnessShortcut = new HotkeySettings();
+            DecreaseBrightnessShortcut = new HotkeySettings();
+            IncreaseContrastShortcut = new HotkeySettings();
+            DecreaseContrastShortcut = new HotkeySettings();
+            IncreaseVolumeShortcut = new HotkeySettings();
+            DecreaseVolumeShortcut = new HotkeySettings();
+            IncreaseSdrContentBrightnessShortcut = new HotkeySettings();
+            DecreaseSdrContentBrightnessShortcut = new HotkeySettings();
             MonitorRefreshDelay = 5;
             MouseWheelIncrement = 5;
+            SdrContentBrightnessReplacesPrimarySlider = false;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
@@ -42,6 +51,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             set => _activationShortcut = value;
         }
 
+        [JsonPropertyName("increase_brightness_shortcut")]
+        public HotkeySettings IncreaseBrightnessShortcut { get; set; }
+
+        [JsonPropertyName("decrease_brightness_shortcut")]
+        public HotkeySettings DecreaseBrightnessShortcut { get; set; }
+
+        [JsonPropertyName("increase_contrast_shortcut")]
+        public HotkeySettings IncreaseContrastShortcut { get; set; }
+
+        [JsonPropertyName("decrease_contrast_shortcut")]
+        public HotkeySettings DecreaseContrastShortcut { get; set; }
+
+        [JsonPropertyName("increase_volume_shortcut")]
+        public HotkeySettings IncreaseVolumeShortcut { get; set; }
+
+        [JsonPropertyName("decrease_volume_shortcut")]
+        public HotkeySettings DecreaseVolumeShortcut { get; set; }
+
+        [JsonPropertyName("increase_sdr_content_brightness_shortcut")]
+        public HotkeySettings IncreaseSdrContentBrightnessShortcut { get; set; }
+
+        [JsonPropertyName("decrease_sdr_content_brightness_shortcut")]
+        public HotkeySettings DecreaseSdrContentBrightnessShortcut { get; set; }
+
         /// <summary>
         /// Gets or sets delay in seconds before refreshing monitors after display changes (hot-plug).
         /// This allows hardware to stabilize before querying DDC/CI.
@@ -50,11 +83,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public int MonitorRefreshDelay { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount each PowerDisplay flyout slider (brightness, contrast, volume)
-        /// changes per mouse-wheel notch. Defaults to 5, the historical hardcoded step.
+        /// Gets or sets the amount each PowerDisplay flyout slider and adjustment shortcut
+        /// changes per step. Defaults to 5, the historical hardcoded mouse-wheel step.
         /// </summary>
         [JsonPropertyName("mouse_wheel_increment")]
         public int MouseWheelIncrement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an HDR-active display's primary brightness
+        /// control adjusts Windows SDR content brightness instead of the physical backlight.
+        /// </summary>
+        [JsonPropertyName("sdr_content_brightness_replaces_primary_slider")]
+        public bool SdrContentBrightnessReplacesPrimarySlider { get; set; }
 
         [JsonPropertyName("monitors")]
         public List<MonitorInfo> Monitors { get; set; }

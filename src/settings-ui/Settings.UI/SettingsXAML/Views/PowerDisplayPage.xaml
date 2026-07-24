@@ -77,6 +77,30 @@
                                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
                                         <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_IncreaseBrightnessShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseBrightnessShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_DecreaseBrightnessShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseBrightnessShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_IncreaseContrastShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseContrastShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_DecreaseContrastShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseContrastShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_IncreaseVolumeShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseVolumeShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_DecreaseVolumeShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseVolumeShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_IncreaseSdrContentBrightnessShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseSdrContentBrightnessShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_DecreaseSdrContentBrightnessShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseSdrContentBrightnessShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
 
                                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay">
                                         <ComboBox
@@ -89,6 +113,9 @@
                                             MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
                                             ItemsSource="{x:Bind ViewModel.MouseWheelIncrementOptions}"
                                             SelectedItem="{x:Bind ViewModel.MouseWheelIncrement, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_SdrContentBrightnessReplacesPrimarySlider">
+                                        <ToggleSwitch IsOn="{x:Bind ViewModel.SdrContentBrightnessReplacesPrimarySlider, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard ContentAlignment="Left">
                                         <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />

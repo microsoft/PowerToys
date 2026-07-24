@@ -132,11 +132,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial bool ShowIdentifyMonitorsButton { get; set; }
 
     /// <summary>
-    /// Gets or sets the per-mouse-wheel-notch step applied to every flyout slider. Loaded from
-    /// PowerDisplaySettings; defaults to 5 (the historical hardcoded step).
+    /// Gets or sets the step applied to every flyout slider mouse-wheel action and adjustment
+    /// shortcut. Loaded from PowerDisplaySettings; defaults to 5.
     /// </summary>
     [ObservableProperty]
     public partial int MouseWheelIncrement { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether HDR-active monitors use Windows SDR content
+    /// brightness as their primary brightness control instead of the physical backlight.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool SdrContentBrightnessReplacesPrimarySlider { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
@@ -153,7 +160,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets or sets the brightness value driving the linked "All Displays" slider. Setter is
     /// debounced and broadcasts on commit to every linked target: a
-    /// <see cref="MonitorViewModel.SupportsBrightness"/> monitor not excluded from sync (see
+    /// <see cref="MonitorViewModel.SupportsPrimaryBrightness"/> monitor not excluded from sync (see
     /// <c>OnLinkedBrightnessChanged</c>). Synchronously updates each linked monitor's brightness
     /// value so it is correct if the monitor is later excluded or link mode is disabled — the
     /// linked broadcast is the single source of hardware writes while link mode is active.
@@ -180,12 +187,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// "All Displays" card subtitle ("N linked"). Counts brightness-capable monitors the user
     /// has not excluded (see <see cref="MonitorViewModel.IsExcludedFromSync"/>).
     /// </summary>
-    public int LinkedMonitorsCount => Monitors.Count(m => m.SupportsBrightness && !IsMonitorExcludedFromSync(m.Id));
+    public int LinkedMonitorsCount => Monitors.Count(m => m.SupportsPrimaryBrightness && !IsMonitorExcludedFromSync(m.Id));
 
     /// <summary>
     /// Gets the count of brightness-capable monitors excluded from linked brightness.
     /// </summary>
-    public int ExcludedMonitorsCount => Monitors.Count(m => m.SupportsBrightness && IsMonitorExcludedFromSync(m.Id));
+    public int ExcludedMonitorsCount => Monitors.Count(m => m.SupportsPrimaryBrightness && IsMonitorExcludedFromSync(m.Id));
 
     /// <summary>
     /// Gets a value indicating whether the "N excluded" subtitle fragment should be visible on
@@ -234,14 +241,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Gets a value indicating whether the link-levels toggle should be visible. Shown when at
-    /// least two monitors report <see cref="MonitorViewModel.SupportsBrightness"/> (the entry-point
+    /// least two monitors report <see cref="MonitorViewModel.SupportsPrimaryBrightness"/> (the entry-point
     /// gate — counting raw entries would show the toggle even when only one display can actually be
     /// driven), OR whenever link mode is already active. The second clause guarantees the user can
     /// always turn link mode back off, even if monitors were unplugged down to one controllable
     /// display while linked — otherwise the "All displays" card would strand them with no way out.
     /// Recomputed by <see cref="UpdateMonitorList"/> and on <see cref="LinkedLevelsActive"/> change.
     /// </summary>
-    public bool ShowLinkLevelsToggle => LinkedLevelsActive || Monitors.Count(m => m.SupportsBrightness) >= 2;
+    public bool ShowLinkLevelsToggle => LinkedLevelsActive || Monitors.Count(m => m.SupportsPrimaryBrightness) >= 2;
 
     public bool ShowLinkLevelsInactiveIcon => !LinkedLevelsActive;
 
@@ -529,6 +536,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
             MouseWheelIncrement = settings.Properties.MouseWheelIncrement;
+            SdrContentBrightnessReplacesPrimarySlider =
+                settings.Properties.SdrContentBrightnessReplacesPrimarySlider;
 
             // Load the linked-brightness exclusion set before applying LinkedLevelsActive. If this
             // method runs after monitors are already discovered, the toggle hook can seed the master

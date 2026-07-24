@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using ManagedCommon;
+using PowerDisplay.Common.Utils;
 using Windows.Win32.Foundation;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -76,12 +77,22 @@ namespace PowerDisplay.Common.Drivers
                         continue;
                     }
 
+                    var (isHdrSupported, isHdrEnabled) = GetHdrState(path.TargetInfo.AdapterId, path.TargetInfo.Id);
+                    var sdrContentBrightness = isHdrEnabled
+                        ? GetSdrContentBrightness(path.TargetInfo.AdapterId, path.TargetInfo.Id)
+                        : null;
+
                     monitorInfo[devicePath] = new MonitorDisplayInfo
                     {
                         DevicePath = devicePath,
                         GdiDeviceName = gdiDeviceName,
                         FriendlyName = friendlyName ?? string.Empty,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
+                        AdapterId = path.TargetInfo.AdapterId,
+                        TargetId = path.TargetInfo.Id,
+                        IsHdrSupported = isHdrSupported,
+                        IsHdrEnabled = isHdrEnabled,
+                        SdrContentBrightness = sdrContentBrightness,
                     };
                 }
             }
@@ -91,6 +102,62 @@ namespace PowerDisplay.Common.Drivers
             }
 
             return monitorInfo;
+        }
+
+        private static unsafe (bool Supported, bool Enabled) GetHdrState(LUID adapterId, uint targetId)
+        {
+            // Windows 11 exposes an explicit active color mode, which lets us distinguish HDR
+            // from WCG. Fall back to the Windows 10 flags when the v2 query is unavailable.
+            var advancedColorInfo2 = new DisplayConfigAdvancedColorInfo2
+            {
+                Header = new DisplayConfigDeviceInfoHeader
+                {
+                    Type = DisplayconfigDeviceInfoGetAdvancedColorInfo2,
+                    Size = (uint)sizeof(DisplayConfigAdvancedColorInfo2),
+                    AdapterId = adapterId,
+                    Id = targetId,
+                },
+            };
+
+            if (DisplayConfigGetDeviceInfo(&advancedColorInfo2) == 0)
+            {
+                return (
+                    advancedColorInfo2.HighDynamicRangeSupported,
+                    advancedColorInfo2.HighDynamicRangeUserEnabled && advancedColorInfo2.IsHdrActive);
+            }
+
+            var advancedColorInfo = new DisplayConfigAdvancedColorInfo
+            {
+                Header = new DisplayConfigDeviceInfoHeader
+                {
+                    Type = DisplayconfigDeviceInfoGetAdvancedColorInfo,
+                    Size = (uint)sizeof(DisplayConfigAdvancedColorInfo),
+                    AdapterId = adapterId,
+                    Id = targetId,
+                },
+            };
+
+            return DisplayConfigGetDeviceInfo(&advancedColorInfo) == 0
+                ? (advancedColorInfo.AdvancedColorSupported, advancedColorInfo.AdvancedColorEnabled)
+                : (false, false);
+        }
+
+        private static unsafe int? GetSdrContentBrightness(LUID adapterId, uint targetId)
+        {
+            var whiteLevel = new DisplayConfigSdrWhiteLevel
+            {
+                Header = new DisplayConfigDeviceInfoHeader
+                {
+                    Type = DisplayconfigDeviceInfoGetSdrWhiteLevel,
+                    Size = (uint)sizeof(DisplayConfigSdrWhiteLevel),
+                    AdapterId = adapterId,
+                    Id = targetId,
+                },
+            };
+
+            return DisplayConfigGetDeviceInfo(&whiteLevel) == 0
+                ? SdrContentBrightnessLevel.FromRaw(whiteLevel.SdrWhiteLevel)
+                : null;
         }
 
         /// <summary>

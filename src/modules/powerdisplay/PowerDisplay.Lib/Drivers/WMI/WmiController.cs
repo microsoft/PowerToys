@@ -271,12 +271,19 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Id = MonitorIdentity.FromDevicePath(displayInfo.DevicePath),
                                 Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
+                                CurrentSdrContentBrightness = displayInfo.SdrContentBrightness ?? 0,
                                 InstanceName = instanceName,
-                                Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
+                                Capabilities = MonitorCapabilities.Brightness
+                                    | MonitorCapabilities.Wmi
+                                    | (displayInfo.IsHdrSupported ? MonitorCapabilities.Hdr : MonitorCapabilities.None)
+                                    | (displayInfo.IsHdrEnabled && displayInfo.SdrContentBrightness.HasValue
+                                        ? MonitorCapabilities.SdrContentBrightness
+                                        : MonitorCapabilities.None),
                                 CommunicationMethod = "WMI",
                                 SupportsColorTemperature = false,
                                 MonitorNumber = displayInfo.MonitorNumber,
                                 GdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty,
+                                IsHdrEnabled = displayInfo.IsHdrEnabled,
                             };
 
                             monitor.ReadValues |= MonitorReadFlags.Brightness;

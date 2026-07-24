@@ -49,6 +49,38 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.ActivationShortcut,
                     value => Properties.ActivationShortcut = value ?? Properties.DefaultActivationShortcut,
                     "Activation_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.IncreaseBrightnessShortcut,
+                    value => Properties.IncreaseBrightnessShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_IncreaseBrightnessShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.DecreaseBrightnessShortcut,
+                    value => Properties.DecreaseBrightnessShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_DecreaseBrightnessShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.IncreaseContrastShortcut,
+                    value => Properties.IncreaseContrastShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_IncreaseContrastShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.DecreaseContrastShortcut,
+                    value => Properties.DecreaseContrastShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_DecreaseContrastShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.IncreaseVolumeShortcut,
+                    value => Properties.IncreaseVolumeShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_IncreaseVolumeShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.DecreaseVolumeShortcut,
+                    value => Properties.DecreaseVolumeShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_DecreaseVolumeShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.IncreaseSdrContentBrightnessShortcut,
+                    value => Properties.IncreaseSdrContentBrightnessShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_IncreaseSdrContentBrightnessShortcut"),
+                new HotkeyAccessor(
+                    () => Properties.DecreaseSdrContentBrightnessShortcut,
+                    value => Properties.DecreaseSdrContentBrightnessShortcut = value ?? new HotkeySettings(),
+                    "PowerDisplay_DecreaseSdrContentBrightnessShortcut"),
             };
 
             return hotkeyAccessors.ToArray();

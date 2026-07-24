@@ -68,6 +68,27 @@ namespace PowerDisplay.Common.Drivers
         public const uint DisplayconfigDeviceInfoGetTargetName = 2;
 
         /// <summary>
+        /// Get the legacy Advanced Color capability and enabled-state flags.
+        /// </summary>
+        public const uint DisplayconfigDeviceInfoGetAdvancedColorInfo = 9;
+
+        /// <summary>
+        /// Get the SDR reference-white level for an Advanced Color display.
+        /// </summary>
+        public const uint DisplayconfigDeviceInfoGetSdrWhiteLevel = 11;
+
+        /// <summary>
+        /// Get the Windows 11 Advanced Color v2 state, including the active HDR/WCG mode.
+        /// </summary>
+        public const uint DisplayconfigDeviceInfoGetAdvancedColorInfo2 = 15;
+
+        /// <summary>
+        /// Private device-info request used by the Windows HDR settings page to commit the
+        /// SDR content brightness value. This is deliberately isolated behind capability checks.
+        /// </summary>
+        public const uint DisplayconfigDeviceInfoSetSdrWhiteLevel = 0xFFFFFFEE;
+
+        /// <summary>
         /// Retrieve the current settings for the display device.
         /// </summary>
         public const int EnumCurrentSettings = -1;

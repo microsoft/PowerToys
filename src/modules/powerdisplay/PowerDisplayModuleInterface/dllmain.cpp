@@ -391,8 +391,8 @@ public:
     virtual void set_config(const wchar_t* /*config*/) override
     {
         // Settings changes are handled via dedicated Windows Events:
-        // - HotkeyUpdatedPowerDisplayEvent: triggered by Settings UI when activation shortcut changes
-        // - SettingsUpdatedPowerDisplayEvent: triggered for tray icon visibility changes
+        // - HotkeyUpdatedPowerDisplayEvent: triggered when an activation or adjustment shortcut changes
+        // - SettingsUpdatedPowerDisplayEvent: triggered for other module settings changes
         // PowerDisplay.exe reads settings directly from file when these events are signaled.
     }
 

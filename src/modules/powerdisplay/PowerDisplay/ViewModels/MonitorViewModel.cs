@@ -38,6 +38,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private readonly MainViewModel? _mainViewModel;
 
     private int _brightness;
+    private int _sdrContentBrightness;
     private int _contrast;
     private int _volume;
 
@@ -46,12 +47,13 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // External / programmatic apply paths (SetBrightnessAsync etc.) bypass the setters
     // and therefore never schedule a debounced commit.
     private DispatcherQueueTimer? _brightnessCommitTimer;
+    private DispatcherQueueTimer? _sdrContentBrightnessCommitTimer;
     private DispatcherQueueTimer? _contrastCommitTimer;
     private DispatcherQueueTimer? _volumeCommitTimer;
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowBrightnessSlider))]
+    [NotifyPropertyChangedFor(nameof(ShowPhysicalBrightnessSlider))]
     public partial bool ShowBrightness { get; set; }
 
     [ObservableProperty]
@@ -85,9 +87,44 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             _brightness = brightness;
             OnPropertyChanged(nameof(Brightness));
+            if (!UsesSdrContentBrightnessAsPrimary)
+            {
+                OnPropertyChanged(nameof(PrimaryBrightness));
+            }
         }
 
         await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
+    }
+
+    /// <summary>
+    /// Applies the Windows SDR content brightness while HDR is active.
+    /// </summary>
+    public async Task SetSdrContentBrightnessAsync(int brightness)
+    {
+        brightness = Math.Clamp(brightness, 0, 100);
+
+        if (_sdrContentBrightness != brightness)
+        {
+            _sdrContentBrightness = brightness;
+            OnPropertyChanged(nameof(SdrContentBrightness));
+            if (UsesSdrContentBrightnessAsPrimary)
+            {
+                OnPropertyChanged(nameof(PrimaryBrightness));
+            }
+        }
+
+        try
+        {
+            var result = await _monitorManager.SetSdrContentBrightnessAsync(Id, brightness);
+            if (!result.IsSuccess)
+            {
+                Logger.LogWarning($"[{Id}] Failed to set SDR content brightness: {result.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[{Id}] Exception setting SDR content brightness: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -248,6 +285,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
         // Initialize basic properties from monitor
         _brightness = monitor.CurrentBrightness;
+        _sdrContentBrightness = monitor.CurrentSdrContentBrightness;
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
     }
@@ -310,13 +348,49 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public bool SupportsBrightness => _monitor.SupportsBrightness;
 
     /// <summary>
+    /// Gets a value indicating whether HDR is active and Windows exposes the SDR content
+    /// brightness balance for this display.
+    /// </summary>
+    public bool SupportsSdrContentBrightness => _monitor.SupportsSdrContentBrightness;
+
+    /// <summary>
+    /// Gets a value indicating whether this HDR-active monitor uses SDR content brightness as
+    /// its primary brightness control.
+    /// </summary>
+    public bool UsesSdrContentBrightnessAsPrimary =>
+        SupportsSdrContentBrightness &&
+        (_mainViewModel?.SdrContentBrightnessReplacesPrimarySlider ?? false);
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor has a brightness value that can participate
+    /// in the primary and linked brightness controls.
+    /// </summary>
+    public bool SupportsPrimaryBrightness => UsesSdrContentBrightnessAsPrimary || SupportsBrightness;
+
+    /// <summary>
+    /// Gets the value represented by the primary brightness control for this monitor.
+    /// </summary>
+    public int PrimaryBrightness =>
+        UsesSdrContentBrightnessAsPrimary ? SdrContentBrightness : Brightness;
+
+    /// <summary>
+    /// Applies the value represented by the primary brightness control for this monitor.
+    /// </summary>
+    public Task SetPrimaryBrightnessAsync(int brightness) =>
+        UsesSdrContentBrightnessAsPrimary
+            ? SetSdrContentBrightnessAsync(brightness)
+            : SetBrightnessAsync(brightness);
+
+    /// <summary>
     /// Gets a value indicating whether this monitor's brightness is currently driven by linked
     /// mode rather than its own slider. True when the parent has link mode on, this monitor
-    /// supports brightness, and the user has not excluded it. When true the per-card brightness
-    /// row shows a disabled linked-mode hint — the "All Displays" master slider broadcasts the
-    /// value instead.
+    /// supports its current primary brightness target, and the user has not excluded it. When true
+    /// the per-card primary row is hidden — the "All Displays" master slider broadcasts the value.
     /// </summary>
-    public bool IsBrightnessLinked => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness && !IsExcludedFromSync;
+    public bool IsBrightnessLinked =>
+        (_mainViewModel?.LinkedLevelsActive ?? false) &&
+        SupportsPrimaryBrightness &&
+        !IsExcludedFromSync;
 
     /// <summary>
     /// Gets a value indicating whether the per-card brightness slider accepts input. Disabled both
@@ -326,7 +400,20 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public bool IsBrightnessSliderEnabled => IsInteractionEnabled && !IsBrightnessLinked;
 
-    public bool ShowBrightnessSlider => ShowBrightness && !IsBrightnessLinked;
+    public bool ShowPhysicalBrightnessSlider =>
+        ShowBrightness &&
+        SupportsBrightness &&
+        !UsesSdrContentBrightnessAsPrimary &&
+        !IsBrightnessLinked;
+
+    /// <summary>
+    /// Gets a value indicating whether the SDR content brightness row should be shown. It remains
+    /// a separate row by default; replacement mode makes it the primary row and linked mode then
+    /// hides it in favor of the "All displays" slider.
+    /// </summary>
+    public bool ShowSdrContentBrightnessSlider =>
+        SupportsSdrContentBrightness &&
+        (!UsesSdrContentBrightnessAsPrimary || !IsBrightnessLinked);
 
     public bool ShowIncludedInSyncIcon => !IsExcludedFromSync;
 
@@ -347,7 +434,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsBrightnessLinked));
                 OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
-                OnPropertyChanged(nameof(ShowBrightnessSlider));
+                OnPropertyChanged(nameof(ShowPhysicalBrightnessSlider));
+                OnPropertyChanged(nameof(ShowSdrContentBrightnessSlider));
                 OnPropertyChanged(nameof(ShowIncludedInSyncIcon));
                 OnPropertyChanged(nameof(SyncToggleToolTip));
             }
@@ -356,9 +444,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Gets a value indicating whether the per-card exclude toggle is shown. Only relevant while
-    /// link mode is on and the monitor supports brightness — otherwise exclusion has no effect.
+    /// link mode is on and the monitor supports its current primary brightness target.
     /// </summary>
-    public bool ShowExcludeButton => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness;
+    public bool ShowExcludeButton =>
+        (_mainViewModel?.LinkedLevelsActive ?? false) &&
+        SupportsPrimaryBrightness;
 
     /// <summary>
     /// Gets the tooltip for the per-card linked-brightness toggle. The action reverses with the
@@ -489,7 +579,33 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             {
                 _brightness = value;
                 OnPropertyChanged();
+                if (!UsesSdrContentBrightnessAsPrimary)
+                {
+                    OnPropertyChanged(nameof(PrimaryBrightness));
+                }
+
                 ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
+            }
+        }
+    }
+
+    public int SdrContentBrightness
+    {
+        get => _sdrContentBrightness;
+        set
+        {
+            if (_sdrContentBrightness != value)
+            {
+                _sdrContentBrightness = value;
+                OnPropertyChanged();
+                if (UsesSdrContentBrightnessAsPrimary)
+                {
+                    OnPropertyChanged(nameof(PrimaryBrightness));
+                }
+
+                ScheduleCommit(
+                    ref _sdrContentBrightnessCommitTimer,
+                    () => SetSdrContentBrightnessAsync(_sdrContentBrightness));
             }
         }
     }
@@ -509,7 +625,48 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             _brightness = value;
             OnPropertyChanged(nameof(Brightness));
+            if (!UsesSdrContentBrightnessAsPrimary)
+            {
+                OnPropertyChanged(nameof(PrimaryBrightness));
+            }
         }
+    }
+
+    /// <summary>
+    /// Updates whichever value is represented by the primary brightness control without
+    /// scheduling a hardware write.
+    /// </summary>
+    public void UpdatePrimaryBrightnessDisplay(int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (UsesSdrContentBrightnessAsPrimary)
+        {
+            if (_sdrContentBrightness != value)
+            {
+                _sdrContentBrightness = value;
+                OnPropertyChanged(nameof(SdrContentBrightness));
+                OnPropertyChanged(nameof(PrimaryBrightness));
+            }
+        }
+        else
+        {
+            UpdateBrightnessDisplay(value);
+        }
+    }
+
+    /// <summary>
+    /// Refreshes primary-slider bindings after the SDR replacement preference changes.
+    /// </summary>
+    public void RefreshPrimaryBrightnessMode()
+    {
+        OnPropertyChanged(nameof(UsesSdrContentBrightnessAsPrimary));
+        OnPropertyChanged(nameof(SupportsPrimaryBrightness));
+        OnPropertyChanged(nameof(PrimaryBrightness));
+        OnPropertyChanged(nameof(IsBrightnessLinked));
+        OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+        OnPropertyChanged(nameof(ShowPhysicalBrightnessSlider));
+        OnPropertyChanged(nameof(ShowSdrContentBrightnessSlider));
+        OnPropertyChanged(nameof(ShowExcludeButton));
     }
 
     /// <summary>
@@ -880,8 +1037,13 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             // Link mode toggled — refresh the linked hint, exclude button, and slider state.
             OnPropertyChanged(nameof(IsBrightnessLinked));
             OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
-            OnPropertyChanged(nameof(ShowBrightnessSlider));
+            OnPropertyChanged(nameof(ShowPhysicalBrightnessSlider));
+            OnPropertyChanged(nameof(ShowSdrContentBrightnessSlider));
             OnPropertyChanged(nameof(ShowExcludeButton));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.SdrContentBrightnessReplacesPrimarySlider))
+        {
+            RefreshPrimaryBrightnessMode();
         }
     }
 
@@ -976,6 +1138,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         // gone (unplug/refresh) or the app is shutting down, so a hardware write would
         // race a half-torn-down MonitorManager.
         _brightnessCommitTimer?.Stop();
+        _sdrContentBrightnessCommitTimer?.Stop();
         _contrastCommitTimer?.Stop();
         _volumeCommitTimer?.Stop();
 

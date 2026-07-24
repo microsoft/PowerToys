@@ -31,6 +31,7 @@ namespace PowerDisplay.Common.Services
         private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
+        private readonly HdrSdrBrightnessController _hdrSdrBrightnessController = new();
 
         // Built-in entries are loaded automatically by the service constructor.
         private readonly MonitorBlacklistService _blacklistService = new();
@@ -166,6 +167,7 @@ namespace PowerDisplay.Common.Services
             }
 
             inventory = filteredInventory;
+            _hdrSdrBrightnessController.UpdateTargets(inventory.Values);
 
             if (inventory.Count == 0)
             {
@@ -266,6 +268,38 @@ namespace PowerDisplay.Common.Services
                     mon.ReadValues |= MonitorReadFlags.Brightness;
                 },
                 cancellationToken);
+
+        /// <summary>
+        /// Sets the Windows SDR content brightness for an HDR-active display.
+        /// This changes the SDR reference white level, not the physical monitor backlight.
+        /// </summary>
+        public Task<MonitorOperationResult> SetSdrContentBrightnessAsync(
+            string monitorId,
+            int brightness,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            brightness = Math.Clamp(brightness, 0, 100);
+
+            if (!_monitorLookup.TryGetValue(monitorId, out var monitor))
+            {
+                return Task.FromResult(MonitorOperationResult.Failure($"Monitor not found: {monitorId}"));
+            }
+
+            if (!monitor.SupportsSdrContentBrightness)
+            {
+                return Task.FromResult(MonitorOperationResult.Failure(
+                    "HDR is not active or SDR content brightness is unavailable for this display."));
+            }
+
+            var result = _hdrSdrBrightnessController.SetSdrContentBrightness(monitorId, brightness);
+            if (result.IsSuccess)
+            {
+                monitor.CurrentSdrContentBrightness = brightness;
+            }
+
+            return Task.FromResult(result);
+        }
 
         /// <summary>
         /// Set contrast of the specified monitor (DDC/CI controllers only; returns Failure on others).

@@ -37,6 +37,22 @@ namespace PowerDisplay.Common.Drivers
         internal static unsafe partial int DisplayConfigGetDeviceInfo(
             DisplayConfigSourceDeviceName* sourceName);
 
+        [LibraryImport("user32.dll")]
+        internal static unsafe partial int DisplayConfigGetDeviceInfo(
+            DisplayConfigAdvancedColorInfo* advancedColorInfo);
+
+        [LibraryImport("user32.dll")]
+        internal static unsafe partial int DisplayConfigGetDeviceInfo(
+            DisplayConfigAdvancedColorInfo2* advancedColorInfo);
+
+        [LibraryImport("user32.dll")]
+        internal static unsafe partial int DisplayConfigGetDeviceInfo(
+            DisplayConfigSdrWhiteLevel* sdrWhiteLevel);
+
+        [LibraryImport("user32.dll")]
+        internal static unsafe partial int DisplayConfigSetDeviceInfo(
+            DisplayConfigSetSdrWhiteLevel* sdrWhiteLevel);
+
         // ==================== User32.dll - Monitor Enumeration ====================
         [LibraryImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
