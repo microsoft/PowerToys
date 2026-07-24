@@ -179,15 +179,16 @@ jobs:
 
   # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
   # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
-  # detached gives it its own console whose stdin blocks, so it stays alive for the run instead of
-  # reading EOF and exiting the moment it starts listening (the failure mode when a test host launches
-  # it as a child). The legacy UITest harness reuses an already-listening instance rather than
+  # detached gives it its own hidden console whose stdin blocks, so it stays alive for the run without
+  # stealing foreground from non-elevated apps under test. This also avoids reading EOF and exiting the
+  # moment it starts listening (the failure mode when a test host launches it as a child). The legacy
+  # UITest harness reuses an already-listening instance rather than
   # relaunching it per test, so this removes the per-assembly launch cost. The winappcli-based .Next
   # tests don't use WinAppDriver. Best-effort: if the pre-start fails, each assembly still launches its own.
   - pwsh: |
       $winapp = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
       if (Test-Path $winapp) {
-        Start-Process -FilePath $winapp
+        Start-Process -FilePath $winapp -WindowStyle Hidden
 
         $deadline = (Get-Date).AddSeconds(30)
         $ready = $false
