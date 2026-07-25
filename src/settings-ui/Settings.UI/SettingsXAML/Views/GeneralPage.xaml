@@ -297,9 +297,9 @@
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
                                     x:Name="ShowThemeAdaptiveTrayIconCard"
-                                    ContentAlignment="Left"
+                                    x:Uid="ShowThemeAdaptiveTrayIcon"
                                     IsEnabled="{x:Bind ViewModel.ShowSysTrayIcon, Mode=OneWay}">
-                                    <CheckBox x:Uid="ShowThemeAdaptiveTrayIcon" IsChecked="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                                    <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>

@@ -74,6 +74,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("show_system_tray_icon")]
         public bool ShowSystemTrayIcon { get; set; }
 
+        [JsonPropertyName("show_theme_adaptive_tray_icon")]
+        public bool ShowThemeAdaptiveTrayIcon { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether to show the profile switcher button in the flyout UI.
         /// Default is true. When false, the profile switcher is hidden (but profiles still work via Settings).

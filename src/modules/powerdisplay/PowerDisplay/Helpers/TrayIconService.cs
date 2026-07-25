@@ -28,6 +28,7 @@ namespace PowerDisplay.Helpers
     /// <returns>The result of the message processing.</returns>
     internal delegate nint WndProcDelegate(nint hwnd, uint msg, nuint wParam, nint lParam);
 
+    [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "TrayIconService uses explicit Destroy() lifecycle matching other PowerToys tray helpers")]
     internal sealed partial class TrayIconService
     {
         private const uint MyNotifyId = 1001;
@@ -38,14 +39,19 @@ namespace PowerDisplay.Helpers
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
         private readonly uint _wmTaskbarRestart;
+        private readonly string _whiteIconPath;
+        private readonly string _darkIconPath;
 
         private Window? _window;
         private nint _hwnd;
         private nint _originalWndProc;
         private WndProcDelegate? _trayWndProc;
         private NOTIFYICONDATAW? _trayIconData;
-        private nint _largeIcon;
         private nint _popupMenu;
+        private nint _trayIconHandle;
+        private bool _themeAdaptiveEnabled;
+        private ThemeListener? _themeListener;
+        private bool _trayIconAdded;
 
         public TrayIconService(
             SettingsUtils settingsUtils,
@@ -57,6 +63,10 @@ namespace PowerDisplay.Helpers
             _toggleWindowAction = toggleWindowAction;
             _exitAction = exitAction;
             _openSettingsAction = openSettingsAction;
+
+            var assetsDir = Path.Combine(AppContext.BaseDirectory, "Assets", "PowerDisplay");
+            _whiteIconPath = Path.Combine(assetsDir, "PowerDisplayWhite.ico");
+            _darkIconPath = Path.Combine(assetsDir, "PowerDisplayDark.ico");
 
             // TaskbarCreated is the message that's broadcast when explorer.exe
             // restarts. We need to know when that happens to be able to bring our
@@ -71,27 +81,11 @@ namespace PowerDisplay.Helpers
 
             if (shouldShow)
             {
-                if (_window is null)
-                {
-                    _window = new Window();
-                    _hwnd = WindowNative.GetWindowHandle(_window);
-
-                    // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-                    // member (and instead like, use a local), then the pointer we marshal
-                    // into the WindowLongPtr will be useless after we leave this function,
-                    // and our **WindProc will explode**.
-                    _trayWndProc = WindowProc;
-                    var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
-                    _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndproc, hotKeyPrcPointer);
-                }
+                EnsureTrayWindow();
+                SetThemeAdaptiveTrayIcon(settings.Properties.ShowThemeAdaptiveTrayIcon);
 
                 if (_trayIconData is null)
                 {
-                    // We need to stash this handle, so it doesn't clean itself up. If
-                    // explorer restarts, we'll come back through here, and we don't
-                    // really need to re-load the icon in that case. We can just use
-                    // the handle from the first time.
-                    _largeIcon = GetAppIconHandle();
                     unsafe
                     {
                         _trayIconData = new NOTIFYICONDATAW()
@@ -101,10 +95,14 @@ namespace PowerDisplay.Helpers
                             uID = MyNotifyId,
                             uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                             uCallbackMessage = WmTrayIcon,
-                            hIcon = new HICON(_largeIcon),
+                            hIcon = new HICON(_trayIconHandle),
                             szTip = GetString("AppName"),
                         };
                     }
+                }
+                else
+                {
+                    UpdateTrayIconHandle();
                 }
 
                 var d = (NOTIFYICONDATAW)_trayIconData;
@@ -112,15 +110,20 @@ namespace PowerDisplay.Helpers
                 // Add the notification icon
                 unsafe
                 {
-                    bool success = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_ADD, &d);
+                    bool success = Shell_NotifyIconNative(
+                        (uint)(_trayIconAdded ? NOTIFY_ICON_MESSAGE.NIM_MODIFY : NOTIFY_ICON_MESSAGE.NIM_ADD),
+                        &d);
                     if (!success)
                     {
                         // Shell_NotifyIcon can fail if explorer.exe isn't ready yet (e.g., during system startup)
                         // Reset _trayIconData to allow retry via WM_WINDOWPOSCHANGING or WM_TASKBAR_RESTART
-                        Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_ADD) failed, will retry later");
+                        Logger.LogWarning("[TrayIcon] Shell_NotifyIcon failed, will retry later");
                         _trayIconData = null;
+                        _trayIconAdded = false;
                         return;
                     }
+
+                    _trayIconAdded = true;
                 }
 
                 if (_popupMenu == 0)
@@ -146,6 +149,7 @@ namespace PowerDisplay.Helpers
                     if (Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_DELETE, &d))
                     {
                         _trayIconData = null;
+                        _trayIconAdded = false;
                     }
                 }
             }
@@ -156,11 +160,9 @@ namespace PowerDisplay.Helpers
                 _popupMenu = 0;
             }
 
-            if (_largeIcon != 0)
-            {
-                DestroyIcon(_largeIcon);
-                _largeIcon = 0;
-            }
+            DisposeThemeListener();
+            ThemeAdaptiveTrayIconHelper.DestroyIconHandle(_trayIconHandle);
+            _trayIconHandle = 0;
 
             if (_window is not null)
             {
@@ -168,6 +170,97 @@ namespace PowerDisplay.Helpers
                 _window = null;
                 _hwnd = 0;
             }
+        }
+
+        private void SetThemeAdaptiveTrayIcon(bool themeAdaptive)
+        {
+            _themeAdaptiveEnabled = themeAdaptive;
+            ReloadTrayIconHandle();
+
+            if (themeAdaptive)
+            {
+                if (_themeListener == null)
+                {
+                    _themeListener = new ThemeListener();
+                    _themeListener.SystemThemeChanged += OnSystemThemeChanged;
+                }
+            }
+            else
+            {
+                DisposeThemeListener();
+            }
+        }
+
+        private void ReloadTrayIconHandle()
+        {
+            ThemeAdaptiveTrayIconHelper.DestroyIconHandle(_trayIconHandle);
+            _trayIconHandle = ThemeAdaptiveTrayIconHelper.LoadIconHandle(
+                _themeAdaptiveEnabled,
+                _whiteIconPath,
+                _darkIconPath,
+                GetAppIconHandle);
+        }
+
+        private void OnSystemThemeChanged(ThemeListener sender)
+        {
+            if (!_themeAdaptiveEnabled)
+            {
+                return;
+            }
+
+            ReloadTrayIconHandle();
+            UpdateTrayIconHandle();
+        }
+
+        private void DisposeThemeListener()
+        {
+            if (_themeListener == null)
+            {
+                return;
+            }
+
+            _themeListener.SystemThemeChanged -= OnSystemThemeChanged;
+            _themeListener.Dispose();
+            _themeListener = null;
+        }
+
+        private void UpdateTrayIconHandle()
+        {
+            if (_trayIconData is null || _trayIconHandle == 0)
+            {
+                return;
+            }
+
+            var d = (NOTIFYICONDATAW)_trayIconData;
+            d.hIcon = new HICON(_trayIconHandle);
+            _trayIconData = d;
+
+            if (_trayIconAdded)
+            {
+                unsafe
+                {
+                    Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_MODIFY, &d);
+                }
+            }
+        }
+
+        private void EnsureTrayWindow()
+        {
+            if (_window is not null)
+            {
+                return;
+            }
+
+            _window = new Window();
+            _hwnd = WindowNative.GetWindowHandle(_window);
+
+            // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+            // member (and instead like, use a local), then the pointer we marshal
+            // into the WindowLongPtr will be useless after we leave this function,
+            // and our **WindProc will explode**.
+            _trayWndProc = WindowProc;
+            var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
+            _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndproc, hotKeyPrcPointer);
         }
 
         private static string GetString(string key)

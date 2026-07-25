@@ -5578,7 +5578,7 @@ The break timer font matches the text font.</value>
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
+  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
     <value>Show system tray icon</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
@@ -6115,8 +6115,11 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Break_BackgroundImage_None.Content" xml:space="preserve">
     <value>None</value>
   </data>
-  <data name="ShowThemeAdaptiveTrayIcon.Content" xml:space="preserve">
-    <value>Show a monochrome icon that matches the Windows theme</value>
+  <data name="ShowThemeAdaptiveTrayIcon.Header" xml:space="preserve">
+    <value>Show monochrome system tray icons that match the Windows theme</value>
+  </data>
+  <data name="ShowThemeAdaptiveTrayIcon.Description" xml:space="preserve">
+    <value>Applies to the PowerToys tray icon and to Awake, ZoomIt, PowerDisplay, and Mouse Without Borders. Command Palette has its own setting.</value>
   </data>
   <data name="GeneralPage_EnableQuickAccess.Header" xml:space="preserve">
     <value>Quick Access flyout</value>
