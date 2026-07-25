@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
@@ -21,6 +22,10 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     private readonly IContextMenuFactory _contextMenuFactory;
 
     private DockBandSettings _bandSettings;
+    private Dictionary<IListItem, DockItemViewModel> _viewModelCache = new(ReferenceEqualityComparer.Instance);
+    private int _refreshInFlight;
+    private int _refreshRequested;
+    private int _cleanupStarted;
 
     public ObservableCollection<DockItemViewModel> Items { get; } = new();
 
@@ -232,24 +237,168 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     private void InitializeFromList(IListPage list)
     {
-        var items = list.GetItems();
-        var newViewModels = new List<DockItemViewModel>();
-        foreach (var item in items)
+        if (Volatile.Read(ref _cleanupStarted) != 0)
         {
-            var newItemVm = new DockItemViewModel(new(item), this.PageContext, _showTitles, _showSubtitles, _contextMenuFactory);
-            newItemVm.SlowInitializeProperties();
-            newViewModels.Add(newItemVm);
+            return;
         }
 
-        List<DockItemViewModel> removed = new();
-        DoOnUiThread(() =>
+        Interlocked.Exchange(ref _refreshRequested, 1);
+        if (Interlocked.CompareExchange(ref _refreshInFlight, 1, 0) != 0)
         {
-            ListHelpers.InPlaceUpdateList(Items, newViewModels, out removed);
-        });
+            return;
+        }
 
-        foreach (var removedItem in removed)
+        BuildRefresh(list);
+    }
+
+    private void BuildRefresh(IListPage list)
+    {
+        List<DockItemViewModel> createdViewModels = [];
+        try
         {
-            removedItem.SafeCleanup();
+            Interlocked.Exchange(ref _refreshRequested, 0);
+            if (Volatile.Read(ref _cleanupStarted) != 0)
+            {
+                CompleteRefresh(list);
+                return;
+            }
+
+            var items = list.GetItems();
+            var currentCache = Volatile.Read(ref _viewModelCache);
+            var itemModels = new List<IListItem>(items.Length);
+            var newViewModels = new List<DockItemViewModel>(items.Length);
+
+            foreach (var item in items)
+            {
+                if (item is null)
+                {
+                    continue;
+                }
+
+                if (!currentCache.TryGetValue(item, out var itemViewModel))
+                {
+                    itemViewModel = new DockItemViewModel(new(item), PageContext, _showTitles, _showSubtitles, _contextMenuFactory);
+                    createdViewModels.Add(itemViewModel);
+                    itemViewModel.SlowInitializeProperties();
+                }
+
+                itemModels.Add(item);
+                newViewModels.Add(itemViewModel);
+            }
+
+            if (!TryDoOnUiThread(() => ApplyRefresh(list, itemModels, newViewModels, createdViewModels)))
+            {
+                QueueCleanup(createdViewModels);
+                CompleteRefresh(list);
+            }
+        }
+        catch
+        {
+            QueueCleanup(createdViewModels);
+            Interlocked.Exchange(ref _refreshInFlight, 0);
+            throw;
+        }
+    }
+
+    private void ApplyRefresh(
+        IListPage list,
+        IReadOnlyList<IListItem> itemModels,
+        IReadOnlyList<DockItemViewModel> newViewModels,
+        IReadOnlyList<DockItemViewModel> createdViewModels)
+    {
+        List<DockItemViewModel> removedItems = [];
+        try
+        {
+            if (Volatile.Read(ref _cleanupStarted) != 0)
+            {
+                return;
+            }
+
+            foreach (var viewModel in newViewModels)
+            {
+                viewModel.ShowTitle = _showTitles;
+                viewModel.ShowSubtitle = _showSubtitles;
+            }
+
+            ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
+
+            var nextCache = new Dictionary<IListItem, DockItemViewModel>(itemModels.Count, ReferenceEqualityComparer.Instance);
+            for (var i = 0; i < itemModels.Count; i++)
+            {
+                nextCache[itemModels[i]] = Items[i];
+            }
+
+            Volatile.Write(ref _viewModelCache, nextCache);
+        }
+        finally
+        {
+            CleanupDiscardedViewModels(removedItems, createdViewModels);
+            CompleteRefresh(list);
+        }
+    }
+
+    private void CompleteRefresh(IListPage list)
+    {
+        Interlocked.Exchange(ref _refreshInFlight, 0);
+        if (Volatile.Read(ref _cleanupStarted) != 0 ||
+            Volatile.Read(ref _refreshRequested) == 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(
+            () =>
+            {
+                try
+                {
+                    InitializeFromList(list);
+                }
+                catch (Exception ex)
+                {
+                    CoreLogger.LogError("Failed to refresh a Dock band.", ex);
+                }
+            });
+    }
+
+    private void CleanupDiscardedViewModels(
+        IEnumerable<DockItemViewModel> removedItems,
+        IEnumerable<DockItemViewModel> createdViewModels)
+    {
+        var retained = new HashSet<DockItemViewModel>(Items, ReferenceEqualityComparer.Instance);
+        var discarded = new HashSet<DockItemViewModel>(ReferenceEqualityComparer.Instance);
+
+        foreach (var item in removedItems)
+        {
+            if (!retained.Contains(item))
+            {
+                discarded.Add(item);
+            }
+        }
+
+        foreach (var item in createdViewModels)
+        {
+            if (!retained.Contains(item))
+            {
+                discarded.Add(item);
+            }
+        }
+
+        QueueCleanup(discarded);
+    }
+
+    private static void QueueCleanup(IEnumerable<DockItemViewModel> viewModels)
+    {
+        var pendingCleanup = viewModels.ToArray();
+        if (pendingCleanup.Length != 0)
+        {
+            _ = Task.Run(
+                () =>
+                {
+                    foreach (var viewModel in pendingCleanup)
+                    {
+                        viewModel.SafeCleanup();
+                    }
+                });
         }
     }
 
@@ -259,17 +408,33 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var list = command.Model.Unsafe as IListPage;
         if (list is not null)
         {
-            InitializeFromList(list);
             list.ItemsChanged += HandleItemsChanged;
+            if (Volatile.Read(ref _cleanupStarted) != 0)
+            {
+                list.ItemsChanged -= HandleItemsChanged;
+                return;
+            }
+
+            InitializeFromList(list);
         }
         else
         {
             var dockItem = new DockItemViewModel(_rootItem, _showTitles, _showSubtitles, _contextMenuFactory);
             dockItem.SlowInitializeProperties();
-            DoOnUiThread(() =>
+            if (!TryDoOnUiThread(() =>
             {
-                Items.Add(dockItem);
-            });
+                if (Volatile.Read(ref _cleanupStarted) == 0)
+                {
+                    Items.Add(dockItem);
+                }
+                else
+                {
+                    QueueCleanup([dockItem]);
+                }
+            }))
+            {
+                QueueCleanup([dockItem]);
+            }
         }
     }
 
@@ -283,6 +448,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     protected override void UnsafeCleanup()
     {
+        Interlocked.Exchange(ref _cleanupStarted, 1);
         base.UnsafeCleanup();
 
         var command = _rootItem.Command;
@@ -291,10 +457,21 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             list.ItemsChanged -= HandleItemsChanged;
         }
 
-        foreach (var item in Items)
+        Volatile.Write(
+            ref _viewModelCache,
+            new Dictionary<IListItem, DockItemViewModel>(ReferenceEqualityComparer.Instance));
+
+        if (!TryDoOnUiThread(DrainItems))
         {
-            item.SafeCleanup();
+            QueueCleanup(Items.ToArray());
         }
+    }
+
+    private void DrainItems()
+    {
+        var items = Items.ToArray();
+        Items.Clear();
+        QueueCleanup(items);
     }
 }
 
@@ -401,6 +578,10 @@ public partial class DockItemViewModel : CommandItemViewModel
             }
         };
     }
+
+    public override bool Equals(object? obj) => obj is DockItemViewModel viewModel && viewModel.Model.Equals(Model);
+
+    public override int GetHashCode() => Model.GetHashCode();
 }
 
 
