@@ -12,8 +12,6 @@ namespace ManagedCommon
 {
     public static class LanguageHelper
     {
-        public const string SettingsFile = "language.json";
-
         internal sealed class OutGoingLanguageSettings
         {
             [JsonPropertyName("language")]
@@ -23,7 +21,7 @@ namespace ManagedCommon
         public static string LoadLanguage()
         {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", SettingsFile);
+            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", "language.json");
 
             if (File.Exists(file))
             {

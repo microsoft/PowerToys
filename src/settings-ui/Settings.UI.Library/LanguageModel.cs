@@ -11,8 +11,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class LanguageModel
     {
-        public const string SettingsFile = "language.json";
-
         public string Tag { get; set; }
 
         public string ResourceID { get; set; }
@@ -23,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             FileSystem fileSystem = new FileSystem();
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", SettingsFile);
+            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", "language.json");
 
             if (fileSystem.File.Exists(file))
             {
