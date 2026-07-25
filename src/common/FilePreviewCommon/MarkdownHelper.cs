@@ -56,12 +56,17 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                 // Markdig AST layer. Markdown images were already rewritten there (to the virtual host
                 // URL or "#") and pass through unchanged; everything else is either validated and
                 // rewritten or blocked.
+                // Matches double-quoted, single-quoted and unquoted src values, so that every form
+                // an author can write is validated the same way. Unquoted values are re-emitted
+                // quoted, which is equivalent HTML.
                 parsedMarkdown = Regex.Replace(
                     parsedMarkdown,
-                    @"(<img\b[^>]*?\ssrc\s*=\s*"")([^""]+)("")",
+                    @"(<img\b[^>]*?\ssrc\s*=\s*)(?:(""|')(.+?)\2|([^\s""'>]+))",
                     m =>
                     {
-                        string src = m.Groups[2].Value;
+                        bool isQuoted = m.Groups[2].Success;
+                        string quote = isQuoted ? m.Groups[2].Value : "\"";
+                        string src = isQuoted ? m.Groups[3].Value : m.Groups[4].Value;
 
                         if (src == "#" || src.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase))
                         {
@@ -70,11 +75,11 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
                         if (HTMLParsingExtension.TryGetLocalImageVirtualUrl(src, extension.FilePath, extension.AllowedBasePath, out string? virtualUrl))
                         {
-                            return m.Groups[1].Value + virtualUrl + m.Groups[3].Value;
+                            return m.Groups[1].Value + quote + virtualUrl + quote;
                         }
 
                         imagesBlockedCallBack();
-                        return m.Groups[1].Value + "#" + m.Groups[3].Value;
+                        return m.Groups[1].Value + quote + "#" + quote;
                     },
                     RegexOptions.IgnoreCase);
             }

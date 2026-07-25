@@ -38,7 +38,7 @@
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
-      <string id="SUPPORTED_POWERTOYS_0_100_0">PowerToys version 0.100.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_101_0">PowerToys version 0.101.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -258,7 +258,7 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
-      <string id="MarkdownAllowLocalImages">Markdown preview: Show images from local and network source</string>
+      <string id="MarkdownAllowLocalImages">Markdown preview: Show images from local and network sources</string>
       <string id="MarkdownAllowLocalImagesDescription">This policy configures whether images from local and network (UNC) sources should be displayed in Markdown file previews.
 
 If you enable this setting, images from the document's folder and network shares will always be shown and the user won't be able to disable it.

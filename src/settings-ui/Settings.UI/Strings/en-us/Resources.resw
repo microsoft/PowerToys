@@ -1020,7 +1020,7 @@ opera.exe</value>
     <value>Show local images</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages.Description" xml:space="preserve">
-    <value>Display images from the document's folder in Markdown preview. Only local files are allowed; remote URLs remain blocked.</value>
+    <value>Display images stored in the Markdown document's folder, including images on the same network share, in the preview. Remote/online images remain blocked.</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>

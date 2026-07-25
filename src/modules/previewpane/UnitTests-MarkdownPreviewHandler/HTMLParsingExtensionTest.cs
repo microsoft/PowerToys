@@ -162,6 +162,38 @@ namespace PreviewPaneUnitTests
             Assert.IsNull(resolvedPath);
         }
 
+        [DataTestMethod]
+        [DataRow("<img src=\"images/test.png\" />")]
+        [DataRow("<img src='images/test.png' />")]
+        [DataRow("<img src=images/test.png />")]
+        [DataRow("<img alt=\"x\" SRC = \"images/test.png\" />")]
+        public void RawHtmlImageIsRewrittenForEveryQuoteStyle(string mdString)
+        {
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                mdString, "light", @"C:\docs\doc.md", () => { }, true, @"C:\docs");
+
+            StringAssert.Contains(html, "https://localmdimages/images/test.png");
+        }
+
+        [DataTestMethod]
+        [DataRow("<img src=\"https://example.com/track.png\" />")]
+        [DataRow("<img src='https://example.com/track.png' />")]
+        [DataRow("<img src=https://example.com/track.png />")]
+        [DataRow("<img src='../secret.png' />")]
+        [DataRow("<img src='data:image/png;base64,iVBORw0KGgo=' />")]
+        public void RawHtmlImageIsBlockedForEveryQuoteStyle(string mdString)
+        {
+            int blockedCount = 0;
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, true, @"C:\docs");
+
+            Assert.AreNotEqual(0, blockedCount, "the blocked-images callback should fire so the info bar is shown");
+            StringAssert.Contains(html, "src=");
+            Assert.IsFalse(html.Contains("example.com"), "remote source must not survive the rewrite");
+            Assert.IsFalse(html.Contains("secret.png"), "traversal source must not survive the rewrite");
+            Assert.IsFalse(html.Contains("base64"), "data URI must not survive the rewrite");
+        }
+
         [TestMethod]
         public void ExtensionRewritesLocalImageToVirtualHostWhenLocalImagesAllowed()
         {

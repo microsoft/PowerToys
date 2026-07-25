@@ -30,7 +30,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_97_0" displayName="$(string.SUPPORTED_POWERTOYS_0_97_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_98_0" displayName="$(string.SUPPORTED_POWERTOYS_0_98_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_99_0" displayName="$(string.SUPPORTED_POWERTOYS_0_99_0)"/>
-      <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_101_0" displayName="$(string.SUPPORTED_POWERTOYS_0_101_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -217,7 +217,7 @@
     </policy>
     <policy name="MarkdownAllowLocalImages" class="Both" displayName="$(string.MarkdownAllowLocalImages)" explainText="$(string.MarkdownAllowLocalImagesDescription)" key="Software\Policies\PowerToys" valueName="MarkdownAllowLocalImages">
       <parentCategory ref="FileExplorerPreview" />
-      <supportedOn ref="SUPPORTED_POWERTOYS_0_100_0" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_101_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>
