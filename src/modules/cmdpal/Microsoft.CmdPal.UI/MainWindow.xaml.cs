@@ -107,10 +107,18 @@ public sealed partial class MainWindow : WindowEx,
     // over the same band). These MUST match or the two disagree about where resizing is.
     private const int ResizeBorderThicknessDip = 8;
 
+    private const int DockPaletteWidthDip = 360;
+    private const int DockPaletteHeightDip = 400;
+
+    private readonly double _standardMinWidth;
+    private readonly double _standardMinHeight;
+
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
+    private bool _useCompactDockPresentation;
+    private double _compactDockCardMaxHeightDip = DockPaletteHeightDip;
 
     private DevRibbon? _devRibbon;
 
@@ -123,6 +131,8 @@ public sealed partial class MainWindow : WindowEx,
     public MainWindow()
     {
         InitializeComponent();
+        _standardMinWidth = MinWidth;
+        _standardMinHeight = MinHeight;
 
         ViewModel = App.Current.Services.GetService<MainWindowViewModel>()!;
 
@@ -776,6 +786,9 @@ public sealed partial class MainWindow : WindowEx,
         ShowHwnd(hwndValue, positionWindowForAnchor);
     }
 
+    private void ShowHwnd(IntPtr hwndValue, RectInt32 bounds) =>
+        ShowHwnd(hwndValue, _ => MoveAndResizeDpiAware(bounds));
+
     private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
     {
         StopAutoGoHome();
@@ -904,8 +917,13 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(ShowWindowMessage message)
     {
         _isLoadedFromDock = false;
+        _useCompactDockPresentation = false;
+        MinWidth = _standardMinWidth;
+        MinHeight = _standardMinHeight;
 
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        RootElement.SetCardStretch(!settings.CompactMode);
+        RootElement.SetCardMaxHeight(double.PositiveInfinity);
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -917,14 +935,64 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void Receive(ShowPaletteAtMessage message)
     {
+        // A Dock item can be invoked while another transient page is still visible.
+        // Cloak before changing layout or bounds so DWM never presents the intermediate
+        // normal palette size.
+        if (!Cloak() && IsVisibleToUser)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+        }
+
         _isLoadedFromDock = true;
+        _useCompactDockPresentation = message.UseCompactSize;
+        MinWidth = message.UseCompactSize ? 0 : _standardMinWidth;
+        MinHeight = message.UseCompactSize ? 0 : _standardMinHeight;
 
-        // Reset the size in case users have resized a dock window.
-        // Ideally in the future, we'll have defined sizes that opening
-        // a dock window will adhere to, but alas, that's the future.
-        RestoreWindowPositionFromMemory();
+        if (message.UseCompactSize)
+        {
+            var bounds = GetCompactDockBounds(message, out var availableHeightDip);
+            RootElement.SetCardStretch(false);
+            _compactDockCardMaxHeightDip = Math.Max(
+                1,
+                availableHeightDip - RootElement.ShadowPadding.Top - RootElement.ShadowPadding.Bottom);
+            RootElement.SetCardMaxHeight(_compactDockCardMaxHeightDip);
+            ShowHwnd(HWND.Null, bounds);
+        }
+        else
+        {
+            // Restore the pre-Dock size while cloaked. The anchor move below also
+            // runs before ShowWindow, so the first visible frame is final.
+            RestoreWindowPositionFromMemory();
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+            RootElement.SetCardStretch(!settings.CompactMode);
+            RootElement.SetCardMaxHeight(double.PositiveInfinity);
+            ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
+        }
+    }
 
-        ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
+    private RectInt32 GetCompactDockBounds(ShowPaletteAtMessage message, out double availableHeightDip)
+    {
+        var effectiveDpi = message.Dpi == 0 ? this.GetDpiForWindow() : message.Dpi;
+        var scale = effectiveDpi / 96.0;
+        var anchorPoint = new PointInt32((int)message.PosPixels.X, (int)message.PosPixels.Y);
+        var workArea = DisplayArea.GetFromPoint(anchorPoint, DisplayAreaFallback.Nearest).WorkArea;
+        var workAreaRight = workArea.X + workArea.Width;
+        var workAreaBottom = workArea.Y + workArea.Height;
+        var anchorX = Math.Clamp(anchorPoint.X, workArea.X, workAreaRight);
+        var anchorY = Math.Clamp(anchorPoint.Y, workArea.Y, workAreaBottom);
+        var anchorsRight = message.Anchor is AnchorPoint.TopRight or AnchorPoint.BottomRight;
+        var anchorsBottom = message.Anchor is AnchorPoint.BottomLeft or AnchorPoint.BottomRight;
+
+        var availableWidth = anchorsRight ? anchorX - workArea.X : workAreaRight - anchorX;
+        var availableHeight = anchorsBottom ? anchorY - workArea.Y : workAreaBottom - anchorY;
+        var width = Math.Min((int)Math.Round(DockPaletteWidthDip * scale), Math.Max(1, availableWidth));
+        var height = Math.Min((int)Math.Round(DockPaletteHeightDip * scale), Math.Max(1, availableHeight));
+        var x = anchorsRight ? anchorX - width : anchorX;
+        var y = anchorsBottom ? anchorY - height : anchorY;
+
+        availableHeightDip = height / scale;
+
+        return new RectInt32(x, y, width, height);
     }
 
     public void Receive(HideWindowMessage message)
@@ -1905,6 +1973,13 @@ public sealed partial class MainWindow : WindowEx,
     // instead of resizing the window we simply shrink or grow the visible card inside it.
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
+        if (_isLoadedFromDock && _useCompactDockPresentation)
+        {
+            RootElement.SetCardStretch(false);
+            RootElement.SetCardMaxHeight(_compactDockCardMaxHeightDip);
+            return;
+        }
+
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         if (!settings.CompactMode)

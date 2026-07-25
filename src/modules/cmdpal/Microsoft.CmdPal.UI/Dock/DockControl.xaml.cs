@@ -29,6 +29,13 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>, IRecipient<CrossMonitorBandDropMessage>
 {
+    private const string PerformanceMonitorProviderId = "PerformanceMonitor";
+    private const string CpuOverviewPageId = "com.microsoft.cmdpal.performanceWidget.cpu.dockOverview";
+    private const string MemoryOverviewPageId = "com.microsoft.cmdpal.performanceWidget.memory.dockOverview";
+    private const string NetworkOverviewPageId = "com.microsoft.cmdpal.performanceWidget.network.dockOverview";
+    private const string DiskOverviewPageId = "com.microsoft.cmdpal.performanceWidget.disk.dockOverview";
+    private const string GpuOverviewPageId = "com.microsoft.cmdpal.performanceWidget.gpu.dockOverview";
+
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
@@ -313,7 +320,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             // Use the center of the border as the point to open at
             var borderCenter = GetDockItemCenter(dockItem);
 
-            InvokeItem(item, borderCenter);
+            InvokeItem(item, band.ProviderId, borderCenter);
             e.Handled = true;
         }
     }
@@ -415,28 +422,30 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         }
     }
 
-    private void InvokeItem(DockItemViewModel item, Point pos)
+    private void InvokeItem(DockItemViewModel item, string providerId, Point pos)
     {
         var command = item.Command;
         var hwnd = OwnerHwnd;
+        var useCompactSize = UsesCompactDockPresentation(providerId, command.Id);
         try
         {
             PerformCommandMessage m = new(command.Model)
             {
                 WithAnimation = false,
                 TransientPage = true,
+                UseCompactDockPresentation = useCompactSize,
 
                 // If the command is invokable and its result asks for a
                 // confirmation dialog, surface the cmdpal window anchored at
                 // this dock item before the dialog appears.
                 OnBeforeShowConfirmation = () =>
-                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd)),
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd, useCompactSize)),
             };
             WeakReferenceMessenger.Default.Send(m);
 
             if (IsPageCommand(command.Model.Unsafe))
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd, useCompactSize));
             }
         }
         catch (COMException e)
@@ -451,6 +460,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         // navigates into a page rather than performing an action in place.
         return command is not null and not IInvokableCommand;
     }
+
+    private static bool UsesCompactDockPresentation(string? providerId, string commandId) =>
+        string.Equals(providerId, PerformanceMonitorProviderId, StringComparison.Ordinal)
+        && commandId is CpuOverviewPageId
+            or MemoryOverviewPageId
+            or NetworkOverviewPageId
+            or DiskOverviewPageId
+            or GpuOverviewPageId;
 
     private static Point GetDockItemCenter(FrameworkElement dockItem)
     {
@@ -474,9 +491,16 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             return;
         }
 
-        if (IsPageCommand(command.Command.Model.Unsafe))
+        try
         {
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
+            if (IsPageCommand(command.Command.Model.Unsafe))
+            {
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd, false));
+            }
+        }
+        catch (COMException e)
+        {
+            Logger.LogError("Error reading dock context command", e);
         }
     }
 
@@ -495,7 +519,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         var hwnd = OwnerHwnd;
         var capturedPos = pos.Value;
         message.OnBeforeShowConfirmation = () =>
-            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd, false));
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)
@@ -512,6 +536,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             ContextMenuFlyout.Hide();
         }
+
+        _bandContextMenuPalettePos = null;
     }
 
     private void RootGrid_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)

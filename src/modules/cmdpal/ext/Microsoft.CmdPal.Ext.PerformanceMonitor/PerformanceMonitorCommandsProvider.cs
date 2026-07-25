@@ -29,10 +29,20 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         PerformanceMetricKind.Battery,
     ];
 
+    private static readonly PerformanceMetricKind[] OverviewMetrics =
+    [
+        PerformanceMetricKind.Cpu,
+        PerformanceMetricKind.Memory,
+        PerformanceMetricKind.Network,
+        PerformanceMetricKind.Disk,
+        PerformanceMetricKind.Gpu,
+    ];
+
     internal static ProviderCrashSentinel CrashSentinel { get; } = new(ProviderIdValue);
 
     private readonly Lock _stateLock = new();
     private readonly SettingsManager _settingsManager = new();
+    private PerformanceOverviewPage[] _dockOverviewPages = [];
     private ICommandItem[] _commands = [];
     private ICommandItem[] _bands = [];
     private PerformanceWidgetsPage? _mainPage;
@@ -194,14 +204,27 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         DisposeActivePages();
 
-        _mainPage = new PerformanceWidgetsPage(_settingsManager, false);
-        _bandPage = new PerformanceWidgetsPage(_settingsManager, true);
-        _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu);
-        _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory);
-        _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network);
-        _diskBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Disk);
-        _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
-        _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
+        var selectionState = new PerformanceMetricSelectionState();
+        var mainPage = new PerformanceWidgetsPage(_settingsManager, selectionState: selectionState);
+        _mainPage = mainPage;
+        var networkThroughputNormalizer = new RollingNetworkThroughputNormalizer();
+        var dockOverviewPages = new Dictionary<PerformanceMetricKind, PerformanceOverviewPage>();
+        foreach (var metric in OverviewMetrics)
+        {
+            dockOverviewPages.Add(metric, new PerformanceOverviewPage(mainPage, metric, networkThroughputNormalizer));
+        }
+
+        _dockOverviewPages = [.. dockOverviewPages.Values];
+        ICommand? GetDockOverviewPage(PerformanceMetricKind metric) =>
+            dockOverviewPages.TryGetValue(metric, out var page) ? page : null;
+
+        _bandPage = new PerformanceWidgetsPage(_settingsManager, true, itemCommandFactory: GetDockOverviewPage, selectionState: selectionState);
+        _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu, GetDockOverviewPage, selectionState);
+        _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory, GetDockOverviewPage, selectionState);
+        _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network, GetDockOverviewPage, selectionState);
+        _diskBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Disk, GetDockOverviewPage, selectionState);
+        _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu, GetDockOverviewPage, selectionState);
+        _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery, selectionState: selectionState);
 
         List<ICommandItem> bands = [
             new CommandItem(_bandPage) { Title = DisplayName },
@@ -233,6 +256,13 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
     private void DisposeActivePages()
     {
+        foreach (var page in _dockOverviewPages)
+        {
+            page.Dispose();
+        }
+
+        _dockOverviewPages = [];
+
         _mainPage?.Dispose();
         _mainPage = null;
 

@@ -194,7 +194,10 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
+        <Grid
+            Grid.Row="0"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+            Visibility="{x:Bind h:BindTransformers.BoolToVisibility(ViewModel.ShouldShowTopBar), Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -563,7 +566,7 @@
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
             BorderThickness="0,1,0,0"
-            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
+            Visibility="{x:Bind h:BindTransformers.VisibleWhenAll(ExpandedMode, ViewModel.ShouldShowCommandBar), Mode=OneWay}">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 

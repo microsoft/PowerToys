@@ -67,6 +67,8 @@ public partial class ShellViewModel : ObservableObject,
                     IsSearchBoxVisible = true;
                 }
 
+                UpdateTransientChromeProperties();
+
                 if (oldValue is IDisposable disposable)
                 {
                     try
@@ -88,6 +90,13 @@ public partial class ShellViewModel : ObservableObject,
         {
             IsSearchBoxVisible = CurrentPage.HasSearchBox;
         }
+
+        if (e.PropertyName is nameof(PageViewModel.HasSearchBox)
+            or nameof(PageViewModel.HasBackButton)
+            or nameof(ContentPageViewModel.CanOpenContextMenu))
+        {
+            UpdateTransientChromeProperties();
+        }
     }
 
     private IPage? _rootPage;
@@ -98,6 +107,13 @@ public partial class ShellViewModel : ObservableObject,
     public bool IsNested => _isNested && !_currentlyTransient;
 
     public bool IsTransient => _currentlyTransient;
+
+    public bool ShouldShowTopBar => !CurrentPage.UseCompactDockPresentation || CurrentPage.HasSearchBox || CurrentPage.HasBackButton;
+
+    public bool ShouldShowCommandBar =>
+        !CurrentPage.UseCompactDockPresentation
+        || CurrentPage is not ContentPageViewModel contentPage
+        || contentPage.CanOpenContextMenu;
 
     public PageViewModel NullPage { get; private set; }
 
@@ -191,18 +207,7 @@ public partial class ShellViewModel : ObservableObject,
                             {
                                 if (cancellationToken.IsCancellationRequested)
                                 {
-                                    if (viewModel is IDisposable disposable)
-                                    {
-                                        try
-                                        {
-                                            disposable.Dispose();
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            CoreLogger.LogError(ex.ToString());
-                                        }
-                                    }
-
+                                    viewModel.SafeCleanup();
                                     return;
                                 }
 
@@ -221,18 +226,7 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                if (viewModel is IDisposable disposable)
-                {
-                    try
-                    {
-                        disposable.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreLogger.LogError(ex.ToString());
-                    }
-                }
-
+                viewModel.SafeCleanup();
                 return;
             }
 
@@ -304,7 +298,7 @@ public partial class ShellViewModel : ObservableObject,
                 }
 
                 _isNested = !isMainPage;
-                _currentlyTransient = message.TransientPage;
+                SetTransientState(message.TransientPage);
 
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
@@ -326,6 +320,8 @@ public partial class ShellViewModel : ObservableObject,
 
                 pageViewModel.IsRootPage = isMainPage;
                 pageViewModel.HasBackButton = IsNested;
+                pageViewModel.IsTransientPage = message.TransientPage;
+                pageViewModel.UseCompactDockPresentation = message.UseCompactDockPresentation;
 
                 // Clear command bar, ViewModel initialization can already set new commands if it wants to
                 OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
@@ -546,7 +542,7 @@ public partial class ShellViewModel : ObservableObject,
     /// </summary>
     public void ResetToHome()
     {
-        _currentlyTransient = false;
+        SetTransientState(false);
         _rootPageService.GoHome();
         WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
     }
@@ -566,12 +562,31 @@ public partial class ShellViewModel : ObservableObject,
         // If the window was hidden while we had a transient page, we need to reset that state.
         if (_currentlyTransient)
         {
-            _currentlyTransient = false;
+            SetTransientState(false);
 
             // navigate back to the main page without animation
             GoHome(withAnimation: false, focusSearch: false);
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
         }
+    }
+
+    private void SetTransientState(bool value)
+    {
+        if (_currentlyTransient == value)
+        {
+            return;
+        }
+
+        _currentlyTransient = value;
+        OnPropertyChanged(nameof(IsNested));
+        OnPropertyChanged(nameof(IsTransient));
+        UpdateTransientChromeProperties();
+    }
+
+    private void UpdateTransientChromeProperties()
+    {
+        OnPropertyChanged(nameof(ShouldShowTopBar));
+        OnPropertyChanged(nameof(ShouldShowCommandBar));
     }
 
     private void OnUIThread(Action action)

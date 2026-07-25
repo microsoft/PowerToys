@@ -31,6 +31,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     public string Id => _rootItem.Command.Id;
 
+    public string ProviderId => _bandSettings.ProviderId;
+
     /// <summary>
     /// Gets or sets a value indicating whether titles are shown for items in this band.
     /// This is a preview value - call <see cref="SaveLabelSettings"/> to persist or
@@ -298,6 +300,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
 public partial class DockItemViewModel : CommandItemViewModel
 {
+    private const double DefaultTitleMinWidth = 24;
+    private const double TransferRateTitleMinWidth = 64;
+
     private bool _showTitle = true;
     private bool _showSubtitle = true;
 
@@ -348,6 +353,14 @@ public partial class DockItemViewModel : CommandItemViewModel
 
     public override string Title => _showTitle ? ItemTitle : string.Empty;
 
+    public double TitleMinWidth => GetTitleMinWidth(Title);
+
+    internal static double GetTitleMinWidth(string title) =>
+        title.EndsWith("bps", StringComparison.OrdinalIgnoreCase) ||
+        title.EndsWith("/s", StringComparison.OrdinalIgnoreCase)
+            ? TransferRateTitleMinWidth
+            : DefaultTitleMinWidth;
+
     public override string Subtitle => _showSubtitle ? base.Subtitle : string.Empty;
 
     public override bool HasText => (_showTitle && !string.IsNullOrEmpty(ItemTitle)) || (_showSubtitle && !string.IsNullOrEmpty(base.Subtitle));
@@ -380,6 +393,11 @@ public partial class DockItemViewModel : CommandItemViewModel
             if (e.PropertyName is nameof(Title) or nameof(Subtitle))
             {
                 UpdateProperty(nameof(Tooltip));
+            }
+
+            if (e.PropertyName == nameof(Title))
+            {
+                UpdateProperty(nameof(TitleMinWidth));
             }
         };
     }

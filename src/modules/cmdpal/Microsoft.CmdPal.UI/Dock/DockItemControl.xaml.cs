@@ -17,6 +17,8 @@ namespace Microsoft.CmdPal.UI.Dock;
 [ContentProperty(Name = nameof(Icon))]
 public sealed partial class DockItemControl : Control
 {
+    private const double DefaultTitleMinWidth = 24;
+
     public DockItemControl()
     {
         DefaultStyleKey = typeof(DockItemControl);
@@ -46,6 +48,15 @@ public sealed partial class DockItemControl : Control
     {
         get => (string)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    public static readonly DependencyProperty TitleMinWidthProperty =
+        DependencyProperty.Register(nameof(TitleMinWidth), typeof(double), typeof(DockItemControl), new PropertyMetadata(DefaultTitleMinWidth));
+
+    public double TitleMinWidth
+    {
+        get => (double)GetValue(TitleMinWidthProperty);
+        set => SetValue(TitleMinWidthProperty, value);
     }
 
     public static readonly DependencyProperty SubtitleProperty =

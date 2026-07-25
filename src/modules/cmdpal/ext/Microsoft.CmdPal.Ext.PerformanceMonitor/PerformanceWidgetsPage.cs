@@ -69,6 +69,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly string _id;
     private readonly bool _isBandPage;
     private readonly PerformanceMetricKind? _singleMetric;
+    private readonly Func<PerformanceMetricKind, ICommand?>? _itemCommandFactory;
 
     private readonly SystemCPUUsageWidgetPage? _cpuPage;
     private readonly ListItem? _cpuItem;
@@ -85,6 +86,16 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemGPUUsageWidgetPage? _gpuPage;
     private readonly ListItem? _gpuItem;
 
+    internal SystemCPUUsageWidgetPage CpuPage => _cpuPage ?? throw new InvalidOperationException("CPU metrics are not available on this page.");
+
+    internal SystemMemoryUsageWidgetPage MemoryPage => _memoryPage ?? throw new InvalidOperationException("Memory metrics are not available on this page.");
+
+    internal SystemDiskUsageWidgetPage DiskPage => _diskPage ?? throw new InvalidOperationException("Disk metrics are not available on this page.");
+
+    internal SystemNetworkUsageWidgetPage NetworkPage => _networkPage ?? throw new InvalidOperationException("Network metrics are not available on this page.");
+
+    internal SystemGPUUsageWidgetPage GpuPage => _gpuPage ?? throw new InvalidOperationException("GPU metrics are not available on this page.");
+
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
 
@@ -100,18 +111,26 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private string _diskReadSpeed = string.Empty;
     private string _diskWriteSpeed = string.Empty;
 
-    public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false, PerformanceMetricKind? singleMetric = null)
+    public PerformanceWidgetsPage(
+        SettingsManager settingsManager,
+        bool isBandPage = false,
+        PerformanceMetricKind? singleMetric = null,
+        Func<PerformanceMetricKind, ICommand?>? itemCommandFactory = null,
+        PerformanceMetricSelectionState? selectionState = null)
     {
+        selectionState ??= new PerformanceMetricSelectionState();
         _isBandPage = isBandPage;
         _singleMetric = singleMetric;
+        _itemCommandFactory = isBandPage ? itemCommandFactory : null;
         _id = GetBandId(singleMetric);
 
         if (IncludesMetric(PerformanceMetricKind.Cpu))
         {
             _cpuPage = new SystemCPUUsageWidgetPage();
-            _cpuItem = new ListItem(_cpuPage)
+            _cpuItem = new ListItem(GetItemCommand(PerformanceMetricKind.Cpu, _cpuPage))
             {
                 Title = _cpuPage.GetItemTitle(isBandPage),
+                Icon = Icons.CpuIcon,
                 MoreCommands = _cpuPage.Commands,
             };
 
@@ -124,9 +143,10 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (IncludesMetric(PerformanceMetricKind.Memory))
         {
             _memoryPage = new SystemMemoryUsageWidgetPage();
-            _memoryItem = new ListItem(_memoryPage)
+            _memoryItem = new ListItem(GetItemCommand(PerformanceMetricKind.Memory, _memoryPage))
             {
                 Title = _memoryPage.GetItemTitle(isBandPage),
+                Icon = Icons.MemoryIcon,
                 MoreCommands = _memoryPage.Commands,
             };
 
@@ -138,16 +158,17 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
         if (IncludesMetric(PerformanceMetricKind.Network))
         {
-            _networkPage = new SystemNetworkUsageWidgetPage(settingsManager);
-            _networkItem = new ListItem(_networkPage)
+            _networkPage = new SystemNetworkUsageWidgetPage(settingsManager, selectionState);
+            _networkItem = new ListItem(GetItemCommand(PerformanceMetricKind.Network, _networkPage))
             {
                 Title = _networkPage.GetItemTitle(isBandPage),
+                Icon = Icons.NetworkIcon,
                 MoreCommands = _networkPage.Commands,
             };
 
             if (isBandPage)
             {
-                _networkUpItem = new ListItem(_networkPage)
+                _networkUpItem = new ListItem(GetItemCommand(PerformanceMetricKind.Network, _networkPage))
                 {
                     Title = $"{_networkUpSpeed}",
                     Subtitle = Resources.GetResource("Network_Send_Subtitle"),
@@ -155,7 +176,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                     MoreCommands = _networkPage.Commands,
                 };
 
-                _networkDownItem = new ListItem(_networkPage)
+                _networkDownItem = new ListItem(GetItemCommand(PerformanceMetricKind.Network, _networkPage))
                 {
                     Title = $"{_networkDownSpeed}",
                     Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
@@ -176,10 +197,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
         if (IncludesMetric(PerformanceMetricKind.Disk))
         {
-            _diskPage = new SystemDiskUsageWidgetPage(settingsManager);
-            _diskItem = new ListItem(_diskPage)
+            _diskPage = new SystemDiskUsageWidgetPage(settingsManager, selectionState);
+            _diskItem = new ListItem(GetItemCommand(PerformanceMetricKind.Disk, _diskPage))
             {
                 Title = _diskPage.GetItemTitle(isBandPage),
+                Icon = Icons.HardDriveIcon,
                 MoreCommands = _diskPage.Commands,
             };
 
@@ -196,10 +218,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
         if (IncludesMetric(PerformanceMetricKind.Gpu))
         {
-            _gpuPage = new SystemGPUUsageWidgetPage();
-            _gpuItem = new ListItem(_gpuPage)
+            _gpuPage = new SystemGPUUsageWidgetPage(selectionState);
+            _gpuItem = new ListItem(GetItemCommand(PerformanceMetricKind.Gpu, _gpuPage))
             {
                 Title = _gpuPage.GetItemTitle(isBandPage),
+                Icon = Icons.GpuIcon,
                 MoreCommands = _gpuPage.Commands,
             };
 
@@ -224,7 +247,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             if (batteryStats.HasBattery)
             {
                 _batteryPage = new SystemBatteryUsageWidgetPage();
-                _batteryItem = new ListItem(_batteryPage)
+                _batteryItem = new ListItem(GetItemCommand(PerformanceMetricKind.Battery, _batteryPage))
                 {
                     Title = _batteryPage.GetItemTitle(isBandPage),
                     Icon = _batteryPage.CurrentIcon,
@@ -327,7 +350,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         {
             if (_networkUpItem is null)
             {
-                _networkUpItem = new ListItem(_networkPage!)
+                _networkUpItem = new ListItem(GetItemCommand(PerformanceMetricKind.Network, _networkPage!))
                 {
                     Title = $"{_networkUpSpeed}",
                     Subtitle = Resources.GetResource("Network_Send_Subtitle"),
@@ -340,7 +363,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
             if (_networkDownItem is null)
             {
-                _networkDownItem = new ListItem(_networkPage!)
+                _networkDownItem = new ListItem(GetItemCommand(PerformanceMetricKind.Network, _networkPage!))
                 {
                     Title = $"{_networkDownSpeed}",
                     Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
@@ -360,7 +383,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private IListItem[] CreateDiskBandItems()
     {
-        _diskReadItem ??= new ListItem(_diskPage!)
+        _diskReadItem ??= new ListItem(GetItemCommand(PerformanceMetricKind.Disk, _diskPage!))
         {
             Subtitle = Resources.GetResource("Disk_Read_Subtitle"),
             Icon = Icons.FileReadIcon,
@@ -368,7 +391,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         };
         _diskReadItem.Title = _diskReadSpeed;
 
-        _diskWriteItem ??= new ListItem(_diskPage!)
+        _diskWriteItem ??= new ListItem(GetItemCommand(PerformanceMetricKind.Disk, _diskPage!))
         {
             Subtitle = Resources.GetResource("Disk_Write_Subtitle"),
             Icon = Icons.FileWriteIcon,
@@ -399,7 +422,10 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         return _singleMetric is null || _singleMetric == metric;
     }
 
-    private static string GetMetricSuffix(PerformanceMetricKind metric)
+    private ICommand GetItemCommand(PerformanceMetricKind metric, ICommand metricPage) =>
+        _itemCommandFactory?.Invoke(metric) ?? metricPage;
+
+    internal static string GetMetricSuffix(PerformanceMetricKind metric)
     {
         return metric switch
         {
@@ -461,6 +487,20 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         _formContent.DataJson = ContentDataJson.ToJsonString();
 
         Updated?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Thread-safe lookup of a single already-formatted content value. Lets a
+    /// sibling page (e.g. the compact <see cref="PerformanceOverviewPage"/>
+    /// dashboard) reuse this page's latest data without duplicating its data
+    /// collection or reaching into <see cref="ContentData"/> directly.
+    /// </summary>
+    internal string GetContentValue(string key)
+    {
+        lock (ContentData)
+        {
+            return ContentData.TryGetValue(key, out var value) ? value : string.Empty;
+        }
     }
 
     protected abstract void LoadContentData();
@@ -779,11 +819,14 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
 
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
-    private int _diskIndex;
+    private readonly PerformanceMetricSelectionState _selectionState;
 
-    public SystemDiskUsageWidgetPage(SettingsManager settingsManager)
+    public SystemDiskUsageWidgetPage(
+        SettingsManager settingsManager,
+        PerformanceMetricSelectionState? selectionState = null)
     {
         _settingsManager = settingsManager;
+        _selectionState = selectionState ?? new PerformanceMetricSelectionState();
         _dataManager = new(DataType.Disk, () => UpdateWidget());
         Commands = [
             new CommandContextItem(new PrevDiskCommand(this) { Name = Resources.GetResource("Previous_Disk_Title") }),
@@ -805,14 +848,15 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var diskName = currentData.GetDiskName(_diskIndex);
-            var diskStats = currentData.GetDiskUsage(_diskIndex);
+            var diskIndex = _selectionState.DiskIndex;
+            var diskName = currentData.GetDiskName(diskIndex);
+            var diskStats = currentData.GetDiskUsage(diskIndex);
 
             ContentData["diskUsage"] = FloatToPercentString(diskStats.Usage);
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
-            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
+            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(diskIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
             ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
 
@@ -905,13 +949,13 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
 
     private void HandlePrevDisk()
     {
-        _diskIndex = _dataManager.GetDiskStats().GetPrevDiskIndex(_diskIndex);
+        _selectionState.DiskIndex = _dataManager.GetDiskStats().GetPrevDiskIndex(_selectionState.DiskIndex);
         UpdateWidget();
     }
 
     private void HandleNextDisk()
     {
-        _diskIndex = _dataManager.GetDiskStats().GetNextDiskIndex(_diskIndex);
+        _selectionState.DiskIndex = _dataManager.GetDiskStats().GetNextDiskIndex(_selectionState.DiskIndex);
         UpdateWidget();
     }
 
@@ -971,11 +1015,15 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
-    private int _networkIndex;
+    private readonly PerformanceMetricSelectionState _selectionState;
+    private float _totalThroughputBytesPerSecond;
 
-    public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
+    public SystemNetworkUsageWidgetPage(
+        SettingsManager settingsManager,
+        PerformanceMetricSelectionState? selectionState = null)
     {
         _settingsManager = settingsManager;
+        _selectionState = selectionState ?? new PerformanceMetricSelectionState();
         _dataManager = new(DataType.Network, () => UpdateWidget());
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
@@ -997,14 +1045,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var netName = currentData.GetNetworkName(_networkIndex);
-            var networkStats = currentData.GetNetworkUsage(_networkIndex);
+            var networkIndex = _selectionState.NetworkIndex;
+            var netName = currentData.GetNetworkName(networkIndex);
+            var networkStats = currentData.GetNetworkUsage(networkIndex);
+            _totalThroughputBytesPerSecond = Math.Max(0, networkStats.Sent + networkStats.Received);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
             ContentData["netReceived"] = SpeedToString(networkStats.Received);
             ContentData["networkName"] = netName;
-            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
+            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(networkIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
             ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
 
@@ -1014,6 +1064,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
         catch (Exception e)
         {
+            _totalThroughputBytesPerSecond = 0;
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
@@ -1067,6 +1118,14 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
+    internal float GetTotalThroughputBytesPerSecond()
+    {
+        lock (ContentData)
+        {
+            return _totalThroughputBytesPerSecond;
+        }
+    }
+
     private string SpeedToString(float bytesPerSec)
     {
         return _settingsManager.NetworkSpeedUnit switch
@@ -1097,13 +1156,13 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private void HandlePrevNetwork()
     {
-        _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
+        _selectionState.NetworkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_selectionState.NetworkIndex);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
-        _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
+        _selectionState.NetworkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_selectionState.NetworkIndex);
         UpdateWidget();
     }
 
@@ -1163,10 +1222,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
     private readonly DataManager _dataManager;
     private readonly string _gpuActiveEngType = "3D";
-    private int _gpuActiveIndex;
+    private readonly PerformanceMetricSelectionState _selectionState;
 
-    public SystemGPUUsageWidgetPage()
+    public SystemGPUUsageWidgetPage(PerformanceMetricSelectionState? selectionState = null)
     {
+        _selectionState = selectionState ?? new PerformanceMetricSelectionState();
         _dataManager = new(DataType.GPU, () => UpdateWidget());
 
         Commands = [
@@ -1189,12 +1249,13 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             var dataDuration = timer.ElapsedMilliseconds;
 
-            var gpuName = stats.GetGPUName(_gpuActiveIndex);
+            var gpuIndex = _selectionState.GpuIndex;
+            var gpuName = stats.GetGPUName(gpuIndex);
 
-            ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
+            ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(gpuIndex, _gpuActiveEngType));
             ContentData["gpuName"] = gpuName;
-            ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
+            ContentData["gpuTemp"] = stats.GetGPUTemperature(gpuIndex);
+            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(gpuIndex);
             ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
             ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
 
@@ -1262,13 +1323,13 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
     private void HandlePrevGPU()
     {
-        _gpuActiveIndex = _dataManager.GetGPUStats().GetPrevGPUIndex(_gpuActiveIndex);
+        _selectionState.GpuIndex = _dataManager.GetGPUStats().GetPrevGPUIndex(_selectionState.GpuIndex);
         UpdateWidget();
     }
 
     private void HandleNextGPU()
     {
-        _gpuActiveIndex = _dataManager.GetGPUStats().GetNextGPUIndex(_gpuActiveIndex);
+        _selectionState.GpuIndex = _dataManager.GetGPUStats().GetNextGPUIndex(_selectionState.GpuIndex);
         UpdateWidget();
     }
 

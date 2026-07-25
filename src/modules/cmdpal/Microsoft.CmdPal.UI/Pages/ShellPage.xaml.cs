@@ -241,6 +241,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             if (!ViewModel.IsNested)
             {
                 // todo BODGY
+                foreach (var entry in RootFrame.BackStack)
+                {
+                    if (entry.Parameter is AsyncNavigationRequest { TargetViewModel: PageViewModel pageViewModel })
+                    {
+                        pageViewModel.SafeCleanupIfTransient();
+                    }
+                }
+
                 RootFrame.BackStack.Clear();
             }
         });

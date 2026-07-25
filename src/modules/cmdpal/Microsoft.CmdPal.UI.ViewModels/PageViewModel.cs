@@ -16,6 +16,10 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     public TaskScheduler Scheduler { get; private set; }
 
     private readonly ExtensionObject<IPage> _pageModel;
+    private readonly Lock _lifecycleLock = new();
+    private bool _initializationInProgress;
+    private bool _cleanupRequested;
+    private bool _cleanupCompleted;
 
     public bool IsLoading => ModelIsLoading || (!IsInitialized);
 
@@ -45,6 +49,18 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
     /// </summary>
     [ObservableProperty]
     public partial bool HasBackButton { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this page is the temporary root
+    /// of a transient Dock window.
+    /// </summary>
+    public bool IsTransientPage { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this page uses the compact,
+    /// chrome-free Performance Monitor Dock presentation.
+    /// </summary>
+    public bool UseCompactDockPresentation { get; set; }
 
     // This is set from the SearchBar
     [ObservableProperty]
@@ -132,13 +148,33 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
         // TODO: We may want to investigate using some sort of AsyncEnumerable or populating these as they come into the UI layer
         //       Though we have to think about threading here and circling back to the UI thread with a TaskScheduler.
+        lock (_lifecycleLock)
+        {
+            if (_cleanupRequested)
+            {
+                return Task.FromResult(false);
+            }
+
+            _initializationInProgress = true;
+        }
+
+        var initialized = false;
         try
         {
             InitializeProperties();
+            initialized = true;
         }
         catch (Exception ex)
         {
             ShowException(ex, _pageModel?.Unsafe?.Name);
+        }
+        finally
+        {
+            CompleteInitialization();
+        }
+
+        if (!initialized)
+        {
             return Task.FromResult(false);
         }
 
@@ -146,7 +182,16 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         Task.Factory.StartNew(
             () =>
             {
-                IsInitialized = true;
+                var publishInitialized = false;
+                lock (_lifecycleLock)
+                {
+                    publishInitialized = !_cleanupRequested;
+                }
+
+                if (publishInitialized)
+                {
+                    IsInitialized = true;
+                }
 
                 // TODO: Do we want an event/signal here that the Page Views can listen to? (i.e. ListPage setting the selected index to 0, however, in async world the user may have already started navigating around page...)
             },
@@ -275,6 +320,57 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         if (model is not null)
         {
             model.PropChanged -= Model_PropChanged;
+        }
+    }
+
+    public override void SafeCleanup()
+    {
+        var cleanupNow = false;
+        lock (_lifecycleLock)
+        {
+            if (_cleanupCompleted)
+            {
+                return;
+            }
+
+            _cleanupRequested = true;
+            if (!_initializationInProgress)
+            {
+                _cleanupCompleted = true;
+                cleanupNow = true;
+            }
+        }
+
+        if (cleanupNow)
+        {
+            base.SafeCleanup();
+        }
+    }
+
+    private void CompleteInitialization()
+    {
+        var cleanupNow = false;
+        lock (_lifecycleLock)
+        {
+            _initializationInProgress = false;
+            if (_cleanupRequested && !_cleanupCompleted)
+            {
+                _cleanupCompleted = true;
+                cleanupNow = true;
+            }
+        }
+
+        if (cleanupNow)
+        {
+            base.SafeCleanup();
+        }
+    }
+
+    public void SafeCleanupIfTransient()
+    {
+        if (IsTransientPage)
+        {
+            SafeCleanup();
         }
     }
 }

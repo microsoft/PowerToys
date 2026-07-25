@@ -1,0 +1,323 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.CmdPal.UI.Controls.PerformanceOverviewControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="Transparent"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="PerformanceAccentBrush" Color="#FF0063B1" />
+                    <SolidColorBrush x:Key="PerformanceAccentTextBrush" Color="#FF005A9E" />
+                    <SolidColorBrush x:Key="PerformanceAttentionBrush" Color="#FFD13438" />
+                    <SolidColorBrush x:Key="PerformanceAttentionTextBrush" Color="#FFB10E1E" />
+                    <SolidColorBrush x:Key="PerformanceGoodBrush" Color="#FF54A254" />
+                    <SolidColorBrush x:Key="PerformanceGoodTextBrush" Color="#FF0B6A0B" />
+                    <SolidColorBrush x:Key="PerformanceTrackBrush" Color="#73808080" />
+                    <SolidColorBrush x:Key="PerformanceWarningBrush" Color="#FFC3AB23" />
+                    <SolidColorBrush x:Key="PerformanceWarningTextBrush" Color="#FF6D5700" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="PerformanceAccentBrush" Color="#FF0063B1" />
+                    <SolidColorBrush x:Key="PerformanceAccentTextBrush" Color="#FF75B9FF" />
+                    <SolidColorBrush x:Key="PerformanceAttentionBrush" Color="#FFD13438" />
+                    <SolidColorBrush x:Key="PerformanceAttentionTextBrush" Color="#FFFF6B6B" />
+                    <SolidColorBrush x:Key="PerformanceGoodBrush" Color="#FF54A254" />
+                    <SolidColorBrush x:Key="PerformanceGoodTextBrush" Color="#FF6CCB5F" />
+                    <SolidColorBrush x:Key="PerformanceTrackBrush" Color="#73808080" />
+                    <SolidColorBrush x:Key="PerformanceWarningBrush" Color="#FFC3AB23" />
+                    <SolidColorBrush x:Key="PerformanceWarningTextBrush" Color="#FFF4C430" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <StaticResource x:Key="PerformanceAccentBrush" ResourceKey="SystemColorHighlightBrush" />
+                    <StaticResource x:Key="PerformanceAccentTextBrush" ResourceKey="SystemColorWindowTextBrush" />
+                    <StaticResource x:Key="PerformanceAttentionBrush" ResourceKey="SystemColorHighlightBrush" />
+                    <StaticResource x:Key="PerformanceAttentionTextBrush" ResourceKey="SystemColorWindowTextBrush" />
+                    <StaticResource x:Key="PerformanceGoodBrush" ResourceKey="SystemColorHighlightBrush" />
+                    <StaticResource x:Key="PerformanceGoodTextBrush" ResourceKey="SystemColorWindowTextBrush" />
+                    <StaticResource x:Key="PerformanceTrackBrush" ResourceKey="SystemColorButtonFaceBrush" />
+                    <StaticResource x:Key="PerformanceWarningBrush" ResourceKey="SystemColorHighlightBrush" />
+                    <StaticResource x:Key="PerformanceWarningTextBrush" ResourceKey="SystemColorWindowTextBrush" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+            <Style x:Key="PerformanceOverviewProgressBarStyle" TargetType="ProgressBar">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="2" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="IsHitTestVisible" Value="False" />
+                <Setter Property="Maximum" Value="100" />
+                <Setter Property="MinHeight" Value="4" />
+                <Setter Property="Minimum" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid
+        AutomationProperties.AutomationId="PerformanceOverviewDashboard"
+        AutomationProperties.Name="{x:Bind ViewModel.TitleText, Mode=OneWay}">
+        <StackPanel Spacing="8">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                    AutomationProperties.AutomationId="PerformanceOverviewTitle"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind ViewModel.TitleText, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+                <TextBlock
+                    Grid.Column="1"
+                    AutomationProperties.AutomationId="PerformanceOverviewStatus"
+                    FontSize="12"
+                    Foreground="{ThemeResource PerformanceGoodTextBrush}"
+                    Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+            </Grid>
+
+            <Border
+                Padding="12,8"
+                Background="{ThemeResource ControlFillColorSecondaryBrush}"
+                CornerRadius="{ThemeResource ControlCornerRadius}">
+                <StackPanel Spacing="1">
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewHeroLabel"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.HeroLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewHeroValue"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.HeroMetric, Mode=OneWay}"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        Text="{x:Bind ViewModel.HeroValueText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Border>
+
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewCpuLabel"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PerformanceAccentTextBrush}"
+                        Text="{x:Bind ViewModel.CpuLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewCpuDetail"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Stretch"
+                        Text="{x:Bind ViewModel.CpuDetailText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Border
+                        Height="1"
+                        Background="{ThemeResource PerformanceTrackBrush}"
+                        CornerRadius="0.5"
+                        VerticalAlignment="Center" />
+                    <ProgressBar
+                        AutomationProperties.AutomationId="PerformanceOverviewCpuBar"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.CpuDetailText, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.CpuLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource PerformanceAccentBrush}"
+                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                        Value="{x:Bind ViewModel.CpuPercent, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewGpuLabel"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PerformanceAccentTextBrush}"
+                        Text="{x:Bind ViewModel.GpuLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewGpuDetail"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Stretch"
+                        Text="{x:Bind ViewModel.GpuDetailText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Border
+                        Height="1"
+                        Background="{ThemeResource PerformanceTrackBrush}"
+                        CornerRadius="0.5"
+                        VerticalAlignment="Center" />
+                    <ProgressBar
+                        AutomationProperties.AutomationId="PerformanceOverviewGpuBar"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.GpuDetailText, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.GpuLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource PerformanceAccentBrush}"
+                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                        Value="{x:Bind ViewModel.GpuPercent, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewMemoryLabel"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PerformanceWarningTextBrush}"
+                        Text="{x:Bind ViewModel.MemoryLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewMemoryDetail"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Stretch"
+                        Text="{x:Bind ViewModel.MemoryDetailText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Border
+                        Height="1"
+                        Background="{ThemeResource PerformanceTrackBrush}"
+                        CornerRadius="0.5"
+                        VerticalAlignment="Center" />
+                    <ProgressBar
+                        AutomationProperties.AutomationId="PerformanceOverviewMemoryBar"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.MemoryDetailText, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.MemoryLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource PerformanceWarningBrush}"
+                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                        Value="{x:Bind ViewModel.MemoryPercent, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewDiskLabel"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PerformanceGoodTextBrush}"
+                        Text="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewDiskDetail"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Stretch"
+                        Text="{x:Bind ViewModel.DiskDetailText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Border
+                        Height="1"
+                        Background="{ThemeResource PerformanceTrackBrush}"
+                        CornerRadius="0.5"
+                        VerticalAlignment="Center" />
+                    <ProgressBar
+                        AutomationProperties.AutomationId="PerformanceOverviewDiskBar"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.DiskDetailText, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource PerformanceGoodBrush}"
+                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                        Value="{x:Bind ViewModel.DiskPercent, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+
+            <Grid RowSpacing="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+                <Grid ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        AutomationProperties.AutomationId="PerformanceOverviewNetworkLabel"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Foreground="{ThemeResource PerformanceAttentionTextBrush}"
+                        Text="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewNetworkDetail"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        HorizontalAlignment="Stretch"
+                        Text="{x:Bind ViewModel.NetworkDetailText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Border
+                        Height="1"
+                        Background="{ThemeResource PerformanceTrackBrush}"
+                        CornerRadius="0.5"
+                        VerticalAlignment="Center" />
+                    <ProgressBar
+                        AutomationProperties.AutomationId="PerformanceOverviewNetworkBar"
+                        AutomationProperties.HelpText="{x:Bind ViewModel.NetworkDetailText, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource PerformanceAttentionBrush}"
+                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                        Value="{x:Bind ViewModel.NetworkPercent, Mode=OneWay}" />
+                </Grid>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

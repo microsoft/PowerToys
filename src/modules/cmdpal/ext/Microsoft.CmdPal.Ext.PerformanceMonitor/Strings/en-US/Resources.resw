@@ -463,4 +463,28 @@
   <data name="Disk_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
   </data>
+  <data name="Overview_Memory_Detail_Format" xml:space="preserve">
+    <value>{0} / {1}</value>
+    <comment>Compact memory detail shown in the performance overview dashboard. {0} is memory in use, {1} is total memory.</comment>
+  </data>
+  <data name="Overview_Live_Status" xml:space="preserve">
+    <value>Live</value>
+    <comment>Status shown in the performance overview header while metrics update.</comment>
+  </data>
+  <data name="Overview_RAM_Label" xml:space="preserve">
+    <value>RAM</value>
+    <comment>Short memory label used in the compact performance overview.</comment>
+  </data>
+  <data name="Overview_Percent_Detail_Format" xml:space="preserve">
+    <value>{0} · {1}</value>
+    <comment>Compact metric detail. {0} is utilization percentage and {1} is a secondary measurement such as speed or temperature.</comment>
+  </data>
+  <data name="Overview_Disk_Detail_Format" xml:space="preserve">
+    <value>{0} {1} · {2} {3}</value>
+    <comment>Compact disk detail shown in the performance overview dashboard. {0}/{2} are the localized "Read"/"Write" words, {1}/{3} are their speeds.</comment>
+  </data>
+  <data name="Overview_Network_Detail_Format" xml:space="preserve">
+    <value>{0} {1} · {2} {3}</value>
+    <comment>Compact network detail shown in the performance overview dashboard. {0}/{2} are the localized "Send"/"Receive" words, {1}/{3} are their speeds.</comment>
+  </data>
 </root>

@@ -1522,7 +1522,7 @@ public sealed partial class DockWindow : WindowEx,
         {
             _paletteOpenedFromDock = true;
             RevealAutoHideDock(immediate: true);
-            RequestShowPaletteOnUiThread(message.PosDips);
+            RequestShowPaletteOnUiThread(message.PosDips, message.UseCompactSize);
         });
     }
 
@@ -1575,7 +1575,7 @@ public sealed partial class DockWindow : WindowEx,
         MonitorLabelTeachingTip.IsOpen = false;
     }
 
-    private void RequestShowPaletteOnUiThread(Point posDips)
+    private void RequestShowPaletteOnUiThread(Point posDips, bool useCompactSize)
     {
         // pos is relative to our root. We need to convert to absolute
         // virtual-screen coords.
@@ -1673,7 +1673,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // Now that we know the anchor corner, and where to attempt to place it, we can
         // ask the palette to show itself there.
-        WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
+        WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint, dpi, useCompactSize));
     }
 
     public DockWindowViewModel WindowViewModel => _windowViewModel;
@@ -1798,11 +1798,11 @@ internal static class ShowDesktop
 
 internal sealed record BringToTopMessage(bool BringToFront);
 
-internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd);
+internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd, bool UseCompactSize);
 
 internal sealed record ShowDockMonitorLabelsMessage(bool Show);
 
-internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor);
+internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor, uint Dpi, bool UseCompactSize);
 
 internal enum AnchorPoint
 {

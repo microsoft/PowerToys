@@ -17,6 +17,7 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
     {
         ContentViewModel? viewModel = content switch
         {
+            IFormContent form when ContentPerformanceOverviewViewModel.IsPerformanceOverview(form) => new ContentPerformanceOverviewViewModel(form, context),
             IFormContent form => new ContentFormViewModel(form, context),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
             ITreeContent tree => new ContentTreeViewModel(tree, context),

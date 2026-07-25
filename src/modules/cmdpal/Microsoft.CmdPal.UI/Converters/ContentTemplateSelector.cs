@@ -14,6 +14,8 @@ public partial class ContentTemplateSelector : DataTemplateSelector
     // These will be "filled-in" in the XAML code.
     public DataTemplate? FormTemplate { get; set; }
 
+    public DataTemplate? PerformanceOverviewTemplate { get; set; }
+
     public DataTemplate? MarkdownTemplate { get; set; }
 
     public DataTemplate? TreeTemplate { get; set; }
@@ -27,6 +29,7 @@ public partial class ContentTemplateSelector : DataTemplateSelector
         return item is ContentViewModel element
             ? element switch
             {
+                ContentPerformanceOverviewViewModel => PerformanceOverviewTemplate,
                 ContentFormViewModel => FormTemplate,
                 ContentMarkdownViewModel => MarkdownTemplate,
                 ContentTreeViewModel => TreeTemplate,

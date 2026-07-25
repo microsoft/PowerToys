@@ -47,6 +47,7 @@
                 FormTemplate="{StaticResource FormContentTemplate}"
                 ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource MarkdownContentTemplate}"
+                PerformanceOverviewTemplate="{StaticResource PerformanceOverviewContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
@@ -55,12 +56,19 @@
                 FormTemplate="{StaticResource NestedFormContentTemplate}"
                 ImageTemplate="{StaticResource ImageContentTemplate}"
                 MarkdownTemplate="{StaticResource NestedMarkdownContentTemplate}"
+                PerformanceOverviewTemplate="{StaticResource PerformanceOverviewContentTemplate}"
                 PlainTextTemplate="{StaticResource PlainTextContentTemplate}"
                 TreeTemplate="{StaticResource TreeContentTemplate}" />
 
             <DataTemplate x:Key="FormContentTemplate" x:DataType="viewModels:ContentFormViewModel">
                 <Grid Margin="0,4,4,4" Padding="12,8,8,8">
                     <cmdPalControls:ContentFormControl ViewModel="{x:Bind}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="PerformanceOverviewContentTemplate" x:DataType="viewModels:ContentPerformanceOverviewViewModel">
+                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                    <cmdPalControls:PerformanceOverviewControl ViewModel="{x:Bind}" />
                 </Grid>
             </DataTemplate>
 

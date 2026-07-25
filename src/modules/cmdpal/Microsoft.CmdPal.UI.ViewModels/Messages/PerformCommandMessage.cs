@@ -20,6 +20,8 @@ public record PerformCommandMessage
 
     public bool TransientPage { get; set; }
 
+    public bool UseCompactDockPresentation { get; set; }
+
     /// <summary>
     /// Optional callback raised by <see cref="ShellViewModel"/> just before a
     /// <see cref="ShowConfirmationMessage"/> is dispatched for this command's

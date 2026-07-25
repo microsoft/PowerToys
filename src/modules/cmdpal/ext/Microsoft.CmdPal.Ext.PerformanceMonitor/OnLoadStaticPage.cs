@@ -83,25 +83,37 @@ internal abstract partial class OnLoadBasePage : Page
     {
         add
         {
-            InternalItemsChanged += value;
             lock (_loadLock)
             {
-                if (_loadCount == 0)
+                InternalItemsChanged += value;
+                try
                 {
-                    Loaded();
-                }
+                    if (_loadCount == 0)
+                    {
+                        Loaded();
+                    }
 
-                _loadCount++;
+                    _loadCount++;
+                }
+                catch
+                {
+                    InternalItemsChanged -= value;
+                    throw;
+                }
             }
         }
 
         remove
         {
-            InternalItemsChanged -= value;
             lock (_loadLock)
             {
+                if (InternalItemsChanged?.GetInvocationList().Contains(value) != true)
+                {
+                    return;
+                }
+
+                InternalItemsChanged -= value;
                 _loadCount--;
-                _loadCount = Math.Max(0, _loadCount);
                 if (_loadCount == 0)
                 {
                     Unloaded();
