@@ -20,12 +20,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     private readonly Lock _commandsLock = new();
     private volatile CommandSnapshot _snapshot = CommandSnapshot.Empty;
 
+    public bool HasInlineCommandSurface { get; private set; }
+
     [ObservableProperty]
     public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
 
     private List<IContextItemViewModel> Commands { get; } = [];
 
-    public bool HasCommands => _snapshot.PrimaryCommand is not null;
+    public bool HasCommands => PrimaryCommand is not null;
 
     public DetailsViewModel? Details { get; private set; }
 
@@ -33,17 +35,22 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     public bool HasDetails => Details is not null;
 
     /////// ICommandBarContext ///////
-    public IReadOnlyList<IContextItemViewModel> MoreCommands => _snapshot.MoreCommands;
+    public IReadOnlyList<IContextItemViewModel> MoreCommands =>
+        HasInlineCommandSurface ? CommandSnapshot.Empty.MoreCommands : _snapshot.MoreCommands;
 
-    public bool HasMoreCommands => _snapshot.SecondaryCommand is not null;
+    public bool HasMoreCommands => SecondaryCommand is not null;
 
-    public bool CanOpenContextMenu => _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+    public bool CanOpenContextMenu =>
+        !HasInlineCommandSurface
+        && _snapshot.AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
 
-    public string SecondaryCommandName => _snapshot.SecondaryCommand?.Name ?? string.Empty;
+    public string SecondaryCommandName => SecondaryCommand?.Name ?? string.Empty;
 
-    public CommandItemViewModel? PrimaryCommand => _snapshot.PrimaryCommand;
+    public CommandItemViewModel? PrimaryCommand =>
+        HasInlineCommandSurface ? null : _snapshot.PrimaryCommand;
 
-    public CommandItemViewModel? SecondaryCommand => _snapshot.SecondaryCommand;
+    public CommandItemViewModel? SecondaryCommand =>
+        HasInlineCommandSurface ? null : _snapshot.SecondaryCommand;
 
     public IReadOnlyList<IContextItemViewModel> AllCommands => _snapshot.AllCommands;
 
@@ -84,6 +91,20 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         var oneContent = newContent.Count == 1;
         newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
+        var hasInlineCommandSurface = newContent.Any(static content => content is ContentPerformanceOverviewViewModel);
+        if (HasInlineCommandSurface != hasInlineCommandSurface)
+        {
+            HasInlineCommandSurface = hasInlineCommandSurface;
+            UpdateProperty(
+                nameof(HasInlineCommandSurface),
+                nameof(HasCommands),
+                nameof(MoreCommands),
+                nameof(HasMoreCommands),
+                nameof(CanOpenContextMenu),
+                nameof(SecondaryCommandName),
+                nameof(PrimaryCommand),
+                nameof(SecondaryCommand));
+        }
 
         // Now, back to a UI thread to update the observable collection
         DoOnUiThread(
@@ -259,6 +280,20 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         {
             contextItem.SafeCleanup();
         }
+    }
+
+    protected void InvokeCommandById(string commandId)
+    {
+        var command = _snapshot.AllCommands
+            .OfType<CommandContextItemViewModel>()
+            .FirstOrDefault(item => string.Equals(item.Command.Id, commandId, StringComparison.Ordinal));
+        if (command is null)
+        {
+            ShowException(new InvalidOperationException($"Page command '{commandId}' is not available."));
+            return;
+        }
+
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
     }
 
     private void RefreshCommandSnapshotsUnsafe()

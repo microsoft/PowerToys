@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common;
@@ -42,7 +43,9 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
 
     private sealed partial class TestContentPage : Microsoft.CommandPalette.Extensions.Toolkit.ContentPage
     {
-        public override IContent[] GetContent() => [];
+        public IContent[] Content { get; init; } = [];
+
+        public override IContent[] GetContent() => Content;
     }
 
     [TestMethod]
@@ -74,6 +77,40 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
     }
 
     [TestMethod]
+    public void InlineAdapterCommands_AreNotPromotedToPageKeyboardActions()
+    {
+        var form = new FormContent
+        {
+            TemplateJson = NativeFormContentTypes.PerformanceOverview,
+            DataJson = BuildPayload("cpu", "11%", 11, 22, 33, 44, 55),
+        };
+        var page = new TestContentPage
+        {
+            Content = [form],
+            Commands =
+            [
+                new CommandContextItem(new NoOpCommand { Name = "Previous GPU" }),
+                new CommandContextItem(new NoOpCommand { Name = "Next GPU" }),
+            ],
+        };
+        var pageViewModel = new CommandPaletteContentPageViewModel(
+            page,
+            TaskScheduler.Default,
+            new TestAppExtensionHost(),
+            CommandProviderContext.Empty);
+
+        pageViewModel.InitializeProperties();
+
+        Assert.IsTrue(pageViewModel.HasInlineCommandSurface);
+        Assert.IsFalse(pageViewModel.HasCommands);
+        Assert.IsFalse(pageViewModel.HasMoreCommands);
+        Assert.IsFalse(pageViewModel.CanOpenContextMenu);
+        Assert.IsNull(pageViewModel.PrimaryCommand);
+        Assert.IsNull(pageViewModel.SecondaryCommand);
+        Assert.AreEqual(2, pageViewModel.AllCommands.Count);
+    }
+
+    [TestMethod]
     public void DataJsonUpdate_MutatesExistingObservableViewModel()
     {
         var context = new TestPageContext();
@@ -101,6 +138,10 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(45, viewModel.DiskPercent);
         Assert.AreEqual(66, viewModel.NetworkPercent);
         Assert.AreEqual("Send 1.0 MB/s · Receive 2.0 MB/s", viewModel.NetworkDetailText);
+        Assert.AreEqual("NVIDIA Test GPU", viewModel.GpuAdapterName);
+        Assert.AreEqual("Test Ethernet", viewModel.NetworkAdapterName);
+        Assert.IsTrue(viewModel.CanSwitchGpu);
+        Assert.IsTrue(viewModel.CanSwitchNetwork);
     }
 
     [TestMethod]
@@ -172,6 +213,36 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(11, viewModel.CpuPercent);
     }
 
+    [TestMethod]
+    public void AdapterCommands_RouteStableCommandIds()
+    {
+        var invokedCommandIds = new List<string>();
+        var form = new FormContent
+        {
+            TemplateJson = NativeFormContentTypes.PerformanceOverview,
+            DataJson = BuildPayload("cpu", "11%", 11, 22, 33, 44, 55),
+        };
+        var viewModel = new ContentPerformanceOverviewViewModel(
+            form,
+            new WeakReference<IPageContext>(new TestPageContext()),
+            invokedCommandIds.Add);
+
+        viewModel.PreviousGpuCommand.Execute(null);
+        viewModel.NextGpuCommand.Execute(null);
+        viewModel.PreviousNetworkCommand.Execute(null);
+        viewModel.NextNetworkCommand.Execute(null);
+
+        CollectionAssert.AreEqual(
+            new[]
+            {
+                NativePerformanceOverviewCommandIds.PreviousGpu,
+                NativePerformanceOverviewCommandIds.NextGpu,
+                NativePerformanceOverviewCommandIds.PreviousNetwork,
+                NativePerformanceOverviewCommandIds.NextNetwork,
+            },
+            invokedCommandIds);
+    }
+
     private static string BuildPayload(
         string heroMetric,
         string heroValue,
@@ -203,6 +274,8 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
             ["cpuDetailText"] = $"{cpuPercent}% · 4.0 GHz",
             ["cpuPercent"] = cpuPercent,
             ["gpuLabelText"] = "GPU",
+            ["gpuAdapterName"] = "NVIDIA Test GPU",
+            ["canSwitchGpu"] = true,
             ["gpuDetailText"] = $"{gpuPercent}% · 40 °C",
             ["gpuPercent"] = gpuPercent,
             ["memoryLabelText"] = "RAM",
@@ -212,8 +285,14 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
             ["diskDetailText"] = "Read 1.0 MB/s · Write 2.0 MB/s",
             ["diskPercent"] = diskPercent,
             ["networkLabelText"] = "Network",
+            ["networkAdapterName"] = "Test Ethernet",
+            ["canSwitchNetwork"] = true,
             ["networkDetailText"] = "Send 1.0 MB/s · Receive 2.0 MB/s",
             ["networkPercent"] = networkPercent,
+            ["previousGpuCommandText"] = "Previous GPU",
+            ["nextGpuCommandText"] = "Next GPU",
+            ["previousNetworkCommandText"] = "Previous network",
+            ["nextNetworkCommandText"] = "Next network",
         }.ToJsonString();
     }
 }

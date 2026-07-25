@@ -357,6 +357,14 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
+    internal int GetGPUCount()
+    {
+        lock (_statsLock)
+        {
+            return _stats.Count;
+        }
+    }
+
     internal int GetPrevGPUIndex(int gpuActiveIndex)
     {
         lock (_statsLock)

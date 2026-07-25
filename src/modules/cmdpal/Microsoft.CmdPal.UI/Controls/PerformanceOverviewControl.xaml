@@ -56,6 +56,18 @@
                 <Setter Property="Minimum" Value="0" />
                 <Setter Property="VerticalAlignment" Value="Stretch" />
             </Style>
+            <Style
+                x:Key="PerformanceOverviewAdapterButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Height" Value="24" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Width" Value="24" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -156,6 +168,9 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="64" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
                         AutomationProperties.AutomationId="PerformanceOverviewGpuLabel"
@@ -166,6 +181,14 @@
                         TextTrimming="CharacterEllipsis" />
                     <TextBlock
                         Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewGpuAdapter"
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                        Text="{x:Bind ViewModel.GpuAdapterName, Mode=OneWay}"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.GpuAdapterName, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Column="2"
                         AutomationProperties.AutomationId="PerformanceOverviewGpuDetail"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -173,6 +196,26 @@
                         Text="{x:Bind ViewModel.GpuDetailText, Mode=OneWay}"
                         TextAlignment="Right"
                         TextTrimming="CharacterEllipsis" />
+                    <Button
+                        Grid.Column="3"
+                        AutomationProperties.AutomationId="PerformanceOverviewPreviousGpu"
+                        AutomationProperties.Name="{x:Bind ViewModel.PreviousGpuCommandText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.PreviousGpuCommand}"
+                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.PreviousGpuCommandText, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CanSwitchGpu, Mode=OneWay}">
+                        <FontIcon FontSize="10" Glyph="&#xE76B;" />
+                    </Button>
+                    <Button
+                        Grid.Column="4"
+                        AutomationProperties.AutomationId="PerformanceOverviewNextGpu"
+                        AutomationProperties.Name="{x:Bind ViewModel.NextGpuCommandText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.NextGpuCommand}"
+                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.NextGpuCommandText, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CanSwitchGpu, Mode=OneWay}">
+                        <FontIcon FontSize="10" Glyph="&#xE76C;" />
+                    </Button>
                 </Grid>
                 <Grid Grid.Row="1">
                     <Border
@@ -285,23 +328,64 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="64" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
                     <TextBlock
+                        Grid.RowSpan="2"
                         AutomationProperties.AutomationId="PerformanceOverviewNetworkLabel"
                         FontSize="12"
                         FontWeight="SemiBold"
                         Foreground="{ThemeResource PerformanceAttentionTextBrush}"
                         Text="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis" />
+                        TextTrimming="CharacterEllipsis"
+                        VerticalAlignment="Center" />
                     <TextBlock
                         Grid.Column="1"
+                        Grid.ColumnSpan="3"
                         AutomationProperties.AutomationId="PerformanceOverviewNetworkDetail"
                         FontSize="12"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        HorizontalAlignment="Stretch"
                         Text="{x:Bind ViewModel.NetworkDetailText, Mode=OneWay}"
                         TextAlignment="Right"
                         TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        AutomationProperties.AutomationId="PerformanceOverviewNetworkAdapter"
+                        FontSize="11"
+                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                        Text="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
+                        VerticalAlignment="Center" />
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        AutomationProperties.AutomationId="PerformanceOverviewPreviousNetwork"
+                        AutomationProperties.Name="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.PreviousNetworkCommand}"
+                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
+                        <FontIcon FontSize="10" Glyph="&#xE76B;" />
+                    </Button>
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        AutomationProperties.AutomationId="PerformanceOverviewNextNetwork"
+                        AutomationProperties.Name="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
+                        Command="{x:Bind ViewModel.NextNetworkCommand}"
+                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                        ToolTipService.ToolTip="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
+                        <FontIcon FontSize="10" Glyph="&#xE76C;" />
+                    </Button>
                 </Grid>
                 <Grid Grid.Row="1">
                     <Border

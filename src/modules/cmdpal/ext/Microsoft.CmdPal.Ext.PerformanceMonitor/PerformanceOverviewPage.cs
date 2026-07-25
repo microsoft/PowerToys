@@ -69,6 +69,13 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
         _networkPage = metricsPage.NetworkPage;
         _gpuPage = metricsPage.GpuPage;
 
+        Commands = [
+            _gpuPage.PreviousAdapterCommand,
+            _gpuPage.NextAdapterCommand,
+            _networkPage.PreviousAdapterCommand,
+            _networkPage.NextAdapterCommand,
+        ];
+
         _refreshTimer = new Timer(
             _ => RefreshIfLoaded(),
             null,
@@ -190,6 +197,10 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
             networkPercentText,
             diskPercentText,
             gpuPercentText);
+        json["previousGpuCommandText"] = Resources.GetResource("Previous_GPU_Title");
+        json["nextGpuCommandText"] = Resources.GetResource("Next_GPU_Title");
+        json["previousNetworkCommandText"] = Resources.GetResource("Previous_Network_Title");
+        json["nextNetworkCommandText"] = Resources.GetResource("Next_Network_Title");
 
         return json;
     }
@@ -227,6 +238,8 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
         var temperatureText = _gpuPage.GetContentValue("gpuTemp");
 
         json["gpuLabelText"] = Resources.GetResource("GPU_Usage_Subtitle");
+        json["gpuAdapterName"] = _gpuPage.GetContentValue("gpuName");
+        json["canSwitchGpu"] = _gpuPage.GetAdapterCount() > 1;
         json["gpuDetailText"] = temperatureText == "--"
             ? percentText
             : FormatPercentDetail(percentText, temperatureText);
@@ -259,6 +272,8 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
         var percentText = networkPercent.ToString(CultureInfo.InvariantCulture) + "%";
 
         json["networkLabelText"] = Resources.GetResource("Network_Usage_Subtitle");
+        json["networkAdapterName"] = _networkPage.GetContentValue("networkName");
+        json["canSwitchNetwork"] = _networkPage.GetAdapterCount() > 1;
         json["networkDetailText"] = string.Format(
             CultureInfo.CurrentCulture,
             Resources.GetResource("Overview_Network_Detail_Format"),

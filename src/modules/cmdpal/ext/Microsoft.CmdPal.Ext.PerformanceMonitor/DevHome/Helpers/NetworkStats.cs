@@ -5,14 +5,19 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.CmdPal.Common;
 
 namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisposable
 {
+    private const float MinimumSwitchDeltaBytesPerSecond = 128;
+    private const float SwitchHysteresisRatio = 0.25f;
+
     private readonly Dictionary<string, List<PerformanceCounter>> _networkCounters = new();
+    private readonly List<string> _networkNames = [];
+    private readonly List<Data> _networkUsagesByIndex = [];
+    private readonly object _statsLock = new();
     private bool _networkCounterReadFailureLogged;
 
     private Dictionary<string, Data> NetworkUsages { get; set; } = new();
@@ -32,6 +37,11 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
         }
 
         public float Received
+        {
+            get; set;
+        }
+
+        public float Bandwidth
         {
             get; set;
         }
@@ -69,9 +79,12 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
                     }
 
                     var instanceCounters = new List<PerformanceCounter> { bytesSent, bytesReceived, currentBandwidth };
+                    var usage = new Data();
                     _networkCounters.Add(instanceName, instanceCounters);
+                    _networkNames.Add(instanceName);
+                    _networkUsagesByIndex.Add(usage);
                     NetChartValues.Add(instanceName, new List<float>());
-                    NetworkUsages.Add(instanceName, new Data());
+                    NetworkUsages.Add(instanceName, usage);
                 }
                 catch (Exception)
                 {
@@ -87,7 +100,6 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
 
     public void GetData()
     {
-        float maxUsage = 0;
         foreach (var networkCounterWithName in _networkCounters)
         {
             try
@@ -95,26 +107,21 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
                 var sent = networkCounterWithName.Value[0].NextValue();
                 var received = networkCounterWithName.Value[1].NextValue();
                 var bandWidth = networkCounterWithName.Value[2].NextValue();
-                if (bandWidth == 0)
-                {
-                    continue;
-                }
-
-                var usage = 8 * (sent + received) / bandWidth;
+                var usage = bandWidth > 0 ? 8 * (sent + received) / bandWidth : 0;
                 var name = networkCounterWithName.Key;
-                NetworkUsages[name].Sent = sent;
-                NetworkUsages[name].Received = received;
-                NetworkUsages[name].Usage = usage;
+                lock (_statsLock)
+                {
+                    var data = NetworkUsages[name];
+                    data.Sent = bandWidth > 0 ? sent : 0;
+                    data.Received = bandWidth > 0 ? received : 0;
+                    data.Usage = usage;
+                    data.Bandwidth = Math.Max(0, bandWidth);
+                }
 
                 var chartValues = NetChartValues[name];
                 lock (chartValues)
                 {
                     ChartHelper.AddNextChartValue(usage * 100, chartValues);
-                }
-
-                if (usage > maxUsage)
-                {
-                    maxUsage = usage;
                 }
             }
             catch (Exception ex)
@@ -126,64 +133,171 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
 
     public string CreateNetImageUrl(int netChartIndex)
     {
-        return ChartHelper.CreateImageUrl(NetChartValues.ElementAt(netChartIndex).Value, ChartHelper.ChartType.Net);
-    }
-
-    public string GetNetworkName(int networkIndex)
-    {
-        if (NetChartValues.Count <= networkIndex)
+        if (netChartIndex < 0 || netChartIndex >= _networkNames.Count)
         {
             return string.Empty;
         }
 
-        return NetChartValues.ElementAt(networkIndex).Key;
+        return ChartHelper.CreateImageUrl(NetChartValues[_networkNames[netChartIndex]], ChartHelper.ChartType.Net);
+    }
+
+    public string GetNetworkName(int networkIndex)
+    {
+        if (networkIndex < 0 || networkIndex >= _networkNames.Count)
+        {
+            return string.Empty;
+        }
+
+        return _networkNames[networkIndex];
     }
 
     public Data GetNetworkUsage(int networkIndex)
     {
-        if (NetChartValues.Count <= networkIndex)
+        lock (_statsLock)
         {
-            return new Data();
+            if (networkIndex < 0 || networkIndex >= _networkUsagesByIndex.Count)
+            {
+                return new Data();
+            }
+
+            var value = _networkUsagesByIndex[networkIndex];
+            return new Data
+            {
+                Usage = value.Usage,
+                Sent = value.Sent,
+                Received = value.Received,
+                Bandwidth = value.Bandwidth,
+            };
+        }
+    }
+
+    public int GetSelectableNetworkCount()
+    {
+        lock (_statsLock)
+        {
+            return CountSelectableNetworks(_networkUsagesByIndex);
+        }
+    }
+
+    internal static int CountSelectableNetworks(IReadOnlyList<Data> networkUsages)
+    {
+        var count = 0;
+        foreach (var networkUsage in networkUsages)
+        {
+            if (IsSelectableNetwork(networkUsage))
+            {
+                count++;
+            }
         }
 
-        var currNetworkName = NetChartValues.ElementAt(networkIndex).Key;
-        if (!NetworkUsages.TryGetValue(currNetworkName, out var value))
+        return count;
+    }
+
+    public int GetBusiestNetworkIndex(int fallbackIndex)
+    {
+        lock (_statsLock)
         {
-            return new Data();
+            return SelectBusiestNetworkIndex(_networkUsagesByIndex, fallbackIndex);
+        }
+    }
+
+    internal static int SelectBusiestNetworkIndex(IReadOnlyList<Data> networkUsages, int fallbackIndex)
+    {
+        if (networkUsages.Count == 0)
+        {
+            return 0;
         }
 
-        return value;
+        var selectedIndex = Math.Clamp(fallbackIndex, 0, networkUsages.Count - 1);
+        var fallbackIsSelectable = IsSelectableNetwork(networkUsages[selectedIndex]);
+        if (!fallbackIsSelectable)
+        {
+            for (var index = 0; index < networkUsages.Count; index++)
+            {
+                if (IsSelectableNetwork(networkUsages[index]))
+                {
+                    selectedIndex = index;
+                    break;
+                }
+            }
+        }
+
+        var selectedThroughput = GetThroughput(networkUsages[selectedIndex]);
+        var busiestIndex = selectedIndex;
+        var busiestThroughput = selectedThroughput;
+        for (var index = 0; index < networkUsages.Count; index++)
+        {
+            var candidate = networkUsages[index];
+            if (!IsSelectableNetwork(candidate))
+            {
+                continue;
+            }
+
+            var candidateThroughput = GetThroughput(candidate);
+            if (candidateThroughput > busiestThroughput)
+            {
+                busiestIndex = index;
+                busiestThroughput = candidateThroughput;
+            }
+        }
+
+        if (!fallbackIsSelectable)
+        {
+            return busiestIndex;
+        }
+
+        var switchDelta = Math.Max(MinimumSwitchDeltaBytesPerSecond, selectedThroughput * SwitchHysteresisRatio);
+        return busiestThroughput > selectedThroughput + switchDelta
+            ? busiestIndex
+            : selectedIndex;
     }
 
     public int GetPrevNetworkIndex(int networkIndex)
     {
-        if (NetChartValues.Count == 0)
+        lock (_statsLock)
         {
-            return 0;
+            return SelectPreviousNetworkIndex(_networkUsagesByIndex, networkIndex);
         }
-
-        if (networkIndex == 0)
-        {
-            return NetChartValues.Count - 1;
-        }
-
-        return networkIndex - 1;
     }
 
     public int GetNextNetworkIndex(int networkIndex)
     {
-        if (NetChartValues.Count == 0)
+        lock (_statsLock)
         {
-            return 0;
+            return SelectNextNetworkIndex(_networkUsagesByIndex, networkIndex);
         }
-
-        if (networkIndex == NetChartValues.Count - 1)
-        {
-            return 0;
-        }
-
-        return networkIndex + 1;
     }
+
+    internal static int SelectPreviousNetworkIndex(IReadOnlyList<Data> networkUsages, int currentIndex) =>
+        SelectAdjacentNetworkIndex(networkUsages, currentIndex, -1);
+
+    internal static int SelectNextNetworkIndex(IReadOnlyList<Data> networkUsages, int currentIndex) =>
+        SelectAdjacentNetworkIndex(networkUsages, currentIndex, 1);
+
+    private static int SelectAdjacentNetworkIndex(IReadOnlyList<Data> networkUsages, int currentIndex, int direction)
+    {
+        if (networkUsages.Count == 0)
+        {
+            return 0;
+        }
+
+        var selectedIndex = Math.Clamp(currentIndex, 0, networkUsages.Count - 1);
+        for (var offset = 1; offset <= networkUsages.Count; offset++)
+        {
+            var candidateIndex = (selectedIndex + (direction * offset) + networkUsages.Count) % networkUsages.Count;
+            if (IsSelectableNetwork(networkUsages[candidateIndex]))
+            {
+                return candidateIndex;
+            }
+        }
+
+        return selectedIndex;
+    }
+
+    private static float GetThroughput(Data networkUsage) =>
+        Math.Max(0, networkUsage.Sent) + Math.Max(0, networkUsage.Received);
+
+    private static bool IsSelectableNetwork(Data networkUsage) => Math.Max(0, networkUsage.Bandwidth) > 0;
 
     public void Dispose()
     {

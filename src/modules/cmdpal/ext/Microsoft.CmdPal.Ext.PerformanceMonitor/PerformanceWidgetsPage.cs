@@ -1032,6 +1032,10 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         ];
     }
 
+    internal IContextItem PreviousAdapterCommand => Commands[0];
+
+    internal IContextItem NextAdapterCommand => Commands[1];
+
     protected override void LoadContentData()
     {
         // CoreLogger.LogDebug("Getting Network stats");
@@ -1046,6 +1050,18 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var dataDuration = timer.ElapsedMilliseconds;
 
             var networkIndex = _selectionState.NetworkIndex;
+            if (_selectionState.IsNetworkSelectionAutomatic)
+            {
+                networkIndex = _selectionState.UpdateAutomaticNetworkIndex(
+                    currentData.GetBusiestNetworkIndex(networkIndex));
+            }
+            else if (currentData.GetNetworkUsage(networkIndex).Bandwidth <= 0)
+            {
+                networkIndex = _selectionState.RecoverNetworkSelection(
+                    networkIndex,
+                    currentData.GetBusiestNetworkIndex(networkIndex));
+            }
+
             var netName = currentData.GetNetworkName(networkIndex);
             var networkStats = currentData.GetNetworkUsage(networkIndex);
             _totalThroughputBytesPerSecond = Math.Max(0, networkStats.Sent + networkStats.Received);
@@ -1126,6 +1142,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
+    internal int GetAdapterCount() => _dataManager.GetNetworkStats().GetSelectableNetworkCount();
+
     private string SpeedToString(float bytesPerSec)
     {
         return _settingsManager.NetworkSpeedUnit switch
@@ -1156,14 +1174,20 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private void HandlePrevNetwork()
     {
-        _selectionState.NetworkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_selectionState.NetworkIndex);
-        UpdateWidget();
+        if (_selectionState.SelectNetworkManually(
+            _dataManager.GetNetworkStats().GetPrevNetworkIndex(_selectionState.NetworkIndex)))
+        {
+            UpdateWidget();
+        }
     }
 
     private void HandleNextNetwork()
     {
-        _selectionState.NetworkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_selectionState.NetworkIndex);
-        UpdateWidget();
+        if (_selectionState.SelectNetworkManually(
+            _dataManager.GetNetworkStats().GetNextNetworkIndex(_selectionState.NetworkIndex)))
+        {
+            UpdateWidget();
+        }
     }
 
     public void Dispose()
@@ -1180,7 +1204,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             _page = page;
         }
 
-        public override string Id => "com.microsoft.cmdpal.network_widget.prev";
+        public override string Id => NativePerformanceOverviewCommandIds.PreviousNetwork;
 
         public override IconInfo Icon => Icons.NavigateBackwardIcon;
 
@@ -1200,7 +1224,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             _page = page;
         }
 
-        public override string Id => "com.microsoft.cmdpal.network_widget.next";
+        public override string Id => NativePerformanceOverviewCommandIds.NextNetwork;
 
         public override IconInfo Icon => Icons.NavigateForwardIcon;
 
@@ -1235,6 +1259,10 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
+
+    internal IContextItem PreviousAdapterCommand => Commands[0];
+
+    internal IContextItem NextAdapterCommand => Commands[1];
 
     protected override void LoadContentData()
     {
@@ -1303,6 +1331,8 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         return Resources.GetResource("GPU_Usage_Subtitle");
     }
 
+    internal int GetAdapterCount() => _dataManager.GetGPUStats().GetGPUCount();
+
     internal override void PushActivate()
     {
         base.PushActivate();
@@ -1347,7 +1377,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _page = page;
         }
 
-        public override string Id => "com.microsoft.cmdpal.gpu_widget.prev";
+        public override string Id => NativePerformanceOverviewCommandIds.PreviousGpu;
 
         public override IconInfo Icon => Icons.NavigateBackwardIcon;
 
@@ -1367,7 +1397,7 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _page = page;
         }
 
-        public override string Id => "com.microsoft.cmdpal.gpu_widget.next";
+        public override string Id => NativePerformanceOverviewCommandIds.NextGpu;
 
         public override IconInfo Icon => Icons.NavigateForwardIcon;
 

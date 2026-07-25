@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -17,11 +18,13 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public sealed partial class ContentPerformanceOverviewViewModel(
     IFormContent form,
-    WeakReference<IPageContext> context) : ContentViewModel(context)
+    WeakReference<IPageContext> context,
+    Action<string>? commandInvoker = null) : ContentViewModel(context)
 {
     private const int SupportedSchemaVersion = 1;
 
     private readonly ExtensionObject<IFormContent> _formModel = new(form);
+    private readonly Action<string>? _commandInvoker = commandInvoker;
 
     private string _titleText = string.Empty;
     private string _statusText = string.Empty;
@@ -32,6 +35,8 @@ public sealed partial class ContentPerformanceOverviewViewModel(
     private string _cpuDetailText = string.Empty;
     private int _cpuPercent;
     private string _gpuLabelText = string.Empty;
+    private string _gpuAdapterName = string.Empty;
+    private bool _canSwitchGpu;
     private string _gpuDetailText = string.Empty;
     private int _gpuPercent;
     private string _memoryLabelText = string.Empty;
@@ -41,8 +46,14 @@ public sealed partial class ContentPerformanceOverviewViewModel(
     private string _diskDetailText = string.Empty;
     private int _diskPercent;
     private string _networkLabelText = string.Empty;
+    private string _networkAdapterName = string.Empty;
+    private bool _canSwitchNetwork;
     private string _networkDetailText = string.Empty;
     private int _networkPercent;
+    private string _previousGpuCommandText = string.Empty;
+    private string _nextGpuCommandText = string.Empty;
+    private string _previousNetworkCommandText = string.Empty;
+    private string _nextNetworkCommandText = string.Empty;
 
     public string TitleText => _titleText;
 
@@ -62,6 +73,10 @@ public sealed partial class ContentPerformanceOverviewViewModel(
 
     public string GpuLabelText => _gpuLabelText;
 
+    public string GpuAdapterName => _gpuAdapterName;
+
+    public bool CanSwitchGpu => _canSwitchGpu;
+
     public string GpuDetailText => _gpuDetailText;
 
     public int GpuPercent => _gpuPercent;
@@ -80,9 +95,21 @@ public sealed partial class ContentPerformanceOverviewViewModel(
 
     public string NetworkLabelText => _networkLabelText;
 
+    public string NetworkAdapterName => _networkAdapterName;
+
+    public bool CanSwitchNetwork => _canSwitchNetwork;
+
     public string NetworkDetailText => _networkDetailText;
 
     public int NetworkPercent => _networkPercent;
+
+    public string PreviousGpuCommandText => _previousGpuCommandText;
+
+    public string NextGpuCommandText => _nextGpuCommandText;
+
+    public string PreviousNetworkCommandText => _previousNetworkCommandText;
+
+    public string NextNetworkCommandText => _nextNetworkCommandText;
 
     public static bool IsPerformanceOverview(IFormContent content) =>
         string.Equals(
@@ -154,6 +181,8 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         var cpuDetailText = GetRequiredString(data, "cpuDetailText");
         var cpuPercent = GetPercent(data, "cpuPercent");
         var gpuLabelText = GetRequiredString(data, "gpuLabelText");
+        var gpuAdapterName = GetOptionalString(data, "gpuAdapterName");
+        var canSwitchGpu = GetOptionalBool(data, "canSwitchGpu");
         var gpuDetailText = GetRequiredString(data, "gpuDetailText");
         var gpuPercent = GetPercent(data, "gpuPercent");
         var memoryLabelText = GetRequiredString(data, "memoryLabelText");
@@ -163,10 +192,16 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         var diskDetailText = GetRequiredString(data, "diskDetailText");
         var diskPercent = GetPercent(data, "diskPercent");
         var networkLabelText = GetRequiredString(data, "networkLabelText");
+        var networkAdapterName = GetOptionalString(data, "networkAdapterName");
+        var canSwitchNetwork = GetOptionalBool(data, "canSwitchNetwork");
         var networkDetailText = GetRequiredString(data, "networkDetailText");
         var networkPercent = GetPercent(data, "networkPercent");
+        var previousGpuCommandText = GetOptionalString(data, "previousGpuCommandText");
+        var nextGpuCommandText = GetOptionalString(data, "nextGpuCommandText");
+        var previousNetworkCommandText = GetOptionalString(data, "previousNetworkCommandText");
+        var nextNetworkCommandText = GetOptionalString(data, "nextNetworkCommandText");
 
-        List<string> changedProperties = new(20);
+        List<string> changedProperties = new(30);
 
         SetValue(ref _titleText, titleText, nameof(TitleText), changedProperties);
         SetValue(ref _statusText, statusText, nameof(StatusText), changedProperties);
@@ -179,6 +214,8 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         SetValue(ref _cpuPercent, cpuPercent, nameof(CpuPercent), changedProperties);
 
         SetValue(ref _gpuLabelText, gpuLabelText, nameof(GpuLabelText), changedProperties);
+        SetValue(ref _gpuAdapterName, gpuAdapterName, nameof(GpuAdapterName), changedProperties);
+        SetValue(ref _canSwitchGpu, canSwitchGpu, nameof(CanSwitchGpu), changedProperties);
         SetValue(ref _gpuDetailText, gpuDetailText, nameof(GpuDetailText), changedProperties);
         SetValue(ref _gpuPercent, gpuPercent, nameof(GpuPercent), changedProperties);
 
@@ -191,8 +228,14 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         SetValue(ref _diskPercent, diskPercent, nameof(DiskPercent), changedProperties);
 
         SetValue(ref _networkLabelText, networkLabelText, nameof(NetworkLabelText), changedProperties);
+        SetValue(ref _networkAdapterName, networkAdapterName, nameof(NetworkAdapterName), changedProperties);
+        SetValue(ref _canSwitchNetwork, canSwitchNetwork, nameof(CanSwitchNetwork), changedProperties);
         SetValue(ref _networkDetailText, networkDetailText, nameof(NetworkDetailText), changedProperties);
         SetValue(ref _networkPercent, networkPercent, nameof(NetworkPercent), changedProperties);
+        SetValue(ref _previousGpuCommandText, previousGpuCommandText, nameof(PreviousGpuCommandText), changedProperties);
+        SetValue(ref _nextGpuCommandText, nextGpuCommandText, nameof(NextGpuCommandText), changedProperties);
+        SetValue(ref _previousNetworkCommandText, previousNetworkCommandText, nameof(PreviousNetworkCommandText), changedProperties);
+        SetValue(ref _nextNetworkCommandText, nextNetworkCommandText, nameof(NextNetworkCommandText), changedProperties);
 
         if (changedProperties.Count > 0)
         {
@@ -208,8 +251,26 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         data[propertyName]?.GetValue<int>()
         ?? throw new JsonException($"Missing native performance overview property: {propertyName}.");
 
+    private static string GetOptionalString(JsonObject data, string propertyName) =>
+        data[propertyName]?.GetValue<string>() ?? string.Empty;
+
+    private static bool GetOptionalBool(JsonObject data, string propertyName) =>
+        data[propertyName]?.GetValue<bool>() ?? false;
+
     private static int GetPercent(JsonObject data, string propertyName) =>
         Math.Clamp(GetRequiredInt(data, propertyName), 0, 100);
+
+    [RelayCommand]
+    private void PreviousGpu() => _commandInvoker?.Invoke(NativePerformanceOverviewCommandIds.PreviousGpu);
+
+    [RelayCommand]
+    private void NextGpu() => _commandInvoker?.Invoke(NativePerformanceOverviewCommandIds.NextGpu);
+
+    [RelayCommand]
+    private void PreviousNetwork() => _commandInvoker?.Invoke(NativePerformanceOverviewCommandIds.PreviousNetwork);
+
+    [RelayCommand]
+    private void NextNetwork() => _commandInvoker?.Invoke(NativePerformanceOverviewCommandIds.NextNetwork);
 
     private static void SetValue<T>(
         ref T target,

@@ -113,7 +113,7 @@ public partial class ShellViewModel : ObservableObject,
     public bool ShouldShowCommandBar =>
         !CurrentPage.UseCompactDockPresentation
         || CurrentPage is not ContentPageViewModel contentPage
-        || contentPage.CanOpenContextMenu;
+        || (contentPage.CanOpenContextMenu && !contentPage.HasInlineCommandSurface);
 
     public PageViewModel NullPage { get; private set; }
 
