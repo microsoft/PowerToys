@@ -104,8 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static UpdatingSettings LoadSettings()
         {
             FileSystem fileSystem = new FileSystem();
-            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", SettingsFile);
+            var file = SettingsUtils.Default.GetSettingsFilePath(string.Empty, SettingsFile);
 
             if (fileSystem.File.Exists(file))
             {

@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using EnvironmentVariablesUILib.Models;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace EnvironmentVariablesUILib.Helpers
 {
@@ -30,7 +31,7 @@ namespace EnvironmentVariablesUILib.Helpers
         {
             _fileSystem = fileSystem;
 
-            _profilesJsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "EnvironmentVariables", "profiles.json");
+            _profilesJsonFilePath = new SettingPath(_fileSystem.Directory, _fileSystem.Path).GetSettingsPath("EnvironmentVariables", "profiles.json");
         }
 
         public void Dispose()

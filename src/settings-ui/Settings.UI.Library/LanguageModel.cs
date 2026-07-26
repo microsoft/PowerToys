@@ -20,8 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static string LoadSetting()
         {
             FileSystem fileSystem = new FileSystem();
-            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = Path.Combine(localAppDataDir, "Microsoft", "PowerToys", "language.json");
+            var file = SettingsUtils.Default.GetSettingsFilePath(string.Empty, "language.json");
 
             if (fileSystem.File.Exists(file))
             {
