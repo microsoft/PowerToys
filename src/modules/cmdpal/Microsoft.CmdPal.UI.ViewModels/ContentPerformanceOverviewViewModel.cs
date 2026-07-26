@@ -56,12 +56,12 @@ public sealed partial class ContentPerformanceOverviewViewModel(
     private bool _canSwitchNetwork;
     private string _networkDetailText = string.Empty;
     private int _networkPercent;
-    private string _networkInLabelText = string.Empty;
-    private string _networkOutLabelText = string.Empty;
-    private string _networkInText = string.Empty;
-    private string _networkOutText = string.Empty;
-    private int _networkInPercent;
-    private int _networkOutPercent;
+    private string _networkSendLabelText = string.Empty;
+    private string _networkReceiveLabelText = string.Empty;
+    private string _networkSendText = string.Empty;
+    private string _networkReceiveText = string.Empty;
+    private int _networkSendPercent;
+    private int _networkReceivePercent;
     private string _previousGpuCommandText = string.Empty;
     private string _nextGpuCommandText = string.Empty;
     private string _previousNetworkCommandText = string.Empty;
@@ -127,17 +127,17 @@ public sealed partial class ContentPerformanceOverviewViewModel(
 
     public int NetworkPercent => _networkPercent;
 
-    public string NetworkInLabelText => _networkInLabelText;
+    public string NetworkSendLabelText => _networkSendLabelText;
 
-    public string NetworkOutLabelText => _networkOutLabelText;
+    public string NetworkReceiveLabelText => _networkReceiveLabelText;
 
-    public string NetworkInText => _networkInText;
+    public string NetworkSendText => _networkSendText;
 
-    public string NetworkOutText => _networkOutText;
+    public string NetworkReceiveText => _networkReceiveText;
 
-    public int NetworkInPercent => _networkInPercent;
+    public int NetworkSendPercent => _networkSendPercent;
 
-    public int NetworkOutPercent => _networkOutPercent;
+    public int NetworkReceivePercent => _networkReceivePercent;
 
     public string PreviousGpuCommandText => _previousGpuCommandText;
 
@@ -238,12 +238,12 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         var canSwitchNetwork = GetOptionalBool(data, "canSwitchNetwork");
         var networkDetailText = GetRequiredString(data, "networkDetailText");
         var networkPercent = GetPercent(data, "networkPercent");
-        var networkInLabelText = GetOptionalString(data, "networkInLabelText");
-        var networkOutLabelText = GetOptionalString(data, "networkOutLabelText");
-        var networkInText = GetOptionalString(data, "networkInText");
-        var networkOutText = GetOptionalString(data, "networkOutText");
-        var networkInPercent = GetOptionalPercent(data, "networkInPercent", networkPercent);
-        var networkOutPercent = GetOptionalPercent(data, "networkOutPercent", 0);
+        var networkSendLabelText = GetOptionalString(data, "networkSendLabelText");
+        var networkReceiveLabelText = GetOptionalString(data, "networkReceiveLabelText");
+        var networkSendText = GetOptionalString(data, "networkSendText");
+        var networkReceiveText = GetOptionalString(data, "networkReceiveText");
+        var networkSendPercent = GetOptionalPercent(data, "networkSendPercent", networkPercent);
+        var networkReceivePercent = GetOptionalPercent(data, "networkReceivePercent", 0);
         var previousGpuCommandText = GetOptionalString(data, "previousGpuCommandText");
         var nextGpuCommandText = GetOptionalString(data, "nextGpuCommandText");
         var previousNetworkCommandText = GetOptionalString(data, "previousNetworkCommandText");
@@ -286,12 +286,12 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         SetValue(ref _canSwitchNetwork, canSwitchNetwork, nameof(CanSwitchNetwork), changedProperties);
         SetValue(ref _networkDetailText, networkDetailText, nameof(NetworkDetailText), changedProperties);
         SetValue(ref _networkPercent, networkPercent, nameof(NetworkPercent), changedProperties);
-        SetValue(ref _networkInLabelText, string.IsNullOrEmpty(networkInLabelText) ? networkLabelText : networkInLabelText, nameof(NetworkInLabelText), changedProperties);
-        SetValue(ref _networkOutLabelText, string.IsNullOrEmpty(networkOutLabelText) ? networkLabelText : networkOutLabelText, nameof(NetworkOutLabelText), changedProperties);
-        SetValue(ref _networkInText, string.IsNullOrEmpty(networkInText) ? networkDetailText : networkInText, nameof(NetworkInText), changedProperties);
-        SetValue(ref _networkOutText, networkOutText, nameof(NetworkOutText), changedProperties);
-        SetValue(ref _networkInPercent, networkInPercent, nameof(NetworkInPercent), changedProperties);
-        SetValue(ref _networkOutPercent, networkOutPercent, nameof(NetworkOutPercent), changedProperties);
+        SetValue(ref _networkSendLabelText, string.IsNullOrEmpty(networkSendLabelText) ? networkLabelText : networkSendLabelText, nameof(NetworkSendLabelText), changedProperties);
+        SetValue(ref _networkReceiveLabelText, string.IsNullOrEmpty(networkReceiveLabelText) ? networkLabelText : networkReceiveLabelText, nameof(NetworkReceiveLabelText), changedProperties);
+        SetValue(ref _networkSendText, string.IsNullOrEmpty(networkSendText) ? networkDetailText : networkSendText, nameof(NetworkSendText), changedProperties);
+        SetValue(ref _networkReceiveText, networkReceiveText, nameof(NetworkReceiveText), changedProperties);
+        SetValue(ref _networkSendPercent, networkSendPercent, nameof(NetworkSendPercent), changedProperties);
+        SetValue(ref _networkReceivePercent, networkReceivePercent, nameof(NetworkReceivePercent), changedProperties);
         SetValue(ref _previousGpuCommandText, previousGpuCommandText, nameof(PreviousGpuCommandText), changedProperties);
         SetValue(ref _nextGpuCommandText, nextGpuCommandText, nameof(NextGpuCommandText), changedProperties);
         SetValue(ref _previousNetworkCommandText, previousNetworkCommandText, nameof(PreviousNetworkCommandText), changedProperties);

@@ -276,48 +276,49 @@
                 </Grid>
             </Grid>
 
-            <Grid RowSpacing="4">
+            <Grid
+                ColumnSpacing="8"
+                RowSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="4" />
                 </Grid.RowDefinitions>
-                <Grid ColumnSpacing="8">
+                <TextBlock
+                    AutomationProperties.AutomationId="PerformanceOverviewDiskLabel"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource PerformanceGoodTextBrush}"
+                    Text="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis" />
+                <Grid
+                    Grid.Column="1"
+                    ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="64" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock
-                        AutomationProperties.AutomationId="PerformanceOverviewDiskLabel"
+                        AutomationProperties.AutomationId="PerformanceOverviewDiskReadText"
                         FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource PerformanceGoodTextBrush}"
-                        Text="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.DiskReadText, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis" />
-                    <Grid
+                    <TextBlock
                         Grid.Column="1"
-                        ColumnSpacing="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock
-                            AutomationProperties.AutomationId="PerformanceOverviewDiskReadText"
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.DiskReadText, Mode=OneWay}"
-                            TextTrimming="CharacterEllipsis" />
-                        <TextBlock
-                            Grid.Column="1"
-                            AutomationProperties.AutomationId="PerformanceOverviewDiskWriteText"
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}"
-                            TextAlignment="Right"
-                            TextTrimming="CharacterEllipsis" />
-                    </Grid>
+                        AutomationProperties.AutomationId="PerformanceOverviewDiskWriteText"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}"
+                        TextAlignment="Right"
+                        TextTrimming="CharacterEllipsis" />
                 </Grid>
                 <Grid
                     Grid.Row="1"
+                    Grid.Column="1"
                     ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -354,90 +355,92 @@
                 </Grid>
             </Grid>
 
-            <Grid RowSpacing="4">
+            <Grid
+                ColumnSpacing="8"
+                RowSpacing="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="64" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="4" />
                 </Grid.RowDefinitions>
-                <Grid ColumnSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="64" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                <TextBlock
+                    AutomationProperties.AutomationId="PerformanceOverviewNetworkLabel"
+                    FontSize="12"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource PerformanceAttentionTextBrush}"
+                    Text="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center" />
+                <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBlock
-                        Grid.RowSpan="2"
-                        AutomationProperties.AutomationId="PerformanceOverviewNetworkLabel"
-                        FontSize="12"
-                        FontWeight="SemiBold"
-                        Foreground="{ThemeResource PerformanceAttentionTextBrush}"
-                        Text="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
-                        TextTrimming="CharacterEllipsis"
-                        VerticalAlignment="Center" />
-                    <Grid
-                        Grid.Column="1"
-                        Grid.ColumnSpan="3"
-                        ColumnSpacing="8">
+                    <Grid ColumnSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <TextBlock
-                            AutomationProperties.AutomationId="PerformanceOverviewNetworkInText"
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkSendText"
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.NetworkInText, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.NetworkSendText, Mode=OneWay}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             Grid.Column="1"
-                            AutomationProperties.AutomationId="PerformanceOverviewNetworkOutText"
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkReceiveText"
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Text="{x:Bind ViewModel.NetworkOutText, Mode=OneWay}"
+                            Text="{x:Bind ViewModel.NetworkReceiveText, Mode=OneWay}"
                             TextAlignment="Right"
                             TextTrimming="CharacterEllipsis" />
                     </Grid>
-                    <TextBlock
+                    <Grid
                         Grid.Row="1"
-                        Grid.Column="1"
-                        AutomationProperties.AutomationId="PerformanceOverviewNetworkAdapter"
-                        FontSize="11"
-                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                        Text="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
-                        TextAlignment="Right"
-                        TextTrimming="CharacterEllipsis"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
-                        VerticalAlignment="Center" />
-                    <Button
-                        Grid.Row="1"
-                        Grid.Column="2"
-                        AutomationProperties.AutomationId="PerformanceOverviewPreviousNetwork"
-                        AutomationProperties.Name="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
-                        Command="{x:Bind ViewModel.PreviousNetworkCommand}"
-                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
-                        <FontIcon FontSize="10" Glyph="&#xE76B;" />
-                    </Button>
-                    <Button
-                        Grid.Row="1"
-                        Grid.Column="3"
-                        AutomationProperties.AutomationId="PerformanceOverviewNextNetwork"
-                        AutomationProperties.Name="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
-                        Command="{x:Bind ViewModel.NextNetworkCommand}"
-                        Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
-                        ToolTipService.ToolTip="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
-                        <FontIcon FontSize="10" Glyph="&#xE76C;" />
-                    </Button>
+                        ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkAdapter"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                            Text="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
+                            TextAlignment="Right"
+                            TextTrimming="CharacterEllipsis"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.NetworkAdapterName, Mode=OneWay}"
+                            VerticalAlignment="Center" />
+                        <Button
+                            Grid.Column="1"
+                            AutomationProperties.AutomationId="PerformanceOverviewPreviousNetwork"
+                            AutomationProperties.Name="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.PreviousNetworkCommand}"
+                            Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.PreviousNetworkCommandText, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
+                            <FontIcon FontSize="10" Glyph="&#xE76B;" />
+                        </Button>
+                        <Button
+                            Grid.Column="2"
+                            AutomationProperties.AutomationId="PerformanceOverviewNextNetwork"
+                            AutomationProperties.Name="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
+                            Command="{x:Bind ViewModel.NextNetworkCommand}"
+                            Style="{StaticResource PerformanceOverviewAdapterButtonStyle}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.NextNetworkCommandText, Mode=OneWay}"
+                            Visibility="{x:Bind ViewModel.CanSwitchNetwork, Mode=OneWay}">
+                            <FontIcon FontSize="10" Glyph="&#xE76C;" />
+                        </Button>
+                    </Grid>
                 </Grid>
                 <Grid
                     Grid.Row="1"
+                    Grid.Column="1"
                     ColumnSpacing="8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -450,12 +453,12 @@
                             CornerRadius="0.5"
                             VerticalAlignment="Center" />
                         <ProgressBar
-                            AutomationProperties.AutomationId="PerformanceOverviewNetworkInBar"
-                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkInText, Mode=OneWay}"
-                            AutomationProperties.Name="{x:Bind ViewModel.NetworkInLabelText, Mode=OneWay}"
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkSendBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkSendText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.NetworkSendLabelText, Mode=OneWay}"
                             Foreground="{ThemeResource PerformanceAttentionBrush}"
                             Style="{StaticResource PerformanceOverviewProgressBarStyle}"
-                            Value="{x:Bind ViewModel.NetworkInPercent, Mode=OneWay}" />
+                            Value="{x:Bind ViewModel.NetworkSendPercent, Mode=OneWay}" />
                     </Grid>
                     <Grid Grid.Column="1">
                         <Border
@@ -464,12 +467,12 @@
                             CornerRadius="0.5"
                             VerticalAlignment="Center" />
                         <ProgressBar
-                            AutomationProperties.AutomationId="PerformanceOverviewNetworkOutBar"
-                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkOutText, Mode=OneWay}"
-                            AutomationProperties.Name="{x:Bind ViewModel.NetworkOutLabelText, Mode=OneWay}"
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkReceiveBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkReceiveText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.NetworkReceiveLabelText, Mode=OneWay}"
                             Foreground="{ThemeResource PerformanceAttentionBrush}"
                             Style="{StaticResource PerformanceOverviewProgressBarStyle}"
-                            Value="{x:Bind ViewModel.NetworkOutPercent, Mode=OneWay}" />
+                            Value="{x:Bind ViewModel.NetworkReceivePercent, Mode=OneWay}" />
                     </Grid>
                 </Grid>
             </Grid>

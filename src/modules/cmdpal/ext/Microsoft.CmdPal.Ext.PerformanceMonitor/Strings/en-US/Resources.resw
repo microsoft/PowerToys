@@ -424,12 +424,6 @@
   <data name="Network_Receive_Subtitle" xml:space="preserve">
     <value>Receive</value>
   </data>
-  <data name="Network_In_Subtitle" xml:space="preserve">
-    <value>In</value>
-  </data>
-  <data name="Network_Out_Subtitle" xml:space="preserve">
-    <value>Out</value>
-  </data>
   <data name="Disk_Read_Subtitle" xml:space="preserve">
     <value>Read</value>
   </data>
@@ -487,11 +481,11 @@
   </data>
   <data name="Overview_Directional_Value_Format" xml:space="preserve">
     <value>{0} {1}</value>
-    <comment>Compact directional throughput value. {0} is a localized direction such as "Read" or "In", and {1} is its speed.</comment>
+    <comment>Compact directional throughput value. {0} is a localized direction such as "Read" or "Send", and {1} is its speed.</comment>
   </data>
   <data name="Overview_Directional_Label_Format" xml:space="preserve">
     <value>{0} {1}</value>
-    <comment>Accessible label for a directional throughput bar. {0} is the metric such as "Disk" or "Network", and {1} is the direction such as "Read" or "In".</comment>
+    <comment>Accessible label for a directional throughput bar. {0} is the metric such as "Disk" or "Network", and {1} is the direction such as "Read" or "Send".</comment>
   </data>
   <data name="Overview_Disk_Detail_Format" xml:space="preserve">
     <value>{0} {1} · {2} {3}</value>
@@ -499,6 +493,6 @@
   </data>
   <data name="Overview_Network_Detail_Format" xml:space="preserve">
     <value>{0} {1} · {2} {3}</value>
-    <comment>Compact network detail shown in the performance overview dashboard. {0}/{2} are the localized "In"/"Out" words, {1}/{3} are their speeds.</comment>
+    <comment>Compact network detail shown in the performance overview dashboard. {0}/{2} are the localized "Send"/"Receive" words, {1}/{3} are their speeds.</comment>
   </data>
 </root>

@@ -294,14 +294,14 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
             throughput.Sent + throughput.Received,
             timestamp);
         var directionPercentages = _networkDirectionNormalizer.AddPairSample(
-            throughput.Received,
             throughput.Sent,
+            throughput.Received,
             timestamp);
         var percentText = networkPercent.ToString(CultureInfo.InvariantCulture) + "%";
-        var inLabel = Resources.GetResource("Network_In_Subtitle");
-        var outLabel = Resources.GetResource("Network_Out_Subtitle");
-        var inText = _networkPage.GetContentValue("netReceived");
-        var outText = _networkPage.GetContentValue("netSent");
+        var sendLabel = Resources.GetResource("Network_Send_Subtitle");
+        var receiveLabel = Resources.GetResource("Network_Receive_Subtitle");
+        var sendText = _networkPage.GetContentValue("netSent");
+        var receiveText = _networkPage.GetContentValue("netReceived");
         var networkLabel = Resources.GetResource("Network_Usage_Subtitle");
 
         json["networkLabelText"] = networkLabel;
@@ -310,16 +310,16 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
         json["networkDetailText"] = string.Format(
             CultureInfo.CurrentCulture,
             Resources.GetResource("Overview_Network_Detail_Format"),
-            inLabel,
-            inText,
-            outLabel,
-            outText);
-        json["networkInLabelText"] = FormatDirectionalLabel(networkLabel, inLabel);
-        json["networkOutLabelText"] = FormatDirectionalLabel(networkLabel, outLabel);
-        json["networkInText"] = FormatDirectionalValue(inLabel, inText);
-        json["networkOutText"] = FormatDirectionalValue(outLabel, outText);
-        json["networkInPercent"] = directionPercentages.FirstPercent;
-        json["networkOutPercent"] = directionPercentages.SecondPercent;
+            sendLabel,
+            sendText,
+            receiveLabel,
+            receiveText);
+        json["networkSendLabelText"] = FormatDirectionalLabel(networkLabel, sendLabel);
+        json["networkReceiveLabelText"] = FormatDirectionalLabel(networkLabel, receiveLabel);
+        json["networkSendText"] = FormatDirectionalValue(sendLabel, sendText);
+        json["networkReceiveText"] = FormatDirectionalValue(receiveLabel, receiveText);
+        json["networkSendPercent"] = directionPercentages.FirstPercent;
+        json["networkReceivePercent"] = directionPercentages.SecondPercent;
         json["networkPercent"] = networkPercent;
         return percentText;
     }

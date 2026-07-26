@@ -143,13 +143,13 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual("Write 2.0 MB/s", viewModel.DiskWriteText);
         Assert.AreEqual(45, viewModel.DiskReadPercent);
         Assert.AreEqual(55, viewModel.DiskWritePercent);
-        Assert.AreEqual("In 2.0 MB/s · Out 1.0 MB/s", viewModel.NetworkDetailText);
-        Assert.AreEqual("Network In", viewModel.NetworkInLabelText);
-        Assert.AreEqual("Network Out", viewModel.NetworkOutLabelText);
-        Assert.AreEqual("In 2.0 MB/s", viewModel.NetworkInText);
-        Assert.AreEqual("Out 1.0 MB/s", viewModel.NetworkOutText);
-        Assert.AreEqual(66, viewModel.NetworkInPercent);
-        Assert.AreEqual(56, viewModel.NetworkOutPercent);
+        Assert.AreEqual("Send 1.0 MB/s · Receive 2.0 MB/s", viewModel.NetworkDetailText);
+        Assert.AreEqual("Network Send", viewModel.NetworkSendLabelText);
+        Assert.AreEqual("Network Receive", viewModel.NetworkReceiveLabelText);
+        Assert.AreEqual("Send 1.0 MB/s", viewModel.NetworkSendText);
+        Assert.AreEqual("Receive 2.0 MB/s", viewModel.NetworkReceiveText);
+        Assert.AreEqual(56, viewModel.NetworkSendPercent);
+        Assert.AreEqual(66, viewModel.NetworkReceivePercent);
         Assert.AreEqual("NVIDIA Test GPU", viewModel.GpuAdapterName);
         Assert.AreEqual("Test Ethernet", viewModel.NetworkAdapterName);
         Assert.IsTrue(viewModel.CanSwitchGpu);
@@ -178,8 +178,8 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(100, viewModel.NetworkPercent);
         Assert.AreEqual(0, viewModel.DiskReadPercent);
         Assert.AreEqual(10, viewModel.DiskWritePercent);
-        Assert.AreEqual(100, viewModel.NetworkInPercent);
-        Assert.AreEqual(100, viewModel.NetworkOutPercent);
+        Assert.AreEqual(100, viewModel.NetworkSendPercent);
+        Assert.AreEqual(100, viewModel.NetworkReceivePercent);
     }
 
     [TestMethod]
@@ -215,12 +215,12 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
             "diskWriteLabelText",
             "diskReadPercent",
             "diskWritePercent",
-            "networkInText",
-            "networkOutText",
-            "networkInLabelText",
-            "networkOutLabelText",
-            "networkInPercent",
-            "networkOutPercent",
+            "networkSendText",
+            "networkReceiveText",
+            "networkSendLabelText",
+            "networkReceiveLabelText",
+            "networkSendPercent",
+            "networkReceivePercent",
         })
         {
             data.Remove(propertyName);
@@ -243,12 +243,12 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(string.Empty, viewModel.DiskWriteText);
         Assert.AreEqual(viewModel.DiskPercent, viewModel.DiskReadPercent);
         Assert.AreEqual(0, viewModel.DiskWritePercent);
-        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkInLabelText);
-        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkOutLabelText);
-        Assert.AreEqual(viewModel.NetworkDetailText, viewModel.NetworkInText);
-        Assert.AreEqual(string.Empty, viewModel.NetworkOutText);
-        Assert.AreEqual(viewModel.NetworkPercent, viewModel.NetworkInPercent);
-        Assert.AreEqual(0, viewModel.NetworkOutPercent);
+        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkSendLabelText);
+        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkReceiveLabelText);
+        Assert.AreEqual(viewModel.NetworkDetailText, viewModel.NetworkSendText);
+        Assert.AreEqual(string.Empty, viewModel.NetworkReceiveText);
+        Assert.AreEqual(viewModel.NetworkPercent, viewModel.NetworkSendPercent);
+        Assert.AreEqual(0, viewModel.NetworkReceivePercent);
     }
 
     [TestMethod]
@@ -357,14 +357,14 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
             ["networkLabelText"] = "Network",
             ["networkAdapterName"] = "Test Ethernet",
             ["canSwitchNetwork"] = true,
-            ["networkDetailText"] = "In 2.0 MB/s · Out 1.0 MB/s",
+            ["networkDetailText"] = "Send 1.0 MB/s · Receive 2.0 MB/s",
             ["networkPercent"] = networkPercent,
-            ["networkInLabelText"] = "Network In",
-            ["networkOutLabelText"] = "Network Out",
-            ["networkInText"] = "In 2.0 MB/s",
-            ["networkOutText"] = "Out 1.0 MB/s",
-            ["networkInPercent"] = networkPercent,
-            ["networkOutPercent"] = networkPercent - 10,
+            ["networkSendLabelText"] = "Network Send",
+            ["networkReceiveLabelText"] = "Network Receive",
+            ["networkSendText"] = "Send 1.0 MB/s",
+            ["networkReceiveText"] = "Receive 2.0 MB/s",
+            ["networkSendPercent"] = networkPercent - 10,
+            ["networkReceivePercent"] = networkPercent,
             ["previousGpuCommandText"] = "Previous GPU",
             ["nextGpuCommandText"] = "Next GPU",
             ["previousNetworkCommandText"] = "Previous network",
