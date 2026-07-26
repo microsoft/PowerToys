@@ -347,7 +347,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _svgRenderEnabledStateIsGPOConfigured || _mdRenderEnabledStateIsGPOConfigured
-                    || _mdLocalImagesEnabledStateIsGPOConfigured
                     || _monacoRenderEnabledStateIsGPOConfigured || _pdfRenderEnabledStateIsGPOConfigured
                     || _gcodeRenderEnabledStateIsGPOConfigured || _qoiRenderEnabledStateIsGPOConfigured
                     || _bgcodeRenderEnabledStateIsGPOConfigured;

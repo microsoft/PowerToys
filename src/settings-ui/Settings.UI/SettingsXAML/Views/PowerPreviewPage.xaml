@@ -150,19 +150,23 @@
                                     IsEnabled="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                     IsOn="{x:Bind ViewModel.MDLocalImagesIsEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical"
+                                Visibility="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                <InfoBar
+                                    x:Uid="GPO_SettingIsManaged"
+                                    IsClosable="False"
+                                    IsOpen="True"
+                                    IsTabStop="True"
+                                    Severity="Informational">
+                                    <InfoBar.IconSource>
+                                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
+                                    </InfoBar.IconSource>
+                                </InfoBar>
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-
-                    <InfoBar
-                        x:Uid="GPO_SettingIsManaged"
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay}"
-                        IsTabStop="{x:Bind ViewModel.MDLocalImagesIsGPOConfigured, Mode=OneWay}"
-                        Severity="Informational">
-                        <InfoBar.IconSource>
-                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE72E;" />
-                        </InfoBar.IconSource>
-                    </InfoBar>
 
                     <tkcontrols:SettingsCard
                         Name="FileExplorerPreviewToggleSwitchPreviewPDF"
