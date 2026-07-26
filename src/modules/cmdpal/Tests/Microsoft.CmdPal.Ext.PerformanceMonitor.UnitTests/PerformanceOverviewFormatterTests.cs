@@ -93,27 +93,27 @@ public class PerformanceOverviewFormatterTests
     }
 
     [TestMethod]
-    public void RollingNetworkThroughputNormalizer_AddsHeadroomAbovePeak()
+    public void RollingThroughputNormalizer_AddsHeadroomAbovePeak()
     {
-        var normalizer = new RollingNetworkThroughputNormalizer();
+        var normalizer = new RollingThroughputNormalizer();
         var timestamp = DateTimeOffset.UtcNow;
 
         Assert.AreEqual(83, normalizer.AddSample(10_000_000, timestamp));
     }
 
     [TestMethod]
-    public void RollingNetworkThroughputNormalizer_UsesMinimumScaleForIdleTraffic()
+    public void RollingThroughputNormalizer_UsesMinimumScaleForIdleTraffic()
     {
-        var normalizer = new RollingNetworkThroughputNormalizer();
+        var normalizer = new RollingThroughputNormalizer();
         var timestamp = DateTimeOffset.UtcNow;
 
         Assert.AreEqual(10, normalizer.AddSample(12_500, timestamp));
     }
 
     [TestMethod]
-    public void RollingNetworkThroughputNormalizer_RetainsPeakForSixtySeconds()
+    public void RollingThroughputNormalizer_RetainsPeakForSixtySeconds()
     {
-        var normalizer = new RollingNetworkThroughputNormalizer();
+        var normalizer = new RollingThroughputNormalizer();
         var timestamp = DateTimeOffset.UtcNow;
 
         normalizer.AddSample(10_000_000, timestamp);
@@ -123,11 +123,21 @@ public class PerformanceOverviewFormatterTests
     }
 
     [TestMethod]
-    public void RollingNetworkThroughputNormalizer_ClampsInvalidSamplesToZero()
+    public void RollingThroughputNormalizer_ClampsInvalidSamplesToZero()
     {
-        var normalizer = new RollingNetworkThroughputNormalizer();
+        var normalizer = new RollingThroughputNormalizer();
 
         Assert.AreEqual(0, normalizer.AddSample(double.NaN, DateTimeOffset.UtcNow));
         Assert.AreEqual(0, normalizer.AddSample(-1, DateTimeOffset.UtcNow));
+    }
+
+    [TestMethod]
+    public void RollingThroughputNormalizer_UsesSharedScaleForPair()
+    {
+        var normalizer = new RollingThroughputNormalizer();
+        var percentages = normalizer.AddPairSample(10_000_000, 5_000_000, DateTimeOffset.UtcNow);
+
+        Assert.AreEqual(83, percentages.FirstPercent);
+        Assert.AreEqual(42, percentages.SecondPercent);
     }
 }

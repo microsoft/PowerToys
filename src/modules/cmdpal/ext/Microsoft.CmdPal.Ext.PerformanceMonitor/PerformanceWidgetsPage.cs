@@ -820,6 +820,8 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private readonly PerformanceMetricSelectionState _selectionState;
+    private float _readThroughputBytesPerSecond;
+    private float _writeThroughputBytesPerSecond;
 
     public SystemDiskUsageWidgetPage(
         SettingsManager settingsManager,
@@ -851,6 +853,8 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             var diskIndex = _selectionState.DiskIndex;
             var diskName = currentData.GetDiskName(diskIndex);
             var diskStats = currentData.GetDiskUsage(diskIndex);
+            _readThroughputBytesPerSecond = Math.Max(0, diskStats.Read);
+            _writeThroughputBytesPerSecond = Math.Max(0, diskStats.Written);
 
             ContentData["diskUsage"] = FloatToPercentString(diskStats.Usage);
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
@@ -866,6 +870,8 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         }
         catch (Exception e)
         {
+            _readThroughputBytesPerSecond = 0;
+            _writeThroughputBytesPerSecond = 0;
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
@@ -916,6 +922,14 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         else
         {
             return "???";
+        }
+    }
+
+    internal (float Read, float Write) GetThroughputBytesPerSecond()
+    {
+        lock (ContentData)
+        {
+            return (_readThroughputBytesPerSecond, _writeThroughputBytesPerSecond);
         }
     }
 
@@ -1016,7 +1030,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private readonly PerformanceMetricSelectionState _selectionState;
-    private float _totalThroughputBytesPerSecond;
+    private float _sentThroughputBytesPerSecond;
+    private float _receivedThroughputBytesPerSecond;
 
     public SystemNetworkUsageWidgetPage(
         SettingsManager settingsManager,
@@ -1064,7 +1079,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var netName = currentData.GetNetworkName(networkIndex);
             var networkStats = currentData.GetNetworkUsage(networkIndex);
-            _totalThroughputBytesPerSecond = Math.Max(0, networkStats.Sent + networkStats.Received);
+            _sentThroughputBytesPerSecond = Math.Max(0, networkStats.Sent);
+            _receivedThroughputBytesPerSecond = Math.Max(0, networkStats.Received);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
@@ -1080,7 +1096,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
         catch (Exception e)
         {
-            _totalThroughputBytesPerSecond = 0;
+            _sentThroughputBytesPerSecond = 0;
+            _receivedThroughputBytesPerSecond = 0;
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
@@ -1134,11 +1151,11 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         }
     }
 
-    internal float GetTotalThroughputBytesPerSecond()
+    internal (float Sent, float Received) GetThroughputBytesPerSecond()
     {
         lock (ContentData)
         {
-            return _totalThroughputBytesPerSecond;
+            return (_sentThroughputBytesPerSecond, _receivedThroughputBytesPerSecond);
         }
     }
 

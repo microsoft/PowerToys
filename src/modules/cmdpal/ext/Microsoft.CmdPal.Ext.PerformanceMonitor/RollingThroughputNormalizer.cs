@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 
-internal sealed class RollingNetworkThroughputNormalizer
+internal sealed class RollingThroughputNormalizer
 {
     internal static readonly TimeSpan Window = TimeSpan.FromSeconds(60);
 
@@ -18,11 +18,17 @@ internal sealed class RollingNetworkThroughputNormalizer
     private readonly Queue<Sample> _samples = new();
     private readonly Lock _samplesLock = new();
 
-    internal int AddSample(double bytesPerSecond, DateTimeOffset timestamp)
+    internal int AddSample(double bytesPerSecond, DateTimeOffset timestamp) =>
+        AddPairSample(bytesPerSecond, 0, timestamp).FirstPercent;
+
+    internal ThroughputPairPercentages AddPairSample(
+        double firstBytesPerSecond,
+        double secondBytesPerSecond,
+        DateTimeOffset timestamp)
     {
-        var currentThroughput = double.IsFinite(bytesPerSecond)
-            ? Math.Max(0, bytesPerSecond)
-            : 0;
+        var firstThroughput = NormalizeThroughput(firstBytesPerSecond);
+        var secondThroughput = NormalizeThroughput(secondBytesPerSecond);
+        var currentPeak = Math.Max(firstThroughput, secondThroughput);
 
         lock (_samplesLock)
         {
@@ -32,7 +38,7 @@ internal sealed class RollingNetworkThroughputNormalizer
                 _samples.Dequeue();
             }
 
-            _samples.Enqueue(new(timestamp, currentThroughput));
+            _samples.Enqueue(new(timestamp, currentPeak));
 
             var rollingPeak = 0.0;
             foreach (var sample in _samples)
@@ -41,12 +47,22 @@ internal sealed class RollingNetworkThroughputNormalizer
             }
 
             var scale = Math.Max(MinimumScaleBytesPerSecond, rollingPeak * HeadroomMultiplier);
-            return Math.Clamp(
-                (int)Math.Round(currentThroughput * 100 / scale, MidpointRounding.AwayFromZero),
-                0,
-                100);
+            return new(
+                ToPercent(firstThroughput, scale),
+                ToPercent(secondThroughput, scale));
         }
     }
 
+    private static double NormalizeThroughput(double bytesPerSecond) =>
+        double.IsFinite(bytesPerSecond) ? Math.Max(0, bytesPerSecond) : 0;
+
+    private static int ToPercent(double bytesPerSecond, double scale) =>
+        Math.Clamp(
+            (int)Math.Round(bytesPerSecond * 100 / scale, MidpointRounding.AwayFromZero),
+            0,
+            100);
+
     private readonly record struct Sample(DateTimeOffset Timestamp, double BytesPerSecond);
+
+    internal readonly record struct ThroughputPairPercentages(int FirstPercent, int SecondPercent);
 }

@@ -207,11 +207,20 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         var selectionState = new PerformanceMetricSelectionState();
         var mainPage = new PerformanceWidgetsPage(_settingsManager, selectionState: selectionState);
         _mainPage = mainPage;
-        var networkThroughputNormalizer = new RollingNetworkThroughputNormalizer();
+        var networkThroughputNormalizer = new RollingThroughputNormalizer();
+        var networkDirectionNormalizer = new RollingThroughputNormalizer();
+        var diskDirectionNormalizer = new RollingThroughputNormalizer();
         var dockOverviewPages = new Dictionary<PerformanceMetricKind, PerformanceOverviewPage>();
         foreach (var metric in OverviewMetrics)
         {
-            dockOverviewPages.Add(metric, new PerformanceOverviewPage(mainPage, metric, networkThroughputNormalizer));
+            dockOverviewPages.Add(
+                metric,
+                new PerformanceOverviewPage(
+                    mainPage,
+                    metric,
+                    networkThroughputNormalizer,
+                    networkDirectionNormalizer,
+                    diskDirectionNormalizer));
         }
 
         _dockOverviewPages = [.. dockOverviewPages.Values];

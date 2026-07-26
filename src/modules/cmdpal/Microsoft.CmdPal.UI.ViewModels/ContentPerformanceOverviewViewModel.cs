@@ -45,11 +45,23 @@ public sealed partial class ContentPerformanceOverviewViewModel(
     private string _diskLabelText = string.Empty;
     private string _diskDetailText = string.Empty;
     private int _diskPercent;
+    private string _diskReadLabelText = string.Empty;
+    private string _diskWriteLabelText = string.Empty;
+    private string _diskReadText = string.Empty;
+    private string _diskWriteText = string.Empty;
+    private int _diskReadPercent;
+    private int _diskWritePercent;
     private string _networkLabelText = string.Empty;
     private string _networkAdapterName = string.Empty;
     private bool _canSwitchNetwork;
     private string _networkDetailText = string.Empty;
     private int _networkPercent;
+    private string _networkInLabelText = string.Empty;
+    private string _networkOutLabelText = string.Empty;
+    private string _networkInText = string.Empty;
+    private string _networkOutText = string.Empty;
+    private int _networkInPercent;
+    private int _networkOutPercent;
     private string _previousGpuCommandText = string.Empty;
     private string _nextGpuCommandText = string.Empty;
     private string _previousNetworkCommandText = string.Empty;
@@ -93,6 +105,18 @@ public sealed partial class ContentPerformanceOverviewViewModel(
 
     public int DiskPercent => _diskPercent;
 
+    public string DiskReadLabelText => _diskReadLabelText;
+
+    public string DiskWriteLabelText => _diskWriteLabelText;
+
+    public string DiskReadText => _diskReadText;
+
+    public string DiskWriteText => _diskWriteText;
+
+    public int DiskReadPercent => _diskReadPercent;
+
+    public int DiskWritePercent => _diskWritePercent;
+
     public string NetworkLabelText => _networkLabelText;
 
     public string NetworkAdapterName => _networkAdapterName;
@@ -102,6 +126,18 @@ public sealed partial class ContentPerformanceOverviewViewModel(
     public string NetworkDetailText => _networkDetailText;
 
     public int NetworkPercent => _networkPercent;
+
+    public string NetworkInLabelText => _networkInLabelText;
+
+    public string NetworkOutLabelText => _networkOutLabelText;
+
+    public string NetworkInText => _networkInText;
+
+    public string NetworkOutText => _networkOutText;
+
+    public int NetworkInPercent => _networkInPercent;
+
+    public int NetworkOutPercent => _networkOutPercent;
 
     public string PreviousGpuCommandText => _previousGpuCommandText;
 
@@ -191,17 +227,29 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         var diskLabelText = GetRequiredString(data, "diskLabelText");
         var diskDetailText = GetRequiredString(data, "diskDetailText");
         var diskPercent = GetPercent(data, "diskPercent");
+        var diskReadLabelText = GetOptionalString(data, "diskReadLabelText");
+        var diskWriteLabelText = GetOptionalString(data, "diskWriteLabelText");
+        var diskReadText = GetOptionalString(data, "diskReadText");
+        var diskWriteText = GetOptionalString(data, "diskWriteText");
+        var diskReadPercent = GetOptionalPercent(data, "diskReadPercent", diskPercent);
+        var diskWritePercent = GetOptionalPercent(data, "diskWritePercent", 0);
         var networkLabelText = GetRequiredString(data, "networkLabelText");
         var networkAdapterName = GetOptionalString(data, "networkAdapterName");
         var canSwitchNetwork = GetOptionalBool(data, "canSwitchNetwork");
         var networkDetailText = GetRequiredString(data, "networkDetailText");
         var networkPercent = GetPercent(data, "networkPercent");
+        var networkInLabelText = GetOptionalString(data, "networkInLabelText");
+        var networkOutLabelText = GetOptionalString(data, "networkOutLabelText");
+        var networkInText = GetOptionalString(data, "networkInText");
+        var networkOutText = GetOptionalString(data, "networkOutText");
+        var networkInPercent = GetOptionalPercent(data, "networkInPercent", networkPercent);
+        var networkOutPercent = GetOptionalPercent(data, "networkOutPercent", 0);
         var previousGpuCommandText = GetOptionalString(data, "previousGpuCommandText");
         var nextGpuCommandText = GetOptionalString(data, "nextGpuCommandText");
         var previousNetworkCommandText = GetOptionalString(data, "previousNetworkCommandText");
         var nextNetworkCommandText = GetOptionalString(data, "nextNetworkCommandText");
 
-        List<string> changedProperties = new(30);
+        List<string> changedProperties = new(42);
 
         SetValue(ref _titleText, titleText, nameof(TitleText), changedProperties);
         SetValue(ref _statusText, statusText, nameof(StatusText), changedProperties);
@@ -226,12 +274,24 @@ public sealed partial class ContentPerformanceOverviewViewModel(
         SetValue(ref _diskLabelText, diskLabelText, nameof(DiskLabelText), changedProperties);
         SetValue(ref _diskDetailText, diskDetailText, nameof(DiskDetailText), changedProperties);
         SetValue(ref _diskPercent, diskPercent, nameof(DiskPercent), changedProperties);
+        SetValue(ref _diskReadLabelText, string.IsNullOrEmpty(diskReadLabelText) ? diskLabelText : diskReadLabelText, nameof(DiskReadLabelText), changedProperties);
+        SetValue(ref _diskWriteLabelText, string.IsNullOrEmpty(diskWriteLabelText) ? diskLabelText : diskWriteLabelText, nameof(DiskWriteLabelText), changedProperties);
+        SetValue(ref _diskReadText, string.IsNullOrEmpty(diskReadText) ? diskDetailText : diskReadText, nameof(DiskReadText), changedProperties);
+        SetValue(ref _diskWriteText, diskWriteText, nameof(DiskWriteText), changedProperties);
+        SetValue(ref _diskReadPercent, diskReadPercent, nameof(DiskReadPercent), changedProperties);
+        SetValue(ref _diskWritePercent, diskWritePercent, nameof(DiskWritePercent), changedProperties);
 
         SetValue(ref _networkLabelText, networkLabelText, nameof(NetworkLabelText), changedProperties);
         SetValue(ref _networkAdapterName, networkAdapterName, nameof(NetworkAdapterName), changedProperties);
         SetValue(ref _canSwitchNetwork, canSwitchNetwork, nameof(CanSwitchNetwork), changedProperties);
         SetValue(ref _networkDetailText, networkDetailText, nameof(NetworkDetailText), changedProperties);
         SetValue(ref _networkPercent, networkPercent, nameof(NetworkPercent), changedProperties);
+        SetValue(ref _networkInLabelText, string.IsNullOrEmpty(networkInLabelText) ? networkLabelText : networkInLabelText, nameof(NetworkInLabelText), changedProperties);
+        SetValue(ref _networkOutLabelText, string.IsNullOrEmpty(networkOutLabelText) ? networkLabelText : networkOutLabelText, nameof(NetworkOutLabelText), changedProperties);
+        SetValue(ref _networkInText, string.IsNullOrEmpty(networkInText) ? networkDetailText : networkInText, nameof(NetworkInText), changedProperties);
+        SetValue(ref _networkOutText, networkOutText, nameof(NetworkOutText), changedProperties);
+        SetValue(ref _networkInPercent, networkInPercent, nameof(NetworkInPercent), changedProperties);
+        SetValue(ref _networkOutPercent, networkOutPercent, nameof(NetworkOutPercent), changedProperties);
         SetValue(ref _previousGpuCommandText, previousGpuCommandText, nameof(PreviousGpuCommandText), changedProperties);
         SetValue(ref _nextGpuCommandText, nextGpuCommandText, nameof(NextGpuCommandText), changedProperties);
         SetValue(ref _previousNetworkCommandText, previousNetworkCommandText, nameof(PreviousNetworkCommandText), changedProperties);
@@ -259,6 +319,11 @@ public sealed partial class ContentPerformanceOverviewViewModel(
 
     private static int GetPercent(JsonObject data, string propertyName) =>
         Math.Clamp(GetRequiredInt(data, propertyName), 0, 100);
+
+    private static int GetOptionalPercent(JsonObject data, string propertyName, int fallback) =>
+        data[propertyName] is null
+            ? fallback
+            : Math.Clamp(data[propertyName]!.GetValue<int>(), 0, 100);
 
     [RelayCommand]
     private void PreviousGpu() => _commandInvoker?.Invoke(NativePerformanceOverviewCommandIds.PreviousGpu);

@@ -137,7 +137,19 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(34, viewModel.MemoryPercent);
         Assert.AreEqual(45, viewModel.DiskPercent);
         Assert.AreEqual(66, viewModel.NetworkPercent);
-        Assert.AreEqual("Send 1.0 MB/s · Receive 2.0 MB/s", viewModel.NetworkDetailText);
+        Assert.AreEqual("Disk Read", viewModel.DiskReadLabelText);
+        Assert.AreEqual("Disk Write", viewModel.DiskWriteLabelText);
+        Assert.AreEqual("Read 1.0 MB/s", viewModel.DiskReadText);
+        Assert.AreEqual("Write 2.0 MB/s", viewModel.DiskWriteText);
+        Assert.AreEqual(45, viewModel.DiskReadPercent);
+        Assert.AreEqual(55, viewModel.DiskWritePercent);
+        Assert.AreEqual("In 2.0 MB/s · Out 1.0 MB/s", viewModel.NetworkDetailText);
+        Assert.AreEqual("Network In", viewModel.NetworkInLabelText);
+        Assert.AreEqual("Network Out", viewModel.NetworkOutLabelText);
+        Assert.AreEqual("In 2.0 MB/s", viewModel.NetworkInText);
+        Assert.AreEqual("Out 1.0 MB/s", viewModel.NetworkOutText);
+        Assert.AreEqual(66, viewModel.NetworkInPercent);
+        Assert.AreEqual(56, viewModel.NetworkOutPercent);
         Assert.AreEqual("NVIDIA Test GPU", viewModel.GpuAdapterName);
         Assert.AreEqual("Test Ethernet", viewModel.NetworkAdapterName);
         Assert.IsTrue(viewModel.CanSwitchGpu);
@@ -164,6 +176,10 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual(50, viewModel.MemoryPercent);
         Assert.AreEqual(0, viewModel.DiskPercent);
         Assert.AreEqual(100, viewModel.NetworkPercent);
+        Assert.AreEqual(0, viewModel.DiskReadPercent);
+        Assert.AreEqual(10, viewModel.DiskWritePercent);
+        Assert.AreEqual(100, viewModel.NetworkInPercent);
+        Assert.AreEqual(100, viewModel.NetworkOutPercent);
     }
 
     [TestMethod]
@@ -185,6 +201,54 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
         Assert.AreEqual("cpu", viewModel.HeroMetric);
         Assert.AreEqual("37%", viewModel.HeroValueText);
         Assert.AreEqual(37, viewModel.CpuPercent);
+    }
+
+    [TestMethod]
+    public void LegacyPayloadWithoutDirectionalFields_UsesAggregateFallbacks()
+    {
+        var data = JsonNode.Parse(BuildPayload("disk", "44%", 11, 22, 33, 44, 55))!.AsObject();
+        foreach (var propertyName in new[]
+        {
+            "diskReadText",
+            "diskWriteText",
+            "diskReadLabelText",
+            "diskWriteLabelText",
+            "diskReadPercent",
+            "diskWritePercent",
+            "networkInText",
+            "networkOutText",
+            "networkInLabelText",
+            "networkOutLabelText",
+            "networkInPercent",
+            "networkOutPercent",
+        })
+        {
+            data.Remove(propertyName);
+        }
+
+        var form = new FormContent
+        {
+            TemplateJson = NativeFormContentTypes.PerformanceOverview,
+            DataJson = data.ToJsonString(),
+        };
+        var viewModel = new ContentPerformanceOverviewViewModel(
+            form,
+            new WeakReference<IPageContext>(new TestPageContext()));
+
+        viewModel.InitializeProperties();
+
+        Assert.AreEqual(viewModel.DiskLabelText, viewModel.DiskReadLabelText);
+        Assert.AreEqual(viewModel.DiskLabelText, viewModel.DiskWriteLabelText);
+        Assert.AreEqual(viewModel.DiskDetailText, viewModel.DiskReadText);
+        Assert.AreEqual(string.Empty, viewModel.DiskWriteText);
+        Assert.AreEqual(viewModel.DiskPercent, viewModel.DiskReadPercent);
+        Assert.AreEqual(0, viewModel.DiskWritePercent);
+        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkInLabelText);
+        Assert.AreEqual(viewModel.NetworkLabelText, viewModel.NetworkOutLabelText);
+        Assert.AreEqual(viewModel.NetworkDetailText, viewModel.NetworkInText);
+        Assert.AreEqual(string.Empty, viewModel.NetworkOutText);
+        Assert.AreEqual(viewModel.NetworkPercent, viewModel.NetworkInPercent);
+        Assert.AreEqual(0, viewModel.NetworkOutPercent);
     }
 
     [TestMethod]
@@ -284,11 +348,23 @@ public sealed partial class ContentPerformanceOverviewViewModelTests
             ["diskLabelText"] = "Disk",
             ["diskDetailText"] = "Read 1.0 MB/s · Write 2.0 MB/s",
             ["diskPercent"] = diskPercent,
+            ["diskReadLabelText"] = "Disk Read",
+            ["diskWriteLabelText"] = "Disk Write",
+            ["diskReadText"] = "Read 1.0 MB/s",
+            ["diskWriteText"] = "Write 2.0 MB/s",
+            ["diskReadPercent"] = diskPercent,
+            ["diskWritePercent"] = diskPercent + 10,
             ["networkLabelText"] = "Network",
             ["networkAdapterName"] = "Test Ethernet",
             ["canSwitchNetwork"] = true,
-            ["networkDetailText"] = "Send 1.0 MB/s · Receive 2.0 MB/s",
+            ["networkDetailText"] = "In 2.0 MB/s · Out 1.0 MB/s",
             ["networkPercent"] = networkPercent,
+            ["networkInLabelText"] = "Network In",
+            ["networkOutLabelText"] = "Network Out",
+            ["networkInText"] = "In 2.0 MB/s",
+            ["networkOutText"] = "Out 1.0 MB/s",
+            ["networkInPercent"] = networkPercent,
+            ["networkOutPercent"] = networkPercent - 10,
             ["previousGpuCommandText"] = "Previous GPU",
             ["nextGpuCommandText"] = "Next GPU",
             ["previousNetworkCommandText"] = "Previous network",

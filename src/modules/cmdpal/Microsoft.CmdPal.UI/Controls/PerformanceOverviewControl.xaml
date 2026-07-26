@@ -293,29 +293,64 @@
                         Foreground="{ThemeResource PerformanceGoodTextBrush}"
                         Text="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis" />
-                    <TextBlock
+                    <Grid
                         Grid.Column="1"
-                        AutomationProperties.AutomationId="PerformanceOverviewDiskDetail"
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        HorizontalAlignment="Stretch"
-                        Text="{x:Bind ViewModel.DiskDetailText, Mode=OneWay}"
-                        TextAlignment="Right"
-                        TextTrimming="CharacterEllipsis" />
+                        ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            AutomationProperties.AutomationId="PerformanceOverviewDiskReadText"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.DiskReadText, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Grid.Column="1"
+                            AutomationProperties.AutomationId="PerformanceOverviewDiskWriteText"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}"
+                            TextAlignment="Right"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
                 </Grid>
-                <Grid Grid.Row="1">
-                    <Border
-                        Height="1"
-                        Background="{ThemeResource PerformanceTrackBrush}"
-                        CornerRadius="0.5"
-                        VerticalAlignment="Center" />
-                    <ProgressBar
-                        AutomationProperties.AutomationId="PerformanceOverviewDiskBar"
-                        AutomationProperties.HelpText="{x:Bind ViewModel.DiskDetailText, Mode=OneWay}"
-                        AutomationProperties.Name="{x:Bind ViewModel.DiskLabelText, Mode=OneWay}"
-                        Foreground="{ThemeResource PerformanceGoodBrush}"
-                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
-                        Value="{x:Bind ViewModel.DiskPercent, Mode=OneWay}" />
+                <Grid
+                    Grid.Row="1"
+                    ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Border
+                            Height="1"
+                            Background="{ThemeResource PerformanceTrackBrush}"
+                            CornerRadius="0.5"
+                            VerticalAlignment="Center" />
+                        <ProgressBar
+                            AutomationProperties.AutomationId="PerformanceOverviewDiskReadBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.DiskReadText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.DiskReadLabelText, Mode=OneWay}"
+                            Foreground="{ThemeResource PerformanceGoodBrush}"
+                            Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                            Value="{x:Bind ViewModel.DiskReadPercent, Mode=OneWay}" />
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Border
+                            Height="1"
+                            Background="{ThemeResource PerformanceTrackBrush}"
+                            CornerRadius="0.5"
+                            VerticalAlignment="Center" />
+                        <ProgressBar
+                            AutomationProperties.AutomationId="PerformanceOverviewDiskWriteBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.DiskWriteLabelText, Mode=OneWay}"
+                            Foreground="{ThemeResource PerformanceGoodBrush}"
+                            Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                            Value="{x:Bind ViewModel.DiskWritePercent, Mode=OneWay}" />
+                    </Grid>
                 </Grid>
             </Grid>
 
@@ -344,15 +379,29 @@
                         Text="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
                         TextTrimming="CharacterEllipsis"
                         VerticalAlignment="Center" />
-                    <TextBlock
+                    <Grid
                         Grid.Column="1"
                         Grid.ColumnSpan="3"
-                        AutomationProperties.AutomationId="PerformanceOverviewNetworkDetail"
-                        FontSize="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.NetworkDetailText, Mode=OneWay}"
-                        TextAlignment="Right"
-                        TextTrimming="CharacterEllipsis" />
+                        ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkInText"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.NetworkInText, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis" />
+                        <TextBlock
+                            Grid.Column="1"
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkOutText"
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.NetworkOutText, Mode=OneWay}"
+                            TextAlignment="Right"
+                            TextTrimming="CharacterEllipsis" />
+                    </Grid>
                     <TextBlock
                         Grid.Row="1"
                         Grid.Column="1"
@@ -387,19 +436,41 @@
                         <FontIcon FontSize="10" Glyph="&#xE76C;" />
                     </Button>
                 </Grid>
-                <Grid Grid.Row="1">
-                    <Border
-                        Height="1"
-                        Background="{ThemeResource PerformanceTrackBrush}"
-                        CornerRadius="0.5"
-                        VerticalAlignment="Center" />
-                    <ProgressBar
-                        AutomationProperties.AutomationId="PerformanceOverviewNetworkBar"
-                        AutomationProperties.HelpText="{x:Bind ViewModel.NetworkDetailText, Mode=OneWay}"
-                        AutomationProperties.Name="{x:Bind ViewModel.NetworkLabelText, Mode=OneWay}"
-                        Foreground="{ThemeResource PerformanceAttentionBrush}"
-                        Style="{StaticResource PerformanceOverviewProgressBarStyle}"
-                        Value="{x:Bind ViewModel.NetworkPercent, Mode=OneWay}" />
+                <Grid
+                    Grid.Row="1"
+                    ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid>
+                        <Border
+                            Height="1"
+                            Background="{ThemeResource PerformanceTrackBrush}"
+                            CornerRadius="0.5"
+                            VerticalAlignment="Center" />
+                        <ProgressBar
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkInBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkInText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.NetworkInLabelText, Mode=OneWay}"
+                            Foreground="{ThemeResource PerformanceAttentionBrush}"
+                            Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                            Value="{x:Bind ViewModel.NetworkInPercent, Mode=OneWay}" />
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Border
+                            Height="1"
+                            Background="{ThemeResource PerformanceTrackBrush}"
+                            CornerRadius="0.5"
+                            VerticalAlignment="Center" />
+                        <ProgressBar
+                            AutomationProperties.AutomationId="PerformanceOverviewNetworkOutBar"
+                            AutomationProperties.HelpText="{x:Bind ViewModel.NetworkOutText, Mode=OneWay}"
+                            AutomationProperties.Name="{x:Bind ViewModel.NetworkOutLabelText, Mode=OneWay}"
+                            Foreground="{ThemeResource PerformanceAttentionBrush}"
+                            Style="{StaticResource PerformanceOverviewProgressBarStyle}"
+                            Value="{x:Bind ViewModel.NetworkOutPercent, Mode=OneWay}" />
+                    </Grid>
                 </Grid>
             </Grid>
         </StackPanel>

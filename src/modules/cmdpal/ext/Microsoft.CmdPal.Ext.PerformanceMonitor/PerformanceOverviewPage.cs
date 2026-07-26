@@ -37,7 +37,9 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
     private readonly Timer _refreshTimer;
     private readonly PerformanceMetricKind _heroMetric;
     private readonly string _heroLabel;
-    private readonly RollingNetworkThroughputNormalizer _networkThroughputNormalizer;
+    private readonly RollingThroughputNormalizer _networkThroughputNormalizer;
+    private readonly RollingThroughputNormalizer _networkDirectionNormalizer;
+    private readonly RollingThroughputNormalizer _diskDirectionNormalizer;
 
     private readonly SystemCPUUsageWidgetPage _cpuPage;
     private readonly SystemMemoryUsageWidgetPage _memoryPage;
@@ -51,10 +53,14 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
     public PerformanceOverviewPage(
         PerformanceWidgetsPage metricsPage,
         PerformanceMetricKind heroMetric,
-        RollingNetworkThroughputNormalizer networkThroughputNormalizer)
+        RollingThroughputNormalizer networkThroughputNormalizer,
+        RollingThroughputNormalizer networkDirectionNormalizer,
+        RollingThroughputNormalizer diskDirectionNormalizer)
     {
         _heroMetric = heroMetric;
         _networkThroughputNormalizer = networkThroughputNormalizer;
+        _networkDirectionNormalizer = networkDirectionNormalizer;
+        _diskDirectionNormalizer = diskDirectionNormalizer;
         _heroLabel = PerformanceOverviewFormatter.SelectMetricValue(
             heroMetric,
             Resources.GetResource("CPU_Usage_Subtitle"),
@@ -178,12 +184,13 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
     private JsonObject BuildDataJson()
     {
         var json = new JsonObject();
+        var timestamp = DateTimeOffset.UtcNow;
 
         var cpuPercentText = AddCpuData(json);
         var memoryPercentText = AddMemoryData(json);
         var gpuPercentText = AddGpuData(json);
-        var diskPercentText = AddDiskData(json);
-        var networkPercentText = AddNetworkData(json);
+        var diskPercentText = AddDiskData(json, timestamp);
+        var networkPercentText = AddNetworkData(json, timestamp);
 
         json["schemaVersion"] = 1;
         json["titleText"] = Resources.GetResource("Performance_Monitor_Title");
@@ -247,45 +254,91 @@ internal sealed partial class PerformanceOverviewPage : OnLoadContentPage, IDisp
         return percentText;
     }
 
-    private string AddDiskData(JsonObject json)
+    private string AddDiskData(JsonObject json, DateTimeOffset timestamp)
     {
         var rawPercentText = _diskPage.GetContentValue("diskUsage");
         var percentText = FirstNonEmpty(rawPercentText, Resources.GetResource("Disk_Usage_Unknown"));
+        var readLabel = Resources.GetResource("Disk_Read_Subtitle");
+        var writeLabel = Resources.GetResource("Disk_Write_Subtitle");
+        var readText = _diskPage.GetContentValue("diskRead");
+        var writeText = _diskPage.GetContentValue("diskWrite");
+        var throughput = _diskPage.GetThroughputBytesPerSecond();
+        var directionPercentages = _diskDirectionNormalizer.AddPairSample(
+            throughput.Read,
+            throughput.Write,
+            timestamp);
+        var diskLabel = Resources.GetResource("Disk_Usage_Subtitle");
 
-        json["diskLabelText"] = Resources.GetResource("Disk_Usage_Subtitle");
+        json["diskLabelText"] = diskLabel;
         json["diskDetailText"] = string.Format(
             CultureInfo.CurrentCulture,
             Resources.GetResource("Overview_Disk_Detail_Format"),
-            Resources.GetResource("Disk_Read_Subtitle"),
-            _diskPage.GetContentValue("diskRead"),
-            Resources.GetResource("Disk_Write_Subtitle"),
-            _diskPage.GetContentValue("diskWrite"));
+            readLabel,
+            readText,
+            writeLabel,
+            writeText);
+        json["diskReadLabelText"] = FormatDirectionalLabel(diskLabel, readLabel);
+        json["diskWriteLabelText"] = FormatDirectionalLabel(diskLabel, writeLabel);
+        json["diskReadText"] = FormatDirectionalValue(readLabel, readText);
+        json["diskWriteText"] = FormatDirectionalValue(writeLabel, writeText);
+        json["diskReadPercent"] = directionPercentages.FirstPercent;
+        json["diskWritePercent"] = directionPercentages.SecondPercent;
         json["diskPercent"] = PerformanceOverviewFormatter.ParsePercentText(rawPercentText);
         return percentText;
     }
 
-    private string AddNetworkData(JsonObject json)
+    private string AddNetworkData(JsonObject json, DateTimeOffset timestamp)
     {
+        var throughput = _networkPage.GetThroughputBytesPerSecond();
         var networkPercent = _networkThroughputNormalizer.AddSample(
-            _networkPage.GetTotalThroughputBytesPerSecond(),
-            DateTimeOffset.UtcNow);
+            throughput.Sent + throughput.Received,
+            timestamp);
+        var directionPercentages = _networkDirectionNormalizer.AddPairSample(
+            throughput.Received,
+            throughput.Sent,
+            timestamp);
         var percentText = networkPercent.ToString(CultureInfo.InvariantCulture) + "%";
+        var inLabel = Resources.GetResource("Network_In_Subtitle");
+        var outLabel = Resources.GetResource("Network_Out_Subtitle");
+        var inText = _networkPage.GetContentValue("netReceived");
+        var outText = _networkPage.GetContentValue("netSent");
+        var networkLabel = Resources.GetResource("Network_Usage_Subtitle");
 
-        json["networkLabelText"] = Resources.GetResource("Network_Usage_Subtitle");
+        json["networkLabelText"] = networkLabel;
         json["networkAdapterName"] = _networkPage.GetContentValue("networkName");
         json["canSwitchNetwork"] = _networkPage.GetAdapterCount() > 1;
         json["networkDetailText"] = string.Format(
             CultureInfo.CurrentCulture,
             Resources.GetResource("Overview_Network_Detail_Format"),
-            Resources.GetResource("Network_Send_Subtitle"),
-            _networkPage.GetContentValue("netSent"),
-            Resources.GetResource("Network_Receive_Subtitle"),
-            _networkPage.GetContentValue("netReceived"));
+            inLabel,
+            inText,
+            outLabel,
+            outText);
+        json["networkInLabelText"] = FormatDirectionalLabel(networkLabel, inLabel);
+        json["networkOutLabelText"] = FormatDirectionalLabel(networkLabel, outLabel);
+        json["networkInText"] = FormatDirectionalValue(inLabel, inText);
+        json["networkOutText"] = FormatDirectionalValue(outLabel, outText);
+        json["networkInPercent"] = directionPercentages.FirstPercent;
+        json["networkOutPercent"] = directionPercentages.SecondPercent;
         json["networkPercent"] = networkPercent;
         return percentText;
     }
 
     private static string FirstNonEmpty(string value, string fallback) => string.IsNullOrEmpty(value) ? fallback : value;
+
+    private static string FormatDirectionalLabel(string metricLabel, string directionLabel) =>
+        string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource("Overview_Directional_Label_Format"),
+            metricLabel,
+            directionLabel);
+
+    private static string FormatDirectionalValue(string label, string value) =>
+        string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource("Overview_Directional_Value_Format"),
+            label,
+            value);
 
     private static string FormatPercentDetail(string percentText, string detailText) =>
         string.IsNullOrEmpty(detailText)
