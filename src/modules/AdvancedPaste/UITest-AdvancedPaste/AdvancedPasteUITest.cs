@@ -891,6 +891,25 @@ namespace Microsoft.AdvancedPaste.UITests
             window.Close();
         }
 
+        private T WaitUntil<T>(Func<T> action, int timeoutMs = 15000)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.ElapsedMilliseconds < timeoutMs)
+            {
+                try
+                {
+                    T result = action();
+                    if (result != null) return result;
+                }
+                catch (Exception)
+                {
+                    // Ignore exceptions during polling
+                }
+                Thread.Sleep(200);
+            }
+            throw new TimeoutException("WaitUntil timed out.");
+        }
+
         private void ContentCopyAndPasteAsRichText(string fileName)
         {
             // Open the txt file with notepad
@@ -902,32 +921,34 @@ namespace Microsoft.AdvancedPaste.UITests
                 throw new InvalidOperationException("Failed to start Notepad.");
             }
 
-            Thread.Sleep(15000);
-
-            var window = FindWindowWithFlexibleTitle(Path.GetFileName(tempFile), false);
+            // Wait for Notepad to appear
+            var window = WaitUntil(() => FindWindowWithFlexibleTitle(Path.GetFileName(tempFile), false));
 
             window.Click();
-            Thread.Sleep(1000);
+            Thread.Sleep(200);
 
             this.SendKeys(Key.LCtrl, Key.A);
-            Thread.Sleep(1000);
+            Thread.Sleep(200);
             this.SendKeys(Key.LCtrl, Key.C);
-            Thread.Sleep(1000);
+            Thread.Sleep(200);
             
             // Delete content so we can paste over it
             this.SendKeys(Key.Delete);
-            Thread.Sleep(1000);
+            Thread.Sleep(200);
 
             // Open Advanced Paste window using hotkey
             this.SendKeys(Key.Win, Key.Shift, Key.V);
-            Thread.Sleep(15000);
 
+            // Wait for Advanced Paste window to appear
+            var apWind = WaitUntil(() => this.Find<Window>("Advanced Paste", global: true));
+            
             // click Paste as Rich Text button
-            var apWind = this.Find<Window>("Advanced Paste", global: true);
-            apWind.Find<TextBlock>("Paste as Rich Text").Click();
+            var pasteBtn = WaitUntil(() => apWind.Find<TextBlock>("Paste as Rich Text"));
+            pasteBtn.Click();
 
+            Thread.Sleep(500);
             this.SendKeys(Key.LCtrl, Key.S);
-            Thread.Sleep(1000);
+            Thread.Sleep(500);
 
             window.Close();
         }
