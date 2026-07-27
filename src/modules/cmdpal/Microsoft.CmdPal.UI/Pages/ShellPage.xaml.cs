@@ -1099,6 +1099,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         HandleExpandCompactOnUiThread(true);
+        WeakReferenceMessenger.Default.Send<UpdateCompactModeHostMessage>(new(true));
         return true;
     }
 
