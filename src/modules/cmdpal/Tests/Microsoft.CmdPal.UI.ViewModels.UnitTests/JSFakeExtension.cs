@@ -28,6 +28,7 @@ internal sealed class JSFakeExtension : IDisposable
     private readonly Stream _extensionReads;
     private readonly Stream _extensionWrites;
     private readonly ConcurrentDictionary<string, Func<JsonElement, JsonNode?>> _handlers = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, (int Code, string Message)> _errors = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _pump;
     private bool _isDisposed;
@@ -47,6 +48,10 @@ internal sealed class JSFakeExtension : IDisposable
     public void OnRequest(string method, Func<JsonElement, JsonNode?> handler) => _handlers[method] = handler;
 
     public void OnResult(string method, string resultJson) => _handlers[method] = _ => JsonNode.Parse(resultJson);
+
+    // Answers a request method with a JSON-RPC error response so tests can drive
+    // the error-handling branches of the proxies.
+    public void OnError(string method, int code, string message) => _errors[method] = (code, message);
 
     public async Task PushNotificationAsync(string method, JsonNode? parameters)
     {
@@ -104,6 +109,12 @@ internal sealed class JSFakeExtension : IDisposable
                 var method = root.TryGetProperty("method", out var methodProp) ? methodProp.GetString() ?? string.Empty : string.Empty;
                 var parameters = root.TryGetProperty("params", out var paramsProp) ? paramsProp.Clone() : default;
 
+                if (_errors.TryGetValue(method, out var error))
+                {
+                    await RespondErrorAsync(id, error.Code, error.Message, cancellationToken);
+                    continue;
+                }
+
                 JsonNode? result = null;
                 if (_handlers.TryGetValue(method, out var handler))
                 {
@@ -137,6 +148,22 @@ internal sealed class JSFakeExtension : IDisposable
         };
 
         await WriteFramedAsync(message.ToJsonString(), cancellationToken);
+    }
+
+    private async Task RespondErrorAsync(int id, int code, string message, CancellationToken cancellationToken)
+    {
+        var envelope = new JsonObject
+        {
+            ["jsonrpc"] = "2.0",
+            ["id"] = id,
+            ["error"] = new JsonObject
+            {
+                ["code"] = code,
+                ["message"] = message,
+            },
+        };
+
+        await WriteFramedAsync(envelope.ToJsonString(), cancellationToken);
     }
 
     private async Task WriteFramedAsync(string json, CancellationToken cancellationToken)
