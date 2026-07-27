@@ -28,12 +28,23 @@ internal sealed class PowerToysAppHostService : IAppHostService
 
     public ICommandProviderContext GetProviderContextForCommand(object? command, ICommandProviderContext? currentContext)
     {
-        ICommandProviderContext? topLevelId = null;
-        if (command is TopLevelViewModel topLevelViewModel)
+        // Prefer the command's own top-level provider context. Do not let a
+        // nested navigation page's currentContext override a TopLevelViewModel
+        // provider (Dock vs palette contamination — #46401).
+        if (command is TopLevelViewModel topLevelViewModel && topLevelViewModel.ProviderContext is not null)
         {
-            topLevelId = topLevelViewModel.ProviderContext;
+            return topLevelViewModel.ProviderContext;
         }
 
-        return topLevelId ?? currentContext ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
+        if (command is TopLevelViewModel)
+        {
+            return currentContext
+                ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
+        }
+
+        // For non-top-level commands, callers must pass the correct provider
+        // context explicitly (Dock host should pass the pinned provider).
+        return currentContext
+            ?? throw new InvalidOperationException("No command provider context could be found for the given command, and no current context was provided.");
     }
 }
