@@ -35,6 +35,25 @@ namespace Wox.Test
         }
 
         [TestMethod]
+        public void LegacyGenerationZeroQueryMatchesRawQueryOnly()
+        {
+            // Legacy binary plugins may reconstruct a query without preserving its parsed fields.
+            var currentQuery = new Query(">search text", ">") { QueryGeneration = 42 };
+            var legacyQuery = new Query(">SEARCH TEXT");
+
+            Assert.IsTrue(MainViewModel.IsCurrentQuery(currentQuery, legacyQuery));
+        }
+
+        [TestMethod]
+        public void LegacyGenerationZeroQueryWithDifferentRawQueryDoesNotMatch()
+        {
+            var currentQuery = new Query(">search text", ">") { QueryGeneration = 42 };
+            var legacyQuery = new Query(">different text");
+
+            Assert.IsFalse(MainViewModel.IsCurrentQuery(currentQuery, legacyQuery));
+        }
+
+        [TestMethod]
         public void BusyPluginDoesNotBlockAnotherPlugin()
         {
             // A non-returning plugin must consume only its own slot so unrelated plugins remain searchable.

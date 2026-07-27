@@ -216,7 +216,19 @@ namespace PowerLauncher.ViewModel
 
         internal static bool IsCurrentQuery(Query currentQuery, Query eventQuery)
         {
-            return currentQuery?.QueryGeneration == eventQuery?.QueryGeneration &&
+            if (currentQuery == null || eventQuery == null)
+            {
+                return false;
+            }
+
+            // Legacy binary IResultUpdated plugins report generation 0 and may reconstruct
+            // their query without preserving ActionKeyword or Search.
+            if (eventQuery.QueryGeneration == 0)
+            {
+                return string.Equals(currentQuery.RawQuery, eventQuery.RawQuery, StringComparison.CurrentCultureIgnoreCase);
+            }
+
+            return currentQuery.QueryGeneration == eventQuery.QueryGeneration &&
                    AreEquivalentQueries(currentQuery, eventQuery);
         }
 
@@ -675,10 +687,14 @@ namespace PowerLauncher.ViewModel
                             lock (_addResultsLock)
                             {
                                 updateToken.ThrowIfCancellationRequested();
-                                if (queryGeneration == _queryGeneration)
+
+                                // A superseding query updates the generation before it cancels this session.
+                                if (queryGeneration != _queryGeneration)
                                 {
-                                    Results.Clear();
+                                    return;
                                 }
+
+                                Results.Clear();
                             }
 
                             var pluginTasks = pluginQueryPairs.Select(
@@ -816,7 +832,14 @@ namespace PowerLauncher.ViewModel
 
             if (!delayedExecution.HasValue || delayedExecution.Value)
             {
-                results = await QueryPluginAsync(plugin, query, delayedExecution: true, queryConcurrencyGate, cancellationToken).ConfigureAwait(false);
+                // Only non-delayed searches honor PTRunNonDelayedSearchInParallel. The per-plugin
+                // gate still prevents overlapping calls to the same plugin during the delayed phase.
+                results = await QueryPluginAsync(
+                    plugin,
+                    query,
+                    delayedExecution: true,
+                    queryConcurrencyGate: null,
+                    cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 if ((results?.Count ?? 0) != 0)
                 {
