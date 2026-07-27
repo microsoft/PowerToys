@@ -109,6 +109,22 @@ export class ExtensionRuntime {
   private readonly resolved = new Map<string, ICommand>();
   private readonly pageScopes = new Map<string, PageScope>();
   private readonly fallbacks = new Map<string, IFallbackCommandItem>();
+  /**
+   * Direct child command ids registered while serializing a page's items or
+   * content, keyed by the owning page id. Reconciled on every re-serialization
+   * so a child (including a child page) that disappears is retired, and walked
+   * recursively when the owner is retired so a whole subtree is released
+   * together instead of leaking until process shutdown.
+   */
+  private readonly pageContentChildren = new Map<string, Set<string>>();
+  /**
+   * Nested command ids emitted inside a command result (a confirm dialog's
+   * primary command, or a toast continuation), keyed by the command or page
+   * that produced the result. Accumulated across invocations and walked
+   * recursively when the owner is retired so a nested result command cannot
+   * outlive its owner.
+   */
+  private readonly resultChildren = new Map<string, Set<string>>();
   private readonly serializer: WireSerializer;
   private readonly send: MessageSender;
   private readonly onDispose?: () => void;
@@ -313,6 +329,8 @@ export class ExtensionRuntime {
       this.resolved.clear();
       this.pageScopes.clear();
       this.fallbacks.clear();
+      this.pageContentChildren.clear();
+      this.resultChildren.clear();
       this.onDispose?.();
     }
   }
@@ -393,8 +411,11 @@ export class ExtensionRuntime {
     const items = await provider.topLevelCommands();
     const scope = new Map<string, ICommand>();
     const serialized = await this.withMapSink(scope, () => this.serializer.commandItems(items));
-    // Replace the previous generation, releasing commands that are gone.
+    // Replace the previous generation, releasing commands that are gone and
+    // recursively retiring the descendant scopes they owned.
+    const previous = this.providerScope;
     this.providerScope = scope;
+    this.retireMissing(previous.keys(), scope);
     this.respond(id, serialized);
   }
 
@@ -415,8 +436,11 @@ export class ExtensionRuntime {
       this.fallbacks.set(item.command.id, item);
     }
     const serialized = await this.withMapSink(scope, () => this.serializer.commandItems(items));
-    // Replace the previous fallback generation, releasing commands that are gone.
+    // Replace the previous fallback generation, releasing commands that are gone
+    // and recursively retiring the descendant scopes they owned.
+    const previous = this.fallbackScope;
     this.fallbackScope = scope;
+    this.retireMissing(previous.keys(), scope);
     this.respond(id, serialized);
   }
 
@@ -453,7 +477,7 @@ export class ExtensionRuntime {
       return;
     }
     const result = await invokable.invoke();
-    this.respond(id, this.serializer.commandResult(result));
+    this.respond(id, await this.serializeOwnedResult(commandId, result));
   }
 
   private async getItems(id: number | string, pageId: string): Promise<void> {
@@ -466,6 +490,7 @@ export class ExtensionRuntime {
     const items = await page.getItems();
     const scope = this.beginPageScope(pageId);
     const serialized = await this.withScopeSink(scope, () => this.serializer.listItems(items));
+    this.reconcilePageContent(pageId, scope);
     this.respond(id, { items: serialized, hasMoreItems: page.hasMoreItems ?? false });
   }
 
@@ -506,6 +531,7 @@ export class ExtensionRuntime {
     const items = await page.getItems();
     const scope = this.beginPageScope(pageId);
     const serialized = await this.withScopeSink(scope, () => this.serializer.listItems(items));
+    this.reconcilePageContent(pageId, scope);
     this.respond(id, { items: serialized, hasMoreItems: page.hasMoreItems ?? false });
   }
 
@@ -531,7 +557,7 @@ export class ExtensionRuntime {
       }
       if (handler) {
         const result = await handler(inputs, data);
-        this.respond(id, this.serializer.commandResult(result));
+        this.respond(id, await this.serializeOwnedResult(pageId, result));
         return;
       }
       this.respondError(id, JsonRpcErrorCode.MethodNotFound, `Form not found: ${pageId}/${formId}`);
@@ -553,7 +579,7 @@ export class ExtensionRuntime {
       return;
     }
     const result = await form.submitForm(inputs, data);
-    this.respond(id, this.serializer.commandResult(result));
+    this.respond(id, await this.serializeOwnedResult(pageId, result));
   }
 
   /**
@@ -570,9 +596,11 @@ export class ExtensionRuntime {
     const content = await page.getContent();
     const scope = this.beginPageScope(pageId);
     const collector = createFormCollector(scope);
-    return this.withScopeSink(scope, () =>
+    const serialized = await this.withScopeSink(scope, () =>
       Promise.all(content.map((item) => this.serializer.content(item, collector))),
     );
+    this.reconcilePageContent(pageId, scope);
+    return serialized;
   }
 
   private async applyFallbackQuery(commandId: string, query: string): Promise<void> {
@@ -709,6 +737,89 @@ export class ExtensionRuntime {
       }
     }
     return null;
+  }
+
+  /**
+   * Recursively retires a command id: removes it from the on-demand and page
+   * registries and walks its descendant scopes (child page content and nested
+   * result commands) so the whole subtree is released together. Safe for ids
+   * that own no scope.
+   */
+  private retire(commandId: string): void {
+    this.resolved.delete(commandId);
+    this.pageScopes.delete(commandId);
+    const contentChildren = this.pageContentChildren.get(commandId);
+    this.pageContentChildren.delete(commandId);
+    const resultChildren = this.resultChildren.get(commandId);
+    this.resultChildren.delete(commandId);
+    if (contentChildren) {
+      for (const childId of contentChildren) {
+        this.retire(childId);
+      }
+    }
+    if (resultChildren) {
+      for (const childId of resultChildren) {
+        this.retire(childId);
+      }
+    }
+  }
+
+  /** Retires every id in `ids` that is absent from the surviving `keep` map. */
+  private retireMissing(ids: Iterable<string>, keep: ReadonlyMap<string, unknown>): void {
+    for (const id of ids) {
+      if (!keep.has(id)) {
+        this.retire(id);
+      }
+    }
+  }
+
+  /**
+   * Records the direct children a page just serialized and retires the children
+   * from the prior generation that are no longer present, recursively releasing
+   * the scopes those children owned.
+   */
+  private reconcilePageContent(pageId: string, scope: PageScope): void {
+    const current = new Set(scope.commands.keys());
+    const previous = this.pageContentChildren.get(pageId);
+    this.pageContentChildren.set(pageId, current);
+    if (previous) {
+      for (const childId of previous) {
+        if (!current.has(childId)) {
+          this.retire(childId);
+        }
+      }
+    }
+  }
+
+  /**
+   * Serializes a command result, attributing any nested commands it emits (a
+   * confirm dialog's primary command, or a toast continuation) to `ownerId` so
+   * they are retired together with their owner rather than leaking in the
+   * on-demand registry until process shutdown.
+   */
+  private async serializeOwnedResult(
+    ownerId: string,
+    result: CommandResult,
+  ): Promise<ReturnType<WireSerializer['commandResult']>> {
+    const children = new Set<string>();
+    const serialized = await this.withSink(
+      (command) => {
+        this.resolved.set(command.id, command);
+        children.add(command.id);
+      },
+      () => this.serializer.commandResult(result),
+    );
+    if (children.size > 0) {
+      const existing = this.resultChildren.get(ownerId);
+      if (existing) {
+        for (const childId of children) {
+          existing.add(childId);
+        }
+      } else {
+        this.resultChildren.set(ownerId, children);
+      }
+    }
+    return serialized;
   }
 
   private respond(id: number | string, result: unknown): void {

@@ -75,9 +75,11 @@ function isMainModule(): boolean {
 
 /**
  * Runs the bootstrap from the command line, exiting with a non-zero code when
- * no entry is provided or the entry fails to load.
+ * no entry is provided or the entry fails to load. Exported so the published
+ * `cmdpal-bootstrap` bin wrapper (which carries the `#!/usr/bin/env node`
+ * shebang) can invoke it after importing the compiled module.
  */
-async function runFromCli(): Promise<void> {
+export async function runBootstrapCli(): Promise<void> {
   const entry = resolveCliEntry(process.argv, process.env);
   if (entry === null) {
     process.stderr.write(
@@ -97,5 +99,5 @@ async function runFromCli(): Promise<void> {
 }
 
 if (isMainModule()) {
-  void runFromCli();
+  void runBootstrapCli();
 }

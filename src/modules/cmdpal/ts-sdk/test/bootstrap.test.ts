@@ -56,6 +56,31 @@ describe('bootstrap loader', () => {
       stdout.restore();
     }
   });
+
+  it('redirects a log emitted at static-import time of the entry away from the protocol stream', async () => {
+    const { out, err } = captureStreams();
+    const entry = new URL('./fixtures/static-import-entry.ts', import.meta.url).href;
+
+    const module = (await bootstrap(entry)) as { loaded?: boolean };
+    const stdout = claimProtocolStdout();
+    try {
+      stdout.writeRaw(encodeMessage({ jsonrpc: '2.0', id: 11, result: { ok: true } }));
+
+      const stdoutBytes = out.join('');
+      // The write performed while the statically imported module was evaluated
+      // (hoisted above the entry body) must not reach the protocol stream; only
+      // the framed message should be present.
+      expect(stdoutBytes).not.toContain('static-import-stdout-write');
+      expect(stdoutBytes).not.toContain('static-import-console-log');
+      expect(stdoutBytes.startsWith('Content-Length:')).toBe(true);
+      expect(stdoutBytes).toContain('"id":11');
+      // The redirected static-import-time write is preserved on stderr.
+      expect(err.join('')).toContain('static-import-stdout-write');
+      expect(module.loaded).toBe(true);
+    } finally {
+      stdout.restore();
+    }
+  });
 });
 
 describe('resolveCliEntry', () => {

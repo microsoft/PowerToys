@@ -65,6 +65,38 @@ class MyProvider extends CommandProviderBase {
 startJsonRpcServer(() => new MyProvider());
 ```
 
+## Launching your extension
+
+Command Palette extensions must be launched through the SDK bootstrap, never by
+running the entry module directly. The bootstrap ships as the `cmdpal-bootstrap`
+bin:
+
+```sh
+cmdpal-bootstrap ./dist/extension.js
+# or, without relying on the bin being on PATH:
+node ./node_modules/@microsoft/cmdpal-sdk/bin/cmdpal-bootstrap.mjs ./dist/extension.js
+```
+
+The extension entry is passed as the first argument (or through the
+`CMDPAL_EXTENSION_ENTRY` environment variable). The host that spawns the Node
+process is expected to use this same contract: `node <cmdpal-bootstrap>
+<compiled-entry.js>`.
+
+Why this matters: the palette uses `stdout` exclusively for framed JSON-RPC
+messages. A stray top-level write to `stdout` (a forgotten `console.log` in your
+entry or in one of its dependencies) corrupts the very first protocol frame and
+breaks the connection. ES module static imports are evaluated before the
+importing module's body runs, so launching `node ./dist/extension.js` directly
+lets those writes escape before the transport can guard the stream.
+
+The bootstrap prevents this: it claims `stdout` for the protocol first
+(redirecting `console.log`, `console.info`, `console.debug`, and direct
+`process.stdout.write` calls to `stderr`), and only then dynamically imports your
+entry. Because the import happens after the redirect is installed, top-level
+writes in your entry and its transitive dependencies can never reach the protocol
+channel. Your logging is preserved on `stderr` and through
+`ExtensionHost.log(...)`.
+
 ## SDK surface
 
 ### Types
@@ -103,6 +135,7 @@ startJsonRpcServer(() => new MyProvider());
 `runtime/` implements the extension side of the protocol:
 
 - `startJsonRpcServer(factory)` (aliased as `run`) starts the stdio server, wires it to your provider, and runs until the host disconnects.
+- The `cmdpal-bootstrap` bin (see [Launching your extension](#launching-your-extension)) is the required process entry point: it claims `stdout` for the protocol, then dynamically imports your compiled entry.
 - `activate(context, factory)` is a convenience activation wrapper.
 - `ExtensionHost` is the bridge back to the host (`log`, `showStatus`, `hideStatus`, `copyToClipboard`).
 - `sendNotification(method, params)` emits an Extension to Host notification.
