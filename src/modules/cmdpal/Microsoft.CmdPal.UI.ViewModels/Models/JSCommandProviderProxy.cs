@@ -32,6 +32,11 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
     // update to the same status refreshes the existing message in place instead
     // of creating a duplicate, and a hide targets exactly the right message.
     private readonly Dictionary<string, StatusMessage> _shownStatusMessages = new();
+
+    // Guards _shownStatusMessages. Host status notifications and Dispose can run
+    // on different threads, so every read, mutation and enumeration of the map
+    // is serialized to avoid enumerating it while another thread mutates it.
+    private readonly object _statusLock = new();
     private readonly ConcurrentDictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
     private IExtensionHost? _host;
     private ICommandSettings? _settingsCache;
@@ -204,11 +209,20 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
         }
 
         // Hide any status messages that are still visible so a disposed provider
-        // does not leave stale status in the host UI.
+        // does not leave stale status in the host UI. Snapshot and clear the map
+        // under the lock so a status notification racing dispose cannot mutate it
+        // while it is being enumerated.
         var host = _host;
+        List<StatusMessage> pendingStatuses;
+        lock (_statusLock)
+        {
+            pendingStatuses = new List<StatusMessage>(_shownStatusMessages.Values);
+            _shownStatusMessages.Clear();
+        }
+
         if (host != null)
         {
-            foreach (var status in _shownStatusMessages.Values)
+            foreach (var status in pendingStatuses)
             {
                 try
                 {
@@ -221,7 +235,6 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
             }
         }
 
-        _shownStatusMessages.Clear();
         _host = null;
     }
 
@@ -372,27 +385,36 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
             var statusId = ReadStatusId(paramsElement);
             var progress = ReadProgress(paramsElement);
 
-            if (!string.IsNullOrEmpty(statusId) &&
-                _shownStatusMessages.TryGetValue(statusId, out var existing))
+            StatusMessage statusMessage;
+            lock (_statusLock)
             {
-                // Same status shown again: refresh it in place so the host keeps a
-                // single message rather than stacking duplicates.
-                existing.Message = message;
-                existing.State = (MessageState)state;
-                existing.Progress = progress;
-                return;
-            }
+                if (_isDisposed)
+                {
+                    return;
+                }
 
-            var statusMessage = new StatusMessage
-            {
-                Message = message,
-                State = (MessageState)state,
-                Progress = progress,
-            };
+                if (!string.IsNullOrEmpty(statusId) &&
+                    _shownStatusMessages.TryGetValue(statusId, out var existing))
+                {
+                    // Same status shown again: refresh it in place so the host
+                    // keeps a single message rather than stacking duplicates.
+                    existing.Message = message;
+                    existing.State = (MessageState)state;
+                    existing.Progress = progress;
+                    return;
+                }
 
-            if (!string.IsNullOrEmpty(statusId))
-            {
-                _shownStatusMessages[statusId] = statusMessage;
+                statusMessage = new StatusMessage
+                {
+                    Message = message,
+                    State = (MessageState)state,
+                    Progress = progress,
+                };
+
+                if (!string.IsNullOrEmpty(statusId))
+                {
+                    _shownStatusMessages[statusId] = statusMessage;
+                }
             }
 
             _ = _host.ShowStatus(statusMessage, ReadStatusContext(paramsElement));
@@ -418,13 +440,18 @@ public sealed partial class JSCommandProviderProxy : ICommandProvider, IDisposab
             }
 
             var statusId = ReadStatusId(paramsElement);
-            if (string.IsNullOrEmpty(statusId) ||
-                !_shownStatusMessages.TryGetValue(statusId, out var statusMessage))
+            StatusMessage statusMessage;
+            lock (_statusLock)
             {
-                return;
+                if (string.IsNullOrEmpty(statusId) ||
+                    !_shownStatusMessages.TryGetValue(statusId, out statusMessage!))
+                {
+                    return;
+                }
+
+                _shownStatusMessages.Remove(statusId);
             }
 
-            _shownStatusMessages.Remove(statusId);
             _ = _host.HideStatus(statusMessage);
         }
         catch (Exception ex)

@@ -47,12 +47,15 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         _connection = connection ?? throw new ArgumentNullException(nameof(connection));
         _pageData = pageData;
 
-        _registry = Registries.GetValue(_connection, static conn =>
-        {
-            var created = new PageRegistry();
-            conn.RegisterNotificationHandler("listPage/itemsChanged", paramsElement => DispatchItemsChanged(created, paramsElement));
-            return created;
-        });
+        // Establish the retained registry first. The factory must stay free of
+        // side effects: ConditionalWeakTable can invoke it on a thread that then
+        // loses the race and has its result discarded, so subscribing inside it
+        // could leave the connection's notification handler bound to a registry
+        // that is thrown away while proxies register into a different one. The
+        // handler is wired exactly once below, against the registry actually
+        // retained.
+        _registry = Registries.GetValue(_connection, static _ => new PageRegistry());
+        _registry.EnsureSubscribed(_connection);
 
         var list = _registry.Pages.GetOrAdd(_pageId, static _ => new List<WeakReference<JSListPageProxy>>());
         lock (list)
@@ -176,6 +179,17 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
             }
 
             UpdatePageState(response.Result);
+
+            // A loadMore response that does not explicitly report more pages
+            // means the extension has no further items, so settle HasMoreItems to
+            // false rather than leaving the previous (true) value in place.
+            SettleHasMoreItemsAfterLoadMore(response.Result);
+
+            // The host waits on ItemsChanged after LoadMore (see
+            // ListViewModel.LoadMoreIfNeeded) to re-query GetItems and clear its
+            // loading state, so raise it once the newly loaded page has been
+            // folded into the pagination state.
+            RaiseItemsChanged(ReadTotalItems(response.Result));
         }
         catch (Exception ex)
         {
@@ -223,6 +237,56 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         {
             OnPropertyChanged(nameof(HasMoreItems));
         }
+    }
+
+    // After a loadMore round trip, the flag is authoritative: an explicit
+    // hasMoreItems:true keeps paging alive, while false or an omitted flag means
+    // the extension has delivered its final page and no further LoadMore should
+    // be issued. This differs from UpdatePageState, which leaves the flag
+    // untouched when the field is absent so that itemsChanged notifications do
+    // not accidentally stop paging.
+    private void SettleHasMoreItemsAfterLoadMore(JsonElement? envelope)
+    {
+        var hasMore = false;
+        if (envelope.HasValue &&
+            envelope.Value.ValueKind == JsonValueKind.Object &&
+            JSModelMapper.TryGetAnyCase(envelope.Value, "hasMoreItems", "HasMoreItems", out var hasMoreProp))
+        {
+            hasMore = hasMoreProp.ValueKind == JsonValueKind.True;
+        }
+
+        var changed = false;
+        lock (_stateLock)
+        {
+            if (_hasMoreItemsState != hasMore)
+            {
+                _hasMoreItemsState = hasMore;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            OnPropertyChanged(nameof(HasMoreItems));
+        }
+    }
+
+    private static int ReadTotalItems(JsonElement? envelope)
+    {
+        if (envelope.HasValue &&
+            envelope.Value.ValueKind == JsonValueKind.Object &&
+            envelope.Value.TryGetProperty("totalItems", out var totalItemsProp) &&
+            totalItemsProp.ValueKind == JsonValueKind.Number)
+        {
+            return totalItemsProp.GetInt32();
+        }
+
+        return -1;
+    }
+
+    private void RaiseItemsChanged(int totalItems)
+    {
+        ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
     }
 
     public void Dispose()
@@ -346,6 +410,22 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
 
     private sealed class PageRegistry
     {
+        private int _subscribed;
+
         public ConcurrentDictionary<string, List<WeakReference<JSListPageProxy>>> Pages { get; } = new();
+
+        // Wires the connection's itemsChanged handler to this retained registry
+        // exactly once. Binding here rather than inside the ConditionalWeakTable
+        // factory guarantees the handler can never target a registry that lost
+        // the creation race and was discarded.
+        public void EnsureSubscribed(JsonRpcConnection connection)
+        {
+            if (Interlocked.Exchange(ref _subscribed, 1) == 0)
+            {
+                connection.RegisterNotificationHandler(
+                    "listPage/itemsChanged",
+                    paramsElement => DispatchItemsChanged(this, paramsElement));
+            }
+        }
     }
 }
