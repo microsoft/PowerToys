@@ -43,7 +43,8 @@ namespace PowerDisplay.Common.Drivers.DDC
         byte Code,
         VcpFeatureValue Value,
         int Attempts,
-        int? LastError)
+        int? LastError,
+        bool Replied = false)
     {
         public bool IsSuccess => Value.IsValid;
 
@@ -58,10 +59,14 @@ namespace PowerDisplay.Common.Drivers.DDC
             VcpFeatureValue value,
             int attempts = 1,
             int? lastError = null) =>
-            new(code, value, attempts, lastError);
+            new(code, value, attempts, lastError, true);
 
-        public static VcpProbeObservation Indeterminate(byte code, int? lastError, int attempts = 1) =>
-            new(code, VcpFeatureValue.Invalid, attempts, lastError);
+        public static VcpProbeObservation Indeterminate(
+            byte code,
+            int? lastError,
+            int attempts = 1,
+            bool replied = false) =>
+            new(code, VcpFeatureValue.Invalid, attempts, lastError, replied);
     }
 
     internal sealed class VcpFeatureProbeService
@@ -113,6 +118,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             int? lastError = null;
             var attempts = 0;
+            var replied = false;
 
             for (var attempt = 1; attempt <= MaxAttempts; attempt++)
             {
@@ -120,12 +126,35 @@ namespace PowerDisplay.Common.Drivers.DDC
                 await _delayAsync(TransactionInterval, cancellationToken).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await Task.Run(
-                    () => _reader.Read(handle, code),
-                    cancellationToken).ConfigureAwait(false);
                 attempts = attempt;
+
+                VcpReadAttempt result;
+                try
+                {
+                    result = await Task.Run(
+                        () => _reader.Read(handle, code),
+                        cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (
+                    ex is not OperationCanceledException &&
+                    ex is not OutOfMemoryException)
+                {
+                    // Containment belongs to the orchestration layer: a throwing read must cost the
+                    // caller this one VCP code, not every monitor sharing the hMonitor via the
+                    // pipeline-wide catch in DdcCiController.
+                    Logger.LogError(
+                        $"DDC: [max-compat] VCP probe threw " +
+                        $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}): {ex.Message}");
+                    break;
+                }
+
                 if (result.IsSuccess)
                 {
+                    // The device answered this opcode. Unimplemented codes fail with
+                    // DDCCI_VCP_NOT_SUPPORTED instead, so a reply proves support even when the
+                    // reported range cannot scale a percentage.
+                    replied = true;
+
                     var value = new VcpFeatureValue((int)result.Current, 0, (int)result.Maximum);
                     if (value.IsValid)
                     {
@@ -159,7 +188,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             return Complete(
                 handle,
-                VcpProbeObservation.Indeterminate(code, lastError, attempts));
+                VcpProbeObservation.Indeterminate(code, lastError, attempts, replied));
         }
 
         private static VcpProbeObservation Complete(IntPtr handle, VcpProbeObservation observation)

@@ -39,15 +39,58 @@ public sealed class ContinuousVcpInitializerTests
     }
 
     [TestMethod]
-    public void Initialize_OmittedCodeCachedValueDoesNotReadOrClaimFreshRead()
+    public void Initialize_OmittedCodeCachedValueUsesFreshLiveValueAndPersists()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(1));
+        // The probe only runs when the capabilities string is unusable, so on the caps-parsed path
+        // nothing has confirmed the cached value. It must be re-read before it is trusted,
+        // otherwise the cache entry could never be refreshed.
+        var reader = new RecordingReader(VcpReadAttempt.Success(60, 100));
         var store = new RecordingStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var clock = new FixedClock();
+        var initializer = new ContinuousVcpInitializer(reader, store, clock);
         var monitor = BrightnessMonitor();
         var evidence = CachedEvidence(parsedAdvertisesBrightness: false);
 
         initializer.Initialize(monitor, new IntPtr(1), evidence);
+
+        Assert.AreEqual(1, reader.CallCount);
+        Assert.AreEqual(60, monitor.CurrentBrightness);
+        Assert.AreEqual(100, monitor.BrightnessVcpMax);
+        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.AreEqual(60, store.LastFeature!.Current);
+        Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
+    }
+
+    [TestMethod]
+    public void Initialize_OmittedCodeFallsBackToCacheWhenLiveReadFails()
+    {
+        var reader = new RecordingReader(VcpReadAttempt.Failure(VcpNotSupported));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessMonitor();
+
+        initializer.Initialize(
+            monitor,
+            new IntPtr(1),
+            CachedEvidence(parsedAdvertisesBrightness: false));
+
+        Assert.AreEqual(1, reader.CallCount);
+        Assert.AreEqual(45, monitor.CurrentBrightness);
+        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
+        Assert.IsNull(store.LastFeature);
+    }
+
+    [TestMethod]
+    public void Initialize_ProbeExhaustedCachedCodeDoesNotReadAgain()
+    {
+        // The probe already spent its full paced retry budget on this code, so re-reading it here
+        // would be pure I2C noise.
+        var reader = new RecordingReader(VcpReadAttempt.Failure(1));
+        var store = new RecordingStore();
+        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var monitor = BrightnessMonitor();
+
+        initializer.Initialize(monitor, new IntPtr(1), ProbeExhaustedCachedEvidence());
 
         Assert.AreEqual(0, reader.CallCount);
         Assert.AreEqual(45, monitor.CurrentBrightness);
@@ -243,19 +286,32 @@ public sealed class ContinuousVcpInitializerTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: parsedCapabilities,
             live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature>
-            {
-                [0x10] = new KnownGoodVcpFeature
-                {
-                    Code = 0x10,
-                    Current = 45,
-                    Maximum = 100,
-                    Source = VcpObservationSource.MaximumCompatibilityProbe,
-                    LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
-                },
-            },
+            cached: CachedBrightness(),
             includeCache: true);
     }
+
+    private static VcpDiscoveryEvidence ProbeExhaustedCachedEvidence() =>
+        VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: new Dictionary<byte, VcpProbeObservation>
+            {
+                [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported, attempts: 3),
+            },
+            cached: CachedBrightness(),
+            includeCache: true);
+
+    private static Dictionary<byte, KnownGoodVcpFeature> CachedBrightness() => new()
+    {
+        [0x10] = new KnownGoodVcpFeature
+        {
+            Code = 0x10,
+            Current = 45,
+            Maximum = 100,
+            Source = VcpObservationSource.MaximumCompatibilityProbe,
+            LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
+        },
+    };
 
     private static VcpDiscoveryEvidence CachedBrightnessAndContrastEvidence()
     {

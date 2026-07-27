@@ -90,7 +90,7 @@ public sealed class MonitorStateManagerTests
         {
             manager.UpdateMonitorParameter(canonicalId, "Brightness", 35);
             manager.UpsertKnownGoodFeature(controllerCacheKey, Feature(0x10, current: 35));
-            manager.RetainMonitorStates(new[] { canonicalId });
+            manager.RemoveMonitorStates(new[] { rawDevicePath });
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
@@ -141,7 +141,7 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RetainMonitorStates_RemovesEntireUnretainedMonitorEntry()
+    public void RemoveMonitorStates_RemovesEntireDroppedMonitorEntry()
     {
         using (var manager = new MonitorStateManager(_statePath))
         {
@@ -150,7 +150,7 @@ public sealed class MonitorStateManagerTests
             manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
             manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
 
-            manager.RetainMonitorStates(new[] { MonitorA });
+            manager.RemoveMonitorStates(new[] { MonitorB });
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
@@ -168,18 +168,18 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RetainMonitorStates_CaseInsensitiveRetainedIdKeepsState()
+    public void RemoveMonitorStates_MatchesIdsCaseInsensitively()
     {
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
 
-        manager.RetainMonitorStates(new[] { MonitorA.ToLowerInvariant() });
+        manager.RemoveMonitorStates(new[] { MonitorA.ToLowerInvariant() });
 
-        Assert.AreEqual(1, manager.GetKnownGoodFeatures(MonitorA).Count);
+        Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorA).Count);
     }
 
     [TestMethod]
-    public void RetainMonitorStates_LegacyEntryRemainsAvailableForMigration()
+    public void RemoveMonitorStates_LegacyEntryRemainsAvailableForMigration()
     {
         const string legacyId = "DDC_AOCB326_1";
 
@@ -187,7 +187,7 @@ public sealed class MonitorStateManagerTests
         {
             manager.UpdateMonitorParameter(legacyId, "Brightness", 42);
 
-            manager.RetainMonitorStates(new[] { MonitorA });
+            manager.RemoveMonitorStates(new[] { legacyId });
             Assert.AreEqual(42, manager.GetMonitorParameters(legacyId)?.Brightness);
 
             manager.MigrateLegacyKeys(new[] { (MonitorA, 1) });
@@ -244,25 +244,27 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RetainMonitorStates_EmptySetClearsCompleteState()
+    public void RemoveMonitorStates_EmptySetKeepsCompleteState()
     {
+        // The empty set is what a reconciliation produces when the settings snapshot could not be
+        // read: nothing was observably dropped, so nothing may be deleted.
         using (var manager = new MonitorStateManager(_statePath))
         {
             manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
             manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
 
-            manager.RetainMonitorStates(Array.Empty<string>());
+            manager.RemoveMonitorStates(Array.Empty<string>());
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
         {
             var monitors = document.RootElement.GetProperty("monitors");
-            Assert.IsFalse(monitors.TryGetProperty(MonitorA, out _));
+            Assert.IsTrue(monitors.TryGetProperty(MonitorA, out _));
         }
 
         using var reloaded = new MonitorStateManager(_statePath);
-        Assert.IsNull(reloaded.GetMonitorParameters(MonitorA));
-        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorA).Count);
+        Assert.AreEqual(20, reloaded.GetMonitorParameters(MonitorA)?.Volume);
+        Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
     }
 
     [TestMethod]

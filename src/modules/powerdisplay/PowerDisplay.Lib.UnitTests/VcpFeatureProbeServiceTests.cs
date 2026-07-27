@@ -158,6 +158,37 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsFalse(result[0x10].IsSuccess);
         Assert.AreEqual(3, result[0x10].Attempts);
         Assert.IsNull(result[0x10].LastError);
+
+        // The device answered every attempt, so support is proven even though no usable range was
+        // obtained. Reconcile relies on this to keep the feature reachable.
+        Assert.IsTrue(result[0x10].Replied);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_UnansweredCodeIsNotMarkedAsReplied()
+    {
+        var reader = new QueueReader(VcpReadAttempt.Failure(VcpNotSupported));
+        var service = CreateService(reader, new List<TimeSpan>());
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.IsFalse(result[0x10].Replied);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_ThrowingReadIsContainedToItsOwnCode()
+    {
+        // A throwing native read must cost the caller this one VCP code, not every monitor sharing
+        // the hMonitor through the pipeline-wide catch in DdcCiController.
+        var reader = new ThrowingReader(0x10, VcpReadAttempt.Success(current: 40, maximum: 100));
+        var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12 });
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
+        Assert.IsFalse(result[0x10].Replied);
+        Assert.IsTrue(result[0x12].IsSuccess);
+        Assert.AreEqual(40, result[0x12].Value.Current);
     }
 
     [TestMethod]
@@ -296,5 +327,12 @@ public sealed class VcpFeatureProbeServiceTests
             releaseReader.Wait();
             return VcpReadAttempt.Success(10, 100);
         }
+    }
+
+    private sealed class ThrowingReader(byte throwingCode, VcpReadAttempt otherwise) : IVcpFeatureReader
+    {
+        public VcpReadAttempt Read(IntPtr handle, byte code) => code == throwingCode
+            ? throw new InvalidOperationException("simulated native failure")
+            : otherwise;
     }
 }

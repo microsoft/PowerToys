@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
@@ -14,6 +15,7 @@ namespace PowerDisplay.UnitTests;
 public sealed class VcpDiscoveryEvidenceTests
 {
     private static readonly DateTime CachedUtc = new(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc);
+    private static readonly int[] VolumePresets = { 0x00, 0x10, 0x20, 0x30 };
     private const int VcpNotSupported = unchecked((int)0xC0262584);
     private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
     private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
@@ -64,6 +66,9 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
         Assert.IsFalse(result.InitialValues[0x10].IsLive);
+
+        // The probe spent its full retry budget on 0x10 this cycle; re-reading it is pointless.
+        Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
     }
 
     [DataTestMethod]
@@ -113,6 +118,7 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsFalse(result.IsPhysicalMonitorUnavailable);
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
+        Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
     }
 
     [TestMethod]
@@ -147,7 +153,72 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.AreEqual(1, result.InitialValues.Count);
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
         Assert.IsFalse(result.InitialValues[0x10].IsLive);
-        Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
+
+        // No probe ran for 0x10 in this cycle (the caps string parsed), so the cached value still
+        // owes the hardware one read before it is trusted and re-persisted.
+        Assert.IsTrue(result.InitialValues[0x10].PreferLiveRead);
+    }
+
+    [TestMethod]
+    public void Reconcile_MaximumCompatibilityKeepsParsedDiscreteValuesWhenCacheSupplementsCode()
+    {
+        // 0x62 is advertised with a discrete value list. Cache evidence may add support for a code
+        // but must never downgrade metadata the capabilities string already parsed.
+        var parsedCapabilities = new VcpCapabilities();
+        parsedCapabilities.SupportedVcpCodes[0x62] =
+            new VcpCodeInfo(0x62, "Audio: Speaker Volume", VolumePresets);
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: "(vcp(62(00 10 20 30)))",
+            parsedCapabilities: parsedCapabilities,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x62] = Cached(0x62, 25) },
+            includeCache: true);
+
+        var codeInfo = result.Capabilities!.GetVcpCodeInfo(0x62)!.Value;
+        Assert.AreEqual("Audio: Speaker Volume", codeInfo.Name);
+        Assert.IsTrue(codeInfo.HasDiscreteValues);
+        CollectionAssert.AreEqual(VolumePresets, codeInfo.SupportedValues.ToArray());
+    }
+
+    [TestMethod]
+    public void Reconcile_RepliedProbeWithUnusableRangeStillAdvertisesSupport()
+    {
+        // The device answered 0x10 — unimplemented codes fail with DDCCI_VCP_NOT_SUPPORTED instead
+        // — but reported a range that cannot scale a percentage. Support is proven even though the
+        // value is not, so the feature must stay reachable.
+        var live = new Dictionary<byte, VcpProbeObservation>
+        {
+            [0x10] = VcpProbeObservation.Indeterminate(0x10, lastError: null, attempts: 3, replied: true),
+        };
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: live,
+            cached: new Dictionary<byte, KnownGoodVcpFeature>(),
+            includeCache: true);
+
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
+        Assert.AreEqual(0, result.InitialValues.Count);
+    }
+
+    [TestMethod]
+    public void Reconcile_UnansweredProbeDoesNotAdvertiseSupport()
+    {
+        var live = new Dictionary<byte, VcpProbeObservation>
+        {
+            [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported),
+        };
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: live,
+            cached: new Dictionary<byte, KnownGoodVcpFeature>(),
+            includeCache: true);
+
+        Assert.IsNull(result.Capabilities);
     }
 
     [TestMethod]

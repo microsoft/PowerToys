@@ -45,7 +45,7 @@ public class MonitorRestorePlannerTests
     {
         var monitor = MonitorWithValue(45, readFlag, MonitorReadFlags.None);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
     }
 
     [DataTestMethod]
@@ -57,7 +57,7 @@ public class MonitorRestorePlannerTests
     {
         var monitor = MonitorWithValue(45, readFlag, readFlag);
 
-        Assert.IsFalse(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag));
+        Assert.IsFalse(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
     }
 
     [DataTestMethod]
@@ -71,7 +71,7 @@ public class MonitorRestorePlannerTests
     {
         var monitor = MonitorWithValue(45, readFlag, differentReadFlag);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
     }
 
     [DataTestMethod]
@@ -83,6 +83,21 @@ public class MonitorRestorePlannerTests
     {
         var monitor = MonitorWithValue(45, readFlag, readFlag);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(60, monitor, readFlag));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(60, monitor, readFlag, 60));
+    }
+
+    [DataTestMethod]
+    [DataRow(MonitorReadFlags.Brightness)]
+    [DataRow(MonitorReadFlags.Contrast)]
+    [DataRow(MonitorReadFlags.Volume)]
+    [DataRow(MonitorReadFlags.ColorTemperature)]
+    public void ShouldWrite_PendingOptimisticValueDisagrees_ReturnsTrue(MonitorReadFlags readFlag)
+    {
+        // Hardware is known to be at 45 and the restore also wants 45, but the UI is already
+        // showing 65 and will commit it once its debounce elapses. Skipping the write here would
+        // let that pending commit silently overwrite the restored value.
+        var monitor = MonitorWithValue(45, readFlag, readFlag);
+
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 65));
     }
 }

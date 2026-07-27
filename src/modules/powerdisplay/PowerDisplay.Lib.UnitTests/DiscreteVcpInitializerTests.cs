@@ -18,17 +18,24 @@ public sealed class DiscreteVcpInitializerTests
     [DataTestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
-    public void Initialize_PhysicalMonitorUnavailableStopsRemainingReads(int errorCode)
+    public void Initialize_PhysicalMonitorUnavailableSkipsOnlyThatFeature(int errorCode)
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(errorCode));
+        // Handle liveness is decided by the maximum-compatibility probe and by
+        // ContinuousVcpInitializer before this stage runs. A discrete read must never discard a
+        // monitor whose continuous features were already read successfully.
+        var reader = new RecordingReader(
+            VcpReadAttempt.Failure(errorCode),
+            VcpReadAttempt.Success(current: 0x11, maximum: 0),
+            VcpReadAttempt.Success(current: 0x01, maximum: 0));
         var initializer = new DiscreteVcpInitializer(reader);
         var monitor = DiscreteMonitor();
 
-        var result = initializer.Initialize(monitor, new IntPtr(1));
+        initializer.Initialize(monitor, new IntPtr(1));
 
-        Assert.AreEqual(VcpInitializationResult.PhysicalMonitorUnavailable, result);
-        CollectionAssert.AreEqual(new byte[] { 0x14 }, reader.Codes);
-        Assert.AreEqual(MonitorReadFlags.None, monitor.ReadValues);
+        CollectionAssert.AreEqual(new byte[] { 0x14, 0x60, 0xD6 }, reader.Codes);
+        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature));
+        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource));
+        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState));
     }
 
     [TestMethod]
@@ -41,9 +48,8 @@ public sealed class DiscreteVcpInitializerTests
         var initializer = new DiscreteVcpInitializer(reader);
         var monitor = DiscreteMonitor();
 
-        var result = initializer.Initialize(monitor, new IntPtr(1));
+        initializer.Initialize(monitor, new IntPtr(1));
 
-        Assert.AreEqual(VcpInitializationResult.Completed, result);
         CollectionAssert.AreEqual(new byte[] { 0x14, 0x60, 0xD6 }, reader.Codes);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature));
         Assert.AreEqual(0x11, monitor.CurrentInputSource);

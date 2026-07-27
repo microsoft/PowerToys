@@ -25,7 +25,18 @@ internal sealed class DiscreteVcpInitializer
         _reader = reader;
     }
 
-    public VcpInitializationResult Initialize(Monitor monitor, IntPtr handle)
+    /// <summary>
+    /// Reads the discrete VCP features a monitor advertises.
+    /// </summary>
+    /// <remarks>
+    /// Discrete VCPs carry no discovery decision. Whether the physical-monitor handle is usable is
+    /// already settled before this stage runs — by the maximum-compatibility probe through
+    /// <see cref="VcpDiscoveryEvidence.Reconcile"/>, and by <see cref="ContinuousVcpInitializer"/>
+    /// in both modes — and both drop the monitor on a handle-class error. Failing here only leaves
+    /// the corresponding <see cref="MonitorReadFlags"/> bit unset, so a monitor whose continuous
+    /// features were read successfully is never discarded because 0xD6 answered badly.
+    /// </remarks>
+    public void Initialize(Monitor monitor, IntPtr handle)
     {
         foreach (var code in DiscreteCodes)
         {
@@ -38,18 +49,11 @@ internal sealed class DiscreteVcpInitializer
             if (!read.IsSuccess)
             {
                 Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
-                if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
-                {
-                    return VcpInitializationResult.PhysicalMonitorUnavailable;
-                }
-
                 continue;
             }
 
             ApplyValue(monitor, code, (int)read.Current);
         }
-
-        return VcpInitializationResult.Completed;
     }
 
     private static bool IsSupported(Monitor monitor, byte code) => code switch

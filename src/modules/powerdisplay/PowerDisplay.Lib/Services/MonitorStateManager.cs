@@ -193,21 +193,20 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Removes complete persisted monitor state entries for any exact DevicePath monitor Id not present in
+        /// Removes the complete persisted monitor state entry for each exact DevicePath monitor Id in
         /// <paramref name="monitorIds"/>. Removing an entry clears its saved brightness, contrast, volume,
-        /// color temperature, capabilities, and known-good VCP cache. Legacy entries are retained until
-        /// <see cref="MigrateLegacyKeys"/> can either migrate or explicitly drop them.
+        /// color temperature, capabilities, and known-good VCP cache. Legacy entries are never removed
+        /// here; <see cref="MigrateLegacyKeys"/> either migrates or explicitly drops them.
         /// </summary>
-        /// <param name="monitorIds">The exact DevicePath monitor Ids whose persisted state entries should be retained.</param>
-        public void RetainMonitorStates(IEnumerable<string> monitorIds)
+        /// <param name="monitorIds">The exact DevicePath monitor Ids that settings no longer references.</param>
+        public void RemoveMonitorStates(IEnumerable<string> monitorIds)
         {
             ArgumentNullException.ThrowIfNull(monitorIds);
-            var retained = new HashSet<string>(monitorIds, MonitorIdComparer.Instance);
             var removed = false;
 
-            foreach (var monitorId in _states.Keys)
+            foreach (var monitorId in monitorIds)
             {
-                if (!retained.Contains(monitorId) && !MonitorIdentity.IsLegacyId(monitorId))
+                if (!string.IsNullOrEmpty(monitorId) && !MonitorIdentity.IsLegacyId(monitorId))
                 {
                     removed |= _states.TryRemove(monitorId, out _);
                 }

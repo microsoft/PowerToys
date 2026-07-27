@@ -68,22 +68,32 @@ internal sealed class VcpDiscoveryEvidence
             }
         }
 
+        // Evidence is merged into the parsed instance rather than into a copy: the caller hands
+        // ownership of parsedCapabilities to Reconcile, and the merged object is published as
+        // Monitor.VcpCapabilitiesInfo.
         var capabilities = parsedCapabilities;
         var values = new Dictionary<byte, VcpInitialValue>();
 
         foreach (var code in ContinuousCodes)
         {
-            var parsedCapabilitiesAdvertiseCode = parsedCapabilities?.SupportsVcpCode(code) == true;
+            var probed = live.TryGetValue(code, out var observation);
 
-            if (live.TryGetValue(code, out var observation) && observation.IsSuccess)
+            if (probed && observation.IsSuccess)
             {
-                capabilities ??= new VcpCapabilities();
-                capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
+                capabilities = MarkSupported(capabilities, code);
                 values[code] = new VcpInitialValue(
                     observation.Value,
                     VcpObservationSource.MaximumCompatibilityProbe,
                     IsLive: true);
                 continue;
+            }
+
+            if (probed && observation.Replied)
+            {
+                // The device answered this VCP code but reported a range that cannot scale a
+                // percentage. Support is proven even though the value is not, so keep the feature
+                // reachable and let the initializer read it again or fall back to the cache.
+                capabilities = MarkSupported(capabilities, code);
             }
 
             if (includeCache &&
@@ -95,17 +105,39 @@ internal sealed class VcpDiscoveryEvidence
                     // includeCache is only enabled by Maximum compatibility mode; when it is, exact-ID
                     // cache evidence intentionally supplements parsed capabilities because caps strings
                     // can omit previously proven continuous VCP support.
-                    capabilities ??= new VcpCapabilities();
-                    capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
+                    capabilities = MarkSupported(capabilities, code);
+
+                    // The probe spends its full paced retry budget on every code it touches, so
+                    // re-reading one of those is pure I2C noise. A code the probe never saw still
+                    // owes the hardware one read: the probe only runs when the caps string is
+                    // unusable, so on the caps-parsed path nothing has confirmed the cached value
+                    // and nothing would ever refresh it.
                     values[code] = new VcpInitialValue(
                         cachedValue,
                         knownGood.Source,
                         IsLive: false,
-                        PreferLiveRead: parsedCapabilitiesAdvertiseCode);
+                        PreferLiveRead: !probed);
                 }
             }
         }
 
         return new VcpDiscoveryEvidence(capabilitiesRaw, capabilities, values);
+    }
+
+    /// <summary>
+    /// Records that <paramref name="code"/> is supported, creating the container when discovery
+    /// produced no parsed capabilities. Evidence may only add support: an entry parsed from the
+    /// capabilities string carries discrete-value and custom-name metadata that a synthesized
+    /// <see cref="VcpCodeInfo"/> does not, so an existing entry is never overwritten.
+    /// </summary>
+    private static VcpCapabilities MarkSupported(VcpCapabilities? capabilities, byte code)
+    {
+        capabilities ??= new VcpCapabilities();
+        if (!capabilities.SupportsVcpCode(code))
+        {
+            capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
+        }
+
+        return capabilities;
     }
 }

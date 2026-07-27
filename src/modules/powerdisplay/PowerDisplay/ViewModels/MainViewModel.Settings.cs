@@ -584,14 +584,16 @@ public partial class MainViewModel
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
-            // SettingsUtils.SaveSettings logs and swallows I/O failures, so there is no reliable
-            // commit result to gate destructive state cleanup on. Keep entries from both the
-            // previously-read and rebuilt snapshots; successfully removed entries are pruned on
-            // the next reconciliation, while failed or same-cycle competing writes keep their state.
-            var retainedStateIds = MonitorStateRetentionPlanner.BuildRetainedIds(
-                existingMonitorSettings.Keys,
+            // Prune monitor_state.json against what this reconciliation actually dropped (the
+            // Rebuild input minus its output), never against what the rebuilt list happens to
+            // contain. The settings read above cannot report that it fell back to defaults: a
+            // missing or corrupt settings.json makes GetSettingsOrDefault persist and return an
+            // empty monitor list, so pruning by absence would delete the saved state of every
+            // monitor that is not connected at that instant.
+            var droppedStateIds = MonitorStateRetentionPlanner.BuildDroppedIds(
+                retentionInput.Select(monitor => monitor.Id),
                 monitors.Select(monitor => monitor.Id));
-            _stateManager.RetainMonitorStates(retainedStateIds);
+            _stateManager.RemoveMonitorStates(droppedStateIds);
 
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();

@@ -15,39 +15,46 @@ public sealed class MonitorStateRetentionPlannerTests
     private const string NewMonitor = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID2";
 
     [TestMethod]
-    public void BuildRetainedIds_PreservesPreviousAndRebuiltSettingsEntries()
+    public void BuildDroppedIds_ReturnsEntriesRemovedFromRebuiltSettings()
     {
-        var retainedIds = MonitorStateRetentionPlanner.BuildRetainedIds(
-            new[] { ExistingMonitor },
+        var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(
+            new[] { ExistingMonitor, NewMonitor },
             new[] { NewMonitor });
 
-        Assert.AreEqual(2, retainedIds.Count);
-        Assert.IsTrue(retainedIds.Contains(ExistingMonitor));
-        Assert.IsTrue(retainedIds.Contains(NewMonitor));
+        Assert.AreEqual(1, droppedIds.Count);
+        Assert.IsTrue(droppedIds.Contains(ExistingMonitor));
     }
 
     [TestMethod]
-    public void BuildRetainedIds_RemovesEntryAfterItIsAbsentFromBothSnapshots()
+    public void BuildDroppedIds_DefaultsSettingsSnapshotDropsNothing()
     {
-        var firstReconciliation = MonitorStateRetentionPlanner.BuildRetainedIds(
-            new[] { ExistingMonitor },
-            Array.Empty<string>());
-        var nextReconciliation = MonitorStateRetentionPlanner.BuildRetainedIds(
+        // A missing or corrupt settings.json makes GetSettingsOrDefault hand back a defaults object
+        // with an empty monitor list. That is indistinguishable from a genuinely empty list, so it
+        // must never authorise deleting the state of monitors that are simply not connected.
+        var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(
             Array.Empty<string>(),
-            Array.Empty<string>());
+            new[] { NewMonitor });
 
-        Assert.IsTrue(firstReconciliation.Contains(ExistingMonitor));
-        Assert.IsFalse(nextReconciliation.Contains(ExistingMonitor));
+        Assert.AreEqual(0, droppedIds.Count);
     }
 
     [TestMethod]
-    public void BuildRetainedIds_DeduplicatesIdsCaseInsensitivelyAndIgnoresEmptyIds()
+    public void BuildDroppedIds_KeepsEntriesThatSurvivedTheRebuild()
     {
-        var retainedIds = MonitorStateRetentionPlanner.BuildRetainedIds(
+        var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(
+            new[] { ExistingMonitor, NewMonitor },
+            new[] { ExistingMonitor, NewMonitor });
+
+        Assert.AreEqual(0, droppedIds.Count);
+    }
+
+    [TestMethod]
+    public void BuildDroppedIds_MatchesIdsCaseInsensitivelyAndIgnoresEmptyIds()
+    {
+        var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(
             new[] { ExistingMonitor, string.Empty },
             new[] { ExistingMonitor.ToLowerInvariant() });
 
-        Assert.AreEqual(1, retainedIds.Count);
-        Assert.IsTrue(retainedIds.Contains(ExistingMonitor));
+        Assert.AreEqual(0, droppedIds.Count);
     }
 }

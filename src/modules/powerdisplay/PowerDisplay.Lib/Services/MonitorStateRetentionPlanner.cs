@@ -9,39 +9,43 @@ using PowerDisplay.Models;
 namespace PowerDisplay.Common.Services;
 
 /// <summary>
-/// Plans the conservative set of monitor-state entries to retain while a rebuilt monitor list is persisted.
+/// Plans which persisted monitor-state entries a settings reconciliation drops.
 /// </summary>
 public static class MonitorStateRetentionPlanner
 {
     /// <summary>
-    /// Returns the union of the monitor Ids read from persisted settings and the Ids in the rebuilt settings.
+    /// Returns the monitor Ids that the persisted settings snapshot listed but the rebuilt settings
+    /// list no longer keeps — that is, the entries this reconciliation deliberately dropped.
     /// </summary>
     /// <remarks>
-/// Settings persistence does not report write failures. Retaining both snapshots prevents a failed or
-/// same-cycle competing settings write from deleting state that the observed settings still reference.
-/// An entry removed from settings is pruned on the next reconciliation, once it is absent from both snapshots.
+    /// State cleanup is driven by an observed drop, never by absence from the rebuilt list. A
+    /// missing or corrupt settings.json makes <c>GetSettingsOrDefault</c> return — and persist — a
+    /// defaults object whose monitor list is empty and is indistinguishable from a real one;
+    /// pruning by absence would then delete the saved brightness, contrast, volume, color
+    /// temperature and known-good VCP cache of every monitor not connected at that instant. With no
+    /// observed drop there is nothing to delete.
     /// </remarks>
-    public static IReadOnlySet<string> BuildRetainedIds(
+    /// <param name="previouslyPersistedIds">Monitor Ids read from settings.json, before the rebuild.</param>
+    /// <param name="rebuiltIds">Monitor Ids about to be written back to settings.json.</param>
+    /// <returns>The Ids whose persisted monitor state is no longer referenced by settings.</returns>
+    public static IReadOnlySet<string> BuildDroppedIds(
         IEnumerable<string> previouslyPersistedIds,
         IEnumerable<string> rebuiltIds)
     {
         ArgumentNullException.ThrowIfNull(previouslyPersistedIds);
         ArgumentNullException.ThrowIfNull(rebuiltIds);
 
-        var retainedIds = new HashSet<string>(MonitorIdComparer.Instance);
-        AddValidIds(retainedIds, previouslyPersistedIds);
-        AddValidIds(retainedIds, rebuiltIds);
-        return retainedIds;
-    }
-
-    private static void AddValidIds(HashSet<string> retainedIds, IEnumerable<string> monitorIds)
-    {
-        foreach (var monitorId in monitorIds)
+        var droppedIds = new HashSet<string>(MonitorIdComparer.Instance);
+        foreach (var monitorId in previouslyPersistedIds)
         {
             if (!string.IsNullOrEmpty(monitorId))
             {
-                retainedIds.Add(monitorId);
+                droppedIds.Add(monitorId);
             }
         }
+
+        // ExceptWith uses the set's own comparer, so Id matching stays case-insensitive.
+        droppedIds.ExceptWith(rebuiltIds);
+        return droppedIds;
     }
 }
