@@ -312,21 +312,29 @@ public class PeekFilePreviewTests : UITestBase
             FileNameFromTitle(peekWindow.WindowTitle, expectedNames),
         };
 
-        for (var index = 0; index < 5; index++)
+        const int maxAttempts = 10;
+        for (var attempt = 1; attempt <= maxAttempts && visitedNames.Count < expectedNames.Count; attempt++)
         {
             var previousTitle = peekWindow.WindowTitle;
             EnsurePeekWindowInteractive(peekWindow);
             EnsurePeekWindowForeground(peekWindow);
             KeyboardHelper.SendKeys(Key.Left);
-            peekWindow = WaitForSelectedFileChange(previousTitle, expectedNames, PeekWindowTimeoutMS)
-                ?? throw new AssertFailedException("Peek did not switch to another selected file.");
+            var changedWindow = WaitForSelectedFileChange(previousTitle, expectedNames, timeoutMS: 2_000);
+            if (changedWindow is null)
+            {
+                TestContext.WriteLine(
+                    $"Selected-file navigation attempt {attempt}/{maxAttempts} made no progress from '{previousTitle}'. Retrying.");
+                continue;
+            }
+
+            peekWindow = changedWindow;
             visitedNames.Add(FileNameFromTitle(peekWindow.WindowTitle, expectedNames));
         }
 
-        Assert.IsTrue(visitedNames.Count > 1, "Peek should switch between the selected files.");
-        Assert.IsTrue(
-            visitedNames.Count <= selectedFiles.Count,
-            $"Peek should navigate only among the selected files, but visited: {string.Join(", ", visitedNames)}.");
+        CollectionAssert.AreEquivalent(
+            expectedNames.ToList(),
+            visitedNames.ToList(),
+            $"Peek should visit every selected file and no unselected files. Visited: {string.Join(", ", visitedNames)}.");
     }
 
     private Session OpenPeekWindow(string filePath)
