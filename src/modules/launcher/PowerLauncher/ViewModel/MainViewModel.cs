@@ -796,7 +796,6 @@ namespace PowerLauncher.ViewModel
             var results = await QueryPluginAsync(plugin, query, delayedExecution: false, queryConcurrencyGate, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
 
-            bool noInitialResults;
             lock (_addResultsLock)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -807,7 +806,6 @@ namespace PowerLauncher.ViewModel
                 }
 
                 UpdateResultView(results, queryText, cancellationToken);
-                noInitialResults = Results.Results.Count == 0;
                 if (!doFinalSort)
                 {
                     Results.Sort(queryTuning);
@@ -831,6 +829,9 @@ namespace PowerLauncher.ViewModel
                             return;
                         }
 
+                        // Compute this while applying delayed results so it reflects initial results
+                        // added by every plugin, not a per-plugin snapshot from the first phase.
+                        var noInitialResults = Results.Results.Count == 0;
                         Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
                         UpdateResultView(results, queryText, cancellationToken);
                         if (!doFinalSort)
