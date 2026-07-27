@@ -282,9 +282,18 @@ internal static class JSModelMapper
         }
 
         var command = JSCommandFactory.CreateCommandFromJson(commandData, connection);
+
+        // A context item that omits its own icon inherits the command's icon,
+        // matching how list items fall back. Reading the item icon with
+        // TryGetIcon distinguishes an absent icon (fall back) from an explicitly
+        // empty one (which stays empty and is not replaced).
+        var icon = TryGetIcon(element, "icon", "Icon", out var ownIcon)
+            ? ownIcon
+            : command.Icon ?? new IconInfo(string.Empty);
+
         var item = new CommandContextItem(command)
         {
-            Icon = GetIcon(element, "icon", "Icon"),
+            Icon = icon,
             IsCritical = GetBool(element, "isCritical", false),
         };
 
