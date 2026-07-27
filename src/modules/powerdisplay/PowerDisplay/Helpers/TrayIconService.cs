@@ -51,7 +51,11 @@ namespace PowerDisplay.Helpers
         private const uint MaxSampleAgeMs = 500;
         private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
-        private static readonly TimeSpan FeedbackPollInterval = TimeSpan.FromMilliseconds(100);
+
+        // Fallback cadence for noticing that the pointer left the icon. Only used when
+        // NOTIFYICON_VERSION_4 could not be applied, because that version reports the departure
+        // through NIN_POPUPCLOSE and the legacy protocol reports nothing at all.
+        private static readonly TimeSpan LegacyHoverPollInterval = TimeSpan.FromMilliseconds(100);
 
         private readonly SettingsUtils _settingsUtils;
         private readonly Action _toggleWindowAction;
@@ -72,7 +76,7 @@ namespace PowerDisplay.Helpers
         private nint _popupMenu;
         private TrayIconMouseWheelListener? _mouseWheelListener;
         private DispatcherQueueTimer? _registrationTimer;
-        private DispatcherQueueTimer? _feedbackPollTimer;
+        private DispatcherQueueTimer? _feedbackTimer;
         private TrayWheelFeedbackWindow? _feedbackWindow;
         private MouseWheelControlMode _mouseWheelControlMode;
         private TrayIconBounds? _cachedBounds;
@@ -470,7 +474,7 @@ namespace PowerDisplay.Helpers
             {
                 _feedbackIconBounds = cached;
                 ApplyFeedbackPresentation(_feedbackSession.StartHover(now), cached);
-                EnsureFeedbackPollTimer();
+                ScheduleFeedbackTick();
 
                 if (!IsMouseWheelAdjustmentReady)
                 {
@@ -503,7 +507,7 @@ namespace PowerDisplay.Helpers
 
             _feedbackIconBounds = bounds;
             ApplyFeedbackPresentation(_feedbackSession.StartHover(now), bounds);
-            EnsureFeedbackPollTimer();
+            ScheduleFeedbackTick();
 
             if (!IsMouseWheelAdjustmentReady)
             {
@@ -580,21 +584,44 @@ namespace PowerDisplay.Helpers
             return result >= 0 && bounds.IsValid;
         }
 
-        private void EnsureFeedbackPollTimer()
+        /// <summary>
+        /// Arms a single tick for the next presentation change that time alone will produce: the
+        /// hover reveal, or the adjustment readout expiring back to the app name. Once the
+        /// presentation is stable nothing is armed, because NIN_POPUPCLOSE reports the pointer
+        /// leaving. Without NOTIFYICON_VERSION_4 there is no such notification, so the timer falls
+        /// back to polling the cursor at <see cref="LegacyHoverPollInterval"/>.
+        /// </summary>
+        private void ScheduleFeedbackTick()
         {
-            _feedbackPollTimer ??= _dispatcherQueue.CreateTimer();
-            _feedbackPollTimer.Interval = FeedbackPollInterval;
-            _feedbackPollTimer.IsRepeating = true;
-            _feedbackPollTimer.Tick -= OnFeedbackPollTimerTick;
-            _feedbackPollTimer.Tick += OnFeedbackPollTimerTick;
-            if (!_feedbackPollTimer.IsRunning)
+            if (!_feedbackSession.IsHovering)
             {
-                _feedbackPollTimer.Start();
+                _feedbackTimer?.Stop();
+                return;
             }
+
+            var pending = _feedbackSession.NextTransitionDelay(Environment.TickCount64);
+            if (pending is null && _trayIconUsesVersion4)
+            {
+                _feedbackTimer?.Stop();
+                return;
+            }
+
+            var interval = pending is long delay
+                ? TimeSpan.FromMilliseconds(Math.Max(1L, delay))
+                : LegacyHoverPollInterval;
+
+            _feedbackTimer ??= _dispatcherQueue.CreateTimer();
+            _feedbackTimer.IsRepeating = false;
+            _feedbackTimer.Tick -= OnFeedbackTimerTick;
+            _feedbackTimer.Tick += OnFeedbackTimerTick;
+            _feedbackTimer.Stop();
+            _feedbackTimer.Interval = interval;
+            _feedbackTimer.Start();
         }
 
-        private void OnFeedbackPollTimerTick(DispatcherQueueTimer sender, object args)
+        private void OnFeedbackTimerTick(DispatcherQueueTimer sender, object args)
         {
+            sender.Stop();
             if (!GetCursorPos(out var cursor) ||
                 !TryQueryTrayIconBounds(out var bounds, out _) ||
                 !bounds.Contains(cursor.X, cursor.Y))
@@ -607,6 +634,7 @@ namespace PowerDisplay.Helpers
             ApplyFeedbackPresentation(
                 _feedbackSession.Tick(Environment.TickCount64, pointerInside: true),
                 bounds);
+            ScheduleFeedbackTick();
         }
 
         private void ApplyFeedbackPresentation(
@@ -702,7 +730,7 @@ namespace PowerDisplay.Helpers
                     _feedbackWindow?.HideFeedback();
                 }
 
-                EnsureFeedbackPollTimer();
+                ScheduleFeedbackTick();
                 return;
             }
 
@@ -746,12 +774,12 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            EnsureFeedbackPollTimer();
+            ScheduleFeedbackTick();
         }
 
         private void StopHoverFeedback()
         {
-            _feedbackPollTimer?.Stop();
+            _feedbackTimer?.Stop();
             _feedbackSession.Stop();
             _feedbackIconBounds = null;
             _feedbackWindowConstructionFailed = false;
@@ -760,7 +788,7 @@ namespace PowerDisplay.Helpers
 
         private void DisposeFeedbackWindow()
         {
-            _feedbackPollTimer?.Stop();
+            _feedbackTimer?.Stop();
             _feedbackSession.Stop();
             _feedbackIconBounds = null;
             _feedbackWindowConstructionFailed = false;

@@ -133,4 +133,84 @@ public class TrayWheelFeedbackSessionTests
             Kind.AppName,
             session.Tick(long.MinValue + 399, pointerInside: true).Kind);
     }
+
+    [TestMethod]
+    public void NextTransitionDelay_Idle_IsNull()
+    {
+        var session = new TrayWheelFeedbackSession();
+
+        Assert.IsNull(session.NextTransitionDelay(1000));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_DuringHoverDelay_IsRemainingDelay()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.StartHover(1000);
+
+        Assert.AreEqual(500L, session.NextTransitionDelay(1000));
+        Assert.AreEqual(200L, session.NextTransitionDelay(1300));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_AfterHoverDelay_IsNull()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.StartHover(1000);
+        _ = session.Tick(1500, pointerInside: true);
+
+        // AppName is terminal: only the pointer leaving ends it, so nothing needs to be armed.
+        Assert.IsNull(session.NextTransitionDelay(1500));
+        Assert.IsNull(session.NextTransitionDelay(9000));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_WhileAdjustmentVisible_IsRemainingLifetime()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.ShowAdjustment("55%", 1000);
+
+        Assert.AreEqual(2000L, session.NextTransitionDelay(1000));
+        Assert.AreEqual(500L, session.NextTransitionDelay(2500));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_PastAdjustmentDeadline_IsZero()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.ShowAdjustment("55%", 1000);
+
+        // Never negative: the caller arms an immediate tick that retires the adjustment.
+        Assert.AreEqual(0L, session.NextTransitionDelay(5000));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_AfterClearAdjustment_IsNull()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.ShowAdjustment("55%", 1000);
+        _ = session.ClearAdjustment(1100, pointerInside: true);
+
+        Assert.IsNull(session.NextTransitionDelay(1100));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_AfterStop_IsNull()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.ShowAdjustment("55%", 1000);
+        _ = session.Stop();
+
+        Assert.IsNull(session.NextTransitionDelay(1100));
+    }
+
+    [TestMethod]
+    public void NextTransitionDelay_HandlesMonotonicWraparound()
+    {
+        var session = new TrayWheelFeedbackSession();
+        _ = session.StartHover(long.MaxValue - 100);
+
+        // Wrapping past long.MaxValue puts 300 ms on the clock, leaving 200 ms of hover delay.
+        Assert.AreEqual(200L, session.NextTransitionDelay(long.MinValue + 199));
+    }
 }

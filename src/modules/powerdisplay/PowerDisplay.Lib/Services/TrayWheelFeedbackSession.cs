@@ -129,6 +129,31 @@ public sealed class TrayWheelFeedbackSession
         return new Presentation(PresentationKind.Hidden);
     }
 
+    /// <summary>
+    /// Gets the delay until the next presentation change that time alone will produce, so the
+    /// caller can arm a single timer for that deadline instead of polling. Returns
+    /// <see langword="null"/> when the current presentation is stable and only ends when the
+    /// pointer leaves, which the caller learns about from the shell instead.
+    /// </summary>
+    /// <param name="now">The current timestamp, in the units passed to <see cref="Tick"/>.</param>
+    /// <returns>The remaining delay in milliseconds, or <see langword="null"/> when no
+    /// time-driven change is pending.</returns>
+    public long? NextTransitionDelay(long now)
+    {
+        if (!_isHovering)
+        {
+            return null;
+        }
+
+        if (_adjustmentText is not null)
+        {
+            return Math.Max(0, AdjustmentDurationMilliseconds - Elapsed(now, _adjustmentStartedAt));
+        }
+
+        var remaining = HoverDelayMilliseconds - Elapsed(now, _hoverStartedAt);
+        return remaining > 0 ? remaining : null;
+    }
+
     private static long Elapsed(long now, long startedAt)
         => unchecked(now - startedAt);
 }
