@@ -44,10 +44,19 @@ public sealed partial class PeekFileCommand : InvokableCommand
 
         try
         {
+            // Match Peek module launch: WinUI3 Peek.UI resolves deps from its
+            // install directory. Starting with UseShellExecute=false and no CWD
+            // often exits silently — palette dismisses and Peek never appears.
+            if (!File.Exists(_fullPath) && !Directory.Exists(_fullPath))
+            {
+                return CommandResult.ShowToast(Resources.Indexer_Command_Peek_Failed);
+            }
+
             using var process = new Process();
             process.StartInfo.FileName = peekExe;
             process.StartInfo.Arguments = $"\"{_fullPath}\"";
-            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(peekExe) ?? string.Empty;
+            process.StartInfo.UseShellExecute = true;
             process.Start();
         }
         catch (Exception ex)
