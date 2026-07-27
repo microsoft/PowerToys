@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +15,9 @@ namespace Wox.Test
     [TestClass]
     public class MainViewModelQueryTest
     {
+        private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(5);
+        private static readonly int[] QueryIndexes = { 0, 1 };
+
         [TestMethod]
         public void EquivalentReconstructedQueryMatchesCurrentQuery()
         {
@@ -51,6 +55,53 @@ namespace Wox.Test
             var legacyQuery = new Query(">different text");
 
             Assert.IsFalse(MainViewModel.IsCurrentQuery(currentQuery, legacyQuery));
+        }
+
+        [TestMethod]
+        public async Task DelayedQueriesWaitForEveryNonDelayedQuery()
+        {
+            var releaseFirstQuery = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseSecondQuery = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var firstQueryCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var completedPhaseCount = 0;
+            var delayedQueryCount = 0;
+
+            var queryTask = MainViewModel.RunQueryPhasesAsync(
+                QueryIndexes,
+                async queryIndex =>
+                {
+                    await (queryIndex == 0 ? releaseFirstQuery.Task : releaseSecondQuery.Task);
+                    if (queryIndex == 0)
+                    {
+                        firstQueryCompleted.SetResult(true);
+                    }
+
+                    return queryIndex;
+                },
+                initialResults =>
+                {
+                    Assert.AreEqual(2, initialResults.Count);
+                    Interlocked.Increment(ref completedPhaseCount);
+                    return true;
+                },
+                _ =>
+                {
+                    Interlocked.Increment(ref delayedQueryCount);
+                    return Task.CompletedTask;
+                });
+
+            releaseFirstQuery.SetResult(true);
+            await firstQueryCompleted.Task.WaitAsync(WaitTimeout);
+            await Task.Delay(100);
+
+            Assert.AreEqual(0, Volatile.Read(ref completedPhaseCount));
+            Assert.AreEqual(0, Volatile.Read(ref delayedQueryCount));
+
+            releaseSecondQuery.SetResult(true);
+            await queryTask.WaitAsync(WaitTimeout);
+
+            Assert.AreEqual(1, Volatile.Read(ref completedPhaseCount));
+            Assert.AreEqual(2, Volatile.Read(ref delayedQueryCount));
         }
 
         [TestMethod]
