@@ -5,7 +5,26 @@ This document describes the conventions for implementing command-line interfaces
 ## PATH-Visible Command Naming and Location
 
 - Name module CLI command shims `PowerToys.<ModuleName>.CLI.exe` (for example, `PowerToys.ImageResizer.CLI.exe`).
-- Install these shims in the `bin` subfolder of the PowerToys installation directory.
+- Install these shims in the `bin` subfolder of the PowerToys installation directory, which the installer adds to `PATH`.
+
+Every command is the same `PowerToys.CliShim.exe` payload (`tools/CliShim/`) installed under a different name. The shim resolves which CLI to launch from its own file name, forwards the raw argument tail unchanged, shares the caller's console, and returns the CLI's exit code.
+
+### Adding a new shim
+
+1. Add a `<CliShim>` item to `tools/CliShim/CliShimManifest.props` with the command name and the target's path relative to `bin`.
+2. Add the matching `<Component>` and `<ComponentRef>` to `installer/PowerToysSetupVNext/CliShims.wxs`, using the command name as the `File/@Name`.
+
+`CliShim.vcxproj` fails the build if those two drift apart, and `CliShim.UnitTests` generates its expectations from the same manifest, so there is no third list to update.
+
+### Shim exit codes
+
+The shim returns the target CLI's exit code unchanged. It substitutes one of its own codes only when the CLI never ran, using values outside the range the CLIs use themselves:
+
+| Code | Meaning |
+| --- | --- |
+| `9009` | No CLI is mapped to the invoked command name (matches `cmd.exe`'s "command not found"). |
+| `9010` | The mapped target executable is missing from the installation. |
+| `9011` | The shim could not start the target, including when it cannot resolve its own path. |
 
 ## Library
 

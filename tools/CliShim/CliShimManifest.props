@@ -16,4 +16,22 @@
       <RelativeTarget>../WinUI3Apps/PowerToys.PowerDisplay.Cli.exe</RelativeTarget>
     </CliShim>
   </ItemGroup>
+
+  <!--
+    Emits the mapping above as a C++ initializer list. The shim and its unit tests both import
+    this file, so the tests always assert against the same table the shim was built from and a
+    new command cannot be added to one without the other picking it up.
+  -->
+  <Target Name="GenerateCliShimTargets"
+          BeforeTargets="ClCompile"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
+          Outputs="$(IntDir)CliShimTargets.g.inc">
+    <ItemGroup>
+      <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
+    </ItemGroup>
+    <MakeDir Directories="$(IntDir)" />
+    <WriteLinesToFile File="$(IntDir)CliShimTargets.g.inc"
+                      Lines="@(_CliShimTargetLine)"
+                      Overwrite="true" />
+  </Target>
 </Project>

@@ -55,24 +55,19 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
-  <Target Name="GenerateCliShimTargets"
+  <!--
+    Keep the explicit WiX components synchronized with the shared manifest. This lives in the
+    product project rather than the wixproj so drift fails on any ordinary build instead of only
+    when someone builds the installer.
+  -->
+  <Target Name="ValidateCliShimInstallerManifest"
           BeforeTargets="ClCompile"
-          Inputs="$(MSBuildProjectFullPath);$(MSBuildProjectDirectory)\CliShimManifest.props"
-          Outputs="$(IntDir)CliShimTargets.g.inc">
-    <ItemGroup>
-      <_CliShimTargetLine Include="{ L%22%(CliShim.Identity)%22, L%22%(CliShim.RelativeTarget)%22 }," />
-    </ItemGroup>
-    <MakeDir Directories="$(IntDir)" />
-    <WriteLinesToFile File="$(IntDir)CliShimTargets.g.inc"
-                      Lines="@(_CliShimTargetLine)"
-                      Overwrite="true" />
-  </Target>
-
-  <!-- Keep explicit WiX components synchronized with the shared manifest. -->
-  <Target Name="ValidateCliShimInstallerManifest" BeforeTargets="ClCompile">
+          Condition="'$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
-      <_CliShimWxsText>$([System.IO.File]::ReadAllText('$(RepoRoot)installer\PowerToysSetupVNext\CliShims.wxs'))</_CliShimWxsText>
-      <_CliShimWxsCount>$([System.Text.RegularExpressions.Regex]::Matches('$(_CliShimWxsText)', 'Name=&quot;[^&quot;]+\.exe&quot;').Count)</_CliShimWxsCount>
+      <_CliShimWxsPath>$(RepoRoot)installer\PowerToysSetupVNext\CliShims.wxs</_CliShimWxsPath>
+      <_CliShimWxsText>$([System.IO.File]::ReadAllText('$(_CliShimWxsPath)'))</_CliShimWxsText>
+      <!-- Anchored to <File> so unrelated Name="*.exe" attributes cannot inflate the count. -->
+      <_CliShimWxsCount>$([System.Text.RegularExpressions.Regex]::Matches('$(_CliShimWxsText)', '&lt;File\b[^&gt;]*\bName=&quot;[^&quot;]+\.exe&quot;').Count)</_CliShimWxsCount>
       <_CliShimManifestCount>@(CliShim-&gt;Count())</_CliShimManifestCount>
     </PropertyGroup>
     <ItemGroup>
@@ -83,6 +78,6 @@
     <Error Condition="'%(CliShim.InWxs)' != 'True'"
            Text="CliShim installer drift: command '%(CliShim.Identity)' is missing from CliShims.wxs." />
     <Error Condition="'$(_CliShimWxsCount)' != '$(_CliShimManifestCount)'"
-           Text="CliShim installer drift: CliShims.wxs contains $(_CliShimWxsCount) command executables, but CliShimManifest.props defines $(_CliShimManifestCount)." />
+           Text="CliShim installer drift: CliShims.wxs installs $(_CliShimWxsCount) command executables, but CliShimManifest.props defines $(_CliShimManifestCount)." />
   </Target>
 </Project>

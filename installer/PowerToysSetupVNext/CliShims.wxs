@@ -1,33 +1,39 @@
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <?include $(sys.CURRENTDIR)\Common.wxi?>
 
-  <!-- PATH-visible shims forward to the installed PowerToys CLIs. -->
+  <!--
+    PATH-visible shims forward to the installed PowerToys CLIs. Every command is the same
+    PowerToys.CliShim.exe payload installed under a different name; the shim resolves its target
+    from that name. tools\CliShim\CliShimManifest.props is the source of truth for the list and
+    the CliShim project fails the build if the two drift apart, so keep the File/@Name values and
+    that manifest in sync.
+  -->
   <Fragment>
     <DirectoryRef Id="CliFolder">
-      <Component Id="CliShim_fancyzonescli_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
+      <Component Id="CliShim_PowerToys_FancyZones_CLI_exe" Guid="63800E2A-21B9-4A92-AD25-9C1DC7593F4F" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_fancyzonescli_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_PowerToys_FancyZones_CLI_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FancyZones.CLI.exe" Id="CliShim_fancyzonescli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FancyZones.CLI.exe" Id="CliShim_PowerToys.FancyZones.CLI.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_imageresizercli_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
+      <Component Id="CliShim_PowerToys_ImageResizer_CLI_exe" Guid="2BC274AA-FECD-4A85-BF70-06670A6B99A5" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_imageresizercli_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_PowerToys_ImageResizer_CLI_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.ImageResizer.CLI.exe" Id="CliShim_imageresizercli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.ImageResizer.CLI.exe" Id="CliShim_PowerToys.ImageResizer.CLI.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_filelocksmithcli_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
+      <Component Id="CliShim_PowerToys_FileLocksmith_CLI_exe" Guid="2DD830DD-78D4-46EE-B23B-3EAB3D838EDF" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_filelocksmithcli_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_PowerToys_FileLocksmith_CLI_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FileLocksmith.CLI.exe" Id="CliShim_filelocksmithcli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.FileLocksmith.CLI.exe" Id="CliShim_PowerToys.FileLocksmith.CLI.exe" Checksum="yes" />
       </Component>
-      <Component Id="CliShim_powerdisplaycli_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
+      <Component Id="CliShim_PowerToys_PowerDisplay_CLI_exe" Guid="E98A36C9-384E-48CB-A844-A6A49E4138D9" Bitness="always64">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="CliShim_powerdisplaycli_exe" Value="" KeyPath="yes" />
+          <RegistryValue Type="string" Name="CliShim_PowerToys_PowerDisplay_CLI_exe" Value="" KeyPath="yes" />
         </RegistryKey>
-        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.PowerDisplay.CLI.exe" Id="CliShim_powerdisplaycli.exe" Checksum="yes" />
+        <File Source="$(var.BinDir)CliShim\PowerToys.CliShim.exe" Name="PowerToys.PowerDisplay.CLI.exe" Id="CliShim_PowerToys.PowerDisplay.CLI.exe" Checksum="yes" />
       </Component>
 
       <!-- MSI broadcasts WM_SETTINGCHANGE; terminals open before install must be reopened. -->
@@ -55,10 +61,10 @@
         </RegistryKey>
         <RemoveFolder Id="RemoveFolderCliFolder" Directory="CliFolder" On="uninstall" />
       </Component>
-      <ComponentRef Id="CliShim_fancyzonescli_exe" />
-      <ComponentRef Id="CliShim_imageresizercli_exe" />
-      <ComponentRef Id="CliShim_filelocksmithcli_exe" />
-      <ComponentRef Id="CliShim_powerdisplaycli_exe" />
+      <ComponentRef Id="CliShim_PowerToys_FancyZones_CLI_exe" />
+      <ComponentRef Id="CliShim_PowerToys_ImageResizer_CLI_exe" />
+      <ComponentRef Id="CliShim_PowerToys_FileLocksmith_CLI_exe" />
+      <ComponentRef Id="CliShim_PowerToys_PowerDisplay_CLI_exe" />
       <?if $(var.PerUser) = "true" ?>
       <ComponentRef Id="cli_env_path_user" />
       <?else?>

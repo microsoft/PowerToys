@@ -6,7 +6,10 @@
 #include <Windows.h>
 
 #include <filesystem>
+#include <fstream>
+#include <iterator>
 #include <string>
+#include <string_view>
 #include <system_error>
 
 #include <CppUnitTest.h>
@@ -18,8 +21,11 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 namespace
 {
     constexpr DWORD ExitCommandNotMapped = 9009;
-    constexpr DWORD ExitLaunchFailed = 1;
+    constexpr DWORD ExitTargetNotFound = 9010;
     constexpr DWORD ForwardedExitCode = 37;
+
+    // Only used to unblock the test run if the shim ever hangs; the wait result is asserted.
+    constexpr DWORD TimeoutTerminationExitCode = 0xFFFFFFFF;
 
     struct ShimMapping
     {
@@ -27,12 +33,10 @@ namespace
         const wchar_t* relativeTarget;
     };
 
-    // Keep this list in sync with CliShimManifest.props.
+    // Generated from CliShimManifest.props, the same table the shim itself is built from, so a
+    // newly mapped command is covered here automatically instead of by hand.
     constexpr ShimMapping ExpectedMappings[] = {
-        { L"PowerToys.FancyZones.CLI", L"..\\FancyZonesCLI.exe" },
-        { L"PowerToys.ImageResizer.CLI", L"..\\WinUI3Apps\\PowerToys.ImageResizerCLI.exe" },
-        { L"PowerToys.FileLocksmith.CLI", L"..\\FileLocksmithCLI.exe" },
-        { L"PowerToys.PowerDisplay.CLI", L"..\\WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe" },
+#include "CliShimTargets.g.inc"
     };
 
     constexpr const wchar_t* RejectedLegacyCommands[] = {
@@ -46,6 +50,43 @@ namespace
         L"powerdisplaycli",
     };
 
+    class UniqueHandle
+    {
+    public:
+        UniqueHandle() = default;
+
+        explicit UniqueHandle(HANDLE value) noexcept :
+            handle{ value }
+        {
+        }
+
+        UniqueHandle(const UniqueHandle&) = delete;
+        UniqueHandle& operator=(const UniqueHandle&) = delete;
+
+        ~UniqueHandle()
+        {
+            Reset();
+        }
+
+        void Reset() noexcept
+        {
+            if (handle != nullptr && handle != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(handle);
+            }
+
+            handle = nullptr;
+        }
+
+        HANDLE Get() const noexcept
+        {
+            return handle;
+        }
+
+    private:
+        HANDLE handle = nullptr;
+    };
+
     std::filesystem::path GetTestBinaryDirectory()
     {
         wchar_t modulePath[MAX_PATH]{};
@@ -56,6 +97,11 @@ namespace
 
         Assert::IsTrue(length > 0 && length < ARRAYSIZE(modulePath), L"Could not locate the test module.");
         return std::filesystem::path{ modulePath }.parent_path();
+    }
+
+    std::filesystem::path GetShimUnderTest()
+    {
+        return GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
     }
 
     std::filesystem::path GetSystemCommandInterpreter()
@@ -120,7 +166,13 @@ namespace
         Assert::AreEqual(0, error.value(), L"Could not copy the executable.");
     }
 
-    DWORD RunAndGetExitCode(const std::filesystem::path& executable, const std::wstring& arguments = {})
+    // Runs the executable and returns its exit code. When standardOutput is set the child is
+    // started with inherited handles so the shim's own redirection behaviour is exercised.
+    DWORD RunProcess(
+        const std::filesystem::path& executable,
+        const std::wstring& arguments,
+        HANDLE standardInput,
+        HANDLE standardOutput)
     {
         std::wstring commandLine = L"\"" + executable.wstring() + L"\"";
         if (!arguments.empty())
@@ -129,8 +181,18 @@ namespace
             commandLine.append(arguments);
         }
 
+        const bool redirect = standardOutput != nullptr;
+
         STARTUPINFOW startupInfo{};
         startupInfo.cb = sizeof(startupInfo);
+        if (redirect)
+        {
+            startupInfo.dwFlags = STARTF_USESTDHANDLES;
+            startupInfo.hStdInput = standardInput;
+            startupInfo.hStdOutput = standardOutput;
+            startupInfo.hStdError = standardOutput;
+        }
+
         PROCESS_INFORMATION processInfo{};
 
         if (!CreateProcessW(
@@ -138,7 +200,7 @@ namespace
                 commandLine.data(),
                 nullptr,
                 nullptr,
-                FALSE,
+                redirect ? TRUE : FALSE,
                 CREATE_NO_WINDOW,
                 nullptr,
                 nullptr,
@@ -152,7 +214,7 @@ namespace
         const DWORD waitResult = WaitForSingleObject(processInfo.hProcess, 30'000);
         if (waitResult != WAIT_OBJECT_0)
         {
-            TerminateProcess(processInfo.hProcess, ExitLaunchFailed);
+            TerminateProcess(processInfo.hProcess, TimeoutTerminationExitCode);
             WaitForSingleObject(processInfo.hProcess, 5'000);
         }
 
@@ -166,6 +228,70 @@ namespace
         Assert::IsTrue(gotExitCode, L"Could not read the shim process exit code.");
         return exitCode;
     }
+
+    DWORD RunAndGetExitCode(const std::filesystem::path& executable, const std::wstring& arguments = {})
+    {
+        return RunProcess(executable, arguments, nullptr, nullptr);
+    }
+
+    std::string RunAndCaptureStandardOutput(
+        const std::filesystem::path& executable,
+        const std::wstring& arguments,
+        const std::filesystem::path& capturePath,
+        DWORD& exitCode)
+    {
+        SECURITY_ATTRIBUTES attributes{};
+        attributes.nLength = sizeof(attributes);
+        attributes.bInheritHandle = TRUE;
+
+        UniqueHandle output{ CreateFileW(
+            capturePath.c_str(),
+            GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            &attributes,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr) };
+        Assert::IsTrue(output.Get() != INVALID_HANDLE_VALUE, L"Could not create the output capture file.");
+
+        UniqueHandle input{ CreateFileW(
+            L"NUL",
+            GENERIC_READ,
+            FILE_SHARE_READ | FILE_SHARE_WRITE,
+            &attributes,
+            OPEN_EXISTING,
+            0,
+            nullptr) };
+        Assert::IsTrue(input.Get() != INVALID_HANDLE_VALUE, L"Could not open NUL as the shim's standard input.");
+
+        exitCode = RunProcess(executable, arguments, input.Get(), output.Get());
+        output.Reset();
+
+        std::ifstream stream{ capturePath, std::ios::binary };
+        Assert::IsTrue(stream.is_open(), L"Could not read the captured output.");
+
+        std::string captured{ std::istreambuf_iterator<char>{ stream }, std::istreambuf_iterator<char>{} };
+        while (!captured.empty() && (captured.back() == '\r' || captured.back() == '\n'))
+        {
+            captured.pop_back();
+        }
+
+        return captured;
+    }
+
+    // The forwarded payload is deliberately ASCII-only so it round-trips through cmd.exe's ECHO.
+    std::string NarrowAscii(std::wstring_view text)
+    {
+        std::string narrow;
+        narrow.reserve(text.size());
+
+        for (const wchar_t character : text)
+        {
+            narrow.push_back(static_cast<char>(character));
+        }
+
+        return narrow;
+    }
 }
 
 namespace CliShimUnitTests
@@ -177,7 +303,6 @@ namespace CliShimUnitTests
         {
             TemporaryDirectory installation;
             const std::filesystem::path binDirectory = installation.GetPath() / L"bin";
-            const std::filesystem::path shimSource = GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
             const std::filesystem::path targetSource = GetSystemCommandInterpreter();
 
             for (const ShimMapping& mapping : ExpectedMappings)
@@ -185,7 +310,7 @@ namespace CliShimUnitTests
                 const std::filesystem::path shimPath = binDirectory / (std::wstring{ mapping.command } + L".exe");
                 const std::filesystem::path targetPath = (binDirectory / mapping.relativeTarget).lexically_normal();
 
-                CopyExecutable(shimSource, shimPath);
+                CopyExecutable(GetShimUnderTest(), shimPath);
                 CopyExecutable(targetSource, targetPath);
 
                 const DWORD exitCode = RunAndGetExitCode(shimPath, L"/d /c exit 37");
@@ -194,12 +319,35 @@ namespace CliShimUnitTests
             }
         }
 
+        // cmd.exe's ECHO writes the remainder of its command line out verbatim, so this pins down
+        // that the caller's quoting and spacing survive the hop through the shim unchanged.
+        TEST_METHOD(ArgumentTailIsForwardedVerbatim)
+        {
+            constexpr const wchar_t* argumentTail = LR"(--path "C:\a b\c.png" --size 100 -q)";
+
+            TemporaryDirectory installation;
+            const std::filesystem::path shimPath = installation.GetPath() / L"bin" / L"PowerToys.FancyZones.CLI.exe";
+
+            CopyExecutable(GetShimUnderTest(), shimPath);
+            CopyExecutable(GetSystemCommandInterpreter(), installation.GetPath() / L"FancyZonesCLI.exe");
+
+            DWORD exitCode = MAXDWORD;
+            const std::string captured = RunAndCaptureStandardOutput(
+                shimPath,
+                std::wstring{ L"/d /c echo " } + argumentTail,
+                installation.GetPath() / L"captured-output.txt",
+                exitCode);
+
+            Assert::AreEqual(static_cast<DWORD>(0), exitCode, L"The forwarded command did not succeed.");
+            Assert::AreEqual(NarrowAscii(argumentTail), captured, L"The argument tail was not forwarded verbatim.");
+        }
+
         TEST_METHOD(UnknownCommandReturnsCommandNotMapped)
         {
             TemporaryDirectory installation;
             const std::filesystem::path shimPath = installation.GetPath() / L"bin" / L"unknown.exe";
 
-            CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
+            CopyExecutable(GetShimUnderTest(), shimPath);
 
             Assert::AreEqual(ExitCommandNotMapped, RunAndGetExitCode(shimPath));
         }
@@ -208,26 +356,27 @@ namespace CliShimUnitTests
         {
             TemporaryDirectory installation;
             const std::filesystem::path binDirectory = installation.GetPath() / L"bin";
-            const std::filesystem::path shimSource = GetTestBinaryDirectory() / L"PowerToys.CliShim.exe";
 
             for (const wchar_t* command : RejectedLegacyCommands)
             {
                 const std::filesystem::path shimPath = binDirectory / (std::wstring{ command } + L".exe");
-                CopyExecutable(shimSource, shimPath);
+                CopyExecutable(GetShimUnderTest(), shimPath);
 
                 const std::wstring message = L"Legacy command was unexpectedly mapped: " + std::wstring{ command };
                 Assert::AreEqual(ExitCommandNotMapped, RunAndGetExitCode(shimPath), message.c_str());
             }
         }
 
-        TEST_METHOD(MissingTargetReturnsLaunchFailed)
+        // A missing target must not be reported with an exit code the target CLI itself could
+        // return, so callers can tell the two apart.
+        TEST_METHOD(MissingTargetReturnsTargetNotFound)
         {
             TemporaryDirectory installation;
             const std::filesystem::path shimPath = installation.GetPath() / L"bin" / L"PowerToys.FancyZones.CLI.exe";
 
-            CopyExecutable(GetTestBinaryDirectory() / L"PowerToys.CliShim.exe", shimPath);
+            CopyExecutable(GetShimUnderTest(), shimPath);
 
-            Assert::AreEqual(ExitLaunchFailed, RunAndGetExitCode(shimPath));
+            Assert::AreEqual(ExitTargetNotFound, RunAndGetExitCode(shimPath));
         }
     };
 }

@@ -19,8 +19,11 @@ namespace
     // Match cmd.exe's "command not found" exit code for unmapped shim names.
     constexpr int ExitCommandNotMapped = 9009;
 
-    // Distinguish mapped commands whose targets cannot be launched.
-    constexpr int ExitLaunchFailed = 1;
+    // Shim failures use codes outside the range the target CLIs use for themselves (see
+    // doc/devdocs/cli-conventions.md: 0 success, 1 general error, 2 invalid arguments) so that a
+    // caller can tell "the shim could not run the CLI" apart from "the CLI ran and failed".
+    constexpr int ExitTargetNotFound = 9010;
+    constexpr int ExitLaunchFailed = 9011;
 
     struct ShimTarget
     {
@@ -80,7 +83,7 @@ int wmain()
     if (!std::filesystem::exists(targetPath, existsError))
     {
         std::fwprintf(stderr, L"cli-shim: target not found: \"%s\".\n", targetPath.c_str());
-        return ExitLaunchFailed;
+        return ExitTargetNotFound;
     }
 
     // Forward the raw tail so the caller's argument quoting remains unchanged.
