@@ -7,7 +7,7 @@ Param(
   [AllowEmptyString()]
   [string]$DevEnvironment = "Local",
 
-  [ValidateSet("stable", "preview")]
+  [ValidateSet("stable", "preview", "private")]
   [string]$Channel = "stable",
 
   [string]$SourceCommit = $env:BUILD_SOURCEVERSION,

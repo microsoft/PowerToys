@@ -58,7 +58,12 @@ jobs:
   - pwsh: |-
       $effectiveVersionNumber = '${{ parameters.resolvedVersionNumber }}'
       if ([string]::IsNullOrWhiteSpace($effectiveVersionNumber) -or $effectiveVersionNumber.StartsWith('$(')) {
-        $effectiveVersionNumber = '${{ parameters.versionNumber }}'
+        $metadata = .pipelines/resolveBuildMetadata.ps1 -VersionOverride '${{ parameters.versionNumber }}'
+        if ($${{ parameters.includePublicSymbolServer }} -and -not $metadata.AllowPublicSymbols) {
+          throw "Public symbols are only supported for manually queued stable-branch releases"
+        }
+
+        $effectiveVersionNumber = $metadata.Version
       }
 
       if ($effectiveVersionNumber -match '^(?<numeric>\d+\.\d+(?:\.\d+){0,2})-preview$') {

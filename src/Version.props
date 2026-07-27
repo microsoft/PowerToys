@@ -2,7 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Version>0.0.1</Version>
-    <VersionChannel>stable</VersionChannel>
+    <VersionChannel>private</VersionChannel>
+    <!-- Update once when main moves to the next stable release train. -->
+    <ReleaseTrainVersion>0.100</ReleaseTrainVersion>
     <SourceCommit></SourceCommit>
     <DevEnvironment>Local</DevEnvironment>
 

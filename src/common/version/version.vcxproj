@@ -9,7 +9,7 @@
       <VersionSourceCommit Condition="'$(VersionSourceCommit)' == '' and '$(BUILD_SOURCEVERSION)' != ''">$(BUILD_SOURCEVERSION)</VersionSourceCommit>
       <VersionSourceCommit Condition="'$(VersionSourceCommit)' == '' and '$(GITHUB_SHA)' != ''">$(GITHUB_SHA)</VersionSourceCommit>
       <VersionSourceCommit Condition="'$(VersionSourceCommit)' == ''">unknown</VersionSourceCommit>
-      <VersionChannel Condition="'$(VersionChannel)' == ''">stable</VersionChannel>
+      <VersionChannel Condition="'$(VersionChannel)' == ''">private</VersionChannel>
     </PropertyGroup>
     <ItemGroup>
       <HeaderLines Include="#pragma once" />
