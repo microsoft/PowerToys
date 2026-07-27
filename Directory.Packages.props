@@ -126,6 +126,8 @@
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="10.0.10" />
+    <!-- Explicitly pinned so the transitive dependency stays aligned with the 10.0.10 .NET package set. Relies on CentralPackageTransitivePinningEnabled. -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.10" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.10" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="10.0.10" />
     <PackageVersion Include="System.Text.Json" Version="10.0.10" />
