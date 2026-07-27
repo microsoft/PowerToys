@@ -139,9 +139,17 @@ internal static class JSModelMapper
             return new IconInfo(string.Empty);
         }
 
-        light ??= new IconData(string.Empty);
-        dark ??= new IconData(string.Empty);
-        return new IconInfo(light, dark);
+        // Exactly one theme variant was supplied here (both-absent already
+        // returned above). Mirror the supplied variant onto the missing theme so
+        // the icon renders in both light and dark rather than disappearing in
+        // whichever theme was omitted.
+        var supplied = light ?? dark;
+        if (supplied is null)
+        {
+            return new IconInfo(string.Empty);
+        }
+
+        return new IconInfo(light ?? supplied, dark ?? supplied);
     }
 
     internal static IconData ParseIconData(JsonElement element)

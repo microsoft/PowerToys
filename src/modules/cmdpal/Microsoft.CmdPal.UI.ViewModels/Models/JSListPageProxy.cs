@@ -175,6 +175,7 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
             if (response.Error != null)
             {
                 Logger.LogWarning($"LoadMore error for page {_pageId}: {response.Error.Message}");
+                SettleLoadMoreFailure();
                 return;
             }
 
@@ -194,7 +195,33 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         catch (Exception ex)
         {
             Logger.LogWarning($"Failed to load more items for page {_pageId}: {ex.Message}");
+            SettleLoadMoreFailure();
         }
+    }
+
+    // A failed loadMore (an RPC error response or a transport exception) must not
+    // leave the host stuck in its loading state. Settle paging to false so no
+    // further LoadMore is issued, and raise ItemsChanged so the host clears its
+    // loading spinner and re-queries the items it already has. The total is
+    // reported as unknown (-1) because the failed page delivered no count.
+    private void SettleLoadMoreFailure()
+    {
+        var changed = false;
+        lock (_stateLock)
+        {
+            if (_hasMoreItemsState != false)
+            {
+                _hasMoreItemsState = false;
+                changed = true;
+            }
+        }
+
+        if (changed)
+        {
+            OnPropertyChanged(nameof(HasMoreItems));
+        }
+
+        RaiseItemsChanged(-1);
     }
 
     // Reads the mutable page state (currently HasMoreItems) from a getItems /
@@ -410,7 +437,8 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
 
     private sealed class PageRegistry
     {
-        private int _subscribed;
+        private readonly object _subscribeLock = new();
+        private bool _subscribed;
 
         public ConcurrentDictionary<string, List<WeakReference<JSListPageProxy>>> Pages { get; } = new();
 
@@ -420,11 +448,27 @@ internal sealed partial class JSListPageProxy : BaseObservable, IListPage, IDisp
         // the creation race and was discarded.
         public void EnsureSubscribed(JsonRpcConnection connection)
         {
-            if (Interlocked.Exchange(ref _subscribed, 1) == 0)
+            lock (_subscribeLock)
             {
+                if (_subscribed)
+                {
+                    return;
+                }
+
+                // Register the handler before marking the registry subscribed.
+                // Publication must be atomic: no caller may observe the registry
+                // as subscribed (and then publish its proxy into Pages) until the
+                // connection is guaranteed to route itemsChanged notifications
+                // here. Setting the flag first and registering afterwards left a
+                // window where a notification could arrive after a concurrent
+                // caller saw the flag but before the handler was bound, and be
+                // dropped. Holding the lock across both steps closes that window,
+                // so EnsureSubscribed never returns before the handler is live.
                 connection.RegisterNotificationHandler(
                     "listPage/itemsChanged",
                     paramsElement => DispatchItemsChanged(this, paramsElement));
+
+                _subscribed = true;
             }
         }
     }
