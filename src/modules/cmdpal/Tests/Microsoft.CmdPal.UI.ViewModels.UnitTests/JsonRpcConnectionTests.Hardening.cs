@@ -444,6 +444,241 @@ public partial class JsonRpcConnectionTests
         }
     }
 
+    [TestMethod]
+    public async Task InFlightHandler_AwaitingResponse_CompletesWhileRequestQueueSaturated()
+    {
+        // Regression for the reader-admission deadlock: a handler that is awaiting an RPC response must
+        // still complete when the inbound request queue is saturated, because the reader routes response
+        // frames without ever blocking on work-queue admission.
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness(TimeSpan.FromSeconds(30));
+
+        var blockGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // "reflect" issues an outbound request and awaits the peer's response before returning. Its
+        // completion depends on the reader continuing to route response frames.
+        harness.Host.RegisterRequestHandler("reflect", async (_, token) =>
+        {
+            var response = await harness.Host.SendRequestAsync("callback", null, token).ConfigureAwait(false);
+            return new JsonObject { ["ok"] = response.Error is null };
+        });
+
+        // "block" never returns until released, so it pins a worker and helps saturate the queue.
+        harness.Host.RegisterRequestHandler("block", async (_, token) =>
+        {
+            await blockGate.Task.WaitAsync(token).ConfigureAwait(false);
+            return new JsonObject { ["ok"] = true };
+        });
+
+        try
+        {
+            // Start the in-flight handler and wait until it has issued its outbound request.
+            await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(1, "reflect", null), cts.Token);
+
+            var callbackId = -1;
+            while (true)
+            {
+                var (_, body) = await ReadFramedAsync(harness.ExtensionReads, cts.Token);
+                using var doc = JsonDocument.Parse(body);
+                if (doc.RootElement.TryGetProperty("method", out var method) &&
+                    string.Equals(method.GetString(), "callback", StringComparison.Ordinal))
+                {
+                    callbackId = doc.RootElement.GetProperty("id").GetInt32();
+                    break;
+                }
+            }
+
+            // Saturate the inbound request path far beyond the worker count and queue capacity. A reader
+            // that blocked on admission (the pre-fix behavior) could no longer route the response below.
+            for (var i = 0; i < 600; i++)
+            {
+                await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(1000 + i, "block", null), cts.Token);
+            }
+
+            // Answer the in-flight handler's outbound request. The reader must route this response even
+            // though the request queue is saturated; otherwise "reflect" never completes (deadlock).
+            await RespondWithResultAsync(harness.ExtensionWrites, callbackId, new JsonObject { ["pong"] = true }, cts.Token);
+
+            using var reflectResponse = await ReadResponseWithIdAsync(harness.ExtensionReads, 1, cts.Token);
+            Assert.IsTrue(
+                reflectResponse.RootElement.GetProperty("result").GetProperty("ok").GetBoolean(),
+                "The in-flight handler did not observe its correlated response while the queue was saturated.");
+        }
+        finally
+        {
+            blockGate.TrySetResult();
+            harness.Host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task InboundRequest_ExceedingByteBudget_IsRejectedWithServerBusy()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var toHost = new Pipe();
+        var fromHost = new Pipe();
+
+        // A tiny request byte budget so the first inbound request's frame already exceeds it and the
+        // reader rejects it rather than admitting a payload that would blow the aggregate budget.
+        var host = new JsonRpcConnection(
+            toHost.Reader.AsStream(),
+            fromHost.Writer.AsStream(),
+            errorStream: null,
+            requestTimeout: TimeSpan.FromSeconds(30),
+            writeTimeout: null,
+            maxQueuedNotificationBytes: null,
+            maxQueuedRequestBytes: 4);
+
+        var handlerInvoked = false;
+        host.RegisterRequestHandler("work", (_, _) =>
+        {
+            handlerInvoked = true;
+            return Task.FromResult<JsonNode?>(new JsonObject { ["ok"] = true });
+        });
+        host.StartListening();
+
+        var extensionReads = fromHost.Reader.AsStream();
+        var extensionWrites = toHost.Writer.AsStream();
+
+        try
+        {
+            await WriteFramedAsync(extensionWrites, BuildRequest(7, "work", null), cts.Token);
+
+            using var response = await ReadResponseWithIdAsync(extensionReads, 7, cts.Token);
+            Assert.AreEqual(
+                JsonRpcError.ServerBusy,
+                response.RootElement.GetProperty("error").GetProperty("code").GetInt32(),
+                "A request exceeding the aggregate byte budget must be rejected with a server-busy error.");
+            Assert.IsFalse(handlerInvoked, "The handler must not run for a request rejected by the byte budget.");
+        }
+        finally
+        {
+            host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task InboundNotification_ExceedingByteBudget_IsDropped()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var toHost = new Pipe();
+        var fromHost = new Pipe();
+
+        // A tiny notification byte budget so the notification's frame exceeds it and is dropped.
+        var host = new JsonRpcConnection(
+            toHost.Reader.AsStream(),
+            fromHost.Writer.AsStream(),
+            errorStream: null,
+            requestTimeout: TimeSpan.FromSeconds(30),
+            writeTimeout: null,
+            maxQueuedNotificationBytes: 4,
+            maxQueuedRequestBytes: null);
+
+        var notificationHandled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // The handler must be registered so the notification reaches the byte-budget drop path rather
+        // than being ignored as unrecognized.
+        host.RegisterNotificationHandler("note", _ => notificationHandled.TrySetResult());
+        host.RegisterRequestHandler("ping", (_, _) => Task.FromResult<JsonNode?>(new JsonObject { ["ok"] = true }));
+        host.StartListening();
+
+        var extensionReads = fromHost.Reader.AsStream();
+        var extensionWrites = toHost.Writer.AsStream();
+
+        try
+        {
+            await WriteFramedAsync(extensionWrites, BuildNotification("note", new JsonObject { ["payload"] = "abcdefghij" }), cts.Token);
+
+            // Frames are processed in order, so once the ping response arrives the notification ahead of
+            // it has already been dropped by the reader.
+            await WriteFramedAsync(extensionWrites, BuildRequest(1, "ping", null), cts.Token);
+            using var pong = await ReadResponseWithIdAsync(extensionReads, 1, cts.Token);
+            Assert.IsTrue(pong.RootElement.GetProperty("result").GetProperty("ok").GetBoolean());
+
+            Assert.IsTrue(
+                host.DroppedNotificationCount >= 1,
+                "A notification exceeding the aggregate byte budget must be dropped.");
+            Assert.IsFalse(
+                notificationHandled.Task.IsCompleted,
+                "A dropped notification must never reach its handler.");
+        }
+        finally
+        {
+            host.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task Dispose_WithManyBlockedWorkers_CompletesWithinSingleAggregateDeadline()
+    {
+        using var cts = new CancellationTokenSource(TestTimeout);
+        var harness = CreateHarness(TimeSpan.FromSeconds(30));
+
+        var started = 0;
+        var allStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var neverRelease = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // The handler deliberately ignores its cancellation token and blocks forever, forcing disposal
+        // to fall back on its drain deadline for every worker at once.
+        harness.Host.RegisterRequestHandler("hang", async (_, _) =>
+        {
+            if (Interlocked.Increment(ref started) >= JsonRpcConnection.InboundRequestWorkerCount)
+            {
+                allStarted.TrySetResult();
+            }
+
+            await neverRelease.Task.ConfigureAwait(false);
+            return new JsonObject();
+        });
+
+        try
+        {
+            for (var i = 0; i < JsonRpcConnection.InboundRequestWorkerCount; i++)
+            {
+                await WriteFramedAsync(harness.ExtensionWrites, BuildRequest(i + 1, "hang", null), cts.Token);
+            }
+
+            await allStarted.Task.WaitAsync(cts.Token);
+
+            var stopwatch = Stopwatch.StartNew();
+            harness.Host.Dispose();
+            stopwatch.Stop();
+
+            // A single aggregate drain budget governs disposal, so even with every worker stuck the wait
+            // is bounded by one deadline rather than one timeout per worker. Generous headroom keeps the
+            // assertion stable on busy CI while still failing the per-worker (~32 second) regression.
+            Assert.IsTrue(
+                stopwatch.Elapsed < TimeSpan.FromSeconds(10),
+                $"Dispose took {stopwatch.Elapsed.TotalSeconds:F1}s; the aggregate drain deadline was not applied.");
+        }
+        finally
+        {
+            neverRelease.TrySetResult();
+        }
+    }
+
+    private static async Task<JsonDocument> ReadResponseWithIdAsync(Stream stream, int id, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            var (_, body) = await ReadFramedAsync(stream, cancellationToken);
+            var document = JsonDocument.Parse(body);
+            var root = document.RootElement;
+
+            // A response carries an id but no method. Skip outbound requests/notifications and responses
+            // correlated to other ids (for example server-busy rejections for the saturating flood).
+            if (!root.TryGetProperty("method", out _) &&
+                root.TryGetProperty("id", out var idElement) &&
+                idElement.ValueKind == JsonValueKind.Number &&
+                idElement.GetInt32() == id)
+            {
+                return document;
+            }
+
+            document.Dispose();
+        }
+    }
+
     private sealed class BlockingWriteStream : Stream
     {
         private readonly TaskCompletionSource _writeStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);

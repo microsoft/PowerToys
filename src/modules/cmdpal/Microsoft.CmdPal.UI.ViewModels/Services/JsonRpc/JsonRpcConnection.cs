@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -42,36 +44,65 @@ public sealed partial class JsonRpcConnection : IDisposable
     // handlers can run at once so a flood of inbound requests cannot spawn unbounded work.
     internal const int InboundRequestWorkerCount = 16;
 
-    // Upper bound on the number of inbound requests buffered ahead of the workers. When the queue
-    // is full the read loop blocks on the enqueue, applying backpressure to the peer rather than
-    // buffering without limit.
+    // Upper bound on the number of inbound requests buffered ahead of the workers. This is a
+    // secondary, count-based guard layered on top of the aggregate byte budget below: the reader
+    // admits requests without ever blocking, so a full queue causes a request to be rejected rather
+    // than stalling the reader.
     private const int InboundRequestQueueCapacity = 256;
+
+    // Aggregate byte budgets for buffered inbound work. Because a single frame body can be as large
+    // as MaxMessageBytes (32 MiB), a purely count-based bound could retain tens of gigabytes of
+    // buffered payloads. These caps bound the total bytes held by the notification queue and the
+    // inbound request queue independently, regardless of item count.
+    internal const long DefaultMaxQueuedNotificationBytes = 64L * 1024 * 1024;
+    internal const long DefaultMaxQueuedRequestBytes = 64L * 1024 * 1024;
+
+    // Upper bound on the number of concurrent server-busy rejection responses in flight. The reader
+    // sends these without blocking; this cap keeps a sustained overload from spawning unbounded
+    // rejection tasks. When exceeded, the request is dropped and the peer observes a timeout.
+    private const int MaxConcurrentRejectionSends = 64;
+
+    // Protocol-error logging is rate limited so a peer that streams malformed or undecodable frames
+    // cannot flood the log. At most this many protocol-error entries are logged per window.
+    private const int ProtocolErrorLogMaxPerWindow = 10;
 
     // Upper bound on how many characters of an offending payload are written to the log. Malformed
     // or oversized bodies are truncated so a single bad frame cannot flood the log up to the frame cap.
     internal const int MaxLoggedBodyChars = 1024;
+
+    private static readonly TimeSpan ProtocolErrorLogWindow = TimeSpan.FromSeconds(5);
+
+    // A single aggregate budget for draining every background task during disposal. The total drain
+    // time is bounded by this one deadline instead of applying a separate per-task timeout, so a
+    // connection with many workers still shuts down promptly.
+    private static readonly TimeSpan DisposeDrainBudget = TimeSpan.FromSeconds(2);
 
     private readonly Stream _input;
     private readonly Stream _output;
     private readonly Stream? _errorStream;
     private readonly TimeSpan _requestTimeout;
     private readonly TimeSpan _writeTimeout;
+    private readonly long _maxQueuedNotificationBytes;
+    private readonly long _maxQueuedRequestBytes;
 
     private readonly ConcurrentDictionary<int, TaskCompletionSource<JsonRpcResponse>> _pendingRequests = new();
     private readonly ConcurrentDictionary<string, Action<JsonElement>> _notificationHandlers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Func<JsonElement, CancellationToken, Task<JsonNode?>>> _requestHandlers = new(StringComparer.Ordinal);
 
+    // The reader (and the drop-oldest path) and the consumer both read this queue, so it is not a
+    // single-reader channel. Only the reader writes to it.
     private readonly Channel<NotificationEnvelope> _notificationQueue = Channel.CreateBounded<NotificationEnvelope>(
         new BoundedChannelOptions(NotificationQueueCapacity)
         {
-            SingleReader = true,
+            SingleReader = false,
             SingleWriter = true,
             FullMode = BoundedChannelFullMode.Wait,
         });
 
     // Bounded queue of inbound requests drained by a fixed pool of workers. Only the read loop writes
-    // to it (SingleWriter), the workers read (multiple readers), and a full queue blocks the writer so
-    // the peer is throttled instead of letting the host buffer inbound requests without limit.
+    // to it (SingleWriter) and the workers read (multiple readers). The reader admits requests with a
+    // non-blocking TryWrite: when the count or byte budget is exhausted the request is rejected with a
+    // server-busy error instead of blocking the reader, which must stay free to route responses.
     private readonly Channel<InboundRequestEnvelope> _inboundRequestQueue = Channel.CreateBounded<InboundRequestEnvelope>(
         new BoundedChannelOptions(InboundRequestQueueCapacity)
         {
@@ -83,9 +114,20 @@ public sealed partial class JsonRpcConnection : IDisposable
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly CancellationTokenSource _disposalCts = new();
 
+    // A snapshot of the disposal token taken at construction. Background tasks and the write path use
+    // this captured value instead of _disposalCts.Token so they never touch the CancellationTokenSource
+    // after it is disposed (which would throw ObjectDisposedException). The token is cancelled before
+    // the source is disposed, so the snapshot still reports cancellation correctly.
+    private readonly CancellationToken _shutdownToken;
+
+    private readonly RateLimitedProtocolLog _protocolErrorLog;
+
     private int _nextRequestId;
     private int _connectionState = StateOpen;
     private long _droppedNotifications;
+    private long _queuedNotificationBytes;
+    private long _queuedRequestBytes;
+    private int _pendingRejectionSends;
     private Task? _readLoopTask;
     private Task? _errorPumpTask;
     private Task? _notificationConsumerTask;
@@ -102,12 +144,35 @@ public sealed partial class JsonRpcConnection : IDisposable
     /// <param name="requestTimeout">The per-request timeout. Defaults to 10 seconds when null.</param>
     /// <param name="writeTimeout">The maximum time a single outbound frame may take to reach the peer before the write is abandoned and the connection is torn down. Defaults to 10 seconds when null.</param>
     public JsonRpcConnection(Stream input, Stream output, Stream? errorStream = null, TimeSpan? requestTimeout = null, TimeSpan? writeTimeout = null)
+        : this(input, output, errorStream, requestTimeout, writeTimeout, maxQueuedNotificationBytes: null, maxQueuedRequestBytes: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="JsonRpcConnection"/> class with explicit aggregate
+    /// byte budgets for buffered inbound work. Used by tests to exercise the byte-budget rejection path.
+    /// </summary>
+    /// <param name="input">The stream to read incoming framed messages from.</param>
+    /// <param name="output">The stream to write outgoing framed messages to.</param>
+    /// <param name="errorStream">An optional stream carrying out-of-band diagnostics.</param>
+    /// <param name="requestTimeout">The per-request timeout. Defaults to 10 seconds when null.</param>
+    /// <param name="writeTimeout">The per-write timeout. Defaults to 10 seconds when null.</param>
+    /// <param name="maxQueuedNotificationBytes">The aggregate byte budget for buffered notifications. Defaults to <see cref="DefaultMaxQueuedNotificationBytes"/> when null.</param>
+    /// <param name="maxQueuedRequestBytes">The aggregate byte budget for buffered inbound requests. Defaults to <see cref="DefaultMaxQueuedRequestBytes"/> when null.</param>
+    internal JsonRpcConnection(Stream input, Stream output, Stream? errorStream, TimeSpan? requestTimeout, TimeSpan? writeTimeout, long? maxQueuedNotificationBytes, long? maxQueuedRequestBytes)
     {
         _input = input ?? throw new ArgumentNullException(nameof(input));
         _output = output ?? throw new ArgumentNullException(nameof(output));
         _errorStream = errorStream;
         _requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(10);
         _writeTimeout = writeTimeout ?? TimeSpan.FromSeconds(10);
+        _maxQueuedNotificationBytes = Math.Max(1, maxQueuedNotificationBytes ?? DefaultMaxQueuedNotificationBytes);
+        _maxQueuedRequestBytes = Math.Max(1, maxQueuedRequestBytes ?? DefaultMaxQueuedRequestBytes);
+        _shutdownToken = _disposalCts.Token;
+        _protocolErrorLog = new RateLimitedProtocolLog(
+            ProtocolErrorLogMaxPerWindow,
+            ProtocolErrorLogWindow,
+            static suppressed => Logger.LogWarning($"Suppressed {suppressed} JSON-RPC protocol-error log entries in the previous window to avoid flooding the log."));
     }
 
     /// <summary>
@@ -119,6 +184,17 @@ public sealed partial class JsonRpcConnection : IDisposable
     /// Raised when the read loop encounters an unrecoverable protocol or stream error.
     /// </summary>
     public event EventHandler<JsonRpcErrorEventArgs>? Error;
+
+    /// <summary>
+    /// Gets the number of inbound notifications that have been dropped because the notification queue
+    /// exceeded its count or byte budget. Exposed for tests.
+    /// </summary>
+    internal long DroppedNotificationCount => Interlocked.Read(ref _droppedNotifications);
+
+    /// <summary>
+    /// Gets the total number of protocol-error log entries suppressed by the rate limiter. Exposed for tests.
+    /// </summary>
+    internal long SuppressedProtocolErrorLogCount => _protocolErrorLog.TotalSuppressed;
 
     /// <summary>
     /// Starts the background read loop (and the optional stderr pump). Must be called once.
@@ -187,7 +263,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             throw new JsonRpcException("The JSON-RPC connection was closed before the request could be sent.");
         }
 
-        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposalCts.Token);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _shutdownToken);
         timeoutCts.CancelAfter(_requestTimeout);
 
         try
@@ -207,7 +283,7 @@ public sealed partial class JsonRpcConnection : IDisposable
                 throw;
             }
 
-            if (_disposed || _disposalCts.IsCancellationRequested || Volatile.Read(ref _connectionState) != StateOpen)
+            if (_disposed || _shutdownToken.IsCancellationRequested || Volatile.Read(ref _connectionState) != StateOpen)
             {
                 throw new JsonRpcException("The JSON-RPC connection was closed before a response was received.");
             }
@@ -316,27 +392,37 @@ public sealed partial class JsonRpcConnection : IDisposable
         _notificationQueue.Writer.TryComplete();
         _inboundRequestQueue.Writer.TryComplete();
 
-        // (d) Drain any writer that is mid-frame by acquiring the write lock once. Writes emit their
-        // header, body, and flush under CancellationToken.None, so an in-flight write completes the
-        // whole frame rather than leaving a corrupt partial frame behind.
+        // (d) Drain the write lock and every background task under a single aggregate deadline so the
+        // total shutdown time is bounded by one budget, not by a separate timeout per task. Acquiring
+        // the write lock once lets any writer that is mid-frame finish (or be abandoned by disposal).
+        var drainStopwatch = Stopwatch.StartNew();
+
         var acquiredWriteLock = false;
         try
         {
-            acquiredWriteLock = _writeLock.Wait(TimeSpan.FromSeconds(2));
+            acquiredWriteLock = _writeLock.Wait(RemainingDrainBudget(drainStopwatch));
         }
         catch (ObjectDisposedException)
         {
         }
 
-        WaitForBackgroundTask(_readLoopTask);
-        WaitForBackgroundTask(_errorPumpTask);
-        WaitForBackgroundTask(_notificationConsumerTask);
-
+        var backgroundTasks = new List<Task>(InboundRequestWorkerCount + 3);
+        AddIfNotNull(backgroundTasks, _readLoopTask);
+        AddIfNotNull(backgroundTasks, _errorPumpTask);
+        AddIfNotNull(backgroundTasks, _notificationConsumerTask);
         if (_inboundRequestWorkers is { } workers)
         {
-            foreach (var worker in workers)
+            backgroundTasks.AddRange(workers);
+        }
+
+        if (backgroundTasks.Count > 0)
+        {
+            try
             {
-                WaitForBackgroundTask(worker);
+                Task.WaitAll(backgroundTasks.ToArray(), RemainingDrainBudget(drainStopwatch));
+            }
+            catch (AggregateException)
+            {
             }
         }
 
@@ -359,15 +445,18 @@ public sealed partial class JsonRpcConnection : IDisposable
         _disposalCts.Dispose();
     }
 
-    private static void WaitForBackgroundTask(Task? task)
+    private static void AddIfNotNull(List<Task> tasks, Task? task)
     {
-        try
+        if (task is not null)
         {
-            task?.Wait(TimeSpan.FromSeconds(2));
+            tasks.Add(task);
         }
-        catch (AggregateException)
-        {
-        }
+    }
+
+    private static TimeSpan RemainingDrainBudget(Stopwatch stopwatch)
+    {
+        var remaining = DisposeDrainBudget - stopwatch.Elapsed;
+        return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
     }
 
     /// <summary>
@@ -435,7 +524,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             // draining stdin the write cannot block forever: when the timeout or disposal fires the
             // write is abandoned and the connection is torn down (never reused), so a partial frame can
             // only ever appear on a connection that is already closing.
-            using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(_disposalCts.Token);
+            using var writeCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken);
             writeCts.CancelAfter(_writeTimeout);
 
             try
@@ -480,9 +569,9 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         try
         {
-            while (!_disposalCts.IsCancellationRequested)
+            while (!_shutdownToken.IsCancellationRequested)
             {
-                var contentLength = await ReadHeaderAsync(_disposalCts.Token).ConfigureAwait(false);
+                var contentLength = await ReadHeaderAsync(_shutdownToken).ConfigureAwait(false);
                 if (contentLength < 0)
                 {
                     break;
@@ -493,17 +582,21 @@ public sealed partial class JsonRpcConnection : IDisposable
                     continue;
                 }
 
-                var body = await ReadExactAsync(contentLength, _disposalCts.Token).ConfigureAwait(false);
+                var body = await ReadExactAsync(contentLength, _shutdownToken).ConfigureAwait(false);
                 if (body is null)
                 {
                     break;
                 }
 
                 var json = Encoding.UTF8.GetString(body);
-                await DispatchMessageAsync(json).ConfigureAwait(false);
+
+                // Dispatch synchronously so the reader never awaits a bounded resource. Response frames
+                // are routed immediately and inbound requests/notifications are admitted without blocking,
+                // which keeps response correlation alive even when the inbound work queues are saturated.
+                DispatchMessage(json, body.Length);
             }
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
         {
         }
         catch (Exception ex)
@@ -605,7 +698,7 @@ public sealed partial class JsonRpcConnection : IDisposable
         return buffer;
     }
 
-    private async Task DispatchMessageAsync(string json)
+    private void DispatchMessage(string json, int frameByteLength)
     {
         JsonDocument document;
         try
@@ -615,9 +708,9 @@ public sealed partial class JsonRpcConnection : IDisposable
         catch (JsonException ex)
         {
             // Bound the logged payload: a malformed body can be as large as the frame cap, so only a
-            // short prefix is recorded (with a truncation marker) to keep a single bad frame from
-            // flooding the log.
-            Logger.LogError($"Failed to parse an inbound JSON-RPC message: {TruncateForLog(json)}", ex);
+            // short prefix is recorded (with a truncation marker). Route it through the rate limiter so
+            // a flood of malformed frames cannot flood the log.
+            _protocolErrorLog.Run(() => Logger.LogError($"Failed to parse an inbound JSON-RPC message: {TruncateForLog(json)}", ex));
             RaiseError(ex);
             return;
         }
@@ -630,11 +723,11 @@ public sealed partial class JsonRpcConnection : IDisposable
 
             if (hasMethod && !hasId)
             {
-                DispatchNotification(methodElement.GetString() ?? string.Empty, root);
+                EnqueueNotification(methodElement.GetString() ?? string.Empty, root, frameByteLength);
             }
             else if (hasMethod && hasId)
             {
-                await EnqueueInboundRequestAsync(methodElement.GetString() ?? string.Empty, idElement, root).ConfigureAwait(false);
+                EnqueueInboundRequest(methodElement.GetString() ?? string.Empty, idElement, root, frameByteLength);
             }
             else if (hasId)
             {
@@ -642,7 +735,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             }
             else
             {
-                Logger.LogWarning("Received a JSON-RPC message with neither a method nor an id.");
+                _protocolErrorLog.Run(static () => Logger.LogWarning("Received a JSON-RPC message with neither a method nor an id."));
             }
         }
     }
@@ -661,7 +754,7 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         if (idElement.ValueKind != JsonValueKind.Number || !idElement.TryGetInt32(out var id))
         {
-            Logger.LogWarning("Received a JSON-RPC response with a non-integer id.");
+            _protocolErrorLog.Run(static () => Logger.LogWarning("Received a JSON-RPC response with a non-integer id."));
             return;
         }
 
@@ -672,7 +765,7 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
         catch (JsonException ex)
         {
-            Logger.LogError("Failed to deserialize a JSON-RPC response.", ex);
+            _protocolErrorLog.Run(() => Logger.LogError("Failed to deserialize a JSON-RPC response.", ex));
             RaiseError(ex);
             return;
         }
@@ -682,17 +775,20 @@ public sealed partial class JsonRpcConnection : IDisposable
             return;
         }
 
+        // Response correlation runs directly on the reader with no bounded-capacity await, so an
+        // in-flight handler awaiting this response always completes even when the inbound work queues
+        // are saturated.
         if (_pendingRequests.TryRemove(id, out var tcs))
         {
             tcs.TrySetResult(response);
         }
         else
         {
-            Logger.LogWarning($"Received a JSON-RPC response for an unknown request id {id}.");
+            _protocolErrorLog.Run(() => Logger.LogWarning($"Received a JSON-RPC response for an unknown request id {id}."));
         }
     }
 
-    private void DispatchNotification(string method, JsonElement root)
+    private void EnqueueNotification(string method, JsonElement root, int sizeBytes)
     {
         if (!_notificationHandlers.ContainsKey(method))
         {
@@ -701,29 +797,43 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
 
         var parameters = root.TryGetProperty("params", out var p) ? p.Clone() : default;
+        var envelope = new NotificationEnvelope(method, parameters, sizeBytes);
 
         // Enqueue rather than invoke inline so a slow or reentrant handler never blocks the read loop
-        // or delays response correlation. The read loop is the only producer for this queue.
-        if (_notificationQueue.Writer.TryWrite(new NotificationEnvelope(method, parameters)))
+        // or delays response correlation. The reader never blocks on admission: it makes room within
+        // both the count and aggregate byte budgets by dropping the oldest notifications, and if the
+        // newest still does not fit it is dropped too. Notifications are advisory, so this is safe.
+        while (true)
         {
+            var projected = Interlocked.Read(ref _queuedNotificationBytes) + sizeBytes;
+            if (projected <= _maxQueuedNotificationBytes && _notificationQueue.Writer.TryWrite(envelope))
+            {
+                Interlocked.Add(ref _queuedNotificationBytes, sizeBytes);
+                return;
+            }
+
+            // The byte budget would be exceeded or the count-bounded queue is full. Drop the oldest
+            // buffered notification to free space, then retry.
+            if (_notificationQueue.Reader.TryRead(out var oldest))
+            {
+                Interlocked.Add(ref _queuedNotificationBytes, -oldest.SizeBytes);
+                RecordDroppedNotification();
+                continue;
+            }
+
+            // The queue is empty yet the newest notification still does not fit (it alone exceeds the
+            // byte budget), or the queue has completed because the connection is closing. Drop it.
+            RecordDroppedNotification();
             return;
         }
+    }
 
-        // The queue is full because the consumer is behind. Drop the oldest buffered notification to
-        // make room for the newest, so the reader stays responsive and the freshest state wins.
-        // Notifications are advisory, so losing an older one is preferable to blocking the transport.
-        _notificationQueue.Reader.TryRead(out _);
-
-        if (!_notificationQueue.Writer.TryWrite(new NotificationEnvelope(method, parameters)))
-        {
-            // The queue completed (the connection is closing); nothing further to do.
-            return;
-        }
-
+    private void RecordDroppedNotification()
+    {
         var dropped = Interlocked.Increment(ref _droppedNotifications);
         if ((dropped & 0x3F) == 1)
         {
-            Logger.LogWarning($"The JSON-RPC notification queue is saturated; {dropped} notification(s) have been dropped (oldest first).");
+            _protocolErrorLog.Run(() => Logger.LogWarning($"The JSON-RPC notification queue is saturated; {dropped} notification(s) have been dropped."));
         }
     }
 
@@ -731,15 +841,16 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         try
         {
-            while (await _notificationQueue.Reader.WaitToReadAsync(_disposalCts.Token).ConfigureAwait(false))
+            while (await _notificationQueue.Reader.WaitToReadAsync(_shutdownToken).ConfigureAwait(false))
             {
                 while (_notificationQueue.Reader.TryRead(out var envelope))
                 {
+                    Interlocked.Add(ref _queuedNotificationBytes, -envelope.SizeBytes);
                     InvokeNotificationHandler(envelope.Method, envelope.Parameters);
                 }
             }
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
         {
         }
         catch (ChannelClosedException)
@@ -765,45 +876,86 @@ public sealed partial class JsonRpcConnection : IDisposable
         }
     }
 
-    private async Task EnqueueInboundRequestAsync(string method, JsonElement idElement, JsonElement root)
+    private void EnqueueInboundRequest(string method, JsonElement idElement, JsonElement root, int sizeBytes)
     {
+        // Admit the request without ever blocking the reader. Enforce the aggregate byte budget first,
+        // then the count-bounded queue. When either budget is exhausted the request is rejected with a
+        // server-busy error rather than stalling the reader, which must stay free to route responses.
+        var projected = Interlocked.Add(ref _queuedRequestBytes, sizeBytes);
+        if (projected > _maxQueuedRequestBytes)
+        {
+            Interlocked.Add(ref _queuedRequestBytes, -sizeBytes);
+            RejectInboundRequest(idElement);
+            return;
+        }
+
         // Clone the id and params so the buffered envelope stays valid after the source document is
         // disposed by the read loop.
         var envelope = new InboundRequestEnvelope(
             method,
             idElement.Clone(),
-            root.TryGetProperty("params", out var p) ? p.Clone() : default);
+            root.TryGetProperty("params", out var p) ? p.Clone() : default,
+            sizeBytes);
 
-        try
+        if (_inboundRequestQueue.Writer.TryWrite(envelope))
         {
-            // Hand the request to the bounded worker pool. When the queue is full this awaits, which
-            // throttles the read loop (backpressure) instead of spawning unbounded handler tasks. The
-            // workers, not the read loop, run the handler so a slow handler cannot stall framing.
-            await _inboundRequestQueue.Writer.WriteAsync(envelope, _disposalCts.Token).ConfigureAwait(false);
+            return;
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+
+        // The count-bounded queue is full (or completed because the connection is closing). Release the
+        // byte reservation and reject the request.
+        Interlocked.Add(ref _queuedRequestBytes, -sizeBytes);
+        RejectInboundRequest(idElement);
+    }
+
+    private void RejectInboundRequest(JsonElement idElement)
+    {
+        if (Volatile.Read(ref _connectionState) != StateOpen)
         {
-            // The connection is closing; the request is dropped along with everything else in flight.
+            // The connection is closing; the peer will observe the disconnect. Nothing to send.
+            return;
         }
-        catch (ChannelClosedException)
+
+        // Bound the number of concurrent rejection sends so a sustained overload cannot spawn unbounded
+        // tasks. When the cap is reached the rejection is dropped and the peer observes a timeout.
+        if (Interlocked.Increment(ref _pendingRejectionSends) > MaxConcurrentRejectionSends)
         {
-            // The queue was completed because the connection is closing; nothing further to do.
+            Interlocked.Decrement(ref _pendingRejectionSends);
+            return;
         }
+
+        var id = idElement.Clone();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await SendErrorResponseAsync(id, JsonRpcError.ServerBusy, "The server is busy and cannot accept the request.").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug($"Failed to send a JSON-RPC server-busy response: {ex.Message}");
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _pendingRejectionSends);
+            }
+        });
     }
 
     private async Task ProcessInboundRequestsAsync()
     {
         try
         {
-            while (await _inboundRequestQueue.Reader.WaitToReadAsync(_disposalCts.Token).ConfigureAwait(false))
+            while (await _inboundRequestQueue.Reader.WaitToReadAsync(_shutdownToken).ConfigureAwait(false))
             {
                 while (_inboundRequestQueue.Reader.TryRead(out var envelope))
                 {
+                    Interlocked.Add(ref _queuedRequestBytes, -envelope.SizeBytes);
                     await DispatchInboundRequestAsync(envelope).ConfigureAwait(false);
                 }
             }
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
         {
         }
         catch (ChannelClosedException)
@@ -825,10 +977,10 @@ public sealed partial class JsonRpcConnection : IDisposable
     {
         try
         {
-            var result = await handler(parameters, _disposalCts.Token).ConfigureAwait(false);
+            var result = await handler(parameters, _shutdownToken).ConfigureAwait(false);
             await SendResultResponseAsync(id, result).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
         {
         }
         catch (Exception ex)
@@ -854,7 +1006,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             ["result"] = result,
         };
 
-        return WriteFramedAsync(response.ToJsonString(), _disposalCts.Token);
+        return WriteFramedAsync(response.ToJsonString(), _shutdownToken);
     }
 
     private Task SendErrorResponseAsync(JsonElement id, int code, string message)
@@ -870,7 +1022,7 @@ public sealed partial class JsonRpcConnection : IDisposable
             },
         };
 
-        return WriteFramedAsync(response.ToJsonString(), _disposalCts.Token);
+        return WriteFramedAsync(response.ToJsonString(), _shutdownToken);
     }
 
     private static JsonNode? NodeFromElement(JsonElement element)
@@ -883,9 +1035,9 @@ public sealed partial class JsonRpcConnection : IDisposable
         try
         {
             var reader = new BoundedStderrReader(line => Logger.LogWarning($"[extension stderr] {line}"));
-            await reader.PumpAsync(_errorStream!, _disposalCts.Token).ConfigureAwait(false);
+            await reader.PumpAsync(_errorStream!, _shutdownToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (_disposalCts.IsCancellationRequested)
+        catch (OperationCanceledException) when (_shutdownToken.IsCancellationRequested)
         {
         }
         catch (Exception ex)
@@ -919,13 +1071,15 @@ public sealed partial class JsonRpcConnection : IDisposable
     }
 
     /// <summary>
-    /// A buffered inbound notification: the method name plus a detached clone of its parameters.
+    /// A buffered inbound notification: the method name, a detached clone of its parameters, and the
+    /// byte size charged against the notification queue's aggregate byte budget.
     /// </summary>
-    private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters);
+    private readonly record struct NotificationEnvelope(string Method, JsonElement Parameters, int SizeBytes);
 
     /// <summary>
     /// A buffered inbound request: the method name plus detached clones of its id and parameters, so
-    /// the envelope remains valid after the source document is disposed by the read loop.
+    /// the envelope remains valid after the source document is disposed by the read loop, and the byte
+    /// size charged against the request queue's aggregate byte budget.
     /// </summary>
-    private readonly record struct InboundRequestEnvelope(string Method, JsonElement Id, JsonElement Parameters);
+    private readonly record struct InboundRequestEnvelope(string Method, JsonElement Id, JsonElement Parameters, int SizeBytes);
 }
