@@ -9,11 +9,29 @@ namespace Microsoft.CmdPal.Ext.WindowWalker.Pages;
 
 internal sealed partial class WindowWalkerListItem : ListItem
 {
-    public Window? Window { get; }
+    private readonly SwitchToWindowCommand _switchToWindowCommand;
+
+    public Window? Window { get; private set; }
+
+    internal bool NeedsIconLoad => _switchToWindowCommand.NeedsIconLoad;
 
     public WindowWalkerListItem(Window? window)
-        : base(new SwitchToWindowCommand(window))
+        : this(window, new SwitchToWindowCommand(window))
+    {
+    }
+
+    private WindowWalkerListItem(Window? window, SwitchToWindowCommand command)
+        : base(command)
     {
         Window = window;
+        _switchToWindowCommand = command;
     }
+
+    internal void UpdateWindow(Window window)
+    {
+        Window = window;
+        _switchToWindowCommand.UpdateWindow(window);
+    }
+
+    internal void LoadIcon() => _switchToWindowCommand.LoadIcon();
 }
