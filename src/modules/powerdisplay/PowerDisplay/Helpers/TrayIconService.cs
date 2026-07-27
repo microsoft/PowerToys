@@ -38,6 +38,15 @@ namespace PowerDisplay.Helpers
         private const uint MyNotifyId = 1001;
         private const uint WmTrayIcon = PInvoke.WM_USER + 1;
         private const uint WmMouseMove = 0x0200;
+        private const uint WmContextMenu = 0x007B;
+
+        // NOTIFYICON_VERSION_4 notification events. They arrive in the low word of lParam, so they
+        // do not collide with WmTrayIcon even where the numeric values overlap.
+        private const uint NinSelect = PInvoke.WM_USER;
+        private const uint NinKeySelect = PInvoke.WM_USER + 1;
+        private const uint NinPopupOpen = PInvoke.WM_USER + 6;
+        private const uint NinPopupClose = PInvoke.WM_USER + 7;
+        private const uint NotifyIconVersion4 = 4;
         private const long BoundsCacheLifetimeMs = 1000;
         private const uint MaxSampleAgeMs = 500;
         private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
@@ -72,10 +81,12 @@ namespace PowerDisplay.Helpers
         private long _hoverGeneration;
         private bool _desiredTrayIconVisible;
         private bool _isTrayIconRegistered;
+        private bool _trayIconUsesVersion4;
         private bool _registrationFailureLogged;
         private bool _sampleDispatchFailureLogged;
         private bool _boundsFailureLogged;
         private bool _feedbackWindowFailureLogged;
+        private bool _feedbackWindowConstructionFailed;
         private bool _feedbackPresentationFailureLogged;
 
         internal event Action<int>? MouseWheelScrolled;
@@ -84,6 +95,15 @@ namespace PowerDisplay.Helpers
         /// Gets or sets the UI-state gate checked before wheel deltas enter the accumulator.
         /// </summary>
         internal Func<bool>? CanProcessMouseWheel { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether a wheel notch delivered over the icon right now would be
+        /// turned into a brightness change. The hook only arms while this holds, which is what lets
+        /// the hook consume the notch instead of forwarding it to the focused window.
+        /// </summary>
+        private bool IsMouseWheelAdjustmentReady =>
+            _mouseWheelControlMode != MouseWheelControlMode.Disabled &&
+            CanProcessMouseWheel?.Invoke() == true;
 
         public TrayIconService(
             SettingsUtils settingsUtils,
@@ -192,9 +212,15 @@ namespace PowerDisplay.Helpers
                     cbSize = (uint)sizeof(NOTIFYICONDATAW),
                     hWnd = new HWND(_hwnd),
                     uID = MyNotifyId,
-                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON,
+
+                    // NIF_TIP without NIF_SHOWTIP: szTip still names the icon for the overflow
+                    // flyout, the taskbar icon list and UI Automation, but under
+                    // NOTIFYICON_VERSION_4 the Shell suppresses the standard tooltip and sends
+                    // NIN_POPUPOPEN/NIN_POPUPCLOSE instead so we can draw our own hover UI.
+                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                     uCallbackMessage = WmTrayIcon,
                     hIcon = new HICON(_largeIcon),
+                    szTip = GetString("AppName"),
                 };
             }
         }
@@ -231,6 +257,7 @@ namespace PowerDisplay.Helpers
 
             if (added)
             {
+                ApplyNotifyIconVersion(data);
                 CompleteTrayIconRegistration();
                 return;
             }
@@ -253,6 +280,29 @@ namespace PowerDisplay.Helpers
             EnsureMouseWheelListener();
             EnsureTrayIconMenu();
             ScheduleRegistrationCheck(RegistrationHealthInterval);
+        }
+
+        /// <summary>
+        /// Opts the freshly added icon into NOTIFYICON_VERSION_4. That is what suppresses the
+        /// standard Shell tooltip while keeping szTip as the icon's name, and what makes the Shell
+        /// send NIN_POPUPOPEN/NIN_POPUPCLOSE, NIN_SELECT/NIN_KEYSELECT and WM_CONTEXTMENU. The
+        /// callback packing differs between versions, so <see cref="WindowProc"/> decodes according
+        /// to whether this succeeded.
+        /// </summary>
+        private void ApplyNotifyIconVersion(NOTIFYICONDATAW data)
+        {
+            data.Anonymous.uVersion = NotifyIconVersion4;
+            bool applied;
+            unsafe
+            {
+                applied = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_SETVERSION, &data);
+            }
+
+            _trayIconUsesVersion4 = applied;
+            if (!applied)
+            {
+                Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_SETVERSION) failed; falling back to legacy callbacks");
+            }
         }
 
         private void MarkTrayIconRegistrationStale(bool resetBackoff, bool scheduleRecovery)
@@ -422,8 +472,9 @@ namespace PowerDisplay.Helpers
                 ApplyFeedbackPresentation(_feedbackSession.StartHover(now), cached);
                 EnsureFeedbackPollTimer();
 
-                if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+                if (!IsMouseWheelAdjustmentReady)
                 {
+                    _mouseWheelListener?.Disarm();
                     return;
                 }
 
@@ -454,10 +505,11 @@ namespace PowerDisplay.Helpers
             ApplyFeedbackPresentation(_feedbackSession.StartHover(now), bounds);
             EnsureFeedbackPollTimer();
 
-            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            if (!IsMouseWheelAdjustmentReady)
             {
                 _cachedBounds = bounds;
                 _boundsCacheTimestamp = now;
+                _mouseWheelListener?.Disarm();
                 return;
             }
 
@@ -585,7 +637,9 @@ namespace PowerDisplay.Helpers
 
         private void ShowFeedbackOverlay(string text, TrayIconBounds bounds)
         {
-            if (_feedbackWindowFailureLogged && _feedbackWindow is null)
+            // Do not thrash window creation inside one hover session, but do retry on the next one:
+            // with the standard Shell tooltip suppressed this overlay is the only hover affordance.
+            if (_feedbackWindowConstructionFailed && _feedbackWindow is null)
             {
                 return;
             }
@@ -608,6 +662,7 @@ namespace PowerDisplay.Helpers
                 InvalidOperationException)
             {
                 _feedbackWindow?.HideFeedback();
+                _feedbackWindowConstructionFailed = _feedbackWindow is null;
                 if (!_feedbackWindowFailureLogged)
                 {
                     Logger.LogWarning($"[TrayFeedback] Unable to show overlay: {ex.Message}");
@@ -673,6 +728,7 @@ namespace PowerDisplay.Helpers
                 ApplyFeedbackPresentation(
                     _feedbackSession.ShowAdjustment(text, now),
                     _feedbackIconBounds.Value);
+                _feedbackPresentationFailureLogged = false;
             }
             catch (Exception ex) when (
                 ex is COMException or
@@ -698,17 +754,26 @@ namespace PowerDisplay.Helpers
             _feedbackPollTimer?.Stop();
             _feedbackSession.Stop();
             _feedbackIconBounds = null;
+            _feedbackWindowConstructionFailed = false;
             _feedbackWindow?.HideFeedback();
         }
 
         private void DisposeFeedbackWindow()
         {
-            StopHoverFeedback();
-            if (_feedbackWindow is not null)
+            _feedbackPollTimer?.Stop();
+            _feedbackSession.Stop();
+            _feedbackIconBounds = null;
+            _feedbackWindowConstructionFailed = false;
+
+            var window = _feedbackWindow;
+            _feedbackWindow = null;
+            if (window is not null)
             {
-                _feedbackWindow.Dispose();
-                _feedbackWindow.Close();
-                _feedbackWindow = null;
+                // Deliberately not routed through HideFeedback: TransparentWindow.Hide defers its
+                // work to the dispatcher, and that queued callback would then run against a window
+                // this method has already closed.
+                window.Dispose();
+                window.Close();
             }
         }
 
@@ -872,28 +937,9 @@ namespace PowerDisplay.Helpers
                     {
                         MarkTrayIconRegistrationStale(resetBackoff: true, scheduleRecovery: true);
                     }
-                    else if (uMsg == WmTrayIcon && (uint)wParam == MyNotifyId)
+                    else if (uMsg == WmTrayIcon)
                     {
-                        switch ((uint)lParam)
-                        {
-                            case WmMouseMove:
-                                HandleTrayMouseMove();
-                                break;
-                            case PInvoke.WM_RBUTTONUP:
-                                {
-                                    if (_popupMenu != 0)
-                                    {
-                                        GetCursorPos(out var cursorPos);
-                                        SetForegroundWindow(_hwnd);
-                                        TrackPopupMenuExNative(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, cursorPos.X, cursorPos.Y, _hwnd, 0);
-                                    }
-                                }
-
-                                break;
-                            case PInvoke.WM_LBUTTONUP:
-                                _toggleWindowAction?.Invoke();
-                                break;
-                        }
+                        DispatchTrayNotification(wParam, lParam);
                     }
 
                     break;
@@ -901,6 +947,105 @@ namespace PowerDisplay.Helpers
 
             return CallWindowProcIntPtr(_originalWndProc, hwnd, uMsg, wParam, lParam);
         }
+
+        /// <summary>
+        /// Unpacks a notification-icon callback. NOTIFYICON_VERSION_4 packs the event in the low
+        /// word of lParam, the icon id in its high word and the Shell-chosen anchor point in wParam;
+        /// the legacy packing puts the id in wParam and the event in lParam.
+        /// </summary>
+        private void DispatchTrayNotification(nuint wParam, nint lParam)
+        {
+            if (_trayIconUsesVersion4)
+            {
+                var packed = unchecked((uint)lParam);
+                if ((packed >> 16) == MyNotifyId)
+                {
+                    HandleTrayNotification(packed & 0xFFFF, wParam);
+                }
+
+                return;
+            }
+
+            if ((uint)wParam == MyNotifyId)
+            {
+                HandleTrayNotification(unchecked((uint)lParam), 0);
+            }
+        }
+
+        private void HandleTrayNotification(uint notification, nuint anchor)
+        {
+            switch (notification)
+            {
+                case WmMouseMove:
+                case NinPopupOpen:
+                    HandleTrayMouseMove();
+                    break;
+
+                case NinPopupClose:
+                    DismissTrayHover();
+                    break;
+
+                case WmContextMenu:
+                    ShowTrayContextMenu(AnchorX(anchor), AnchorY(anchor));
+                    break;
+
+                case PInvoke.WM_RBUTTONUP:
+                    // Version 4 delivers WM_CONTEXTMENU instead, and still forwards the raw button
+                    // message; handling both would open the menu twice.
+                    if (!_trayIconUsesVersion4 && GetCursorPos(out var cursorPos))
+                    {
+                        ShowTrayContextMenu(cursorPos.X, cursorPos.Y);
+                    }
+
+                    break;
+
+                case NinSelect:
+                case NinKeySelect:
+                    ActivateFromTrayIcon();
+                    break;
+
+                case PInvoke.WM_LBUTTONUP:
+                    // Superseded by NIN_SELECT under version 4, same double-invoke reasoning.
+                    if (!_trayIconUsesVersion4)
+                    {
+                        ActivateFromTrayIcon();
+                    }
+
+                    break;
+            }
+        }
+
+        private void ShowTrayContextMenu(int x, int y)
+        {
+            if (_popupMenu == 0)
+            {
+                return;
+            }
+
+            DismissTrayHover();
+            SetForegroundWindow(_hwnd);
+            TrackPopupMenuExNative(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, x, y, _hwnd, 0);
+        }
+
+        private void ActivateFromTrayIcon()
+        {
+            DismissTrayHover();
+            _toggleWindowAction?.Invoke();
+        }
+
+        /// <summary>
+        /// Tears down the hover presentation the way the Shell tooltip used to disappear on click,
+        /// and drops the armed wheel hover so a stale rectangle cannot outlive the gesture.
+        /// </summary>
+        private void DismissTrayHover()
+        {
+            StopHoverFeedback();
+            InvalidateMouseWheelHover(disarm: true);
+        }
+
+        private static int AnchorX(nuint anchor) => unchecked((short)(uint)anchor);
+
+        private static int AnchorY(nuint anchor) => unchecked((short)((uint)anchor >> 16));
 
         [LibraryImport("user32.dll", EntryPoint = "CallWindowProcW")]
         private static partial nint CallWindowProcIntPtr(IntPtr lpPrevWndFunc, nint hWnd, uint msg, nuint wParam, nint lParam);

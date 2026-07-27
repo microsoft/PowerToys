@@ -26,6 +26,10 @@ namespace PowerDisplay.Helpers
         private const uint PmNoRemove = 0;
         private const int MaxQueuedSamples = 32;
 
+        // Non-zero LRESULT from a WH_MOUSE_LL proc blocks the message for the rest of the hook
+        // chain and for the target window.
+        private const nint HookHandled = 1;
+
         private readonly Action<TrayWheelSample[]> _sampleBatchHandler;
         private readonly Action<long> _disarmedHandler;
         private readonly ManualResetEventSlim _ready = new();
@@ -319,6 +323,16 @@ namespace PowerDisplay.Helpers
                             !PostThreadMessageNative(_threadId, WmDrainSamples, 0, 0))
                         {
                             Interlocked.Exchange(ref _drainSamplesPosted, 0);
+                        }
+
+                        if (_activeBounds.Contains(data.Point.X, data.Point.Y))
+                        {
+                            // Consume the notch. Arming already required the UI thread to confirm
+                            // that it will turn this into a brightness change, so forwarding it as
+                            // well would scroll the focused window at the same time. Out-of-bounds
+                            // samples are still queued so the UI thread can retire the hover, but
+                            // they are not ours to swallow.
+                            return HookHandled;
                         }
                     }
                 }
