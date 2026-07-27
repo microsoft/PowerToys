@@ -94,6 +94,9 @@ public static class WindowControl
     /// </summary>
     public readonly record struct ProcessWindow(IntPtr Hwnd, int ProcessId, string ClassName, string Title, int Width, int Height, bool IsVisible);
 
+    /// <summary>Diagnostic details for the current foreground window.</summary>
+    public readonly record struct ForegroundWindowInfo(IntPtr Hwnd, int ProcessId, string ProcessName, string ClassName, string Title, bool? IsElevated);
+
     /// <summary>
     /// Enumerate the top-level windows owned by any process in <paramref name="processIds"/> using the
     /// pure Win32 <c>EnumWindows</c> API. Unlike winappcli's UI-Automation-backed <c>list-windows</c>,
@@ -322,6 +325,64 @@ public static class WindowControl
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
 
+    /// <summary>Return process, class, title, and elevation details for the current foreground HWND.</summary>
+    public static ForegroundWindowInfo GetForegroundWindowInfo()
+    {
+        var hwnd = GetForegroundWindow();
+        if (hwnd == IntPtr.Zero)
+        {
+            return new ForegroundWindowInfo(IntPtr.Zero, 0, string.Empty, string.Empty, string.Empty, null);
+        }
+
+        var foregroundThreadId = GetWindowThreadProcessId(hwnd, out var processId);
+        if (foregroundThreadId == 0)
+        {
+            processId = 0;
+        }
+
+        var processName = string.Empty;
+        if (processId != 0)
+        {
+            try
+            {
+                using var process = Process.GetProcessById((int)processId);
+                processName = process.ProcessName;
+            }
+            catch
+            {
+            }
+        }
+
+        return new ForegroundWindowInfo(
+            hwnd,
+            (int)processId,
+            processName,
+            GetWindowClassName(hwnd),
+            GetWindowTitle(hwnd),
+            processId == 0 ? null : ElevationHelper.IsProcessElevated((int)processId));
+    }
+
+    /// <summary>Bring an HWND forward until it owns foreground for the requested consecutive samples.</summary>
+    public static bool WaitForForeground(
+        IntPtr hwnd,
+        int timeoutMS = 5_000,
+        int requiredConsecutiveMatches = 1,
+        int pollIntervalMS = 100)
+    {
+        if (hwnd == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        return WaitHelper.WaitForStable(
+            observe: GetForegroundWindow,
+            isMatch: foreground => foreground == hwnd,
+            timeoutMS: timeoutMS,
+            requiredConsecutiveMatches: requiredConsecutiveMatches,
+            pollIntervalMS: pollIntervalMS,
+            recover: _ => TryBringToForeground(hwnd)).Succeeded;
+    }
+
     public static bool TryFocusByApp(string appNameOrPid)
     {
         try
@@ -432,6 +493,79 @@ public static class WindowControl
         catch
         {
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Force-terminate every exact-name process tree and wait until no matching process remains.
+    /// Unlike <see cref="TryKillProcessByName"/>, this also treats an already-absent process as success.
+    /// </summary>
+    public static bool TryKillProcessTreeByNameAndWait(string exactProcessName, int timeoutMS = 10_000)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(exactProcessName);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(timeoutMS);
+
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (DateTime.UtcNow < deadline)
+        {
+            var processes = Process.GetProcessesByName(exactProcessName);
+            if (processes.Length == 0)
+            {
+                return true;
+            }
+
+            try
+            {
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        var remainingMS = Math.Max(0, (int)(deadline - DateTime.UtcNow).TotalMilliseconds);
+                        if (!process.WaitForExit(remainingMS))
+                        {
+                            return false;
+                        }
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var process in processes)
+                {
+                    process.Dispose();
+                }
+            }
+        }
+
+        var remainingProcesses = Process.GetProcessesByName(exactProcessName);
+        try
+        {
+            return remainingProcesses.Length == 0;
+        }
+        finally
+        {
+            foreach (var process in remainingProcesses)
+            {
+                process.Dispose();
+            }
         }
     }
 

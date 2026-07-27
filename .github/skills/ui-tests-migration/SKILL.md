@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate PowerToys module UI tests from the legacy WinAppDriver/Selenium harness (Microsoft.PowerToys.UITest) to the new winappcli-based harness (Microsoft.PowerToys.UITest.Next). Use when asked to port/convert/rewrite/modernize a module's UI tests to the .Next framework, create a new [Module].UITests.Next project alongside existing legacy tests, or stand up brand-new winappcli UI tests for a module that has none by reading its human test sign-off markdown. Covers the API mapping (By/Element/Session/UITestBase, KeyboardHelper/MouseHelper/ClipboardHelper), project/csproj scaffolding, naming rules, common PowerToys test recipes (toggle a module, read an activation shortcut, fire a global hotkey, inspect the clipboard, discover overlay/editor windows), build/run validation, and CI-stability hardening for fewer CI iterations. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, migrate, port, modernize, .Next, MSTest, CI stability, flaky test, stabilize on CI."
+description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, Explorer/Shell selection, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, migrate, port, modernize, flaky, CI stability, Explorer, Shell, WebView2, visual regression."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -48,6 +48,10 @@ module, which tests) comes from the calling prompt.
 >   `Session.FromProcess`, a DPI-aware `app.manifest`, cursor centering, and patient hotkey
 >   activation are all there because real runs needed them (see
 >   [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)).
+> - **Stateful/visual reference (validated 15/15 across Win10 x64, Win11 x64, and ARM64)**:
+>   [PeekFilePreviewTests.cs](../../../src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs)
+>   demonstrates stable Explorer Shell selection, toggle-hotkey activation, process-preserving
+>   pinning tests, renderer readiness, and composed WinUI/WebView visual baselines.
 
 ## Required reads (in order)
 
@@ -71,11 +75,10 @@ module, which tests) comes from the calling prompt.
    shortcut from a `ShortcutControl`, fire a global hotkey reliably, inspect the clipboard, discover
    overlay/editor windows) and the gotchas that bite during migration.
 7. **[references/ci-stability.md](references/ci-stability.md)** — the CI-stability capstone: the
-   Win32-window vs UIA-element mental model, five design principles that keep a port green on a slow
-   CI agent (authoritative-signal retries over fixed sleeps, invoke-vs-physical-click, screen-capture
-   cold-start, toggle-state guards, on-screen/DPI/clean-profile hygiene), and a **pre-flight
-   checklist** to apply BEFORE the first CI push so the first run *validates* instead of *discovers*.
-   Read this to spend one CI iteration instead of six.
+  Win32-window vs UIA-element mental model, state-boundary worksheet, stable-sample waits, retry
+  semantics, foreground/integrity constraints, process lifecycle, composed visual capture, and a
+  **pre-flight checklist** to apply BEFORE the first CI push so the first run *validates* instead of
+  *discovers*. Read this to spend one CI iteration instead of six.
 
 ## Pick your scenario
 
@@ -114,6 +117,8 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 - [ ] 3. Inventory the source:
         • Scenario A → list every [TestMethod] + shared helper in the legacy project
         • Scenario B → read the module's sign-off .md; list each manual checklist item
+  • For each workflow → list every external boundary (runner, Explorer, HWND, renderer,
+    compositor, child process) and its authoritative ready signal
         — references/porting-workflow.md
 - [ ] 4. Internalize the deltas — references/framework-differences.md
 - [ ] 5. Scaffold the new project (csproj from template, name per the table, register in .slnx)
@@ -121,9 +126,8 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 - [ ] 6. Re-implement tests, mapping each API as you go — references/api-mapping.md
         + recipes from references/patterns-and-pitfalls.md
 - [ ] 7. Apply the CI-stability checklist BEFORE building — references/ci-stability.md
-        (authoritative-signal retries not fixed sleeps, navigation via UIA invoke, Win32 window/overlay
-        detection, screen-capture cold-start handling, DPI manifest, single-module enable, first-run
-        suppression)
+  (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
+  scope, composed capture, DPI manifest, single-module enable, first-run suppression)
 - [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
 - [ ] 9. (If a live desktop is available) run the tests; otherwise report that they build and are
         ready to run, and summarize coverage vs. the source
@@ -202,7 +206,13 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
   (or skip with an explanation) rather than asserting on something you can't actually read.
 - **Do NOT introduce new third-party NuGet dependencies.** The `.Next` harness is intentionally
   dependency-free (MSTest only). Use the Win32-based helpers it already ships.
+- **Do NOT retry a toggle hotkey blindly.** Once any target window appears, wait for initialization;
+  resending the chord may close a healthy window. Restart only after a terminal readiness failure.
+- **Do NOT replace or weaken visual baselines before proving capture is correct.** Foreground HWND,
+  DWM z-order, composed WebView content, theme, and platform are separate failure sources.
 
 ## What is NICE to do
 
-- **Improve the new UT Test framework if you see such opportunity**. The new framework works only with a few modules and may lack something other requires. If you see the old test uses something that we don't have in a new framework and it's handy, don't hesiate to port it to a new one. Or you may see the test uses a bunch of extra helpers ouside of test framework, which also may be a signal.
+- **Improve the framework when a helper is demonstrably reusable.** Prefer small composable APIs
+  (`WaitHelper`, `WindowControl`, `ExplorerShell`) over module-specific mega-helpers. Keep product
+  semantics such as Peek pin-state preservation in the module test.

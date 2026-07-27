@@ -111,6 +111,7 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | — | `Inspect(depth, interactive, …)` → `JsonElement` | `winapp ui inspect --json` tree (the ColorPicker editor walk). |
 | — | `WaitForElement(by, t)`, `WaitFor(Func<bool>, t)` | Built-in waits. |
 | — | `Screenshot(path, element?, captureScreen?)` / `TryScreenshot(...)` | |
+| — | `ScreenshotVisibleWindow(path)` | Captures composed WinUI/WebView content from DWM-visible desktop pixels; requires a window-scoped foreground session. |
 
 ### `MouseActionType` → `MouseHelper`
 
@@ -135,6 +136,11 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | Clear clipboard | `ClipboardHelper.Clear()` |
 | Set clipboard | `ClipboardHelper.SetText("v")` |
 | Wait for clipboard to change | `ClipboardHelper.WaitForText(ignoredValue, timeoutMS)` |
+| Wait for consecutive stable observations | `WaitHelper.WaitForStable(observe, isMatch, timeoutMS, requiredConsecutiveMatches, …)` |
+| Wait for exact HWND foreground | `WindowControl.WaitForForeground(hwnd, timeoutMS, stableSamples)` |
+| Diagnose current foreground owner | `WindowControl.GetForegroundWindowInfo()` |
+| Stop an exact process tree and await exit | `WindowControl.TryKillProcessTreeByNameAndWait(name, timeoutMS)` |
+| Set/read exact Explorer Shell selection | `ExplorerShell.SetSelectionAndWaitForStable(...)` / `TryGetSelection(hwnd)` |
 | Seed module on/off baseline | `SettingsConfigHelper.ConfigureGlobalModuleSettings("ColorPicker", …)` |
 | Edit a module's own settings.json | `SettingsConfigHelper.UpdateModuleSettings(name, default, json => {…})` |
 

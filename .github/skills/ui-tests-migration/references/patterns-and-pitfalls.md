@@ -315,6 +315,55 @@ string result = MeasureWithRetry(() => { MouseHelper.MoveTo(cx, cy); MouseHelper
 > Each test spawns its own module process = its own capture session = its own cold-start; there is no
 > cross-test warming, so every capture test must tolerate the first-frame delay on its own.
 
+## Recipe 13 — Establish exact File Explorer selection
+
+Do not use UIA child discovery or timing-sensitive `Shift+Arrow` input for Explorer selection. The
+Shell view is the authority consumed by Peek and similar file-driven tools:
+
+```csharp
+var result = ExplorerShell.SetSelectionAndWaitForStable(
+    new IntPtr(explorerWindow.WindowHandle),
+    selectedPaths: new[] { firstPath, secondPath, focusedPath },
+    focusedPath,
+    timeoutMS: 30_000,
+    requiredConsecutiveMatches: 4);
+
+Assert.IsTrue(result.Succeeded,
+    $"Explorer selection did not settle. Last focus: {result.LastObservation?.FocusedPath ?? "<none>"}");
+```
+
+The helper normalizes paths, sets exact selection/focus through Shell COM, retries exact foreground
+ownership, and requires consecutive matching snapshots. The focused item matters: multi-select tools
+often open item zero/current, not an arbitrary member of the selected set.
+
+## Recipe 14 — Preserve or reset module process state intentionally
+
+Write a lifecycle matrix before implementing cleanup:
+
+| Scenario | Close window | Preserve process | Kill tree and wait |
+|---|---:|---:|---:|
+| Validate state retained in-process | yes | yes | no |
+| Explicitly reset/unpin/reopen | yes | no | yes |
+| Renderer terminal failure | best effort | no | yes |
+
+Use `WindowControl.TryKillProcessTreeByNameAndWait(exactName)` when a fresh process is required. It
+waits for the parent and children (for example WebView2) to exit before the next activation. Do not
+use it in scenarios whose assertion depends on in-process state.
+
+## Recipe 15 — Validate composed WinUI/WebView visuals
+
+Expose a product-owned ready signal first, then compare visible pixels:
+
+```csharp
+var state = window.Find<Element>(By.AccessibilityId("PreviewStateAutomationPeer"), 15_000);
+Assert.IsTrue(state.WaitForValue("Loaded", timeoutMS: 60_000));
+VisualAssert.AreEqual(TestContext, window, scenarioSubname: "image");
+```
+
+`VisualAssert` uses `ScreenshotVisibleWindow`, DWM frame bounds, exact foreground ownership, and
+bounded retries. Keep platform-specific embedded baselines. If a correctly rendered video disagrees
+with a screenshot, diagnose capture/z-order before touching the baseline or 95% threshold.
+
 ---
 
 ## Pitfalls
@@ -408,3 +457,20 @@ string result = MeasureWithRetry(() => { MouseHelper.MoveTo(cx, cy); MouseHelper
     interaction: activate a `NavigationViewItem` with `By.AccessibilityId(...).Click()` (the harness
     routes it to a coordinate-free UIA invoke), not a raw `MouseHelper`/`MouseClick`. See
     [ci-stability.md](ci-stability.md) Principle 2.
+20. **A condition observed once may be transient.** Deferred Explorer chrome, focus changes, and DWM
+    composition can invalidate an apparently ready state. Use `WaitHelper.WaitForStable` for exact
+    foreground/selection/bounds state and require consecutive samples.
+21. **Blind retries can undo success.** Activation hotkeys and pin buttons toggle. Once any target
+    HWND exists, stop resending and wait for initialization. Retry the whole activation only after a
+    bounded terminal failure and explicit process reset.
+22. **Window close is not process reset.** A hidden module process may ignore later show events, while
+    a pinned process may intentionally hold geometry. Choose preserve vs.
+    `TryKillProcessTreeByNameAndWait` per scenario (Recipe 14).
+23. **Foreground activation is best-effort across integrity levels.** An elevated visible helper
+    console can permanently block a non-elevated target. Log `GetForegroundWindowInfo()` and fix the
+    environment (for example launch shared WinAppDriver hidden), rather than adding infinite retries.
+24. **Explorer UIA is not the Shell selection authority.** Title readiness and visible file rows do
+    not prove the exact selected set or focused item. Use `ExplorerShell` (Recipe 13).
+25. **`PrintWindow` is not a composed-content oracle.** WinUI/WebView2 can render correctly on video
+    while `PrintWindow` is blank or incomplete. Use visible DWM capture and verify z-order before
+    changing valid baselines (Recipe 15).
