@@ -16,10 +16,11 @@
     }
   },
   "bin": {
-    "cmdpal-bootstrap": "./dist/runtime/bootstrap.js"
+    "cmdpal-bootstrap": "./bin/cmdpal-bootstrap.mjs"
   },
   "files": [
     "dist",
+    "bin",
     "README.md"
   ],
   "publishConfig": {
@@ -36,8 +37,9 @@
     "pretest": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "verify:pack": "node scripts/verify-pack.mjs",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build && npm run verify:pack"
   },
   "keywords": [
     "powertoys",

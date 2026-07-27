@@ -196,3 +196,127 @@ describe('bounded command registry eviction', () => {
     expect((await invoke('fb-1'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
   });
 });
+
+describe('recursive scope retirement', () => {
+  it('recursively retires child-page command scopes when the owner page is retired', async () => {
+    const childPage: IListPage = {
+      id: 'child',
+      name: 'Child',
+      title: 'Child',
+      getItems(): IListItem[] {
+        return [item('grandchild-cmd')];
+      },
+    };
+    const parentPage: IListPage = {
+      id: 'parent',
+      name: 'Parent',
+      title: 'Parent',
+      getItems(): IListItem[] {
+        return [{ command: childPage, title: 'Child' }];
+      },
+    };
+    let generation = 0;
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands() {
+        generation += 1;
+        // The parent page is present on the first refresh and gone afterwards.
+        return generation === 1 ? [{ command: parentPage, title: 'Parent' }] : [];
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(provider);
+
+    let messageId = 0;
+    const request = async (method: string, params?: Record<string, unknown>): Promise<void> => {
+      messageId += 1;
+      await runtime.handleRequest({ jsonrpc: JSONRPC_VERSION, id: messageId, method, params });
+    };
+    const invoke = async (commandId: string): Promise<JsonRpcResponse | undefined> => {
+      messageId += 1;
+      const thisId = messageId;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: thisId,
+        method: 'command/invoke',
+        params: { commandId },
+      });
+      return responseFor(sent, thisId);
+    };
+
+    // Register the parent page, then walk two levels deep so the grandchild
+    // command lands in the child page's scope.
+    await request('provider/getTopLevelCommands');
+    await request('listPage/getItems', { pageId: 'parent' });
+    await request('listPage/getItems', { pageId: 'child' });
+    expect((await invoke('grandchild-cmd'))?.result).toEqual({ Kind: 4 });
+
+    // Refreshing top-level retires the parent page, which must recursively
+    // retire the child page scope and the grandchild command nested inside it.
+    await request('provider/getTopLevelCommands');
+    expect((await invoke('grandchild-cmd'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
+  });
+
+  it('retires nested result commands when the command that produced them is retired', async () => {
+    const nested: IInvokableCommand = {
+      id: 'nested-primary',
+      name: 'Nested primary',
+      invoke(): CommandResult {
+        return { kind: 'keepOpen' };
+      },
+    };
+    const opener: IInvokableCommand = {
+      id: 'opener',
+      name: 'Opener',
+      invoke(): CommandResult {
+        return {
+          kind: 'confirm',
+          args: { title: 'Confirm', description: 'Proceed?', primaryCommand: nested },
+        };
+      },
+    };
+    let generation = 0;
+    const provider: ICommandProvider = {
+      id: 'ext',
+      displayName: 'Ext',
+      topLevelCommands() {
+        generation += 1;
+        return generation === 1 ? [{ command: opener, title: 'Opener' }] : [];
+      },
+    };
+    const { runtime, sent } = createHarness();
+    runtime.setProvider(provider);
+
+    let messageId = 0;
+    const getTopLevel = async (): Promise<void> => {
+      messageId += 1;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: messageId,
+        method: 'provider/getTopLevelCommands',
+      });
+    };
+    const invoke = async (commandId: string): Promise<JsonRpcResponse | undefined> => {
+      messageId += 1;
+      const thisId = messageId;
+      await runtime.handleRequest({
+        jsonrpc: JSONRPC_VERSION,
+        id: thisId,
+        method: 'command/invoke',
+        params: { commandId },
+      });
+      return responseFor(sent, thisId);
+    };
+
+    // Invoking the opener registers its confirm dialog's primary command, which
+    // is then invocable on its own.
+    await getTopLevel();
+    await invoke('opener');
+    expect((await invoke('nested-primary'))?.result).toEqual({ Kind: 4 });
+
+    // Retiring the opener across a refresh must retire the nested command too.
+    await getTopLevel();
+    expect((await invoke('nested-primary'))?.error?.code).toBe(JsonRpcErrorCode.MethodNotFound);
+  });
+});
