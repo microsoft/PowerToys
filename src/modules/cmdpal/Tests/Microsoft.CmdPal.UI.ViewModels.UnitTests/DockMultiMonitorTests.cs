@@ -774,6 +774,150 @@ public class DockMultiMonitorTests
         Assert.IsTrue(result[1].IsCustomized, "Customization flag should survive migration");
     }
 
+    [TestMethod]
+    public void Reconciler_RenumberedLegacyEnabledSecondary_CopiesAndRetainsOriginal()
+    {
+        var customBands = ImmutableList.Create(new DockBandSettings { ProviderId = "custom", CommandId = "command" });
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = false, IsPrimary = true, IsCustomized = true },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY2", Enabled = false, IsPrimary = false, IsCustomized = true },
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = @"\\.\DISPLAY3",
+                Enabled = true,
+                IsPrimary = false,
+                IsCustomized = true,
+                Side = DockSide.Left,
+                StartBands = customBands,
+            });
+
+        var result = MonitorConfigReconciler.Reconcile(configs, new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor });
+
+        var migrated = result.Find(config =>
+            string.Equals(config.MonitorDeviceId, SecondaryMonitor.StableId, StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(migrated);
+        Assert.IsTrue(migrated.Enabled);
+        Assert.AreEqual(DockSide.Left, migrated.Side);
+        Assert.AreEqual("command", migrated.StartBands![0].CommandId);
+        Assert.AreEqual(3, result.Count);
+        Assert.IsFalse(result.Exists(config => config.MonitorDeviceId == @"\\.\DISPLAY2"));
+
+        var retained = result.Find(config => config.MonitorDeviceId == @"\\.\DISPLAY3");
+        Assert.IsNotNull(retained);
+        Assert.IsTrue(retained.Enabled);
+        Assert.AreEqual(DockSide.Left, retained.Side);
+        Assert.AreEqual("command", retained.StartBands![0].CommandId);
+    }
+
+    [TestMethod]
+    public void Reconciler_RenumberedLegacyEnabledSecondary_DoesNotGuessBetweenMonitors()
+    {
+        var otherSecondary = SecondaryMonitor with
+        {
+            DeviceId = @"\\.\DISPLAY4",
+            StableId = @"\\?\DISPLAY#OTHER9012#4&ccc&0&UID333#{guid3}",
+            DisplayName = "Display 4",
+            Bounds = new ScreenRect(3840, 0, 5760, 1080),
+            WorkArea = new ScreenRect(3840, 0, 5760, 1040),
+        };
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = false, IsPrimary = true },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY2", Enabled = false, IsPrimary = false },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY3", Enabled = true, IsPrimary = false });
+
+        var result = MonitorConfigReconciler.Reconcile(
+            configs,
+            new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor, otherSecondary });
+
+        Assert.IsFalse(result.Find(config =>
+            string.Equals(config.MonitorDeviceId, SecondaryMonitor.StableId, StringComparison.OrdinalIgnoreCase))!.Enabled);
+        Assert.IsFalse(result.Find(config =>
+            string.Equals(config.MonitorDeviceId, otherSecondary.StableId, StringComparison.OrdinalIgnoreCase))!.Enabled);
+        Assert.IsTrue(result.Exists(config => config.MonitorDeviceId == @"\\.\DISPLAY3" && config.Enabled));
+    }
+
+    [TestMethod]
+    public void Reconciler_RenumberedLegacyEnabledSecondary_PreservesCustomizedDirectMatch()
+    {
+        var customBands = ImmutableList.Create(new DockBandSettings { ProviderId = "custom", CommandId = "command" });
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = false, IsPrimary = true },
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = @"\\.\DISPLAY2",
+                Enabled = false,
+                IsPrimary = false,
+                IsCustomized = true,
+                StartBands = customBands,
+                CenterBands = ImmutableList<DockBandSettings>.Empty,
+                EndBands = ImmutableList<DockBandSettings>.Empty,
+            },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY3", Enabled = true, IsPrimary = false });
+
+        var result = MonitorConfigReconciler.Reconcile(configs, new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor });
+
+        var directMatch = result.Find(config =>
+            string.Equals(config.MonitorDeviceId, SecondaryMonitor.StableId, StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(directMatch);
+        Assert.IsFalse(directMatch.Enabled);
+        Assert.AreEqual("command", directMatch.StartBands![0].CommandId);
+        Assert.IsTrue(result.Exists(config => config.MonitorDeviceId == @"\\.\DISPLAY3" && config.Enabled));
+    }
+
+    [TestMethod]
+    public void Reconciler_FallbackMonitorIds_DoNotReplacePersistedStableIds()
+    {
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = false, IsPrimary = true },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true, IsPrimary = false });
+        var fallbackMonitors = new List<MonitorInfo>
+        {
+            PrimaryMonitor with { StableId = PrimaryMonitor.DeviceId },
+            SecondaryMonitor with { StableId = SecondaryMonitor.DeviceId },
+        };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, fallbackMonitors);
+
+        Assert.AreSame(configs, result);
+    }
+
+    [TestMethod]
+    public void Reconciler_PartialFallback_ReconcilesResolvedMonitor()
+    {
+        var now = DateTime.UtcNow;
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = false, IsPrimary = true },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.StableId, Enabled = true, IsPrimary = false });
+        var monitors = new List<MonitorInfo>
+        {
+            PrimaryMonitor,
+            SecondaryMonitor with { StableId = SecondaryMonitor.DeviceId },
+        };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors, now);
+
+        Assert.AreEqual(now, result[0].LastSeen);
+        Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId);
+        Assert.AreEqual(SecondaryMonitor.StableId, result[1].MonitorDeviceId);
+        Assert.IsTrue(result[1].Enabled);
+    }
+
+    [TestMethod]
+    public void Reconciler_UnambiguousFallbackMonitor_CreatesDefaultConfig()
+    {
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.StableId, Enabled = true, IsPrimary = true });
+        var fallbackSecondary = SecondaryMonitor with { StableId = SecondaryMonitor.DeviceId };
+
+        var result = MonitorConfigReconciler.Reconcile(
+            configs,
+            new List<MonitorInfo> { PrimaryMonitor, fallbackSecondary });
+
+        var fallbackConfig = result.Find(config => config.MonitorDeviceId == SecondaryMonitor.DeviceId);
+        Assert.IsNotNull(fallbackConfig);
+        Assert.IsFalse(fallbackConfig.Enabled);
+    }
+
     private static SettingsModel CreateSettingsModelWithConfigs(params DockMonitorConfig[] configs)
     {
         var dockSettings = CreateMinimalDockSettings() with

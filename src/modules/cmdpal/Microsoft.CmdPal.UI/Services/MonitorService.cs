@@ -38,8 +38,18 @@ public sealed class MonitorService : IMonitorService
             }
 
             _cachedMonitors = EnumerateMonitors();
-            _cachedSnapshot = _cachedMonitors.AsReadOnly();
-            return _cachedSnapshot;
+            if (_cachedMonitors.Count == 0 || HasFallbackIds(_cachedMonitors))
+            {
+                _cachedMonitors = EnumerateMonitors();
+            }
+
+            var snapshot = _cachedMonitors.AsReadOnly();
+            if (_cachedMonitors.Count > 0)
+            {
+                _cachedSnapshot = snapshot;
+            }
+
+            return snapshot;
         }
     }
 
@@ -195,15 +205,13 @@ public sealed class MonitorService : IMonitorService
 
             var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
             var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
-            var topologyId = default(DISPLAYCONFIG_TOPOLOGY_ID);
 
             result = PInvoke.QueryDisplayConfig(
                 QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
                 ref pathCount,
                 paths,
                 ref modeCount,
-                modes,
-                ref topologyId);
+                modes);
             if (result != WIN32_ERROR.NO_ERROR)
             {
                 return map;
@@ -285,4 +293,7 @@ public sealed class MonitorService : IMonitorService
 
         return name;
     }
+
+    private static bool HasFallbackIds(List<MonitorInfo> monitors) =>
+        monitors.Exists(monitor => string.Equals(monitor.StableId, monitor.DeviceId, StringComparison.OrdinalIgnoreCase));
 }
