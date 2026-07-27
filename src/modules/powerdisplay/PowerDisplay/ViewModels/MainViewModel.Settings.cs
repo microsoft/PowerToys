@@ -584,16 +584,17 @@ public partial class MainViewModel
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
-            // Prune monitor_state.json against what this reconciliation actually dropped (the
-            // Rebuild input minus its output), never against what the rebuilt list happens to
-            // contain. The settings read above cannot report that it fell back to defaults: a
-            // missing or corrupt settings.json makes GetSettingsOrDefault persist and return an
-            // empty monitor list, so pruning by absence would delete the saved state of every
-            // monitor that is not connected at that instant.
+            // Collect the known-good VCP cache of the monitors this reconciliation actually dropped
+            // (the Rebuild input minus its output), never of the ones merely absent from the rebuilt
+            // list. The settings read above cannot report that it fell back to defaults: a missing or
+            // corrupt settings.json makes GetSettingsOrDefault persist and return an empty monitor
+            // list, so collecting by absence would discard the cache of every monitor that is not
+            // connected at that instant. Saved user values are never removed — only the discovery
+            // cache this feature introduced.
             var droppedStateIds = MonitorStateRetentionPlanner.BuildDroppedIds(
                 retentionInput.Select(monitor => monitor.Id),
                 monitors.Select(monitor => monitor.Id));
-            _stateManager.RemoveMonitorStates(droppedStateIds);
+            _stateManager.RemoveKnownGoodFeatures(droppedStateIds);
 
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();

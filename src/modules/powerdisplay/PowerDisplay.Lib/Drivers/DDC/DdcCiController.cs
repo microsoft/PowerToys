@@ -32,12 +32,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class DdcCiController : IMonitorController, IDisposable
     {
-        /// <summary>
-        /// How long a persisted known-good VCP observation may stand in for a live read before it
-        /// has to be re-proven. Matches the monitor-entry retention window used for settings.
-        /// </summary>
-        private static readonly TimeSpan KnownGoodFeatureMaxAge = TimeSpan.FromDays(30);
-
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly IKnownGoodVcpStore _knownGoodStore;
         private readonly ISystemClock _clock;
@@ -440,7 +434,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             var cached = MaxCompatibilityMode
-                ? FreshKnownGoodFeatures(monitorId)
+                ? _knownGoodStore.GetKnownGoodFeatures(monitorId)
                 : new Dictionary<byte, KnownGoodVcpFeature>();
 
             var evidence = VcpDiscoveryEvidence.Reconcile(
@@ -483,43 +477,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return evidence;
-        }
-
-        /// <summary>
-        /// Reads the persisted known-good observations for a monitor, dropping any that have not
-        /// been re-proven within <see cref="KnownGoodFeatureMaxAge"/>.
-        /// </summary>
-        /// <remarks>
-        /// Cache evidence can advertise a VCP code that the capabilities string omits, and nothing
-        /// later in discovery can contradict it, so the entry must age out on its own. Every
-        /// successful read — probe or capabilities initialization — restamps the entry, so a
-        /// feature that still works never expires.
-        /// </remarks>
-        private IReadOnlyDictionary<byte, KnownGoodVcpFeature> FreshKnownGoodFeatures(string monitorId)
-        {
-            var stored = _knownGoodStore.GetKnownGoodFeatures(monitorId);
-            if (stored.Count == 0)
-            {
-                return stored;
-            }
-
-            var now = _clock.UtcNow;
-            var fresh = new Dictionary<byte, KnownGoodVcpFeature>(stored.Count);
-            foreach (var entry in stored)
-            {
-                if (entry.Value.IsFresh(now, KnownGoodFeatureMaxAge))
-                {
-                    fresh[entry.Key] = entry.Value;
-                }
-                else
-                {
-                    Logger.LogInfo(
-                        $"DDC: [max-compat] [{monitorId}] discarding stale known-good VCP 0x{entry.Key:X2} " +
-                        $"(lastSuccessful={entry.Value.LastSuccessfulUtc:o})");
-                }
-            }
-
-            return fresh;
         }
 
         /// <summary>

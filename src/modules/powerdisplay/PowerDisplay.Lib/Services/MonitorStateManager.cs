@@ -193,22 +193,36 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Removes the complete persisted monitor state entry for each exact DevicePath monitor Id in
-        /// <paramref name="monitorIds"/>. Removing an entry clears its saved brightness, contrast, volume,
-        /// color temperature, capabilities, and known-good VCP cache. Legacy entries are never removed
-        /// here; <see cref="MigrateLegacyKeys"/> either migrates or explicitly drops them.
+        /// Clears the cached known-good VCP observations for each exact DevicePath monitor Id in
+        /// <paramref name="monitorIds"/>, leaving the user's saved brightness, contrast, volume, color
+        /// temperature and capabilities untouched.
         /// </summary>
+        /// <remarks>
+        /// The known-good cache is discovery state owned by maximum-compatibility mode, so it is
+        /// collected once settings stops referencing a monitor. Saved user values are not: monitor state
+        /// entries were never removed before this cache existed, and a display that returns after a long
+        /// absence should still come back with the brightness the user chose. Legacy entries are never
+        /// touched here; <see cref="MigrateLegacyKeys"/> either migrates or explicitly drops them.
+        /// </remarks>
         /// <param name="monitorIds">The exact DevicePath monitor Ids that settings no longer references.</param>
-        public void RemoveMonitorStates(IEnumerable<string> monitorIds)
+        public void RemoveKnownGoodFeatures(IEnumerable<string> monitorIds)
         {
             ArgumentNullException.ThrowIfNull(monitorIds);
             var removed = false;
 
             foreach (var monitorId in monitorIds)
             {
-                if (!string.IsNullOrEmpty(monitorId) && !MonitorIdentity.IsLegacyId(monitorId))
+                if (string.IsNullOrEmpty(monitorId) ||
+                    MonitorIdentity.IsLegacyId(monitorId) ||
+                    !_states.TryGetValue(monitorId, out var state))
                 {
-                    removed |= _states.TryRemove(monitorId, out _);
+                    continue;
+                }
+
+                lock (state)
+                {
+                    removed |= state.KnownGoodVcpFeatures.Count > 0;
+                    state.KnownGoodVcpFeatures.Clear();
                 }
             }
 

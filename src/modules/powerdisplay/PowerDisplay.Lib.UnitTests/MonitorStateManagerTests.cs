@@ -90,7 +90,7 @@ public sealed class MonitorStateManagerTests
         {
             manager.UpdateMonitorParameter(canonicalId, "Brightness", 35);
             manager.UpsertKnownGoodFeature(controllerCacheKey, Feature(0x10, current: 35));
-            manager.RemoveMonitorStates(new[] { rawDevicePath });
+            manager.RemoveKnownGoodFeatures(new[] { rawDevicePath });
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
@@ -141,7 +141,7 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RemoveMonitorStates_RemovesEntireDroppedMonitorEntry()
+    public void RemoveKnownGoodFeatures_ClearsCacheButKeepsSavedUserValues()
     {
         using (var manager = new MonitorStateManager(_statePath))
         {
@@ -150,45 +150,49 @@ public sealed class MonitorStateManagerTests
             manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
             manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
 
-            manager.RemoveMonitorStates(new[] { MonitorB });
+            manager.RemoveKnownGoodFeatures(new[] { MonitorB });
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
         {
             var monitors = document.RootElement.GetProperty("monitors");
             Assert.IsTrue(monitors.TryGetProperty(MonitorA, out _));
-            Assert.IsFalse(monitors.TryGetProperty(MonitorB, out _));
+
+            // The entry itself survives: only the discovery cache this feature owns is collected.
+            Assert.IsTrue(monitors.TryGetProperty(MonitorB, out _));
         }
 
         using var reloaded = new MonitorStateManager(_statePath);
         Assert.AreEqual(25, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
-        Assert.IsNull(reloaded.GetMonitorParameters(MonitorB));
+        Assert.AreEqual(80, reloaded.GetMonitorParameters(MonitorB)?.Contrast);
         Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
         Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorB).Count);
     }
 
     [TestMethod]
-    public void RemoveMonitorStates_MatchesIdsCaseInsensitively()
+    public void RemoveKnownGoodFeatures_MatchesIdsCaseInsensitively()
     {
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
 
-        manager.RemoveMonitorStates(new[] { MonitorA.ToLowerInvariant() });
+        manager.RemoveKnownGoodFeatures(new[] { MonitorA.ToLowerInvariant() });
 
         Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorA).Count);
     }
 
     [TestMethod]
-    public void RemoveMonitorStates_LegacyEntryRemainsAvailableForMigration()
+    public void RemoveKnownGoodFeatures_LegacyEntryRemainsAvailableForMigration()
     {
         const string legacyId = "DDC_AOCB326_1";
 
         using (var manager = new MonitorStateManager(_statePath))
         {
             manager.UpdateMonitorParameter(legacyId, "Brightness", 42);
+            manager.UpsertKnownGoodFeature(legacyId, Feature(0x10, current: 42));
 
-            manager.RemoveMonitorStates(new[] { legacyId });
+            manager.RemoveKnownGoodFeatures(new[] { legacyId });
             Assert.AreEqual(42, manager.GetMonitorParameters(legacyId)?.Brightness);
+            Assert.AreEqual(1, manager.GetKnownGoodFeatures(legacyId).Count);
 
             manager.MigrateLegacyKeys(new[] { (MonitorA, 1) });
             Assert.AreEqual(42, manager.GetMonitorParameters(MonitorA)?.Brightness);
@@ -244,16 +248,16 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RemoveMonitorStates_EmptySetKeepsCompleteState()
+    public void RemoveKnownGoodFeatures_EmptySetKeepsCompleteState()
     {
         // The empty set is what a reconciliation produces when the settings snapshot could not be
-        // read: nothing was observably dropped, so nothing may be deleted.
+        // read: nothing was observably dropped, so nothing may be collected.
         using (var manager = new MonitorStateManager(_statePath))
         {
             manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
             manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
 
-            manager.RemoveMonitorStates(Array.Empty<string>());
+            manager.RemoveKnownGoodFeatures(Array.Empty<string>());
         }
 
         using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
