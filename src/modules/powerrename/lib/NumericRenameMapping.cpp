@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "NumericRenameMapping.h"
 #include <climits>
+#include <string_view>
+#include <zip.h>
 
 namespace
 {
@@ -93,6 +95,142 @@ namespace
         while (first < field.size() && iswspace(field[first])) ++first;
         return field.substr(first);
     }
+
+    std::string ToUtf8(PCWSTR value)
+    {
+        if (!value) return {};
+        const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value, -1, nullptr, 0, nullptr, nullptr);
+        if (length <= 1) return {};
+        std::string result(static_cast<size_t>(length), '\0');
+        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value, -1, result.data(), length, nullptr, nullptr);
+        result.resize(static_cast<size_t>(length) - 1);
+        return result;
+    }
+
+    std::wstring DecodeXmlEntities(const std::wstring& value)
+    {
+        std::wstring result;
+        result.reserve(value.size());
+        for (size_t i = 0; i < value.size(); ++i)
+        {
+            if (value[i] != L'&')
+            {
+                result.push_back(value[i]);
+                continue;
+            }
+
+            const size_t end = value.find(L';', i + 1);
+            if (end == std::wstring::npos)
+            {
+                result.push_back(value[i]);
+                continue;
+            }
+            const std::wstring entity = value.substr(i + 1, end - i - 1);
+            if (entity == L"amp") result.push_back(L'&');
+            else if (entity == L"lt") result.push_back(L'<');
+            else if (entity == L"gt") result.push_back(L'>');
+            else if (entity == L"quot") result.push_back(L'"');
+            else if (entity == L"apos") result.push_back(L'\'');
+            else if (entity.rfind(L"#x", 0) == 0)
+            {
+                wchar_t* parsedEnd = nullptr;
+                const auto codePoint = wcstoul(entity.c_str() + 2, &parsedEnd, 16);
+                if (parsedEnd && *parsedEnd == L'\0') result.push_back(static_cast<wchar_t>(codePoint));
+            }
+            else if (entity.rfind(L"#", 0) == 0)
+            {
+                wchar_t* parsedEnd = nullptr;
+                const auto codePoint = wcstoul(entity.c_str() + 1, &parsedEnd, 10);
+                if (parsedEnd && *parsedEnd == L'\0') result.push_back(static_cast<wchar_t>(codePoint));
+            }
+            else
+            {
+                result.append(value, i, end - i + 1);
+            }
+            i = end;
+        }
+        return result;
+    }
+
+    std::wstring XmlTextElements(const std::wstring& xml)
+    {
+        std::wstring result;
+        size_t position = 0;
+        while ((position = xml.find(L"<t", position)) != std::wstring::npos)
+        {
+            const wchar_t next = position + 2 < xml.size() ? xml[position + 2] : L'\0';
+            if (next != L'>' && !iswspace(next))
+            {
+                position += 2;
+                continue;
+            }
+            const size_t openEnd = xml.find(L'>', position);
+            const size_t close = openEnd == std::wstring::npos ? std::wstring::npos : xml.find(L"</t>", openEnd + 1);
+            if (close == std::wstring::npos) break;
+            result += DecodeXmlEntities(xml.substr(openEnd + 1, close - openEnd - 1));
+            position = close + 4;
+        }
+        return result;
+    }
+
+    std::wstring XmlAttribute(const std::wstring& tag, const wchar_t* name)
+    {
+        const std::wstring prefix = std::wstring(name) + L"=\"";
+        const size_t start = tag.find(prefix);
+        if (start == std::wstring::npos) return {};
+        const size_t valueStart = start + prefix.size();
+        const size_t end = tag.find(L'"', valueStart);
+        return end == std::wstring::npos ? std::wstring{} : tag.substr(valueStart, end - valueStart);
+    }
+
+    HRESULT ReadZipEntry(zip_t* archive, const char* name, std::string& contents)
+    {
+        zip_stat_t stat{};
+        if (zip_stat(archive, name, 0, &stat) != 0 || stat.size > SIZE_MAX)
+        {
+            return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+        }
+        zip_file_t* file = zip_fopen(archive, name, 0);
+        if (!file) return E_FAIL;
+        contents.resize(static_cast<size_t>(stat.size));
+        const zip_int64_t read = zip_fread(file, contents.data(), contents.size());
+        zip_fclose(file);
+        return read == static_cast<zip_int64_t>(contents.size()) ? S_OK : E_FAIL;
+    }
+
+    std::wstring FirstXlsxCellValue(const std::wstring& cell, const std::vector<std::wstring>& sharedStrings)
+    {
+        const size_t openEnd = cell.find(L'>');
+        if (openEnd == std::wstring::npos) return {};
+        const std::wstring type = XmlAttribute(cell.substr(0, openEnd + 1), L"t");
+        const size_t valueStart = cell.find(L"<v>", openEnd);
+        const size_t valueEnd = valueStart == std::wstring::npos ? std::wstring::npos : cell.find(L"</v>", valueStart);
+        const std::wstring value = valueStart == std::wstring::npos || valueEnd == std::wstring::npos ? std::wstring{} : DecodeXmlEntities(cell.substr(valueStart + 3, valueEnd - valueStart - 3));
+
+        if (type == L"s")
+        {
+            wchar_t* end = nullptr;
+            const unsigned long index = wcstoul(value.c_str(), &end, 10);
+            return end && *end == L'\0' && index < sharedStrings.size() ? sharedStrings[index] : std::wstring{};
+        }
+        if (type == L"inlineStr")
+        {
+            const size_t inlineStart = cell.find(L"<is>", openEnd);
+            const size_t inlineEnd = inlineStart == std::wstring::npos ? std::wstring::npos : cell.find(L"</is>", inlineStart);
+            return inlineStart == std::wstring::npos || inlineEnd == std::wstring::npos ? std::wstring{} : XmlTextElements(cell.substr(inlineStart, inlineEnd - inlineStart + 5));
+        }
+        return value;
+    }
+
+    HRESULT DecodeXlsxXml(const std::string& bytes, std::wstring& text)
+    {
+        if (bytes.empty()) return E_INVALIDARG;
+        const int wideLength = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, bytes.data(), static_cast<int>(bytes.size()), nullptr, 0);
+        if (wideLength == 0) return HRESULT_FROM_WIN32(GetLastError());
+        text.resize(wideLength);
+        MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, bytes.data(), static_cast<int>(bytes.size()), text.data(), wideLength);
+        return S_OK;
+    }
 }
 
 namespace PowerRenameLib
@@ -101,9 +239,11 @@ namespace PowerRenameLib
     {
         names.clear();
         std::vector<unsigned char> bytes;
-        RETURN_IF_FAILED(ReadFileBytes(path, bytes));
+        HRESULT hr = ReadFileBytes(path, bytes);
+        if (FAILED(hr)) return hr;
         std::wstring text;
-        RETURN_IF_FAILED(DecodeCsvBytes(bytes, text));
+        hr = DecodeCsvBytes(bytes, text);
+        if (FAILED(hr)) return hr;
 
         size_t rowStart = 0;
         while (rowStart <= text.size())
@@ -111,12 +251,108 @@ namespace PowerRenameLib
             const size_t rowEnd = text.find_first_of(L"\r\n", rowStart);
             const size_t end = rowEnd == std::wstring::npos ? text.size() : rowEnd;
             const std::wstring name = FirstCsvField(text.substr(rowStart, end - rowStart));
-            if (!name.empty()) names.push_back(name);
+            if (!name.empty())
+            {
+                if (!IsValidNumericRenameName(name.c_str()))
+                {
+                    names.clear();
+                    return E_INVALIDARG;
+                }
+                names.push_back(name);
+            }
             if (rowEnd == std::wstring::npos) break;
             rowStart = rowEnd + 1;
             if (text[rowEnd] == L'\r' && rowStart < text.size() && text[rowStart] == L'\n') ++rowStart;
         }
         return names.empty() ? E_INVALIDARG : S_OK;
+    }
+
+    HRESULT LoadNumericRenameMappingFromXlsx(PCWSTR path, std::vector<std::wstring>& names)
+    {
+        names.clear();
+        const std::string utf8Path = ToUtf8(path);
+        if (utf8Path.empty()) return E_INVALIDARG;
+
+        int zipError = 0;
+        zip_t* archive = zip_open(utf8Path.c_str(), ZIP_RDONLY, &zipError);
+        if (!archive) return E_FAIL;
+
+        std::vector<std::wstring> sharedStrings;
+        std::string sharedBytes;
+        if (SUCCEEDED(ReadZipEntry(archive, "xl/sharedStrings.xml", sharedBytes)))
+        {
+            std::wstring sharedXml;
+            if (SUCCEEDED(DecodeXlsxXml(sharedBytes, sharedXml)))
+            {
+                size_t position = 0;
+                while ((position = sharedXml.find(L"<si", position)) != std::wstring::npos)
+                {
+                    const size_t end = sharedXml.find(L"</si>", position);
+                    if (end == std::wstring::npos) break;
+                    sharedStrings.push_back(XmlTextElements(sharedXml.substr(position, end - position + 5)));
+                    position = end + 5;
+                }
+            }
+        }
+
+        std::string worksheetBytes;
+        HRESULT hr = ReadZipEntry(archive, "xl/worksheets/sheet1.xml", worksheetBytes);
+        if (SUCCEEDED(hr))
+        {
+            std::wstring worksheet;
+            hr = DecodeXlsxXml(worksheetBytes, worksheet);
+            if (SUCCEEDED(hr))
+            {
+                size_t position = 0;
+                while ((position = worksheet.find(L"<row", position)) != std::wstring::npos)
+                {
+                    const size_t rowEnd = worksheet.find(L"</row>", position);
+                    if (rowEnd == std::wstring::npos) break;
+                    const std::wstring row = worksheet.substr(position, rowEnd - position + 6);
+                    const size_t cellStart = row.find(L"<c");
+                    if (cellStart != std::wstring::npos)
+                    {
+                        const size_t cellEnd = row.find(L"</c>", cellStart);
+                        if (cellEnd != std::wstring::npos)
+                        {
+                            const std::wstring value = FirstXlsxCellValue(row.substr(cellStart, cellEnd - cellStart + 4), sharedStrings);
+                            if (!value.empty())
+                            {
+                                if (!IsValidNumericRenameName(value.c_str()))
+                                {
+                                    names.clear();
+                                    hr = E_INVALIDARG;
+                                    break;
+                                }
+                                names.push_back(value);
+                            }
+                        }
+                    }
+                    position = rowEnd + 6;
+                }
+            }
+        }
+        zip_close(archive);
+        return SUCCEEDED(hr) && !names.empty() ? S_OK : (FAILED(hr) ? hr : E_INVALIDARG);
+    }
+
+    bool IsValidNumericRenameName(PCWSTR name)
+    {
+        if (!name || *name == L'\0')
+        {
+            return false;
+        }
+
+        for (const wchar_t character : std::wstring_view{ name })
+        {
+            if (character == L'<' || character == L'>' || character == L':' || character == L'"' ||
+                character == L'\\' || character == L'/' || character == L'|' || character == L'?' || character == L'*')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     bool TryGetNumericFileStem(PCWSTR fileName, unsigned long long& number)

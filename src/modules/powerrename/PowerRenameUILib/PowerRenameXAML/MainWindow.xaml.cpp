@@ -489,28 +489,39 @@ namespace winrt::PowerRenameUI::implementation
 
     winrt::fire_and_forget MainWindow::SelectNumericMapping(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
     {
-        Windows::Storage::Pickers::FileOpenPicker picker;
-        picker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::DocumentsLibrary);
-        picker.FileTypeFilter().Append(L".csv");
-        auto initializeWithWindow = picker.as<::IInitializeWithWindow>();
-        winrt::check_hresult(initializeWithWindow->Initialize(m_window));
-
-        auto file = co_await picker.PickSingleFileAsync();
-        if (!file)
+        try
         {
-            co_return;
-        }
+            Windows::Storage::Pickers::FileOpenPicker picker;
+            picker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::DocumentsLibrary);
+            picker.FileTypeFilter().Append(L".csv");
+            picker.FileTypeFilter().Append(L".xlsx");
+            auto initializeWithWindow = picker.as<::IInitializeWithWindow>();
+            winrt::check_hresult(initializeWithWindow->Initialize(m_window));
 
-        std::vector<std::wstring> names;
-        const HRESULT hr = PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), names);
-        if (FAILED(hr))
+            auto file = co_await picker.PickSingleFileAsync();
+            if (!file)
+            {
+                co_return;
+            }
+
+            std::vector<std::wstring> names;
+            const std::wstring extension = std::filesystem::path(file.Path().c_str()).extension().wstring();
+            const HRESULT hr = _wcsicmp(extension.c_str(), L".xlsx") == 0 ?
+                PowerRenameLib::LoadNumericRenameMappingFromXlsx(file.Path().c_str(), names) :
+                PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), names);
+            if (FAILED(hr))
+            {
+                Logger::error(L"Unable to load numeric rename mapping from {}", file.Path().c_str());
+                co_return;
+            }
+
+            m_numericRenameNames = std::move(names);
+            SearchReplaceChanged(true);
+        }
+        catch (const winrt::hresult_error& error)
         {
-            Logger::error(L"Unable to load numeric rename mapping from {}", file.Path().c_str());
-            co_return;
+            Logger::error(L"Unable to select numeric rename mapping: {}", error.message().c_str());
         }
-
-        m_numericRenameNames = std::move(names);
-        SearchReplaceChanged(true);
     }
 
     HRESULT MainWindow::CreateShellItemArrayFromPaths(
@@ -685,7 +696,14 @@ namespace winrt::PowerRenameUI::implementation
             }
 
             item->PutNewName(newName.c_str());
-            item->PutStatus(lstrcmp(originalName, newName.c_str()) == 0 ? PowerRenameItemRenameStatus::Init : PowerRenameItemRenameStatus::ShouldRename);
+            if (!PowerRenameLib::IsValidNumericRenameName(newName.c_str()))
+            {
+                item->PutStatus(PowerRenameItemRenameStatus::ItemNameInvalidChar);
+            }
+            else
+            {
+                item->PutStatus(lstrcmp(originalName, newName.c_str()) == 0 ? PowerRenameItemRenameStatus::Init : PowerRenameItemRenameStatus::ShouldRename);
+            }
         }
         UpdateCounts();
         InvalidateItemListViewState();
