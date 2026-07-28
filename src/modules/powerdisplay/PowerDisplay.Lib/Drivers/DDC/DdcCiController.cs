@@ -51,9 +51,13 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public bool MaxCompatibilityMode { get; set; }
 
-        public DdcCiController(IKnownGoodVcpStore? knownGoodStore = null)
+        /// <param name="knownGoodStore">
+        /// Persisted store for known-good VCP observations. Required: a controller without one
+        /// silently loses the discovery cache that maximum compatibility mode depends on.
+        /// </param>
+        public DdcCiController(IKnownGoodVcpStore knownGoodStore)
             : this(
-                knownGoodStore ?? NullKnownGoodVcpStore.Instance,
+                knownGoodStore,
                 new SystemClock(),
                 new NativeVcpFeatureReader())
         {
@@ -372,6 +376,35 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more -- and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
         /// or unparsable. Cancellation is honored both during the cap-string fetch
@@ -385,6 +418,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             const int maxAttempts = 3;
             const int retryDelayMs = 1000;
+
+            // Snapshot the mode once. The property is settable from the UI thread whenever settings
+            // are reloaded, and this method awaits several times, so reading it at each decision
+            // point could let one monitor's evidence be gathered under one mode and reconciled under
+            // the other.
+            var maxCompatibility = MaxCompatibilityMode;
 
             string? capsString = null;
             for (int attempt = 1; attempt <= maxAttempts; attempt++)
@@ -435,7 +474,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             IReadOnlyDictionary<byte, VcpProbeObservation> live =
                 new Dictionary<byte, VcpProbeObservation>();
 
-            if (caps == null && MaxCompatibilityMode)
+            if (caps == null && maxCompatibility)
             {
                 Logger.LogInfo(
                     $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
@@ -443,7 +482,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 live = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
             }
 
-            var cached = MaxCompatibilityMode
+            var cached = maxCompatibility
                 ? _knownGoodStore.GetKnownGoodFeatures(monitorId)
                 : new Dictionary<byte, KnownGoodVcpFeature>();
 
@@ -452,7 +491,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 caps,
                 live,
                 cached,
-                includeCache: MaxCompatibilityMode);
+                includeCache: maxCompatibility);
 
             foreach (var observation in live.Values.Where(value => value.IsSuccess))
             {
@@ -697,6 +736,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         Logger.LogWarning(
                             $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle is no longer valid");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
@@ -704,6 +744,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         Logger.LogWarning(
                             $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
@@ -717,6 +758,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                     if (monitor != null)
                     {
                         monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed, threw, or the handle died during continuous VCP
+                        // initialization. Either way this physical never becomes a Monitor, so it
+                        // never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
                     }
                 }
 

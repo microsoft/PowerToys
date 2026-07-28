@@ -42,10 +42,12 @@ namespace PowerDisplay.Common.Services
 
         public IReadOnlyList<Monitor> Monitors => _monitors.AsReadOnly();
 
-        public MonitorManager(IKnownGoodVcpStore? knownGoodStore = null)
+        public MonitorManager(IKnownGoodVcpStore knownGoodStore)
         {
+            ArgumentNullException.ThrowIfNull(knownGoodStore);
+
             // Initialize controllers
-            InitializeControllers(knownGoodStore ?? NullKnownGoodVcpStore.Instance);
+            InitializeControllers(knownGoodStore);
         }
 
         /// <summary>
