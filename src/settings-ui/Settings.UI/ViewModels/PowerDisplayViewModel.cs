@@ -411,18 +411,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     mode,
                     v => _settings.Properties.MouseWheelControlMode = v))
                 {
-                    OnPropertyChanged(nameof(IsMouseWheelControlEnabled));
                     SignalSettingsUpdated();
                 }
             }
         }
-
-        /// <summary>
-        /// Gets a value indicating whether PowerDisplay mouse-wheel control is enabled.
-        /// </summary>
-        public bool IsMouseWheelControlEnabled
-            => _settings.Properties.MouseWheelControlMode.Normalize() !=
-               MouseWheelControlMode.Disabled;
 
         /// <summary>
         /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
