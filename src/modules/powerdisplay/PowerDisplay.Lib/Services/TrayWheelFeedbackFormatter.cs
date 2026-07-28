@@ -23,7 +23,9 @@ public static class TrayWheelFeedbackFormatter
     private const string NeutralListSeparator = ", ";
 
     /// <summary>
-    /// Formats one feedback payload.
+    /// Formats one feedback payload. <paramref name="maxLength"/> bounds the UTF-16 length of the
+    /// result so a mis-translated template cannot hand the single-line overlay an unbounded string;
+    /// the overlay ellipsizes whatever still does not fit its measured width.
     /// </summary>
     public static string? Format(
         TrayWheelAdjustmentFeedback feedback,
@@ -139,6 +141,9 @@ public static class TrayWheelFeedbackFormatter
         return string.Format(CultureInfo.InvariantCulture, neutral, arguments);
     }
 
+    // Returns at most maxLength UTF-16 code units and never ends on a lone high surrogate, so the
+    // caller always gets well-formed text - including when a broken template supplied a split
+    // surrogate pair that already fit.
     private static string LimitUtf16(string value, int maxLength)
     {
         if (value.Length == 0)

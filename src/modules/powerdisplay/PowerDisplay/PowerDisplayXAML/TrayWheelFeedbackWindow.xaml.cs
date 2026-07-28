@@ -57,6 +57,10 @@ public sealed partial class TrayWheelFeedbackWindow : TransparentWindow, IDispos
         var error = Marshal.GetLastPInvokeError();
         if (_originalWndProc == 0 && error != 0)
         {
+            // InitializeComponent already realized the window, and the caller never receives this
+            // instance, so close it here rather than leaking the HWND for the process lifetime.
+            _wndProcDelegate = null;
+            Close();
             throw new Win32Exception(error);
         }
 
