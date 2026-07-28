@@ -56,11 +56,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
-    private InterlockedBoolean _isLoading;
+    private InterlockedBoolean _isLoadingMore;
     private int _activeFetchCount;
     private int _latestFetchGeneration;
     private bool _deferredFetchRequested;
     private bool _deferredFetchKeepSelection = true;
+    private bool _deferredFetchEnsureSelectionVisible;
 
     public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
@@ -149,7 +150,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
     {
-        RequestFetch(args.TotalItems == IncrementalRefresh);
+        var isLoadingMore = _isLoadingMore.Value;
+
+        // Perform a soft refresh when:
+        // - the caller explicitly requests it through a flag piggybacked on args.TotalItems;
+        // - incremental loading (LoadMore) is used, which implies a soft refresh by definition.
+        RequestFetch(
+            keepSelection: args.TotalItems == IncrementalRefresh || isLoadingMore,
+            ensureSelectionVisible: !isLoadingMore);
     }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
@@ -199,9 +207,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
-            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
+            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: true, ensureSelectionVisible: true));
             UpdateEmptyContent();
-            _isLoading.Clear();
+            _isLoadingMore.Clear();
         }
     }
 
@@ -225,14 +233,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
-    private void RequestFetch(bool keepSelection)
+    private void RequestFetch(bool keepSelection, bool ensureSelectionVisible)
     {
         // Keep RPC GetItems work off the UI thread. If the provider raises
         // ItemsChanged while we're already on a background thread, stay on that
         // thread so same-thread reentrancy detection still works.
         if (IsCurrentThreadUiThread())
         {
-            QueueObservedBackgroundFetch(() => RequestFetch(keepSelection), "Failed to request background fetch");
+            QueueObservedBackgroundFetch(
+                () => RequestFetch(keepSelection, ensureSelectionVisible),
+                "Failed to request background fetch");
             return;
         }
 
@@ -242,29 +252,35 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 _deferredFetchRequested = true;
                 _deferredFetchKeepSelection &= keepSelection;
+                _deferredFetchEnsureSelectionVisible |= ensureSelectionVisible;
             }
 
             return;
         }
 
-        FetchItems(keepSelection);
+        FetchItems(keepSelection, ensureSelectionVisible);
     }
 
     private void QueueDeferredFetchIfNeeded()
     {
         bool deferredFetchRequested;
         bool keepSelection;
+        bool ensureSelectionVisible;
         lock (_fetchStateLock)
         {
             deferredFetchRequested = _deferredFetchRequested;
             keepSelection = _deferredFetchKeepSelection;
+            ensureSelectionVisible = _deferredFetchEnsureSelectionVisible;
             _deferredFetchRequested = false;
             _deferredFetchKeepSelection = true;
+            _deferredFetchEnsureSelectionVisible = false;
         }
 
         if (deferredFetchRequested)
         {
-            QueueObservedBackgroundFetch(() => FetchItems(keepSelection), "Failed to execute deferred fetch");
+            QueueObservedBackgroundFetch(
+                () => FetchItems(keepSelection, ensureSelectionVisible),
+                "Failed to execute deferred fetch");
         }
     }
 
@@ -288,7 +304,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection)
+    private void FetchItems(bool keepSelection, bool ensureSelectionVisible)
     {
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
@@ -536,8 +552,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     var forceFirst = _forceFirstItemPending;
                     _forceFirstItemPending = false;
 
-                    ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
-                    _isLoading.Clear();
+                    ItemsUpdated?.Invoke(
+                        this,
+                        new ItemsUpdatedEventArgs(
+                            forceFirstItem: IsRootPage && forceFirst,
+                            ensureSelectionVisible: ensureSelectionVisible));
+                    _isLoadingMore.Clear();
                 }
             });
     }
@@ -964,7 +984,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
         }
 
-        FetchItems(true);
+        FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
     }
 
@@ -998,7 +1018,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (!_isLoading.Set())
+        if (!_isLoadingMore.Set())
         {
             return;
 
@@ -1016,17 +1036,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     model.LoadMore();
 
-                    // _isLoading flag will be set as a result of LoadMore,
-                    // which must raise ItemsChanged to end the loading.
+                    // LoadMore must raise ItemsChanged; the resulting fetch clears
+                    // _isLoadingMore when the updated items are published.
                 }
                 else
                 {
-                    _isLoading.Clear();
+                    _isLoadingMore.Clear();
                 }
             }
             catch (Exception ex)
             {
-                _isLoading.Clear();
+                _isLoadingMore.Clear();
                 ShowException(ex, model.Name);
             }
         });

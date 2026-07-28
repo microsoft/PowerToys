@@ -25,6 +25,13 @@ public sealed partial class SelectorControl : UserControl
     // Number of items currently in the accent bar (mirrors the bound ObservableCollection).
     public int ItemCount => CharactersList.Items.Count;
 
+    // The window sizing calculation must reserve all horizontal space outside the ListView: the
+    // Surface's outer margin plus its border (1px each side from DefaultTransientSurfaceStyle).
+    // Reading both from the live element means the formula stays correct if either value changes.
+    internal double HorizontalSurfaceOverheadDip =>
+        Surface.Margin.Left + Surface.Margin.Right +
+        Surface.BorderThickness.Left + Surface.BorderThickness.Right;
+
     // Wire the inner TransientSurface to the hosting window's Show/Hide so it animates in/out.
     // TransientSurface.SubscribeTo explicitly supports being "placed within" the window content.
     public void SubscribeSurfaceTo(TransparentWindow host) => Surface.SubscribeTo(host);
