@@ -181,7 +181,7 @@ protected:
     ComPtr<IUnknown> m_site;
 
 private:
-    std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILE_LOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
+    std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_FILELOCKSMITH_CONTEXT_MENU_ENTRY, L"Unlock with File Locksmith");
 };
 
 CoCreatableClass(FileLocksmithContextMenuCommand)
