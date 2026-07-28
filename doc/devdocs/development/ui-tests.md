@@ -110,12 +110,27 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -Platform x64Win11 `
   -BuildLabel (git rev-parse HEAD) `
   -CleanupProcess 'PowerToys.<Module>.UI' `
+  -ProcessorAffinityMask 0x3 `
   -InstallWebView2
 ```
 
 The controller launches Sandbox through its registered Start-menu AppID, waits for the interactive
 `WDAGUtilityAccount` login, dynamically shares the lean exchange, runs as `ExistingLogin`, streams
 progress, returns `status.json` and TRX artifacts, and stops the exact guest in `finally`.
+
+By default, the guest runner and its directly launched descendants (the test host, PowerToys,
+winappcli, and module processes) are limited to logical processors 0 and 1 with affinity mask `0x3`.
+Pass another mask to select a different CPU set or `0` to disable affinity limiting. Sandbox has no
+supported vCPU-count/VM-affinity setting; changing host `WindowsSandboxServer.exe` affinity does not
+throttle guest execution. The mask selects guest vCPUs and limits process concurrency; it does not
+pin the Sandbox VM to those same numbered host CPUs.
+
+For a fast edit/build/rerun loop, retain the first guest with `-KeepSandbox`. After rebuilding, replace
+only the changed archive in the exchange and rerun with the returned `SandboxId`,
+`-ReuseSandboxId`, and `-ReuseStagedPayload`. Per-component hashes refresh only changed tests,
+product, winappcli, or .NET files; unchanged SDK/runtime payloads and WebView2 stay staged. No guest
+service is required because `wsb share` and `wsb exec` provide the file and command channels. Use a
+fresh Sandbox for final clean-profile validation.
 
 Timeouts are independently adjustable. The Sandbox controller defaults to a two-hour guest suite and
 a 150-minute host deadline so broad project runs can complete. Tighten both for focused/module runs,

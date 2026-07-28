@@ -1,10 +1,23 @@
 {
   "RunId": "20260728-120000-deadbeef",
   "BuildLabel": "git-commit-or-build-id",
-  "TestExecutable": "Module.UITests.Next.exe",
+  "TestExecutables": [
+    "Module.UITests.Next.exe"
+  ],
   "Filter": "TestCategory=Module",
   "Platform": "x64Win11",
   "SuiteTimeout": "2h",
+  "ProcessorAffinityMask": 3,
+  "ReuseStagedPayload": false,
+  "PayloadFingerprint": "generated-by-host-controller",
+  "PayloadHashes": {
+    "Tests": "sha256",
+    "Product": "sha256",
+    "ProductOverlay": null,
+    "WinAppCli": "sha256",
+    "DotNet": "sha256",
+    "WebView2Installer": "sha256"
+  },
   "Archives": {
     "Tests": "ui-tests.zip",
     "Product": "powertoys-runtime.zip",

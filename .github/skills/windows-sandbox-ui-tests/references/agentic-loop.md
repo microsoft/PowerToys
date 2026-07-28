@@ -98,6 +98,7 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -Platform x64Win11 `
   -BuildLabel (git rev-parse HEAD) `
   -InstallWebView2 `
+  -ProcessorAffinityMask 0x3 `
   -SuiteTimeout 2h `
   -TimeoutMinutes 150
 ```
@@ -105,13 +106,43 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
 The controller:
 
 1. Refuses overlapping Sandboxes.
-2. Launches `Microsoft.Windows.Containers.Sandbox` through Start.
-3. Waits for the new environment ID and `ExistingLogin` readiness.
-4. Dynamically shares the exchange as `C:\SandboxExchange`.
-5. Creates a run-specific request and dispatches the guest runner hidden.
-6. Streams progress while waiting for `status.json`.
-7. Parses the TRX counters.
-8. Stops the exact Sandbox in `finally`.
+2. Clears orphaned remote sessions and waits for a failed environment to be fully disposed; it
+  leaves the persistent Store broker running.
+3. Launches `Microsoft.Windows.Containers.Sandbox` through Start and retries transient pre-login
+  connection loss up to three times.
+4. Waits for the new environment ID and `ExistingLogin` readiness.
+5. Dynamically shares the exchange as `C:\SandboxExchange`.
+6. Creates a run-specific request and dispatches the guest runner hidden.
+7. Streams progress while waiting for `status.json`.
+8. Parses the TRX counters.
+9. Stops the exact Sandbox in `finally`.
+
+## CPU affinity
+
+Windows Sandbox does not expose a supported processor-count or VM-affinity setting. Host affinity on
+`WindowsSandboxServer.exe` only affects the broker, not the guest virtual processors. Instead, the
+guest runner sets its own `ProcessorAffinity`; Windows child processes inherit that mask.
+
+The default mask is `0x3`, selecting guest logical processors 0 and 1. This covers the test host,
+PowerToys runner and modules launched by it, winappcli, the WebView2 installer, and other direct
+descendants. Use another bitmask to select a different guest CPU set, or `0` to disable limiting:
+
+```pwsh
+# Guest logical processors 0 and 1 (default)
+-ProcessorAffinityMask 0x3
+
+# Guest logical processors 2 and 3
+-ProcessorAffinityMask 0xC
+
+# No affinity restriction
+-ProcessorAffinityMask 0
+```
+
+Affinity is not a CPU-rate quota: two busy threads can still consume both selected logical
+processors fully. Existing Sandbox OS processes and shell-brokered processes that are not descendants
+of the guest runner do not inherit the mask. The selected processors are guest vCPUs; Hyper-V can
+schedule them on any host logical processors. Exact host-core pinning is not supported by Windows
+Sandbox.
 
 MSTest filters need an explicit property. Use `Name=...`, `Name~...`,
 `FullyQualifiedName~...`, or `TestCategory=...`; a bare display name can select zero tests.
@@ -161,6 +192,41 @@ assertion-bearing TRX results as `FAIL`.
 4. Rebuild and recreate the test archive.
 5. Rerun the focused test in a fresh Sandbox.
 6. Widen to the module suite only after the focused check passes.
+
+### Reuse the same Sandbox after code changes
+
+The mapped exchange and `wsb exec` already provide file and command communication; do not install a
+daemon in the guest. Retain the first guest:
+
+```pwsh
+$first = pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
+  -ExchangeRoot '<exchange>' `
+  -TestExecutable '<Module>.UITests.Next.exe' `
+  -Filter 'Name=<focused-test>' `
+  -KeepSandbox | ConvertFrom-Json
+```
+
+After editing/building tests, replace only `<exchange>\ui-tests.zip`, then attach to the retained ID:
+
+```pwsh
+pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
+  -ExchangeRoot '<exchange>' `
+  -TestExecutable '<Module>.UITests.Next.exe' `
+  -Filter 'Name=<focused-test>' `
+  -ReuseSandboxId $first.SandboxId `
+  -ReuseStagedPayload `
+  -KeepSandbox
+```
+
+The host hashes each archive on every request. The guest manifest stores per-component hashes:
+
+- Changed tests archive: stop test/product processes, replace only `Tests`, then rerun.
+- Changed product archive or overlay: replace only `PowerToys` (base plus overlay).
+- Changed winappcli or .NET archive: replace only that tool/runtime.
+- Unchanged components: no extraction; WebView2 remains installed.
+
+Omit `-KeepSandbox` on the last retained run to stop it. Reuse preserves the guest profile and can
+hide first-run defects, so finish with a fresh Sandbox run before declaring the suite validated.
 
 Choose timeout budgets from the selected scope. Keep the host deadline larger because it includes
 Sandbox startup, archive extraction, prerequisite installation, test execution, and result export.

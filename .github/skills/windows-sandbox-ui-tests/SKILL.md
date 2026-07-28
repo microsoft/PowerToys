@@ -100,6 +100,7 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -Platform x64Win11 `
   -BuildLabel (git rev-parse HEAD) `
   -CleanupProcess PowerToys.MyModule.UI `
+  -ProcessorAffinityMask 0x3 `
   -InstallWebView2
 ```
 
@@ -114,8 +115,14 @@ and stops the Sandbox in `finally`.
 - Launch through the registered Start-menu AppID
   `Microsoft.Windows.Containers.Sandbox`, then use `wsb share`/`wsb exec` after login. This avoids
   intermittent pre-login failures seen when mapped folders are supplied during launch.
+- Treat Store-client pre-login loss (`0x80070520`) as transient infrastructure. The controller
+  stops the failed guest/session, waits for disposal, and retries a clean desktop up to three times
+  by default; adjust with `-StartupAttempts`. The persistent Store broker is left running.
 - Keep the mapped exchange lean: archives, scripts, requests, and results only. Extract product and
   tests to guest-local storage before execution.
+- Limit the guest test process tree to logical processors 0 and 1 by default (`0x3`). The test host,
+  PowerToys, winappcli, WebView2 installer, and directly launched descendants inherit that mask.
+  Override `-ProcessorAffinityMask` for another CPU set or pass `0` to disable it.
 - Run UI tests as `ExistingLogin`, never `System`; UIA, foreground input, Explorer, and rendering need
   the interactive `WDAGUtilityAccount` session.
 - Use one writable mapped root and run-specific result folders. Retry transient sharing violations
@@ -130,6 +137,24 @@ and stops the Sandbox in `finally`.
   "fix" environment-specific pixels by weakening assertions.
 - Always collect TRX, transcript, status, failure artifacts, and build label before teardown.
 - Always stop the exact Sandbox in `finally`, even on launch, timeout, or test failure.
+
+## Fast retained-Sandbox loop
+
+For rapid code/test iteration, keep a successful guest with `-KeepSandbox`, rebuild and replace only
+the changed archive in the mapped exchange, then rerun with `-ReuseSandboxId <id>
+-ReuseStagedPayload`. The controller hashes each archive; the guest refreshes only changed components
+(`Tests`, `Product`, `winappcli`, or `.NET`) and reuses everything else, including installed WebView2.
+
+No guest agent or service is required: `wsb share` is the live file channel and `wsb exec` is the
+command channel. Use this retained loop for inner iteration only. Run the final focused test and full
+suite once in a fresh Sandbox to revalidate clean-profile behavior.
+
+Windows Sandbox has no supported vCPU-count or VM-affinity configuration. Do not set affinity on
+`WindowsSandboxServer.exe`; it is a host broker and does not constrain guest execution. The skill
+therefore throttles the guest test process tree. Existing guest OS processes and shell-brokered
+processes that are not descendants of the runner are outside this affinity boundary. Guest logical
+processors 0 and 1 are virtual CPUs; Hyper-V may schedule them on any host logical processors, so
+this limits concurrency but does not pin the VM to host CPUs 0 and 1.
 
 ## Verdicts
 

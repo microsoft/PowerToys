@@ -36,11 +36,15 @@ $winAppRoot = Join-Path $workRoot 'winappcli'
 $dotNetRoot = Join-Path $workRoot 'dotnet'
 $localResultsRoot = Join-Path $workRoot 'TestResults'
 $localLog = Join-Path $workRoot 'sandbox-ui-tests.log'
+$stagingManifestPath = Join-Path $workRoot 'staging-manifest.json'
 $hostResultsRoot = Join-Path $exchangeRoot "SandboxResults\$($request.RunId)"
 $startedUtc = [DateTime]::UtcNow
 $exitCode = 1
 $errorMessage = $null
 $transcriptStarted = $false
+$logicalProcessorCount = [Environment]::ProcessorCount
+$processorAffinityMask = if ($null -eq $request.ProcessorAffinityMask) { [UInt64]3 } else { [UInt64]$request.ProcessorAffinityMask }
+$reusedStagedPayload = $false
 
 function Write-SharedText {
     param(
@@ -81,35 +85,116 @@ function Write-RunProgress {
     Write-SharedText -Path (Join-Path $hostResultsRoot 'progress.json') -Value $payload
 }
 
+function Stop-RunProcesses {
+    $cleanupProcesses = @('PowerToys', 'PowerToys.Settings', 'winapp') + @($request.CleanupProcesses)
+    Get-Process -Name ($cleanupProcesses | Sort-Object -Unique) -ErrorAction SilentlyContinue |
+        Stop-Process -Force -ErrorAction SilentlyContinue
+}
+
 try {
     Write-RunProgress -Stage 'Starting' -Detail 'The guest runner is active.'
-    Remove-Item $workRoot -Recurse -Force -ErrorAction SilentlyContinue
-    New-Item $workRoot -ItemType Directory -Force | Out-Null
+    if ($processorAffinityMask -ne 0) {
+        if ($processorAffinityMask -gt [Int64]::MaxValue) {
+            throw 'ProcessorAffinityMask must not exceed 0x7FFFFFFFFFFFFFFF.'
+        }
+
+        $highestProcessorIndex = 0
+        $remainingMask = $processorAffinityMask
+        while ($remainingMask -gt 1) {
+            $remainingMask = $remainingMask -shr 1
+            $highestProcessorIndex++
+        }
+        if ($highestProcessorIndex -ge $logicalProcessorCount) {
+            throw "ProcessorAffinityMask 0x$($processorAffinityMask.ToString('X')) selects a processor outside the guest's $logicalProcessorCount logical processors."
+        }
+
+        $currentProcess = [Diagnostics.Process]::GetCurrentProcess()
+        try {
+            $currentProcess.ProcessorAffinity = [IntPtr]([Int64]$processorAffinityMask)
+        }
+        finally {
+            $currentProcess.Dispose()
+        }
+        Write-RunProgress -Stage 'Configuring' -Detail "Process-tree affinity 0x$($processorAffinityMask.ToString('X')) on $logicalProcessorCount logical processors"
+    }
+
+    Stop-RunProcesses
+    $reuseRequested = $request.PSObject.Properties.Name -contains 'ReuseStagedPayload' -and [bool]$request.ReuseStagedPayload
+    $refreshTests = $true
+    $refreshProduct = $true
+    $refreshWinAppCli = $true
+    $refreshDotNet = $true
+    $refreshedComponents = @()
+    if ($reuseRequested) {
+        if (-not (Test-Path $stagingManifestPath -PathType Leaf)) {
+            throw 'Staged payload reuse was requested, but the guest manifest is missing.'
+        }
+        $stagingManifest = Get-Content $stagingManifestPath -Raw | ConvertFrom-Json
+        if ($null -eq $request.PayloadHashes -or $null -eq $stagingManifest.PayloadHashes) {
+            throw 'Staged payload reuse requires per-component hashes in both the request and guest manifest.'
+        }
+
+        $refreshTests = $stagingManifest.PayloadHashes.Tests -ne $request.PayloadHashes.Tests -or
+            -not (Test-Path $testRoot -PathType Container)
+        $refreshProduct = $stagingManifest.PayloadHashes.Product -ne $request.PayloadHashes.Product -or
+            $stagingManifest.PayloadHashes.ProductOverlay -ne $request.PayloadHashes.ProductOverlay -or
+            -not (Test-Path $productRoot -PathType Container)
+        $refreshWinAppCli = $stagingManifest.PayloadHashes.WinAppCli -ne $request.PayloadHashes.WinAppCli -or
+            -not (Test-Path $winAppRoot -PathType Container)
+        $refreshDotNet = $stagingManifest.PayloadHashes.DotNet -ne $request.PayloadHashes.DotNet -or
+            -not (Test-Path $dotNetRoot -PathType Container)
+        $reusedStagedPayload = $true
+        $changedComponents = @()
+        if ($refreshTests) { $changedComponents += 'Tests' }
+        if ($refreshProduct) { $changedComponents += 'Product' }
+        if ($refreshWinAppCli) { $changedComponents += 'winappcli' }
+        if ($refreshDotNet) { $changedComponents += '.NET' }
+        $reuseDetail = if ($changedComponents.Count -eq 0) {
+            "Unchanged payload $($request.PayloadFingerprint)"
+        }
+        else {
+            "Refreshing: $($changedComponents -join ', ')"
+        }
+        Write-RunProgress -Stage 'Reusing' -Detail $reuseDetail
+    }
+    else {
+        Remove-Item $workRoot -Recurse -Force -ErrorAction SilentlyContinue
+        New-Item $workRoot -ItemType Directory -Force | Out-Null
+    }
+
+    Remove-Item $localResultsRoot -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item $localLog -Force -ErrorAction SilentlyContinue
     New-Item $localResultsRoot -ItemType Directory -Force | Out-Null
     Start-Transcript -Path $localLog -Force | Out-Null
     $transcriptStarted = $true
 
-    $archives = [ordered]@{
-        $request.Archives.Tests = $testRoot
-        $request.Archives.Product = $productRoot
-        $request.Archives.WinAppCli = $winAppRoot
-        $request.Archives.DotNet = $dotNetRoot
-    }
-
-    foreach ($archive in $archives.GetEnumerator()) {
-        $archivePath = Join-Path $exchangeRoot $archive.Key
+    $components = @(
+        [pscustomobject]@{ Name = 'Tests'; Refresh = $refreshTests; Archive = $request.Archives.Tests; Destination = $testRoot },
+        [pscustomobject]@{ Name = 'Product'; Refresh = $refreshProduct; Archive = $request.Archives.Product; Destination = $productRoot },
+        [pscustomobject]@{ Name = 'winappcli'; Refresh = $refreshWinAppCli; Archive = $request.Archives.WinAppCli; Destination = $winAppRoot },
+        [pscustomobject]@{ Name = '.NET'; Refresh = $refreshDotNet; Archive = $request.Archives.DotNet; Destination = $dotNetRoot }
+    )
+    foreach ($component in $components) {
+        if (-not $component.Refresh) {
+            continue
+        }
+        $archivePath = Join-Path $exchangeRoot $component.Archive
         if (-not (Test-Path $archivePath -PathType Leaf)) {
             throw "Required payload is missing: $archivePath"
         }
-
-        Write-RunProgress -Stage 'Extracting' -Detail $archive.Key
-        Expand-Archive -Path $archivePath -DestinationPath $archive.Value -Force
+        Remove-Item $component.Destination -Recurse -Force -ErrorAction SilentlyContinue
+        $stage = if ($reuseRequested) { 'Refreshing' } else { 'Extracting' }
+        Write-RunProgress -Stage $stage -Detail "$($component.Name): $($component.Archive)"
+        Expand-Archive -Path $archivePath -DestinationPath $component.Destination -Force
+        $refreshedComponents += $component.Name
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($request.Archives.ProductOverlay)) {
-        $overlayPath = Join-Path $exchangeRoot $request.Archives.ProductOverlay
-        Write-RunProgress -Stage 'Overlaying' -Detail $request.BuildLabel
-        Expand-Archive -Path $overlayPath -DestinationPath $productRoot -Force
+    if ($refreshProduct) {
+        if (-not [string]::IsNullOrWhiteSpace($request.Archives.ProductOverlay)) {
+            $overlayPath = Join-Path $exchangeRoot $request.Archives.ProductOverlay
+            Write-RunProgress -Stage 'Overlaying' -Detail $request.BuildLabel
+            Expand-Archive -Path $overlayPath -DestinationPath $productRoot -Force
+        }
     }
 
     if (-not [string]::IsNullOrWhiteSpace($request.WebView2Installer)) {
@@ -132,14 +217,39 @@ try {
         }
     }
 
+    [ordered]@{
+        PayloadFingerprint = $request.PayloadFingerprint
+        PayloadFiles = @($request.PayloadFiles)
+        PayloadHashes = $request.PayloadHashes
+        StagedUtc = [DateTime]::UtcNow.ToString('O')
+    } | ConvertTo-Json -Depth 4 | Set-Content $stagingManifestPath -Encoding utf8
+
     Write-RunProgress -Stage 'Preparing' -Detail 'Locating the test runner and dependencies.'
     Get-ChildItem $winAppRoot -Recurse | Unblock-File -ErrorAction SilentlyContinue
 
-    $testExe = Get-ChildItem $testRoot -Recurse -Filter $request.TestExecutable -File | Select-Object -First 1
-    $winApp = Get-ChildItem $winAppRoot -Recurse -Filter 'winapp.exe' -File | Select-Object -First 1
-    if ($null -eq $testExe) {
-        throw "$($request.TestExecutable) was not found under $testRoot."
+    $requestedExecutables = if ($request.PSObject.Properties.Name -contains 'TestExecutables') {
+        @($request.TestExecutables)
     }
+    elseif ($request.PSObject.Properties.Name -contains 'TestExecutable') {
+        @($request.TestExecutable)
+    }
+    else {
+        @()
+    }
+    if ($requestedExecutables.Count -eq 0) {
+        throw 'No test executables were requested.'
+    }
+
+    $testExecutables = @()
+    foreach ($requestedExecutable in $requestedExecutables) {
+        $testExe = Get-ChildItem $testRoot -Recurse -Filter $requestedExecutable -File | Select-Object -First 1
+        if ($null -eq $testExe) {
+            throw "$requestedExecutable was not found under $testRoot."
+        }
+        $testExecutables += $testExe
+    }
+
+    $winApp = Get-ChildItem $winAppRoot -Recurse -Filter 'winapp.exe' -File | Select-Object -First 1
     if ($null -eq $winApp) {
         throw "winapp.exe was not found under $winAppRoot."
     }
@@ -158,30 +268,43 @@ try {
     $env:platform = $request.Platform
     $env:TESTINGPLATFORM_TELEMETRY_OPTOUT = '1'
 
-    $testArguments = @(
-        '--report-trx',
-        '--report-trx-filename', 'sandbox-ui-tests.trx',
-        '--results-directory', $localResultsRoot,
-        '--timeout', $request.SuiteTimeout
-    )
-    if (-not [string]::IsNullOrWhiteSpace($request.Filter)) {
-        $effectiveFilter = if ($request.Filter -match '[=~!&|()]') { $request.Filter } else { "Name=$($request.Filter)" }
-        $testArguments += @('--filter', $effectiveFilter)
-    }
+    $overallExitCode = 0
+    for ($testIndex = 0; $testIndex -lt $testExecutables.Count; $testIndex++) {
+        $testExe = $testExecutables[$testIndex]
+        $testArguments = @(
+            '--report-trx',
+            '--report-trx-filename', "$($testExe.BaseName).trx",
+            '--results-directory', $localResultsRoot,
+            '--timeout', $request.SuiteTimeout
+        )
+        $effectiveFilter = $null
+        if (-not [string]::IsNullOrWhiteSpace($request.Filter)) {
+            $effectiveFilter = if ($request.Filter -match '[=~!&|()]') { $request.Filter } else { "Name=$($request.Filter)" }
+            $testArguments += @('--filter', $effectiveFilter)
+        }
 
-    Write-RunProgress -Stage 'Testing' -Detail $effectiveFilter
-    Set-Location $testExe.DirectoryName
-    & $testExe.FullName @testArguments
-    $exitCode = $LASTEXITCODE
+        $testDetail = "$($testExe.Name) ($($testIndex + 1)/$($testExecutables.Count))"
+        if ($effectiveFilter) {
+            $testDetail += ": $effectiveFilter"
+        }
+        Write-RunProgress -Stage 'Testing' -Detail $testDetail
+        Set-Location $testExe.DirectoryName
+        & $testExe.FullName @testArguments
+        $testExitCode = $LASTEXITCODE
+        if ($testExitCode -ne 0 -and $overallExitCode -eq 0) {
+            $overallExitCode = $testExitCode
+        }
+
+        Stop-RunProcesses
+    }
+    $exitCode = $overallExitCode
 }
 catch {
     $errorMessage = $_.Exception.Message
     Write-Host "Sandbox guest runner failed: $errorMessage"
 }
 finally {
-    $cleanupProcesses = @('PowerToys', 'PowerToys.Settings', 'winapp') + @($request.CleanupProcesses)
-    Get-Process -Name ($cleanupProcesses | Sort-Object -Unique) -ErrorAction SilentlyContinue |
-        Stop-Process -Force -ErrorAction SilentlyContinue
+    Stop-RunProcesses
 
     if ($transcriptStarted) {
         Stop-Transcript -ErrorAction SilentlyContinue | Out-Null
@@ -202,6 +325,11 @@ finally {
         BuildLabel = $request.BuildLabel
         Filter = $request.Filter
         Platform = $request.Platform
+        ProcessorAffinityMask = "0x$($processorAffinityMask.ToString('X'))"
+        LogicalProcessorCount = $logicalProcessorCount
+        ReusedStagedPayload = $reusedStagedPayload
+        RefreshedComponents = $refreshedComponents
+        PayloadFingerprint = $request.PayloadFingerprint
         RunId = $request.RunId
         StartedUtc = $startedUtc.ToString('O')
         CompletedUtc = [DateTime]::UtcNow.ToString('O')
