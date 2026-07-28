@@ -373,9 +373,14 @@ namespace PowerDisplay.Common.Services
                             CapabilitiesRaw = entry.CapabilitiesRaw,
                         };
 
-                        foreach (var feature in entry.KnownGoodVcpFeatures)
+                        // Guarded like stateFile.Monitors above: an explicit JSON null lands here
+                        // despite the member initializer, and the array can carry null elements.
+                        // An unguarded dereference would escape to the method-level catch and drop
+                        // every monitor after this one, which the next whole-file rewrite in
+                        // BuildStateJson would then make permanent.
+                        foreach (var feature in entry.KnownGoodVcpFeatures ?? Enumerable.Empty<KnownGoodVcpFeature>())
                         {
-                            if (feature.ToVcpFeatureValue().IsValid)
+                            if (feature != null && feature.ToVcpFeatureValue().IsValid)
                             {
                                 state.KnownGoodVcpFeatures[feature.Code] = feature.Clone();
                             }

@@ -26,7 +26,6 @@ public sealed class ContinuousVcpInitializerTests
         var monitor = BrightnessMonitor();
         var evidence = Evidence(new VcpInitialValue(
             new VcpFeatureValue(30, 0, 100),
-            VcpObservationSource.MaximumCompatibilityProbe,
             IsLive: true));
 
         initializer.Initialize(monitor, new IntPtr(1), evidence);
@@ -327,7 +326,6 @@ public sealed class ContinuousVcpInitializerTests
             {
                 [0x10] = new VcpInitialValue(
                     new VcpFeatureValue(45, 0, 100),
-                    VcpObservationSource.MaximumCompatibilityProbe,
                     IsLive: false,
                     PreferLiveRead: true),
             });

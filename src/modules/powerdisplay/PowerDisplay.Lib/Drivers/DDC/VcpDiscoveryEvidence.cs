@@ -14,7 +14,6 @@ namespace PowerDisplay.Common.Drivers.DDC;
 
 internal readonly record struct VcpInitialValue(
     VcpFeatureValue Value,
-    VcpObservationSource Source,
     bool IsLive,
     bool PreferLiveRead = false);
 
@@ -83,7 +82,6 @@ internal sealed class VcpDiscoveryEvidence
                 capabilities = MarkSupported(capabilities, code);
                 values[code] = new VcpInitialValue(
                     observation.Value,
-                    VcpObservationSource.MaximumCompatibilityProbe,
                     IsLive: true);
                 continue;
             }
@@ -136,7 +134,6 @@ internal sealed class VcpDiscoveryEvidence
                     // the cached value and nothing would ever refresh it.
                     values[code] = new VcpInitialValue(
                         cachedValue,
-                        knownGood.Source,
                         IsLive: false,
                         PreferLiveRead: !probed);
                 }

@@ -46,9 +46,11 @@ namespace PowerDisplay.Common.Models
 
         /// <summary>
         /// Gets or sets the known-good VCP observations cached for this exact DevicePath monitor entry.
+        /// Nullable because deserialization writes an explicit JSON <c>null</c> straight over the
+        /// initializer; readers must treat it as optional.
         /// </summary>
         [JsonPropertyName("knownGoodVcpFeatures")]
-        public List<KnownGoodVcpFeature> KnownGoodVcpFeatures { get; set; } = new();
+        public List<KnownGoodVcpFeature>? KnownGoodVcpFeatures { get; set; } = new();
 
         /// <summary>
         /// Gets or sets when this entry was last updated.
