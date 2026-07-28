@@ -108,6 +108,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AwakeIndefinitelyKeepAwakeEvent | Triggered when the system is set to stay awake indefinitely. |
 | Microsoft.PowerToys.AwakeNoKeepAwakeEvent | Occurs when Awake is turned off, allowing the computer to enter sleep mode. |
 | Microsoft.PowerToys.AwakeTimedKeepAwakeEvent | Triggered when the system is kept awake for a specified time duration. |
+| Microsoft.PowerToys.Awake_CLICommand | Triggered when an Awake CLI command is executed, logging the command name and success status. |
 
 ### Color Picker
 
@@ -204,6 +205,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FileLocksmith_Invoked | Occurs when File Locksmith is invoked. |
 | Microsoft.PowerToys.FileLocksmith_InvokedRet | Triggered when File Locksmith invocation returns a result. |
 | Microsoft.PowerToys.FileLocksmith_QueryContextMenuError | Occurs when there is an error querying the context menu for File Locksmith. |
+| Microsoft.PowerToys.FileLocksmith_CLICommand | Triggered when a File Locksmith CLI command is executed, logging the operation mode (query, kill, query-wait, query-json, or help) and success status. |
 
 ### FileExplorerAddOns
 
@@ -240,6 +242,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FindMyMouse_EnableFindMyMouse | Triggered when Find My Mouse is enabled. |
 | Microsoft.PowerToys.FindMyMouse_MousePointerFocused | Occurs when the mouse pointer is focused using Find My Mouse, including the activation method (double-tap left/right Ctrl, shake mouse, or shortcut). |
 
+### Grab And Move
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.GrabAndMove_EnableGrabAndMove | Triggered when Grab And Move is enabled or disabled. |
+| Microsoft.PowerToys.GrabAndMove_ShortcutUse | Logs an attempt to move or resize a window via the Alt+Drag shortcut, including whether it succeeded, the action type (move or resize), and the reason (e.g., started, blocked by game mode). |
+
 ### Hosts File Editor
 
 | Event Name | Description |
@@ -258,6 +267,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ImageResizer_Invoked | Occurs when Image Resizer is invoked by the user. |
 | Microsoft.PowerToys.ImageResizer_InvokedRet | Fires when the Image Resizer operation is completed and returns a result. |
 | Microsoft.PowerToys.ImageResizer_QueryContextMenuError | Triggered when there is an error querying the context menu for Image Resizer. |
+| Microsoft.PowerToys.ImageResizer_CLICommand | Triggered when an Image Resizer CLI command is executed, logging the command name and success status. |
 
 ### Keyboard Manager
 
@@ -358,6 +368,15 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.Peek_OpenWith | Occurs when an item is opened with Peek. |
 | Microsoft.PowerToys.Peek_Settings | Triggered when the settings for Peek are modified. |
 | Microsoft.PowerToys.Peek_SpaceModeEnabled | Triggered when the Space key activation mode is enabled or disabled in Peek. |
+
+### Power Display
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.PowerDisplay_EnablePowerDisplay | Triggered when Power Display is enabled or disabled. |
+| Microsoft.PowerToys.PowerDisplay_Activate | Triggered when Power Display is activated via hotkey or tray toggle. |
+| Microsoft.PowerToys.PowerDisplay_Start | Triggered when the Power Display application process starts. |
+| Microsoft.PowerToys.PowerDisplay_Settings | Periodic snapshot of Power Display settings, including whether the hotkey and tray icon are enabled, the number of detected monitors, and the number of saved profiles. |
 
 ### PowerRename
 

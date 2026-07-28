@@ -121,7 +121,7 @@
     <value>Image Resizer</value>
     <comment>Product name, do not loc</comment>
   </data>
-  <data name="Cancel.Text" xml:space="preserve">
+  <data name="Cancel.Content" xml:space="preserve">
     <value>Cancel</value>
   </data>
   <data name="Height" xml:space="preserve">
@@ -442,5 +442,8 @@
   </data>
   <data name="TitleBarTitle.Title" xml:space="preserve">
     <value>Image Resizer</value>
+  </data>
+  <data name="Resize_button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Resize</value>
   </data>
 </root>

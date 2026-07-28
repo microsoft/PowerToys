@@ -25,4 +25,7 @@ RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak64.scr"
 RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak64a.scr"
 #endif
 
+// Embed the selfie segmentation ONNX model (platform-independent).
+RCSEGMODEL             BINRES  MOVEABLE PURE   "selfie_segmentation.onnx"
+
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ZoomIt.exe.manifest"

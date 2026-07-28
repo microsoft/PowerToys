@@ -23,9 +23,7 @@
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Polly.Core" />
     <PackageReference Include="WmiLight" />
-    <PackageReference Include="System.Collections.Immutable" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

@@ -71,7 +71,7 @@
                                 <Run Text="{x:Bind ViewModel.DisplayName}" />
                             </TextBlock>
                         </controls:SettingsCard.Header>
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_ExtensionPage_Enable" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </controls:SettingsCard>
                     <controls:SwitchPresenter
                         HorizontalAlignment="Stretch"
@@ -109,11 +109,15 @@
                                                         <TextBox
                                                             x:Uid="Settings_ExtensionPage_Alias_PlaceholderText"
                                                             MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            AutomationProperties.AutomationId="CmdPal_ExtensionPage_AliasText"
                                                             AutomationProperties.LabeledBy="{x:Bind AliasSettingsCard}"
                                                             Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     </controls:SettingsCard>
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_AliasActivation_SettingsCard" IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}">
-                                                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind IsDirectAlias, Converter={StaticResource BoolToOptionConverter}, Mode=TwoWay}">
+                                                        <ComboBox
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            AutomationProperties.AutomationId="CmdPal_ExtensionPage_AliasActivationType"
+                                                            SelectedIndex="{x:Bind IsDirectAlias, Converter={StaticResource BoolToOptionConverter}, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_DirectComboBox" />
                                                             <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_IndirectComboBox" />
                                                         </ComboBox>
@@ -136,6 +140,7 @@
                                         Margin="0,0,0,4"
                                         Padding="0"
                                         VerticalAlignment="Bottom"
+                                        AutomationProperties.AutomationId="CmdPal_ExtensionPage_ManageFallbackRank"
                                         Click="RankButton_Click">
                                         <HyperlinkButton.Content>
                                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -157,6 +162,7 @@
                                         <DataTemplate x:DataType="viewModels:FallbackSettingsViewModel">
                                             <controls:SettingsExpander
                                                 Grid.Column="1"
+                                                AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                                                 Header="{x:Bind DisplayName, Mode=OneWay}"
                                                 IsExpanded="False">
                                                 <controls:SettingsExpander.HeaderIcon>
@@ -172,6 +178,13 @@
                                                     </cpcontrols:ContentIcon>
                                                 </controls:SettingsExpander.HeaderIcon>
 
+                                                <!--
+                                                    AutomationId on the inner ToggleSwitch is intentionally
+                                                    omitted because the parent SettingsExpander already
+                                                    exposes a per-fallback unique AutomationId (Id), so
+                                                    tests can locate the toggle relative to that without
+                                                    ambiguity across rows.
+                                                -->
                                                 <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
 
                                                 <controls:SettingsExpander.Items>

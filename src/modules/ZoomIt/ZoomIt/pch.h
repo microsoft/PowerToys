@@ -43,6 +43,7 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Media.Core.h>
+#include <winrt/Windows.Media.Capture.h>
 #include <winrt/Windows.Media.Editing.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.Transcoding.h>
@@ -92,7 +93,6 @@
 #include <algorithm>
 #include <filesystem>
 #include <future>
-#include <regex>
 #include <fstream>
 #include <sstream>
 

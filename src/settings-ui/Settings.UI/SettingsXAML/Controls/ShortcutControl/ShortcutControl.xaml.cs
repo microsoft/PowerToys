@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.WinUI;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Telemetry.Events;
@@ -41,6 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private HotkeySettingsControlHook hook;
         private bool _isActive;
         private bool disposedValue;
+
+        [ThreadStatic]
+        private static bool _isDialogOpen;
 
         public string Header { get; set; }
 
@@ -541,7 +545,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     if (lastValidSettings.IsValid())
                     {
-                        if (string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (hotkeySettings != null && string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             c.HasConflict = hotkeySettings.HasConflict;
                             c.ConflictMessage = hotkeySettings.ConflictDescription;
@@ -670,25 +674,48 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
-            c.Keys = null;
-            c.Keys = HotkeySettings.GetKeysList();
+            if (_isDialogOpen)
+            {
+                return;
+            }
 
-            c.IgnoreConflict = IgnoreConflict;
-            c.HasConflict = hotkeySettings.HasConflict;
-            c.ConflictMessage = hotkeySettings.ConflictDescription;
+            _isDialogOpen = true;
+            try
+            {
+                c.Keys = null;
+                c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
 
-            // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
-            // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
-            c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
+                c.IgnoreConflict = IgnoreConflict;
+                c.HasConflict = hotkeySettings?.HasConflict ?? false;
+                c.ConflictMessage = hotkeySettings?.ConflictDescription;
 
-            shortcutDialog.XamlRoot = this.XamlRoot;
-            shortcutDialog.RequestedTheme = this.ActualTheme;
-            await shortcutDialog.ShowAsync();
+                // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
+                // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
+                c.IsWarningAltGr = c.Keys.Contains("Ctrl") && c.Keys.Contains("Alt") && !c.Keys.Contains(92);
+
+                shortcutDialog.XamlRoot = this.XamlRoot;
+                shortcutDialog.RequestedTheme = this.ActualTheme;
+                await shortcutDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open shortcut dialog", ex);
+            }
+            finally
+            {
+                _isDialogOpen = false;
+            }
         }
 
         private void C_ResetClick(object sender, RoutedEventArgs e)
         {
-            hotkeySettings = null;
+            // Use an empty HotkeySettings instead of null to avoid a native E_POINTER
+            // crash in the WinUI3 XAML runtime.  Setting the DependencyProperty to null
+            // while the two-way binding is still active causes the XAML runtime to
+            // dereference a null pointer during property-change notification.
+            // An empty HotkeySettings (IsEmpty()==true) signals "no shortcut" without
+            // breaking the binding chain.
+            hotkeySettings = new HotkeySettings();
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
             SetKeys();

@@ -121,7 +121,7 @@ CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IPr
     if (argc < 2)
     {
         Logger::warn("No arguments provided");
-        return { 1, get_usage(strings) };
+        return { 1, get_usage(strings), L"help" };
     }
 
     bool json_output = false;
@@ -156,18 +156,18 @@ CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IPr
                 catch (...)
                 {
                     Logger::error("Invalid timeout value");
-                    return { 1, strings.GetString(IDS_ERROR_INVALID_TIMEOUT) };
+                    return { 1, strings.GetString(IDS_ERROR_INVALID_TIMEOUT), L"query-wait" };
                 }
             }
             else
             {
                 Logger::error("Timeout argument missing");
-                return { 1, strings.GetString(IDS_ERROR_TIMEOUT_ARG) };
+                return { 1, strings.GetString(IDS_ERROR_TIMEOUT_ARG), L"query-wait" };
             }
         }
         else if (arg == L"--help")
         {
-            return { 0, get_usage(strings) };
+            return { 0, get_usage(strings), L"help" };
         }
         else
         {
@@ -178,7 +178,7 @@ CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IPr
     if (paths.empty())
     {
         Logger::error("No paths specified");
-        return { 1, strings.GetString(IDS_ERROR_NO_PATHS) };
+        return { 1, strings.GetString(IDS_ERROR_NO_PATHS), L"query" };
     }
 
     Logger::info("Processing {} paths", paths.size());
@@ -213,13 +213,13 @@ CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IPr
                 {
                     Logger::warn("Timeout waiting for files to be unlocked");
                     ss << strings.GetString(IDS_TIMEOUT);
-                    return { 1, ss.str() };
+                    return { 1, ss.str(), L"query-wait" };
                 }
             }
 
             Sleep(200);
         }
-        return { 0, ss.str() };
+        return { 0, ss.str(), L"query-wait" };
     }
 
     auto results = finder.find(paths);
@@ -244,5 +244,6 @@ CommandResult run_command(int argc, wchar_t* argv[], IProcessFinder& finder, IPr
         output_ss << get_text(results, strings);
     }
 
-    return { 0, output_ss.str() };
+    std::wstring cmd_name = kill ? L"kill" : (json_output ? L"query-json" : L"query");
+    return { 0, output_ss.str(), cmd_name };
 }

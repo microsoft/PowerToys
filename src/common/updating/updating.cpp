@@ -87,11 +87,7 @@ namespace updating
         // If the current version starts with 0.0.*, it means we're on a local build from a farm and shouldn't check for updates.
         if constexpr (VERSION_MAJOR == 0 && VERSION_MINOR == 0)
         {
-#if USE_STD_EXPECTED
             co_return std::unexpected(LOCAL_BUILD_ERROR);
-#else
-            co_return nonstd::make_unexpected(LOCAL_BUILD_ERROR);
-#endif
         }
 
         try
@@ -143,11 +139,7 @@ namespace updating
         catch (...)
         {
         }
-#if USE_STD_EXPECTED
         co_return std::unexpected(NETWORK_ERROR);
-#else
-        co_return nonstd::make_unexpected(NETWORK_ERROR);
-#endif
     }
 #pragma warning(pop)
 

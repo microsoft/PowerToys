@@ -313,5 +313,71 @@ namespace ViewModelTests
             Assert.AreEqual(50, imageSize.Width);
             Assert.AreEqual(50, imageSize.Height);
         }
+
+        [TestMethod]
+        public void ImageSizeNameShouldNotBeSetToEmptyNullOrWhitespace()
+        {
+            // arrange
+            ImageSize imageSize = new ImageSize()
+            {
+                Id = 0,
+                Name = "Original Name",
+                Fit = ResizeFit.Fit,
+                Width = 100,
+                Height = 100,
+                Unit = ResizeUnit.Pixel,
+            };
+
+            // Act - try to set name to empty string
+            imageSize.Name = string.Empty;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to null
+            imageSize.Name = null;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to whitespace only
+            imageSize.Name = "   ";
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - set name to valid value
+            imageSize.Name = "New Valid Name";
+
+            // Assert - name should be updated
+            Assert.AreEqual("New Valid Name", imageSize.Name);
+        }
+
+        [TestMethod]
+        public void ImageSizeNameShouldNotBeNullAfterConstructionWithEmptyOrMissingName()
+        {
+            // Arrange & Act - construct with default (empty) name, simulating deserialization of legacy settings
+            ImageSize defaultSize = new ImageSize();
+
+            // Assert - name should be non-null empty string, not null (prevents NullReferenceException in callers)
+            Assert.IsNotNull(defaultSize.Name);
+
+            // Arrange & Act - construct with explicit empty name
+            ImageSize emptyNameSize = new ImageSize(id: 1, name: string.Empty);
+
+            // Assert - name should remain as the initialized default, not null
+            Assert.IsNotNull(emptyNameSize.Name);
+
+            // Arrange & Act - construct with explicit null name
+            ImageSize nullNameSize = new ImageSize(id: 2, name: null);
+
+            // Assert - name should remain as the initialized default, not null
+            Assert.IsNotNull(nullNameSize.Name);
+
+            // Verify that StartsWith can be called without NullReferenceException
+            Assert.IsFalse(defaultSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+            Assert.IsFalse(emptyNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+            Assert.IsFalse(nullNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+        }
     }
 }

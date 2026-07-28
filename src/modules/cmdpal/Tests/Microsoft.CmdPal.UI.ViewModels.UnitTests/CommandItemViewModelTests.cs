@@ -79,6 +79,25 @@ public class CommandItemViewModelTests
     }
 
     [TestMethod]
+    public void FastInitializeProperties_CreatesPrimaryContextItem()
+    {
+        // Context menus are opened from fast-initialized list items before slow init completes.
+        // The synthetic primary command must already exist so the first right-click can open the menu.
+        var pageContext = new TestPageContext();
+        var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+        {
+            Title = "Primary",
+        };
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.FastInitializeProperties();
+
+        Assert.AreEqual(1, viewModel.AllCommands.Count);
+        Assert.IsTrue(viewModel.CanOpenContextMenu);
+        Assert.AreEqual("Primary", ((CommandContextItemViewModel)viewModel.AllCommands[0]).Name);
+    }
+
+    [TestMethod]
     public void LatePrimaryCommandCreation_AddsPrimaryToAllCommands()
     {
         // Reproduces issue where SlowInitializeProperties runs before a real primary command exists.

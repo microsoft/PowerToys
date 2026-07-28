@@ -60,7 +60,7 @@ A markdown page is a page inside of command palette that displays markdown conte
 
 ```csharp
  interface IMarkdownPage requires IPage {
-     String[] Bodies(); // TODO! should this be an IBody, so we can make it observable?
+     String[] Bodies(); 
      IDetails Details();
      IContextItem[] Commands { get; };
  }

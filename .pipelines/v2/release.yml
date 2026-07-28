@@ -104,6 +104,10 @@ extends:
               # Have msbuild use the release nuget config profile
               additionalBuildOptions: /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config" /p:EnableCmdPalAOT=true
               beforeBuildSteps:
+                # Install the Terrapin retrieval tool, which replaces vcpkg's download handler
+                # to redirect it to a safe Microsoft-controlled location
+                - template: .pipelines/v2/templates/steps-install-terrapin.yml@self
+
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
                     .pipelines/versionSetting.ps1 -versionNumber '${{ parameters.versionNumber }}' -DevEnvironment ''
@@ -140,6 +144,10 @@ extends:
                 signCertName: $(SigningSignCertName)
                 useManagedIdentity: $(SigningUseManagedIdentity)
                 clientId: $(SigningOriginalClientId)
+              beforeBuildSteps:
+                # Install the Terrapin retrieval tool, which replaces vcpkg's download handler
+                # to redirect it to a safe Microsoft-controlled location
+                - template: .pipelines/v2/templates/steps-install-terrapin.yml@self
 
       - stage: Publish
         displayName: Publish

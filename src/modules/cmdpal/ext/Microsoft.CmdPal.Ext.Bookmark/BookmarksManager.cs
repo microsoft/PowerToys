@@ -47,6 +47,7 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
     public BookmarkData Add(string name, string bookmark)
     {
         var newBookmark = new BookmarkData(name, bookmark);
+        Logger.LogDebug($"BookmarksManager.Add: created bookmark id={newBookmark.Id} name='{name}' value='{bookmark}'");
 
         lock (_lock)
         {

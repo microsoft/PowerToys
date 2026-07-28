@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.UITest
     public static class VisualAssert
     {
         /// <summary>
-        /// Asserts current visual state of the element is equal with base line image.
+        /// Asserts current visual state of the element is equal to base line image.
         /// To use this VisualAssert, you need to set Window Theme to Light-Mode to avoid Theme color difference in baseline image.
         /// Such limitation could be removed either Auto-generate baseline image for both Light & Dark mode
         /// </summary>

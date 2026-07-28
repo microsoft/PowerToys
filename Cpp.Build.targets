@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+    PowerToys global C++ post-targets. Wired in via
+    <ForceImportAfterCppTargets> in Cpp.Build.props so MSBuild loads this
+    file AFTER Microsoft.Cpp.targets for every .vcxproj.
+
+    Conditionally imports vcpkg.targets to hook ClCompile into vcpkg's
+    VcpkgInstallManifestDependencies target so spdlog headers are
+    auto-discovered on the include path and spdlog.lib is auto-linked.
+    vcpkg.props is imported in Cpp.Build.props (before Microsoft.Cpp.props);
+    vcpkg.targets needs the matching "after" hook here.
+  -->
+  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(VcpkgEnabled)' == 'true' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets')" />
+</Project>

@@ -176,11 +176,22 @@ function Get-DefaultPlatform {
     return 'x64'
 }
 
+function Test-VsHasNativeTools {
+    # Returns $true when the current process environment was initialized with a
+    # usable native (C++) toolchain. Any VS instance (full SKU or Build Tools)
+    # without the C++ workload leaves these unset, which is the original
+    # MSB4086 ($(PlatformToolsetVersion) empty) failure mode we are guarding
+    # against.
+    if (-not $env:VCToolsInstallDir) { return $false }
+    if (-not (Test-Path $env:VCToolsInstallDir)) { return $false }
+    return $true
+}
+
 function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:DevEnvDir -or $env:VCToolsInstallDir) {
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
         Write-Host "[VS] VS developer environment already present"
         return $true
     }
@@ -193,22 +204,44 @@ function Ensure-VsDevEnvironment {
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
 
+    # Probe for a Visual Studio install with the C++ workload. Selection is
+    # capability-based (-requires VC.Tools.x86.x64), not SKU-based: full VS
+    # SKUs and Build Tools are equally valid as long as the C++ workload is
+    # installed. -prerelease lets vswhere see Preview/Insiders alongside GA.
+    $vsProducts = @('Microsoft.VisualStudio.Product.Community',
+                     'Microsoft.VisualStudio.Product.Professional',
+                     'Microsoft.VisualStudio.Product.Enterprise',
+                     'Microsoft.VisualStudio.Product.BuildTools')
+
     $instPaths = @()
     if ($vswhere) {
-        # First try with the VC tools requirement (preferred)
-        try { $p = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
-        # Fallback: try without -requires to find any VS installations
+        # Newest VS instance with the C++ VC tools workload (stable + prerelease).
+        try { $p = & $vswhere -latest -prerelease -products $vsProducts -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
+        # Last-resort fallback if no instance reports the VC workload (still
+        # validated below by Test-VsHasNativeTools to skip unusable installs).
         if (-not $instPaths) {
-            try { $p2 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
+            try { $p2 = & $vswhere -latest -prerelease -products $vsProducts -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
         }
     }
 
-    # Add explicit common year-based candidates as a last resort
+    # Add explicit common candidates as a last resort (newest first)
     if (-not $instPaths) {
         $explicit = @(
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Enterprise",
+            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise"
@@ -221,7 +254,8 @@ function Ensure-VsDevEnvironment {
         return $false
     }
 
-    # Try each candidate installation path until one works
+    # Try each candidate installation path until one yields a working native
+    # toolchain (validated post-init via Test-VsHasNativeTools).
     foreach ($inst in $instPaths) {
         if (-not $inst) { continue }
         Write-Host "[VS] Checking candidate: $inst"
@@ -234,6 +268,10 @@ function Ensure-VsDevEnvironment {
                 # Call Enter-VsDevShell using only the install path to avoid parameter name differences
                 try {
                     Enter-VsDevShell -VsInstallPath $inst -ErrorAction Stop
+                    if (-not (Test-VsHasNativeTools)) {
+                        Write-Warning "[VS] DevShell entered $inst but VC tools (VCToolsInstallDir) not present - skipping"
+                        continue
+                    }
                     Write-Host "[VS] Entered Visual Studio DevShell at $inst"
                     return $true
                 } catch {
@@ -249,11 +287,19 @@ function Ensure-VsDevEnvironment {
             Write-Host "[VS] Running VsDevCmd.bat and importing environment from $vsDevCmd"
             try {
                 $cmdOut = cmd.exe /c "`"$vsDevCmd`" && set"
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "[VS] VsDevCmd.bat exited with code $LASTEXITCODE at $inst"
+                    continue
+                }
                 foreach ($line in $cmdOut) {
                     $parts = $line -split('=',2)
                     if ($parts.Length -eq 2) {
                         try { [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process') } catch {}
                     }
+                }
+                if (-not (Test-VsHasNativeTools)) {
+                    Write-Warning "[VS] VsDevCmd.bat imported $inst but VC tools (VCToolsInstallDir) not present - skipping"
+                    continue
                 }
                 Write-Host "[VS] Imported environment from VsDevCmd.bat at $inst"
                 return $true

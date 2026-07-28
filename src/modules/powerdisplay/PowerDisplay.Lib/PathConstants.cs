@@ -13,23 +13,22 @@ namespace PowerDisplay.Common
     /// </summary>
     public static class PathConstants
     {
-        private static readonly Lazy<string> _localAppDataPath = new Lazy<string>(
-            () => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-
-        private static readonly Lazy<string> _powerToysBasePath = new Lazy<string>(
-            () => Path.Combine(_localAppDataPath.Value, "Microsoft", "PowerToys"));
-
         /// <summary>
         /// Gets the base PowerToys settings folder path.
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys
         /// </summary>
-        public static string PowerToysBasePath => _powerToysBasePath.Value;
+        public static string PowerToysBasePath
+            => Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys");
 
         /// <summary>
         /// Gets the PowerDisplay module folder path.
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay
         /// </summary>
-        public static string PowerDisplayFolderPath => Path.Combine(PowerToysBasePath, "PowerDisplay");
+        public static string PowerDisplayFolderPath
+            => Path.Combine(PowerToysBasePath, "PowerDisplay");
 
         /// <summary>
         /// Gets the PowerDisplay profiles file path.
@@ -75,6 +74,25 @@ namespace PowerDisplay.Common
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay\monitor_state.json
         /// </summary>
         public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
+
+        /// <summary>
+        /// Full path of discovery.lock. Existence at PowerDisplay.exe startup
+        /// indicates the previous run crashed inside DDC/CI capability fetch.
+        /// </summary>
+        public static string DiscoveryLockPath => Path.Combine(PowerDisplayFolderPath, "discovery.lock");
+
+        /// <summary>
+        /// Full path of crash_detected.flag. UI signal — Settings UI shows the
+        /// auto-disable InfoBar when this exists. Settings UI computes the same
+        /// path independently (cannot reference PowerDisplay.Lib).
+        /// </summary>
+        public static string CrashDetectedFlagPath => Path.Combine(PowerDisplayFolderPath, "crash_detected.flag");
+
+        /// <summary>
+        /// Full path of the global PowerToys settings.json (NOT the per-module file).
+        /// PowerDisplay.exe Phase 0 mutates enabled.PowerDisplay here.
+        /// </summary>
+        public static string GlobalPowerToysSettingsPath => Path.Combine(PowerToysBasePath, "settings.json");
 
         /// <summary>
         /// Event name for LightSwitch light theme change notifications.

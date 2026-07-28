@@ -185,7 +185,12 @@ namespace PowerDisplay.Helpers
         private nint GetAppIconHandle()
         {
             var exePath = Path.Combine(AppContext.BaseDirectory, "PowerToys.PowerDisplay.exe");
-            ExtractIconExNative(exePath, 0, out var largeIcon, out _, 1);
+            ExtractIconExNative(exePath, 0, out var largeIcon, out var smallIcon, 1);
+            if (smallIcon != 0)
+            {
+                DestroyIcon(smallIcon);
+            }
+
             return largeIcon;
         }
 

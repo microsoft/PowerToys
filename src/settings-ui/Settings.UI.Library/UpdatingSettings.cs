@@ -68,22 +68,32 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             get
             {
+                var dt = LastCheckedDateTime;
+                return dt?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+            }
+        }
+
+        [JsonIgnore]
+        public DateTime? LastCheckedDateTime
+        {
+            get
+            {
                 try
                 {
                     if (LastCheckedDate == null)
                     {
-                        return string.Empty;
+                        return null;
                     }
 
                     long seconds = long.Parse(LastCheckedDate, CultureInfo.CurrentCulture);
                     var date = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-                    return date.ToLocalTime().ToString(CultureInfo.CurrentCulture);
+                    return date.ToLocalTime();
                 }
                 catch (Exception)
                 {
                 }
 
-                return string.Empty;
+                return null;
             }
         }
 

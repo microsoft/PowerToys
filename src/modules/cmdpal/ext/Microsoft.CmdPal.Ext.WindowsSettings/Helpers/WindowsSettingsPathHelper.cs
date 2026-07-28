@@ -30,41 +30,50 @@ internal static class WindowsSettingsPathHelper
 
         foreach (var settings in windowsSettings.Settings)
         {
-            // Check if type value is filled. If not, then write log warning.
-            if (string.IsNullOrEmpty(settings.Type))
-            {
-                // TODO GH #108 Logging is something we have to take care of
-                // Log.Warn($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.", typeof(WindowsSettingsPathHelper));
-                Logger.LogWarning($"The type property is not set for setting [{settings.Name}] in json. Skipping generating of settings path.");
-                continue;
-            }
+            GeneratePathValues(settings);
+        }
+    }
 
-            // Check if "JoinedAreaPath" and "JoinedFullSettingsPath" are filled. Then log debug message.
-            if (!string.IsNullOrEmpty(settings.JoinedAreaPath))
-            {
-                // Log.Debug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
-                Logger.LogDebug($"The property [JoinedAreaPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.");
-            }
+    /// <summary>
+    /// Generates the values for <see cref="WindowsSetting.JoinedAreaPath"/> and <see cref="WindowsSetting.JoinedFullSettingsPath"/> on a single setting.
+    /// </summary>
+    /// <param name="setting">The setting to generate the path values for.</param>
+    internal static void GeneratePathValues(Classes.WindowsSetting setting)
+    {
+        // Check if type value is filled. If not, then write log warning.
+        if (string.IsNullOrEmpty(setting.Type))
+        {
+            // TODO GH #108 Logging is something we have to take care of
+            // Log.Warn($"The type property is not set for setting [{setting.Name}]. Skipping generating of settings path.", typeof(WindowsSettingsPathHelper));
+            Logger.LogWarning($"The type property is not set for setting [{setting.Name}]. Skipping generating of settings path.");
+            return;
+        }
 
-            if (!string.IsNullOrEmpty(settings.JoinedFullSettingsPath))
-            {
-                // TODO GH #108 Logging is something we have to take care of
-                // Log.Debug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
-                Logger.LogDebug($"The property [JoinedFullSettingsPath] of setting [{settings.Name}] was filled from the json. This value is not used and will be overwritten.");
-            }
+        // Check if "JoinedAreaPath" and "JoinedFullSettingsPath" are filled. Then log debug message.
+        if (!string.IsNullOrEmpty(setting.JoinedAreaPath))
+        {
+            // Log.Debug($"The property [JoinedAreaPath] of setting [{setting.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
+            Logger.LogDebug($"The property [JoinedAreaPath] of setting [{setting.Name}] was filled from the json. This value is not used and will be overwritten.");
+        }
 
-            // Generating path values.
-            if (!(settings.Areas is null) && settings.Areas.Any())
-            {
-                var areaValue = string.Join(_pathDelimiterSequence, settings.Areas);
-                settings.JoinedAreaPath = areaValue;
-                settings.JoinedFullSettingsPath = $"{settings.Type}{_pathDelimiterSequence}{areaValue}";
-            }
-            else
-            {
-                settings.JoinedAreaPath = string.Empty;
-                settings.JoinedFullSettingsPath = settings.Type;
-            }
+        if (!string.IsNullOrEmpty(setting.JoinedFullSettingsPath))
+        {
+            // TODO GH #108 Logging is something we have to take care of
+            // Log.Debug($"The property [JoinedFullSettingsPath] of setting [{setting.Name}] was filled from the json. This value is not used and will be overwritten.", typeof(WindowsSettingsPathHelper));
+            Logger.LogDebug($"The property [JoinedFullSettingsPath] of setting [{setting.Name}] was filled from the json. This value is not used and will be overwritten.");
+        }
+
+        // Generating path values.
+        if (!(setting.Areas is null) && setting.Areas.Any())
+        {
+            var areaValue = string.Join(_pathDelimiterSequence, setting.Areas);
+            setting.JoinedAreaPath = areaValue;
+            setting.JoinedFullSettingsPath = $"{setting.Type}{_pathDelimiterSequence}{areaValue}";
+        }
+        else
+        {
+            setting.JoinedAreaPath = string.Empty;
+            setting.JoinedFullSettingsPath = setting.Type;
         }
     }
 }

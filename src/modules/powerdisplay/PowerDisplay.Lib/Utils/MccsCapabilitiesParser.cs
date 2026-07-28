@@ -398,58 +398,62 @@ namespace PowerDisplay.Common.Utils
         public bool TryParseEntry(out VcpEntry entry)
         {
             entry = default;
-            SkipWhitespace();
 
-            if (IsAtEnd())
+            while (true)
             {
-                return false;
-            }
+                SkipWhitespace();
 
-            // Parse hex byte (VCP code)
-            if (!TryParseHexByte(out var code))
-            {
-                // Skip invalid character and try again
-                _position++;
-                return TryParseEntry(out entry);
-            }
-
-            var values = new List<int>();
-
-            SkipWhitespace();
-
-            // Check for optional value list
-            if (!IsAtEnd() && Peek() == '(')
-            {
-                _position++; // consume '('
-
-                // Parse values until ')'
-                while (!IsAtEnd() && Peek() != ')')
+                if (IsAtEnd())
                 {
-                    SkipWhitespace();
+                    return false;
+                }
 
-                    if (Peek() == ')')
+                // Parse hex byte (VCP code)
+                if (!TryParseHexByte(out var code))
+                {
+                    // Skip invalid character and try again
+                    _position++;
+                    continue;
+                }
+
+                var values = new List<int>();
+
+                SkipWhitespace();
+
+                // Check for optional value list
+                if (!IsAtEnd() && Peek() == '(')
+                {
+                    _position++; // consume '('
+
+                    // Parse values until ')'
+                    while (!IsAtEnd() && Peek() != ')')
                     {
-                        break;
+                        SkipWhitespace();
+
+                        if (Peek() == ')')
+                        {
+                            break;
+                        }
+
+                        if (TryParseHexByte(out var value))
+                        {
+                            values.Add(value);
+                        }
+                        else
+                        {
+                            _position++; // Skip invalid character
+                        }
                     }
 
-                    if (TryParseHexByte(out var value))
+                    if (!IsAtEnd() && Peek() == ')')
                     {
-                        values.Add(value);
-                    }
-                    else
-                    {
-                        _position++; // Skip invalid character
+                        _position++; // consume ')'
                     }
                 }
 
-                if (!IsAtEnd() && Peek() == ')')
-                {
-                    _position++; // consume ')'
-                }
+                entry = new VcpEntry(code, values);
+                return true;
             }
-
-            entry = new VcpEntry(code, values);
-            return true;
         }
 
         private bool TryParseHexByte(out byte value)
@@ -518,45 +522,48 @@ namespace PowerDisplay.Common.Utils
             code = 0;
             name = string.Empty;
 
-            SkipWhitespace();
-
-            if (IsAtEnd())
+            while (true)
             {
-                return false;
+                SkipWhitespace();
+
+                if (IsAtEnd())
+                {
+                    return false;
+                }
+
+                // Parse hex byte
+                if (!TryParseHexByte(out code))
+                {
+                    _position++;
+                    continue;
+                }
+
+                SkipWhitespace();
+
+                // Expect '('
+                if (IsAtEnd() || Peek() != '(')
+                {
+                    return false;
+                }
+
+                _position++; // consume '('
+
+                // Parse name until ')'
+                int start = _position;
+                while (!IsAtEnd() && Peek() != ')')
+                {
+                    _position++;
+                }
+
+                name = _content.Slice(start, _position - start).ToString().Trim();
+
+                if (!IsAtEnd() && Peek() == ')')
+                {
+                    _position++; // consume ')'
+                }
+
+                return true;
             }
-
-            // Parse hex byte
-            if (!TryParseHexByte(out code))
-            {
-                _position++;
-                return TryParseEntry(out code, out name);
-            }
-
-            SkipWhitespace();
-
-            // Expect '('
-            if (IsAtEnd() || Peek() != '(')
-            {
-                return false;
-            }
-
-            _position++; // consume '('
-
-            // Parse name until ')'
-            int start = _position;
-            while (!IsAtEnd() && Peek() != ')')
-            {
-                _position++;
-            }
-
-            name = _content.Slice(start, _position - start).ToString().Trim();
-
-            if (!IsAtEnd() && Peek() == ')')
-            {
-                _position++; // consume ')'
-            }
-
-            return true;
         }
 
         private bool TryParseHexByte(out byte value)

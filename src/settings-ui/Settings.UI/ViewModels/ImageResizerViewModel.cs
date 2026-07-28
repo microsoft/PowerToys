@@ -53,6 +53,13 @@ public partial class ImageResizerViewModel : Observable
 
     private Func<string, int> SendConfigMSG { get; }
 
+    /// <summary>
+    /// Tracks the next available unique ID for new presets. This should only ever increase, to
+    /// prevent reuse of IDs from deleted presets. Used for reliable round-tripping of IDs between
+    /// Settings and the client application.
+    /// </summary>
+    private int _nextId;
+
     public ImageResizerViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string> resourceLoader)
     {
         _isInitializing = true;
@@ -88,6 +95,10 @@ public partial class ImageResizerViewModel : Observable
         InitializeEnabledValue();
 
         Sizes = new ObservableCollection<ImageSize>(Settings.Properties.ImageresizerSizes.Value);
+
+        // Initialize the next ID to be one greater than the current maximum ID.
+        _nextId = Sizes.Count > 0 ? Sizes.Max(x => x.Id) + 1 : 0;
+
         JPEGQualityLevel = Settings.Properties.ImageresizerJpegQualityLevel.Value;
         PngInterlaceOption = Settings.Properties.ImageresizerPngInterlaceOption.Value;
         TiffCompressOption = Settings.Properties.ImageresizerTiffCompressOption.Value;
@@ -313,10 +324,15 @@ public partial class ImageResizerViewModel : Observable
             namePrefix = DefaultPresetNamePrefix;
         }
 
-        int maxId = Sizes.Count > 0 ? Sizes.Max(x => x.Id) : -1;
-        string sizeName = GenerateNameForNewSize(namePrefix);
+        Sizes.Add(new ImageSize(
+            _nextId,
+            GenerateNameForNewSize(namePrefix),
+            _customSize.Fit,
+            _customSize.Width,
+            _customSize.Height,
+            _customSize.Unit));
 
-        Sizes.Add(new ImageSize(maxId + 1, GenerateNameForNewSize(namePrefix), _customSize.Fit, _customSize.Width, _customSize.Height, _customSize.Unit));
+        _nextId++;
 
         // Set the focus requested flag to indicate that an add operation has occurred during the ContainerContentChanging event
         IsListViewFocusRequested = true;
@@ -326,6 +342,8 @@ public partial class ImageResizerViewModel : Observable
     {
         ImageSize size = _sizes.First(x => x.Id == id);
         Sizes.Remove(size);
+
+        // Note: _nextId is not decremented, to avoid reusing IDs.
     }
 
     public void SaveImageSizes()

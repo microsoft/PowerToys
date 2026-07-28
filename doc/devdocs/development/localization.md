@@ -52,11 +52,11 @@ If you already have a .rc file, copy the string table to a separate txt file and
 After generating the resx file, rename the existing rc and h files to ProjName.base.rc and resource.base.h. In the rc file remove the string table which is to be localized and in the .h file remove all `#define`s corresponding to localized resources. In the vcxproj of the C++ project, add the following build event:
 ```
 <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ProjName.base.rc ProjName.rc" />
+    <Exec LogStandardErrorAsError="false" Command="powershell -NonInteractive -executionpolicy Unrestricted -NoProfile $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h ProjName.base.rc ProjName.rc" />
 </Target>
 ```
 
-This event runs a script which generates a resource.h and ProjName.rc in the `Generated Files` folder using the strings in all the resx files along with the existing information in resource.base.h and ProjName.base.rc. The script is [convert-resx-to-rc.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the .rc file format. When the resources are added to the rc file the `IDS_` prefix is added and resource names are in upper case (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
+This event runs a script which generates a resource.h and ProjName.rc in the `Generated Files` folder using the strings in all the resx files along with the existing information in resource.base.h and ProjName.base.rc. The script is [convert-resx-to-rc.ps1](https://github.com/microsoft/PowerToys/blob/main/tools/build/convert-resx-to-rc.ps1). The script uses [`resgen`](https://learn.microsoft.com/dotnet/framework/tools/resgen-exe-resource-file-generator#Convert) to convert the resx file to a string table expected in the .rc file format. When the resources are added to the rc file the `IDS_` prefix is added and resource names are in uppercase (as it was originally). Any occurrences of `"` in the string resource is escaped as `""` to prevent build errors. The string tables are added to the rc file in the following format:
 ```
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US

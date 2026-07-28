@@ -1,0 +1,18 @@
+{
+  "name": "spdlog",
+  "version-string": "1.8.5-pt-616866fc",
+  "port-version": 0,
+  "description": "Very fast, header-only/compiled, C++ logging library. PowerToys overlay pinned to gabime/spdlog@616866fc (the exact submodule commit before this migration), with a single-hunk patch that works around MSVC 14.51 removing stdext::checked_array_iterator (STL4043).",
+  "homepage": "https://github.com/gabime/spdlog",
+  "license": "MIT",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

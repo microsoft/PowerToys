@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -12,6 +13,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using PowerDisplay.Common;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
 using PowerToys.Interop;
@@ -83,6 +85,22 @@ namespace PowerDisplay
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             Logger.LogInfo("OnLaunched: Application launching");
+
+            // Phase 0: must run before any DDC/CI initialization.
+            try
+            {
+                if (CrashRecovery.CreateDefault().DetectOrphanAndDisable())
+                {
+                    Logger.LogWarning("Phase 0: orphan discovery.lock detected; auto-disable sequence executed; exiting");
+                    Environment.Exit(0);
+                }
+            }
+            catch (Exception phaseZeroEx)
+            {
+                Logger.LogError($"Phase 0: auto-disable sequence failed: {phaseZeroEx}");
+                Environment.Exit(1);
+            }
+
             try
             {
                 // Single instance is already ensured by AppInstance.FindOrRegisterForKey() in Program.cs
@@ -111,6 +129,10 @@ namespace PowerDisplay
                     mw => mw.ReloadHotkeySettings(),
                     "HotkeyUpdated");
                 RegisterViewModelEvent(Constants.PowerDisplaySendSettingsTelemetryEvent(), vm => vm.SendSettingsTelemetry(), "SendSettingsTelemetry");
+                RegisterViewModelEvent(
+                    Constants.RescanPowerDisplayMonitorsEvent(),
+                    vm => _ = vm.RefreshMonitorsAsync(),
+                    "RescanMonitors");
 
                 // LightSwitch integration - apply profiles when theme changes
                 RegisterViewModelEvent(PathConstants.LightSwitchLightThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: true), "LightSwitch-Light");
@@ -319,6 +341,13 @@ namespace PowerDisplay
         {
             Logger.LogInfo("PowerDisplay shutting down");
             _trayIconService?.Destroy();
+
+            // Stop the CLI pipe server before exiting.
+            if (_mainWindow is MainWindow mw)
+            {
+                mw.Dispose();
+            }
+
             Environment.Exit(0);
         }
 
@@ -356,12 +385,18 @@ namespace PowerDisplay
             }
             else if (messageType == Constants.PowerDisplayApplyProfileMessage())
             {
-                // Apply profile by name
-                if (messageParts.Length > 1 && _mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                if (messageParts.Length <= 1
+                    || !int.TryParse(messageParts[1].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var profileId)
+                    || profileId < 1)
                 {
-                    var profileName = messageParts[1].Trim();
-                    Logger.LogInfo($"[NamedPipe] Applying profile: {profileName}");
-                    await mainWindow.ViewModel.ApplyProfileByNameAsync(profileName);
+                    Logger.LogWarning("[NamedPipe] ApplyProfile message is missing a valid positive profile id");
+                    return;
+                }
+
+                if (_mainWindow is MainWindow mainWindow && mainWindow.ViewModel != null)
+                {
+                    Logger.LogInfo($"[NamedPipe] Applying profile id: {profileId}");
+                    await mainWindow.ViewModel.ApplyProfileByIdAsync(profileId);
                 }
             }
             else if (messageType == Constants.PowerDisplayTerminateAppMessage())

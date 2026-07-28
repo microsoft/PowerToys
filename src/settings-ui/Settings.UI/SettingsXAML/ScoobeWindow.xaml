@@ -45,6 +45,10 @@
             Loaded="NavigationView_Loaded"
             OpenPaneLength="186"
             SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            </NavigationView.Resources>
             <NavigationView.MenuItemTemplate>
                 <DataTemplate x:DataType="local:ScoobeReleaseGroupViewModel">
                     <StackPanel

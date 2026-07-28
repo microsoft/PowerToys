@@ -318,6 +318,7 @@
             </Button>
 
             <Button
+                x:Uid="Resize_button"
                 Grid.Column="1"
                 MinWidth="{StaticResource ButtonMinWidth}"
                 Command="{x:Bind ViewModel.ResizeCommand}"
@@ -332,6 +333,7 @@
             </Button>
 
             <Button
+                x:Uid="Cancel"
                 Grid.Column="2"
                 MinWidth="{StaticResource ButtonMinWidth}"
                 Margin="8,0,0,0"
@@ -339,7 +341,6 @@
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Escape" />
                 </Button.KeyboardAccelerators>
-                <TextBlock x:Uid="Cancel" />
             </Button>
         </Grid>
     </Grid>

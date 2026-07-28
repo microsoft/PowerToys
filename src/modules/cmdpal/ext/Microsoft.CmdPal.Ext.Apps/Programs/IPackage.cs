@@ -17,4 +17,6 @@ public interface IPackage
     bool IsDevelopmentMode { get; }
 
     string InstalledLocation { get; }
+
+    bool IsNonRemovable { get; }
 }

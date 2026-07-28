@@ -45,7 +45,9 @@
                         x:Uid="ImageResizer_Presets"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE792;}">
                         <Button
+                            x:Name="AddSizeButton"
                             x:Uid="ImageResizer_AddSizeButton"
+                            AutomationProperties.LabeledBy="{Binding ElementName=ImageResizerPresets}"
                             Click="AddSizeButton_Click"
                             Style="{ThemeResource AccentButtonStyle}" />
                     </tkcontrols:SettingsCard>

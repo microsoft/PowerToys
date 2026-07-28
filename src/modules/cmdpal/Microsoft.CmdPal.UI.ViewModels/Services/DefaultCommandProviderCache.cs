@@ -14,7 +14,6 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
     private const string CacheFileName = "commandProviderCache.json";
 
     private readonly Dictionary<string, CommandProviderCacheItem> _cache = new(StringComparer.Ordinal);
-
     private readonly Lock _sync = new();
 
     private readonly SupersedingAsyncGate _saveGate;

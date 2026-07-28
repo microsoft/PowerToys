@@ -44,14 +44,24 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
 
+    // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
+    // CollectionChanged synchronously, and its layout pass can pump the message
+    // loop — which lets a second DoOnUiThread task start mutating FilteredItems
+    // while the first is still mid-update. C# lock is reentrant (same thread
+    // re-acquires), so _listLock cannot prevent this. Instead we use a boolean
+    // flag and defer the latest update until the in-flight one finishes.
+    private bool _isUpdatingFilteredItems;
+    private Action? _pendingFilteredItemsUpdate;
+
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
-    private InterlockedBoolean _isLoading;
+    private InterlockedBoolean _isLoadingMore;
     private int _activeFetchCount;
     private int _latestFetchGeneration;
     private bool _deferredFetchRequested;
     private bool _deferredFetchKeepSelection = true;
+    private bool _deferredFetchEnsureSelectionVisible;
 
     public event TypedEventHandler<ListViewModel, ItemsUpdatedEventArgs>? ItemsUpdated;
 
@@ -82,6 +92,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     public CommandItemViewModel EmptyContent { get; private set; }
 
     public bool IsMainPage { get; init; }
+
+    public bool IsTokenSearch { get; private set; }
 
     public bool HasCustomDebounceLogic => IsMainPage;
 
@@ -138,7 +150,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args)
     {
-        RequestFetch(args.TotalItems == IncrementalRefresh);
+        var isLoadingMore = _isLoadingMore.Value;
+
+        // Perform a soft refresh when:
+        // - the caller explicitly requests it through a flag piggybacked on args.TotalItems;
+        // - incremental loading (LoadMore) is used, which implies a soft refresh by definition.
+        RequestFetch(
+            keepSelection: args.TotalItems == IncrementalRefresh || isLoadingMore,
+            ensureSelectionVisible: !isLoadingMore);
     }
 
     protected override void OnSearchTextBoxUpdated(string searchTextBox)
@@ -185,12 +204,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
-                ApplyFilterUnderLock();
+                RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
-            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
+            ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: true, ensureSelectionVisible: true));
             UpdateEmptyContent();
-            _isLoading.Clear();
+            _isLoadingMore.Clear();
         }
     }
 
@@ -214,14 +233,16 @@ public partial class ListViewModel : PageViewModel, IDisposable
         });
     }
 
-    private void RequestFetch(bool keepSelection)
+    private void RequestFetch(bool keepSelection, bool ensureSelectionVisible)
     {
         // Keep RPC GetItems work off the UI thread. If the provider raises
         // ItemsChanged while we're already on a background thread, stay on that
         // thread so same-thread reentrancy detection still works.
         if (IsCurrentThreadUiThread())
         {
-            QueueObservedBackgroundFetch(() => RequestFetch(keepSelection), "Failed to request background fetch");
+            QueueObservedBackgroundFetch(
+                () => RequestFetch(keepSelection, ensureSelectionVisible),
+                "Failed to request background fetch");
             return;
         }
 
@@ -231,29 +252,35 @@ public partial class ListViewModel : PageViewModel, IDisposable
             {
                 _deferredFetchRequested = true;
                 _deferredFetchKeepSelection &= keepSelection;
+                _deferredFetchEnsureSelectionVisible |= ensureSelectionVisible;
             }
 
             return;
         }
 
-        FetchItems(keepSelection);
+        FetchItems(keepSelection, ensureSelectionVisible);
     }
 
     private void QueueDeferredFetchIfNeeded()
     {
         bool deferredFetchRequested;
         bool keepSelection;
+        bool ensureSelectionVisible;
         lock (_fetchStateLock)
         {
             deferredFetchRequested = _deferredFetchRequested;
             keepSelection = _deferredFetchKeepSelection;
+            ensureSelectionVisible = _deferredFetchEnsureSelectionVisible;
             _deferredFetchRequested = false;
             _deferredFetchKeepSelection = true;
+            _deferredFetchEnsureSelectionVisible = false;
         }
 
         if (deferredFetchRequested)
         {
-            QueueObservedBackgroundFetch(() => FetchItems(keepSelection), "Failed to execute deferred fetch");
+            QueueObservedBackgroundFetch(
+                () => FetchItems(keepSelection, ensureSelectionVisible),
+                "Failed to execute deferred fetch");
         }
     }
 
@@ -277,7 +304,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     }
 
     //// Run on background thread, from InitializeAsync or Model_ItemsChanged
-    private void FetchItems(bool keepSelection)
+    private void FetchItems(bool keepSelection, bool ensureSelectionVisible)
     {
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
@@ -502,14 +529,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         if (!_isDynamic)
                         {
                             // A static list? Great! Just run the filter.
-                            ApplyFilterUnderLock();
+                            RunFilteredItemsUpdate(ApplyFilterUnderLock);
                         }
                         else
                         {
                             // A dynamic list? Even better! Just stick everything into
                             // FilteredItems. The extension already did any filtering it cared about.
                             var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
-                            ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
+                            RunFilteredItemsUpdate(() => ListHelpers.InPlaceUpdateList(FilteredItems, snapshot));
                         }
 
                         UpdateEmptyContent();
@@ -525,8 +552,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     var forceFirst = _forceFirstItemPending;
                     _forceFirstItemPending = false;
 
-                    ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(forceFirstItem: IsRootPage && forceFirst));
-                    _isLoading.Clear();
+                    ItemsUpdated?.Invoke(
+                        this,
+                        new ItemsUpdatedEventArgs(
+                            forceFirstItem: IsRootPage && forceFirst,
+                            ensureSelectionVisible: ensureSelectionVisible));
+                    _isLoadingMore.Clear();
                 }
             });
     }
@@ -571,6 +602,50 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// FilteredItems to match the results.
     /// </summary>
     private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
+
+    /// <summary>
+    /// Executes an action that mutates <see cref="FilteredItems"/> with a
+    /// reentrancy guard.  WinUI3's native XAML renderer can pump the
+    /// message loop while processing a <c>CollectionChanged</c>
+    /// notification, which allows a second queued UI-thread task to begin
+    /// mutating the same collection before the first task finishes.  This
+    /// causes heap corruption inside the native ItemsRepeater / ListView
+    /// and manifests as an access-violation in ntdll.dll.
+    ///
+    /// The guard detects reentrancy (same UI thread re-entering) and
+    /// stores only the <em>latest</em> pending action.  Once the
+    /// in-flight mutation completes, the pending action (if any) executes
+    /// immediately, ensuring the UI always converges to the newest state
+    /// without overlapping mutations.
+    /// </summary>
+    private void RunFilteredItemsUpdate(Action updateAction)
+    {
+        if (_isUpdatingFilteredItems)
+        {
+            // Reentrant call — store only the latest; earlier stale
+            // updates are intentionally dropped.
+            _pendingFilteredItemsUpdate = updateAction;
+            return;
+        }
+
+        _isUpdatingFilteredItems = true;
+        try
+        {
+            updateAction();
+
+            // Drain any update that was enqueued while we were running.
+            while (_pendingFilteredItemsUpdate is not null)
+            {
+                var pending = _pendingFilteredItemsUpdate;
+                _pendingFilteredItemsUpdate = null;
+                pending();
+            }
+        }
+        finally
+        {
+            _isUpdatingFilteredItems = false;
+        }
+    }
 
     private Dictionary<IListItem, ListItemViewModel> ReadVmCache() => Volatile.Read(ref _vmCache);
 
@@ -904,7 +979,12 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
-        FetchItems(true);
+        if (model is IExtendedAttributesProvider haveProperties)
+        {
+            LoadExtendedAttributes(haveProperties.GetProperties().AsReadOnly());
+        }
+
+        FetchItems(keepSelection: true, ensureSelectionVisible: true);
         model.ItemsChanged += Model_ItemsChanged;
     }
 
@@ -919,6 +999,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
         };
     }
 
+    private void LoadExtendedAttributes(IReadOnlyDictionary<string, object> properties)
+    {
+        // Check if this is a token page
+        if (properties.TryGetValue("TokenSearch", out var isTokenSearchObj) &&
+            isTokenSearchObj is bool isTokenSearch)
+        {
+            IsTokenSearch = isTokenSearch;
+            UpdateProperty(nameof(IsTokenSearch));
+        }
+    }
+
     public void LoadMoreIfNeeded()
     {
         var model = _model.Unsafe;
@@ -927,7 +1018,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             return;
         }
 
-        if (!_isLoading.Set())
+        if (!_isLoadingMore.Set())
         {
             return;
 
@@ -945,17 +1036,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 {
                     model.LoadMore();
 
-                    // _isLoading flag will be set as a result of LoadMore,
-                    // which must raise ItemsChanged to end the loading.
+                    // LoadMore must raise ItemsChanged; the resulting fetch clears
+                    // _isLoadingMore when the updated items are published.
                 }
                 else
                 {
-                    _isLoading.Clear();
+                    _isLoadingMore.Clear();
                 }
             }
             catch (Exception ex)
             {
-                _isLoading.Clear();
+                _isLoadingMore.Clear();
                 ShowException(ex, model.Name);
             }
         });
@@ -1068,12 +1159,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             Items.Clear();
-            foreach (var item in FilteredItems)
+            RunFilteredItemsUpdate(() =>
             {
-                item.SafeCleanup();
-            }
+                foreach (var item in FilteredItems)
+                {
+                    item.SafeCleanup();
+                }
 
-            FilteredItems.Clear();
+                FilteredItems.Clear();
+            });
         }
 
         PublishVmCache(new(VmCacheComparer));

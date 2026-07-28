@@ -51,9 +51,14 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
+    private readonly Separator _pinnedSeparator = new(Resources.home_sections_pinned_title);
     private readonly Separator _resultsSeparator = new(Resources.results);
     private readonly Separator _fallbacksSeparator = new(Resources.fallbacks);
     private readonly Separator _commandsSeparator = new(Resources.home_sections_commands_title);
+
+    private TopLevelViewModel[]? _cachedPinnedViewModels;
+    private TopLevelViewModel[]? _cachedRegularViewModels;
+    private bool _defaultViewDirty = true;
 
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
@@ -100,6 +105,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged += Commands_CollectionChanged;
+        _tlcManager.PinnedCommands.CollectionChanged += PinnedCommands_CollectionChanged;
 
         _refreshThrottledDebouncedAction = new ThrottledDebouncedAction(
             () =>
@@ -140,13 +146,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
-        allApps.PropChanged += (s, p) =>
-        {
-            if (p.PropertyName == nameof(allApps.IsLoading))
-            {
-                IsLoading = ActuallyLoading();
-            }
-        };
+        allApps.PropChanged += AllApps_PropChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -166,8 +166,23 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
+    private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
+        {
+            IsLoading = ActuallyLoading();
+        }
+    }
+
+    private void PinnedCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        _defaultViewDirty = true;
+        RaiseItemsChanged();
+    }
+
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        _defaultViewDirty = true;
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
         if (_includeApps != _filteredItemsIncludesApps)
         {
@@ -238,65 +253,108 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         lock (_tlcManager.TopLevelCommands)
         {
-            // Either return the top-level commands (no search text), or the merged and
-            // filtered results.
-            if (string.IsNullOrWhiteSpace(SearchText))
+            return string.IsNullOrWhiteSpace(SearchText) ? GetDefaultViewItems() : GetSearchViewItems();
+        }
+    }
+
+    private IListItem[] GetSearchViewItems()
+    {
+        var validScoredFallbacks = _scoredFallbackItems?
+            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+            .ToList();
+
+        var validFallbacks = _fallbackItems?
+            .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
+            .ToList();
+
+        return MainListPageResultFactory.Create(
+            _filteredItems,
+            validScoredFallbacks,
+            _filteredApps,
+            validFallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            AppResultLimit);
+    }
+
+    private IListItem[] GetDefaultViewItems()
+    {
+        if (_defaultViewDirty)
+        {
+            RebuildDefaultViewCache();
+        }
+
+        var pinned = _cachedPinnedViewModels!;
+        var regular = _cachedRegularViewModels!;
+        var pinnedCount = pinned.Length;
+        var regularCount = regular.Length;
+
+        var sectionCount = (pinnedCount > 0 ? 1 : 0) + (regularCount > 0 ? 1 : 0);
+        if (sectionCount == 0)
+        {
+            return [];
+        }
+
+        var result = new IListItem[pinnedCount + regularCount + sectionCount];
+        var writeIndex = 0;
+        if (pinnedCount > 0)
+        {
+            result[writeIndex++] = _pinnedSeparator;
+            Array.Copy(pinned, 0, result, writeIndex, pinnedCount);
+            writeIndex += pinnedCount;
+        }
+
+        if (regularCount > 0)
+        {
+            result[writeIndex++] = _commandsSeparator;
+            Array.Copy(regular, 0, result, writeIndex, regularCount);
+        }
+
+        return result;
+    }
+
+    private void RebuildDefaultViewCache()
+    {
+        var allCommands = _tlcManager.TopLevelCommands;
+        var pinnedSettings = _tlcManager.PinnedCommands;
+
+        // Resolve pinned VMs in settings order
+        var pinned = new List<TopLevelViewModel>(pinnedSettings.Count);
+        for (var i = 0; i < pinnedSettings.Count; i++)
+        {
+            var s = pinnedSettings[i];
+            for (var j = 0; j < allCommands.Count; j++)
             {
-                var allCommands = _tlcManager.TopLevelCommands;
-
-                // First pass: count eligible commands
-                var eligibleCount = 0;
-                for (var i = 0; i < allCommands.Count; i++)
+                var cmd = allCommands[j];
+                if (IsEligibleTopLevelCommand(cmd) &&
+                    cmd.CommandProviderId == s.ProviderId &&
+                    cmd.Id == s.CommandId)
                 {
-                    var cmd = allCommands[i];
-                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
-                    {
-                        eligibleCount++;
-                    }
+                    pinned.Add(cmd);
+                    break;
                 }
-
-                if (eligibleCount == 0)
-                {
-                    return [];
-                }
-
-                // +1 for the separator
-                var result = new IListItem[eligibleCount + 1];
-                result[0] = _commandsSeparator;
-
-                // Second pass: populate
-                var writeIndex = 1;
-                for (var i = 0; i < allCommands.Count; i++)
-                {
-                    var cmd = allCommands[i];
-                    if (!cmd.IsFallback && !string.IsNullOrEmpty(cmd.Title))
-                    {
-                        result[writeIndex++] = cmd;
-                    }
-                }
-
-                return result;
-            }
-            else
-            {
-                var validScoredFallbacks = _scoredFallbackItems?
-                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-                    .ToList();
-
-                var validFallbacks = _fallbackItems?
-                    .Where(s => !string.IsNullOrWhiteSpace(s.Item.Title))
-                    .ToList();
-
-                return MainListPageResultFactory.Create(
-                    _filteredItems,
-                    validScoredFallbacks,
-                    _filteredApps,
-                    validFallbacks,
-                    _resultsSeparator,
-                    _fallbacksSeparator,
-                    AppResultLimit);
             }
         }
+
+        // Single pass for regular items
+        var regular = new List<TopLevelViewModel>(allCommands.Count);
+        for (var i = 0; i < allCommands.Count; i++)
+        {
+            var candidate = allCommands[i];
+            if (IsEligibleTopLevelCommand(candidate) && !_tlcManager.IsPinned(candidate.CommandProviderId, candidate.Id))
+            {
+                regular.Add(candidate);
+            }
+        }
+
+        _cachedPinnedViewModels = [.. pinned];
+        _cachedRegularViewModels = [.. regular];
+        _defaultViewDirty = false;
+    }
+
+    private static bool IsEligibleTopLevelCommand(TopLevelViewModel command)
+    {
+        return !command.IsFallback && !string.IsNullOrEmpty(command.Title);
     }
 
     private void ClearResults()
@@ -309,6 +367,13 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
+        var oldWasEmpty = string.IsNullOrEmpty(oldSearch);
+        var newWasEmpty = string.IsNullOrEmpty(newSearch);
+        if (oldWasEmpty != newWasEmpty)
+        {
+            WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(!newWasEmpty));
+        }
+
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
@@ -380,7 +445,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 {
                     specialFallbacks.Add(s);
                 }
-                else
+                else if (s.IsEnabled)
                 {
                     commonFallbacks.Add(s);
                 }
@@ -479,11 +544,9 @@ public sealed partial class MainListPage : DynamicListPage,
                     var allNewApps = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>().ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
-                    // Pinned app command IDs are stored in ProviderSettings.PinnedCommandIds.
-                    _settingsService.Settings.ProviderSettings.TryGetValue(AllAppsCommandProvider.WellKnownId, out var providerSettings);
-                    var pinnedCommandIds = providerSettings?.PinnedCommandIds;
+                    var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId);
 
-                    if (pinnedCommandIds is not null && pinnedCommandIds.Count > 0)
+                    if (pinnedCommandIds.Count > 0)
                     {
                         newApps = allNewApps.Where(li => li.Command != null && !pinnedCommandIds.Contains(li.Command.Id));
                     }
@@ -702,6 +765,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Receive(UpdateFallbackItemsMessage message)
     {
+        _tlcManager.RebuildPinnedCache();
+        _defaultViewDirty = true;
         RequestRefresh(fullRefresh: false);
     }
 
@@ -717,6 +782,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
+        _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+
+        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
 
         if (_settingsService is not null)
         {

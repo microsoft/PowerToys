@@ -84,6 +84,7 @@ struct LogSettings
     inline const static std::string zoomItLoggerName = "zoom-it";
     inline const static std::string lightSwitchLoggerName = "light-switch";
     inline const static std::string powerDisplayLoggerName = "powerdisplay";
+    inline const static std::string grabAndMoveLoggerName = "grabandmove";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

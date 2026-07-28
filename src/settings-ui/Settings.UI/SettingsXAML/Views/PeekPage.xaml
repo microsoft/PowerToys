@@ -47,6 +47,18 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysRunNotElevated, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="PeekAlwaysOnTop"
+                        x:Uid="Peek_AlwaysOnTop"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C4;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.AlwaysOnTop, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PeekShowTaskbarIcon"
+                        x:Uid="Peek_ShowTaskbarIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8F9;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTaskbarIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="PeekCloseAfterLosingFocus"
                         x:Uid="Peek_CloseAfterLosingFocus"
                         HeaderIcon="{ui:FontIcon Glyph=&#xED1A;}">
@@ -57,6 +69,12 @@
                         x:Uid="Peek_ConfirmFileDelete"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ConfirmFileDelete, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PeekShowFilePreviewTooltip"
+                        x:Uid="Peek_ShowFilePreviewTooltip"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE171;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowFilePreviewTooltip, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 

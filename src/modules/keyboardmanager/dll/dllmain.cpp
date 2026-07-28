@@ -60,7 +60,7 @@ private:
     Hotkey m_editorHotkey = { .key = 0 };
 
     // Whether to use the new WinUI3 editor
-    bool m_useNewEditor = false;
+    bool m_useNewEditor = true;
 
     ULONGLONG m_lastHotkeyTime = 0;
 
@@ -196,11 +196,11 @@ private:
             try
             {
                 auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
-                m_useNewEditor = propertiesObject.GetNamedBoolean(JSON_KEY_USE_NEW_EDITOR, false);
+                m_useNewEditor = propertiesObject.GetNamedBoolean(JSON_KEY_USE_NEW_EDITOR, true);
             }
             catch (...)
             {
-                Logger::warn("Failed to parse useNewEditor setting, defaulting to false");
+                Logger::warn("Failed to parse useNewEditor setting, defaulting to true");
             }
         }
     }

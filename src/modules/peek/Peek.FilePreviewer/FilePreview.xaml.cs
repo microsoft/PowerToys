@@ -48,6 +48,13 @@ namespace Peek.FilePreviewer
                 typeof(FilePreview),
                 new PropertyMetadata(false, async (d, e) => await ((FilePreview)d).OnScalingFactorPropertyChanged()));
 
+        public static readonly DependencyProperty ShowFilePreviewTooltipProperty =
+            DependencyProperty.Register(
+                nameof(ShowFilePreviewTooltip),
+                typeof(bool),
+                typeof(FilePreview),
+                new PropertyMetadata(true, (d, e) => ((FilePreview)d).OnShowFilePreviewTooltipChanged()));
+
         [ObservableProperty]
         private int numberOfFiles;
 
@@ -64,7 +71,7 @@ namespace Peek.FilePreviewer
         private IPreviewer? previewer;
 
         [ObservableProperty]
-        private string infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
+        private string? infoTooltip = ResourceLoaderInstance.ResourceLoader.GetString("PreviewTooltip_Blank");
 
         [ObservableProperty]
         private string noMoreFilesText = ResourceLoaderInstance.ResourceLoader.GetString("NoMoreFiles");
@@ -139,6 +146,40 @@ namespace Peek.FilePreviewer
             }
         }
 
+        public bool ShowFilePreviewTooltip
+        {
+            get => (bool)GetValue(ShowFilePreviewTooltipProperty);
+            set => SetValue(ShowFilePreviewTooltipProperty, value);
+        }
+
+        private void OnShowFilePreviewTooltipChanged()
+        {
+            if (!ShowFilePreviewTooltip)
+            {
+                InfoTooltip = null;
+            }
+            else if (Item != null)
+            {
+                _ = SafeUpdateTooltipAsync();
+            }
+        }
+
+        private async Task SafeUpdateTooltipAsync()
+        {
+            try
+            {
+                await UpdateTooltipAsync(_cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during navigation
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Tooltip update failed: " + ex.Message);
+            }
+        }
+
         public bool MatchPreviewState(PreviewState? value, PreviewState stateToMatch)
         {
             return value == stateToMatch;
@@ -194,7 +235,6 @@ namespace Peek.FilePreviewer
                 Previewer = null;
                 ImagePreview.Visibility = Visibility.Collapsed;
                 VideoPreview.Visibility = Visibility.Collapsed;
-
                 AudioPreview.Visibility = Visibility.Collapsed;
                 BrowserPreview.Visibility = Visibility.Collapsed;
                 ArchivePreview.Visibility = Visibility.Collapsed;
@@ -279,6 +319,12 @@ namespace Peek.FilePreviewer
             {
                 value.PropertyChanged += Previewer_PropertyChanged;
             }
+        }
+
+        partial void OnPreviewerChanged(IPreviewer? value)
+        {
+            // Ensure the media transport controls are only present when viewing video media.
+            VideoPreview.MediaPlayer.CommandManager.IsEnabled = value is IVideoPreviewer;
         }
 
         private void BrowserPreview_DOMContentLoaded(Microsoft.Web.WebView2.Core.CoreWebView2 sender, Microsoft.Web.WebView2.Core.CoreWebView2DOMContentLoadedEventArgs args)
@@ -366,6 +412,12 @@ namespace Peek.FilePreviewer
 
         private async Task UpdateTooltipAsync(CancellationToken cancellationToken)
         {
+            if (!ShowFilePreviewTooltip)
+            {
+                InfoTooltip = null;
+                return;
+            }
+
             if (Item == null)
             {
                 return;
@@ -388,6 +440,11 @@ namespace Peek.FilePreviewer
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 
+            if (!ShowFilePreviewTooltip)
+            {
+                return;
+            }
+
             InfoTooltip = sb.ToString();
         }
 
@@ -402,6 +459,12 @@ namespace Peek.FilePreviewer
                 var toolTip = ToolTipService.GetToolTip(previewControl) as ToolTip;
                 if (toolTip != null)
                 {
+                    if (string.IsNullOrEmpty(toolTip.Content as string))
+                    {
+                        toolTip.IsOpen = false;
+                        return;
+                    }
+
                     var pos = e.GetCurrentPoint(previewControl).Position;
                     toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
                         PlacementMode.Bottom : PlacementMode.Top;

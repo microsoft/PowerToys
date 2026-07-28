@@ -20,6 +20,11 @@ namespace ImageResizer.Cli
     public class ImageResizerCliExecutor
     {
         /// <summary>
+        /// Gets the name of the last CLI operation that was executed.
+        /// </summary>
+        public string CommandName { get; private set; } = "resize";
+
+        /// <summary>
         /// Runs the CLI executor with the provided command-line arguments.
         /// </summary>
         /// <param name="args">Command-line arguments.</param>
@@ -37,18 +42,21 @@ namespace ImageResizer.Cli
                 }
 
                 CliOptions.PrintUsage();
+                CommandName = "error";
                 return 1;
             }
 
             if (cliOptions.ShowHelp)
             {
                 CliOptions.PrintUsage();
+                CommandName = "help";
                 return 0;
             }
 
             if (cliOptions.ShowConfig)
             {
                 CliOptions.PrintConfig(Settings.Default);
+                CommandName = "show-config";
                 return 0;
             }
 
@@ -56,6 +64,7 @@ namespace ImageResizer.Cli
             {
                 Console.WriteLine(Resources.CLI_NoInputFiles);
                 CliOptions.PrintUsage();
+                CommandName = "error";
                 return 1;
             }
 

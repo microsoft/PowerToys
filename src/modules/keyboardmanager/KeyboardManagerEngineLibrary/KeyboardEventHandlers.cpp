@@ -122,6 +122,21 @@ namespace KeyboardEventHandlers
                     key_count = std::get<Shortcut>(it->second).Size();
                 }
 
+                const DWORD sourceKey = data->lParam->vkCode;
+                const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+
+                // If the matching key-down injection was blocked earlier, we passed the
+                // original key-down through to the foreground app to keep the key alive.
+                // The corresponding key-up must be passed through as well; otherwise the
+                // physical key is stranded DOWN (its down reached the app, but its up would
+                // be swallowed by the remap). Key-down and key-up arrive as separate hook
+                // events, so this is the cross-invocation counterpart of the key-down
+                // passthrough handled below.
+                if (isKeyUp && state.ConsumeSingleKeyRemapInjectionFailed(sourceKey))
+                {
+                    return 0;
+                }
+
                 std::vector<INPUT> keyEventList;
 
                 // Handle remaps to VK_WIN_BOTH
@@ -139,6 +154,14 @@ namespace KeyboardEventHandlers
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
                     ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
+
+                    // If a Ctrl/Alt/Shift key is remapped to a non-modifier key, reset the modifier state to prevent the injected key from being delivered as WM_SYSKEYDOWN instead of WM_KEYDOWN
+                    if (Helpers::IsModifierKey(it->first) && !Helpers::IsModifierKey(target) && target != VK_CAPITAL && !(it->first == VK_LWIN || it->first == VK_RWIN || it->first == CommonSharedConstants::VK_WIN_BOTH))
+                    {
+                        std::vector<INPUT> suppressList;
+                        Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(it->first), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                        ii.SendVirtualInput(suppressList);
+                    }
                 }
 
                 if (remapToKey)
@@ -169,7 +192,25 @@ namespace KeyboardEventHandlers
                     }
                 }
 
-                ii.SendVirtualInput(keyEventList);
+                if (!ii.SendVirtualInput(keyEventList))
+                {
+                    // Injection was blocked (e.g. by UIPI). Return 0 so the ORIGINAL key is
+                    // passed through instead of being swallowed, leaving no dead key. For a
+                    // key-down, remember that we passed it through so the matching key-up is
+                    // passed through too (handled above), preventing a key stranded DOWN.
+                    if (!isKeyUp)
+                    {
+                        state.SetSingleKeyRemapInjectionFailed(sourceKey, true);
+                    }
+                    return 0;
+                }
+
+                // Injection succeeded; drop any stale passthrough marker for this key so its
+                // key-up follows the normal (suppressed) path.
+                if (!isKeyUp)
+                {
+                    state.SetSingleKeyRemapInjectionFailed(sourceKey, false);
+                }
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
@@ -303,9 +344,13 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
-            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL))
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
             {
                 isAltRightKeyInvoked = true;
+            }
+            else if (data->lParam->vkCode == VK_RMENU && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            {
+                isAltRightKeyInvoked = false;
             }
 
             // If the shortcut has been pressed down
@@ -540,9 +585,12 @@ namespace KeyboardEventHandlers
 
                         // Send modifier release events first, then send text directly
                         // (SendTextInput handles multiline by flushing between chunks)
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         keyEventList.clear();
-                        Helpers::SendTextInput(remapping);
+                        Helpers::SendTextInput(remapping, ii);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -554,7 +602,10 @@ namespace KeyboardEventHandlers
 
                     Logger::trace(L"ChordKeyboardHandler:keyEventList.size:{}", keyEventList.size());
 
-                    ii.SendVirtualInput(keyEventList);
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
                     if (activatedApp.has_value())
                     {
                         if (remapToKey)
@@ -693,7 +744,10 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                     }
 
-                    ii.SendVirtualInput(keyEventList);
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
                     return 1;
                 }
 
@@ -723,12 +777,14 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            ii.SendVirtualInput(keyEventList);
-                            Helpers::SendTextInput(remapping);
+                            Helpers::SendTextInput(remapping, ii);
                             return 1;
                         }
 
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         return 1;
                     }
 
@@ -815,7 +871,10 @@ namespace KeyboardEventHandlers
                             }
                         }
 
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         return 1;
                     }
 
@@ -940,7 +999,10 @@ namespace KeyboardEventHandlers
                                 state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                             }
 
-                            ii.SendVirtualInput(keyEventList);
+                            if (!ii.SendVirtualInput(keyEventList))
+                            {
+                                return 0;
+                            }
                             return 1;
                         }
                         else
@@ -1009,7 +1071,10 @@ namespace KeyboardEventHandlers
                                     state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                                 }
 
-                                ii.SendVirtualInput(keyEventList);
+                                if (!ii.SendVirtualInput(keyEventList))
+                                {
+                                    return 0;
+                                }
                                 return 1;
                             }
                             else
@@ -1569,7 +1634,7 @@ namespace KeyboardEventHandlers
 
             if (hwnd == GetForegroundWindow())
             {
-                // only hide if this was a call from a already open program, don't make small if we just opened it.
+                // only hide if this was a call from an already open program, don't make small if we just opened it.
                 if (!isNewProcess && minimizeIfVisible)
                 {
                     Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
@@ -1723,7 +1788,7 @@ namespace KeyboardEventHandlers
                 return 0;
             }
 
-            // Convert process name to lower case
+            // Convert process name to lowercase
             std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
 
             std::wstring query_string;
@@ -1787,8 +1852,9 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        // Only send the text on keydown event
-        if (data->wParam != WM_KEYDOWN)
+        // Only send the text on key-down events. WM_SYSKEYDOWN is sent instead of
+        // WM_KEYDOWN while Alt is held, so accept it too or the remap silently drops.
+        if (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN)
         {
             return 0;
         }
@@ -1799,7 +1865,43 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        Helpers::SendTextInput(*remapping);
+        // Release held modifiers before text injection to prevent Ctrl+text corruption
+        constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU, VK_LWIN, VK_RWIN };
+        std::vector<INPUT> releaseEvents;
+
+        // A dummy key event must precede the modifier releases so that releasing a
+        // held Win (Start Menu) or Alt (menu bar) does not trigger its lone-press
+        // action when we inject the modifier key-up.
+        Helpers::SetDummyKeyEvent(releaseEvents, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+
+        bool anyModifierHeld = false;
+        for (int vk : modifierKeys)
+        {
+            if (ii.GetVirtualKeyState(vk))
+            {
+                Helpers::SetKeyEvent(releaseEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                anyModifierHeld = true;
+            }
+        }
+
+        // Only inject the dummy + modifier releases when a modifier was actually held.
+        if (anyModifierHeld)
+        {
+            if (!ii.SendVirtualInput(releaseEvents))
+            {
+                return 0;
+            }
+        }
+
+        Helpers::SendTextInput(*remapping, ii);
+
+        // Intentionally do NOT re-press the released modifiers. Once we inject a
+        // KEYUP for a modifier, GetAsyncKeyState (and therefore GetVirtualKeyState)
+        // reports it as up, so there is no reliable way to tell whether the user is
+        // still physically holding the key or has released it. Re-pressing
+        // unconditionally would risk leaving a modifier stuck down if the user let
+        // go during injection — the exact failure this change set prevents. Leaving
+        // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;
     }
