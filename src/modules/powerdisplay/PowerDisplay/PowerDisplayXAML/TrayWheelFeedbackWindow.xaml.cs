@@ -118,13 +118,16 @@ public sealed partial class TrayWheelFeedbackWindow : TransparentWindow, IDispos
         // FeedbackRoot's 8-DIP shadow padding supplies the visible Border-to-icon gap.
         var rect = TrayWheelFeedbackPlacement.Calculate(
             iconBounds,
-            displayArea.OuterBounds,
-            displayArea.WorkArea,
+            ToPixelRect(displayArea.OuterBounds),
+            ToPixelRect(displayArea.WorkArea),
             width,
             height,
             gap: 0);
 
-        FlyoutWindowHelper.MoveAndResizeOnDisplay(this, displayArea, rect);
+        FlyoutWindowHelper.MoveAndResizeOnDisplay(
+            this,
+            displayArea,
+            new RectInt32(rect.X, rect.Y, rect.Width, rect.Height));
         if (!_isVisible)
         {
             Show();
@@ -193,6 +196,9 @@ public sealed partial class TrayWheelFeedbackWindow : TransparentWindow, IDispos
             wParam,
             lParam);
     }
+
+    private static PixelRect ToPixelRect(RectInt32 rect)
+        => new(rect.X, rect.Y, rect.Width, rect.Height);
 
     private void ApplyExtendedStyles()
     {

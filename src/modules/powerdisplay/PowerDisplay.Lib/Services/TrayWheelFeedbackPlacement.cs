@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Windows.Graphics;
 
 namespace PowerDisplay.Common.Services;
 
@@ -15,10 +14,10 @@ public static class TrayWheelFeedbackPlacement
     /// <summary>
     /// Positions the overlay inward from the nearest outer display edge and clamps it to work area.
     /// </summary>
-    public static RectInt32 Calculate(
+    public static PixelRect Calculate(
         TrayIconBounds icon,
-        RectInt32 outer,
-        RectInt32 work,
+        PixelRect outer,
+        PixelRect work,
         int width,
         int height,
         int gap)
@@ -84,7 +83,7 @@ public static class TrayWheelFeedbackPlacement
         var maxY = Math.Max(minY, (long)work.Y + work.Height - height);
         x = Math.Clamp(x, minX, maxX);
         y = Math.Clamp(y, minY, maxY);
-        return new RectInt32((int)x, (int)y, width, height);
+        return new PixelRect((int)x, (int)y, width, height);
     }
 
     private enum Edge
