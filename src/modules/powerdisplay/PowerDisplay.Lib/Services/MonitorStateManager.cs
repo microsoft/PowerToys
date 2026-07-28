@@ -290,8 +290,7 @@ namespace PowerDisplay.Common.Services
                     _states.TryRemove(legacyKey, out _);
                 }
 
-                _isDirty = true;
-                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                MarkDirtyAndScheduleSave();
 
                 Logger.LogInfo(
                     $"[MonitorStateManager] Legacy migration finished: {migrated} migrated, {dropped} dropped (no match).");
@@ -392,8 +391,23 @@ namespace PowerDisplay.Common.Services
             }
         }
 
+        /// <summary>
+        /// Marks the in-memory state dirty and schedules the debounced flush.
+        /// </summary>
+        /// <remarks>
+        /// Dispose has already snapshotted <c>_isDirty</c>, disposed the debouncer and flushed by the
+        /// time a late caller can reach this, so setting the flag again would only leave the instance
+        /// permanently dirty with no path left to clear it. Late observations are dropped on purpose:
+        /// the only writer that can still arrive after Dispose is the synchronous discovery block,
+        /// and whatever it observed is re-derived by the next discovery pass.
+        /// </remarks>
         private void MarkDirtyAndScheduleSave()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             _isDirty = true;
             _saveDebouncer.Debounce(SaveStateToDiskAsync);
         }

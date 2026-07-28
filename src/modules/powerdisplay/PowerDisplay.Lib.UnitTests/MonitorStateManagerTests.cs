@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers;
@@ -284,6 +285,70 @@ public sealed class MonitorStateManagerTests
 
         Assert.AreEqual(0, manager.GetKnownGoodFeatures("MONITOR-A").Count);
         Assert.AreEqual(42, manager.GetMonitorParameters("MONITOR-A")?.Brightness);
+    }
+
+    [TestMethod]
+    public void ConcurrentUpsertAndRead_OnSameMonitorDoNotTearTheFeatureMap()
+    {
+        // ConcurrentUpserts_PreserveBothMonitorEntries uses two monitor Ids, which GetOrAdd maps to
+        // two distinct MonitorState instances and therefore two distinct lock objects — it never
+        // exercises the locks at all. The contention they actually guard is one monitor Id: the
+        // discovery thread upserting several VCP codes while the debounced save thread enumerates
+        // that same KnownGoodVcpFeatures dictionary. Without `lock (state)` the reader's
+        // ToDictionary inside GetKnownGoodFeatures observes a dictionary whose version changed
+        // mid-enumeration and throws InvalidOperationException.
+        using var manager = new MonitorStateManager(_statePath);
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 10));
+
+        const int Rounds = 100;
+        Exception? readerFailure = null;
+        using var start = new Barrier(2);
+
+        var writer = new Thread(() =>
+        {
+            start.SignalAndWait();
+            for (var round = 0; round < Rounds; round++)
+            {
+                for (byte code = 0x20; code < 0x60; code++)
+                {
+                    manager.UpsertKnownGoodFeature(MonitorA, Feature(code, current: code));
+                }
+
+                manager.RemoveKnownGoodFeatures(new[] { MonitorA });
+            }
+        })
+        {
+            IsBackground = true,
+        };
+
+        var reader = new Thread(() =>
+        {
+            start.SignalAndWait();
+            try
+            {
+                for (var round = 0; round < Rounds; round++)
+                {
+                    foreach (var pair in manager.GetKnownGoodFeatures(MonitorA))
+                    {
+                        Assert.AreEqual(100, pair.Value.Maximum);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                readerFailure = ex;
+            }
+        })
+        {
+            IsBackground = true,
+        };
+
+        writer.Start();
+        reader.Start();
+
+        Assert.IsTrue(writer.Join(TimeSpan.FromSeconds(30)), "Writer thread did not finish.");
+        Assert.IsTrue(reader.Join(TimeSpan.FromSeconds(30)), "Reader thread did not finish.");
+        Assert.IsNull(readerFailure, $"Concurrent read observed a torn feature map: {readerFailure}");
     }
 
     private static KnownGoodVcpFeature Feature(byte code, int current) => new()
