@@ -48,6 +48,7 @@ ANDSCANS
 animatedvisuals
 Animnate
 AOC
+AOCB
 aocfnapldcnfbofgmbbllojgocaelgdd
 aot
 apicontract
@@ -356,6 +357,7 @@ DCBA
 DCOM
 DCR
 ddc
+DDCCI
 DDEIf
 Deact
 debouncer
@@ -2194,6 +2196,7 @@ xcopy
 xdf
 xfd
 xhair
+XMN
 xmp
 Xoshiro
 xsi
