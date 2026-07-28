@@ -14,7 +14,8 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged,
+    IRecipient<DockAutoHideConflictMessage>
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -122,12 +123,43 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public int ToastPositionIndex
+    {
+        get => (int)_settingsService.Settings.ToastPosition;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ToastPosition = (ToastPosition)value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsToastPositionFromSystemSettings)));
+        }
+    }
+
+    public bool IsToastPositionFromSystemSettings => _settingsService.Settings.ToastPosition == ToastPosition.UseSystemSettings;
+
     public bool ShowSystemTrayIcon
     {
         get => _settingsService.Settings.ShowSystemTrayIcon;
         set
         {
             _settingsService.UpdateSettings(s => s with { ShowSystemTrayIcon = value });
+        }
+    }
+
+    public bool CompactMode
+    {
+        get => _settingsService.Settings.CompactMode;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactMode = value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CompactMode)));
+        }
+    }
+
+    public double CompactCenterHeightPercentage
+    {
+        get => _settingsService.Settings.CompactCenterHeightPercentage;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { CompactCenterHeightPercentage = (int)value });
         }
     }
 
@@ -238,6 +270,30 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool Dock_AutoHide
+    {
+        get => _settingsService.Settings.DockSettings.AutoHide;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { AutoHide = value } });
+        }
+    }
+
+    private bool _dockAutoHideConflict;
+
+    public bool Dock_AutoHideConflict
+    {
+        get => _dockAutoHideConflict;
+        private set
+        {
+            if (_dockAutoHideConflict != value)
+            {
+                _dockAutoHideConflict = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_AutoHideConflict)));
+            }
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
@@ -328,6 +384,13 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             ApplyFallbackSort();
         }
+
+        WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this);
+    }
+
+    public void Receive(DockAutoHideConflictMessage message)
+    {
+        Dock_AutoHideConflict = message.IsConflict;
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

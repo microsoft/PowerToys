@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
 using WinUIEx;
@@ -15,10 +17,27 @@ namespace RegistryPreview
         /// </summary>
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
-            jsonWindowPlacement.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(AppWindow.Position.X));
-            jsonWindowPlacement.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(AppWindow.Position.Y));
-            jsonWindowPlacement.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(AppWindow.Size.Width));
-            jsonWindowPlacement.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(AppWindow.Size.Height));
+            // Any exception that escapes a WinRT event handler is projected back to
+            // the CsWinRT dispatcher as a failed HRESULT, and CFlat fail-fasts the
+            // process. Defend the handler so a transient teardown failure (e.g.,
+            // null placement state, separated RCW during shutdown) can't terminate
+            // the editor unexpectedly.
+            try
+            {
+                if (jsonWindowPlacement == null)
+                {
+                    return;
+                }
+
+                jsonWindowPlacement.SetNamedValue("appWindow.Position.X", JsonValue.CreateNumberValue(AppWindow.Position.X));
+                jsonWindowPlacement.SetNamedValue("appWindow.Position.Y", JsonValue.CreateNumberValue(AppWindow.Position.Y));
+                jsonWindowPlacement.SetNamedValue("appWindow.Size.Width", JsonValue.CreateNumberValue(AppWindow.Size.Width));
+                jsonWindowPlacement.SetNamedValue("appWindow.Size.Height", JsonValue.CreateNumberValue(AppWindow.Size.Height));
+            }
+            catch (Exception ex)
+            {
+                ManagedCommon.Logger.LogError("Unhandled exception in RegistryPreview MainWindow.AppWindow_Closing; suppressing to avoid fail-fast.", ex);
+            }
         }
 
         /// <summary>

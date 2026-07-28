@@ -19,9 +19,9 @@
 #include "WebcamPreviewWindow.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
+#include "ImageEncoder.h"
 #include <wtsapi32.h>
 #include <tlhelp32.h>
-#include <limits>
 #include <vector>
 
 #ifdef __ZOOMIT_POWERTOYS__
@@ -174,6 +174,8 @@ DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
 DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
+DWORD   g_SnipSaveToggleMod;
+DWORD   g_SnipPanoramaSaveToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -212,7 +214,10 @@ BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
 WebcamPreviewWindow g_WebcamPreview;
+// The full path of the last saved recording file.
 std::wstring	g_RecordingSaveLocation;
+// The last user-chosen recording filename. Used to construct unique recording filenames.
+std::wstring	g_RecordingSaveBaseFilename;
 std::wstring	g_ScreenshotSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
 std::shared_ptr<VideoRecordingSession> g_RecordingSession = nullptr;
@@ -725,7 +730,7 @@ RunningOnWin64(
 // this executable.
 //
 //--------------------------------------------------------------------
-BOOLEAN ExtractImageResource( PTCHAR ResourceName, PTCHAR TargetFile )
+BOOLEAN ExtractImageResource( PCTSTR ResourceName, PTCHAR TargetFile )
 {
     HRSRC		hResource;
     HGLOBAL		hImageResource;
@@ -1440,7 +1445,7 @@ HBITMAP CreateFadedDesktopBackground( HDC hdc, LPRECT rcScreen, LPRECT rcCrop )
 //
 // AdjustToMoveBoundary
 //
-// Shifts to accomodate move boundary.
+// Shifts to accommodate move boundary.
 //
 //----------------------------------------------------------------------------
 void AdjustToMoveBoundary( float zoomLevel, int *coordinate, int cursor, int size, int max )
@@ -1498,43 +1503,6 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
 }
 
 
-//----------------------------------------------------------------------------
-//
-// GetEncoderClsid
-//
-//----------------------------------------------------------------------------
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
-{
-   UINT  num = 0;          // number of image encoders
-   UINT  size = 0;         // size of the image encoder array in bytes
-using namespace Gdiplus;
-
-   ImageCodecInfo* pImageCodecInfo = NULL;
-
-   GetImageEncodersSize(&num, &size);
-   if(size == 0)
-      return -1;  // Failure
-
-   pImageCodecInfo = static_cast<ImageCodecInfo*>(malloc(size));
-   if(pImageCodecInfo == NULL)
-      return -1;  // Failure
-
-   GetImageEncoders(num, size, pImageCodecInfo);
-
-   for(UINT j = 0; j < num; ++j)
-   {
-      if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
-      {
-         *pClsid = pImageCodecInfo[j].Clsid;
-         free(pImageCodecInfo);
-         return j;  // Success
-      }
-   }
-
-   free(pImageCodecInfo);
-   return -1;  // Failure
-}
-
 //----------------------------------------------------------------------
 //
 // ConvertToUnicode
@@ -1575,26 +1543,6 @@ HBITMAP LoadImageFile( PTCHAR Filename )
     }
     delete bitmap;
     return hBmp;
-}
-
-
-//----------------------------------------------------------------------------
-//
-// SavePng
-//
-// Use gdi+ to save a PNG.
-//
-//----------------------------------------------------------------------------
-DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap )
-{
-    Gdiplus::Bitmap		bitmap( hBitmap, NULL );
-    CLSID pngClsid;
-    GetEncoderClsid(L"image/png", &pngClsid);
-    if( bitmap.Save( Filename, &pngClsid, NULL )) {
-
-        return GetLastError();
-    }
-    return ERROR_SUCCESS;
 }
 
 
@@ -2837,6 +2785,323 @@ INT_PTR CALLBACK AdvancedBreakProc( HWND hDlg, UINT message, WPARAM wParam, LPAR
 
 //----------------------------------------------------------------------------
 //
+// WebcamSettingsProc
+//
+//----------------------------------------------------------------------------
+INT_PTR CALLBACK WebcamSettingsProc( HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam )
+{
+    static std::vector<std::pair<std::wstring, std::wstring>> webcams;
+    static UINT currentDpi = DPI_BASELINE;
+    static HWND s_hBrightnessTooltip = nullptr;
+
+    switch( message ) {
+    case WM_INITDIALOG:
+    {
+        HICON hIcon = LoadIcon( g_hInstance, L"APPICON" );
+        if( hIcon )
+        {
+            SendMessage( hDlg, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon) );
+            SendMessage( hDlg, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon) );
+        }
+
+        // Enumerate webcam devices
+        webcams.clear();
+        {
+            MFStartup( MF_VERSION, MFSTARTUP_LITE );
+            IMFAttributes* pAttributes = nullptr;
+            if( SUCCEEDED( MFCreateAttributes( &pAttributes, 1 ) ) )
+            {
+                pAttributes->SetGUID( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID );
+                IMFActivate** ppDevices = nullptr;
+                UINT32 count = 0;
+                if( SUCCEEDED( MFEnumDeviceSources( pAttributes, &ppDevices, &count ) ) )
+                {
+                    for( UINT32 i = 0; i < count; i++ )
+                    {
+                        LPWSTR symLink = nullptr, friendlyName = nullptr;
+                        UINT32 nameLen = 0;
+                        if( SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symLink, &nameLen ) ) &&
+                            SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &friendlyName, &nameLen ) ) )
+                        {
+                            webcams.emplace_back( symLink, friendlyName );
+                        }
+                        if( symLink ) CoTaskMemFree( symLink );
+                        if( friendlyName ) CoTaskMemFree( friendlyName );
+                        ppDevices[i]->Release();
+                    }
+                    CoTaskMemFree( ppDevices );
+                }
+                pAttributes->Release();
+            }
+            MFShutdown();
+        }
+
+        // Populate camera combo
+        SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Default") );
+        {
+            int selection = 0;
+            for( size_t i = 0; i < webcams.size(); i++ )
+            {
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(webcams[i].second.c_str()) );
+                if( selection == 0 && wcscmp( webcams[i].first.c_str(), g_WebcamDeviceSymLink ) == 0 )
+                    selection = static_cast<int>(i + 1);
+            }
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_SETCURSEL, selection, 0 );
+        }
+
+        // Populate position combo
+        {
+            const wchar_t* positions[] = { L"Top-left", L"Top-right", L"Bottom-left", L"Bottom-right" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(positions[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_SETCURSEL, g_WebcamPosition, 0 );
+        }
+
+        // Populate size combo
+        {
+            const wchar_t* sizes[] = { L"Small", L"Medium", L"Large", L"X-Large", L"Full screen" };
+            for( int i = 0; i < 5; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(sizes[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_SETCURSEL, g_WebcamSize, 0 );
+        }
+
+        // Populate shape combo
+        {
+            const wchar_t* shapes[] = { L"Rectangle", L"Rounded Rectangle", L"Rounded Square", L"Circle" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(shapes[i]) );
+            SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, g_WebcamShape, 0 );
+        }
+
+        // Populate background mode combo
+        {
+            HWND hBgMode = GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"None") );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Blur") );
+            SendMessage( hBgMode, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Image") );
+            SendMessage( hBgMode, CB_SETCURSEL, g_WebcamBackgroundMode, 0 );
+            SetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, g_WebcamBackgroundImage );
+        }
+
+        // Initialize brightness slider
+        {
+            HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
+            SendMessage( hSlider, TBM_SETRANGE, FALSE, MAKELONG( 0, 100 ) );
+            SendMessage( hSlider, TBM_SETPOS, TRUE, g_WebcamBrightness );
+
+            // Place the built-in drag tooltip (TBS_TOOLTIPS) beneath the slider.
+            SendMessage( hSlider, TBM_SETTIPSIDE, TBTS_BOTTOM, 0 );
+
+            // Hover tooltip that displays the current brightness when not dragging.
+            // TTF_SUBCLASS lets the tooltip detect hover itself; LPSTR_TEXTCALLBACK
+            // makes us supply the current value via TTN_GETDISPINFO.
+            s_hBrightnessTooltip = CreateWindowEx(
+                WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
+                WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+                CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                hDlg, nullptr, g_hInstance, nullptr );
+            if( s_hBrightnessTooltip )
+            {
+                TOOLINFO ti = { sizeof(TOOLINFO) };
+                ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+                ti.hwnd = hDlg;
+                ti.uId = reinterpret_cast<UINT_PTR>(hSlider);
+                ti.lpszText = LPSTR_TEXTCALLBACK;
+                SendMessage( s_hBrightnessTooltip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti) );
+            }
+        }
+
+        // Set initial enabled state
+        {
+            bool isFullScreen = g_WebcamSize == 4;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE_LABEL ), !isFullScreen );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), !isFullScreen );
+            bool isImageMode = g_WebcamBackgroundMode == 2;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_IMAGE ), isImageMode );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_BROWSE ), isImageMode );
+        }
+
+        // DPI scaling
+        currentDpi = GetDpiForWindowHelper( hDlg );
+        if( currentDpi != DPI_BASELINE )
+            ScaleDialogForDpi( hDlg, currentDpi, DPI_BASELINE );
+
+        ApplyDarkModeToDialog( hDlg );
+        return TRUE;
+    }
+
+    case WM_DPICHANGED:
+        HandleDialogDpiChange( hDlg, wParam, lParam, currentDpi );
+        return TRUE;
+
+    case WM_ERASEBKGND:
+        if( IsDarkModeEnabled() )
+        {
+            HDC hdc = reinterpret_cast<HDC>(wParam);
+            RECT rc;
+            GetClientRect( hDlg, &rc );
+            FillRect( hdc, &rc, GetDarkModeBrush() );
+            return TRUE;
+        }
+        break;
+
+    case WM_CTLCOLORDLG:
+    case WM_CTLCOLORSTATIC:
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORLISTBOX:
+    {
+        HDC hdc = reinterpret_cast<HDC>(wParam);
+        HWND hCtrl = reinterpret_cast<HWND>(lParam);
+        HBRUSH hBrush = HandleDarkModeCtlColor( hdc, hCtrl, message );
+        if( hBrush )
+            return reinterpret_cast<INT_PTR>(hBrush);
+        break;
+    }
+
+    case WM_NOTIFY:
+    {
+        LPNMHDR pnmh = reinterpret_cast<LPNMHDR>(lParam);
+        if( s_hBrightnessTooltip && pnmh->hwndFrom == s_hBrightnessTooltip )
+        {
+            if( pnmh->code == TTN_GETDISPINFO )
+            {
+                LPNMTTDISPINFO pdi = reinterpret_cast<LPNMTTDISPINFO>(lParam);
+                static wchar_t buf[16];
+                int pos = static_cast<int>(SendMessage(
+                    GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER ), TBM_GETPOS, 0, 0 ));
+                _snwprintf_s( buf, _countof(buf), _TRUNCATE, L"%d", pos );
+                pdi->lpszText = buf;
+                return TRUE;
+            }
+            if( pnmh->code == TTN_SHOW )
+            {
+                // Reposition the tooltip directly beneath the slider, centered on the cursor.
+                HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
+                RECT rcSlider, rcTip;
+                GetWindowRect( hSlider, &rcSlider );
+                GetWindowRect( s_hBrightnessTooltip, &rcTip );
+                POINT pt;
+                GetCursorPos( &pt );
+                int tipW = rcTip.right - rcTip.left;
+                SetWindowPos( s_hBrightnessTooltip, HWND_TOPMOST,
+                              pt.x - tipW / 2, rcSlider.bottom + 4, 0, 0,
+                              SWP_NOSIZE | SWP_NOACTIVATE );
+                return TRUE;
+            }
+        }
+        break;
+    }
+
+    case WM_DESTROY:
+        if( s_hBrightnessTooltip )
+        {
+            DestroyWindow( s_hBrightnessTooltip );
+            s_hBrightnessTooltip = nullptr;
+        }
+        break;
+
+    case WM_COMMAND:
+        // Handle size combo change — disable shape when Full screen
+        if( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_SIZE )
+        {
+            bool isFullScreen = SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_GETCURSEL, 0, 0 ) == 4;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE_LABEL ), !isFullScreen );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), !isFullScreen );
+        }
+        // Handle background mode combo change — show/hide browse controls
+        if( HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_BG_MODE )
+        {
+            bool isImageMode = SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE ), CB_GETCURSEL, 0, 0 ) == 2;
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_IMAGE ), isImageMode );
+            EnableWindow( GetDlgItem( hDlg, IDC_WEBCAM_BG_BROWSE ), isImageMode );
+        }
+
+        switch( LOWORD(wParam) ) {
+        case IDC_WEBCAM_BG_BROWSE:
+        {
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Bitmap Files (*.bmp;*.dib)", L"*.bmp;*.dib" },
+                { L"PNG (*.png)", L"*.png" },
+                { L"JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)", L"*.jpg;*.jpeg;*.jpe;*.jfif" },
+                { L"GIF (*.gif)", L"*.gif" },
+                { L"All Picture Files", L"*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif" },
+                { L"All Files", L"*.*" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 5 );
+            openDialog->SetTitle( L"ZoomIt: Specify Background Image..." );
+
+            TCHAR bgFilePath[MAX_PATH], bgInitDir[MAX_PATH];
+            GetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, bgFilePath, _countof( bgFilePath ) );
+            if( _tcsrchr( bgFilePath, '\\' ) )
+            {
+                _tcscpy( bgInitDir, bgFilePath );
+                *( _tcsrchr( bgInitDir, '\\' ) + 1 ) = 0;
+            }
+            else
+            {
+                _tcscpy( bgFilePath, L"%USERPROFILE%\\Pictures" );
+                ExpandEnvironmentStrings( bgFilePath, bgInitDir, _countof( bgInitDir ) );
+            }
+            wil::com_ptr<IShellItem> folderItem;
+            if( SUCCEEDED( SHCreateItemFromParsingName( bgInitDir, nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
+                openDialog->SetFolder( folderItem.get() );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                        SetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, pathStr.get() );
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+
+        case IDOK:
+            g_WebcamPosition = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_POSITION ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamSize = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SIZE ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamShape = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_SHAPE ), CB_GETCURSEL, 0, 0 ));
+            g_WebcamBackgroundMode = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BG_MODE ), CB_GETCURSEL, 0, 0 ));
+            GetDlgItemText( hDlg, IDC_WEBCAM_BG_IMAGE, g_WebcamBackgroundImage, MAX_PATH );
+            g_WebcamBrightness = static_cast<DWORD>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER ), TBM_GETPOS, 0, 0 ));
+            {
+                int wcIndex = static_cast<int>(SendMessage( GetDlgItem( hDlg, IDC_WEBCAM_DEVICE ), CB_GETCURSEL, 0, 0 ));
+                _tcscpy( g_WebcamDeviceSymLink, wcIndex == 0 ? L"" : webcams[static_cast<size_t>(wcIndex) - 1].first.c_str() );
+            }
+            reg.WriteRegSettings( RegSettings );
+            EndDialog( hDlg, 0 );
+            break;
+
+        case IDCANCEL:
+            EndDialog( hDlg, 0 );
+            return TRUE;
+        }
+        break;
+    }
+
+    return FALSE;
+}
+
+
+//----------------------------------------------------------------------------
+//
 // OptionsTabProc
 //
 //----------------------------------------------------------------------------
@@ -2972,52 +3237,33 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 // Enable/disable audio controls based on selection (GIF has no audio)
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
 
-                // Enable/disable webcam controls (webcam overlay is MP4-only).
-                // Also keep everything disabled if no webcam is present.
-                bool hasWebcam = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), CB_GETCOUNT, 0, 0) > 1;
-                bool webcamEnabled = hasWebcam && !isGifSelected && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
-                {
-                    bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
-                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
-                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
-                }
+                // Enable/disable webcam overlay and settings button (webcam overlay is MP4-only).
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_OVERLAY), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SETTINGS), !isGifSelected && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED);
             }
         }
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_WEBCAM_OVERLAY) {
-            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
-            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
-            {
-                bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
-                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
-            }
+            bool webcamEnabled = IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SETTINGS), webcamEnabled);
         }
-        // Handle webcam size combo change — disable shape when Full screen selected
-        if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_SIZE) {
-            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
-            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
-            bool isFullScreen = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
-            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+        if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CAPTURE_AUDIO) {
+            bool micEnabled = IsDlgButtonChecked(hDlg, IDC_CAPTURE_AUDIO) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), micEnabled);
+
         }
 
         switch ( LOWORD( wParam )) {
+        case IDC_WEBCAM_SETTINGS:
+            DialogBox( g_hInstance, L"WEBCAM_SETTINGS", hDlg, WebcamSettingsProc );
+            break;
         case IDC_ADVANCED_BREAK:
             DialogBox( g_hInstance, L"ADVANCED_BREAK", hDlg, AdvancedBreakProc );
             break;
@@ -3341,12 +3587,16 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_SnipToggleKey) {
         registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
-        registerHotkey( SNIP_SAVE_HOTKEY, ( g_SnipToggleMod ^ MOD_SHIFT ), g_SnipToggleKey & 0xFF );
     }
-    if( g_SnipPanoramaToggleKey &&
+    if (g_SnipSaveToggleKey) {
+        registerHotkey( SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF);
+    }
+    if (g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
-        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipPanoramaSaveToggleKey) {
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
@@ -4575,9 +4825,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
+    DWORD			newSnipSaveToggleKey, newSnipSaveToggleMod;
+    DWORD			newSnipPanoramaSaveToggleKey, newSnipPanoramaSaveToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
-    static std::vector<std::pair<std::wstring, std::wstring>>	webcams;
 
     auto CleanupFonts = [&]()
     {
@@ -4810,7 +5061,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipSaveToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipSaveToggleKey, 0 );
         if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipPanoramaSaveToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaSaveToggleKey, 0 );
         if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
@@ -4848,6 +5101,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX,
             g_MicMonoMix ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION,
+            g_NoiseCancellation ? BST_CHECKED: BST_UNCHECKED );
 
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO,
             g_RecordAspectRatio ? BST_CHECKED: BST_UNCHECKED );
@@ -4924,101 +5180,19 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         bool isGifSelected = (g_RecordingFormat == RecordingFormat::GIF);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
-        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected);
-        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected && g_CaptureAudio);
 
         // Webcam overlay controls
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY,
             g_WebcamOverlay ? BST_CHECKED : BST_UNCHECKED );
 
-        // Enumerate webcam devices
-        webcams.clear();
+        // Set initial enabled state for webcam overlay and settings button
         {
-            MFStartup( MF_VERSION, MFSTARTUP_LITE );
-            IMFAttributes* pAttributes = nullptr;
-            if( SUCCEEDED( MFCreateAttributes( &pAttributes, 1 ) ) )
-            {
-                pAttributes->SetGUID( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID );
-                IMFActivate** ppDevices = nullptr;
-                UINT32 count = 0;
-                if( SUCCEEDED( MFEnumDeviceSources( pAttributes, &ppDevices, &count ) ) )
-                {
-                    for( UINT32 i = 0; i < count; i++ )
-                    {
-                        WCHAR* symLink = nullptr;
-                        UINT32 symLinkLen = 0;
-                        WCHAR* friendlyName = nullptr;
-                        UINT32 nameLen = 0;
-                        if( SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symLink, &symLinkLen ) ) &&
-                            SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &friendlyName, &nameLen ) ) )
-                        {
-                            webcams.emplace_back( symLink, friendlyName );
-                        }
-                        if( symLink ) CoTaskMemFree( symLink );
-                        if( friendlyName ) CoTaskMemFree( friendlyName );
-                        ppDevices[i]->Release();
-                    }
-                    CoTaskMemFree( ppDevices );
-                }
-                pAttributes->Release();
-            }
-            MFShutdown();
-        }
-
-        // Add webcam devices to combo box
-        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default") );
-        selection = 0;
-        for( size_t i = 0; i < webcams.size(); i++ )
-        {
-            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(webcams[i].second.c_str()) );
-            if( selection == 0 && wcscmp( webcams[i].first.c_str(), g_WebcamDeviceSymLink ) == 0 )
-            {
-                selection = i + 1;
-            }
-        }
-        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
-
-        // Webcam position combo
-        {
-            const wchar_t* positions[] = { L"Top left", L"Top right", L"Bottom left", L"Bottom right" };
-            for( int i = 0; i < 4; i++ )
-                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(positions[i]) );
-            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamPosition), static_cast<LPARAM>(0) );
-        }
-
-        // Webcam size combo
-        {
-            const wchar_t* sizes[] = { L"Small", L"Medium", L"Large", L"X-Large", L"Full screen" };
-            for( int i = 0; i < 5; i++ )
-                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(sizes[i]) );
-            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamSize), static_cast<LPARAM>(0) );
-        }
-
-        // Webcam shape combo
-        {
-            const wchar_t* shapes[] = { L"Rectangle", L"Rounded rectangle", L"Rounded square", L"Circle" };
-            for( int i = 0; i < 4; i++ )
-                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(shapes[i]) );
-            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamShape), static_cast<LPARAM>(0) );
-        }
-
-        // Set initial enabled state for webcam controls.
-        // Disable everything if no webcam is detected on the system.
-        {
-            bool hasWebcam = !webcams.empty();
-            bool webcamEnabled = hasWebcam && !isGifSelected && g_WebcamOverlay;
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), webcamEnabled);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), webcamEnabled);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
-            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), webcamEnabled);
-            {
-                bool isFullScreen = webcamEnabled && g_WebcamSize == 4;
-                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
-                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
-            }
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY), !isGifSelected);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SETTINGS), !isGifSelected && g_WebcamOverlay);
         }
 
         if( GetFileAttributes( g_DemoTypeFile ) == -1 )
@@ -5351,7 +5525,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaSaveToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_SAVE_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
             newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
@@ -5361,7 +5537,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipSaveToggleMod = GetKeyMod( newSnipSaveToggleKey );
             newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
+            newSnipPanoramaSaveToggleMod = GetKeyMod( newSnipPanoramaSaveToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
@@ -5372,6 +5550,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
+            g_NoiseCancellation = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION) == BST_CHECKED;
             g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
@@ -5385,15 +5564,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
             _tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[static_cast<size_t>(index) - 1].first.c_str() );
 
-            // Get the webcam settings
+            // Get the webcam overlay setting (other webcam settings are saved in WebcamSettingsProc)
             g_WebcamOverlay = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
-            g_WebcamPosition = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), CB_GETCURSEL, 0, 0));
-            g_WebcamSize = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0));
-            g_WebcamShape = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), CB_GETCURSEL, 0, 0));
-            {
-                int wcIndex = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), CB_GETCURSEL, 0, 0));
-                _tcscpy( g_WebcamDeviceSymLink, wcIndex == 0 ? L"" : webcams[static_cast<size_t>(wcIndex) - 1].first.c_str() );
-            }
 
             if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
 
@@ -5436,8 +5608,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
             }
             else if (newSnipToggleKey &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, (newSnipToggleMod ^ MOD_SHIFT), newSnipToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_HOTKEY, newSnipToggleMod, newSnipToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -5445,12 +5616,29 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_SAVE_HOTKEY, newSnipSaveToggleMod, newSnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if (newSnipPanoramaToggleKey &&
                 (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
-                (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, ( newSnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF))) {
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, newSnipPanoramaSaveToggleMod | MOD_NOREPEAT, newSnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 UnregisterAllHotkeys(GetParent(hDlg));
                 break;
@@ -5465,18 +5653,15 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
-            else if( newRecordToggleKey ) {
-                UINT cropMod = newRecordToggleMod ^ MOD_SHIFT;
-                UINT windowMod = newRecordToggleMod ^ MOD_ALT;
-                if (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY, newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
-                    (cropMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)) ||
-                    (windowMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF))) {
+            else if( UINT cropMod = newRecordToggleMod ^ MOD_SHIFT, windowMod = newRecordToggleMod ^ MOD_ALT; newRecordToggleKey &&
+                (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY, newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
+                (cropMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)) ||
+                (windowMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)))) {
 
-                    MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
-                        APPNAME, MB_ICONERROR);
-                    UnregisterAllHotkeys(GetParent(hDlg));
-                    break;
-                }
+                MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
             } else {
 
                 g_BreakTimeout = newTimeout;
@@ -5493,8 +5678,12 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipSaveToggleKey = newSnipSaveToggleKey;
+                g_SnipSaveToggleMod = newSnipSaveToggleMod;
                 g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
                 g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipPanoramaSaveToggleKey = newSnipPanoramaSaveToggleKey;
+                g_SnipPanoramaSaveToggleMod = newSnipPanoramaSaveToggleMod;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
@@ -6119,7 +6308,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 
 //----------------------------------------------------------------------------
 //
-// SavCursorArea
+// SaveCursorArea
 //
 //----------------------------------------------------------------------------
 void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
@@ -6585,6 +6774,45 @@ void StopRecording()
     }
 }
 
+//----------------------------------------------------------------------------
+// GetTimestampSuffix
+//
+// Returns a timestamp string for disambiguating filenames.
+// Format: " YYYY-MM-DD HHMMSS", e.g." 2025-11-02 143000".
+//
+// Used as a suffix for the default recording filename. Ensures
+// chronological name sorting in Explorer.
+// 
+//----------------------------------------------------------------------------
+static std::wstring GetTimestampSuffix()
+{
+    auto const now = std::chrono::system_clock::now();
+    auto const in_time_t = std::chrono::system_clock::to_time_t( now );
+
+    std::tm buf{};
+    localtime_s( &buf, &in_time_t );
+
+    std::wstringstream ss;
+    ss << L" " << std::put_time( &buf, L"%Y-%m-%d %H%M%S" );
+
+    return ss.str();
+}
+
+//----------------------------------------------------------------------------
+// IsDefaultRecordingFilename
+// 
+// Determines if the provided filename matches the default recording name.
+// Case-insensitive comparison.
+// 
+// Returns:
+//   true if filename is the default; otherwise false.
+// 
+//----------------------------------------------------------------------------
+static bool IsDefaultRecordingFilename(const std::wstring& filename)
+{
+    return CompareStringOrdinal( DEFAULT_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL
+        || CompareStringOrdinal( DEFAULT_GIF_RECORDING_FILE, -1, filename.c_str(), -1, TRUE ) == CSTR_EQUAL;
+}
 
 //----------------------------------------------------------------------------
 //
@@ -6639,19 +6867,70 @@ std::wstring GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* 
 //
 // GetUniqueRecordingFilename
 //
-// Gets a unique file name for recording saves, using the " (N)" suffix
-// approach so that the user can hit OK without worrying about overwriting
-// if they are making multiple recordings in one session or don't want to
-// always see an overwrite dialog or stop to clean up files.
+// Generates a unique filename to be suggested in the "Save As" recording
+// dialog, based on the user's last chosen filename and save location.
+// This allows the user to quickly save a recording without worrying about
+// manual renaming to prevent overwriting earlier recordings.
+// 
+// There are two distinct behaviors based on the last used filename:
+// 
+// 1. For the default filename ("Recording.mp4"):
+//    Generates a more descriptive name by appending a timestamp, e.g.
+//    "Recording 2025-11-03 143015.mp4". This ensures chronological sorting
+//    in Explorer when ordered by name and is consistent with other tools.
+// 
+// 2. For custom filenames (e.g. "Presentation.mp4"):
+//    Appends a numeric suffix if the file already exists, e.g.
+//    "Presentation (1).mp4", "Presentation (2).mp4", etc.
+// 
+// Returns:
+//   A unique filename (without folder path).
+// 
+// Relies upon the global state of `g_RecordingSaveLocation` and
+// `g_RecordingSaveBaseFilename`.
 //
 //----------------------------------------------------------------------------
-auto GetUniqueRecordingFilename()
+static auto GetUniqueRecordingFilename()
 {
     const wchar_t* defaultFile = (g_RecordingFormat == RecordingFormat::GIF)
         ? DEFAULT_GIF_RECORDING_FILE
         : DEFAULT_RECORDING_FILE;
 
-    return GetUniqueFilename(g_RecordingSaveLocation, defaultFile, FOLDERID_Videos);
+    // Without a remembered filename, suggest the default name for the current format.
+    std::wstring baseFilename = g_RecordingSaveBaseFilename.empty()
+        ? std::wstring( defaultFile )
+        : g_RecordingSaveBaseFilename;
+
+    std::filesystem::path basePath{ baseFilename };
+
+    // For the default filename, append a timestamp so successive default saves stay
+    // unique and sort chronologically in Explorer.
+    if ( IsDefaultRecordingFilename( basePath.filename().wstring() ) )
+    {
+        return basePath.stem().wstring() + GetTimestampSuffix() + basePath.extension().wstring();
+    }
+
+    // For custom filenames, append a numeric suffix to avoid collisions.
+    std::filesystem::path directory;
+    if ( !g_RecordingSaveLocation.empty() )
+        directory = std::filesystem::path( g_RecordingSaveLocation ).parent_path();
+    if ( directory.empty() )
+    {
+        wil::unique_cotaskmem_string folderPath;
+        if ( SUCCEEDED( SHGetKnownFolderPath( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, folderPath.put() ) ) )
+            directory = folderPath.get();
+    }
+
+    std::wstring baseStem = basePath.stem().wstring();
+    std::wstring baseExtension = basePath.extension().wstring();
+
+    std::filesystem::path testPath = directory / ( baseStem + baseExtension );
+    for ( int index = 1; std::filesystem::exists( testPath ); index++ )
+    {
+        testPath = directory / ( baseStem + L" (" + std::to_wstring( index ) + L')' + baseExtension );
+    }
+
+    return testPath.filename().wstring();
 }
 
 //----------------------------------------------------------------------------
@@ -6683,7 +6962,7 @@ auto GetUniqueScreenshotFilename()
 //
 // StartRecordingAsync
 //
-// Starts the screen recording.
+// Initiates screen recording and handles the save dialog workflow.
 //
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
@@ -6705,6 +6984,22 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
 
     // Capture the UI thread context so we can resume on it for the save dialog
     winrt::apartment_context uiThread;
+
+    // Start audio initialization as early as possible.  AudioGraph creation
+    // and microphone device opening take ~1400 ms.  By starting here, the
+    // init runs in the background during D3D device creation, capture-item
+    // creation, file I/O, and the entire VideoRecordingSession constructor
+    // (webcam probe + warmup), giving it ~1400 ms of overlap — enough to
+    // finish before StartAsync even needs the result.
+    std::unique_ptr<AudioSampleGenerator> audioGenerator;
+    winrt::Windows::Foundation::IAsyncAction audioInitAction{ nullptr };
+    if ((g_RecordingFormat != RecordingFormat::GIF) && (g_CaptureAudio || g_CaptureSystemAudio))
+    {
+        audioGenerator = std::make_unique<AudioSampleGenerator>(
+            g_CaptureAudio, g_CaptureSystemAudio, g_MicMonoMix, g_NoiseCancellation );
+        audioInitAction = audioGenerator->InitializeAsync();
+        _diagLog( L"audio InitializeAsync started (background)" );
+    }
 
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
     auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync( tempFolderPath );
@@ -6794,9 +7089,8 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         item,
                                         *rcCrop,
                                         g_RecordFrameRate,
-                                        g_CaptureAudio,
-                                        g_CaptureSystemAudio,
-                                        g_MicMonoMix,
+                                        std::move(audioGenerator),
+                                        audioInitAction,
                                         stream );
         _diagLog( L"VideoRecordingSession::Create returned" );
 
@@ -6913,8 +7207,30 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             if (!finalPath.empty())
             {
                 auto path = std::filesystem::path(finalPath);
+
+                // Remember the user's chosen filename and apply a timestamp to default
+                // names so successive saves stay unique and sort chronologically.
+                std::wstring filename = path.filename().wstring();
+                std::wstring finalFilename = filename;
+                if ( IsDefaultRecordingFilename( filename ) )
+                {
+                    // The user accepted or re-typed the default filename. Remember it so the
+                    // next suggestion also uses a timestamp, and append one to this save.
+                    g_RecordingSaveBaseFilename = filename;
+                    finalFilename = path.stem().wstring() + GetTimestampSuffix() + path.extension().wstring();
+                }
+                else if ( CompareStringOrdinal( suggestedName.c_str(), -1, filename.c_str(), -1, TRUE ) != CSTR_EQUAL )
+                {
+                    // The user chose their own filename instead of the suggested one. Remember
+                    // it so future suggestions use numeric suffixes based on this name.
+                    g_RecordingSaveBaseFilename = filename;
+                }
+
+                // The path actually written to disk (with any timestamp applied).
+                std::wstring savedPath = ( path.parent_path() / finalFilename ).wstring();
+
                 winrt::StorageFolder folder{ co_await winrt::StorageFolder::GetFolderFromPathAsync(path.parent_path().c_str()) };
-                destFile = co_await folder.CreateFileAsync(path.filename().c_str(), winrt::CreationCollisionOption::ReplaceExisting);
+                destFile = co_await folder.CreateFileAsync(finalFilename.c_str(), winrt::CreationCollisionOption::ReplaceExisting);
 
                 // If user trimmed, use the trimmed file
                 winrt::StorageFile sourceFile = file;
@@ -6932,8 +7248,8 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                     try { co_await file.DeleteAsync(); } catch (...) {}
                 }
 
-                // Use finalPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
-                g_RecordingSaveLocation = finalPath;
+                // Use savedPath directly - destFile.Path() may be stale after MoveAndReplaceAsync
+                g_RecordingSaveLocation = savedPath;
                 // Update the registry buffer and save to persist across app restarts
                 wcsncpy_s(g_RecordingSaveLocationBuffer, g_RecordingSaveLocation.c_str(), _TRUNCATE);
                 reg.WriteRegSettings(RegSettings);
@@ -7433,7 +7749,9 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipSaveToggleMod = GetKeyMod( g_SnipSaveToggleKey );
         g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipPanoramaSaveToggleMod = GetKeyMod( g_SnipPanoramaSaveToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
@@ -7484,20 +7802,34 @@ LRESULT APIENTRY MainWndProc(
 
             }
             else if (g_SnipToggleKey &&
-                (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
             }
+            else if (g_SnipSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
-                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaSaveToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
@@ -8390,7 +8722,7 @@ LRESULT APIENTRY MainWndProc(
                     SelectObject(hdcScreenSaveCompat, hbmpDrawingCompat);
 
                     // Create cursor save bitmap
-                    // (have to accomodate large fonts and LiveZoom pen scaling)
+                    // (have to accommodate large fonts and LiveZoom pen scaling)
                     hbmpCursorCompat = CreateBitmap( MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2,
                         MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2, bmp.bmPlanes,
                         bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
@@ -8753,7 +9085,7 @@ LRESULT APIENTRY MainWndProc(
 
                     g_FontScale -= delta;
                     if( g_FontScale == 0 ) g_FontScale = 1;
-                    // Set lParam to 0 as part of message to keyup hander
+                    // Set lParam to 0 as part of message to keyup handler
                     DeleteObject(hTypingFont);
                     g_LogFont.lfHeight = max((int)(height / zoomLevel) / g_FontScale, 12);
                     if (g_LogFont.lfHeight < 20)
@@ -10087,7 +10419,9 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipSaveToggleMod = GetKeyMod(g_SnipSaveToggleKey);
         g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipPanoramaSaveToggleMod = GetKeyMod(g_SnipPanoramaSaveToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
@@ -10150,8 +10484,7 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_SnipToggleKey)
         {
-            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -10160,15 +10493,36 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
             }
         }
+        if (g_SnipSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveToggleMod, g_SnipSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
         if (g_SnipPanoramaToggleKey &&
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
-            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaSaveToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveToggleMod | MOD_NOREPEAT, g_SnipPanoramaSaveToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
@@ -10294,11 +10648,32 @@ LRESULT APIENTRY MainWndProc(
             if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
                 saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
 
-            // Set file types - index is 1-based when retrieved via GetFileTypeIndex
+            // Set file types - index is 1-based when retrieved via GetFileTypeIndex.
+            // Keep fileTypes[] and s_saveFilters[] below in the same order so the
+            // selected filter index maps directly to format/size/extension.
             COMDLG_FILTERSPEC fileTypes[] = {
                 { L"Zoomed PNG", L"*.png" },
-                { L"Actual size PNG", L"*.png" }
+                { L"Actual size PNG", L"*.png" },
+                { L"Zoomed WebP", L"*.webp" },
+                { L"Actual size WebP", L"*.webp" },
+                { L"Zoomed JPG", L"*.jpg" },
+                { L"Actual size JPG", L"*.jpg" }
             };
+            struct SaveFilterInfo
+            {
+                ImageFormat    format;
+                bool           actualSize;
+                const wchar_t* extension;
+            };
+            static const SaveFilterInfo s_saveFilters[] = {
+                { ImageFormat::Png,  false, L".png" },
+                { ImageFormat::Png,  true,  L".png" },
+                { ImageFormat::Webp, false, L".webp" },
+                { ImageFormat::Webp, true,  L".webp" },
+                { ImageFormat::Jpeg, false, L".jpg" },
+                { ImageFormat::Jpeg, true,  L".jpg" }
+            };
+
             saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
             saveDialog->SetFileTypeIndex( 1 ); // Default to "Zoomed PNG"
             saveDialog->SetDefaultExtension( L"png" );
@@ -10346,16 +10721,37 @@ LRESULT APIENTRY MainWndProc(
 
             if( !selectedFilePath.empty() )
             {
-                std::wstring targetFilePath = selectedFilePath;
-                if( targetFilePath.find(L'.') == std::wstring::npos )
-                {
-                    targetFilePath += L".png";
-                }
+                // Map the selected filter to an image format and whether to save the
+                // pixel-accurate (actual size) bitmap. Filter indices are 1-based and
+                // map directly into the parallel s_saveFilters[] table defined above.
+                UINT filterSlot = ( selectedFilterIndex >= 1 &&
+                                    selectedFilterIndex <= _countof( s_saveFilters ) )
+                                  ? selectedFilterIndex - 1 : 0;
+                const SaveFilterInfo& filterInfo = s_saveFilters[filterSlot];
+                ImageFormat imageFormat = filterInfo.format;
+                bool saveActualSize = filterInfo.actualSize;
+                const wchar_t* desiredExtension = filterInfo.extension;
 
-                if( selectedFilterIndex == 2 )
+                // Ensure the filename carries the extension that matches the chosen
+                // format. Only override when the user left the extension off or used a
+                // format extension we manage (.png/.webp/.jpg/.jpeg); otherwise respect
+                // their input.
+                std::filesystem::path targetPath( selectedFilePath );
+                std::wstring currentExt = targetPath.extension().wstring();
+                if( currentExt.empty() ||
+                    _wcsicmp( currentExt.c_str(), L".png" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".webp" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpg" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpeg" ) == 0 )
+                {
+                    targetPath.replace_extension( desiredExtension );
+                }
+                std::wstring targetFilePath = targetPath.wstring();
+
+                if( saveActualSize )
                 {
                     // Save at actual size.
-                    SavePng( targetFilePath.c_str(), hbmActualSize.get() );
+                    SaveImage( targetFilePath.c_str(), hbmActualSize.get(), imageFormat );
                 }
                 else
                 {
@@ -10382,7 +10778,7 @@ LRESULT APIENTRY MainWndProc(
                                 saveWidth, saveHeight,
                                 SRCCOPY | CAPTUREBLT );
 
-                    SavePng(targetFilePath.c_str(), hbmZoomed.get());
+                    SaveImage( targetFilePath.c_str(), hbmZoomed.get(), imageFormat );
                 }
 
                 // Remember the save location for next time and persist to registry

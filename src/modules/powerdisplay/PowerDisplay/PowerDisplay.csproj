@@ -93,6 +93,8 @@
     <!-- Removed ManagedCsWin32 - using CsWin32 directly for TrayIcon APIs -->
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Contracts\PowerDisplay.Contracts.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Ipc\PowerDisplay.Ipc.csproj" />
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
     <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
   </ItemGroup>

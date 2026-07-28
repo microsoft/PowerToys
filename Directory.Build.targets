@@ -4,6 +4,29 @@
   <Import Project="$(MSBuildCachePackageRoot)\build\$(MSBuildCachePackageName).targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
   <Import Project="$(MSBuildCacheSharedCompilationPackageRoot)\build\Microsoft.MSBuildCache.SharedCompilation.targets" Condition="'$(MSBuildCacheEnabled)' == 'true'" />
 
+  <!--
+    Onboarding guard: PowerToys has deeply nested source paths that exceed the legacy
+    260-character MAX_PATH limit. Without Windows long path support enabled, the build
+    fails with cryptic "path too long" / "could not find file" errors that are hard for
+    new contributors to diagnose. Detect the missing registry setting up front and emit a
+    clear, actionable error before the confusing failures occur.
+
+    - Covers both Visual Studio (Ctrl+Shift+B) and the command-line build scripts.
+    - Runs only during real builds (skips design-time/IntelliSense passes).
+    - Bypass with /p:SkipLongPathsCheck=true if you know what you're doing.
+    See tools\build\setup-dev-environment.ps1 to enable everything automatically.
+  -->
+  <Target Name="EnsureLongPathsEnabled"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(SkipLongPathsCheck)' != 'true' and '$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <_LongPathsEnabled>$([MSBuild]::GetRegistryValueFromView('HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem', 'LongPathsEnabled', null, RegistryView.Registry64))</_LongPathsEnabled>
+    </PropertyGroup>
+    <Error Condition="'$(_LongPathsEnabled)' != '1'"
+           Code="PTLONGPATH"
+           Text="Windows long path support is not enabled. PowerToys source paths exceed the 260-character MAX_PATH limit, so the build will fail with cryptic 'path too long' errors. Fix it by running (from an elevated PowerShell): .\tools\build\setup-dev-environment.ps1 -- or set HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled = 1 (DWORD) and restart Windows. To bypass this check, build with /p:SkipLongPathsCheck=true." />
+  </Target>
+
   <!-- Override ManifestTool to the x64 host tool under WindowsSdkDir for all projects once the SDK path is known. -->
   <PropertyGroup Label="ManifestToolOverride">
     <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>

@@ -8,6 +8,7 @@
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:panels="using:Microsoft.PowerToys.Settings.UI.Panels"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -265,30 +266,32 @@
                     </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsExpander
                         Name="MouseHighlighterAppearanceBehavior"
-                        x:Uid="Appearance_Behavior"
+                        x:Uid="MouseUtils_MouseHighlighter_Appearance"
                         AutomationProperties.AutomationId="MouseUtils_MouseHighlighterAppearanceBehaviorId"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xEB3C;}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
+                        <ComboBox
+                            x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind ViewModel.HighlightModeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
+                            <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
+                            <ComboBoxItem x:Uid="HighlightMode_Ripple_Mode" />
+                        </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_PrimaryButtonClickColor" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x6}">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterLeftButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" IsEnabled="{x:Bind ViewModel.IsSpotlightModeEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x6}">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterAlwaysColor" x:Uid="MouseUtils_MouseHighlighter_AlwaysColor">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterAlwaysColor"
+                                x:Uid="MouseUtils_MouseHighlighter_AlwaysColor"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="HighlightMode">
-                                <ComboBox
-                                    x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}, Mode=TwoWay}">
-                                    <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
-                                    <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
-                                </ComboBox>
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="10"
@@ -297,7 +300,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterRadius, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDelayMs" x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterFadeDelayMs"
+                                x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -306,7 +312,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterFadeDelayMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDurationMs" x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterFadeDurationMs"
+                                x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -314,6 +323,42 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterFadeDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleSize" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x4}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="300"
+                                    Minimum="10"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.RippleSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleIntensity" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x4}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="0.1"
+                                    Maximum="1.35"
+                                    Minimum="0.15"
+                                    SmallChange="0.05"
+                                    StepFrequency="0.05"
+                                    Value="{x:Bind ViewModel.RippleIntensity, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleDurationMs" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x4}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="2000"
+                                    Minimum="60"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.RippleDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x4}">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseUtils_MouseHighlighter_RippleShowDragTrail" IsChecked="{x:Bind ViewModel.RippleShowDragTrail, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x4}">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="MouseUtils_MouseHighlighter_RippleShowReleasePulse" IsChecked="{x:Bind ViewModel.RippleShowReleasePulse, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>

@@ -112,8 +112,6 @@
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/Text/.*\.cs$
-^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherComparisonTests.cs$
-^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
 ^src/modules/MouseUtils/MouseJumpUI/MainForm\.resx$
@@ -137,6 +135,8 @@
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
+^src/modules/ZoomIt/ZoomIt/rnnoise/
+^src/modules/ZoomIt/ZoomIt/selfie_segmentation\.onnx$
 ^src/modules/ZoomIt/ZoomIt/ZoomIt\.idc$
 ^src/Monaco/
 ^tools/project_template/ModuleTemplate/resource\.h$

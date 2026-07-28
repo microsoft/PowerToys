@@ -1542,7 +1542,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 3
+            - "<3>"
       - Name: Move earlier or later by number of frames specified for stroke Duration
         Shortcut:
         - Win: false

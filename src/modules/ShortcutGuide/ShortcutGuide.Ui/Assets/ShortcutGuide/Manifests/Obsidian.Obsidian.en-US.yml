@@ -1,0 +1,196 @@
+PackageName: Obsidian.Obsidian
+Name: Obsidian
+WindowFilter: "Obsidian.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: Navigation
+    Properties:
+      - Name: Open command palette
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - P
+      - Name: Open quick switcher
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - O
+      - Name: Search in all files
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - F
+      - Name: Toggle reading/editing view
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - E
+  - SectionName: Tabs
+    Properties:
+      - Name: New tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - T
+      - Name: Next tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Tab>"
+      - Name: Previous tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - "<Tab>"
+      - Name: Switch to tab at position (1–8)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - '1 - 8'
+      - Name: Switch to last tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<9>"
+      - Name: Reopen last closed tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - T
+  - SectionName: Editing
+    Properties:
+      - Name: Bold
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - B
+      - Name: Italic
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - I
+      - Name: Undo
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Z
+      - Name: Redo
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Y
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Z
+      - Name: Paste without formatting
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - V
+      - Name: Select all
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Delete current line
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - K
+      - Name: Delete previous word
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Backspace>"
+      - Name: Delete next word
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Delete>"
+      - Name: Move cursor to beginning of note
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Home>"
+      - Name: Move cursor to end of note
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<End>"
+      - Name: Add file property
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - ";"

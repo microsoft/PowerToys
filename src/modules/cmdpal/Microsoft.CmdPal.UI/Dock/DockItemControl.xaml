@@ -48,6 +48,7 @@
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
         <Style.Setters>
+            <Setter Property="AutomationProperties.LiveSetting" Value="Off" />
             <Setter Property="Background" Value="{ThemeResource DockItemBackground}" />
             <Setter Property="BorderBrush" Value="{ThemeResource DockItemBorderBrush}" />
             <Setter Property="Padding" Value="{StaticResource DockItemPadding}" />
@@ -151,11 +152,7 @@
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="TextVisibilityStates">
                                     <VisualState x:Name="TextVisible" />
-                                    <VisualState x:Name="TitleOnly">
-                                        <VisualState.Setters>
-                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
-                                        </VisualState.Setters>
-                                    </VisualState>
+                                    <VisualState x:Name="TitleOnly" />
                                     <VisualState x:Name="SubtitleOnly">
                                         <VisualState.Setters>
                                             <Setter Target="TitleText.Visibility" Value="Collapsed" />
@@ -164,9 +161,16 @@
                                     </VisualState>
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
-                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                             <Setter Target="ContentGrid.HorizontalAlignment" Value="Center" />
                                             <Setter Target="TextPanel.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="SubtitleVisibilityStates">
+                                    <VisualState x:Name="SubtitleVisible" />
+                                    <VisualState x:Name="SubtitleHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -174,8 +178,15 @@
                                     <VisualState x:Name="IconVisible" />
                                     <VisualState x:Name="IconHidden">
                                         <VisualState.Setters>
-                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                             <Setter Target="IconPresenter.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="ContentSpacingStates">
+                                    <VisualState x:Name="ContentSpacingVisible" />
+                                    <VisualState x:Name="ContentSpacingHidden">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>
@@ -198,7 +209,6 @@
                                     <VisualState x:Name="Compact">
                                         <VisualState.Setters>
                                             <Setter Target="PART_RootGrid.Padding" Value="0" />
-                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
                                             <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
                                         </VisualState.Setters>
                                     </VisualState>

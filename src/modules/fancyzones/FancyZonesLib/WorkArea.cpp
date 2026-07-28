@@ -115,6 +115,11 @@ WorkArea::WorkArea(HINSTANCE hinstance, const FancyZonesDataTypes::WorkAreaId& u
 
 WorkArea::~WorkArea()
 {
+    // Tear down the renderer (joining its background thread) before returning
+    // the HWND to the pool. Otherwise, the render thread can still be drawing
+    // through m_renderTarget into an HWND that has already been recycled by a
+    // subsequent NewZonesOverlayWindow call.
+    m_zonesOverlay.reset();
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 

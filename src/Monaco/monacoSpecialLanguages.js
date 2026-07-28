@@ -13,6 +13,7 @@ export async function registerAdditionalLanguages(monaco){
     registerAdditionalLanguage("vbExt", [".vbs"], "vb", monaco);
     registerAdditionalLanguage("iniExt", [".inf", ".gitconfig", ".gitattributes", ".editorconfig"], "ini", monaco);
     registerAdditionalLanguage("shellExt", [".ksh", ".zsh", ".bsh"], "shell", monaco);
+    registerAdditionalLanguage("jsonExt", [".uplugin", ".uproject"], "json", monaco);
     registerAdditionalNewLanguage("reg", [".reg"], regDefinition(), monaco);
     registerAdditionalNewLanguage("gitignore", [".gitignore"], gitignoreDefinition(), monaco);
     registerAdditionalNewLanguage("srt", [".srt"], srtDefinition(), monaco);

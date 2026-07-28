@@ -33,6 +33,15 @@ namespace Hosts
             var loader = new ResourceLoader("PowerToys.HostsUILib.pri", "PowerToys.HostsUILib/Resources");
 
             var title = Host.GetService<IElevationHelper>().IsElevated ? loader.GetString("WindowAdminTitle") : loader.GetString("WindowTitle");
+
+            // Guard against an empty title: ResourceLoader.GetString returns "" when the resource
+            // map can't be resolved, and an empty native window title can fault the WinUI TitleBar
+            // control while it reads AppWindow.Title during a deferred layout pass.
+            if (string.IsNullOrEmpty(title))
+            {
+                title = "Hosts File Editor";
+            }
+
             Title = title;
             titleBar.Title = title;
 

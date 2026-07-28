@@ -9,5 +9,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Enumerations
         LeftRightArrow,
         Space,
         Both,
+        PressAndHold,
     }
 }

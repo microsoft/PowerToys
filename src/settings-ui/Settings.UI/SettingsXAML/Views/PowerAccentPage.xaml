@@ -45,8 +45,22 @@
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Arrows" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Space" />
                             <ComboBoxItem x:Uid="QuickAccent_Activation_Key_Either" />
+                            <ComboBoxItem x:Uid="QuickAccent_Activation_Key_PressAndHold" />
                         </ComboBox>
                         <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="QuickAccent_HoldDurationMs"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                                Visibility="{x:Bind ViewModel.IsPressAndHoldActivation, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="3000"
+                                    Minimum="100"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.HoldDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="QuickAccent_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
@@ -191,7 +205,8 @@
                     <tkcontrols:SettingsCard
                         Name="QuickAccentInputTimeMs"
                         x:Uid="QuickAccent_InputTimeMs"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        Visibility="{x:Bind ViewModel.IsPressAndHoldActivation, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"

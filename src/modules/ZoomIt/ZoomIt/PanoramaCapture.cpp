@@ -104,6 +104,7 @@
 #include "pch.h"
 
 #include "PanoramaCapture.h"
+#include "ImageEncoder.h"
 #include "Utility.h"
 #include "WindowsVersions.h"
 
@@ -140,7 +141,6 @@ extern bool             g_bSaveInProgress;
 extern std::wstring     g_ScreenshotSaveLocation;
 void OutputDebug(const TCHAR* format, ...);
 const wchar_t* HotkeyIdToString( WPARAM hotkeyId );
-DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap );
 std::wstring GetUniqueFilename( const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId );
 
 // Maximum number of frames the capture loop will collect before auto-stopping.
@@ -10758,7 +10758,9 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
 
         COMDLG_FILTERSPEC fileTypes[] = {
-            { L"PNG Image", L"*.png" }
+            { L"PNG Image", L"*.png" },
+            { L"WebP Image", L"*.webp" },
+            { L"JPEG Image", L"*.jpg" }
         };
         saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
         saveDialog->SetFileTypeIndex( 1 );
@@ -10783,6 +10785,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
         }
 
         std::wstring selectedFilePath;
+        UINT selectedFilterIndex = 1;
         if( SUCCEEDED( saveDialog->Show( hWnd ) ) )
         {
             wil::com_ptr<IShellItem> resultItem;
@@ -10794,16 +10797,43 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
                     selectedFilePath = pathStr.get();
                 }
             }
+            saveDialog->GetFileTypeIndex( &selectedFilterIndex );
         }
 
         bool success = false;
         if( !selectedFilePath.empty() )
         {
-            if( selectedFilePath.find( L'.' ) == std::wstring::npos )
+            // Map the selected filter to an image format. Filter indices are
+            // 1-based: 1 = PNG, 2 = WebP, 3 = JPEG.
+            ImageFormat imageFormat = ImageFormat::Png;
+            const wchar_t* desiredExtension = L".png";
+            if( selectedFilterIndex == 2 )
             {
-                selectedFilePath += L".png";
+                imageFormat = ImageFormat::Webp;
+                desiredExtension = L".webp";
             }
-            DWORD saveResult = SavePng( selectedFilePath.c_str(), panoramaBitmap );
+            else if( selectedFilterIndex == 3 )
+            {
+                imageFormat = ImageFormat::Jpeg;
+                desiredExtension = L".jpg";
+            }
+
+            // Ensure the filename carries the extension matching the chosen
+            // format. Only override when the user left the extension off or
+            // used a format extension we manage (.png/.webp/.jpg/.jpeg).
+            std::filesystem::path targetPath( selectedFilePath );
+            std::wstring currentExt = targetPath.extension().wstring();
+            if( currentExt.empty() ||
+                _wcsicmp( currentExt.c_str(), L".png" ) == 0 ||
+                _wcsicmp( currentExt.c_str(), L".webp" ) == 0 ||
+                _wcsicmp( currentExt.c_str(), L".jpg" ) == 0 ||
+                _wcsicmp( currentExt.c_str(), L".jpeg" ) == 0 )
+            {
+                targetPath.replace_extension( desiredExtension );
+            }
+            selectedFilePath = targetPath.wstring();
+
+            DWORD saveResult = SaveImage( selectedFilePath.c_str(), panoramaBitmap, imageFormat );
             if( saveResult == ERROR_SUCCESS )
             {
                 g_ScreenshotSaveLocation = selectedFilePath;
@@ -10812,7 +10842,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
             }
             else
             {
-                StitchLog( L"[Panorama/Capture] SavePng failed err=%lu\n", saveResult );
+                StitchLog( L"[Panorama/Capture] SaveImage failed err=%lu\n", saveResult );
             }
         }
 

@@ -10,22 +10,22 @@ internal sealed class AvailableResult
     /// <summary>
     /// Gets or sets the time/date value
     /// </summary>
-    internal string Value { get; set; }
+    internal required string Value { get; set; }
 
     /// <summary>
     /// Gets or sets the text used for the subtitle and as search term
     /// </summary>
-    internal string Label { get; set; }
+    internal required string Label { get; set; }
 
     /// <summary>
     /// Gets or sets an alternative search tag that will be evaluated if label doesn't match. For example we like to show the era on searches for 'year' too.
     /// </summary>
-    internal string AlternativeSearchTag { get; set; }
+    internal required string AlternativeSearchTag { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating the type of result
     /// </summary>
-    internal ResultIconType IconType { get; set; }
+    internal required ResultIconType IconType { get; set; }
 
     /// <summary>
     /// Gets or sets a value to show additional error details
@@ -37,7 +37,7 @@ internal sealed class AvailableResult
     /// </summary>
     /// <param name="theme">Theme</param>
     /// <returns>Path</returns>
-    public IconInfo GetIconInfo()
+    public IconInfo? GetIconInfo()
     {
         return IconType switch
         {

@@ -6,6 +6,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/window.h>
 #include <common/utils/excluded_apps.h>
+#include <modules/interface/powertoy_module_interface.h>
 
 #include <array>
 #include <complex>
@@ -263,6 +264,7 @@ namespace FancyZonesUtils
         inputKey[0].type = INPUT_KEYBOARD;
         inputKey[0].ki.wVk = key;
         inputKey[0].ki.dwFlags = KEYEVENTF_KEYUP;
+        inputKey[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG; // Prevent hook re-trigger if this utility is used in the future
         SendInput(1, inputKey, sizeof(INPUT));
     }
 }
