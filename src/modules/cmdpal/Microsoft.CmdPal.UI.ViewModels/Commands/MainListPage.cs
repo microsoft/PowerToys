@@ -6,6 +6,7 @@
  #define CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
 */
 
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
@@ -70,6 +71,10 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+
+    // Last per-provider settings we reacted to, so a settings reload can tell whether any
+    // provider's search weight actually changed and only then re-rank the active query.
+    private ImmutableDictionary<string, ProviderSettings>? _lastProviderSettingsSnapshot;
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
@@ -803,7 +808,65 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
 
-    private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
+    private void HotReloadSettings(SettingsModel settings)
+    {
+        ShowDetails = settings.ShowAppDetails;
+
+        // A per-provider search-weight change has to reorder the query that is already on screen.
+        // Scoring reads the weight live, but scored results are cached, so without an explicit
+        // re-score the active query keeps its old order until the next keystroke. Detect a weight
+        // change and re-rank the current search in place.
+        var providerSettings = settings.ProviderSettings;
+        var weightsChanged = ProviderWeightsChanged(_lastProviderSettingsSnapshot, providerSettings);
+        _lastProviderSettingsSnapshot = providerSettings;
+
+        if (weightsChanged && !string.IsNullOrEmpty(SearchText))
+        {
+            RerankActiveSearch();
+        }
+    }
+
+    // Re-scores the current query off the UI thread so a settings change (e.g. a per-provider
+    // search-weight change) reorders the results already shown. This reuses the same non-reset
+    // re-score path as an app-inclusion refresh: the retained matches are re-scored with the new
+    // weights, which is sufficient because provider weight only nudges order within a tier and
+    // never changes which items match.
+    private void RerankActiveSearch()
+    {
+        var current = SearchText;
+        if (!string.IsNullOrEmpty(current))
+        {
+            _ = Task.Run(() => UpdateSearchTextCore(current, current, isUserInput: false));
+        }
+    }
+
+    // True when the effective per-provider search weight differs between two snapshots. A provider
+    // absent from a snapshot is treated as Normal, so adding or removing an entry whose weight is
+    // Normal does not count as a change.
+    private static bool ProviderWeightsChanged(
+        ImmutableDictionary<string, ProviderSettings>? previous,
+        ImmutableDictionary<string, ProviderSettings> current)
+    {
+        previous ??= ImmutableDictionary<string, ProviderSettings>.Empty;
+        if (ReferenceEquals(previous, current))
+        {
+            return false;
+        }
+
+        var keys = new HashSet<string>(previous.Keys, StringComparer.Ordinal);
+        keys.UnionWith(current.Keys);
+        foreach (var key in keys)
+        {
+            var previousWeight = previous.TryGetValue(key, out var p) ? p.SearchWeight : ProviderSearchWeight.Normal;
+            var currentWeight = current.TryGetValue(key, out var c) ? c.SearchWeight : ProviderSearchWeight.Normal;
+            if (previousWeight != currentWeight)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void Dispose()
     {
