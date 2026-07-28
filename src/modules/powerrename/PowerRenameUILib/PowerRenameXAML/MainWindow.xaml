@@ -501,6 +501,12 @@
                     </Button>
                 </Grid>
 
+                <Button
+                    x:Uid="NumericMappingButton"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Stretch"
+                    Click="SelectNumericMapping" />
+
                 <TextBlock
                     x:Name="ApplyToLabel"
                     x:Uid="TextBox_ApplyTo"

@@ -165,6 +165,9 @@
   <data name="ReplaceBox.PlaceholderText" xml:space="preserve">
     <value>Replace with</value>
   </data>
+  <data name="NumericMappingButton.Content" xml:space="preserve">
+    <value>Load numeric names from CSV</value>
+  </data>
   <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
     <value>Replace using advanced counter syntax</value>
   </data>

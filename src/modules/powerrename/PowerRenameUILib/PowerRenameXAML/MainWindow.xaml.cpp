@@ -25,9 +25,11 @@
 #include "microsoft.ui.xaml.window.h"
 #include <winrt/Microsoft.UI.Interop.h>
 #include <winrt/Windows.UI.ViewManagement.h>
+#include <winrt/Windows.Storage.Pickers.h>
 #include <winrt/Microsoft.UI.Windowing.h>
 #include <common/Themes/theme_helpers.h>
 #include <common/Themes/theme_listener.h>
+#include <NumericRenameMapping.h>
 
 using namespace winrt;
 using namespace Windows::UI::Xaml;
@@ -485,6 +487,32 @@ namespace winrt::PowerRenameUI::implementation
         Windows::System::Launcher::LaunchUriAsync(winrt::Windows::Foundation::Uri{ L"https://aka.ms/PowerToysOverview_PowerRename" });
     }
 
+    winrt::fire_and_forget MainWindow::SelectNumericMapping(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        Windows::Storage::Pickers::FileOpenPicker picker;
+        picker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::DocumentsLibrary);
+        picker.FileTypeFilter().Append(L".csv");
+        auto initializeWithWindow = picker.as<::IInitializeWithWindow>();
+        winrt::check_hresult(initializeWithWindow->Initialize(m_window));
+
+        auto file = co_await picker.PickSingleFileAsync();
+        if (!file)
+        {
+            co_return;
+        }
+
+        std::vector<std::wstring> names;
+        const HRESULT hr = PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), names);
+        if (FAILED(hr))
+        {
+            Logger::error(L"Unable to load numeric rename mapping from {}", file.Path().c_str());
+            co_return;
+        }
+
+        m_numericRenameNames = std::move(names);
+        SearchReplaceChanged(true);
+    }
+
     HRESULT MainWindow::CreateShellItemArrayFromPaths(
         std::vector<std::wstring> files,
         IShellItemArray** shellItemArray)
@@ -609,6 +637,58 @@ namespace winrt::PowerRenameUI::implementation
             winrt::hstring replaceTerm = textBox_replace().Text();
             prRegEx->PutReplaceTerm(replaceTerm.c_str(), forceRenaming);
         }
+
+        if (!m_numericRenameNames.empty())
+        {
+            ApplyNumericMapping();
+        }
+    }
+
+    void MainWindow::ApplyNumericMapping()
+    {
+        if (!m_prManager)
+        {
+            return;
+        }
+
+        UINT itemCount = 0;
+        m_prManager->GetItemCount(&itemCount);
+        for (UINT i = 0; i < itemCount; ++i)
+        {
+            CComPtr<IPowerRenameItem> item;
+            if (FAILED(m_prManager->GetItemByIndex(i, &item)))
+            {
+                continue;
+            }
+
+            PWSTR originalName = nullptr;
+            if (FAILED(item->GetOriginalName(&originalName)))
+            {
+                continue;
+            }
+            wil::unique_cotaskmem_string originalNameGuard{ originalName };
+
+            unsigned long long number = 0;
+            if (!PowerRenameLib::TryGetNumericFileStem(originalName, number) || number == 0 || number > m_numericRenameNames.size())
+            {
+                item->PutNewName(originalName);
+                item->PutStatus(PowerRenameItemRenameStatus::Init);
+                continue;
+            }
+
+            std::wstring newName = m_numericRenameNames[static_cast<size_t>(number - 1)];
+            bool isFolder = false;
+            item->GetIsFolder(&isFolder);
+            if (!isFolder)
+            {
+                newName += std::filesystem::path(originalName).extension().wstring();
+            }
+
+            item->PutNewName(newName.c_str());
+            item->PutStatus(lstrcmp(originalName, newName.c_str()) == 0 ? PowerRenameItemRenameStatus::Init : PowerRenameItemRenameStatus::ShouldRename);
+        }
+        UpdateCounts();
+        InvalidateItemListViewState();
     }
 
     void MainWindow::ValidateFlags(PowerRenameFlags flag)
