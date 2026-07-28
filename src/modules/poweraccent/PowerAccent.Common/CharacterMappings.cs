@@ -106,7 +106,9 @@ public static class CharacterMappings
 
         new(Language.BG, "Bulgarian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_I] = ["й"],
+            [LetterKey.VK_E] = ["€"],
+            [LetterKey.VK_I] = ["ѝ"],
+            [LetterKey.VK_COMMA] = ["„", "“", "«", "»"],
         }),
 
         new(Language.CA, "Catalan", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -143,15 +145,15 @@ public static class CharacterMappings
         // language, but rather a set of symbols used across languages.
         new(Language.CUR, "Currency", LanguageGroup.Special, new Dictionary<LetterKey, string[]>
         {
-            [LetterKey.VK_B] = ["฿", "в"],
-            [LetterKey.VK_C] = ["¢", "₡", "č"],
+            [LetterKey.VK_B] = ["฿", "в"], // Bulgarian Lev (лв)
+            [LetterKey.VK_C] = ["¢", "₡", "č"], // Czech Koruna (Kč)
             [LetterKey.VK_D] = ["₫"],
             [LetterKey.VK_E] = ["€"],
             [LetterKey.VK_F] = ["ƒ"],
             [LetterKey.VK_H] = ["₴"],
             [LetterKey.VK_K] = ["₭"],
-            [LetterKey.VK_L] = ["ł"],
-            [LetterKey.VK_N] = ["л"],
+            [LetterKey.VK_L] = ["ł"], // Polish Złoty (zł)
+            [LetterKey.VK_N] = ["л"], // Bulgarian Lev (лв)
             [LetterKey.VK_M] = ["₼"],
             [LetterKey.VK_P] = ["£", "₽", "₱"],
             [LetterKey.VK_R] = ["₹", "៛", "﷼"],
@@ -159,7 +161,6 @@ public static class CharacterMappings
             [LetterKey.VK_T] = ["₮", "₺", "₸"],
             [LetterKey.VK_W] = ["₩"],
             [LetterKey.VK_Y] = ["¥"],
-            [LetterKey.VK_Z] = ["z"],
         }),
 
         new(Language.CY, "Welsh", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -240,7 +241,7 @@ public static class CharacterMappings
             [LetterKey.VK_B] = ["β"],
             [LetterKey.VK_C] = ["χ"],
             [LetterKey.VK_D] = ["δ"],
-            [LetterKey.VK_E] = ["ε", "έ", "η", "ή"],
+            [LetterKey.VK_E] = ["ε", "έ", "η", "ή", "€"],
             [LetterKey.VK_F] = ["φ"],
             [LetterKey.VK_G] = ["γ"],
             [LetterKey.VK_I] = ["ι", "ί"],
@@ -350,6 +351,7 @@ public static class CharacterMappings
             [LetterKey.VK_G] = ["ױ"],
             [LetterKey.VK_H] = ["ײ", "ײַ", "ׯ", "\u05b4"],
             [LetterKey.VK_M] = ["\u05b5"],
+            [LetterKey.VK_N] = ["₪"],
             [LetterKey.VK_P] = ["\u05b7", "\u05b2"],
             [LetterKey.VK_S] = ["\u05bc"],
             [LetterKey.VK_T] = ["ﭏ"],
@@ -699,7 +701,7 @@ public static class CharacterMappings
         new(Language.VI, "Vietnamese", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["à", "ả", "ã", "á", "ạ", "ă", "ằ", "ẳ", "ẵ", "ắ", "ặ", "â", "ầ", "ẩ", "ẫ", "ấ", "ậ"],
-            [LetterKey.VK_D] = ["đ"],
+            [LetterKey.VK_D] = ["đ", "₫"],
             [LetterKey.VK_E] = ["è", "ẻ", "ẽ", "é", "ẹ", "ê", "ề", "ể", "ễ", "ế", "ệ"],
             [LetterKey.VK_I] = ["ì", "ỉ", "ĩ", "í", "ị"],
             [LetterKey.VK_O] = ["ò", "ỏ", "õ", "ó", "ọ", "ô", "ồ", "ổ", "ỗ", "ố", "ộ", "ơ", "ờ", "ở", "ỡ", "ớ", "ợ"],

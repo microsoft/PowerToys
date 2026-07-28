@@ -50,6 +50,9 @@
     <None Update="DevHome\Templates\SystemMemoryTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="DevHome\Templates\SystemDiskUsageTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="DevHome\Templates\SystemNetworkUsageTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

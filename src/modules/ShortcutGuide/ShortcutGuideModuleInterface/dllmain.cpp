@@ -10,7 +10,6 @@
 #include "../interface/powertoy_module_interface.h"
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
-#include <common/utils/EventWaiter.h>
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
@@ -37,9 +36,10 @@ public:
         }
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT);
-        triggerEventWaiter.start(CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, [this](DWORD) {
-            OnHotkeyEx();
-        });
+        if (!triggerEvent)
+        {
+            Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, get_last_error_or_default(GetLastError()));
+        }
 
         InitSettings();
     }
@@ -91,6 +91,7 @@ public:
         if (!_enabled)
         {
             _enabled = true;
+            StartProcess();
         }
         else
         {
@@ -127,6 +128,10 @@ public:
         {
             CloseHandle(exitEvent);
         }
+        if (triggerEvent)
+        {
+            CloseHandle(triggerEvent);
+        }
 
         delete this;
     }
@@ -145,19 +150,12 @@ public:
             return;
         }
 
-        if (IsProcessActive())
+        if (!IsProcessActive())
         {
-            TerminateProcess(m_hProcess, 0);
-            return;
+            StartProcess();
         }
 
-        if (m_hProcess)
-        {
-            CloseHandle(m_hProcess);
-            m_hProcess = nullptr;
-        }
-
-        StartProcess();
+        SetEvent(triggerEvent);
     }
 
     virtual void send_settings_telemetry() override
@@ -168,6 +166,8 @@ public:
             Logger::error("Failed to create a process to send settings telemetry");
         }
     }
+    virtual bool keep_track_of_pressed_win_key() override { return true; }
+    virtual UINT milliseconds_win_key_must_be_pressed() override { return 900; }
 
 private:
     std::wstring app_name;
@@ -187,13 +187,17 @@ private:
 
     HANDLE triggerEvent;
     HANDLE exitEvent;
-    EventWaiter triggerEventWaiter;
 
     bool StartProcess(std::wstring args = L"")
     {
         if (exitEvent)
         {
             ResetEvent(exitEvent);
+        }
+
+        if (triggerEvent)
+        {
+            ResetEvent(triggerEvent);
         }
 
         unsigned long powertoys_pid = GetCurrentProcessId();
@@ -308,6 +312,14 @@ private:
             Logger::info("Shortcut Guide is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = VK_OEM_2;
+        }
+    }
+
+    void WindowsKeyPressBehavior()
+    {
+        if (IsProcessActive())
+        {
+            TerminateProcess(m_hProcess, 0);
         }
     }
 };

@@ -495,7 +495,13 @@ public static class TestHelper
             {
                 var btnX = button.X + (button.Width / 2);
                 var btnY = button.Y + (button.Height / 2);
-                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height} (offscreen={button.IsOffscreen}, toggle={toggleState}); real mouse click at ({btnX},{btnY})");
+                Log($"SelectToolAndVerify[{testName}]: attempt {attempt}: located {buttonId} at ({button.X},{button.Y}) {button.Width}x{button.Height} (offscreen={button.IsOffscreen}, toggle={toggleState}); raising toolbar to foreground then real mouse click at ({btnX},{btnY})");
+
+                // Raise the toolbar to the foreground first so the real click can't land on a window
+                // occluding it (the Win32 foreground lock). Bounds selection uses a manual MouseHelper
+                // click rather than Element.Click, so — unlike spacing — it needs this guard explicitly.
+                // TryBringToForeground only un-minimizes (IsIconic), so a maximized toolbar isn't resized.
+                ruler.EnsureForeground();
                 MouseHelper.MoveTo(btnX, btnY);
                 Thread.Sleep(200);
                 MouseHelper.LeftClick();
