@@ -81,6 +81,7 @@ namespace PowerDisplay.Helpers
         private TrayWheelFeedbackWindow? _feedbackWindow;
         private MouseWheelControlMode _mouseWheelControlMode;
         private string? _appName;
+        private TrayWheelFeedbackTemplates? _feedbackTemplates;
         private TrayIconBounds? _cachedBounds;
         private TrayIconBounds? _feedbackIconBounds;
         private long _boundsCacheTimestamp;
@@ -739,41 +740,31 @@ namespace PowerDisplay.Helpers
         internal void UpdateAdjustmentFeedback(TrayWheelAdjustmentFeedback? feedback)
         {
             var now = Environment.TickCount64;
-            TrayIconBounds bounds = default;
-            var pointerInside =
-                GetCursorPos(out var cursor) &&
-                TryQueryTrayIconBounds(out bounds, out _) &&
-                bounds.Contains(cursor.X, cursor.Y);
-            if (pointerInside)
-            {
-                _feedbackIconBounds = bounds;
-            }
-
-            if (!pointerInside)
+            if (!GetCursorPos(out var cursor) ||
+                !TryQueryTrayIconBounds(out var bounds, out _) ||
+                !bounds.Contains(cursor.X, cursor.Y))
             {
                 StopHoverFeedback();
                 return;
             }
 
+            _feedbackIconBounds = bounds;
+
             if (feedback is null)
             {
-                var presentation = _feedbackSession.ClearAdjustment(now, pointerInside: true);
-                if (_feedbackIconBounds is TrayIconBounds currentBounds)
-                {
-                    ApplyFeedbackPresentation(presentation, currentBounds);
-                }
-                else
-                {
-                    _feedbackWindow?.HideFeedback();
-                }
-
+                ApplyFeedbackPresentation(
+                    _feedbackSession.ClearAdjustment(now, pointerInside: true),
+                    bounds);
                 ScheduleFeedbackTick();
                 return;
             }
 
             try
             {
-                var templates = new TrayWheelFeedbackTemplates(
+                // The resource strings cannot change without an app restart, and a fast wheel
+                // produces several adjustments per second, so build the templates once. Kept inside
+                // the try so a failed lookup still lands in the handler below.
+                _feedbackTemplates ??= new TrayWheelFeedbackTemplates(
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryPluralFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackAllFormat"),
@@ -783,9 +774,9 @@ namespace PowerDisplay.Helpers
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackListSeparator"));
                 var text = TrayWheelFeedbackFormatter.Format(
                     feedback,
-                    templates,
+                    _feedbackTemplates,
                     CultureInfo.CurrentCulture);
-                if (text is null || !_feedbackIconBounds.HasValue)
+                if (text is null)
                 {
                     StopHoverFeedback();
                     return;
@@ -793,7 +784,7 @@ namespace PowerDisplay.Helpers
 
                 ApplyFeedbackPresentation(
                     _feedbackSession.ShowAdjustment(text, now),
-                    _feedbackIconBounds.Value);
+                    bounds);
                 _feedbackPresentationFailureLogged = false;
             }
             catch (Exception ex) when (
@@ -883,7 +874,7 @@ namespace PowerDisplay.Helpers
                 // The hook only swallows notches that landed inside the rectangle it was armed
                 // with, so a sample stamped with a retired hover - or one the Shell has since moved
                 // the icon out from under - was never ours. Retire the hover for those, but keep
-                // honouring the samples in the same batch that were swallowed on our behalf:
+                // applying the samples in the same batch that were swallowed on our behalf:
                 // dropping those would consume a notch without adjusting anything.
                 if (sample.HoverGeneration != _hoverGeneration ||
                     !currentBounds.Contains(sample.X, sample.Y))

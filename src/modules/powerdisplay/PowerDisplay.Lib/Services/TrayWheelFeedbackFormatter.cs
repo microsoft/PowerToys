@@ -24,8 +24,8 @@ public static class TrayWheelFeedbackFormatter
 
     /// <summary>
     /// Formats one feedback payload. <paramref name="maxLength"/> bounds the UTF-16 length of the
-    /// result so a mis-translated template cannot hand the single-line overlay an unbounded string;
-    /// the overlay ellipsizes whatever still does not fit its measured width.
+    /// result so a broken template cannot hand the single-line overlay an unbounded string; the
+    /// overlay trims anything that still does not fit its measured width.
     /// </summary>
     public static string? Format(
         TrayWheelAdjustmentFeedback feedback,
