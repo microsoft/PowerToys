@@ -179,7 +179,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         $"DDC: [max-compat] VCP probe attempt " +
                         $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
                         $"status=failed, error={FormatError(lastError)})");
-                    if (!IsTransient(result.ErrorCode))
+                    if (!DdcErrorClassifier.IsTransient(result.ErrorCode))
                     {
                         break;
                     }
@@ -218,16 +218,5 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         private static string FormatError(int? errorCode) =>
             errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
-
-        internal static bool IsTransient(int errorCode) => errorCode is
-            unchecked((int)0xC0262582) or
-            unchecked((int)0xC0262583) or
-            unchecked((int)0xC0262585) or
-            unchecked((int)0xC0262588) or
-            unchecked((int)0xC0262589) or
-            unchecked((int)0xC026258A) or
-            unchecked((int)0xC026258B) or
-            unchecked((int)0xC02625D8) or
-            1460;
     }
 }
