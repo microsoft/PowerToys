@@ -391,6 +391,53 @@ public partial class JSAdapterRemediationTests
         Assert.IsFalse(withoutAccent.AccentColor.HasValue);
     }
 
+    // p3-12: a tag whose color components are out of byte range or fractional must
+    // not throw out of the WinRT-visible Tags getter. Every numeric component that
+    // does not fit is dropped to its default, and the surrounding item metadata
+    // (title, subtitle, other tags) is preserved rather than collapsing to Error.
+    [TestMethod]
+    public void Tags_OutOfRangeOrFractionalColorComponentsDefaultInsteadOfThrowing()
+    {
+        using var fake = new JSFakeExtension();
+        var element = ParseElement(new JsonObject
+        {
+            ["title"] = "Item With Bad Tag Color",
+            ["subtitle"] = "Still Here",
+            ["tags"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["text"] = "over",
+                    ["foreground"] = new JsonObject
+                    {
+                        // 256 overflows a byte and 1.5 is fractional; both would throw
+                        // from JsonElement.GetByte, so they must fall back to defaults.
+                        ["r"] = 256,
+                        ["g"] = 1.5,
+                        ["b"] = 12,
+                    },
+                },
+                new JsonObject { ["text"] = "clean" },
+            },
+        });
+
+        var adapter = new JSListItemAdapter(element, fake.Connection);
+
+        var tags = adapter.Tags;
+        Assert.AreEqual(2, tags.Length);
+        Assert.AreEqual("over", tags[0].Text);
+        Assert.AreEqual("clean", tags[1].Text);
+
+        var foreground = tags[0].Foreground;
+        Assert.IsTrue(foreground.HasValue);
+        Assert.AreEqual(0, foreground.Color.R);
+        Assert.AreEqual(0, foreground.Color.G);
+        Assert.AreEqual(12, foreground.Color.B);
+
+        Assert.AreEqual("Item With Bad Tag Color", adapter.Title);
+        Assert.AreEqual("Still Here", adapter.Subtitle);
+    }
+
     private static async Task<string> SubmitAndReadFormId(JSFormContentProxy form, TaskCompletionSource<string> captured)
     {
         await Task.Run(() => form.SubmitForm("{}", "{}"));

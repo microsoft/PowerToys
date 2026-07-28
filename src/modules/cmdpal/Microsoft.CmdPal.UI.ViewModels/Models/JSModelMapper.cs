@@ -634,9 +634,10 @@ internal static class JSModelMapper
 
     private static byte ReadByte(JsonElement element, string camel, string pascal, byte defaultValue = 0)
     {
-        if (TryGetAnyCase(element, camel, pascal, out var prop) && prop.ValueKind == JsonValueKind.Number)
+        if (TryGetAnyCase(element, camel, pascal, out var prop) && prop.ValueKind == JsonValueKind.Number &&
+            prop.TryGetByte(out var value))
         {
-            return prop.GetByte();
+            return value;
         }
 
         return defaultValue;
@@ -645,9 +646,10 @@ internal static class JSModelMapper
     private static int ReadInt(JsonElement element, string name, int defaultValue)
     {
         if (element.ValueKind == JsonValueKind.Object &&
-            element.TryGetProperty(name, out var prop) && prop.ValueKind == JsonValueKind.Number)
+            element.TryGetProperty(name, out var prop) && prop.ValueKind == JsonValueKind.Number &&
+            prop.TryGetInt32(out var value))
         {
-            return prop.GetInt32();
+            return value;
         }
 
         return defaultValue;
