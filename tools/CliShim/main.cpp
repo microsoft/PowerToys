@@ -5,6 +5,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include <wil/resource.h>
 #include <wil/stl.h>
 #include <wil/win32_helpers.h>
 
@@ -40,6 +41,36 @@ namespace
     BOOL WINAPI ConsoleCtrlHandler(DWORD /*controlType*/)
     {
         return TRUE;
+    }
+
+    // The shim is the only handle a caller holds on the CLI, so killing the shim - taskkill without
+    // /T, Process.Kill() without entireProcessTree, a script's own timeout, stopping the debugger -
+    // must not leave the CLI running: PowerToys.FileLocksmith.CLI --wait polls until interrupted and
+    // prints nothing while it does. KILL_ON_JOB_CLOSE takes the CLI down with the shim, because the
+    // kernel closes the job handle however the shim dies.
+    //
+    // SILENT_BREAKAWAY_OK keeps the CLI's own children out of the job: PowerToys.FancyZones.CLI
+    // open-settings starts a long-lived PowerToys.exe and returns, and without this flag that window
+    // would be killed the moment the shim exits. Plain BREAKAWAY_OK cannot substitute - it requires
+    // the creator to pass CREATE_BREAKAWAY_FROM_JOB, which Process.Start cannot express. This is the
+    // one deliberate difference from src\runner\quick_access_host.cpp.
+    wil::unique_handle CreateShimJob()
+    {
+        wil::unique_handle job{ CreateJobObjectW(nullptr, nullptr) };
+        if (!job)
+        {
+            return {};
+        }
+
+        JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
+        limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_SILENT_BREAKAWAY_OK;
+        if (!SetInformationJobObject(job.get(), JobObjectExtendedLimitInformation, &limits, sizeof(limits)))
+        {
+            // A job without the kill limit buys nothing, so drop it rather than assign to it.
+            return {};
+        }
+
+        return job;
     }
 
     const wchar_t* ResolveTarget(const std::wstring& commandName)
@@ -101,6 +132,10 @@ int wmain()
     startupInfo.cb = sizeof(startupInfo);
     wil::unique_process_information processInfo;
 
+    // Best effort, and silent on failure: an unprotected CLI beats a CLI that will not start, and
+    // this process's stderr belongs to the CLI's caller.
+    const wil::unique_handle shimJob = CreateShimJob();
+
     if (!CreateProcessW(
             targetPath.c_str(),
             commandLine.data(), // Requires a mutable buffer; CreateProcessW may write to it.
@@ -115,6 +150,11 @@ int wmain()
     {
         std::fwprintf(stderr, L"cli-shim: failed to launch \"%s\" (error %lu).\n", targetPath.c_str(), GetLastError());
         return ExitLaunchFailed;
+    }
+
+    if (shimJob)
+    {
+        AssignProcessToJobObject(shimJob.get(), processInfo.hProcess);
     }
 
     WaitForSingleObject(processInfo.hProcess, INFINITE);

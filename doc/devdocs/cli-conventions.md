@@ -7,7 +7,9 @@ This document describes the conventions for implementing command-line interfaces
 - Name module CLI command shims `PowerToys.<ModuleName>.CLI.exe` (for example, `PowerToys.ImageResizer.CLI.exe`).
 - Install these shims in the `bin` subfolder of the PowerToys installation directory, which the installer adds to `PATH`.
 
-Every command is the same `PowerToys.CliShim.exe` payload (`tools/CliShim/`) installed under a different name. The shim resolves which CLI to launch from its own file name, forwards the raw argument tail unchanged, shares the caller's console, and returns the CLI's exit code.
+Every command is the same `PowerToys.CliShim.exe` payload (`tools/CliShim/`) installed under a different name. The shim resolves which CLI to launch from its own file name, forwards the raw argument tail unchanged, shares the caller's console, and returns the CLI's exit code. The CLI runs in a job object owned by the shim, so killing the shim kills the CLI with it; processes the CLI itself starts (the Settings window, for example) break away and survive.
+
+On a per-machine install the `bin` folder is created with a protected DACL (`MachinePathFolderSddl` in `installer/PowerToysSetupVNext/Common.wxi`) so that a custom installation root cannot leave a machine-`PATH` folder writable by standard users. Author that `<CreateFolder>` on the same component as the folder's `<Environment>` `PATH` entry, so the two cannot drift apart.
 
 ### Adding a new shim
 
