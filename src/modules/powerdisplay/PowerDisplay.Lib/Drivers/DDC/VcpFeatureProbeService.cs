@@ -202,7 +202,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             var message =
                 $"DDC: [max-compat] VCP probe outcome " +
                 $"(handle=0x{handle:X}, code=0x{observation.Code:X2}, attempts={observation.Attempts}, " +
-                $"status={status}, lastError={FormatError(observation.LastError)})";
+                $"status={status}, replied={observation.Replied}, lastError={FormatError(observation.LastError)})";
 
             if (observation.IsSuccess)
             {

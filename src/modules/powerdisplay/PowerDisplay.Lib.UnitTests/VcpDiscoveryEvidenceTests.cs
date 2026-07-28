@@ -270,6 +270,47 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsNull(result.Capabilities);
     }
 
+    [TestMethod]
+    public void Reconcile_ReportsOnlyTheCodesTheCacheAloneProved()
+    {
+        // The caps string advertises 0x10 and the probe replied for 0x12, so only 0x62 rests on
+        // persisted evidence — that is the one discovery has to name in the log, because it is the
+        // only control a user could see without the hardware ever having claimed to support it.
+        var parsedCapabilities = new VcpCapabilities();
+        parsedCapabilities.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: parsedCapabilities,
+            live: new Dictionary<byte, VcpProbeObservation>
+            {
+                [0x12] = VcpProbeObservation.Indeterminate(0x12, lastError: null, attempts: 3, replied: true),
+            },
+            cached: new Dictionary<byte, KnownGoodVcpFeature>
+            {
+                [0x10] = Cached(0x10, 25),
+                [0x12] = Cached(0x12, 35),
+                [0x62] = Cached(0x62, 45),
+            },
+            includeCache: true);
+
+        CollectionAssert.AreEqual(new byte[] { 0x62 }, result.CacheSupplementedCodes.ToArray());
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x62));
+    }
+
+    [TestMethod]
+    public void Reconcile_NormalModeReportsNoCacheSupplementedCodes()
+    {
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
+            includeCache: false);
+
+        Assert.AreEqual(0, result.CacheSupplementedCodes.Count);
+    }
+
     private static KnownGoodVcpFeature Cached(byte code, int current) => new()
     {
         Code = code,

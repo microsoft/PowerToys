@@ -525,6 +525,24 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
+            if (evidence.CacheSupplementedCodes.Count > 0)
+            {
+                // These controls rest on persisted evidence alone. The probe only runs when the caps
+                // string is unusable, so on the caps-parsed path the block above logs nothing at all —
+                // without this line a support log cannot tell a control the cache created apart from
+                // one the hardware advertised, which is the first thing to check when a user reports
+                // a slider that does nothing.
+                var detail = string.Join(
+                    ", ",
+                    evidence.CacheSupplementedCodes.Select(code => cached.TryGetValue(code, out var knownGood)
+                        ? $"0x{code:X2} (last successful {knownGood.LastSuccessfulUtc:u})"
+                        : $"0x{code:X2}"));
+
+                Logger.LogInfo(
+                    $"DDC: [max-compat] cached evidence added feature(s) not advertised by capabilities " +
+                    $"for handle=0x{hPhysicalMonitor:X}: {detail}");
+            }
+
             return evidence;
         }
 
@@ -695,6 +713,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning(
                             $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
                             $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
                         break;
                     }
 

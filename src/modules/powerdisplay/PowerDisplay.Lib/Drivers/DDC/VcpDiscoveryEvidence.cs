@@ -30,12 +30,14 @@ internal sealed class VcpDiscoveryEvidence
         string capabilitiesRaw,
         VcpCapabilities? capabilities,
         IReadOnlyDictionary<byte, VcpInitialValue> initialValues,
-        bool isPhysicalMonitorUnavailable = false)
+        bool isPhysicalMonitorUnavailable = false,
+        IReadOnlyList<byte>? cacheSupplementedCodes = null)
     {
         CapabilitiesRaw = capabilitiesRaw;
         Capabilities = capabilities;
         InitialValues = initialValues;
         IsPhysicalMonitorUnavailable = isPhysicalMonitorUnavailable;
+        CacheSupplementedCodes = cacheSupplementedCodes ?? System.Array.Empty<byte>();
     }
 
     public string CapabilitiesRaw { get; }
@@ -45,6 +47,13 @@ internal sealed class VcpDiscoveryEvidence
     public IReadOnlyDictionary<byte, VcpInitialValue> InitialValues { get; }
 
     public bool IsPhysicalMonitorUnavailable { get; }
+
+    /// <summary>
+    /// Gets the codes only the known-good cache proved supported — neither the capabilities string
+    /// nor a live probe reply covered them. Discovery logs these so a control that exists purely on
+    /// persisted evidence can be told apart, in a support log, from one the hardware advertised.
+    /// </summary>
+    public IReadOnlyList<byte> CacheSupplementedCodes { get; }
 
     public static VcpDiscoveryEvidence Reconcile(
         string capabilitiesRaw,
@@ -72,6 +81,7 @@ internal sealed class VcpDiscoveryEvidence
         // Monitor.VcpCapabilitiesInfo.
         var capabilities = parsedCapabilities;
         var values = new Dictionary<byte, VcpInitialValue>();
+        var cacheSupplementedCodes = new List<byte>();
 
         foreach (var code in ContinuousCodes)
         {
@@ -124,6 +134,15 @@ internal sealed class VcpDiscoveryEvidence
                     // common garbage reply of current=0/max=0 fails VcpFeatureValue.IsValid and is
                     // never cached. Known limitation: a monitor that does slip through keeps the
                     // phantom control until its settings entry ages out.
+                    if (capabilities?.SupportsVcpCode(code) != true)
+                    {
+                        // Neither the capabilities string nor a probe reply covered this code, so the
+                        // control about to appear rests on persisted evidence alone. Discovery logs
+                        // these; without that a support log cannot tell such a control apart from one
+                        // the hardware advertised.
+                        cacheSupplementedCodes.Add(code);
+                    }
+
                     capabilities = MarkSupported(capabilities, code);
 
                     // The probe already issued at least one transaction for every code it touched —
@@ -140,7 +159,11 @@ internal sealed class VcpDiscoveryEvidence
             }
         }
 
-        return new VcpDiscoveryEvidence(capabilitiesRaw, capabilities, values);
+        return new VcpDiscoveryEvidence(
+            capabilitiesRaw,
+            capabilities,
+            values,
+            cacheSupplementedCodes: cacheSupplementedCodes);
     }
 
     /// <summary>
