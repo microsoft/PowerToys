@@ -2343,6 +2343,27 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_NewVersionAvailable.Title" xml:space="preserve">
     <value>An update is available:</value>
   </data>
+  <data name="General_UpdateAvailableTitle" xml:space="preserve">
+    <value>An update is available:</value>
+  </data>
+  <data name="General_PreviewUpdateAvailableTitle" xml:space="preserve">
+    <value>Preview update available:</value>
+  </data>
+  <data name="General_UpdateReadyToInstallTitle" xml:space="preserve">
+    <value>An update is ready to install:</value>
+  </data>
+  <data name="General_PreviewUpdateReadyToInstallTitle" xml:space="preserve">
+    <value>A Preview update is ready to install:</value>
+  </data>
+  <data name="General_PreviewBadge.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ScoobeReleaseGroup_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ScoobeReleaseNotes_PreviewBadge" xml:space="preserve">
+    <value>Preview release</value>
+  </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
   </data>

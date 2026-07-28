@@ -32,12 +32,30 @@ namespace
 using namespace notifications;
 using namespace updating;
 
+std::wstring AvailableVersionToWstring(const new_version_download_info& info)
+{
+    auto result = info.version.toWstring();
+    if (info.is_prerelease)
+    {
+        result += L"-preview";
+    }
+
+    return result;
+}
+
 std::wstring CurrentVersionToNextVersion(const new_version_download_info& info)
 {
     auto result = VersionHelper{ VERSION_MAJOR, VERSION_MINOR, VERSION_REVISION }.toWstring();
     result += L" \u2192 "; // Right arrow
-    result += info.version.toWstring();
+    result += AvailableVersionToWstring(info);
     return result;
+}
+
+std::wstring UpdateAvailableMessage(const new_version_download_info& info)
+{
+    return info.is_prerelease ?
+               GET_RESOURCE_STRING(IDS_GITHUB_NEW_PREVIEW_VERSION_AVAILABLE) :
+               GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE);
 }
 
 void ShowNewVersionAvailable(const new_version_download_info& info)
@@ -45,7 +63,7 @@ void ShowNewVersionAvailable(const new_version_download_info& info)
     remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
 
     toast_params toast_params{ UPDATING_PROCESS_TOAST_TAG, false };
-    std::wstring contents = GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE);
+    std::wstring contents = UpdateAvailableMessage(info);
     contents += L'\n';
     contents += CurrentVersionToNextVersion(info);
 
@@ -60,7 +78,7 @@ void ShowNewVersionAvailable(const new_version_download_info& info)
                                 L"powertoys://open_overview/");
 }
 
-void ShowOpenSettingsForUpdate()
+void ShowOpenSettingsForUpdate(const new_version_download_info& info)
 {
     remove_toasts_by_tag(UPDATING_PROCESS_TOAST_TAG);
 
@@ -70,7 +88,10 @@ void ShowOpenSettingsForUpdate()
         link_button{ GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_MORE_INFO),
                      L"powertoys://open_overview/" },
     };
-    show_toast_with_activations(GET_RESOURCE_STRING(IDS_GITHUB_NEW_VERSION_AVAILABLE),
+    auto contents = UpdateAvailableMessage(info);
+    contents += L'\n';
+    contents += AvailableVersionToWstring(info);
+    show_toast_with_activations(std::move(contents),
                                 GET_RESOURCE_STRING(IDS_TOAST_TITLE),
                                 {},
                                 std::move(actions),
@@ -130,12 +151,14 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         state.state = UpdateState::upToDate;
         state.releasePageUrl = {};
         state.downloadedInstallerFilename = {};
+        state.isPrerelease = false;
         Logger::trace(L"Version is up to date");
         dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(false); }, nullptr);
         return;
     }
     const auto new_version_info = std::get<new_version_download_info>(version_info);
     state.releasePageUrl = new_version_info.release_page_uri.ToString().c_str();
+    state.isPrerelease = new_version_info.is_prerelease;
     Logger::trace(L"Discovered new version {}", new_version_info.version.toWstring());
 
     const bool already_downloaded = state.state == UpdateState::readyToInstall && state.downloadedInstallerFilename == new_version_info.installer_filename;
@@ -203,7 +226,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(true); }, nullptr);
         if (show_notifications)
         {
-            ShowOpenSettingsForUpdate();
+            ShowOpenSettingsForUpdate(new_version_info);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace updating
         VersionHelper version{ 0, 0, 0, 0 };
         Uri installer_download_url = nullptr;
         std::wstring installer_filename;
+        bool is_prerelease = false;
     };
     using github_version_info = std::variant<new_version_download_info, version_up_to_date>;
     using github_version_result = std::expected<github_version_info, std::wstring>;

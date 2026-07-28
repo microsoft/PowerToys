@@ -133,7 +133,8 @@ namespace updating
             co_return new_version_download_info{ extract_release_page_url(release_object),
                                                  std::move(github_version),
                                                  std::move(installer_download_url),
-                                                 std::move(installer_filename) };
+                                                 std::move(installer_filename),
+                                                 release_object.GetNamedBoolean(L"prerelease", false) };
         }
         catch (...)
         {

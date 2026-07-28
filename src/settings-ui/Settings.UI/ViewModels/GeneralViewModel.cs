@@ -189,6 +189,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            _isPrereleaseUpdate = UpdatingSettingsConfig.IsPrerelease;
             _updateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
             _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
@@ -284,6 +285,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
+        private bool _isPrereleaseUpdate;
         private string _updateCheckedDate = string.Empty;
 
         private bool _isNewVersionDownloading;
@@ -831,6 +833,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsCurrentVersionPreview => string.Equals(GetPowerToysVersionChannel(), "preview", StringComparison.OrdinalIgnoreCase);
+
+        public string NewVersionAvailableTitle => GetResourceString(IsPrereleaseUpdate ? "General_PreviewUpdateAvailableTitle" : "General_UpdateAvailableTitle");
+
+        public string NewVersionReadyToInstallTitle => GetResourceString(IsPrereleaseUpdate ? "General_PreviewUpdateReadyToInstallTitle" : "General_UpdateReadyToInstallTitle");
+
         public string UpdateCheckedDate
         {
             get
@@ -1045,6 +1053,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _newAvailableVersionLink = value;
                     NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsPrereleaseUpdate
+        {
+            get
+            {
+                return _isPrereleaseUpdate;
+            }
+
+            private set
+            {
+                if (value != _isPrereleaseUpdate)
+                {
+                    _isPrereleaseUpdate = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(NewVersionAvailableTitle));
+                    NotifyPropertyChanged(nameof(NewVersionReadyToInstallTitle));
                 }
             }
         }
@@ -1424,6 +1451,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysUpdatingState = UpdatingSettingsConfig.State;
                 PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+                IsPrereleaseUpdate = UpdatingSettingsConfig.IsPrerelease;
                 UpdateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
                 _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;

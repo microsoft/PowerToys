@@ -22,6 +22,7 @@ UpdateState deserialize(const json::JsonObject& json)
     result.releasePageUrl = json.GetNamedString(L"releasePageUrl", L"");
     result.githubUpdateLastCheckedDate = timeutil::from_string(json.GetNamedString(L"githubUpdateLastCheckedDate", L"invalid").c_str());
     result.downloadedInstallerFilename = json.GetNamedString(L"downloadedInstallerFilename", L"");
+    result.isPrerelease = json.GetNamedBoolean(L"isPrerelease", false);
     return result;
 }
 
@@ -36,6 +37,7 @@ json::JsonObject serialize(const UpdateState& state)
     json.SetNamedValue(L"releasePageUrl", json::value(state.releasePageUrl));
     json.SetNamedValue(L"state", json::value(static_cast<double>(state.state)));
     json.SetNamedValue(L"downloadedInstallerFilename", json::value(state.downloadedInstallerFilename));
+    json.SetNamedValue(L"isPrerelease", json::value(state.isPrerelease));
 
     json.SetNamedValue(L"updateStateFileVersion", json::value(CURRENT_VERSION.toWstring()));
 
