@@ -68,7 +68,10 @@ public class TrayWheelFeedbackSessionTests
         _ = session.ShowAdjustment("55%", 1000);
         _ = session.ShowAdjustment("60%", 2500);
 
-        Assert.AreEqual(Kind.Adjustment, session.Tick(4499, pointerInside: true).Kind);
+        var result = session.Tick(4499, pointerInside: true);
+
+        Assert.AreEqual(Kind.Adjustment, result.Kind);
+        Assert.AreEqual("60%", result.Text);
         Assert.AreEqual(Kind.AppName, session.Tick(4500, pointerInside: true).Kind);
     }
 

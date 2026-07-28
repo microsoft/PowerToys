@@ -20,19 +20,87 @@ public partial class MainViewModel
     private bool _trayWheelNoTargetLogged;
 
     /// <summary>
+    /// Gets a value indicating whether a wheel notch delivered right now would produce a brightness
+    /// change. The tray hook arms only while this holds, so it never consumes a notch that no
+    /// monitor can accept.
+    /// </summary>
+    public bool CanAdjustBrightnessFromTrayWheel =>
+        PlanTrayWheelAdjustments(MouseWheelControlMode.Normalize(), 1).Count > 0;
+
+    /// <summary>
     /// Applies complete tray wheel notches to the configured brightness targets.
     /// </summary>
     /// <param name="notches">The signed number of complete wheel notches.</param>
     public TrayWheelAdjustmentFeedback? AdjustBrightnessFromTrayWheel(int notches)
     {
         var mode = MouseWheelControlMode.Normalize();
+        var adjustments = PlanTrayWheelAdjustments(mode, notches);
+
+        if (adjustments.Count == 0)
+        {
+            if (!_trayWheelNoTargetLogged)
+            {
+                Logger.LogWarning("[TrayWheel] No valid brightness target was available");
+                _trayWheelNoTargetLogged = true;
+            }
+
+            return null;
+        }
+
+        _trayWheelNoTargetLogged = false;
+
+        // Linked monitors are driven by the master value, not their own setter: a per-VM commit
+        // would leave the master slider stale and the next broadcast would revert the wheel
+        // adjustment. Excluded monitors keep their own value and are adjusted individually.
+        var linkedBrightness = (int)Math.Clamp(
+            LinkedBrightness + ((long)notches * MouseWheelIncrement),
+            0,
+            100);
+        var hasLinkedTarget = false;
+
+        var brightnessValues = new int[adjustments.Count];
+        for (var i = 0; i < adjustments.Count; i++)
+        {
+            var adjustment = adjustments[i];
+            brightnessValues[i] = adjustment.Brightness;
+            foreach (var monitor in Monitors)
+            {
+                if (MonitorIdComparer.Equal(monitor.Id, adjustment.Id))
+                {
+                    if (LinkedLevelsActive && IsLinkedTarget(monitor))
+                    {
+                        brightnessValues[i] = linkedBrightness;
+                        hasLinkedTarget = true;
+                    }
+                    else
+                    {
+                        monitor.Brightness = adjustment.Brightness;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        if (hasLinkedTarget)
+        {
+            LinkedBrightness = linkedBrightness;
+        }
+
+        return new TrayWheelAdjustmentFeedback(mode, brightnessValues);
+    }
+
+    private IReadOnlyList<TrayWheelAdjustmentPlanner.Adjustment> PlanTrayWheelAdjustments(
+        MouseWheelMode mode,
+        int notches)
+    {
         if (mode == MouseWheelMode.Disabled ||
             notches == 0 ||
             MouseWheelIncrement <= 0 ||
             !IsInitialized ||
             !IsInteractionEnabled)
         {
-            return null;
+            return [];
         }
 
         string? primaryGdiDeviceName = null;
@@ -53,40 +121,11 @@ public partial class MainViewModel
         }
 
         var delta = (long)notches * MouseWheelIncrement;
-        var adjustments = TrayWheelAdjustmentPlanner.Plan(
+        return TrayWheelAdjustmentPlanner.Plan(
             mode,
             targets,
             primaryGdiDeviceName,
             delta);
-
-        if (adjustments.Count == 0)
-        {
-            if (!_trayWheelNoTargetLogged)
-            {
-                Logger.LogWarning("[TrayWheel] No valid brightness target was available");
-                _trayWheelNoTargetLogged = true;
-            }
-
-            return null;
-        }
-
-        _trayWheelNoTargetLogged = false;
-        var brightnessValues = new int[adjustments.Count];
-        for (var i = 0; i < adjustments.Count; i++)
-        {
-            var adjustment = adjustments[i];
-            brightnessValues[i] = adjustment.Brightness;
-            foreach (var monitor in Monitors)
-            {
-                if (MonitorIdComparer.Equal(monitor.Id, adjustment.Id))
-                {
-                    monitor.Brightness = adjustment.Brightness;
-                    break;
-                }
-            }
-        }
-
-        return new TrayWheelAdjustmentFeedback(mode, brightnessValues);
     }
 
     private static unsafe string? GetPrimaryGdiDeviceName()

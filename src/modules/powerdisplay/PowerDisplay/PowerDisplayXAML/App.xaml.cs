@@ -185,8 +185,7 @@ namespace PowerDisplay
                     _trayIconService.UpdateAdjustmentFeedback(feedback);
                 };
                 _trayIconService.CanProcessMouseWheel =
-                    () => mainWindow.ViewModel.IsInitialized &&
-                        mainWindow.ViewModel.IsInteractionEnabled;
+                    () => mainWindow.ViewModel.CanAdjustBrightnessFromTrayWheel;
                 _trayIconService.SetupTrayIcon();
                 Logger.LogTrace("OnLaunched: TrayIconService initialized");
 

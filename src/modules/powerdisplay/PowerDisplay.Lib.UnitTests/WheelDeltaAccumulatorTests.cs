@@ -46,6 +46,26 @@ public class WheelDeltaAccumulatorTests
     }
 
     [TestMethod]
+    public void Add_NegativePartialPackets_EmitsOnlyAfterCompleteNotch()
+    {
+        var accumulator = new WheelDeltaAccumulator();
+
+        Assert.AreEqual(0, accumulator.Add(-30));
+        Assert.AreEqual(0, accumulator.Add(-30));
+        Assert.AreEqual(0, accumulator.Add(-30));
+        Assert.AreEqual(-1, accumulator.Add(-30));
+    }
+
+    [TestMethod]
+    public void Add_OneDeltaShortOfNotch_EmitsOnlyOnFinalDelta()
+    {
+        var accumulator = new WheelDeltaAccumulator();
+
+        Assert.AreEqual(0, accumulator.Add(119));
+        Assert.AreEqual(1, accumulator.Add(1));
+    }
+
+    [TestMethod]
     public void Add_DirectionReversal_CancelsPartialRemainder()
     {
         var accumulator = new WheelDeltaAccumulator();

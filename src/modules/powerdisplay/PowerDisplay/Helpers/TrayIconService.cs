@@ -52,9 +52,11 @@ namespace PowerDisplay.Helpers
         private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
 
-        // Fallback cadence for noticing that the pointer left the icon. Only used when
-        // NOTIFYICON_VERSION_4 could not be applied, because that version reports the departure
-        // through NIN_POPUPCLOSE and the legacy protocol reports nothing at all.
+        // Cadence for noticing that the pointer left the icon. NOTIFYICON_VERSION_4 also reports
+        // the departure through NIN_POPUPCLOSE, but the Shell only sends that as the partner of a
+        // NIN_POPUPOPEN it emits after its own hover dwell, which can outlast the delay before the
+        // overlay appears; the legacy protocol reports nothing at all and has to poll faster.
+        private static readonly TimeSpan HoverWatchdogInterval = TimeSpan.FromMilliseconds(250);
         private static readonly TimeSpan LegacyHoverPollInterval = TimeSpan.FromMilliseconds(100);
 
         private readonly SettingsUtils _settingsUtils;
@@ -87,8 +89,10 @@ namespace PowerDisplay.Helpers
         private bool _isTrayIconRegistered;
         private bool _trayIconUsesVersion4;
         private bool _registrationFailureLogged;
+        private bool _mouseWheelListenerConstructionFailed;
         private bool _sampleDispatchFailureLogged;
         private bool _boundsFailureLogged;
+        private bool _hoverOutsideBoundsLogged;
         private bool _feedbackWindowFailureLogged;
         private bool _feedbackWindowConstructionFailed;
         private bool _feedbackPresentationFailureLogged;
@@ -96,7 +100,8 @@ namespace PowerDisplay.Helpers
         internal event Action<int>? MouseWheelScrolled;
 
         /// <summary>
-        /// Gets or sets the UI-state gate checked before wheel deltas enter the accumulator.
+        /// Gets or sets the gate checked before wheel deltas enter the accumulator: the UI must be
+        /// interactive and some monitor must be able to accept the resulting brightness write.
         /// </summary>
         internal Func<bool>? CanProcessMouseWheel { get; set; }
 
@@ -154,7 +159,7 @@ namespace PowerDisplay.Helpers
             _mouseWheelControlMode = MouseWheelControlMode.Disabled;
             InvalidateMouseWheelHover(disarm: false);
 
-            if (_isTrayIconRegistered && _trayIconData is not null)
+            if (_trayIconData is not null)
             {
                 var d = (NOTIFYICONDATAW)_trayIconData;
                 unsafe
@@ -417,21 +422,33 @@ namespace PowerDisplay.Helpers
 
         private void EnsureMouseWheelListener()
         {
-            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            // Reached from the window procedure, where an escaping exception takes the process down.
+            // The hook thread is optional, so latch a failed start instead of retrying it per hover.
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled ||
+                _mouseWheelListenerConstructionFailed)
             {
                 return;
             }
 
-            _mouseWheelListener ??= new TrayIconMouseWheelListener(
-                OnWheelSampleBatch,
-                OnMouseWheelListenerDisarmed);
-            _mouseWheelListener.SetEnabled(true);
+            try
+            {
+                _mouseWheelListener ??= new TrayIconMouseWheelListener(
+                    OnWheelSampleBatch,
+                    OnMouseWheelListenerDisarmed);
+                _mouseWheelListener.SetEnabled(true);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _mouseWheelListenerConstructionFailed = true;
+                Logger.LogWarning($"[TrayWheel] Unable to start the hook thread: {ex.Message}");
+            }
         }
 
         private void DisposeMouseWheelListener()
         {
             _mouseWheelListener?.Dispose();
             _mouseWheelListener = null;
+            _mouseWheelListenerConstructionFailed = false;
             _cachedBounds = null;
             _wheelDeltaAccumulator.Reset();
         }
@@ -497,9 +514,25 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            if (!TryGetCurrentIconBounds(out var bounds) ||
-                !bounds.Contains(cursor.X, cursor.Y))
+            if (!TryGetCurrentIconBounds(out var bounds))
             {
+                StopHoverFeedback();
+                InvalidateMouseWheelHover(disarm: true);
+                return;
+            }
+
+            if (!bounds.Contains(cursor.X, cursor.Y))
+            {
+                // The Shell only notifies while the pointer is over the icon, so a rectangle that
+                // excludes the cursor means either the pointer already moved on or the Shell
+                // reported a stand-in rectangle for an icon parked in the notification overflow.
+                if (!_hoverOutsideBoundsLogged)
+                {
+                    Logger.LogInfo(
+                        $"[TrayWheel] Tray hover at ({cursor.X}, {cursor.Y}) is outside the reported icon rectangle ({bounds.Left}, {bounds.Top}, {bounds.Right}, {bounds.Bottom})");
+                    _hoverOutsideBoundsLogged = true;
+                }
+
                 StopHoverFeedback();
                 InvalidateMouseWheelHover(disarm: true);
                 return;
@@ -587,9 +620,10 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Arms a single tick for the next presentation change that time alone will produce: the
         /// hover reveal, or the adjustment readout expiring back to the app name. Once the
-        /// presentation is stable nothing is armed, because NIN_POPUPCLOSE reports the pointer
-        /// leaving. Without NOTIFYICON_VERSION_4 there is no such notification, so the timer falls
-        /// back to polling the cursor at <see cref="LegacyHoverPollInterval"/>.
+        /// presentation is stable the tick keeps watching for the pointer leaving, because
+        /// NIN_POPUPCLOSE cannot be the only way the overlay is taken down: it never arrives for a
+        /// hover that ends before the Shell opened its own pop-up, and without
+        /// NOTIFYICON_VERSION_4 it is not sent at all.
         /// </summary>
         private void ScheduleFeedbackTick()
         {
@@ -600,15 +634,10 @@ namespace PowerDisplay.Helpers
             }
 
             var pending = _feedbackSession.NextTransitionDelay(Environment.TickCount64);
-            if (pending is null && _trayIconUsesVersion4)
-            {
-                _feedbackTimer?.Stop();
-                return;
-            }
-
+            var watchdog = _trayIconUsesVersion4 ? HoverWatchdogInterval : LegacyHoverPollInterval;
             var interval = pending is long delay
                 ? TimeSpan.FromMilliseconds(Math.Max(1L, delay))
-                : LegacyHoverPollInterval;
+                : watchdog;
 
             _feedbackTimer ??= _dispatcherQueue.CreateTimer();
             _feedbackTimer.IsRepeating = false;

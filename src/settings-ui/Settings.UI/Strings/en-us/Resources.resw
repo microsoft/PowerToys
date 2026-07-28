@@ -5591,7 +5591,8 @@ The break timer font matches the text font.</value>
     <value>Mouse wheel control</value>
   </data>
   <data name="PowerDisplay_MouseWheelControlMode.Description" xml:space="preserve">
-    <value>Choose which displays are adjusted when scrolling over the PowerDisplay tray icon. Off also disables mouse wheel adjustment in the PowerDisplay flyout.</value>
+    <value>Choose which displays are adjusted when scrolling over the Power Display tray icon. Off also disables mouse wheel adjustment in the Power Display flyout.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_MouseWheelControlModeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Mouse wheel control mode</value>

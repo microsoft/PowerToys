@@ -69,6 +69,9 @@ namespace PowerDisplay.Helpers
 
             if (!_ready.Wait(TimeSpan.FromSeconds(5)))
             {
+                // The thread has not published its id yet, so WmShutdown has nowhere to go. Latch
+                // the request instead; ThreadMain checks it before entering the message loop.
+                Volatile.Write(ref _disposed, 1);
                 throw new InvalidOperationException("Timed out starting the tray mouse-wheel thread.");
             }
         }
@@ -140,6 +143,11 @@ namespace PowerDisplay.Helpers
             _ = PeekMessageNative(out _, 0, 0, 0, PmNoRemove);
             _threadId = GetCurrentThreadIdNative();
             _ready.Set();
+
+            if (Volatile.Read(ref _disposed) != 0)
+            {
+                return;
+            }
 
             var running = true;
             while (running)
