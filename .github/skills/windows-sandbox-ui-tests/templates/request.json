@@ -1,0 +1,19 @@
+{
+  "RunId": "20260728-120000-deadbeef",
+  "BuildLabel": "git-commit-or-build-id",
+  "TestExecutable": "Module.UITests.Next.exe",
+  "Filter": "TestCategory=Module",
+  "Platform": "x64Win11",
+  "SuiteTimeout": "2h",
+  "Archives": {
+    "Tests": "ui-tests.zip",
+    "Product": "powertoys-runtime.zip",
+    "WinAppCli": "winappcli.zip",
+    "DotNet": "dotnet-runtime.zip",
+    "ProductOverlay": null
+  },
+  "WebView2Installer": "MicrosoftEdgeWebview2Setup.exe",
+  "CleanupProcesses": [
+    "PowerToys.Module.UI"
+  ]
+}

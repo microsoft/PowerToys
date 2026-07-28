@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, Explorer/Shell selection, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, migrate, port, modernize, flaky, CI stability, Explorer, Shell, WebView2, visual regression."
+description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, Windows Sandbox clean-profile validation, Explorer/Shell selection, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic Sandbox execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Windows Sandbox, migrate, port, modernize, flaky, CI stability, Explorer, Shell, WebView2, visual regression."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -27,6 +27,9 @@ Use this skill when the task is to:
 - **Stand up brand-new** `.Next` UI tests for a module that has **no** UI tests at all, by reading the
   module's human test **sign-off markdown** (e.g. `ColorPickerUITest.md`) and turning each manual
   checklist item into an automated test.
+- **Validate a new or migrated suite in a clean Windows Sandbox** through an unattended
+  build/package/deploy/run/TRX/diagnose loop. Use the linked Sandbox skill as the default live run
+  after the project builds.
 
 This skill is the *how*: the framework differences, the API mapping, the project scaffolding, the
 naming rules, the recurring PowerToys test recipes, and the build/validate loop. The *what* (which
@@ -79,6 +82,10 @@ module, which tests) comes from the calling prompt.
   semantics, foreground/integrity constraints, process lifecycle, composed visual capture, and a
   **pre-flight checklist** to apply BEFORE the first CI push so the first run *validates* instead of
   *discovers*. Read this to spend one CI iteration instead of six.
+  8. **[windows-sandbox-ui-tests](../windows-sandbox-ui-tests/SKILL.md)** — the default clean-desktop
+    execution loop after a successful build: enable Sandbox, package a lean exchange, launch an
+    interactive guest, run with winappcli, collect TRX/logs/screenshots, classify failures, and tear
+    down. Read it when a live run is part of the task.
 
 ## Pick your scenario
 
@@ -129,8 +136,12 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
   (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
   scope, composed capture, DPI manifest, single-module enable, first-run suppression)
 - [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
-- [ ] 9. (If a live desktop is available) run the tests; otherwise report that they build and are
-        ready to run, and summarize coverage vs. the source
+- [ ] 9. By default, run one deterministic test in a clean Windows Sandbox and diagnose the first
+  failure — ../windows-sandbox-ui-tests/SKILL.md
+- [ ] 10. Rerun the focused test after each fix, then widen to the complete module suite with bounded
+   timeouts; parse TRX and verify Sandbox teardown
+- [ ] 11. If Sandbox is unavailable or unsupported, run on another live desktop or report the exact
+   environmental blocker; do not silently stop at compile validation
 ```
 
 ## Build & validate
@@ -158,6 +169,13 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
 #    Exit 0 = all passed. Parse the .trx for per-test outcomes + failure messages.
 ```
 
+- **Default to clean Windows Sandbox validation —
+  [windows-sandbox-ui-tests](../windows-sandbox-ui-tests/SKILL.md).** After the focused build passes,
+  package the current product/test outputs and run one deterministic test in Sandbox. Iterate there
+  until it passes, then run the module suite. This catches fresh-profile, first-run, WebView2,
+  Explorer, foreground, and lifecycle assumptions before CI without mutating the host profile.
+  Sandbox is not the final authority for fixed-resolution visual baselines; preserve and classify
+  visual mismatches, then use the matching CI/VM display for final pixel sign-off.
 - **Design for CI stability up-front — [references/ci-stability.md](references/ci-stability.md).**
   Before the first push, walk its pre-flight checklist (authoritative-signal retries instead of fixed
   sleeps, navigation via UIA invoke, Win32 window/overlay detection, screen-capture cold-start
