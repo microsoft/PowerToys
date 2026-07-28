@@ -40,6 +40,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly ContinuousVcpInitializer _continuousInitializer;
         private readonly DiscreteVcpInitializer _discreteInitializer;
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
         private bool _disposed;
 
@@ -58,15 +59,24 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
         }
 
+        /// <param name="knownGoodStore">Persisted store for known-good VCP observations.</param>
+        /// <param name="clock">Clock used to stamp known-good observations.</param>
+        /// <param name="reader">VCP feature reader; the production implementation wraps Dxva2.</param>
+        /// <param name="delayAsync">
+        /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
+        /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
+        /// </param>
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
             ISystemClock clock,
-            IVcpFeatureReader reader)
+            IVcpFeatureReader reader,
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             _knownGoodStore = knownGoodStore;
             _clock = clock;
             _vcpReader = reader;
-            _probeService = new VcpFeatureProbeService(_vcpReader);
+            _delayAsync = delayAsync ?? Task.Delay;
+            _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore, _clock);
             _discreteInitializer = new DiscreteVcpInitializer(_vcpReader);
             _discoveryHelper = new MonitorDiscoveryHelper();
@@ -368,7 +378,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// (cooperative — checked between attempts) and during the 1 s delay between
         /// retries.
         /// </summary>
-        private async Task<VcpDiscoveryEvidence> FetchCapabilitiesWithFallbackAsync(
+        internal async Task<VcpDiscoveryEvidence> FetchCapabilitiesWithFallbackAsync(
             IntPtr hPhysicalMonitor,
             string monitorId,
             CancellationToken cancellationToken)
@@ -397,7 +407,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Logger.LogWarning(
                         $"DDC: cap string fetch attempt {attempt} returned empty " +
                         $"(handle=0x{hPhysicalMonitor:X}); retrying in {retryDelayMs}ms");
-                    await Task.Delay(retryDelayMs, cancellationToken);
+                    await _delayAsync(TimeSpan.FromMilliseconds(retryDelayMs), cancellationToken);
                 }
             }
 
@@ -773,6 +783,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
                         {
+                            RefreshKnownGoodAfterWrite(monitor, vcpCode, value);
                             return MonitorOperationResult.Success();
                         }
 
@@ -785,6 +796,58 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 },
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Keeps an existing known-good cache entry aligned with a successful write. The cache is
+        /// otherwise only refreshed by a successful read, so a slider move would leave it holding the
+        /// pre-write value; maximum compatibility mode then republishes that stale value on a later
+        /// discovery whose probe touched the code but could not read it, and
+        /// <see cref="ContinuousVcpInitializer"/> applies it without re-reading.
+        /// </summary>
+        /// <remarks>
+        /// Only an entry a real read already established is refreshed, and only when the value was
+        /// scaled against the very maximum that entry holds. A successful SetVCPFeature is not
+        /// evidence that the device implements the code, and a monitor whose discovery read failed
+        /// still carries the placeholder <see cref="Monitor.BrightnessVcpMax"/> of 100 — writing that
+        /// back would replace a read-proven device range (e.g. 0-50) with the placeholder and
+        /// mis-scale every later write.
+        /// </remarks>
+        /// <param name="monitor">The monitor that just accepted the write.</param>
+        /// <param name="vcpCode">The VCP code written.</param>
+        /// <param name="rawValue">The device-native value handed to SetVCPFeature.</param>
+        internal void RefreshKnownGoodAfterWrite(Monitor monitor, byte vcpCode, int rawValue)
+        {
+            if (string.IsNullOrEmpty(monitor.Id) ||
+                !_knownGoodStore.GetKnownGoodFeatures(monitor.Id).TryGetValue(vcpCode, out var existing))
+            {
+                return;
+            }
+
+            var maximum = vcpCode switch
+            {
+                VcpCodeBrightness => monitor.BrightnessVcpMax,
+                VcpCodeContrast => monitor.ContrastVcpMax,
+                VcpCodeVolume => monitor.VolumeVcpMax,
+                _ => 0,
+            };
+
+            if (maximum != existing.Maximum ||
+                !new VcpFeatureValue(rawValue, 0, existing.Maximum).IsValid)
+            {
+                return;
+            }
+
+            _knownGoodStore.UpsertKnownGoodFeature(
+                monitor.Id,
+                new KnownGoodVcpFeature
+                {
+                    Code = vcpCode,
+                    Current = rawValue,
+                    Maximum = existing.Maximum,
+                    Source = existing.Source,
+                    LastSuccessfulUtc = _clock.UtcNow,
+                });
         }
 
         public void Dispose()
