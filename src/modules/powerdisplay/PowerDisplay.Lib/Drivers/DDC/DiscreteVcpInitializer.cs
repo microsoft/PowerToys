@@ -29,12 +29,16 @@ internal sealed class DiscreteVcpInitializer
     /// Reads the discrete VCP features a monitor advertises.
     /// </summary>
     /// <remarks>
-    /// Discrete VCPs carry no discovery decision. Whether the physical-monitor handle is usable is
-    /// already settled before this stage runs — by the maximum-compatibility probe through
-    /// <see cref="VcpDiscoveryEvidence.Reconcile"/>, and by <see cref="ContinuousVcpInitializer"/>
-    /// in both modes — and both drop the monitor on a handle-class error. Failing here only leaves
-    /// the corresponding <see cref="MonitorReadFlags"/> bit unset, so a monitor whose continuous
-    /// features were read successfully is never discarded because 0xD6 answered badly.
+    /// Discrete VCPs carry no discovery decision. A handle-class error is acted on by the stages
+    /// that run first — the maximum-compatibility probe through
+    /// <see cref="VcpDiscoveryEvidence.Reconcile"/>, and <see cref="ContinuousVcpInitializer"/> in
+    /// both modes — so by the time a monitor reaches this stage the usual case is that its handle
+    /// has already answered. It is not guaranteed to have been exercised: a capabilities string that
+    /// parses but advertises none of 0x10/0x12/0x62 leaves nothing for the continuous stage to read
+    /// and suppresses the probe, making these the first reads on the handle. Even then, failing here
+    /// only leaves the corresponding <see cref="MonitorReadFlags"/> bit unset — the monitor is kept
+    /// and its discrete controls fall back to their defaults, which is preferable to discarding a
+    /// display whose capabilities string parsed cleanly because 0xD6 answered badly.
     /// </remarks>
     public void Initialize(Monitor monitor, IntPtr handle)
     {

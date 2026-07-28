@@ -105,13 +105,35 @@ internal sealed class VcpDiscoveryEvidence
                     // includeCache is only enabled by Maximum compatibility mode; when it is, exact-ID
                     // cache evidence intentionally supplements parsed capabilities because caps strings
                     // can omit previously proven continuous VCP support.
+                    //
+                    // Positive cache evidence is deliberately permanent for as long as the monitor
+                    // stays connected: nothing here retracts it, and MonitorStateManager's
+                    // RemoveKnownGoodFeatures only fires once the 30-day settings retention drops the
+                    // monitor entry. In particular a definitive DDCCI_VCP_NOT_SUPPORTED reply does not
+                    // outrank the cache — see Reconcile_VcpNotSupportedStillUsesCachedPositiveEvidence.
+                    //
+                    // That asymmetry is the point. Retracting on negative evidence trades a mild
+                    // failure for a severe one: a stale positive leaves a control that writes into the
+                    // void, whereas dropping the last cached code leaves Reconcile with null
+                    // capabilities and BuildMonitorFromPhysical discards the display outright, taking
+                    // its rotation and discrete VCPs with it. And NOT_SUPPORTED is not dependable
+                    // negative evidence on the hardware this mode exists for: panels whose DDC/CI
+                    // engine is busy or asleep return it as a generic refusal, which is why the probe
+                    // does not retry it and why one such reply must not delete persisted state.
+                    //
+                    // The window for a false positive is correspondingly narrow. Seeding one requires
+                    // the panel to answer an unimplemented code with a non-zero, in-range maximum; the
+                    // common garbage reply of current=0/max=0 fails VcpFeatureValue.IsValid and is
+                    // never cached. Known limitation: a monitor that does slip through keeps the
+                    // phantom control until its settings entry ages out.
                     capabilities = MarkSupported(capabilities, code);
 
-                    // The probe spends its full paced retry budget on every code it touches, so
-                    // re-reading one of those is pure I2C noise. A code the probe never saw still
-                    // owes the hardware one read: the probe only runs when the caps string is
-                    // unusable, so on the caps-parsed path nothing has confirmed the cached value
-                    // and nothing would ever refresh it.
+                    // The probe already issued at least one transaction for every code it touched —
+                    // exhausting its paced retry budget, or stopping early on a definitive answer —
+                    // so re-reading one of those in the same pass is pure I2C noise. A code the
+                    // probe never saw still owes the hardware one read: the probe only runs when
+                    // the caps string is unusable, so on the caps-parsed path nothing has confirmed
+                    // the cached value and nothing would ever refresh it.
                     values[code] = new VcpInitialValue(
                         cachedValue,
                         knownGood.Source,

@@ -81,6 +81,11 @@ internal sealed class ContinuousVcpInitializer
             Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
             if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
             {
+                // Dropping the monitor is deliberate, and the cached fallback is deliberately not
+                // applied: Monitor.Handle is captured once per discovery pass and never refreshed,
+                // so a monitor kept here would answer every later read and write against a handle
+                // already known to be dead. A rediscovery is what repairs it, and DisplayChangeWatcher
+                // schedules one for the topology changes that invalidate a handle.
                 return VcpInitializationResult.PhysicalMonitorUnavailable;
             }
 

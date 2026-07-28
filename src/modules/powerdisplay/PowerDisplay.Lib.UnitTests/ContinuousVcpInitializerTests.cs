@@ -83,8 +83,9 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_ProbeExhaustedCachedCodeDoesNotReadAgain()
     {
-        // The probe already spent its full paced retry budget on this code, so re-reading it here
-        // would be pure I2C noise.
+        // The probe already issued transactions for this code in this pass — it stopped on a
+        // definitive DDCCI_VCP_NOT_SUPPORTED rather than exhausting the budget — so re-reading it
+        // here would be pure I2C noise.
         var reader = new RecordingReader(VcpReadAttempt.Failure(1));
         var store = new RecordingStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
