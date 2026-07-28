@@ -22,10 +22,35 @@ public partial class MainViewModel
     /// <summary>
     /// Gets a value indicating whether a wheel notch delivered right now would produce a brightness
     /// change. The tray hook arms only while this holds, so it never consumes a notch that no
-    /// monitor can accept.
+    /// monitor can accept. The tray service re-reads this for every hover message, so it answers
+    /// the question by scanning for the first eligible monitor instead of planning the full set.
     /// </summary>
-    public bool CanAdjustBrightnessFromTrayWheel =>
-        PlanTrayWheelAdjustments(MouseWheelControlMode.Normalize(), 1).Count > 0;
+    public bool CanAdjustBrightnessFromTrayWheel
+    {
+        get
+        {
+            var mode = MouseWheelControlMode.Normalize();
+            if (!TryGetTrayWheelScope(mode, notches: 1, out var primaryGdiDeviceName))
+            {
+                return false;
+            }
+
+            // Indexed rather than foreach: ObservableCollection hands out a boxed enumerator, and
+            // this runs on every tray hover message.
+            for (var i = 0; i < Monitors.Count; i++)
+            {
+                if (TrayWheelAdjustmentPlanner.IsEligible(
+                    mode,
+                    CreateTrayWheelTarget(Monitors[i]),
+                    primaryGdiDeviceName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 
     /// <summary>
     /// Applies complete tray wheel notches to the configured brightness targets.
@@ -99,39 +124,66 @@ public partial class MainViewModel
         MouseWheelMode mode,
         int notches)
     {
+        if (!TryGetTrayWheelScope(mode, notches, out var primaryGdiDeviceName))
+        {
+            return [];
+        }
+
+        var targets = new List<TrayWheelAdjustmentPlanner.Target>(Monitors.Count);
+        foreach (var monitor in Monitors)
+        {
+            targets.Add(CreateTrayWheelTarget(monitor));
+        }
+
+        return TrayWheelAdjustmentPlanner.Plan(
+            mode,
+            targets,
+            primaryGdiDeviceName,
+            (long)notches * MouseWheelIncrement);
+    }
+
+    /// <summary>
+    /// Validates the preconditions shared by <see cref="CanAdjustBrightnessFromTrayWheel"/> and
+    /// <see cref="PlanTrayWheelAdjustments"/>, and resolves the primary display's GDI name for the
+    /// modes that need it.
+    /// </summary>
+    /// <param name="mode">The normalized mouse-wheel mode.</param>
+    /// <param name="notches">The signed number of complete wheel notches.</param>
+    /// <param name="primaryGdiDeviceName">The resolved primary GDI name, or <see langword="null"/>
+    /// when the mode does not target the primary display.</param>
+    /// <returns><see langword="true"/> when a tray wheel adjustment is possible in principle.</returns>
+    private bool TryGetTrayWheelScope(
+        MouseWheelMode mode,
+        int notches,
+        out string? primaryGdiDeviceName)
+    {
+        primaryGdiDeviceName = null;
+
         if (mode == MouseWheelMode.Disabled ||
             notches == 0 ||
             MouseWheelIncrement <= 0 ||
             !IsInitialized ||
             !IsInteractionEnabled)
         {
-            return [];
+            return false;
         }
 
-        string? primaryGdiDeviceName = null;
-        if (mode == MouseWheelMode.PrimaryDisplay)
+        if (mode != MouseWheelMode.PrimaryDisplay)
         {
-            primaryGdiDeviceName = GetPrimaryGdiDeviceName();
+            return true;
         }
 
-        var targets = new List<TrayWheelAdjustmentPlanner.Target>(Monitors.Count);
-        foreach (var monitor in Monitors)
-        {
-            targets.Add(new TrayWheelAdjustmentPlanner.Target(
-                monitor.Id,
-                monitor.GdiDeviceName,
-                monitor.SupportsBrightness,
-                monitor.HasValidBrightnessReading,
-                monitor.Brightness));
-        }
-
-        var delta = (long)notches * MouseWheelIncrement;
-        return TrayWheelAdjustmentPlanner.Plan(
-            mode,
-            targets,
-            primaryGdiDeviceName,
-            delta);
+        primaryGdiDeviceName = GetPrimaryGdiDeviceName();
+        return !string.IsNullOrWhiteSpace(primaryGdiDeviceName);
     }
+
+    private static TrayWheelAdjustmentPlanner.Target CreateTrayWheelTarget(MonitorViewModel monitor)
+        => new(
+            monitor.Id,
+            monitor.GdiDeviceName,
+            monitor.SupportsBrightness,
+            monitor.HasValidBrightnessReading,
+            monitor.Brightness);
 
     private static unsafe string? GetPrimaryGdiDeviceName()
     {

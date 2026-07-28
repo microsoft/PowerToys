@@ -163,4 +163,86 @@ public class TrayWheelAdjustmentPlannerTests
         Assert.AreEqual(1, result.Count);
         Assert.AreEqual(new Adjustment("a", 0), result[0]);
     }
+
+    [TestMethod]
+    public void IsEligible_Disabled_IsFalse()
+    {
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.Disabled,
+            Monitor("a", @"\\.\DISPLAY1", 50),
+            @"\\.\DISPLAY1"));
+    }
+
+    [TestMethod]
+    public void IsEligible_RejectsMonitorsWithoutAUsableBrightnessReading()
+    {
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.AllDisplays,
+            Monitor("a", @"\\.\DISPLAY1", 50, supportsBrightness: false),
+            null));
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.AllDisplays,
+            Monitor("a", @"\\.\DISPLAY1", 50, hasBrightnessReading: false),
+            null));
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.AllDisplays,
+            Monitor(string.Empty, @"\\.\DISPLAY1", 50),
+            null));
+    }
+
+    [TestMethod]
+    public void IsEligible_PrimaryDisplay_MatchesGdiNameCaseInsensitively()
+    {
+        Assert.IsTrue(IsEligible(
+            MouseWheelControlMode.PrimaryDisplay,
+            Monitor("a", @"\\.\DISPLAY7", 50),
+            @"\\.\display7"));
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.PrimaryDisplay,
+            Monitor("a", @"\\.\DISPLAY2", 50),
+            @"\\.\DISPLAY7"));
+    }
+
+    [TestMethod]
+    public void IsEligible_PrimaryDisplay_WithoutAKnownPrimaryIsFalse()
+    {
+        // Guards the gate against pairing a monitor that reports no GDI name with an unresolved
+        // primary and calling that a match.
+        Assert.IsFalse(IsEligible(
+            MouseWheelControlMode.PrimaryDisplay,
+            Monitor("a", string.Empty, 50),
+            null));
+    }
+
+    [TestMethod]
+    public void IsEligible_AgreesWithPlanForEveryMode()
+    {
+        Target[] targets =
+        [
+            Monitor("primary", @"\\.\DISPLAY1", 50),
+            Monitor("secondary", @"\\.\DISPLAY2", 40),
+            Monitor("no-reading", @"\\.\DISPLAY3", 30, hasBrightnessReading: false),
+            Monitor("no-brightness", @"\\.\DISPLAY4", 20, supportsBrightness: false),
+        ];
+
+        MouseWheelControlMode[] modes =
+        [
+            MouseWheelControlMode.Disabled,
+            MouseWheelControlMode.PrimaryDisplay,
+            MouseWheelControlMode.AllDisplays,
+        ];
+
+        foreach (var mode in modes)
+        {
+            var planned = Plan(mode, targets, @"\\.\DISPLAY1", 5)
+                .Select(adjustment => adjustment.Id)
+                .ToArray();
+            var eligible = targets
+                .Where(target => IsEligible(mode, target, @"\\.\DISPLAY1"))
+                .Select(target => target.Id)
+                .ToArray();
+
+            CollectionAssert.AreEqual(planned, eligible, $"mode {mode}");
+        }
+    }
 }
