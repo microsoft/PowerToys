@@ -95,6 +95,9 @@ std::optional<fs::path> CopySelfToTempDir()
     return dst_path;
 }
 
+// The installer filename read from UpdateState.json is validated by
+// updating::IsSafeDownloadedInstallerFilename (common/updating/updateLifecycle.h)
+// so it can be unit-tested. See ObtainInstaller below for how it's used.
 std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 {
     using namespace updating;
@@ -107,7 +110,25 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     // so we don't need a GitHub API call (which may fail if offline).
     if (state.state == UpdateState::readyToInstall)
     {
-        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (!IsSafeDownloadedInstallerFilename(state.downloadedInstallerFilename))
+        {
+            Logger::error(L"Ignoring unexpected downloadedInstallerFilename from update state: {}", state.downloadedInstallerFilename);
+            return std::nullopt;
+        }
+
+        const fs::path updatesDir = get_pending_updates_path();
+        fs::path installer{ updatesDir / state.downloadedInstallerFilename };
+
+        // Make sure the resolved path actually stays within the Updates directory.
+        std::error_code ec;
+        const fs::path normalizedInstaller = fs::weakly_canonical(installer, ec);
+        const fs::path normalizedUpdatesDir = fs::weakly_canonical(updatesDir, ec);
+        if (ec || normalizedInstaller.parent_path() != normalizedUpdatesDir)
+        {
+            Logger::error(L"Resolved installer path is outside the updates directory: {}", installer.native());
+            return std::nullopt;
+        }
+
         if (fs::is_regular_file(installer))
         {
             return std::move(installer);
@@ -169,9 +190,17 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
-            // Get the process that owns the tray window so we can wait for it to exit
+            // Get the process that owns the tray window so we can wait for it to exit.
             DWORD ptProcessId = 0;
             GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
+            // Open the process handle BEFORE sending WM_CLOSE. PowerToys can exit
+            // inside its own WM_CLOSE handler, and once it does the OS is free to
+            // recycle its PID -- opening by PID afterwards could then fail or, worse,
+            // attach to an unrelated process that reused the PID. Holding the handle
+            // anchors the kernel object to the original process, so reuse is
+            // impossible while we wait on it.
+            wil::unique_handle ptProcess{ ptProcessId != 0 ? OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) : nullptr };
 
             // Use SendMessageTimeoutW to avoid blocking indefinitely if the
             // tray window thread is hung or unresponsive.
@@ -180,13 +209,9 @@ bool InstallNewVersionStage1(fs::path installer)
 
             // Wait for PT to actually exit before launching installer.
             // Without this, the installer may find PT files locked.
-            if (ptProcessId != 0)
+            if (ptProcess)
             {
-                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
-                if (ptProcess)
-                {
-                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
-                }
+                WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
             }
         }
 

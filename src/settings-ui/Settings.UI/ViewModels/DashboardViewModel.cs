@@ -748,6 +748,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case Library.Enumerations.PowerAccentActivationKey.LeftRightArrow: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Arrows/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Space: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Space/Content"); break;
                 case Library.Enumerations.PowerAccentActivationKey.Both: activation = resourceLoader.GetString("QuickAccent_Activation_Key_Either/Content"); break;
+                case Library.Enumerations.PowerAccentActivationKey.PressAndHold: activation = resourceLoader.GetString("QuickAccent_Activation_Key_PressAndHold/Content"); break;
+                default: activation = string.Empty; break;
             }
 
             var list = new List<DashboardModuleItem>

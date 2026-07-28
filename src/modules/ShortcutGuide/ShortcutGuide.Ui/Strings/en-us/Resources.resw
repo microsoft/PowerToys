@@ -120,6 +120,9 @@
   <data name="CloseButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Close</value>
   </data>
+  <data name="CloseButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="ErrorInAppParsing" xml:space="preserve">
     <value>Error displaying the application's shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts; Application refers to a PC application</comment>

@@ -3,12 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Threading.Tasks;
 
 // <summary>
 //     Encrypt/decrypt implementation.
@@ -32,13 +31,17 @@ internal static class Encryption
     private static Random ran = new(); // Used for non encryption related functionality.
     internal const int SymAlBlockSize = 16;
 
-    /// <summary>
-    /// This is used for the first encryption block, the following blocks will be combined with the cipher text of the previous block.
-    /// Thus identical blocks in the socket stream would be encrypted to different cipher text blocks.
-    /// The first block is a handshake one containing random data.
-    /// Related Unit Test: TestEncryptDecrypt
-    /// </summary>
-    private static readonly string InitialIV = ulong.MaxValue.ToString(CultureInfo.InvariantCulture);
+    // Size (in bytes) of the random, per-connection PBKDF2 salt that is exchanged in the
+    // clear at the start of every encrypted stream. A unique random salt prevents an
+    // attacker from pre-computing a single brute-force/rainbow table that could be reused
+    // against every captured connection.
+    private const int SaltSize = 16;
+
+    // Number of PBKDF2 iterations used to derive the symmetric key from the shared secret.
+    private const int KeyDerivationIterations = 50000;
+
+    // Length (in bytes) of the derived AES-256 key.
+    private const int DerivedKeyLength = 32;
 
     internal static Random Ran
     {
@@ -55,19 +58,7 @@ internal static class Encryption
     internal static string MyKey
     {
         get => Encryption.myKey;
-
-        set
-        {
-            if (Encryption.myKey != value)
-            {
-                Encryption.myKey = value;
-                _ = Task.Factory.StartNew(
-                    () => Encryption.GenLegalKey(),
-                    System.Threading.CancellationToken.None,
-                    TaskCreationOptions.None,
-                    TaskScheduler.Default); // Cache the key to improve UX.
-            }
-        }
+        set => Encryption.myKey = value;
     }
 
     private static string KeyDisplayedText(string key)
@@ -112,59 +103,70 @@ internal static class Encryption
         }
     }
 
-    private static readonly ConcurrentDictionary<string, byte[]> LegalKeyDictionary = new(StringComparer.OrdinalIgnoreCase);
-
-    private static byte[] GenLegalKey()
+    private static byte[] GenLegalKey(byte[] salt)
     {
-        byte[] rv;
-        string myKey = Encryption.MyKey;
-
-        if (!LegalKeyDictionary.TryGetValue(myKey, out byte[] value))
-        {
-            rv = Rfc2898DeriveBytes.Pbkdf2(
-                myKey,
-                Common.GetBytesU(InitialIV),
-                50000,
-                HashAlgorithmName.SHA512,
-                32);
-            _ = LegalKeyDictionary.AddOrUpdate(myKey, rv, (k, v) => rv);
-        }
-        else
-        {
-            rv = value;
-        }
-
-        return rv;
-    }
-
-    private static byte[] GenLegalIV()
-    {
-        string st = InitialIV;
-        int ivLength = symAl.IV.Length;
-        if (st.Length > ivLength)
-        {
-            st = st[..ivLength];
-        }
-        else if (st.Length < ivLength)
-        {
-            st = st.PadRight(ivLength, ' ');
-        }
-
-        return Common.GetBytes(st);
+        return Rfc2898DeriveBytes.Pbkdf2(
+            Encryption.MyKey,
+            salt,
+            KeyDerivationIterations,
+            HashAlgorithmName.SHA512,
+            DerivedKeyLength);
     }
 
     internal static Stream GetEncryptedStream(Stream encryptedStream)
     {
-        ICryptoTransform encryptor;
-        encryptor = symAl.CreateEncryptor(GenLegalKey(), GenLegalIV());
+        // A fresh random salt and IV are generated for every connection and sent in the
+        // clear ahead of the cipher text. Neither value is secret: deriving the symmetric
+        // key still requires the shared secret. The random salt prevents an attacker from
+        // pre-computing a brute-force/rainbow table that could be reused against every
+        // captured connection, and the random IV avoids reusing a fixed IV across sessions.
+        byte[] header = new byte[SaltSize + SymAlBlockSize];
+        RandomNumberGenerator.Fill(header);
+        ExchangeEncryptionHeader(encryptedStream, header, send: true);
+
+        byte[] salt = header[..SaltSize];
+        byte[] iv = header[SaltSize..];
+
+        ICryptoTransform encryptor = symAl.CreateEncryptor(GenLegalKey(salt), iv);
         return new CryptoStream(encryptedStream, encryptor, CryptoStreamMode.Write);
     }
 
     internal static Stream GetDecryptedStream(Stream encryptedStream)
     {
-        ICryptoTransform decryptor;
-        decryptor = symAl.CreateDecryptor(GenLegalKey(), GenLegalIV());
+        byte[] header = new byte[SaltSize + SymAlBlockSize];
+        ExchangeEncryptionHeader(encryptedStream, header, send: false);
+
+        byte[] salt = header[..SaltSize];
+        byte[] iv = header[SaltSize..];
+
+        ICryptoTransform decryptor = symAl.CreateDecryptor(GenLegalKey(salt), iv);
         return new CryptoStream(encryptedStream, decryptor, CryptoStreamMode.Read);
+    }
+
+    // Sends or receives the cleartext salt + IV header. Mirrors the tolerant socket-close
+    // handling used elsewhere so an expected remote disconnect does not surface as an error.
+    private static void ExchangeEncryptionHeader(Stream stream, byte[] header, bool send)
+    {
+        try
+        {
+            if (send)
+            {
+                stream.Write(header, 0, header.Length);
+            }
+            else
+            {
+                stream.ReadExactly(header);
+            }
+        }
+        catch (IOException e)
+        {
+            Logger.Log($"{nameof(ExchangeEncryptionHeader)}: Exception {(send ? "writing" : "reading")} the encryption header to the socket stream: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)");
+
+            if (e is not EndOfStreamException && e.InnerException is not (SocketException or ObjectDisposedException))
+            {
+                throw;
+            }
+        }
     }
 
     internal static uint Get24BitHash(string st)

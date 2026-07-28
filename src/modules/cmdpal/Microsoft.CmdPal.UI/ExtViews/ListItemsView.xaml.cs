@@ -680,12 +680,13 @@ public sealed partial class ListItemsView : UserControl,
         // Latch: once any update requests force-first, keep it until consumed.
         _forceFirstPending |= args.ForceFirstItem;
         var forceFirstItem = _forceFirstPending;
+        var ensureSelectionVisible = args.EnsureSelectionVisible;
 
         // Try to handle selection immediately — items should already be available
         // since FilteredItems is a direct ObservableCollection bound as ItemsSource.
         // TrySetSelectionAfterUpdate clears _forceFirstPending internally once
         // selection stabilizes (no repair needed), so we don't clear it here.
-        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem))
+        if (TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible))
         {
             return;
         }
@@ -700,7 +701,7 @@ public sealed partial class ListItemsView : UserControl,
                     return;
                 }
 
-                TrySetSelectionAfterUpdate(sender, version, forceFirstItem);
+                TrySetSelectionAfterUpdate(sender, version, forceFirstItem, ensureSelectionVisible);
             });
     }
 
@@ -712,7 +713,10 @@ public sealed partial class ListItemsView : UserControl,
     /// When true, always select the first selectable item and scroll to top
     /// (used for filter changes and top-level fetches).
     /// </param>
-    private bool TrySetSelectionAfterUpdate(ListViewModel sender, long version, bool forceFirstItem)
+    /// <param name="ensureSelectionVisible">
+    /// When true, scroll a preserved selection into view after a soft refresh.
+    /// </param>
+    private bool TrySetSelectionAfterUpdate(ListViewModel sender, long version, bool forceFirstItem, bool ensureSelectionVisible)
     {
         if (version != Volatile.Read(ref _itemsUpdatedVersion))
         {
@@ -819,7 +823,7 @@ public sealed partial class ListItemsView : UserControl,
 
                     ItemView.UpdateLayout();
 
-                    if (stickyRestored is not null)
+                    if (stickyRestored is not null && ensureSelectionVisible)
                     {
                         ScrollToItem(stickyRestored);
                     }
@@ -838,16 +842,20 @@ public sealed partial class ListItemsView : UserControl,
         else
         {
             // Selection is valid and unchanged: the force-first intent (if any)
-            // has been fully delivered and selection has stabilized. Safe to clear.
+            // has been fully delivered and selection has stabilized.
             _forceFirstPending = false;
 
-            // Just make sure the item is visible
-            if (_stickySelectedItem is ListItemViewModel li)
+            if (ensureSelectionVisible && _stickySelectedItem is ListItemViewModel selectedItem)
             {
                 _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                 {
+                    if (version != Volatile.Read(ref _itemsUpdatedVersion))
+                    {
+                        return;
+                    }
+
                     ItemView.UpdateLayout();
-                    ScrollToItem(li);
+                    ScrollToItem(selectedItem);
                 });
             }
         }

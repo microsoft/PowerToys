@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
@@ -209,6 +210,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     // Property to access IsInteractionEnabled from parent ViewModel
     public bool IsInteractionEnabled => _mainViewModel?.IsInteractionEnabled ?? true;
+
+    /// <summary>
+    /// Gets the shared per-mouse-wheel-notch step for this monitor's sliders, proxied from the
+    /// owning <see cref="MainViewModel"/>. Falls back to 5 if the owner is unavailable.
+    /// </summary>
+    public int MouseWheelIncrement => _mainViewModel?.MouseWheelIncrement ?? 5;
 
     public MonitorViewModel(Monitor monitor, MonitorManager monitorManager, MainViewModel mainViewModel)
     {
@@ -670,6 +677,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
+    /// Raise <see cref="PropertyChanged"/> for <see cref="MouseWheelIncrement"/> so per-monitor
+    /// sliders pick up a new value after the user changes it in Settings. Called from
+    /// <c>MainViewModel.ApplySettingsFromUI</c>.
+    /// </summary>
+    public void RefreshMouseWheelIncrement()
+    {
+        OnPropertyChanged(nameof(MouseWheelIncrement));
+    }
+
+    /// <summary>
     /// Set input source for this monitor
     /// </summary>
     public async Task SetInputSourceAsync(int inputSource)
@@ -760,8 +777,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Set power state for this monitor.
-    /// Note: Setting any state other than "On" will turn off the display.
+    /// Set the monitor's power state via VCP 0xD6: On (0x01) wakes the display,
+    /// Standby/Suspend/Off put it to sleep.
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
@@ -788,18 +805,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[{Id}] Exception setting power state: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Command to set power state
-    /// </summary>
-    [RelayCommand]
-    private async Task SetPowerState(int? state)
-    {
-        if (state.HasValue)
-        {
-            await SetPowerStateAsync(state.Value);
         }
     }
 
@@ -959,11 +964,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (item.Value == PowerStateItem.PowerStateOn)
-        {
-            return;
-        }
-
+        // Send the selected state straight to the hardware. Selecting On (0x01) wakes a
+        // sleeping monitor: DDC/CI stays reachable in Standby/Suspend/Off(DPM), so the
+        // write turns the panel back on (Off(Hard)/0x05 may still need a physical wake).
         await SetPowerStateAsync(item.Value);
     }
 

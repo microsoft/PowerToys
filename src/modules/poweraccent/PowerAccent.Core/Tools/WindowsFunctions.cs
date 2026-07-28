@@ -88,6 +88,40 @@ internal static class WindowsFunctions
         }
     }
 
+    public static void SendArrowKey(bool left)
+    {
+        var key = left ? VIRTUAL_KEY.VK_LEFT : VIRTUAL_KEY.VK_RIGHT;
+        var inputs = new INPUT[]
+        {
+            new INPUT
+            {
+                type = INPUT_TYPE.INPUT_KEYBOARD,
+                Anonymous = new INPUT._Anonymous_e__Union
+                {
+                    ki = new KEYBDINPUT
+                    {
+                        wVk = key,
+                        dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY,
+                    },
+                },
+            },
+            new INPUT
+            {
+                type = INPUT_TYPE.INPUT_KEYBOARD,
+                Anonymous = new INPUT._Anonymous_e__Union
+                {
+                    ki = new KEYBDINPUT
+                    {
+                        wVk = key,
+                        dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                    },
+                },
+            },
+        };
+
+        _ = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+    }
+
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
     {
         GUITHREADINFO guiInfo = default;
@@ -107,7 +141,8 @@ internal static class WindowsFunctions
 
         double dpi = dpiRaw / 96d;
         var location = new Point(monitorInfo.rcWork.left, monitorInfo.rcWork.top);
-        return (location, monitorInfo.rcWork.Size, dpi);
+        var size = new Size(monitorInfo.rcWork.right - monitorInfo.rcWork.left, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
+        return (location, size, dpi);
     }
 
     public static bool IsCapsLockState()

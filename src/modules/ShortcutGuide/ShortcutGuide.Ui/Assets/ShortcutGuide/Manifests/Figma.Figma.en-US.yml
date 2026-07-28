@@ -806,7 +806,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Set opacity to 50
         Shortcut:
         - Win: false
@@ -814,7 +814,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 5
+            - "<5>"
       - Name: Set opacity to 100
         Shortcut:
         - Win: false
@@ -822,7 +822,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - "<0>"
   - SectionName: Arrange
     Properties:
       - Name: Bring forward

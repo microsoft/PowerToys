@@ -234,6 +234,8 @@ namespace AdvancedPaste.ViewModels
 
         public bool ShowClipboardHistoryButton => ClipboardHistoryEnabled;
 
+        public bool ShowAIPasteSection => _userSettings.ShowAIPaste && IsAllowedByGPO;
+
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 
         private PasteFormats CustomAIFormat =>
@@ -320,6 +322,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
             OnPropertyChanged(nameof(ShowClipboardPreview));
+            OnPropertyChanged(nameof(ShowAIPasteSection));
 
             NotifyActiveProviderChanged();
 

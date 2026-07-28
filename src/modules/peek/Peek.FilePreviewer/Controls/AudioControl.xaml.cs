@@ -45,6 +45,11 @@ namespace Peek.FilePreviewer.Controls
             {
                 PlayerElement.MediaPlayer.Pause();
                 PlayerElement.MediaPlayer.Source = null;
+                PlayerElement.MediaPlayer.CommandManager.IsEnabled = false;
+            }
+            else
+            {
+                PlayerElement.MediaPlayer.CommandManager.IsEnabled = true;
             }
         }
 

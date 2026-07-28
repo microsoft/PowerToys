@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<common:TransparentWindow
+    x:Class="PowerAccent.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:PowerAccent.UI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <!--
+        The content lives in a UserControl (SelectorControl) rather than inline here so its x:Bind
+        bindings initialize on the control's Loading pass - which fires when this SW_SHOWNA overlay is
+        first laid out - instead of on Window.Activated, which never fires for a window shown without
+        activation. That removes the need to call Bindings.Update() by hand.
+    -->
+    <local:SelectorControl x:Name="Selector" />
+</common:TransparentWindow>

@@ -144,17 +144,19 @@ namespace EnvironmentVariablesUILib.Helpers
             set.Variables = new System.Collections.ObjectModel.ObservableCollection<Variable>(sortedList.Values);
         }
 
-        internal static bool SetVariableWithoutNotify(Variable variable)
+        // Profiles override User variables only (see doc/devdocs/modules/environmentvariables.md), so
+        // every registry write driven by a profile targets the current-user environment regardless of a
+        // variable's ParentType. These helpers centralize that behavior for the apply/unapply/edit paths.
+        internal static bool SetProfileVariableWithoutNotify(Variable variable)
         {
-            bool fromMachine = variable.ParentType switch
-            {
-                VariablesSetType.Profile => false,
-                VariablesSetType.User => false,
-                VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
-            };
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine: false);
 
-            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
+            return true;
+        }
+
+        internal static bool UnsetProfileVariableWithoutNotify(Variable variable)
+        {
+            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine: false);
 
             return true;
         }
@@ -171,21 +173,6 @@ namespace EnvironmentVariablesUILib.Helpers
 
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
             NotifyEnvironmentChange();
-
-            return true;
-        }
-
-        internal static bool UnsetVariableWithoutNotify(Variable variable)
-        {
-            bool fromMachine = variable.ParentType switch
-            {
-                VariablesSetType.Profile => false,
-                VariablesSetType.User => false,
-                VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
-            };
-
-            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
 
             return true;
         }
