@@ -7,7 +7,6 @@
     <RootNamespace>PowerToysCliShimUnitTests</RootNamespace>
     <ProjectName>CliShim.UnitTests</ProjectName>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
-    <IsTestProject>true</IsTestProject>
     <UsePrecompiledHeaders>false</UsePrecompiledHeaders>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\tests\CliShim\</OutDir>
   </PropertyGroup>
