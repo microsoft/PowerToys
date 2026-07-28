@@ -276,6 +276,10 @@
     <value>All displays · {0}</value>
     <comment>{0} is a list or range of brightness values, for example "35%, 70%".</comment>
   </data>
+  <data name="TrayWheelFeedbackLinkedFormat" xml:space="preserve">
+    <value>Linked displays · {0}</value>
+    <comment>Shown while linked brightness is on, because the linked group moves together regardless of the selected mouse wheel scope. {0} is a list or range of brightness values, for example "35%, 70%".</comment>
+  </data>
   <data name="TrayWheelFeedbackPercentageFormat" xml:space="preserve">
     <value>{0}%</value>
     <comment>{0} is an integer brightness percentage from 0 through 100.</comment>

@@ -17,6 +17,7 @@ public static class TrayWheelFeedbackFormatter
     private const string NeutralPrimaryFormat = "Primary display · {0}";
     private const string NeutralPrimaryPluralFormat = "Primary displays · {0}";
     private const string NeutralAllFormat = "All displays · {0}";
+    private const string NeutralLinkedFormat = "Linked displays · {0}";
     private const string NeutralPercentageFormat = "{0}%";
     private const string NeutralRangeFormat = "{0}–{1} ({2} displays)";
     private const string NeutralListSeparator = ", ";
@@ -93,15 +94,27 @@ public static class TrayWheelFeedbackFormatter
                 count);
         }
 
-        var result = mode == MouseWheelControlMode.PrimaryDisplay
-            ? count == 1
+        string result;
+        if (feedback.IsLinked)
+        {
+            // Linked brightness owns every monitor it covers, so the scope the wheel mode names is
+            // not what actually moved.
+            result = SafeFormat(templates.LinkedFormat, NeutralLinkedFormat, culture, valuesText);
+        }
+        else if (mode == MouseWheelControlMode.PrimaryDisplay)
+        {
+            result = count == 1
                 ? SafeFormat(templates.PrimaryFormat, NeutralPrimaryFormat, culture, valuesText)
                 : SafeFormat(
                     templates.PrimaryPluralFormat,
                     NeutralPrimaryPluralFormat,
                     culture,
-                    valuesText)
-            : SafeFormat(templates.AllFormat, NeutralAllFormat, culture, valuesText);
+                    valuesText);
+        }
+        else
+        {
+            result = SafeFormat(templates.AllFormat, NeutralAllFormat, culture, valuesText);
+        }
 
         return LimitUtf16(result, maxLength);
     }

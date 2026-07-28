@@ -24,15 +24,18 @@ public class TrayWheelFeedbackFormatterTests
     private static readonly int[] BrokenTemplateValues = [55];
     private static readonly int[] BrokenPercentageValues = [25, 75];
     private static readonly int[] LongLengthValues = [55];
+    private static readonly int[] LinkedGroupValues = [65];
+    private static readonly int[] LinkedWithExcludedValues = [65, 40];
 
     private static TrayWheelFeedbackTemplates Templates(
         string? primary = "Primary display · {0}",
         string? primaryPlural = "Primary displays · {0}",
         string? all = "All displays · {0}",
+        string? linked = "Linked displays · {0}",
         string? percentage = "{0}%",
         string? range = "{0}–{1} ({2} displays)",
         string? separator = ", ")
-        => new(primary, primaryPlural, all, percentage, range, separator);
+        => new(primary, primaryPlural, all, linked, percentage, range, separator);
 
     [TestMethod]
     public void Format_PrimarySingle_UsesSingularLabel()
@@ -68,6 +71,32 @@ public class TrayWheelFeedbackFormatterTests
         var result = TrayWheelFeedbackFormatter.Format(feedback, Templates(), Culture);
 
         Assert.AreEqual("All displays · 10%, 30%, 50%, 70%", result);
+    }
+
+    [TestMethod]
+    public void Format_Linked_OverridesTheModeLabel()
+    {
+        var feedback = new TrayWheelAdjustmentFeedback(
+            MouseWheelControlMode.PrimaryDisplay,
+            LinkedGroupValues,
+            IsLinked: true);
+
+        var result = TrayWheelFeedbackFormatter.Format(feedback, Templates(), Culture);
+
+        Assert.AreEqual("Linked displays · 65%", result);
+    }
+
+    [TestMethod]
+    public void Format_LinkedWithExcludedMonitor_ListsGroupThenExcluded()
+    {
+        var feedback = new TrayWheelAdjustmentFeedback(
+            MouseWheelControlMode.AllDisplays,
+            LinkedWithExcludedValues,
+            IsLinked: true);
+
+        var result = TrayWheelFeedbackFormatter.Format(feedback, Templates(), Culture);
+
+        Assert.AreEqual("Linked displays · 65%, 40%", result);
     }
 
     [TestMethod]

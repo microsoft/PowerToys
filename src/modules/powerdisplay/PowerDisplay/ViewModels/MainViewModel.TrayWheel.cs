@@ -58,27 +58,32 @@ public partial class MainViewModel
             100);
         var hasLinkedTarget = false;
 
-        var brightnessValues = new int[adjustments.Count];
-        for (var i = 0; i < adjustments.Count; i++)
+        var brightnessValues = new List<int>(adjustments.Count);
+        foreach (var adjustment in adjustments)
         {
-            var adjustment = adjustments[i];
-            brightnessValues[i] = adjustment.Brightness;
             foreach (var monitor in Monitors)
             {
-                if (MonitorIdComparer.Equal(monitor.Id, adjustment.Id))
+                if (!MonitorIdComparer.Equal(monitor.Id, adjustment.Id))
                 {
-                    if (LinkedLevelsActive && IsLinkedTarget(monitor))
+                    continue;
+                }
+
+                if (LinkedLevelsActive && IsLinkedTarget(monitor))
+                {
+                    // The group moves as one, so it contributes a single value to the readout.
+                    if (!hasLinkedTarget)
                     {
-                        brightnessValues[i] = linkedBrightness;
+                        brightnessValues.Add(linkedBrightness);
                         hasLinkedTarget = true;
                     }
-                    else
-                    {
-                        monitor.Brightness = adjustment.Brightness;
-                    }
-
-                    break;
                 }
+                else
+                {
+                    monitor.Brightness = adjustment.Brightness;
+                    brightnessValues.Add(adjustment.Brightness);
+                }
+
+                break;
             }
         }
 
@@ -87,7 +92,7 @@ public partial class MainViewModel
             LinkedBrightness = linkedBrightness;
         }
 
-        return new TrayWheelAdjustmentFeedback(mode, brightnessValues);
+        return new TrayWheelAdjustmentFeedback(mode, brightnessValues, hasLinkedTarget);
     }
 
     private IReadOnlyList<TrayWheelAdjustmentPlanner.Adjustment> PlanTrayWheelAdjustments(

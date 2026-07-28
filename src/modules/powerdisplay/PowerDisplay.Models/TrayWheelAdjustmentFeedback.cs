@@ -11,6 +11,11 @@ namespace PowerDisplay.Models;
 /// </summary>
 /// <param name="Mode">The target scope used for the adjustment.</param>
 /// <param name="BrightnessValues">Post-clamp brightness values in target enumeration order.</param>
+/// <param name="IsLinked">
+/// Whether linked brightness drove the adjustment. The linked group moves as one, so it
+/// contributes a single entry to <paramref name="BrightnessValues"/>.
+/// </param>
 public sealed record TrayWheelAdjustmentFeedback(
     MouseWheelControlMode Mode,
-    IReadOnlyList<int> BrightnessValues);
+    IReadOnlyList<int> BrightnessValues,
+    bool IsLinked = false);

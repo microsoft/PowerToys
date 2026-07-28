@@ -769,6 +769,7 @@ namespace PowerDisplay.Helpers
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPrimaryPluralFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackAllFormat"),
+                    ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackLinkedFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackPercentageFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackRangeFormat"),
                     ResourceLoaderInstance.ResourceLoader.GetString("TrayWheelFeedbackListSeparator"));

@@ -11,6 +11,7 @@ public sealed record TrayWheelFeedbackTemplates(
     string? PrimaryFormat,
     string? PrimaryPluralFormat,
     string? AllFormat,
+    string? LinkedFormat,
     string? PercentageFormat,
     string? RangeFormat,
     string? ListSeparator);
