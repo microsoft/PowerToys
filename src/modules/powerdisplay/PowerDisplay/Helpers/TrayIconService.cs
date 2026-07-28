@@ -49,7 +49,6 @@ namespace PowerDisplay.Helpers
         private const uint NotifyIconVersion4 = 4;
         private const long BoundsCacheLifetimeMs = 1000;
         private const uint MaxSampleAgeMs = 500;
-        private static readonly TimeSpan RegistrationHealthInterval = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan ImmediateRegistrationCheck = TimeSpan.FromMilliseconds(1);
 
         // Cadence for noticing that the pointer left the icon. NOTIFYICON_VERSION_4 also reports
@@ -81,6 +80,7 @@ namespace PowerDisplay.Helpers
         private DispatcherQueueTimer? _feedbackTimer;
         private TrayWheelFeedbackWindow? _feedbackWindow;
         private MouseWheelControlMode _mouseWheelControlMode;
+        private string? _appName;
         private TrayIconBounds? _cachedBounds;
         private TrayIconBounds? _feedbackIconBounds;
         private long _boundsCacheTimestamp;
@@ -113,6 +113,12 @@ namespace PowerDisplay.Helpers
         private bool IsMouseWheelAdjustmentReady =>
             _mouseWheelControlMode != MouseWheelControlMode.Disabled &&
             CanProcessMouseWheel?.Invoke() == true;
+
+        /// <summary>
+        /// Gets the localized product name shown as the icon's name and as the ordinary hover text.
+        /// Cached because the hover presentation is re-applied on every tray mouse-move message.
+        /// </summary>
+        private string AppName => _appName ??= GetString("AppName");
 
         public TrayIconService(
             SettingsUtils settingsUtils,
@@ -229,7 +235,7 @@ namespace PowerDisplay.Helpers
                     uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                     uCallbackMessage = WmTrayIcon,
                     hIcon = new HICON(_largeIcon),
-                    szTip = GetString("AppName"),
+                    szTip = AppName,
                 };
             }
         }
@@ -241,14 +247,6 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            if (IsTrayIconRegistrationHealthy())
-            {
-                CompleteTrayIconRegistration();
-                return;
-            }
-
-            // Check again immediately before adding. Shell_NotifyIconGetRect can fail transiently
-            // while the existing registration remains valid.
             if (IsTrayIconRegistrationHealthy())
             {
                 CompleteTrayIconRegistration();
@@ -281,14 +279,18 @@ namespace PowerDisplay.Helpers
             ScheduleRegistrationCheck(_registrationBackoff.NextDelay());
         }
 
+        /// <summary>
+        /// Marks the icon as live and stands the recovery timer down. Nothing polls the healthy
+        /// state: a lost registration is reported by the <c>TaskbarCreated</c> broadcast, by a
+        /// failing <c>Shell_NotifyIconGetRect</c> on the next hover, or by the settings-update path,
+        /// and each of those schedules its own recovery.
+        /// </summary>
         private void CompleteTrayIconRegistration()
         {
             _isTrayIconRegistered = true;
-            _registrationBackoff.Reset();
-            _registrationFailureLogged = false;
+            StopRegistrationRecovery();
             EnsureMouseWheelListener();
             EnsureTrayIconMenu();
-            ScheduleRegistrationCheck(RegistrationHealthInterval);
         }
 
         /// <summary>
@@ -372,10 +374,13 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            _registrationTimer ??= _dispatcherQueue.CreateTimer();
-            _registrationTimer.IsRepeating = false;
-            _registrationTimer.Tick -= OnRegistrationTimerTick;
-            _registrationTimer.Tick += OnRegistrationTimerTick;
+            if (_registrationTimer is null)
+            {
+                _registrationTimer = _dispatcherQueue.CreateTimer();
+                _registrationTimer.IsRepeating = false;
+                _registrationTimer.Tick += OnRegistrationTimerTick;
+            }
+
             _registrationTimer.Stop();
             _registrationTimer.Interval = delay;
             _registrationTimer.Start();
@@ -639,10 +644,13 @@ namespace PowerDisplay.Helpers
                 ? TimeSpan.FromMilliseconds(Math.Max(1L, delay))
                 : watchdog;
 
-            _feedbackTimer ??= _dispatcherQueue.CreateTimer();
-            _feedbackTimer.IsRepeating = false;
-            _feedbackTimer.Tick -= OnFeedbackTimerTick;
-            _feedbackTimer.Tick += OnFeedbackTimerTick;
+            if (_feedbackTimer is null)
+            {
+                _feedbackTimer = _dispatcherQueue.CreateTimer();
+                _feedbackTimer.IsRepeating = false;
+                _feedbackTimer.Tick += OnFeedbackTimerTick;
+            }
+
             _feedbackTimer.Stop();
             _feedbackTimer.Interval = interval;
             _feedbackTimer.Start();
@@ -673,7 +681,7 @@ namespace PowerDisplay.Helpers
             switch (presentation.Kind)
             {
                 case TrayWheelFeedbackSession.PresentationKind.AppName:
-                    ShowFeedbackOverlay(GetString("AppName"), bounds);
+                    ShowFeedbackOverlay(AppName, bounds);
                     break;
                 case TrayWheelFeedbackSession.PresentationKind.Adjustment:
                     if (!string.IsNullOrEmpty(presentation.Text))
@@ -868,46 +876,47 @@ namespace PowerDisplay.Helpers
             }
 
             var now = unchecked((uint)Environment.TickCount);
-            var hasStaleSample = false;
-            var shouldDisarm = false;
+            var totalNotches = 0;
+            var retireHover = false;
             foreach (var sample in samples)
             {
+                // The hook only swallows notches that landed inside the rectangle it was armed
+                // with, so a sample stamped with a retired hover - or one the Shell has since moved
+                // the icon out from under - was never ours. Retire the hover for those, but keep
+                // honouring the samples in the same batch that were swallowed on our behalf:
+                // dropping those would consume a notch without adjusting anything.
                 if (sample.HoverGeneration != _hoverGeneration ||
                     !currentBounds.Contains(sample.X, sample.Y))
                 {
-                    shouldDisarm = true;
+                    retireHover = true;
+                    continue;
                 }
 
+                // Input that queued up behind a stalled UI thread should not move brightness late,
+                // and the partial notch it belonged to is no longer meaningful either.
                 if (unchecked(now - sample.Timestamp) > MaxSampleAgeMs)
                 {
-                    hasStaleSample = true;
+                    _wheelDeltaAccumulator.Reset();
+                    continue;
                 }
-            }
 
-            if (shouldDisarm)
-            {
-                InvalidateMouseWheelHover(disarm: true);
-                return;
-            }
-
-            if (hasStaleSample)
-            {
-                _wheelDeltaAccumulator.Reset();
-                return;
-            }
-
-            var totalNotches = 0;
-            foreach (var sample in samples)
-            {
                 totalNotches += _wheelDeltaAccumulator.Add(sample.Delta);
             }
 
-            _cachedBounds = currentBounds;
-            _boundsCacheTimestamp = Environment.TickCount64;
+            if (!retireHover)
+            {
+                _cachedBounds = currentBounds;
+                _boundsCacheTimestamp = Environment.TickCount64;
+            }
 
             if (totalNotches != 0)
             {
                 MouseWheelScrolled?.Invoke(totalNotches);
+            }
+
+            if (retireHover)
+            {
+                InvalidateMouseWheelHover(disarm: true);
             }
         }
 
@@ -981,7 +990,11 @@ namespace PowerDisplay.Helpers
 
                 case PInvoke.WM_WINDOWPOSCHANGING:
                     {
-                        if (_desiredTrayIconVisible && !_isTrayIconRegistered)
+                        // Do not shorten a pending backoff retry: a window-position message is not
+                        // evidence that Explorer became available again.
+                        if (_desiredTrayIconVisible &&
+                            !_isTrayIconRegistered &&
+                            _registrationTimer?.IsRunning != true)
                         {
                             ScheduleRegistrationCheck(ImmediateRegistrationCheck);
                         }
