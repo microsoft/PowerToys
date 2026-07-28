@@ -50,6 +50,15 @@
           <RegistryValue Type="string" Name="cli_env_path_machine" Value="" KeyPath="yes" />
         </RegistryKey>
         <Environment Id="AddCliToMachinePath" Name="PATH" Action="set" Part="last" System="yes" Value="[CliFolder]" />
+        <!--
+          On the same component as the PATH entry on purpose: bin is only worth locking down
+          because it is on the machine PATH, and this way the two cannot drift apart.
+          CreateFolders applies the DACL before InstallFiles writes the shims, so the shims
+          inherit it and need no PermissionEx of their own.
+        -->
+        <CreateFolder>
+          <PermissionEx Sddl="$(var.MachinePathFolderSddl)" />
+        </CreateFolder>
       </Component>
       <?endif?>
     </DirectoryRef>
