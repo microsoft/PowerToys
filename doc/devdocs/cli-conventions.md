@@ -13,10 +13,10 @@ On a per-machine install the `bin` folder is created with a protected DACL (`Mac
 
 ### Adding a new shim
 
-1. Add a `<CliShim>` item to `tools/CliShim/CliShimManifest.props` with the command name and the target's path relative to `bin`.
+1. Add a `<CliShim>` item to `tools/CliShim/CliShimManifest.props` with the command name and the target's path relative to `bin`. Write that path with `/` separators, and against the *installed* layout (see [Signing and Deployment](#signing-and-deployment)) - which is where the CLI ends up, not where it is built from.
 2. Add the matching `<Component>` and `<ComponentRef>` to `installer/PowerToysSetupVNext/CliShims.wxs`, using the command name as the `File/@Name`.
 
-`CliShim.vcxproj` fails the build if those two drift apart, and `CliShim.UnitTests` generates its expectations from the same manifest, so there is no third list to update.
+`CliShim.vcxproj` fails the build if the command names in those two drift apart, `build-installer.ps1` fails the build if a `RelativeTarget` does not resolve to a real executable, and `CliShim.UnitTests` generates its expectations from the same manifest, so there is no third list to update.
 
 ### Shim exit codes
 
@@ -115,5 +115,5 @@ Reference implementations:
 
 - CLI executables are signed automatically in CI/CD.
 - **New CLI tools**: Add your executable and dll to `.pipelines/ESRPSigning_core.json` in the signing list.
-- CLI executables are deployed alongside their parent module (e.g., `C:\Program Files\PowerToys\modules\[ModuleName]\`). PATH-visible shims are deployed to `C:\Program Files\PowerToys\bin\`.
+- CLI executables are deployed either to the installation root (e.g., `C:\Program Files\PowerToys\FancyZonesCLI.exe`) or, for WinUI 3 modules, next to their module in `WinUI3Apps\` (e.g., `C:\Program Files\PowerToys\WinUI3Apps\PowerToys.ImageResizerCLI.exe`). PATH-visible shims are deployed to `C:\Program Files\PowerToys\bin\`, and a shim's `RelativeTarget` is resolved from that `bin` folder against the *installed* layout - not against the source tree.
 - Use self-contained deployment (import `Common.SelfContained.props`).
