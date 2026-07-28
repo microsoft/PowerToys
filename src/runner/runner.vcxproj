@@ -59,6 +59,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="..\common\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="auto_start_helper.cpp" />
     <ClCompile Include="bug_report.cpp" />
     <ClCompile Include="centralized_hotkeys.cpp" />

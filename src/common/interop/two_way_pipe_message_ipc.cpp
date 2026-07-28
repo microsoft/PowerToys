@@ -31,6 +31,11 @@ void TwoWayPipeMessageIPC::start(HANDLE _restricted_pipe_token)
     impl->start(_restricted_pipe_token);
 }
 
+void TwoWayPipeMessageIPC::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& caller_policy)
+{
+    impl->start(_restricted_pipe_token, caller_policy);
+}
+
 void TwoWayPipeMessageIPC::end()
 {
     impl->end();
@@ -56,6 +61,12 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
     output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
     input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
     input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& _caller_policy)
+{
+    caller_policy = _caller_policy;
+    start(_restricted_pipe_token);
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
@@ -353,6 +364,21 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
     {
         return;
     }
+
+    // Authenticate the connecting client before reading/queuing anything. Fail-closed: an unauthenticated
+    // caller gets no dispatch. When the policy is disabled (managed server / tests) this is a no-op.
+    if (caller_policy.enabled)
+    {
+        const interop_auth::AuthResult auth = interop_auth::AuthenticateClient(input_pipe_handle, caller_policy);
+        if (!auth.accepted)
+        {
+            FlushFileBuffers(input_pipe_handle);
+            DisconnectNamedPipe(input_pipe_handle);
+            CloseHandle(input_pipe_handle);
+            return;
+        }
+    }
+
     constexpr DWORD readBlockBytes = BUFSIZE;
     std::wstring message;
     size_t iBlock = 0;
@@ -411,7 +437,8 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
                     WRITE_DAC,
                 PIPE_TYPE_MESSAGE |
                     PIPE_READMODE_MESSAGE |
-                    PIPE_WAIT,
+                    PIPE_WAIT |
+                    PIPE_REJECT_REMOTE_CLIENTS,
                 PIPE_UNLIMITED_INSTANCES,
                 BUFSIZE,
                 BUFSIZE,
