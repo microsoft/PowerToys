@@ -26,12 +26,14 @@ Use it when asked to:
 - Diagnose a black Sandbox window, lost connection, missing interactive login, stuck renderer, or
   unexpectedly long module suite.
 
-Do not use Sandbox as proof of fixed-resolution visual parity. Sandbox window size is not
-configurable; functional/UIA tests are authoritative, while visual failures must be classified
-against the actual display, DPI, theme, renderer, and capture dimensions.
+Windows Sandbox has no direct `.wsb` resolution setting. The controller instead resizes the host
+Sandbox window after login, measures guest pixels, and converges to 1920x1080 by default. Functional
+and UIA tests are authoritative; visual failures still require classification against DPI, theme,
+renderer, compositor, and capture dimensions.
 
-> **Visual scope:** Sandbox is authoritative for functional/UIA behavior, not fixed-resolution pixel
-> sign-off. Its guest resolution can vary because the Sandbox window size is not configurable.
+> **Visual scope:** Exact 1920x1080 resolution is verified before tests, but that alone does not make
+> Sandbox the final pixel-sign-off environment. Preserve baselines and thresholds and compare all
+> rendering inputs.
 
 ## Required reads
 
@@ -101,6 +103,8 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -BuildLabel (git rev-parse HEAD) `
   -CleanupProcess PowerToys.MyModule.UI `
   -ProcessorAffinityMask 0x3 `
+  -DesktopWidth 1920 `
+  -DesktopHeight 1080 `
   -InstallWebView2
 ```
 
@@ -117,12 +121,16 @@ and stops the Sandbox in `finally`.
   intermittent pre-login failures seen when mapped folders are supplied during launch.
 - Treat Store-client pre-login loss (`0x80070520`) as transient infrastructure. The controller
   stops the failed guest/session, waits for disposal, and retries a clean desktop up to three times
-  by default; adjust with `-StartupAttempts`. The persistent Store broker is left running.
+  by default. Each guest gets 20 seconds to establish `ExistingLogin`; adjust with
+  `-StartupAttempts` and `-LoginTimeoutSeconds`. The persistent Store broker is left running.
 - Keep the mapped exchange lean: archives, scripts, requests, and results only. Extract product and
   tests to guest-local storage before execution.
 - Limit the guest test process tree to logical processors 0 and 1 by default (`0x3`). The test host,
   PowerToys, winappcli, WebView2 installer, and directly launched descendants inherit that mask.
   Override `-ProcessorAffinityMask` for another CPU set or pass `0` to disable it.
+- Resize and verify the guest desktop after `ExistingLogin` and before test dispatch. The defaults are
+  1920x1080. Set both `-DesktopWidth 0 -DesktopHeight 0` to disable resizing. Fail before tests if the
+  host work area cannot fit the required Sandbox window or the guest does not converge exactly.
 - Run UI tests as `ExistingLogin`, never `System`; UIA, foreground input, Explorer, and rendering need
   the interactive `WDAGUtilityAccount` session.
 - Use one writable mapped root and run-specific result folders. Retry transient sharing violations

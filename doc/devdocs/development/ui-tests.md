@@ -111,6 +111,8 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -BuildLabel (git rev-parse HEAD) `
   -CleanupProcess 'PowerToys.<Module>.UI' `
   -ProcessorAffinityMask 0x3 `
+  -DesktopWidth 1920 `
+  -DesktopHeight 1080 `
   -InstallWebView2
 ```
 
@@ -125,6 +127,10 @@ supported vCPU-count/VM-affinity setting; changing host `WindowsSandboxServer.ex
 throttle guest execution. The mask selects guest vCPUs and limits process concurrency; it does not
 pin the Sandbox VM to those same numbered host CPUs.
 
+Sandbox has no direct resolution configuration. After login, the controller measures guest pixels,
+resizes the host Sandbox window, and verifies 1920x1080 by default before dispatching tests. Set both
+desktop dimensions to `0` to disable this behavior.
+
 For a fast edit/build/rerun loop, retain the first guest with `-KeepSandbox`. After rebuilding, replace
 only the changed archive in the exchange and rerun with the returned `SandboxId`,
 `-ReuseSandboxId`, and `-ReuseStagedPayload`. Per-component hashes refresh only changed tests,
@@ -135,9 +141,9 @@ fresh Sandbox for final clean-profile validation.
 Timeouts are independently adjustable. The Sandbox controller defaults to a two-hour guest suite and
 a 150-minute host deadline so broad project runs can complete. Tighten both for focused/module runs,
 or increase both for a known longer suite; the host deadline must include startup, staging, execution,
-and result export. WebView/Monaco tests need WebView2 provisioning. Sandbox window size is not
-configurable, so preserve visual baselines/thresholds and use the matching CI/VM display for final
-pixel sign-off.
+and result export. WebView/Monaco tests need WebView2 provisioning. Verified resolution does not
+eliminate DPI/theme/renderer/compositor differences, so preserve visual baselines/thresholds and use
+the matching CI/VM environment for final pixel sign-off.
 
 See the complete [agentic loop](../../../.github/skills/windows-sandbox-ui-tests/references/agentic-loop.md)
 and [troubleshooting guide](../../../.github/skills/windows-sandbox-ui-tests/references/troubleshooting.md).

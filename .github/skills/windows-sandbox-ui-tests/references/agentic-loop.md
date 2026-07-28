@@ -99,6 +99,8 @@ pwsh .github\skills\windows-sandbox-ui-tests\scripts\Invoke-SandboxUiTest.ps1 `
   -BuildLabel (git rev-parse HEAD) `
   -InstallWebView2 `
   -ProcessorAffinityMask 0x3 `
+  -DesktopWidth 1920 `
+  -DesktopHeight 1080 `
   -SuiteTimeout 2h `
   -TimeoutMinutes 150
 ```
@@ -109,13 +111,28 @@ The controller:
 2. Clears orphaned remote sessions and waits for a failed environment to be fully disposed; it
   leaves the persistent Store broker running.
 3. Launches `Microsoft.Windows.Containers.Sandbox` through Start and retries transient pre-login
-  connection loss up to three times.
+  connection loss up to three times, dropping each guest after 20 seconds without `ExistingLogin`.
 4. Waits for the new environment ID and `ExistingLogin` readiness.
 5. Dynamically shares the exchange as `C:\SandboxExchange`.
 6. Creates a run-specific request and dispatches the guest runner hidden.
 7. Streams progress while waiting for `status.json`.
 8. Parses the TRX counters.
 9. Stops the exact Sandbox in `finally`.
+
+## Desktop resolution
+
+Windows Sandbox exposes no supported `.wsb` resolution property. Its guest display follows the RDP
+client viewport. After login and dynamic sharing, the controller:
+
+1. Measures the current guest display.
+2. Resizes the host `WindowsSandboxRemoteSession` window by the pixel delta.
+3. Re-measures and repeats until the guest exactly matches the target.
+4. Fails before test dispatch if the target cannot fit the host work area or does not converge.
+
+Defaults are `-DesktopWidth 1920 -DesktopHeight 1080`. Set both to `0` to disable sizing. The
+feedback loop is DPI-independent; on the validated 144-DPI host it converged from guest 2033x1112 to
+1920x1080 using a 1935x1120 outer host window. The controller records actual dimensions in
+`status.json`.
 
 ## CPU affinity
 

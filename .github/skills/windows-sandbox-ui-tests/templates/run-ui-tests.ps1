@@ -327,6 +327,8 @@ finally {
         Platform = $request.Platform
         ProcessorAffinityMask = "0x$($processorAffinityMask.ToString('X'))"
         LogicalProcessorCount = $logicalProcessorCount
+        DesktopWidth = 0
+        DesktopHeight = 0
         ReusedStagedPayload = $reusedStagedPayload
         RefreshedComponents = $refreshedComponents
         PayloadFingerprint = $request.PayloadFingerprint
@@ -336,6 +338,14 @@ finally {
         User = [Security.Principal.WindowsIdentity]::GetCurrent().Name
         SessionId = (Get-Process -Id $PID).SessionId
         OsVersion = [Environment]::OSVersion.Version.ToString()
+    }
+    try {
+        Add-Type -AssemblyName System.Windows.Forms
+        $desktopBounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+        $status.DesktopWidth = $desktopBounds.Width
+        $status.DesktopHeight = $desktopBounds.Height
+    }
+    catch {
     }
     Write-SharedText -Path (Join-Path $hostResultsRoot 'status.json') -Value ($status | ConvertTo-Json)
     Write-RunProgress -Stage 'Completed' -Detail $status.Status

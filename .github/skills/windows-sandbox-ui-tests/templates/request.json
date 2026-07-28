@@ -8,6 +8,8 @@
   "Platform": "x64Win11",
   "SuiteTimeout": "2h",
   "ProcessorAffinityMask": 3,
+  "DesktopWidth": 1920,
+  "DesktopHeight": 1080,
   "ReuseStagedPayload": false,
   "PayloadFingerprint": "generated-by-host-controller",
   "PayloadHashes": {

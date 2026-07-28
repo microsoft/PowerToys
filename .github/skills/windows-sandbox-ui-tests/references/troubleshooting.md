@@ -5,7 +5,7 @@ Classify the failure boundary before changing tests.
 | Symptom | Boundary | Action |
 |---|---|---|
 | Black window, connection lost, no `progress.json` | Guest desktop never logged on | Treat as transient infrastructure, not a test failure. Stop the exact environment/session, wait for disposal, and retry Start-menu activation before sharing. Leave the persistent Store broker running. |
-| `0x80070520` from `ExistingLogin` | No active guest user session | The controller retries clean startup three times by default. Avoid split `wsb start` + `wsb connect` and pre-login large mappings; adjust `-StartupAttempts` only when needed. |
+| `0x80070520` from `ExistingLogin` | No active guest user session | The controller stops a guest after 20 seconds without login and retries clean startup three times by default. Avoid split `wsb start` + `wsb connect` and pre-login large mappings; adjust `-LoginTimeoutSeconds`/`-StartupAttempts` only when needed. |
 | "too many sessions established" | Overlapping guests/mapped shares | Enforce singleton execution; `wsb list --raw`, stop stale IDs, close their remote-session windows. |
 | `wsb connect` never returns | Connection client owns the visible session | Do not synchronously redirect `wsb connect`; the default controller does not need it. |
 | Sandbox starts but desktop stays clean | Guest command not dispatched or exited | Check request path, dynamic share, `ExistingLogin`, and first progress marker. Export guest process list with `wsb exec`. |
@@ -17,6 +17,7 @@ Classify the failure boundary before changing tests.
 | Visual hash below threshold but functional workflow passed | Display/compositor mismatch | Preserve baseline/threshold, export both images, report resolution/DPI/theme/foreground and similarity as `ENVIRONMENT` or real visual failure. |
 | Sandbox gone but warning window remains | Orphan `WindowsSandboxRemoteSession.exe` | Stop only the process associated with the completed/failed run; verify `wsb list` is empty. |
 | Test processes use more CPUs than expected | Affinity disabled, invalid mask, or brokered process | Check `status.json` affinity fields and guest process affinities. Use `-ProcessorAffinityMask 0x3`; note that unrelated OS/shell-brokered processes are outside the runner tree. |
+| Guest desktop is not 1920x1080 | Host work area too small, resize disabled, or RDP viewport did not converge | Check controller resize messages and `status.json`. Use `-DesktopWidth 1920 -DesktopHeight 1080`; both `0` disables sizing. Resize runs only after successful login. |
 | Retained run reports missing/mismatched staging | Wrong Sandbox ID, exchange, or old manifest | Use the ID returned by the `-KeepSandbox` run and the same exchange. Let component hashes refresh changed archives; use a fresh run if the manifest predates reuse support. |
 | Retained run hides a clean-profile failure | Guest settings/cache persisted between iterations | Treat reuse as an inner loop only; rerun in a fresh Sandbox for final validation. |
 
@@ -69,8 +70,8 @@ status and artifacts, then stop the Sandbox.
 
 ## Visual-test caveat
 
-Microsoft documents that Sandbox window size is not configurable. Different host window dimensions
-can expose different guest resolutions across runs. For visual tests:
+Microsoft documents no direct Sandbox window-size configuration. The controller now drives the RDP
+viewport indirectly and verifies 1920x1080 by default. For visual tests:
 
 1. Log monitor geometry and DPI.
 2. Require exact foreground ownership before capture.

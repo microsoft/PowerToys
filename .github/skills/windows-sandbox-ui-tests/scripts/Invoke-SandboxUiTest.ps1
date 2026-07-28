@@ -37,6 +37,17 @@ Defaults to 3 (0x3), which selects logical processors 0 and 1. Set to 0 to disab
 Maximum clean Sandbox desktop startup attempts. Failed pre-login environments and remote sessions
 are removed before retrying. Defaults to three.
 
+.PARAMETER LoginTimeoutSeconds
+Maximum time to wait for ExistingLogin after an environment ID appears. Defaults to 20 seconds; a
+guest that misses this deadline is stopped before the next startup attempt.
+
+.PARAMETER DesktopWidth
+Target guest desktop width. Defaults to 1920. Set both desktop dimensions to 0 to disable resizing.
+
+.PARAMETER DesktopHeight
+Target guest desktop height. Defaults to 1080. The controller resizes the host Sandbox window only
+after ExistingLogin succeeds and verifies the resulting guest pixels before running tests.
+
 .PARAMETER ReuseSandboxId
 ID of a Sandbox retained by a previous run with -KeepSandbox. When specified, the controller attaches
 to that exact interactive guest instead of creating a fresh one.
@@ -73,6 +84,12 @@ param(
     [UInt64]$ProcessorAffinityMask = 3,
     [ValidateRange(1, 5)]
     [int]$StartupAttempts = 3,
+    [ValidateRange(5, 120)]
+    [int]$LoginTimeoutSeconds = 20,
+    [ValidateRange(0, 7680)]
+    [int]$DesktopWidth = 1920,
+    [ValidateRange(0, 4320)]
+    [int]$DesktopHeight = 1080,
     [ValidateRange(1, 1440)]
     [int]$TimeoutMinutes = 150,
     [guid]$ReuseSandboxId = [guid]::Empty,
@@ -106,13 +123,25 @@ function Invoke-Wsb {
     )
 
     $output = & wsb.exe @Arguments 2>&1 | Out-String
-    $exitCode = $LASTEXITCODE
+    $nativeExitCode = $LASTEXITCODE
+    $exitCode = $nativeExitCode
+    if ($nativeExitCode -eq 0 -and -not [string]::IsNullOrWhiteSpace($output)) {
+        try {
+            $payload = $output | ConvertFrom-Json
+            if ($payload.PSObject.Properties.Name -contains 'ExitCode') {
+                $exitCode = [int]$payload.ExitCode
+            }
+        }
+        catch {
+        }
+    }
     if (-not $AllowFailure -and $exitCode -ne 0) {
-        throw "wsb $($Arguments[0]) failed with exit code $exitCode`: $($output.Trim())"
+        throw "wsb $($Arguments[0]) failed with exit code $exitCode (native $nativeExitCode): $($output.Trim())"
     }
 
     [pscustomobject]@{
         ExitCode = $exitCode
+        NativeExitCode = $nativeExitCode
         Output = $output.Trim()
     }
 }
@@ -191,6 +220,140 @@ function Test-SandboxLogin {
     ) -AllowFailure
 }
 
+if (-not ('SandboxHostWindowControl' -as [type])) {
+    Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class SandboxHostWindowControl
+{
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT { public int Left, Top, Right, Bottom; }
+
+    [DllImport("user32.dll")]
+    public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int command);
+}
+'@
+}
+
+function Get-SandboxDisplayResolution {
+    param(
+        [Parameter(Mandatory)]
+        [guid]$EnvironmentId,
+        [Parameter(Mandatory)]
+        [string]$GuestResultPath,
+        [Parameter(Mandatory)]
+        [string]$HostResultPath
+    )
+
+    $hostErrorPath = [IO.Path]::ChangeExtension($HostResultPath, '.error.txt')
+    $guestErrorPath = [IO.Path]::ChangeExtension($GuestResultPath, '.error.txt')
+    Remove-Item $HostResultPath,$hostErrorPath -Force -ErrorAction SilentlyContinue
+    $guestScript = @"
+try {
+    Add-Type -AssemblyName System.Windows.Forms
+    `$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+    [ordered]@{
+        Width = `$bounds.Width
+        Height = `$bounds.Height
+        Device = [System.Windows.Forms.Screen]::PrimaryScreen.DeviceName
+        Timestamp = [DateTime]::UtcNow.ToString('O')
+    } | ConvertTo-Json | Set-Content '$GuestResultPath' -Encoding utf8
+}
+catch {
+    (`$_ | Out-String) | Set-Content '$guestErrorPath' -Encoding utf8
+    exit 1
+}
+"@
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($guestScript))
+    $probe = Invoke-Wsb -Arguments @(
+        'exec', '--id', $EnvironmentId.ToString(), '--run-as', 'ExistingLogin',
+        '--command', "powershell.exe -NoProfile -EncodedCommand $encoded", '--raw'
+    ) -AllowFailure
+    if ($probe.ExitCode -ne 0) {
+        throw "Failed to measure Sandbox display: $($probe.Output)"
+    }
+
+    $deadline = [DateTime]::UtcNow.AddSeconds(10)
+    do {
+        $display = Read-SharedJson -Path $HostResultPath
+        if ($null -ne $display) {
+            return $display
+        }
+        [Threading.Thread]::Sleep(100)
+    } while ([DateTime]::UtcNow -lt $deadline)
+
+    $guestError = if (Test-Path $hostErrorPath) { Get-Content $hostErrorPath -Raw } else { 'No guest error file.' }
+    throw "Sandbox display probe did not write $GuestResultPath within ten seconds. wsb output: $($probe.Output). Guest error: $guestError"
+}
+
+function Set-SandboxDesktopResolution {
+    param(
+        [Parameter(Mandatory)]
+        [guid]$EnvironmentId,
+        [Parameter(Mandatory)]
+        [int]$Width,
+        [Parameter(Mandatory)]
+        [int]$Height
+    )
+
+    Add-Type -AssemblyName System.Windows.Forms
+    $windowDeadline = [DateTime]::UtcNow.AddSeconds(30)
+    do {
+        $windowProcess = Get-Process WindowsSandboxRemoteSession -ErrorAction SilentlyContinue |
+            Where-Object { $_.MainWindowHandle -ne 0 } |
+            Select-Object -First 1
+        if ($null -ne $windowProcess) {
+            break
+        }
+        [Threading.Thread]::Sleep(250)
+    } while ([DateTime]::UtcNow -lt $windowDeadline)
+    if ($null -eq $windowProcess) {
+        throw 'Sandbox host window was not found for desktop sizing.'
+    }
+
+    $windowHandle = $windowProcess.MainWindowHandle
+    $workingArea = [System.Windows.Forms.Screen]::FromHandle($windowHandle).WorkingArea
+    $displayProbeName = "sandbox-display-$runId.json"
+    $guestResultPath = "C:\SandboxExchange\$displayProbeName"
+    $hostResultPath = Join-Path $ExchangeRoot $displayProbeName
+    [SandboxHostWindowControl]::ShowWindow($windowHandle, 9) | Out-Null
+
+    for ($resizeAttempt = 1; $resizeAttempt -le 4; $resizeAttempt++) {
+        $display = Get-SandboxDisplayResolution -EnvironmentId $EnvironmentId -GuestResultPath $guestResultPath -HostResultPath $hostResultPath
+        if ([int]$display.Width -eq $Width -and [int]$display.Height -eq $Height) {
+            Write-Host "Sandbox guest desktop verified at ${Width}x${Height}"
+            return $display
+        }
+
+        $outer = [SandboxHostWindowControl+RECT]::new()
+        [SandboxHostWindowControl]::GetWindowRect($windowHandle, [ref]$outer) | Out-Null
+        $outerWidth = $outer.Right - $outer.Left
+        $outerHeight = $outer.Bottom - $outer.Top
+        $newOuterWidth = $outerWidth + ($Width - [int]$display.Width)
+        $newOuterHeight = $outerHeight + ($Height - [int]$display.Height)
+        if ($newOuterWidth -gt $workingArea.Width -or $newOuterHeight -gt $workingArea.Height) {
+            throw "Target guest desktop ${Width}x${Height} requires a host window about ${newOuterWidth}x${newOuterHeight}, larger than work area $($workingArea.Width)x$($workingArea.Height)."
+        }
+
+        $x = $workingArea.Left + [Math]::Max(0, [int](($workingArea.Width - $newOuterWidth) / 2))
+        $y = $workingArea.Top + [Math]::Max(0, [int](($workingArea.Height - $newOuterHeight) / 2))
+        Write-Host "Resizing Sandbox host window from guest $($display.Width)x$($display.Height) toward ${Width}x${Height} (outer ${newOuterWidth}x${newOuterHeight})"
+        if (-not [SandboxHostWindowControl]::SetWindowPos($windowHandle, [IntPtr]::Zero, $x, $y, $newOuterWidth, $newOuterHeight, 0x0044)) {
+            throw 'SetWindowPos failed while sizing the Sandbox desktop.'
+        }
+        [Threading.Thread]::Sleep(2000)
+    }
+
+    $display = Get-SandboxDisplayResolution -EnvironmentId $EnvironmentId -GuestResultPath $guestResultPath -HostResultPath $hostResultPath
+    throw "Sandbox guest desktop remained $($display.Width)x$($display.Height), expected ${Width}x${Height}."
+}
+
 function Stop-SandboxClientState {
     param(
         [guid]$EnvironmentId = [guid]::Empty
@@ -248,7 +411,7 @@ function Start-SandboxInteractiveSession {
         }
 
         $probe = $null
-        $loginDeadline = [DateTime]::UtcNow.AddMinutes(2)
+        $loginDeadline = [DateTime]::UtcNow.AddSeconds($LoginTimeoutSeconds)
         do {
             $probe = Test-SandboxLogin -EnvironmentId $attemptSandboxId
             if ($probe.ExitCode -eq 0) {
@@ -258,7 +421,7 @@ function Start-SandboxInteractiveSession {
         } while ([DateTime]::UtcNow -lt $loginDeadline)
 
         $lastFailure = if ($null -eq $probe) { 'No login probe result.' } else { $probe.Output }
-        Write-Warning "Sandbox startup attempt $startupAttempt failed before interactive login: $lastFailure"
+        Write-Warning "Sandbox startup attempt $startupAttempt did not establish interactive login within $LoginTimeoutSeconds second(s): $lastFailure"
         Stop-SandboxClientState -EnvironmentId $attemptSandboxId
     }
 
@@ -279,6 +442,9 @@ try {
 
     if ($ReuseStagedPayload -and $ReuseSandboxId -eq [guid]::Empty) {
         throw '-ReuseStagedPayload requires -ReuseSandboxId.'
+    }
+    if (($DesktopWidth -eq 0) -ne ($DesktopHeight -eq 0)) {
+        throw 'Set both DesktopWidth and DesktopHeight to 0 to disable resizing.'
     }
 
     Get-Command wsb.exe -ErrorAction Stop | Out-Null
@@ -350,6 +516,8 @@ try {
         WebView2Installer = if ($InstallWebView2) { $WebView2Installer } else { $null }
         CleanupProcesses = $CleanupProcess
         ProcessorAffinityMask = $ProcessorAffinityMask
+        DesktopWidth = $DesktopWidth
+        DesktopHeight = $DesktopHeight
         ReuseStagedPayload = [bool]$ReuseStagedPayload
         PayloadFingerprint = $payloadFingerprint
         PayloadFiles = @($payloadFiles | Sort-Object -Unique)
@@ -382,6 +550,26 @@ try {
             '--sandbox-path', 'C:\SandboxExchange',
             '--allow-write', '--raw'
         ) | Out-Null
+    }
+
+    $mappingDeadline = [DateTime]::UtcNow.AddSeconds(30)
+    do {
+        $mappingProbe = Invoke-Wsb -Arguments @(
+            'exec', '--id', $sandboxId.ToString(), '--run-as', 'ExistingLogin',
+            '--command', "cmd.exe /d /c if exist `"$guestRequestPath`" (exit /b 0) else (exit /b 1)", '--raw'
+        ) -AllowFailure
+        if ($mappingProbe.ExitCode -eq 0) {
+            break
+        }
+        [Threading.Thread]::Sleep(250)
+    } while ([DateTime]::UtcNow -lt $mappingDeadline)
+    if ($mappingProbe.ExitCode -ne 0) {
+        throw 'Sandbox exchange did not become visible within 30 seconds after sharing.'
+    }
+
+    $displayResolution = $null
+    if ($DesktopWidth -ne 0) {
+        $displayResolution = Set-SandboxDesktopResolution -EnvironmentId $sandboxId -Width $DesktopWidth -Height $DesktopHeight
     }
 
     $guestScriptPath = "C:\SandboxExchange\$GuestScript"
@@ -470,6 +658,8 @@ try {
         ReusedSandbox = $sandboxReused
         ReusedStagedPayload = $status.ReusedStagedPayload
         PayloadFingerprint = $status.PayloadFingerprint
+        DesktopWidth = $status.DesktopWidth
+        DesktopHeight = $status.DesktopHeight
         ResultsPath = $hostResultRoot
         Tests = $summary
         Suites = $suiteSummaries
