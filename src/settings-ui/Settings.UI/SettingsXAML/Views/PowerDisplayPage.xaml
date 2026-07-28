@@ -94,7 +94,12 @@
                                             <ComboBoxItem x:Uid="PowerDisplay_MouseWheelControlMode_AllDisplays" />
                                         </ComboBox>
                                     </tkcontrols:SettingsCard>
-                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement" IsEnabled="{x:Bind ViewModel.IsMouseWheelControlEnabled, Mode=OneWay}">
+                                    <!--
+                                        Deliberately not gated on the mouse wheel mode: this step is also the
+                                        default for the command-line relative adjust (AdjustCommandExecutor),
+                                        which stays available when wheel control is off.
+                                    -->
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement">
                                         <ComboBox
                                             MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
                                             ItemsSource="{x:Bind ViewModel.MouseWheelIncrementOptions}"
