@@ -36,10 +36,9 @@ namespace
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
 
-    // Set once the OS confirms session end (WM_ENDSESSION, wparam == TRUE) so the
-    // WM_DESTROY handler below can skip cross-process cleanup the OS is already
-    // reaping in parallel.
-    bool g_session_ending = false;
+    // Set when Windows confirms that the full session is ending so WM_DESTROY
+    // can skip cross-process cleanup the OS is already performing in parallel.
+    bool g_system_session_ending = false;
 
     bool about_box_shown = false;
 
@@ -162,7 +161,7 @@ void click_timer_elapsed()
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     LRESULT session_end_result = 0;
-    if (handle_session_end_message(window, message, wparam, session_end_result, &g_session_ending))
+    if (handle_stateless_session_end_message(window, message, wparam, lparam, session_end_result, &g_system_session_ending))
     {
         return session_end_result;
     }
@@ -191,10 +190,10 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         // PowerToys.Settings.exe, which the OS is reaping in parallel. That wait, plus
         // Shell_NotifyIcon during explorer teardown, would burn the limited quiesce
         // budget and trip APPLICATION_HANG_QUIESCE. PostQuitMessage alone unwinds the
-        // loop in milliseconds. User-initiated Exit (session_ending == false) keeps the
-        // full graceful cleanup.
-        Logger::info(L"Runner WM_DESTROY, session_ending={}", g_session_ending);
-        if (!g_session_ending)
+        // loop in milliseconds. User-initiated Exit and Restart Manager
+        // ENDSESSION_CLOSEAPP requests keep the full graceful cleanup.
+        Logger::info(L"Runner WM_DESTROY, system_session_ending={}", g_system_session_ending);
+        if (!g_system_session_ending)
         {
             if (tray_icon_created)
             {
@@ -564,9 +563,9 @@ void stop_tray_icon()
     }
 }
 
-bool is_session_ending()
+bool is_system_session_ending()
 {
-    return g_session_ending;
+    return g_system_session_ending;
 }
 void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject hotkey)
 {

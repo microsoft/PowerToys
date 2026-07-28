@@ -41,14 +41,14 @@ inline int run_message_loop(const bool until_idle = false,
     return static_cast<int>(msg.wParam);
 }
 
-// Handles WM_QUERYENDSESSION / WM_ENDSESSION for processes that have no
-// unsaved user state of their own (the PowerToys runner and most modules).
+// Handles WM_QUERYENDSESSION / WM_ENDSESSION for a window whose process has no
+// unsaved user state of its own.
 //
 // WndProcs should call this at the top of their dispatch and return early
 // when it reports the message was handled. Without this, the OS quiesce
-// handshake on shutdown / sign-out / restart / suspend has nothing to wait
-// on except the full timeout, producing APPLICATION_HANG_QUIESCE failure
-// buckets even though the process is idle in GetMessage.
+// handshake on shutdown / sign-out / restart has nothing to wait on except
+// the full timeout, producing APPLICATION_HANG_QUIESCE failure buckets even
+// though the process is idle in GetMessage.
 //
 // On WM_QUERYENDSESSION we always allow the session to end (returns TRUE).
 // On WM_ENDSESSION with wparam == TRUE we DestroyWindow(window), which then
@@ -60,13 +60,16 @@ inline int run_message_loop(const bool until_idle = false,
 // Returns true if the message was an end-session message and out_result has
 // been set; the caller should return out_result without further dispatch.
 //
-// When out_session_ending is non-null it is set to true exactly when an actual
-// teardown begins (WM_ENDSESSION with wparam == TRUE) and is left untouched
-// otherwise. Callers whose WM_DESTROY performs blocking cross-process cleanup
-// (for example waiting on a child process) can read this flag and skip that
-// work on OS shutdown, where the OS is already reaping those processes in
-// parallel and the quiesce budget is too short to wait on them.
-inline bool handle_session_end_message(HWND window, UINT message, WPARAM wparam, LRESULT& out_result, bool* out_session_ending = nullptr)
+// When out_system_session_ending is non-null it is set to true exactly when
+// the full Windows session is ending. ENDSESSION_CLOSEAPP only closes this
+// application, so callers must retain their normal child-process cleanup.
+// The value is left untouched for all other messages and cancelled shutdowns.
+inline bool handle_stateless_session_end_message(HWND window,
+                                                 UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam,
+                                                 LRESULT& out_result,
+                                                 bool* out_system_session_ending = nullptr)
 {
     switch (message)
     {
@@ -76,9 +79,9 @@ inline bool handle_session_end_message(HWND window, UINT message, WPARAM wparam,
     case WM_ENDSESSION:
         if (wparam)
         {
-            if (out_session_ending)
+            if (out_system_session_ending && !(lparam & ENDSESSION_CLOSEAPP))
             {
-                *out_session_ending = true;
+                *out_system_session_ending = true;
             }
             DestroyWindow(window);
         }

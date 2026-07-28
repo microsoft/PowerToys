@@ -156,23 +156,23 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(true);
         }
 
-        // handle_session_end_message tests
+        // handle_stateless_session_end_message tests
         //
         // These guard the fix for APPLICATION_HANG_QUIESCE in
-        // PowerToys.exe!run_message_loop, where the runner and most modules
-        // failed to handle WM_QUERYENDSESSION / WM_ENDSESSION and were
-        // force-terminated on every OS shutdown, sign-out, or restart.
-        TEST_METHOD(HandleSessionEndMessage_QueryEndSession_AllowsShutdown)
+        // PowerToys.exe!run_message_loop, where the runner failed to handle
+        // WM_QUERYENDSESSION / WM_ENDSESSION and was force-terminated on OS
+        // shutdown, sign-out, or restart.
+        TEST_METHOD(HandleStatelessSessionEndMessage_QueryEndSession_AllowsShutdown)
         {
             LRESULT result = 0;
-            bool handled = handle_session_end_message(nullptr, WM_QUERYENDSESSION, 0, result);
+            bool handled = handle_stateless_session_end_message(nullptr, WM_QUERYENDSESSION, 0, 0, result);
 
             Assert::IsTrue(handled, L"WM_QUERYENDSESSION should be handled");
             Assert::AreEqual(static_cast<LRESULT>(TRUE), result,
                              L"WM_QUERYENDSESSION must return TRUE so the OS can proceed with shutdown");
         }
 
-        TEST_METHOD(HandleSessionEndMessage_EndSessionCancelled_DoesNotTearDown)
+        TEST_METHOD(HandleStatelessSessionEndMessage_EndSessionCancelled_DoesNotTearDown)
         {
             // wparam == FALSE means another app vetoed shutdown; we must not
             // tear down. We pass a real HWND so that an accidental
@@ -189,7 +189,7 @@ namespace UnitTestsCommonUtils
             Assert::IsNotNull(hwnd, L"Test window must be created");
 
             LRESULT result = 0xDEAD;
-            bool handled = handle_session_end_message(hwnd, WM_ENDSESSION, FALSE, result);
+            bool handled = handle_stateless_session_end_message(hwnd, WM_ENDSESSION, FALSE, 0, result);
 
             Assert::IsTrue(handled, L"WM_ENDSESSION should be handled");
             Assert::AreEqual(static_cast<LRESULT>(0), result);
@@ -200,7 +200,7 @@ namespace UnitTestsCommonUtils
             UnregisterClassW(L"EndSessionTest_Cancelled", GetModuleHandleW(nullptr));
         }
 
-        TEST_METHOD(HandleSessionEndMessage_EndSessionConfirmed_TearsDownAndExitsLoop)
+        TEST_METHOD(HandleStatelessSessionEndMessage_EndSessionConfirmed_TearsDownAndExitsLoop)
         {
             // wparam == TRUE means shutdown is actually proceeding. The
             // helper must DestroyWindow, which routes through WM_DESTROY ->
@@ -224,18 +224,17 @@ namespace UnitTestsCommonUtils
             Assert::IsNotNull(hwnd, L"Test window must be created");
 
             LRESULT result = 0xDEAD;
-            bool handled = handle_session_end_message(hwnd, WM_ENDSESSION, TRUE, result);
+            bool handled = handle_stateless_session_end_message(hwnd, WM_ENDSESSION, TRUE, 0, result);
 
             Assert::IsTrue(handled, L"WM_ENDSESSION should be handled");
             Assert::AreEqual(static_cast<LRESULT>(0), result);
 
             // After DestroyWindow the window must no longer exist and the
             // message loop must exit promptly because WM_QUIT was posted.
-            // The timeout was 1000 ms; assert well under that (2000 ms gives
-            // headroom for slow CI VMs while still failing if the loop is
-            // actually waiting out the full timeout).
+            // The timeout exceeds the assertion threshold so the test fails
+            // if the loop waits for the timer instead of consuming WM_QUIT.
             auto start = std::chrono::steady_clock::now();
-            run_message_loop(false, 1000);
+            run_message_loop(false, 3000);
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - start);
 
@@ -247,25 +246,26 @@ namespace UnitTestsCommonUtils
             UnregisterClassW(L"EndSessionTest_Confirmed", GetModuleHandleW(nullptr));
         }
 
-        TEST_METHOD(HandleSessionEndMessage_UnrelatedMessage_NotHandled)
+        TEST_METHOD(HandleStatelessSessionEndMessage_UnrelatedMessage_NotHandled)
         {
             LRESULT result = 0xDEAD;
-            bool handled = handle_session_end_message(nullptr, WM_USER, 0, result);
+            bool handled = handle_stateless_session_end_message(nullptr, WM_USER, 0, 0, result);
 
             Assert::IsFalse(handled, L"Non-end-session messages must fall through");
             Assert::AreEqual(static_cast<LRESULT>(0xDEAD), result,
                              L"out_result must be left untouched when not handled");
         }
 
-        // out_session_ending tests
+        // out_system_session_ending tests
         //
         // The optional out-param lets a caller's WM_DESTROY skip blocking
         // cross-process cleanup (the 1.5s wait on PowerToys.Settings.exe in the
-        // runner) only on a real OS-initiated shutdown, which is what keeps the
-        // teardown inside the quiesce budget.
-        TEST_METHOD(HandleSessionEndMessage_EndSessionConfirmed_SignalsSessionEnding)
+        // runner) only when the full Windows session is ending, which keeps the
+        // teardown inside the quiesce budget without orphaning child processes
+        // during a Restart Manager ENDSESSION_CLOSEAPP request.
+        TEST_METHOD(HandleStatelessSessionEndMessage_EndSessionConfirmed_SignalsSystemSessionEnding)
         {
-            // wparam == TRUE must flag session-ending before tearing the window down.
+            // wparam == TRUE must flag the system session ending before teardown.
             WNDCLASSW wc{};
             wc.lpfnWndProc = [](HWND hwnd, UINT msg, WPARAM w, LPARAM l) -> LRESULT {
                 if (msg == WM_DESTROY)
@@ -285,12 +285,12 @@ namespace UnitTestsCommonUtils
             Assert::IsNotNull(hwnd, L"Test window must be created");
 
             LRESULT result = 0;
-            bool session_ending = false;
-            bool handled = handle_session_end_message(hwnd, WM_ENDSESSION, TRUE, result, &session_ending);
+            bool system_session_ending = false;
+            bool handled = handle_stateless_session_end_message(hwnd, WM_ENDSESSION, TRUE, 0, result, &system_session_ending);
 
             Assert::IsTrue(handled, L"WM_ENDSESSION should be handled");
-            Assert::IsTrue(session_ending,
-                           L"WM_ENDSESSION(TRUE) must flag session-ending so WM_DESTROY can skip blocking cleanup");
+            Assert::IsTrue(system_session_ending,
+                           L"WM_ENDSESSION(TRUE) must flag a full system session end so WM_DESTROY can skip blocking cleanup");
 
             // Drain the WM_QUIT posted by the test WndProc so it cannot leak into
             // a subsequent test running on the same thread.
@@ -298,30 +298,57 @@ namespace UnitTestsCommonUtils
             UnregisterClassW(L"EndSessionTest_Signals", GetModuleHandleW(nullptr));
         }
 
-        TEST_METHOD(HandleSessionEndMessage_EndSessionCancelled_DoesNotSignalSessionEnding)
+        TEST_METHOD(HandleStatelessSessionEndMessage_CloseApp_DoesNotSignalSystemSessionEnding)
+        {
+            WNDCLASSW wc{};
+            wc.lpfnWndProc = DefWindowProcW;
+            wc.hInstance = GetModuleHandleW(nullptr);
+            wc.lpszClassName = L"EndSessionTest_CloseApp";
+            RegisterClassW(&wc);
+
+            HWND hwnd = CreateWindowExW(0, L"EndSessionTest_CloseApp", L"Test",
+                                        0, 0, 0, 0, 0, HWND_MESSAGE, nullptr,
+                                        GetModuleHandleW(nullptr), nullptr);
+            Assert::IsNotNull(hwnd, L"Test window must be created");
+
+            LRESULT result = 0;
+            bool system_session_ending = false;
+            bool handled = handle_stateless_session_end_message(
+                hwnd, WM_ENDSESSION, TRUE, ENDSESSION_CLOSEAPP, result, &system_session_ending);
+
+            Assert::IsTrue(handled, L"WM_ENDSESSION should be handled");
+            Assert::IsFalse(system_session_ending,
+                            L"ENDSESSION_CLOSEAPP must retain normal child-process cleanup");
+            Assert::IsFalse(IsWindow(hwnd) == TRUE,
+                            L"The window must still close for ENDSESSION_CLOSEAPP");
+
+            UnregisterClassW(L"EndSessionTest_CloseApp", GetModuleHandleW(nullptr));
+        }
+
+        TEST_METHOD(HandleStatelessSessionEndMessage_EndSessionCancelled_DoesNotSignalSystemSessionEnding)
         {
             // wparam == FALSE (another app vetoed) must not flag session-ending, so a
             // caller keeps doing its normal cleanup if it later closes on its own.
             LRESULT result = 0;
-            bool session_ending = false;
-            bool handled = handle_session_end_message(nullptr, WM_ENDSESSION, FALSE, result, &session_ending);
+            bool system_session_ending = false;
+            bool handled = handle_stateless_session_end_message(nullptr, WM_ENDSESSION, FALSE, 0, result, &system_session_ending);
 
             Assert::IsTrue(handled, L"WM_ENDSESSION should be handled");
-            Assert::IsFalse(session_ending,
-                            L"A cancelled shutdown must not flag session-ending");
+            Assert::IsFalse(system_session_ending,
+                            L"A cancelled shutdown must not flag the system session ending");
         }
 
-        TEST_METHOD(HandleSessionEndMessage_QueryEndSession_DoesNotSignalSessionEnding)
+        TEST_METHOD(HandleStatelessSessionEndMessage_QueryEndSession_DoesNotSignalSystemSessionEnding)
         {
             // The query phase only asks permission; it must not flag teardown.
             LRESULT result = 0;
-            bool session_ending = false;
-            bool handled = handle_session_end_message(nullptr, WM_QUERYENDSESSION, 0, result, &session_ending);
+            bool system_session_ending = false;
+            bool handled = handle_stateless_session_end_message(nullptr, WM_QUERYENDSESSION, 0, 0, result, &system_session_ending);
 
             Assert::IsTrue(handled, L"WM_QUERYENDSESSION should be handled");
             Assert::AreEqual(static_cast<LRESULT>(TRUE), result);
-            Assert::IsFalse(session_ending,
-                            L"WM_QUERYENDSESSION must not flag session-ending");
+            Assert::IsFalse(system_session_ending,
+                            L"WM_QUERYENDSESSION must not flag the system session ending");
         }
     };
 }
