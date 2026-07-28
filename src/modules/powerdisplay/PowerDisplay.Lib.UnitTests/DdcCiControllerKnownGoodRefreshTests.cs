@@ -101,11 +101,15 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
     [TestMethod]
     public void RefreshKnownGoodAfterWrite_EmptyMonitorIdIsIgnored()
     {
+        // The store is seeded and answers any Id, so the only thing that can keep the refresh from
+        // happening is the production guard itself: drop `string.IsNullOrEmpty(monitor.Id)` and both
+        // assertions flip.
         var store = new FakeKnownGoodStore(Cached(0x10, current: 45, maximum: 50));
         using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(new Monitor { BrightnessVcpMax = 50 }, 0x10, 20);
 
+        Assert.AreEqual(0, store.GetCallCount, "An empty Id must short-circuit before the store is queried.");
         Assert.AreEqual(0, store.UpsertCount);
     }
 
@@ -139,10 +143,18 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
 
         public int UpsertCount { get; private set; }
 
-        public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId) =>
-            string.Equals(monitorId, MonitorId, StringComparison.OrdinalIgnoreCase)
-                ? _features
-                : new Dictionary<byte, KnownGoodVcpFeature>();
+        /// <summary>
+        /// Counts lookups so a test can prove the caller short-circuited before reaching the store.
+        /// The monitor Id is deliberately ignored: matching on it here would silently stand in for
+        /// the production guard a test means to pin.
+        /// </summary>
+        public int GetCallCount { get; private set; }
+
+        public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId)
+        {
+            GetCallCount++;
+            return _features;
+        }
 
         public void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature)
         {

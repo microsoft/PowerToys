@@ -35,7 +35,8 @@ public sealed class DdcErrorClassifierTests
     [DataRow(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported)]
 
     // Handle-class failures are owned by IsPhysicalMonitorUnavailable, which aborts the whole
-    // probe — treating them as transient would keep hammering a dead handle.
+    // probe. They must never also be transient: ProbeCodeAsync consults IsTransient to decide
+    // whether to retry, so an overlap would keep hammering a handle ProbeAsync already knows is gone.
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
 
@@ -66,14 +67,4 @@ public sealed class DdcErrorClassifierTests
     [DataRow(0)]
     public void IsPhysicalMonitorUnavailable_RejectsFeatureLevelFailures(int errorCode) =>
         Assert.IsFalse(DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode));
-
-    [TestMethod]
-    public void HandleClassFailuresAreNeverTransient()
-    {
-        // The two sets must stay disjoint: ProbeCodeAsync consults IsTransient to decide whether to
-        // retry, and ProbeAsync consults the resulting disposition to decide whether to abandon the
-        // handle. An overlap would retry against a handle that is already gone.
-        Assert.IsFalse(DdcErrorClassifier.IsTransient(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle));
-        Assert.IsFalse(DdcErrorClassifier.IsTransient(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists));
-    }
 }

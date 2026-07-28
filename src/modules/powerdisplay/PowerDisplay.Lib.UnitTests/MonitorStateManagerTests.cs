@@ -290,13 +290,14 @@ public sealed class MonitorStateManagerTests
     [TestMethod]
     public void ConcurrentUpsertAndRead_OnSameMonitorDoNotTearTheFeatureMap()
     {
-        // ConcurrentUpserts_PreserveBothMonitorEntries uses two monitor Ids, which GetOrAdd maps to
-        // two distinct MonitorState instances and therefore two distinct lock objects — it never
-        // exercises the locks at all. The contention they actually guard is one monitor Id: the
-        // discovery thread upserting several VCP codes while the debounced save thread enumerates
-        // that same KnownGoodVcpFeatures dictionary. Without `lock (state)` the reader's
-        // ToDictionary inside GetKnownGoodFeatures observes a dictionary whose version changed
-        // mid-enumeration and throws InvalidOperationException.
+        // Drives the contention `lock (state)` exists for: a single monitor Id, whose one
+        // MonitorState is the lock object shared by the discovery thread upserting several VCP
+        // codes and the debounced save enumerating that same KnownGoodVcpFeatures dictionary.
+        // Remove the locks and the reader's ToDictionary inside GetKnownGoodFeatures observes a
+        // dictionary whose version changed mid-enumeration, and throws InvalidOperationException.
+        //
+        // Two different monitor Ids would not reproduce it: GetOrAdd maps them to two MonitorState
+        // instances and therefore two disjoint locks.
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 10));
 
