@@ -57,7 +57,6 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
     IRecipient<ExpandCompactModeMessage>,
-    IRecipient<UpdateCompactModeHostMessage>,
     IDisposable,
     IHostWindow
 {
@@ -185,7 +184,6 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCompactModeHostMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -1899,11 +1897,6 @@ public sealed partial class MainWindow : WindowEx,
     }
 
     public void Receive(ExpandCompactModeMessage message)
-    {
-        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
-    }
-
-    void IRecipient<UpdateCompactModeHostMessage>.Receive(UpdateCompactModeHostMessage message)
     {
         this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
     }
