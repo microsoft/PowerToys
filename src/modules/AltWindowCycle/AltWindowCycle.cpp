@@ -307,6 +307,7 @@ static AltWindowCycleLogic::WindowEligibility QueryWindowEligibility(HWND hwnd)
 
     LONG_PTR exStyle = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
     eligibility.isToolWindow = (exStyle & WS_EX_TOOLWINDOW) != 0;
+    eligibility.isAppWindow = (exStyle & WS_EX_APPWINDOW) != 0;
     return eligibility;
 }
 
@@ -429,6 +430,7 @@ private:
     std::vector<std::wstring> titles;
     HWND anchorWindow = nullptr;
     int selected = 0;
+    int pageStart = 0;
     unsigned int activeHoldModifiers = AltWindowCycleLogic::ModifierAlt;
 
     double scale = 1.0;
@@ -751,6 +753,15 @@ void Switcher::HideOverlayWindow()
 void Switcher::SetSelection(int index)
 {
     selected = index;
+    const int nextPageStart = AltWindowCycleLogic::PageStartForSelection(
+        selected,
+        static_cast<int>(windows.size()),
+        overlayLayout.pageSize);
+    if (nextPageStart != pageStart)
+    {
+        pageStart = nextPageStart;
+        RegisterThumbnails();
+    }
     RenderLayered();
 }
 
@@ -781,6 +792,10 @@ void Switcher::ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int&
     tileH = overlayLayout.tileH;
     cols = overlayLayout.cols;
     rows = overlayLayout.rows;
+    pageStart = AltWindowCycleLogic::PageStartForSelection(
+        selected,
+        static_cast<int>(windows.size()),
+        overlayLayout.pageSize);
 
     x = overlayLayout.panelX;
     y = overlayLayout.panelY;
@@ -826,18 +841,21 @@ void Switcher::RegisterThumbnails()
 {
     UnregisterThumbnails();
 
-    for (size_t i = 0; i < windows.size(); ++i)
+    const int pageEnd = (std::min)(
+        pageStart + overlayLayout.pageSize,
+        static_cast<int>(windows.size()));
+    for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
     {
-        RECT dest = PreviewRect(TileRect(static_cast<int>(i)));
+        RECT dest = PreviewRect(TileRect(slot));
         HTHUMBNAIL th = nullptr;
-        if (FAILED(DwmRegisterThumbnail(thumbHost, windows[i], &th)) || !th)
+        if (FAILED(DwmRegisterThumbnail(thumbHost, windows[windowIndex], &th)) || !th)
         {
             thumbs.push_back(nullptr);
             continue;
         }
         thumbs.push_back(th);
 
-        SIZE clientSize = IsIconic(windows[i]) ? SIZE{ 0, 0 } : ClientSourceSize(windows[i]);
+        SIZE clientSize = IsIconic(windows[windowIndex]) ? SIZE{ 0, 0 } : ClientSourceSize(windows[windowIndex]);
         BOOL clientOnly = TRUE;
         if (clientSize.cx <= 0 || clientSize.cy <= 0)
         {
@@ -1236,10 +1254,13 @@ void Switcher::RenderLayered()
         COLORREF accent = GetAccentColor();
         Gdiplus::Color accentClr = AltTabStyle::Accent(accent);
 
-        for (int i = 0; i < static_cast<int>(windows.size()); ++i)
+        const int pageEnd = (std::min)(
+            pageStart + overlayLayout.pageSize,
+            static_cast<int>(windows.size()));
+        for (int windowIndex = pageStart, slot = 0; windowIndex < pageEnd; ++windowIndex, ++slot)
         {
-            RECT tile = TileRect(i);
-            bool sel = (i == selected);
+            RECT tile = TileRect(slot);
+            bool sel = (windowIndex == selected);
             RECT pv = PreviewRect(tile);
 
             // Full rounded card chrome. The live DWM preview is a rectangular
@@ -1296,7 +1317,7 @@ void Switcher::RenderLayered()
             // Header tab: app icon + window title.
             RECT hdr = HeaderRect(tile);
             int textLeft = hdr.left;
-            HICON ic = (i < static_cast<int>(icons.size())) ? icons[i] : nullptr;
+            HICON ic = (windowIndex < static_cast<int>(icons.size())) ? icons[windowIndex] : nullptr;
             if (ic)
             {
                 int iy = tile.top + (headerH - iconSize) / 2;
@@ -1305,7 +1326,7 @@ void Switcher::RenderLayered()
                 textLeft = hdr.left + iconSize + Scaled(8);
             }
 
-            const std::wstring* text = (i < static_cast<int>(titles.size())) ? &titles[i] : nullptr;
+            const std::wstring* text = (windowIndex < static_cast<int>(titles.size())) ? &titles[windowIndex] : nullptr;
             if (text)
             {
                 g.Flush();

@@ -20,11 +20,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         public HotkeySettings DefaultPreviousWindowShortcut => new HotkeySettings(false, false, true, true, 0xC0);
 
+        private HotkeySettings _nextWindowShortcut;
+
+        private HotkeySettings _previousWindowShortcut;
+
         [JsonPropertyName("next_window_shortcut")]
-        public HotkeySettings NextWindowShortcut { get; set; }
+        public HotkeySettings NextWindowShortcut
+        {
+            get => _nextWindowShortcut ?? DefaultNextWindowShortcut;
+            set => _nextWindowShortcut = value;
+        }
 
         [JsonPropertyName("previous_window_shortcut")]
-        public HotkeySettings PreviousWindowShortcut { get; set; }
+        public HotkeySettings PreviousWindowShortcut
+        {
+            get => _previousWindowShortcut ?? DefaultPreviousWindowShortcut;
+            set => _previousWindowShortcut = value;
+        }
 
         public AltWindowCycleProperties()
         {

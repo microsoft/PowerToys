@@ -25,7 +25,8 @@ namespace AltWindowCycleUnitTests
             bool visible = true,
             bool cloaked = false,
             bool representative = true,
-            bool toolWindow = false)
+            bool toolWindow = false,
+            bool appWindow = false)
         {
             AltWindowCycleLogic::CandidateWindow candidate;
             candidate.id = id;
@@ -34,6 +35,7 @@ namespace AltWindowCycleUnitTests
             candidate.eligibility.isCloaked = cloaked;
             candidate.eligibility.isAltTabRepresentative = representative;
             candidate.eligibility.isToolWindow = toolWindow;
+            candidate.eligibility.isAppWindow = appWindow;
             return candidate;
         }
 
@@ -69,6 +71,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(202, layout.tileH);
             Assert::AreEqual(4, layout.cols);
             Assert::AreEqual(1, layout.rows);
+            Assert::AreEqual(4, layout.pageSize);
             Assert::AreEqual(1222, layout.panelW);
             Assert::AreEqual(266, layout.panelH);
             Assert::AreEqual(349, layout.panelX);
@@ -92,6 +95,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(303, layout.tileH);
             Assert::AreEqual(4, layout.cols);
             Assert::AreEqual(2, layout.rows);
+            Assert::AreEqual(6, layout.pageSize);
             Assert::AreEqual(1833, layout.panelW);
             Assert::AreEqual(741, layout.panelH);
             Assert::AreEqual(43, layout.panelX);
@@ -106,6 +110,7 @@ namespace AltWindowCycleUnitTests
 
             Assert::AreEqual(1, layout.cols);
             Assert::AreEqual(0, layout.rows);
+            Assert::AreEqual(0, layout.pageSize);
         }
 
         TEST_METHOD(TilePreviewAndHeaderRectsUsePanelRelativeInsetViewport)
@@ -213,6 +218,11 @@ namespace AltWindowCycleUnitTests
             Assert::IsFalse(AltWindowCycleLogic::IsAltTabEligible({ true, false, true, true }));
         }
 
+        TEST_METHOD(IsAltTabEligibleAcceptsToolWindowOptedInAsAppWindow)
+        {
+            Assert::IsTrue(AltWindowCycleLogic::IsAltTabEligible({ true, false, true, true, true }));
+        }
+
         TEST_METHOD(ProcessKeyEqualsIsCaseInsensitiveAndRejectsEmptyCandidate)
         {
             Assert::IsTrue(AltWindowCycleLogic::ProcessKeyEquals(L"C:\\Apps\\Foo.exe", L"c:\\apps\\foo.EXE"));
@@ -316,7 +326,7 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(4, layout.rows); // ceil(10 / 3)
         }
 
-        TEST_METHOD(ComputeOverlayLayoutClampsColumnsToNarrowWorkArea)
+        TEST_METHOD(ComputeOverlayLayoutClampsColumnsAndRowsToNarrowWorkArea)
         {
             const RECT work = { 0, 0, 640, 480 };
 
@@ -324,7 +334,9 @@ namespace AltWindowCycleUnitTests
 
             // (640 - 64 + 26) / (270 + 26) = 2 columns fit the work area.
             Assert::AreEqual(2, layout.cols);
-            Assert::AreEqual(4, layout.rows);
+            Assert::AreEqual(1, layout.rows);
+            Assert::AreEqual(2, layout.pageSize);
+            Assert::IsTrue(layout.panelH <= work.bottom - work.top);
         }
 
         TEST_METHOD(ComputeOverlayLayoutScalesPaddingAcrossDpi)
@@ -337,16 +349,27 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(64, AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 2.0).pad);
         }
 
-        TEST_METHOD(ComputeOverlayLayoutKeepsOversizedPanelOriginInWorkArea)
+        TEST_METHOD(ComputeOverlayLayoutPaginatesRowsThatDoNotFitWorkArea)
         {
-            const RECT work = { 100, 200, 600, 700 };
+            const RECT work = { 0, 0, 1920, 1080 };
 
-            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 13, 2.0);
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 13, 1.5);
 
-            Assert::IsTrue(layout.panelW > work.right - work.left);
-            Assert::IsTrue(layout.panelH > work.bottom - work.top);
-            Assert::AreEqual(static_cast<int>(work.left), layout.panelX);
-            Assert::AreEqual(static_cast<int>(work.top), layout.panelY);
+            Assert::AreEqual(4, layout.cols);
+            Assert::AreEqual(2, layout.rows);
+            Assert::AreEqual(8, layout.pageSize);
+            Assert::IsTrue(layout.panelH <= work.bottom - work.top);
+        }
+
+        TEST_METHOD(PageStartForSelectionKeepsSelectedWindowOnPage)
+        {
+            Assert::AreEqual(0, AltWindowCycleLogic::PageStartForSelection(0, 13, 8));
+            Assert::AreEqual(0, AltWindowCycleLogic::PageStartForSelection(7, 13, 8));
+            Assert::AreEqual(8, AltWindowCycleLogic::PageStartForSelection(8, 13, 8));
+            Assert::AreEqual(8, AltWindowCycleLogic::PageStartForSelection(12, 13, 8));
+            Assert::AreEqual(0, AltWindowCycleLogic::PageStartForSelection(-1, 13, 8));
+            Assert::AreEqual(8, AltWindowCycleLogic::PageStartForSelection(13, 13, 8));
+            Assert::AreEqual(0, AltWindowCycleLogic::PageStartForSelection(0, 0, 0));
         }
 
         TEST_METHOD(TileRectAdvancesAcrossColumnsAndRows)

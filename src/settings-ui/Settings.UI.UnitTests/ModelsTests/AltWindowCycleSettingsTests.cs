@@ -74,6 +74,18 @@ namespace CommonLibTest
         }
 
         [TestMethod]
+        public void Deserialize_WithNullHotkeys_ShouldUseDefaults()
+        {
+            const string Json = "{\"properties\":{\"next_window_shortcut\":null,\"previous_window_shortcut\":null}}";
+
+            var deserialized = JsonSerializer.Deserialize<AltWindowCycleSettings>(Json);
+
+            Assert.IsNotNull(deserialized);
+            AssertHotkey(deserialized.Properties.NextWindowShortcut, win: false, ctrl: false, alt: true, shift: false, code: OemTilde);
+            AssertHotkey(deserialized.Properties.PreviousWindowShortcut, win: false, ctrl: false, alt: true, shift: true, code: OemTilde);
+        }
+
+        [TestMethod]
         public void ShouldBeRegisteredInSerializationContext()
         {
             var options = new JsonSerializerOptions

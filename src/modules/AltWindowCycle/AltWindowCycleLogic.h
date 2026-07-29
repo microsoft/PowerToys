@@ -34,6 +34,7 @@ namespace AltWindowCycleLogic
         int iconSize = 0;
         int cols = 1;
         int rows = 0;
+        int pageSize = 0;
         int panelX = 0;
         int panelY = 0;
         int panelW = 0;
@@ -120,9 +121,12 @@ namespace AltWindowCycleLogic
             layout.cols = 1;
         }
 
-        layout.rows = (safeWindowCount + layout.cols - 1) / layout.cols;
+        const int totalRows = (safeWindowCount + layout.cols - 1) / layout.cols;
+        const int rowsFromWork = (std::max)(1, (workH - 2 * layout.pad + layout.gap) / (layout.tileH + layout.gap));
+        layout.rows = (std::min)(totalRows, rowsFromWork);
+        layout.pageSize = (std::min)(safeWindowCount, layout.cols * layout.rows);
         layout.panelW = 2 * layout.pad + layout.cols * layout.tileW + (layout.cols - 1) * layout.gap;
-        layout.panelH = 2 * layout.pad + layout.rows * layout.tileH + (layout.rows - 1) * layout.gap;
+        layout.panelH = 2 * layout.pad + layout.rows * layout.tileH + (std::max)(0, layout.rows - 1) * layout.gap;
         layout.panelX = work.left + (workW - layout.panelW) / 2;
         layout.panelY = work.top + (workH - layout.panelH) / 2;
         if (layout.panelX < work.left)
@@ -135,6 +139,17 @@ namespace AltWindowCycleLogic
         }
 
         return layout;
+    }
+
+    inline int PageStartForSelection(int selectedIndex, int windowCount, int pageSize)
+    {
+        if (windowCount <= 0 || pageSize <= 0)
+        {
+            return 0;
+        }
+
+        const int normalizedIndex = (std::min)((std::max)(0, selectedIndex), windowCount - 1);
+        return (normalizedIndex / pageSize) * pageSize;
     }
 
     inline RECT TileRect(const OverlayLayout& layout, int index)
@@ -205,14 +220,18 @@ namespace AltWindowCycleLogic
         // itself. Owned secondary windows (whose owner is visible) are not.
         bool isAltTabRepresentative = false;
         bool isToolWindow = false;
+        bool isAppWindow = false;
     };
 
     // Mirrors the classic "IsAltTabWindow" predicate: a window participates in the
     // cycle only when it is visible, not cloaked, the representative window of its
-    // owner chain, and not a tool window.
+    // owner chain, and either not a tool window or explicitly opted in as an app window.
     constexpr bool IsAltTabEligible(const WindowEligibility& window)
     {
-        return window.isVisible && !window.isCloaked && window.isAltTabRepresentative && !window.isToolWindow;
+        return window.isVisible &&
+               !window.isCloaked &&
+               window.isAltTabRepresentative &&
+               (!window.isToolWindow || window.isAppWindow);
     }
 
     struct CandidateWindow
@@ -234,8 +253,8 @@ namespace AltWindowCycleLogic
     // Given the foreground app's process key and the windows enumerated in Z-order
     // (top-most first == MRU), return the ids that make up the Alt-Tab cycle set for
     // that app, preserving enumeration order. Ineligible windows (invisible, cloaked,
-    // owned, or tool) and windows from other processes are dropped. Returns empty when
-    // the foreground key is unknown.
+    // owned, or tool-only) and windows from other processes are dropped. Returns empty
+    // when the foreground key is unknown.
     inline std::vector<unsigned long long> SelectCycleWindows(
         const std::wstring& foregroundProcessKey,
         const std::vector<CandidateWindow>& enumeratedInZOrder)
