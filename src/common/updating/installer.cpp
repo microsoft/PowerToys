@@ -68,6 +68,11 @@ namespace updating
         // resource reports ProductName "PowerToys (Preview) <arch>" and CompanyName
         // "Microsoft Corporation"; the .msi UpgradeCodes are shared with MsiUtils.h.
         constexpr const wchar_t* MICROSOFT_ORGANIZATION_NAME = L"Microsoft Corporation";
+        // NOTE: This must match the WiX bundle ProductName ("PowerToys (Preview) <arch>", see
+        // installer/PowerToysSetupVNext/PowerToys.wxs). It is intentionally a prefix so the trailing
+        // architecture varies. If the product is ever renamed (e.g. a stable/GA build that drops
+        // "(Preview)"), this constant MUST be updated in lockstep, otherwise a legitimate installer
+        // would be rejected here in the elevated update path.
         constexpr const wchar_t* POWERTOYS_PRODUCT_NAME_PREFIX = L"PowerToys (Preview)";
 
         // Reads the signer leaf certificate's Organization (O) from the ALREADY-VERIFIED
@@ -319,7 +324,10 @@ namespace updating
 
         if (!microsoftSigned)
         {
-            Logger::error(L"Installer '{}' is Authenticode-signed but not by Microsoft Corporation; refusing to run it elevated", installerPath);
+            // Reaches here both when the signer's organization is not "Microsoft Corporation" and
+            // when the signer information couldn't be read from the verified state at all; the
+            // wording covers both so it isn't misread as "a specific, known non-Microsoft signer".
+            Logger::error(L"Installer '{}' is Authenticode-signed but its signer could not be confirmed as Microsoft Corporation; refusing to run it elevated", installerPath);
             return false;
         }
 
