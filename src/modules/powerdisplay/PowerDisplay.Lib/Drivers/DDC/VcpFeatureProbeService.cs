@@ -71,7 +71,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
     internal sealed class VcpFeatureProbeService
     {
-        internal static readonly TimeSpan TransactionInterval = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan TransactionInterval = TimeSpan.FromMilliseconds(100);
         private const int MaxAttempts = 3;
         private static readonly byte[] DefaultCodes = { VcpCodeBrightness, VcpCodeContrast, VcpCodeVolume };
 

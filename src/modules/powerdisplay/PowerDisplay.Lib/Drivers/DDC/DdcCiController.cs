@@ -547,28 +547,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Wrapper for GetVCPFeatureAndVCPFeatureReply that logs errors on failure.
-        /// </summary>
-        /// <param name="handle">Physical monitor handle</param>
-        /// <param name="vcpCode">VCP code to read</param>
-        /// <param name="monitorId">Monitor ID for logging (optional)</param>
-        /// <param name="currentValue">Output: current value</param>
-        /// <param name="maxValue">Output: maximum value</param>
-        /// <returns>True if successful, false otherwise</returns>
-        private static bool TryGetVcpFeature(IntPtr handle, byte vcpCode, string? monitorId, out uint currentValue, out uint maxValue)
-        {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, vcpCode, IntPtr.Zero, out currentValue, out maxValue))
-            {
-                return true;
-            }
-
-            var lastError = Marshal.GetLastWin32Error();
-            var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
-            Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
-            return false;
-        }
-
-        /// <summary>
         /// Update monitor capability flags based on parsed VCP capabilities.
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
@@ -822,11 +800,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return VcpFeatureValue.Invalid;
                     }
 
-                    if (TryGetVcpFeature(monitor.Handle, vcpCode, monitor.Id, out uint current, out uint max))
+                    var read = _vcpReader.Read(monitor.Handle, vcpCode);
+                    if (read.IsSuccess)
                     {
-                        return new VcpFeatureValue((int)current, 0, (int)max);
+                        return new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
                     }
 
+                    var monitorPrefix = string.IsNullOrEmpty(monitor.Id) ? string.Empty : $"[{monitor.Id}] ";
+                    Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {read.ErrorCode}");
                     return VcpFeatureValue.Invalid;
                 },
                 cancellationToken);
