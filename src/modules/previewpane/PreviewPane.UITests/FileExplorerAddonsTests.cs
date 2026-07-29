@@ -20,6 +20,7 @@ public class FileExplorerAddonsTests : UITestBase
     private const string ThumbnailHandlerShellExtension = "{e357fccd-a995-4576-b01f-234630154e96}";
     private const string ThumbnailIsolationRegistryPath = @"Software\Classes\CLSID\{E357FCCD-A995-4576-B01F-234630154E96}";
     private const string DisableProcessIsolationValueName = "DisableProcessIsolation";
+    private const string EmptyPreviewPaneText = "Select a file to preview.";
 
     private const string MarkdownPreviewHandler = "{60789D87-9C3C-44AF-B18C-3DE2C2820ED3}";
     private const string SvgPreviewHandler = "{FCDD4EED-41AA-492F-8A84-31A1546226E0}";
@@ -34,9 +35,12 @@ public class FileExplorerAddonsTests : UITestBase
 
     private const int ExplorerTimeoutMS = 30_000;
     private const int ExplorerOpenAttempts = 3;
+    private const int PreviewPaneDetectionTimeoutMS = 2_000;
+    private const int PreviewPaneOpenTimeoutMS = 10_000;
     private const int PreviewTimeoutMS = 60_000;
     private const int VisualStableTimeoutMS = 15_000;
     private const double PreviewRegionDifferenceThreshold = 0.75;
+    private static readonly TimeSpan FailureRecordingTail = TimeSpan.FromSeconds(2);
 
     private static readonly string[] FileExplorerModule = { "File Explorer" };
     private static readonly (string Extension, string Clsid)[] ThumbnailProviders =
@@ -50,7 +54,6 @@ public class FileExplorerAddonsTests : UITestBase
     private static readonly object ExplorerPreparationLock = new();
     private static List<SandboxThumbnailRegistration>? sandboxThumbnailRegistrations;
     private static bool explorerPrepared;
-    private static bool previewPaneShortcutSent;
 
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
@@ -128,8 +131,15 @@ public class FileExplorerAddonsTests : UITestBase
     }
 
     [TestCleanup]
-    public void CleanupTest()
+    public async Task CleanupTest()
     {
+        if (TestContext.CurrentTestOutcome is
+            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown)
+        {
+            await Task.Delay(FailureRecordingTail);
+            await CaptureFailureArtifactsAsync();
+        }
+
         CloseExplorerFileWindows();
         explorerWindowHandle = 0;
 
@@ -522,15 +532,35 @@ public class FileExplorerAddonsTests : UITestBase
     private void EnsurePreviewPaneOpen(Session explorer)
     {
         EnsureExplorerForeground(explorer);
-        if (previewPaneShortcutSent)
+        if (WaitForPreviewPane(explorer, PreviewPaneDetectionTimeoutMS))
         {
+            TestContext.WriteLine("Explorer's Preview pane was already open.");
             return;
         }
 
-        KeyboardHelper.SendKeys(Key.Alt, Key.P);
-        Thread.Sleep(500);
-        previewPaneShortcutSent = true;
-        TestContext.WriteLine("Opened Explorer's Preview pane with Alt+P.");
+        for (var attempt = 1; attempt <= 2; attempt++)
+        {
+            EnsureExplorerForeground(explorer);
+            KeyboardHelper.SendKeys(Key.Alt, Key.P);
+            if (WaitForPreviewPane(explorer, PreviewPaneOpenTimeoutMS))
+            {
+                TestContext.WriteLine($"Opened Explorer's Preview pane with Alt+P on attempt {attempt}.");
+                return;
+            }
+
+            TestContext.WriteLine($"Explorer's Preview pane was not visible after Alt+P attempt {attempt}.");
+        }
+
+        Assert.Fail("Explorer's Preview pane did not open after two Alt+P attempts.");
+    }
+
+    private static bool WaitForPreviewPane(Session explorer, int timeoutMS)
+    {
+        return explorer.WaitFor(
+            () => explorer.FindAll<Element>(By.Name(EmptyPreviewPaneText), timeoutMS: 250)
+                .Any(element => element.Width > 0 && element.Height > 0),
+            timeoutMS,
+            pollIntervalMS: 250);
     }
 
     private static void EnsureExplorerForeground(Session explorer)

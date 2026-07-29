@@ -213,7 +213,7 @@ public class UITestBase : IDisposable
     /// the PowerToys log files. Idempotent and fully tolerant — runs from both the <see cref="TestInit"/>
     /// failure path (where <c>[TestCleanup]</c> won't fire) and <see cref="TestCleanup"/>.
     /// </summary>
-    private async Task CaptureFailureArtifactsAsync()
+    protected async Task CaptureFailureArtifactsAsync()
     {
         if (artifactsCaptured)
         {
@@ -221,6 +221,20 @@ public class UITestBase : IDisposable
         }
 
         artifactsCaptured = true;
+
+        try
+        {
+            var screenshotPath = Path.Combine(
+                TestContext.TestResultsDirectory ?? Path.GetTempPath(),
+                $"failure-{Guid.NewGuid():N}.png");
+            if (ScreenCapture.TryCaptureDesktop(screenshotPath))
+            {
+                TestContext.AddResultFile(screenshotPath);
+            }
+        }
+        catch
+        {
+        }
 
         if (isInPipeline)
         {
