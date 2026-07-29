@@ -14,13 +14,6 @@ namespace PowerDisplay.Common.Drivers.DDC;
 
 internal sealed class ContinuousVcpInitializer
 {
-    private static readonly byte[] ContinuousCodes =
-    {
-        VcpCodeBrightness,
-        VcpCodeContrast,
-        VcpCodeVolume,
-    };
-
     private readonly IVcpFeatureReader _reader;
     private readonly IKnownGoodVcpStore _store;
     private readonly ISystemClock _clock;
@@ -35,14 +28,18 @@ internal sealed class ContinuousVcpInitializer
         _clock = clock;
     }
 
+    /// <summary>
+    /// Applies the continuous VCP features to <paramref name="monitor"/>, reading from
+    /// <see cref="Monitor.Handle"/> where the evidence does not already carry a value that can be
+    /// trusted without one.
+    /// </summary>
     public VcpInitializationResult Initialize(
         Monitor monitor,
-        IntPtr handle,
         VcpDiscoveryEvidence evidence)
     {
-        foreach (var code in ContinuousCodes)
+        foreach (var code in ContinuousVcpCodes)
         {
-            var result = InitializeFeature(monitor, handle, evidence, code);
+            var result = InitializeFeature(monitor, evidence, code);
             if (result == VcpInitializationResult.PhysicalMonitorUnavailable)
             {
                 return result;
@@ -54,7 +51,6 @@ internal sealed class ContinuousVcpInitializer
 
     private VcpInitializationResult InitializeFeature(
         Monitor monitor,
-        IntPtr handle,
         VcpDiscoveryEvidence evidence,
         byte code)
     {
@@ -75,7 +71,7 @@ internal sealed class ContinuousVcpInitializer
             cachedFallback = initial;
         }
 
-        var read = _reader.Read(handle, code);
+        var read = _reader.Read(monitor.Handle, code);
         if (!read.IsSuccess)
         {
             Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
@@ -106,14 +102,11 @@ internal sealed class ContinuousVcpInitializer
         ApplyValue(monitor, code, value, markAsRead: true);
         _store.UpsertKnownGoodFeature(
             monitor.Id,
-            new KnownGoodVcpFeature
-            {
-                Code = code,
-                Current = value.Current,
-                Maximum = value.Maximum,
-                Source = VcpObservationSource.CapabilitiesInitialization,
-                LastSuccessfulUtc = _clock.UtcNow,
-            });
+            KnownGoodVcpFeature.From(
+                code,
+                value,
+                VcpObservationSource.CapabilitiesInitialization,
+                _clock.UtcNow));
 
         return VcpInitializationResult.Completed;
     }

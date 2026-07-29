@@ -73,7 +73,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private static readonly TimeSpan TransactionInterval = TimeSpan.FromMilliseconds(100);
         private const int MaxAttempts = 3;
-        private static readonly byte[] DefaultCodes = { VcpCodeBrightness, VcpCodeContrast, VcpCodeVolume };
 
         private readonly IVcpFeatureReader _reader;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
@@ -86,7 +85,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             _reader = reader;
             _delayAsync = delayAsync ?? Task.Delay;
-            _codes = codes ?? DefaultCodes;
+            _codes = codes ?? ContinuousVcpCodes;
         }
 
         public async Task<IReadOnlyDictionary<byte, VcpProbeObservation>> ProbeAsync(

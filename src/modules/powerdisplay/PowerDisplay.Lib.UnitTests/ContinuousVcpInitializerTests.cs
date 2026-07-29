@@ -28,7 +28,7 @@ public sealed class ContinuousVcpInitializerTests
             new VcpFeatureValue(30, 0, 100),
             IsLive: true));
 
-        initializer.Initialize(monitor, new IntPtr(1), evidence);
+        initializer.Initialize(monitor, evidence);
 
         Assert.AreEqual(0, reader.CallCount);
         Assert.AreEqual(30, monitor.CurrentBrightness);
@@ -50,7 +50,7 @@ public sealed class ContinuousVcpInitializerTests
         var monitor = BrightnessMonitor();
         var evidence = CachedEvidence(parsedAdvertisesBrightness: false);
 
-        initializer.Initialize(monitor, new IntPtr(1), evidence);
+        initializer.Initialize(monitor, evidence);
 
         Assert.AreEqual(1, reader.CallCount);
         Assert.AreEqual(60, monitor.CurrentBrightness);
@@ -71,7 +71,7 @@ public sealed class ContinuousVcpInitializerTests
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
-        initializer.Initialize(monitor, new IntPtr(1), ProbeExhaustedCachedEvidence());
+        initializer.Initialize(monitor, ProbeExhaustedCachedEvidence());
 
         Assert.AreEqual(0, reader.CallCount);
         Assert.AreEqual(45, monitor.CurrentBrightness);
@@ -90,7 +90,6 @@ public sealed class ContinuousVcpInitializerTests
 
         initializer.Initialize(
             monitor,
-            new IntPtr(1),
             CachedEvidence(parsedAdvertisesBrightness: true));
 
         Assert.AreEqual(1, reader.CallCount);
@@ -113,7 +112,6 @@ public sealed class ContinuousVcpInitializerTests
 
         initializer.Initialize(
             monitor,
-            new IntPtr(1),
             CachedEvidence(parsedAdvertisesBrightness: true));
 
         Assert.AreEqual(1, reader.CallCount);
@@ -133,7 +131,6 @@ public sealed class ContinuousVcpInitializerTests
 
         initializer.Initialize(
             monitor,
-            new IntPtr(1),
             CachedEvidence(parsedAdvertisesBrightness: true));
 
         Assert.AreEqual(1, reader.CallCount);
@@ -154,7 +151,6 @@ public sealed class ContinuousVcpInitializerTests
 
         initializer.Initialize(
             monitor,
-            new IntPtr(1),
             new VcpDiscoveryEvidence(string.Empty, new VcpCapabilities(), new Dictionary<byte, VcpInitialValue>()));
 
         Assert.AreEqual(1, reader.CallCount);
@@ -173,7 +169,6 @@ public sealed class ContinuousVcpInitializerTests
 
         initializer.Initialize(
             monitor,
-            new IntPtr(1),
             new VcpDiscoveryEvidence(string.Empty, new VcpCapabilities(), new Dictionary<byte, VcpInitialValue>()));
 
         Assert.AreEqual(1, reader.CallCount);
@@ -196,7 +191,6 @@ public sealed class ContinuousVcpInitializerTests
 
         var result = initializer.Initialize(
             monitor,
-            new IntPtr(1),
             CachedBrightnessAndContrastEvidence());
 
         Assert.AreEqual(VcpInitializationResult.PhysicalMonitorUnavailable, result);
@@ -220,7 +214,6 @@ public sealed class ContinuousVcpInitializerTests
 
         var result = initializer.Initialize(
             monitor,
-            new IntPtr(1),
             CachedBrightnessAndContrastEvidence());
 
         Assert.AreEqual(VcpInitializationResult.Completed, result);
@@ -235,12 +228,14 @@ public sealed class ContinuousVcpInitializerTests
     private static Monitor BrightnessMonitor() => new()
     {
         Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+        Handle = new IntPtr(1),
         Capabilities = MonitorCapabilities.DdcCi | MonitorCapabilities.Brightness,
     };
 
     private static Monitor BrightnessAndContrastMonitor() => new()
     {
         Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+        Handle = new IntPtr(1),
         Capabilities = MonitorCapabilities.DdcCi |
             MonitorCapabilities.Brightness |
             MonitorCapabilities.Contrast,

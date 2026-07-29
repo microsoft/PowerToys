@@ -353,7 +353,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 // then discrete-enum VCPs. Each guard is independent — a controller
                 // can support any subset.
                 var continuousInitialization =
-                    _continuousInitializer.Initialize(monitor, physical.HPhysicalMonitor, evidence);
+                    _continuousInitializer.Initialize(monitor, evidence);
                 if (continuousInitialization == VcpInitializationResult.PhysicalMonitorUnavailable)
                 {
                     Logger.LogWarning(
@@ -363,7 +363,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 // Discrete VCPs are read last and never discard the monitor: handle liveness has
                 // already been decided by the probe and the continuous stage above.
-                _discreteInitializer.Initialize(monitor, physical.HPhysicalMonitor);
+                _discreteInitializer.Initialize(monitor);
 
                 return monitor;
             }
@@ -497,14 +497,11 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 _knownGoodStore.UpsertKnownGoodFeature(
                     monitorId,
-                    new KnownGoodVcpFeature
-                    {
-                        Code = observation.Code,
-                        Current = observation.Value.Current,
-                        Maximum = observation.Value.Maximum,
-                        Source = VcpObservationSource.MaximumCompatibilityProbe,
-                        LastSuccessfulUtc = _clock.UtcNow,
-                    });
+                    KnownGoodVcpFeature.From(
+                        observation.Code,
+                        observation.Value,
+                        VcpObservationSource.MaximumCompatibilityProbe,
+                        _clock.UtcNow));
             }
 
             if (live.Count > 0)
@@ -527,11 +524,9 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             if (evidence.CacheSupplementedCodes.Count > 0)
             {
-                // These controls rest on persisted evidence alone. The probe only runs when the caps
-                // string is unusable, so on the caps-parsed path the block above logs nothing at all —
-                // without this line a support log cannot tell a control the cache created apart from
-                // one the hardware advertised, which is the first thing to check when a user reports
-                // a slider that does nothing.
+                // The probe-outcome block above is gated on live.Count, which is zero on the
+                // caps-parsed path — the one path where the cache silently adds a code. See
+                // VcpDiscoveryEvidence.CacheSupplementedCodes.
                 var detail = string.Join(
                     ", ",
                     evidence.CacheSupplementedCodes.Select(code => cached.TryGetValue(code, out var knownGood)
@@ -885,22 +880,15 @@ namespace PowerDisplay.Common.Drivers.DDC
                 _ => 0,
             };
 
-            if (maximum != existing.Maximum ||
-                !new VcpFeatureValue(rawValue, 0, existing.Maximum).IsValid)
+            var written = new VcpFeatureValue(rawValue, 0, existing.Maximum);
+            if (maximum != existing.Maximum || !written.IsValid)
             {
                 return;
             }
 
             _knownGoodStore.UpsertKnownGoodFeature(
                 monitor.Id,
-                new KnownGoodVcpFeature
-                {
-                    Code = vcpCode,
-                    Current = rawValue,
-                    Maximum = existing.Maximum,
-                    Source = existing.Source,
-                    LastSuccessfulUtc = _clock.UtcNow,
-                });
+                KnownGoodVcpFeature.From(vcpCode, written, existing.Source, _clock.UtcNow));
         }
 
         public void Dispose()

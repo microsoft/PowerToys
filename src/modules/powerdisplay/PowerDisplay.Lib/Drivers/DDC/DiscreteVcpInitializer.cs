@@ -37,7 +37,7 @@ internal sealed class DiscreteVcpInitializer
     /// <see cref="ContinuousVcpInitializer"/> to read and suppresses the probe — so a monitor can be
     /// published here with a handle no read has exercised.
     /// </remarks>
-    public void Initialize(Monitor monitor, IntPtr handle)
+    public void Initialize(Monitor monitor)
     {
         foreach (var code in DiscreteCodes)
         {
@@ -46,7 +46,7 @@ internal sealed class DiscreteVcpInitializer
                 continue;
             }
 
-            var read = _reader.Read(handle, code);
+            var read = _reader.Read(monitor.Handle, code);
             if (!read.IsSuccess)
             {
                 Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");

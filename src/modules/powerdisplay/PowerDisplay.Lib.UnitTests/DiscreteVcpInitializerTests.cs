@@ -13,16 +13,15 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class DiscreteVcpInitializerTests
 {
-    private const int VcpNotSupported = unchecked((int)0xC0262584);
-
     [DataTestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
-    public void Initialize_PhysicalMonitorUnavailableSkipsOnlyThatFeature(int errorCode)
+    public void Initialize_FailedReadSkipsOnlyThatFeature(int errorCode)
     {
-        // Handle liveness is decided by the maximum-compatibility probe and by
-        // ContinuousVcpInitializer before this stage runs. A discrete read must never discard a
-        // monitor whose continuous features were already read successfully.
+        // Initialize never inspects read.ErrorCode, so the handle-class codes are the rows worth
+        // pinning: they are what would fail if someone copied ContinuousVcpInitializer's
+        // drop-the-monitor branch into this stage. Handle liveness is decided by the
+        // maximum-compatibility probe and by ContinuousVcpInitializer before this stage runs.
         var reader = new RecordingReader(
             VcpReadAttempt.Failure(errorCode),
             VcpReadAttempt.Success(current: 0x11, maximum: 0),
@@ -30,25 +29,7 @@ public sealed class DiscreteVcpInitializerTests
         var initializer = new DiscreteVcpInitializer(reader);
         var monitor = DiscreteMonitor();
 
-        initializer.Initialize(monitor, new IntPtr(1));
-
-        CollectionAssert.AreEqual(new byte[] { 0x14, 0x60, 0xD6 }, reader.Codes);
-        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature));
-        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource));
-        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState));
-    }
-
-    [TestMethod]
-    public void Initialize_VcpNotSupportedContinuesRemainingReads()
-    {
-        var reader = new RecordingReader(
-            VcpReadAttempt.Failure(VcpNotSupported),
-            VcpReadAttempt.Success(current: 0x11, maximum: 0),
-            VcpReadAttempt.Success(current: 0x01, maximum: 0));
-        var initializer = new DiscreteVcpInitializer(reader);
-        var monitor = DiscreteMonitor();
-
-        initializer.Initialize(monitor, new IntPtr(1));
+        initializer.Initialize(monitor);
 
         CollectionAssert.AreEqual(new byte[] { 0x14, 0x60, 0xD6 }, reader.Codes);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature));
@@ -68,6 +49,7 @@ public sealed class DiscreteVcpInitializerTests
         return new Monitor
         {
             Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+            Handle = new IntPtr(1),
             SupportsColorTemperature = true,
             VcpCapabilitiesInfo = capabilities,
         };

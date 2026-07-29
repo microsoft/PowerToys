@@ -18,13 +18,6 @@ internal readonly record struct VcpInitialValue(
 
 internal sealed class VcpDiscoveryEvidence
 {
-    private static readonly byte[] ContinuousCodes =
-    {
-        VcpCodeBrightness,
-        VcpCodeContrast,
-        VcpCodeVolume,
-    };
-
     public VcpDiscoveryEvidence(
         string capabilitiesRaw,
         VcpCapabilities? capabilities,
@@ -82,7 +75,7 @@ internal sealed class VcpDiscoveryEvidence
         var values = new Dictionary<byte, VcpInitialValue>();
         var cacheSupplementedCodes = new List<byte>();
 
-        foreach (var code in ContinuousCodes)
+        foreach (var code in ContinuousVcpCodes)
         {
             var probed = live.TryGetValue(code, out var observation);
 
@@ -128,10 +121,6 @@ internal sealed class VcpDiscoveryEvidence
                     // daily use never reclaims it.
                     if (capabilities?.SupportsVcpCode(code) != true)
                     {
-                        // Neither the capabilities string nor a probe reply covered this code, so the
-                        // control about to appear rests on persisted evidence alone. Discovery logs
-                        // these; without that a support log cannot tell such a control apart from one
-                        // the hardware advertised.
                         cacheSupplementedCodes.Add(code);
                     }
 

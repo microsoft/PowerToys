@@ -40,6 +40,23 @@ namespace PowerDisplay.Common.Models
             LastSuccessfulUtc = LastSuccessfulUtc,
         };
 
+        /// <summary>
+        /// Builds an observation from a device-native value. The inverse of
+        /// <see cref="ToVcpFeatureValue"/>, so the two stay in step.
+        /// </summary>
+        public static KnownGoodVcpFeature From(
+            byte code,
+            VcpFeatureValue value,
+            VcpObservationSource source,
+            DateTime observedUtc) => new()
+        {
+            Code = code,
+            Current = value.Current,
+            Maximum = value.Maximum,
+            Source = source,
+            LastSuccessfulUtc = observedUtc,
+        };
+
         public VcpFeatureValue ToVcpFeatureValue() => new(Current, 0, Maximum);
     }
 }
