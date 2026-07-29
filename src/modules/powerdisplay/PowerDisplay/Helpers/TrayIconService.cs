@@ -83,7 +83,6 @@ namespace PowerDisplay.Helpers
         private string? _appName;
         private TrayWheelFeedbackTemplates? _feedbackTemplates;
         private TrayIconBounds? _cachedBounds;
-        private TrayIconBounds? _feedbackIconBounds;
         private long _boundsCacheTimestamp;
         private long _hoverGeneration;
         private bool _desiredTrayIconVisible;
@@ -228,16 +227,74 @@ namespace PowerDisplay.Helpers
                     cbSize = (uint)sizeof(NOTIFYICONDATAW),
                     hWnd = new HWND(_hwnd),
                     uID = MyNotifyId,
-
-                    // NIF_TIP without NIF_SHOWTIP: szTip still names the icon for the overflow
-                    // flyout, the taskbar icon list and UI Automation, but under
-                    // NOTIFYICON_VERSION_4 the Shell suppresses the standard tooltip and sends
-                    // NIN_POPUPOPEN/NIN_POPUPCLOSE instead so we can draw our own hover UI.
-                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
+                    uFlags = BuildTrayIconFlags(),
                     uCallbackMessage = WmTrayIcon,
                     hIcon = new HICON(_largeIcon),
                     szTip = AppName,
                 };
+            }
+        }
+
+        /// <summary>
+        /// Builds the notification-icon flags for the current mouse-wheel mode.
+        /// <para>NIF_TIP without NIF_SHOWTIP keeps szTip as the icon's name for the overflow
+        /// flyout, the taskbar icon list and UI Automation, while NOTIFYICON_VERSION_4 suppresses
+        /// the standard tooltip and sends NIN_POPUPOPEN/NIN_POPUPCLOSE instead so the hover overlay
+        /// can replace it.</para>
+        /// <para>That trade only pays for itself while the overlay actually runs. With mouse wheel
+        /// control off there is no overlay and no wheel gesture to annotate, so ask for the standard
+        /// tooltip back rather than leaving the icon with no hover text at all - a user who opted
+        /// out of this feature should get the pre-existing tray behaviour, including for keyboard
+        /// and touch, which never reach the cursor-gated overlay.</para>
+        /// </summary>
+        private NOTIFY_ICON_DATA_FLAGS BuildTrayIconFlags()
+        {
+            var flags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP;
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                flags |= NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP;
+            }
+
+            return flags;
+        }
+
+        /// <summary>
+        /// Re-applies <see cref="BuildTrayIconFlags"/> to a live registration after the mouse-wheel
+        /// mode changed, so switching the setting hands the tooltip back and forth without needing
+        /// a module restart. NIF_SHOWTIP is honoured under NOTIFYICON_VERSION_4, so the callback
+        /// packing <see cref="DispatchTrayNotification"/> decodes is unaffected either way.
+        /// </summary>
+        private void ApplyTrayIconTooltipMode()
+        {
+            if (_trayIconData is null)
+            {
+                return;
+            }
+
+            var data = (NOTIFYICONDATAW)_trayIconData;
+            var flags = BuildTrayIconFlags();
+            if (data.uFlags == flags)
+            {
+                return;
+            }
+
+            data.uFlags = flags;
+            _trayIconData = data;
+
+            if (!_isTrayIconRegistered)
+            {
+                return;
+            }
+
+            bool modified;
+            unsafe
+            {
+                modified = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_MODIFY, &data);
+            }
+
+            if (!modified)
+            {
+                Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_MODIFY) failed while updating the hover presentation");
             }
         }
 
@@ -414,10 +471,14 @@ namespace PowerDisplay.Helpers
             }
 
             _mouseWheelControlMode = mode;
+            ApplyTrayIconTooltipMode();
             InvalidateMouseWheelHover(disarm: true);
 
             if (mode == MouseWheelControlMode.Disabled)
             {
+                // The Shell tooltip is back, so take our own overlay down instead of leaving the
+                // last one parked until the pointer happens to move.
+                StopHoverFeedback();
                 DisposeMouseWheelListener();
             }
             else if (_isTrayIconRegistered)
@@ -443,8 +504,11 @@ namespace PowerDisplay.Helpers
                     OnMouseWheelListenerDisarmed);
                 _mouseWheelListener.SetEnabled(true);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
+                // Deliberately broad: starting a thread can also fail with ThreadStateException or
+                // OutOfMemoryException, and this runs on the window procedure where anything that
+                // escapes ends the process. Wheel control is optional, so latch and carry on.
                 _mouseWheelListenerConstructionFailed = true;
                 Logger.LogWarning($"[TrayWheel] Unable to start the hook thread: {ex.Message}");
             }
@@ -478,6 +542,13 @@ namespace PowerDisplay.Helpers
 
         private void HandleTrayMouseMove()
         {
+            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
+            {
+                // Off keeps NIF_SHOWTIP (see BuildTrayIconFlags), so the Shell draws the hover text
+                // and there is nothing for us to present or arm.
+                return;
+            }
+
             if (!GetCursorPos(out var cursor))
             {
                 StopHoverFeedback();
@@ -495,7 +566,6 @@ namespace PowerDisplay.Helpers
                 now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
                 cached.Contains(cursor.X, cursor.Y))
             {
-                _feedbackIconBounds = cached;
                 ApplyFeedbackPresentation(_feedbackSession.StartHover(now), cached);
                 ScheduleFeedbackTick();
 
@@ -544,7 +614,6 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            _feedbackIconBounds = bounds;
             ApplyFeedbackPresentation(_feedbackSession.StartHover(now), bounds);
             ScheduleFeedbackTick();
 
@@ -624,12 +693,13 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Arms a single tick for the next presentation change that time alone will produce: the
-        /// hover reveal, or the adjustment readout expiring back to the app name. Once the
-        /// presentation is stable the tick keeps watching for the pointer leaving, because
-        /// NIN_POPUPCLOSE cannot be the only way the overlay is taken down: it never arrives for a
-        /// hover that ends before the Shell opened its own pop-up, and without
-        /// NOTIFYICON_VERSION_4 it is not sent at all.
+        /// Arms the next feedback tick. Two deadlines compete for it: the next presentation change
+        /// that time alone will produce (the hover reveal, or the adjustment readout expiring back
+        /// to the app name), and the watchdog that notices the pointer leaving. The earlier one
+        /// wins, because neither can stand in for the other - NIN_POPUPCLOSE never arrives for a
+        /// hover that ended before the Shell opened its own pop-up, and without
+        /// NOTIFYICON_VERSION_4 it is not sent at all, so a two-second adjustment readout must not
+        /// blind the watchdog for two seconds.
         /// </summary>
         private void ScheduleFeedbackTick()
         {
@@ -639,11 +709,15 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
-            var pending = _feedbackSession.NextTransitionDelay(Environment.TickCount64);
-            var watchdog = _trayIconUsesVersion4 ? HoverWatchdogInterval : LegacyHoverPollInterval;
-            var interval = pending is long delay
-                ? TimeSpan.FromMilliseconds(Math.Max(1L, delay))
-                : watchdog;
+            var interval = _trayIconUsesVersion4 ? HoverWatchdogInterval : LegacyHoverPollInterval;
+            if (_feedbackSession.NextTransitionDelay(Environment.TickCount64) is long delay)
+            {
+                var pending = TimeSpan.FromMilliseconds(Math.Max(1L, delay));
+                if (pending < interval)
+                {
+                    interval = pending;
+                }
+            }
 
             if (_feedbackTimer is null)
             {
@@ -664,11 +738,14 @@ namespace PowerDisplay.Helpers
                 !TryQueryTrayIconBounds(out var bounds, out _) ||
                 !bounds.Contains(cursor.X, cursor.Y))
             {
+                // The rectangle can move out from under a pointer that never moved (an auto-hide
+                // taskbar, or a neighbouring icon appearing), so this is a hover departure the
+                // mouse-move path will not report. Drop the armed rectangle with it.
                 StopHoverFeedback();
+                InvalidateMouseWheelHover(disarm: true);
                 return;
             }
 
-            _feedbackIconBounds = bounds;
             ApplyFeedbackPresentation(
                 _feedbackSession.Tick(Environment.TickCount64, pointerInside: true),
                 bounds);
@@ -703,6 +780,16 @@ namespace PowerDisplay.Helpers
 
         private void ShowFeedbackOverlay(string text, TrayIconBounds bounds)
         {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                // AppName resolves to an empty string when the resource is missing from the active
+                // language's PRI, and ShowText rejects blank text. This runs on the tray window
+                // procedure, where an escaping exception ends the process, so drop the overlay
+                // instead of presenting nothing and throwing.
+                _feedbackWindow?.HideFeedback();
+                return;
+            }
+
             // Do not thrash window creation inside one hover session, but do retry on the next one:
             // with the standard Shell tooltip suppressed this overlay is the only hover affordance.
             if (_feedbackWindowConstructionFailed && _feedbackWindow is null)
@@ -725,7 +812,8 @@ namespace PowerDisplay.Helpers
             catch (Exception ex) when (
                 ex is System.ComponentModel.Win32Exception or
                 System.Runtime.InteropServices.COMException or
-                InvalidOperationException)
+                InvalidOperationException or
+                ArgumentException)
             {
                 _feedbackWindow?.HideFeedback();
                 _feedbackWindowConstructionFailed = _feedbackWindow is null;
@@ -747,8 +835,6 @@ namespace PowerDisplay.Helpers
                 StopHoverFeedback();
                 return;
             }
-
-            _feedbackIconBounds = bounds;
 
             if (feedback is null)
             {
@@ -810,7 +896,6 @@ namespace PowerDisplay.Helpers
         {
             _feedbackTimer?.Stop();
             _feedbackSession.Stop();
-            _feedbackIconBounds = null;
             _feedbackWindowConstructionFailed = false;
             _feedbackWindow?.HideFeedback();
         }
@@ -819,7 +904,6 @@ namespace PowerDisplay.Helpers
         {
             _feedbackTimer?.Stop();
             _feedbackSession.Stop();
-            _feedbackIconBounds = null;
             _feedbackWindowConstructionFailed = false;
 
             var window = _feedbackWindow;
@@ -856,7 +940,11 @@ namespace PowerDisplay.Helpers
 
             if (CanProcessMouseWheel?.Invoke() != true)
             {
-                _wheelDeltaAccumulator.Reset();
+                // The gate went false after the hook was armed - a monitor rescan, for instance.
+                // Retire the hover rather than only dropping the partial notch: the pointer may be
+                // parked, in which case no tray mouse-move would arrive to re-evaluate this, and
+                // the hook would keep swallowing notches nobody acts on.
+                InvalidateMouseWheelHover(disarm: true);
                 return;
             }
 
@@ -1087,17 +1175,29 @@ namespace PowerDisplay.Helpers
             DismissTrayHover();
             SetForegroundWindow(_hwnd);
             TrackPopupMenuExNative(_popupMenu, (uint)TRACK_POPUP_MENU_FLAGS.TPM_LEFTALIGN | (uint)TRACK_POPUP_MENU_FLAGS.TPM_BOTTOMALIGN, x, y, _hwnd, 0);
+
+            // TrackPopupMenuEx runs its own modal loop, so control returns here once the menu is
+            // gone. The pointer can be back on the icon without ever having moved, and a still
+            // pointer produces no further tray mouse-move to re-arm from, so re-evaluate the hover
+            // rather than leaving wheel control dead until the user nudges the mouse.
+            HandleTrayMouseMove();
         }
 
         private void ActivateFromTrayIcon()
         {
-            DismissTrayHover();
+            // Take the overlay down the way the Shell tooltip used to disappear on click, but keep
+            // the wheel hover armed: the pointer is still over the icon, and arming only happens on
+            // a tray mouse-move that a still pointer never produces. Leaving the icon still disarms
+            // through the hook's own out-of-bounds check.
+            StopHoverFeedback();
             _toggleWindowAction?.Invoke();
         }
 
         /// <summary>
-        /// Tears down the hover presentation the way the Shell tooltip used to disappear on click,
-        /// and drops the armed wheel hover so a stale rectangle cannot outlive the gesture.
+        /// Tears the hover down completely: the presentation and the armed wheel rectangle. Used
+        /// where the pointer is either gone (NIN_POPUPCLOSE) or about to be captured by something
+        /// else (the context menu's modal loop), so a stale rectangle cannot outlive the gesture.
+        /// Activation takes the lighter path instead - see <see cref="ActivateFromTrayIcon"/>.
         /// </summary>
         private void DismissTrayHover()
         {

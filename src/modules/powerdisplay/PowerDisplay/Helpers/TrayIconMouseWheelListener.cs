@@ -45,6 +45,8 @@ namespace PowerDisplay.Helpers
         private int _drainSamplesPosted;
         private bool _hookInstallFailureLogged;
         private bool _hookReleaseFailureLogged;
+        private bool _postFailureLogged;
+        private volatile bool _threadStopped;
         private TrayIconBounds _pendingBounds;
         private long _pendingGeneration;
         private TrayIconBounds _activeBounds;
@@ -149,6 +151,27 @@ namespace PowerDisplay.Helpers
                 return;
             }
 
+            try
+            {
+                RunMessageLoop();
+            }
+            catch (Exception ex)
+            {
+                // Nothing sits above this thread to contain a failure - the WinUI unhandled
+                // exception handler only covers the UI thread - so an escaping exception would end
+                // the process. Wheel control is optional: log it, drop the hook in the finally
+                // below, and let the thread retire.
+                Logger.LogError($"[TrayWheel] Hook thread stopped after an unhandled failure: {ex.Message}");
+            }
+            finally
+            {
+                DisarmCore(notify: false);
+                _threadStopped = true;
+            }
+        }
+
+        private void RunMessageLoop()
+        {
             var running = true;
             while (running)
             {
@@ -188,8 +211,6 @@ namespace PowerDisplay.Helpers
                         break;
                 }
             }
-
-            DisarmCore(notify: false);
         }
 
         private void HandleSetEnabled(bool enabled)
@@ -351,8 +372,16 @@ namespace PowerDisplay.Helpers
 
         private void PostCommand(uint message, nuint wParam)
         {
-            if (!PostThreadMessageNative(_threadId, message, wParam, 0))
+            if (_threadStopped)
             {
+                // The message loop is gone, so there is nothing to post to. Stay quiet: this is
+                // reached from the tray hover path, once per mouse-move message.
+                return;
+            }
+
+            if (!PostThreadMessageNative(_threadId, message, wParam, 0) && !_postFailureLogged)
+            {
+                _postFailureLogged = true;
                 Logger.LogWarning(
                     $"[TrayWheel] PostThreadMessage failed with error {Marshal.GetLastPInvokeError()}");
             }

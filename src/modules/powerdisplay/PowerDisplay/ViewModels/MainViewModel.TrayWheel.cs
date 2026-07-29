@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedCommon;
@@ -77,10 +76,7 @@ public partial class MainViewModel
         // Linked monitors are driven by the master value, not their own setter: a per-VM commit
         // would leave the master slider stale and the next broadcast would revert the wheel
         // adjustment. Excluded monitors keep their own value and are adjusted individually.
-        var linkedBrightness = (int)Math.Clamp(
-            LinkedBrightness + ((long)notches * MouseWheelIncrement),
-            0,
-            100);
+        var linkedBrightness = 0;
         var hasLinkedTarget = false;
 
         var brightnessValues = new List<int>(adjustments.Count);
@@ -96,8 +92,19 @@ public partial class MainViewModel
                 if (LinkedLevelsActive && IsLinkedTarget(monitor))
                 {
                     // The group moves as one, so it contributes a single value to the readout.
+                    // Step from the planner's value for this monitor rather than from
+                    // LinkedBrightness: the master is positional only - SeedInitialLinkedBrightness
+                    // takes it from the lowest-numbered linked monitor and never writes hardware,
+                    // and every monitor-list rebuild re-seeds it - so it can sit arbitrarily far
+                    // from the monitor the wheel actually named. Stepping the master relative to
+                    // itself turns that drift into a wrong-sized or wrong-signed change, and a
+                    // master already clamped at 0/100 would swallow the notch while writing
+                    // nothing at all. The planner already clamped this value against the target's
+                    // real brightness, so the group snaps to the target's level and the gesture
+                    // always moves that monitor in the direction the user scrolled.
                     if (!hasLinkedTarget)
                     {
+                        linkedBrightness = adjustment.Brightness;
                         brightnessValues.Add(linkedBrightness);
                         hasLinkedTarget = true;
                     }

@@ -43,6 +43,32 @@ public class PowerDisplay
     }
 
     [TestMethod]
+    public void MouseWheelMode_SetAllDisplays_PersistsAndRoundTrips()
+    {
+        using var viewModel = CreateViewModel(out var settings);
+
+        viewModel.MouseWheelControlModeIndex = (int)MouseWheelControlMode.AllDisplays;
+
+        Assert.AreEqual(
+            MouseWheelControlMode.AllDisplays,
+            settings.Properties.MouseWheelControlMode);
+        Assert.AreEqual(
+            (int)MouseWheelControlMode.AllDisplays,
+            viewModel.MouseWheelControlModeIndex);
+    }
+
+    // The ComboBox in PowerDisplayPage.xaml binds SelectedIndex straight to the enum value, so the
+    // declared item order (Off, Primary display, All displays) is load-bearing. Pin the numbering
+    // here: inserting a new mode anywhere but at the end would silently remap existing settings.
+    [TestMethod]
+    public void MouseWheelMode_EnumValues_MatchComboBoxItemOrder()
+    {
+        Assert.AreEqual(0, (int)MouseWheelControlMode.Disabled);
+        Assert.AreEqual(1, (int)MouseWheelControlMode.PrimaryDisplay);
+        Assert.AreEqual(2, (int)MouseWheelControlMode.AllDisplays);
+    }
+
+    [TestMethod]
     public void MouseWheelMode_UnsupportedIndex_IsIgnored()
     {
         using var viewModel = CreateViewModel(out var settings);
