@@ -93,7 +93,7 @@ int32_t EnsureEven(int32_t value)
 
 //----------------------------------------------------------------------------
 //
-// Recording startup diagnostics — active in ALL builds.
+// Recording startup diagnostics — opt-in via the registry (see RecDiagEnabled).
 // Logs QPC-based wall-clock timestamps so we can measure exactly where time
 // is spent during the recording startup pipeline.
 //
@@ -140,8 +140,40 @@ static void RecDiagCloseFile()
     }
 }
 
+//
+// Diagnostics are opt-in via the registry so they never fire for normal users.
+// Enable by setting the DWORD value:
+//   HKCU\Software\Sysinternals\ZoomIt\EnableDebugTrace = 1
+// The value is read once and cached, so toggling it requires a ZoomIt restart.
+//
+static bool RecDiagEnabled()
+{
+    static int s_enabled = -1; // -1 = not yet read, 0 = disabled, 1 = enabled
+    if( s_enabled == -1 )
+    {
+        s_enabled = 0;
+        HKEY hKey;
+        if( RegOpenKeyExW( HKEY_CURRENT_USER, L"Software\\Sysinternals\\ZoomIt", 0, KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+        {
+            DWORD val = 0;
+            DWORD type = 0;
+            DWORD size = sizeof( val );
+            if( RegQueryValueExW( hKey, L"EnableDebugTrace", nullptr, &type, reinterpret_cast<LPBYTE>( &val ), &size ) == ERROR_SUCCESS &&
+                type == REG_DWORD && val != 0 )
+            {
+                s_enabled = 1;
+            }
+            RegCloseKey( hKey );
+        }
+    }
+    return s_enabled == 1;
+}
+
 static void RecDiag( const wchar_t* fmt, ... )
 {
+    if( !RecDiagEnabled() )
+        return;
+
     wchar_t buf[512];
     int offset = swprintf_s( buf, L"[RecDiag +%.1fms] ", RecDiagElapsedMs() );
     va_list va;
