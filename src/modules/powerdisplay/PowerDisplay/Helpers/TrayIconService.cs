@@ -227,74 +227,25 @@ namespace PowerDisplay.Helpers
                     cbSize = (uint)sizeof(NOTIFYICONDATAW),
                     hWnd = new HWND(_hwnd),
                     uID = MyNotifyId,
-                    uFlags = BuildTrayIconFlags(),
+
+                    // NIF_TIP without NIF_SHOWTIP: szTip still names the icon for the overflow
+                    // flyout, the taskbar icon list and UI Automation, but under
+                    // NOTIFYICON_VERSION_4 the Shell suppresses the standard tooltip and sends
+                    // NIN_POPUPOPEN/NIN_POPUPCLOSE instead so we can draw our own hover UI.
+                    //
+                    // This is deliberately not conditional on the mouse-wheel mode. The overlay is
+                    // the single owner of tray hover text: it has to exist anyway for the wheel
+                    // readout, which needs to appear on demand and the Shell tooltip cannot, and
+                    // one renderer means one presentation to maintain and test. The cost is that a
+                    // user with wheel control off still gets the overlay rather than the Shell
+                    // tooltip, and that a hover which never involves the cursor - keyboard or touch
+                    // focus in the notification area - has no visible text at all, because the
+                    // overlay is only presented for a cursor inside the icon rectangle.
+                    uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                     uCallbackMessage = WmTrayIcon,
                     hIcon = new HICON(_largeIcon),
                     szTip = AppName,
                 };
-            }
-        }
-
-        /// <summary>
-        /// Builds the notification-icon flags for the current mouse-wheel mode.
-        /// <para>NIF_TIP without NIF_SHOWTIP keeps szTip as the icon's name for the overflow
-        /// flyout, the taskbar icon list and UI Automation, while NOTIFYICON_VERSION_4 suppresses
-        /// the standard tooltip and sends NIN_POPUPOPEN/NIN_POPUPCLOSE instead so the hover overlay
-        /// can replace it.</para>
-        /// <para>That trade only pays for itself while the overlay actually runs. With mouse wheel
-        /// control off there is no overlay and no wheel gesture to annotate, so ask for the standard
-        /// tooltip back rather than leaving the icon with no hover text at all - a user who opted
-        /// out of this feature should get the pre-existing tray behaviour, including for keyboard
-        /// and touch, which never reach the cursor-gated overlay.</para>
-        /// </summary>
-        private NOTIFY_ICON_DATA_FLAGS BuildTrayIconFlags()
-        {
-            var flags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP;
-            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
-            {
-                flags |= NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP;
-            }
-
-            return flags;
-        }
-
-        /// <summary>
-        /// Re-applies <see cref="BuildTrayIconFlags"/> to a live registration after the mouse-wheel
-        /// mode changed, so switching the setting hands the tooltip back and forth without needing
-        /// a module restart. NIF_SHOWTIP is honoured under NOTIFYICON_VERSION_4, so the callback
-        /// packing <see cref="DispatchTrayNotification"/> decodes is unaffected either way.
-        /// </summary>
-        private void ApplyTrayIconTooltipMode()
-        {
-            if (_trayIconData is null)
-            {
-                return;
-            }
-
-            var data = (NOTIFYICONDATAW)_trayIconData;
-            var flags = BuildTrayIconFlags();
-            if (data.uFlags == flags)
-            {
-                return;
-            }
-
-            data.uFlags = flags;
-            _trayIconData = data;
-
-            if (!_isTrayIconRegistered)
-            {
-                return;
-            }
-
-            bool modified;
-            unsafe
-            {
-                modified = Shell_NotifyIconNative((uint)NOTIFY_ICON_MESSAGE.NIM_MODIFY, &data);
-            }
-
-            if (!modified)
-            {
-                Logger.LogWarning("[TrayIcon] Shell_NotifyIcon(NIM_MODIFY) failed while updating the hover presentation");
             }
         }
 
@@ -471,14 +422,12 @@ namespace PowerDisplay.Helpers
             }
 
             _mouseWheelControlMode = mode;
-            ApplyTrayIconTooltipMode();
             InvalidateMouseWheelHover(disarm: true);
 
             if (mode == MouseWheelControlMode.Disabled)
             {
-                // The Shell tooltip is back, so take our own overlay down instead of leaving the
-                // last one parked until the pointer happens to move.
-                StopHoverFeedback();
+                // Only the wheel goes away. The overlay owns tray hover text in every mode, so the
+                // hover presentation is deliberately left running - see EnsureTrayIconIdentity.
                 DisposeMouseWheelListener();
             }
             else if (_isTrayIconRegistered)
@@ -542,13 +491,6 @@ namespace PowerDisplay.Helpers
 
         private void HandleTrayMouseMove()
         {
-            if (_mouseWheelControlMode == MouseWheelControlMode.Disabled)
-            {
-                // Off keeps NIF_SHOWTIP (see BuildTrayIconFlags), so the Shell draws the hover text
-                // and there is nothing for us to present or arm.
-                return;
-            }
-
             if (!GetCursorPos(out var cursor))
             {
                 StopHoverFeedback();

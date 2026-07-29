@@ -443,23 +443,37 @@ high-resolution deltas (precision wheels, touchpads) into whole notches.
 
 **Hover presentation.** The icon opts into `NOTIFYICON_VERSION_4`, which changes the callback
 packing (`LOWORD(lParam)` carries the event, `wParam` the anchor point) and adds
-`NIN_POPUPOPEN`/`NIN_POPUPCLOSE`. The `NIF_SHOWTIP` flag decides who draws the hover text:
+`NIN_POPUPOPEN`/`NIN_POPUPCLOSE`. `NIF_TIP` is supplied without `NIF_SHOWTIP`, which tells the Shell
+to stop drawing the standard tooltip and let the application present its own hover UI.
 
-| Mouse wheel control | `NIF_SHOWTIP` | Hover text drawn by |
-| --- | --- | --- |
-| `Disabled` | set | The Shell (standard tooltip, unchanged pre-feature behaviour) |
-| `PrimaryDisplay` / `AllDisplays` | cleared | `TrayWheelFeedbackWindow` |
+`TrayWheelFeedbackWindow` is that presenter, and it is the **single owner of tray hover text in
+every mode**:
 
-`szTip` is always supplied, so the icon keeps its UI Automation name and its label in the overflow
-flyout regardless of the mode. Switching the setting re-applies the flag through `NIM_MODIFY`, so no
-restart is needed. Keeping the standard tooltip when the feature is off matters for keyboard and
-touch users: the overlay is only shown when `GetCursorPos` lands inside the icon rectangle.
+| Moment | Overlay shows |
+| --- | --- |
+| 500 ms after the pointer enters the icon | The app name |
+| Immediately on a wheel adjustment | The scope and the resulting percentage |
+| 2 s after the last adjustment | Back to the app name |
+
+The overlay has to exist regardless of the setting, because the adjustment readout must appear on
+demand and the standard tooltip cannot be shown programmatically. Splitting the two purposes between
+the Shell and the overlay would mean two hover presentations to maintain and test, so the overlay
+draws both and `NIF_SHOWTIP` is never set. **Mouse wheel control set to `Disabled` therefore only
+disables the wheel** - the hover presentation is unchanged.
+
+Two consequences of that choice are deliberate and worth knowing before changing this code:
+
+- A user who turns mouse wheel control off still gets the overlay instead of the standard tooltip,
+  and still pays for the lazily created XAML window and the hover watchdog.
+- A hover that never involves the cursor - keyboard or touch focus in the notification area - shows
+  no text at all, because the overlay is only presented when `GetCursorPos` lands inside the icon
+  rectangle. `szTip` is still supplied, so the icon keeps its UI Automation name and its label in
+  the overflow flyout, but there is no visible hover text for those input methods.
 
 `TrayWheelFeedbackWindow` is a no-activate (`WS_EX_NOACTIVATE`), click-through
 (`WS_EX_TRANSPARENT` plus `HTTRANSPARENT`) `TransparentWindow`. `TrayWheelFeedbackSession` owns the
-timing — app name after a 500 ms hover, the adjustment readout immediately and for 2 s afterwards —
-and `TrayWheelFeedbackPlacement` positions it inward from the nearest outer display edge, clamped to
-the work area.
+timing in the table above and `TrayWheelFeedbackPlacement` positions it inward from the nearest
+outer display edge, clamped to the work area.
 
 **Linked brightness.** While linked brightness is on, a wheel notch must move the whole group, so it
 is routed through `MainViewModel.LinkedBrightness` rather than the individual monitor setters. The
