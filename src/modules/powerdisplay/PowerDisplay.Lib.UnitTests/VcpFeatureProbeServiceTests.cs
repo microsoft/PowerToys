@@ -14,11 +14,6 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class VcpFeatureProbeServiceTests
 {
-    private const int InvalidCommand = unchecked((int)0xC0262589);
-    private const int VcpNotSupported = unchecked((int)0xC0262584);
-    private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
-    private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
-
     [TestMethod]
     public async Task ProbeAsync_FirstSuccessReturnsValuesWithoutRetry()
     {
@@ -41,7 +36,7 @@ public sealed class VcpFeatureProbeServiceTests
     public async Task ProbeAsync_TransientFailureThenSuccessRetriesWithPacing()
     {
         var reader = new QueueReader(
-            VcpReadAttempt.Failure(InvalidCommand),
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
             VcpReadAttempt.Success(current: 45, maximum: 100));
         var delays = new List<TimeSpan>();
         var service = CreateService(reader, delays);
@@ -52,7 +47,7 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsTrue(result[0x10].IsSuccess);
         Assert.AreEqual(VcpProbeDisposition.Success, result[0x10].Disposition);
         Assert.AreEqual(2, result[0x10].Attempts);
-        Assert.AreEqual(InvalidCommand, result[0x10].LastError);
+        Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand, result[0x10].LastError);
         CollectionAssert.AreEqual(
             new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100) },
             delays);
@@ -62,9 +57,9 @@ public sealed class VcpFeatureProbeServiceTests
     public async Task ProbeAsync_ThreeTransientFailuresReturnIndeterminate()
     {
         var reader = new QueueReader(
-            VcpReadAttempt.Failure(InvalidCommand),
-            VcpReadAttempt.Failure(InvalidCommand),
-            VcpReadAttempt.Failure(InvalidCommand));
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
         var service = CreateService(reader, new List<TimeSpan>());
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
@@ -72,13 +67,13 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(3, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
         Assert.AreEqual(3, result[0x10].Attempts);
-        Assert.AreEqual(InvalidCommand, result[0x10].LastError);
+        Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand, result[0x10].LastError);
     }
 
     [TestMethod]
     public async Task ProbeAsync_NonTransientFailureDoesNotRetry()
     {
-        var reader = new QueueReader(VcpReadAttempt.Failure(VcpNotSupported));
+        var reader = new QueueReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported));
         var service = CreateService(reader, new List<TimeSpan>());
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
@@ -87,12 +82,12 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.IsFalse(result[0x10].IsSuccess);
         Assert.IsFalse(result[0x10].Replied);
         Assert.AreEqual(1, result[0x10].Attempts);
-        Assert.AreEqual(VcpNotSupported, result[0x10].LastError);
+        Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported, result[0x10].LastError);
     }
 
     [DataTestMethod]
-    [DataRow(InvalidPhysicalMonitorHandle)]
-    [DataRow(MonitorNoLongerExists)]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public async Task ProbeAsync_PhysicalMonitorUnavailableStopsRemainingFeatureProbes(int errorCode)
     {
         var reader = new QueueReader(VcpReadAttempt.Failure(errorCode));
@@ -111,7 +106,7 @@ public sealed class VcpFeatureProbeServiceTests
     public async Task ProbeAsync_VcpNotSupportedContinuesWithRemainingFeatures()
     {
         var reader = new QueueReader(
-            VcpReadAttempt.Failure(VcpNotSupported),
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             VcpReadAttempt.Success(current: 20, maximum: 100));
         var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12 });
 

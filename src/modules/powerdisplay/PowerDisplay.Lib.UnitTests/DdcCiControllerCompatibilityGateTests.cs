@@ -29,7 +29,6 @@ namespace PowerDisplay.UnitTests;
 public sealed class DdcCiControllerCompatibilityGateTests
 {
     private const string MonitorId = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1";
-    private const int VcpNotSupported = unchecked((int)0xC0262584);
 
     [TestMethod]
     public async Task NormalMode_NeitherProbesNorTouchesTheCache()
@@ -55,8 +54,8 @@ public sealed class DdcCiControllerCompatibilityGateTests
         var reader = new ScriptedReader
         {
             [0x10] = VcpReadAttempt.Success(30, 100),
-            [0x12] = VcpReadAttempt.Failure(VcpNotSupported),
-            [0x62] = VcpReadAttempt.Failure(VcpNotSupported),
+            [0x12] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
+            [0x62] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
         };
         var clock = new FixedClock();
         using var controller = NewController(store, reader, maxCompatibility: true, clock);
@@ -86,9 +85,9 @@ public sealed class DdcCiControllerCompatibilityGateTests
         var store = new RecordingStore(Cached(0x10, current: 45, maximum: 100));
         var reader = new ScriptedReader
         {
-            [0x10] = VcpReadAttempt.Failure(VcpNotSupported),
-            [0x12] = VcpReadAttempt.Failure(VcpNotSupported),
-            [0x62] = VcpReadAttempt.Failure(VcpNotSupported),
+            [0x10] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
+            [0x12] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
+            [0x62] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
         };
         using var controller = NewController(store, reader, maxCompatibility: true);
 
@@ -136,7 +135,7 @@ public sealed class DdcCiControllerCompatibilityGateTests
             CallCount++;
             return _results.TryGetValue(code, out var result)
                 ? result
-                : VcpReadAttempt.Failure(VcpNotSupported);
+                : VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported);
         }
     }
 

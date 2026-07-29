@@ -490,8 +490,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 capsString ?? string.Empty,
                 caps,
                 live,
-                cached,
-                includeCache: maxCompatibility);
+                cached);
 
             foreach (var observation in live.Values.Where(value => value.IsSuccess))
             {

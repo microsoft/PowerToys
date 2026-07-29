@@ -51,8 +51,7 @@ internal sealed class VcpDiscoveryEvidence
         string capabilitiesRaw,
         VcpCapabilities? parsedCapabilities,
         IReadOnlyDictionary<byte, VcpProbeObservation> live,
-        IReadOnlyDictionary<byte, KnownGoodVcpFeature> cached,
-        bool includeCache)
+        IReadOnlyDictionary<byte, KnownGoodVcpFeature> cached)
     {
         foreach (var observation in live.Values)
         {
@@ -96,14 +95,14 @@ internal sealed class VcpDiscoveryEvidence
                 capabilities = MarkSupported(capabilities, code);
             }
 
-            if (includeCache &&
-                cached.TryGetValue(code, out var knownGood))
+            if (cached.TryGetValue(code, out var knownGood))
             {
                 var cachedValue = knownGood.ToVcpFeatureValue();
                 if (cachedValue.IsValid)
                 {
-                    // Max-compat only: exact-Id cache evidence supplements parsed capabilities,
-                    // because caps strings can omit continuous VCP support the hardware has proven.
+                    // Reached in Maximum compatibility mode only: the caller hands an empty
+                    // dictionary in normal mode, so cache evidence supplements parsed capabilities
+                    // only there, where caps strings can omit support the hardware has proven.
                     //
                     // Positive evidence is never retracted, not even by a definitive
                     // DDCCI_VCP_NOT_SUPPORTED — panels whose DDC/CI engine is busy or asleep return

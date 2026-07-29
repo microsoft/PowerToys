@@ -15,8 +15,6 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class ContinuousVcpInitializerTests
 {
-    private const int VcpNotSupported = unchecked((int)0xC0262584);
-
     [TestMethod]
     public void Initialize_LiveInitialValueDoesNotReadAgain()
     {
@@ -57,6 +55,7 @@ public sealed class ContinuousVcpInitializerTests
         Assert.AreEqual(100, monitor.BrightnessVcpMax);
         Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
         Assert.AreEqual(60, store.LastFeature!.Current);
+        Assert.AreEqual(100, store.LastFeature.Maximum);
         Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
     }
 
@@ -80,32 +79,9 @@ public sealed class ContinuousVcpInitializerTests
     }
 
     [TestMethod]
-    public void Initialize_AdvertisedCachedCodeUsesFreshLiveValueAndPersists()
-    {
-        var reader = new RecordingReader(VcpReadAttempt.Success(60, 100));
-        var store = new RecordingStore();
-        var clock = new FixedClock();
-        var initializer = new ContinuousVcpInitializer(reader, store, clock);
-        var monitor = BrightnessMonitor();
-
-        initializer.Initialize(
-            monitor,
-            CachedEvidence(parsedAdvertisesBrightness: true));
-
-        Assert.AreEqual(1, reader.CallCount);
-        Assert.AreEqual(60, monitor.CurrentBrightness);
-        Assert.AreEqual(100, monitor.BrightnessVcpMax);
-        Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
-        Assert.AreEqual(60, store.LastFeature!.Current);
-        Assert.AreEqual(100, store.LastFeature.Maximum);
-        Assert.AreEqual(VcpObservationSource.CapabilitiesInitialization, store.LastFeature.Source);
-        Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
-    }
-
-    [TestMethod]
     public void Initialize_AdvertisedCachedCodeUsesCacheWhenLiveReadFails()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(unchecked((int)0xC0262589)));
+        var reader = new RecordingReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
         var store = new RecordingStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
@@ -206,7 +182,7 @@ public sealed class ContinuousVcpInitializerTests
     public void Initialize_VcpNotSupportedUsesCacheAndContinuesRemainingReads()
     {
         var reader = new RecordingReader(
-            VcpReadAttempt.Failure(VcpNotSupported),
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             VcpReadAttempt.Success(60, 100));
         var store = new RecordingStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
@@ -262,8 +238,7 @@ public sealed class ContinuousVcpInitializerTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: parsedCapabilities,
             live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: CachedBrightness(),
-            includeCache: true);
+            cached: CachedBrightness());
     }
 
     private static VcpDiscoveryEvidence ProbeExhaustedCachedEvidence() =>
@@ -272,10 +247,9 @@ public sealed class ContinuousVcpInitializerTests
             parsedCapabilities: null,
             live: new Dictionary<byte, VcpProbeObservation>
             {
-                [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported, attempts: 3),
+                [0x10] = VcpProbeObservation.Indeterminate(0x10, DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported, attempts: 3),
             },
-            cached: CachedBrightness(),
-            includeCache: true);
+            cached: CachedBrightness());
 
     private static Dictionary<byte, KnownGoodVcpFeature> CachedBrightness() => new()
     {

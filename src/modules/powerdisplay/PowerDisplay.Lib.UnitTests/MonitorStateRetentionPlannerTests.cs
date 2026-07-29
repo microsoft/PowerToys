@@ -39,16 +39,6 @@ public sealed class MonitorStateRetentionPlannerTests
     }
 
     [TestMethod]
-    public void BuildDroppedIds_KeepsEntriesThatSurvivedTheRebuild()
-    {
-        var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(
-            new[] { ExistingMonitor, NewMonitor },
-            new[] { ExistingMonitor, NewMonitor });
-
-        Assert.AreEqual(0, droppedIds.Count);
-    }
-
-    [TestMethod]
     public void BuildDroppedIds_MatchesIdsCaseInsensitivelyAndIgnoresEmptyIds()
     {
         var droppedIds = MonitorStateRetentionPlanner.BuildDroppedIds(

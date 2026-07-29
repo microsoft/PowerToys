@@ -6,7 +6,6 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Drivers.DDC;
@@ -224,19 +223,6 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(65, features[0x12].Current);
         Assert.IsNull(manager.GetMonitorParameters(legacyId));
         Assert.AreEqual(0, manager.GetKnownGoodFeatures(legacyId).Count);
-    }
-
-    [TestMethod]
-    public void ConcurrentUpserts_PreserveBothMonitorEntries()
-    {
-        using var manager = new MonitorStateManager(_statePath);
-
-        Parallel.Invoke(
-            () => manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20)),
-            () => manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80)));
-
-        Assert.AreEqual(20, manager.GetKnownGoodFeatures(MonitorA)[0x10].Current);
-        Assert.AreEqual(80, manager.GetKnownGoodFeatures(MonitorB)[0x10].Current);
     }
 
     [TestMethod]

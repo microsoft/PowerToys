@@ -16,9 +16,6 @@ public sealed class VcpDiscoveryEvidenceTests
 {
     private static readonly DateTime CachedUtc = new(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc);
     private static readonly int[] VolumePresets = { 0x00, 0x10, 0x20, 0x30 };
-    private const int VcpNotSupported = unchecked((int)0xC0262584);
-    private const int InvalidPhysicalMonitorHandle = unchecked((int)0xC026258C);
-    private const int MonitorNoLongerExists = unchecked((int)0xC026258D);
 
     [TestMethod]
     public void Reconcile_LiveObservationOverridesCache()
@@ -36,8 +33,7 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,
             live: live,
-            cached: cache,
-            includeCache: true);
+            cached: cache);
 
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(40, result.InitialValues[0x10].Value.Current);
@@ -45,8 +41,8 @@ public sealed class VcpDiscoveryEvidenceTests
     }
 
     [DataTestMethod]
-    [DataRow(InvalidPhysicalMonitorHandle)]
-    [DataRow(MonitorNoLongerExists)]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
+    [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public void Reconcile_PhysicalMonitorUnavailableRejectsAllCapabilitiesAndCache(int errorCode)
     {
         var parsedCapabilities = new VcpCapabilities();
@@ -65,8 +61,7 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: "(vcp(12))",
             parsedCapabilities: parsedCapabilities,
             live: live,
-            cached: cache,
-            includeCache: true);
+            cached: cache);
 
         Assert.IsTrue(result.IsPhysicalMonitorUnavailable);
         Assert.IsNull(result.Capabilities);
@@ -78,15 +73,14 @@ public sealed class VcpDiscoveryEvidenceTests
     {
         var live = new Dictionary<byte, VcpProbeObservation>
         {
-            [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported),
+            [0x10] = VcpProbeObservation.Indeterminate(0x10, DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
         };
 
         var result = VcpDiscoveryEvidence.Reconcile(
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,
             live: live,
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) });
 
         Assert.IsFalse(result.IsPhysicalMonitorUnavailable);
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
@@ -95,21 +89,6 @@ public sealed class VcpDiscoveryEvidenceTests
 
         // The probe spent its full retry budget on 0x10 this cycle; re-reading it is pointless.
         Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
-    }
-
-    [TestMethod]
-    public void Reconcile_NormalModeIgnoresCache()
-    {
-        var result = VcpDiscoveryEvidence.Reconcile(
-            capabilitiesRaw: string.Empty,
-            parsedCapabilities: null,
-            live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
-            includeCache: false);
-
-        Assert.IsNull(result.Capabilities);
-        Assert.AreEqual(0, result.InitialValues.Count);
-        Assert.AreEqual(0, result.CacheSupplementedCodes.Count);
     }
 
     [TestMethod]
@@ -122,8 +101,7 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: parsedCapabilities,
             live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) });
 
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.IsTrue(result.Capabilities.SupportsVcpCode(0x12));
@@ -149,8 +127,7 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: "(vcp(62(00 10 20 30)))",
             parsedCapabilities: parsedCapabilities,
             live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x62] = Cached(0x62, 25) },
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x62] = Cached(0x62, 25) });
 
         var codeInfo = result.Capabilities!.GetVcpCodeInfo(0x62)!.Value;
         Assert.AreEqual("Audio: Speaker Volume", codeInfo.Name);
@@ -173,8 +150,7 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,
             live: live,
-            cached: new Dictionary<byte, KnownGoodVcpFeature>(),
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature>());
 
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(0, result.InitialValues.Count);
@@ -185,15 +161,14 @@ public sealed class VcpDiscoveryEvidenceTests
     {
         var live = new Dictionary<byte, VcpProbeObservation>
         {
-            [0x10] = VcpProbeObservation.Indeterminate(0x10, VcpNotSupported),
+            [0x10] = VcpProbeObservation.Indeterminate(0x10, DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
         };
 
         var result = VcpDiscoveryEvidence.Reconcile(
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,
             live: live,
-            cached: new Dictionary<byte, KnownGoodVcpFeature>(),
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature>());
 
         Assert.IsNull(result.Capabilities);
     }
@@ -208,24 +183,10 @@ public sealed class VcpDiscoveryEvidenceTests
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,
             live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = cached },
-            includeCache: true);
+            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = cached });
 
         Assert.IsNull(result.Capabilities);
         Assert.AreEqual(0, result.InitialValues.Count);
-    }
-
-    [TestMethod]
-    public void Reconcile_NoLiveOrCacheLeavesFeatureUnavailable()
-    {
-        var result = VcpDiscoveryEvidence.Reconcile(
-            capabilitiesRaw: string.Empty,
-            parsedCapabilities: null,
-            live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature>(),
-            includeCache: true);
-
-        Assert.IsNull(result.Capabilities);
     }
 
     [TestMethod]
@@ -249,8 +210,7 @@ public sealed class VcpDiscoveryEvidenceTests
                 [0x10] = Cached(0x10, 25),
                 [0x12] = Cached(0x12, 35),
                 [0x62] = Cached(0x62, 45),
-            },
-            includeCache: true);
+            });
 
         CollectionAssert.AreEqual(new byte[] { 0x62 }, result.CacheSupplementedCodes.ToArray());
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x62));
