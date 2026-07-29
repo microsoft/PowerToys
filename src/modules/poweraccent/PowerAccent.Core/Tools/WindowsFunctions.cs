@@ -120,6 +120,7 @@ internal static class WindowsFunctions
                     {
                         wVk = key,
                         dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY,
+                        dwExtraInfo = PowerToysInjectedTag,
                     },
                 },
             },
@@ -132,12 +133,17 @@ internal static class WindowsFunctions
                     {
                         wVk = key,
                         dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                        dwExtraInfo = PowerToysInjectedTag,
                     },
                 },
             },
         };
 
-        _ = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+        uint arrowSent = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+        if (arrowSent != (uint)inputs.Length)
+        {
+            Logger.LogError($"SendInput arrow key failed: sent {arrowSent}/{inputs.Length}");
+        }
     }
 
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
@@ -173,47 +179,5 @@ internal static class WindowsFunctions
     {
         var shift = PInvoke.GetAsyncKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
-    }
-
-    public static void SendArrowKey(VIRTUAL_KEY arrowKey)
-    {
-        unsafe
-        {
-            var inputs = new INPUT[]
-            {
-                new INPUT
-                {
-                    type = INPUT_TYPE.INPUT_KEYBOARD,
-                    Anonymous = new INPUT._Anonymous_e__Union
-                    {
-                        ki = new KEYBDINPUT
-                        {
-                            wVk = arrowKey,
-                            dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY,
-                            dwExtraInfo = PowerToysInjectedTag,
-                        },
-                    },
-                },
-                new INPUT
-                {
-                    type = INPUT_TYPE.INPUT_KEYBOARD,
-                    Anonymous = new INPUT._Anonymous_e__Union
-                    {
-                        ki = new KEYBDINPUT
-                        {
-                            wVk = arrowKey,
-                            dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_EXTENDEDKEY | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
-                            dwExtraInfo = PowerToysInjectedTag,
-                        },
-                    },
-                },
-            };
-
-            uint arrowSent = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
-            if (arrowSent != (uint)inputs.Length)
-            {
-                Logger.LogError($"SendInput arrow key failed: sent {arrowSent}/{inputs.Length}");
-            }
-        }
     }
 }
