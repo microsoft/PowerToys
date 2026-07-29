@@ -4,7 +4,7 @@ The registry plugin allows users to search the Windows registry.
 
 ## Special functions (differ from the regular functions)
 
-* Support full base keys and short base keys (e.g. `HKLM` for `HKEY_LOCALE_MACHINE`).
+* Support full base keys and short base keys (e.g. `HKLM` for `HKEY_LOCAL_MACHINE`).
 * Show count of subkeys and count of values in the second result line.
 * Search for value names and value data inside a registry key (syntax: `[RegistryKey]\\[ValueName]` and `[RegistryKey]\\[ValueData]`)
 
