@@ -69,6 +69,24 @@ Each JS extension runs in its own Node.js process. The host spawns the process, 
 
 ---
 
+## Known Gaps and Deferred Work
+
+The following capabilities are intentionally not part of the current JS/TS extension surface. They are documented here so contributors know the boundary and the likely shape of a future solution. Each is deferred rather than rejected.
+
+### Per-page load and unload lifecycle
+
+There is no per-page unload notification. A JS page learns it has become active implicitly, because the first `getItems` fetch after navigation acts as a de facto load signal, but there is no equivalent signal when the user navigates away and a page is popped from the stack. The WinRT `IPage` interface has no `OnLoad` or `OnUnload` member, so there is no C# ABI parity to mirror.
+
+A future solution would be additive and JS-only: a host to extension JSON-RPC notification (for example `page/unloaded` carrying the page id, and optionally a symmetric `page/loaded`), emitted from the host where a page is torn down. `PageViewModel.UnsafeCleanup` is the natural single choke point, since back-navigation and other disposal paths all pass through it. The TS SDK would expose an optional `onUnload` (and optionally `onLoad`) hook on the page base classes, following the existing `loadMore` lifecycle pattern. Because it is additive with no reply expected, older extensions that do not register the hook are unaffected. The item is deferred because it introduces JS-only surface with no C# ABI equivalent, and that asymmetry needs a broader decision.
+
+### Drag and drop (DataPackage)
+
+There is no drag-and-drop or `DataPackage` concept anywhere in the extension ABI, in either the C# or the JS surface. The only related primitive today is the clipboard, exposed through `IExtensionHost.copyToClipboard`. Items cannot declare draggable payloads, and the host list and content controls do not act as drag sources or drop targets for extension data.
+
+Two shapes are plausible for a future solution. The minimal path is copy-on-drag built on the existing clipboard primitive, where dragging an item that declares data places that data on the clipboard so a drop behaves like a paste; this adds no new wire surface and is low risk, but it is not true operating-system drag-and-drop and is limited to what the clipboard can carry. The fuller path is a dedicated `DataPackage`-style wire payload plus host WinUI drag source and drop target handling, which is the only option that would touch the WinRT ABI and carries the most risk. The item is deferred until there is concrete demand, at which point the choice between the two shapes can be made against real requirements (for example whether images or files must be draggable).
+
+---
+
 ## Feedback Requested
 
 We are seeking feedback on the following areas:
