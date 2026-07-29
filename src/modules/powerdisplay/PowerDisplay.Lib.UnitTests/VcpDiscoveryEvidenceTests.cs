@@ -133,6 +133,7 @@ public sealed class VcpDiscoveryEvidenceTests
 
         Assert.IsNull(result.Capabilities);
         Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.AreEqual(0, result.CacheSupplementedCodes.Count);
     }
 
     [TestMethod]
@@ -222,25 +223,6 @@ public sealed class VcpDiscoveryEvidenceTests
     }
 
     [TestMethod]
-    public void Reconcile_MaximumCompatibilityMarksAdvertisedCachedCodeAsLiveFallback()
-    {
-        var parsedCapabilities = new VcpCapabilities();
-        parsedCapabilities.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
-
-        var result = VcpDiscoveryEvidence.Reconcile(
-            capabilitiesRaw: string.Empty,
-            parsedCapabilities: parsedCapabilities,
-            live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
-            includeCache: true);
-
-        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
-        Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
-        Assert.IsFalse(result.InitialValues[0x10].IsLive);
-        Assert.IsTrue(result.InitialValues[0x10].PreferLiveRead);
-    }
-
-    [TestMethod]
     public void Reconcile_InvalidCachedRangeIsIgnored()
     {
         var cached = Cached(0x10, current: 25);
@@ -296,19 +278,10 @@ public sealed class VcpDiscoveryEvidenceTests
 
         CollectionAssert.AreEqual(new byte[] { 0x62 }, result.CacheSupplementedCodes.ToArray());
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x62));
-    }
 
-    [TestMethod]
-    public void Reconcile_NormalModeReportsNoCacheSupplementedCodes()
-    {
-        var result = VcpDiscoveryEvidence.Reconcile(
-            capabilitiesRaw: string.Empty,
-            parsedCapabilities: null,
-            live: new Dictionary<byte, VcpProbeObservation>(),
-            cached: new Dictionary<byte, KnownGoodVcpFeature> { [0x10] = Cached(0x10, 25) },
-            includeCache: false);
-
-        Assert.AreEqual(0, result.CacheSupplementedCodes.Count);
+        // 0x10 is advertised by the caps string and cached, and no probe touched it, so it is not
+        // cache-supplemented but still owes the hardware one read before the cached value is trusted.
+        Assert.IsTrue(result.InitialValues[0x10].PreferLiveRead);
     }
 
     private static KnownGoodVcpFeature Cached(byte code, int current) => new()

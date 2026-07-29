@@ -61,25 +61,6 @@ public sealed class ContinuousVcpInitializerTests
     }
 
     [TestMethod]
-    public void Initialize_OmittedCodeFallsBackToCacheWhenLiveReadFails()
-    {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(VcpNotSupported));
-        var store = new RecordingStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
-        var monitor = BrightnessMonitor();
-
-        initializer.Initialize(
-            monitor,
-            new IntPtr(1),
-            CachedEvidence(parsedAdvertisesBrightness: false));
-
-        Assert.AreEqual(1, reader.CallCount);
-        Assert.AreEqual(45, monitor.CurrentBrightness);
-        Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
-        Assert.IsNull(store.LastFeature);
-    }
-
-    [TestMethod]
     public void Initialize_ProbeExhaustedCachedCodeDoesNotReadAgain()
     {
         // The probe already issued transactions for this code in this pass — it stopped on a

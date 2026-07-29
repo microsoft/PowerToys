@@ -15,6 +15,30 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class DdcErrorClassifierTests
 {
+    /// <summary>
+    /// Pins the numeric values against winerror.h. Every other assertion in this file addresses the
+    /// codes by name, so a typo in a constant would move production and tests together and leave the
+    /// whole suite green.
+    /// </summary>
+    [TestMethod]
+    public void Constants_MatchWinerrorValues()
+    {
+        Assert.AreEqual(unchecked((int)0xC0262582), DdcErrorClassifier.ErrorGraphicsI2CErrorTransmittingData);
+        Assert.AreEqual(unchecked((int)0xC0262583), DdcErrorClassifier.ErrorGraphicsI2CErrorReceivingData);
+        Assert.AreEqual(unchecked((int)0xC0262584), DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported);
+        Assert.AreEqual(unchecked((int)0xC0262585), DdcErrorClassifier.ErrorGraphicsDdcCiInvalidData);
+        Assert.AreEqual(unchecked((int)0xC0262588), DdcErrorClassifier.ErrorGraphicsMcaInternalError);
+        Assert.AreEqual(unchecked((int)0xC0262589), DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand);
+        Assert.AreEqual(unchecked((int)0xC026258A), DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageLength);
+        Assert.AreEqual(unchecked((int)0xC026258B), DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageChecksum);
+        Assert.AreEqual(unchecked((int)0xC026258C), DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle);
+        Assert.AreEqual(unchecked((int)0xC026258D), DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists);
+        Assert.AreEqual(
+            unchecked((int)0xC02625D8),
+            DdcErrorClassifier.ErrorGraphicsDdcCiCurrentCurrentValueGreaterThanMaximumValue);
+        Assert.AreEqual(1460, DdcErrorClassifier.ErrorTimeout);
+    }
+
     [DataTestMethod]
     [DataRow(DdcErrorClassifier.ErrorGraphicsI2CErrorTransmittingData)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsI2CErrorReceivingData)]

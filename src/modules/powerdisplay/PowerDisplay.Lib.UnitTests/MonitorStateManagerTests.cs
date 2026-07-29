@@ -112,16 +112,7 @@ public sealed class MonitorStateManagerTests
     public void GetKnownGoodFeatures_UsesExactDevicePathComparer()
     {
         using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(
-            MonitorA,
-            new KnownGoodVcpFeature
-            {
-                Code = 0x10,
-                Current = 40,
-                Maximum = 100,
-                Source = VcpObservationSource.CapabilitiesInitialization,
-                LastSuccessfulUtc = SuccessfulUtc,
-            });
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
 
         Assert.AreEqual(1, manager.GetKnownGoodFeatures(MonitorA.ToLowerInvariant()).Count);
         Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorB).Count);
