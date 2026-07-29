@@ -55,6 +55,21 @@ namespace PowerRenameNumericMappingTests
             DeleteFileW(path);
         }
 
+        TEST_METHOD(TextRowsBecomeOneBasedNamesAndPreserveCommas)
+        {
+            const wchar_t path[] = L"NumericRenameMappingTests.txt";
+            std::ofstream output(path, std::ios::binary);
+            output << "Alice, A.\r\n\r\nBob\r\n";
+            output.close();
+
+            PowerRenameLib::NumericRenameMapping mappings;
+            Assert::IsTrue(SUCCEEDED(PowerRenameLib::LoadNumericRenameMappingFromText(path, mappings)));
+            Assert::AreEqual<size_t>(2, mappings.size());
+            Assert::AreEqual(std::wstring(L"Alice, A."), mappings.at(1));
+            Assert::AreEqual(std::wstring(L"Bob"), mappings.at(2));
+            DeleteFileW(path);
+        }
+
         TEST_METHOD(XlsxRowsReadFirstWorksheetColumn)
         {
             const wchar_t path[] = L"NumericRenameMappingTests.xlsx";

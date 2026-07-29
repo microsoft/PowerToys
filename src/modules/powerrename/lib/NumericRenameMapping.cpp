@@ -350,6 +350,31 @@ namespace PowerRenameLib
         return BuildNumericMapping(rows, mappings);
     }
 
+    HRESULT LoadNumericRenameMappingFromText(PCWSTR path, NumericRenameMapping& mappings)
+    {
+        mappings.clear();
+        std::vector<unsigned char> bytes;
+        HRESULT hr = ReadFileBytes(path, bytes);
+        if (FAILED(hr)) return hr;
+        std::wstring text;
+        hr = DecodeCsvBytes(bytes, text);
+        if (FAILED(hr)) return hr;
+
+        std::vector<std::vector<std::wstring>> rows;
+        size_t rowStart = 0;
+        while (rowStart <= text.size())
+        {
+            const size_t rowEnd = text.find_first_of(L"\r\n", rowStart);
+            const size_t end = rowEnd == std::wstring::npos ? text.size() : rowEnd;
+            const std::wstring name = text.substr(rowStart, end - rowStart);
+            if (!name.empty()) rows.push_back({ name });
+            if (rowEnd == std::wstring::npos) break;
+            rowStart = rowEnd + 1;
+            if (text[rowEnd] == L'\r' && rowStart < text.size() && text[rowStart] == L'\n') ++rowStart;
+        }
+        return BuildNumericMapping(rows, mappings);
+    }
+
     HRESULT LoadNumericRenameMappingFromXlsx(PCWSTR path, NumericRenameMapping& mappings)
     {
         mappings.clear();

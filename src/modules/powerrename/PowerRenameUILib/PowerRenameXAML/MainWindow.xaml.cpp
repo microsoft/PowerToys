@@ -494,6 +494,7 @@ namespace winrt::PowerRenameUI::implementation
             Windows::Storage::Pickers::FileOpenPicker picker;
             picker.SuggestedStartLocation(Windows::Storage::Pickers::PickerLocationId::DocumentsLibrary);
             picker.FileTypeFilter().Append(L".csv");
+            picker.FileTypeFilter().Append(L".txt");
             picker.FileTypeFilter().Append(L".xlsx");
             auto initializeWithWindow = picker.as<::IInitializeWithWindow>();
             winrt::check_hresult(initializeWithWindow->Initialize(m_window));
@@ -508,6 +509,8 @@ namespace winrt::PowerRenameUI::implementation
             const std::wstring extension = std::filesystem::path(file.Path().c_str()).extension().wstring();
             const HRESULT hr = _wcsicmp(extension.c_str(), L".xlsx") == 0 ?
                 PowerRenameLib::LoadNumericRenameMappingFromXlsx(file.Path().c_str(), mappings) :
+                _wcsicmp(extension.c_str(), L".txt") == 0 ?
+                PowerRenameLib::LoadNumericRenameMappingFromText(file.Path().c_str(), mappings) :
                 PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), mappings);
             if (FAILED(hr))
             {
