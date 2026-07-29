@@ -30,6 +30,9 @@ internal static class GalleryServiceRegistration
         });
         services.AddSingleton<IExtensionGalleryService, ExtensionGalleryService>();
 
+        services.AddSingleton<INpmCommandRunner, NpmCommandRunner>();
+        services.AddSingleton<IJsExtensionInstaller, NpmJsExtensionInstaller>();
+
         services.AddTransient<ExtensionGalleryItemViewModelFactory>();
         services.AddTransient<ExtensionGalleryViewModel>();
 
