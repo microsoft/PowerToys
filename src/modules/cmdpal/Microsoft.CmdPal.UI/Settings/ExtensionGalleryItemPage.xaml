@@ -320,6 +320,47 @@
                         FontSize="12"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}" />
 
+                    <Button
+                        MinWidth="172"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_InstallViaNpm"
+                        Command="{x:Bind ViewModel.InstallViaNpmCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.InstallViaNpmText, Mode=OneWay}"
+                        FontWeight="SemiBold"
+                        IsEnabled="{x:Bind ViewModel.CanInstallViaNpm, Mode=OneWay}"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaNpmButton), Mode=OneWay, FallbackValue=Collapsed}" />
+
+                    <Button
+                        MinWidth="172"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_UninstallJsonRpc"
+                        Command="{x:Bind ViewModel.UninstallJsonRpcCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.UninstallJsonRpcText, Mode=OneWay}"
+                        FontWeight="SemiBold"
+                        IsEnabled="{x:Bind ViewModel.CanUninstallJsonRpc, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowUninstallJsonRpcButton), Mode=OneWay, FallbackValue=Collapsed}" />
+
+                    <Button
+                        MinWidth="172"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_CancelJsonRpcAction"
+                        Command="{x:Bind ViewModel.CancelJsonRpcActionCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.CancelJsonRpcActionText, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanCancelJsonRpcAction, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelJsonRpcActionButton), Mode=OneWay, FallbackValue=Collapsed}" />
+
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.JsonRpcActionMessage, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasJsonRpcActionMessage), Mode=OneWay, FallbackValue=Collapsed}" />
+
                 </StackPanel>
                 <ScrollViewer Grid.Row="4">
                     <StackPanel Spacing="16">
