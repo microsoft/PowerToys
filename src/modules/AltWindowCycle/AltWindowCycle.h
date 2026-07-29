@@ -9,12 +9,14 @@ bool InitializeAltWindowCycle(HINSTANCE hinst);
 // initialized (idempotent). Called from disable() and destroy().
 void ShutdownAltWindowCycle();
 
-// Called from on_hotkey() on the runner thread. Does a cheap window-count check
-// and posts to the UI thread. `holdModifiers` is an AltWindowCycleLogic modifier
-// mask that controls which modifier release commits the visible cycle.
-// Returns false (do not swallow) if the focused app has fewer than 2 cycle
-// candidates and the overlay is not already active.
+// Called from on_hotkey() on the runner thread. Posts to the UI thread without
+// enumerating windows. `holdModifiers` is an AltWindowCycleLogic modifier mask
+// that controls which modifier release commits the visible cycle.
 bool HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers);
+
+// Posts an Escape cancellation request when the overlay is active. Returns true
+// only when Escape should be swallowed by the centralized keyboard hook.
+bool HandleAltWindowCycleCancel();
 
 // Instant (no-overlay) cycle helper, kept for internal use.
 void CycleForegroundAppWindows(bool forward);

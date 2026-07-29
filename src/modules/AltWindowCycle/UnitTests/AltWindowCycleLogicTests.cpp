@@ -337,6 +337,18 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(64, AltWindowCycleLogic::ComputeOverlayLayout(work, 4, 2.0).pad);
         }
 
+        TEST_METHOD(ComputeOverlayLayoutKeepsOversizedPanelOriginInWorkArea)
+        {
+            const RECT work = { 100, 200, 600, 700 };
+
+            const auto layout = AltWindowCycleLogic::ComputeOverlayLayout(work, 13, 2.0);
+
+            Assert::IsTrue(layout.panelW > work.right - work.left);
+            Assert::IsTrue(layout.panelH > work.bottom - work.top);
+            Assert::AreEqual(static_cast<int>(work.left), layout.panelX);
+            Assert::AreEqual(static_cast<int>(work.top), layout.panelY);
+        }
+
         TEST_METHOD(TileRectAdvancesAcrossColumnsAndRows)
         {
             const RECT work = { 0, 0, 1920, 1080 };

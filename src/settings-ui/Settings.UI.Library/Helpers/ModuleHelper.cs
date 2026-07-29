@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
             return moduleType switch
             {
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
+                ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",

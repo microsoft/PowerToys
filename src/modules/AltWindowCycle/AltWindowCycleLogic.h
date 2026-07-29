@@ -125,6 +125,14 @@ namespace AltWindowCycleLogic
         layout.panelH = 2 * layout.pad + layout.rows * layout.tileH + (layout.rows - 1) * layout.gap;
         layout.panelX = work.left + (workW - layout.panelW) / 2;
         layout.panelY = work.top + (workH - layout.panelH) / 2;
+        if (layout.panelX < work.left)
+        {
+            layout.panelX = work.left;
+        }
+        if (layout.panelY < work.top)
+        {
+            layout.panelY = work.top;
+        }
 
         return layout;
     }

@@ -388,6 +388,7 @@ public:
     bool Init(HINSTANCE instance);
     void Shutdown();
     void OnHotkey(bool forward, unsigned int holdModifiers);
+    void OnCancel();
 
 private:
     enum class St { Idle, Visible };
@@ -579,17 +580,18 @@ void Switcher::OnHotkey(bool forward, unsigned int holdModifiers)
 
 void Switcher::OnTick()
 {
-    bool escDown = (GetAsyncKeyState(VK_ESCAPE) & 0x8000) != 0;
-
-    if (escDown)
-    {
-        Cancel();
-        return;
-    }
     if (!AltWindowCycleLogic::AreRequiredModifiersDown(activeHoldModifiers, CurrentModifiersDown()))
     {
         Commit();
         return;
+    }
+}
+
+void Switcher::OnCancel()
+{
+    if (state == St::Visible)
+    {
+        Cancel();
     }
 }
 
@@ -1379,8 +1381,10 @@ LRESULT CALLBACK Switcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 // =================== Dedicated UI thread =====================================
 
-// Custom thread message: wParam = forward flag (0/1), lParam = held modifier mask.
+// Custom thread messages.
+// WM_AWC_HOTKEY: wParam = forward flag (0/1), lParam = held modifier mask.
 static const UINT WM_AWC_HOTKEY = WM_APP + 1;
+static const UINT WM_AWC_CANCEL = WM_APP + 2;
 
 static Switcher g_switcher;
 static HANDLE g_uiThread = nullptr;
@@ -1390,16 +1394,44 @@ static std::atomic<bool> g_shutdownRequested{ false };
 static HINSTANCE g_threadHinst = nullptr;
 static HANDLE g_threadReadyEvent = nullptr;
 
+static void CloseUIThreadHandle()
+{
+    CloseHandle(g_uiThread);
+    g_uiThread = nullptr;
+    g_uiThreadId = 0;
+    g_threadHinst = nullptr;
+    g_initOk.store(false);
+    g_switcherActive.store(false);
+}
+
 static void ClearExitedUIThread()
 {
     if (g_uiThread && WaitForSingleObject(g_uiThread, 0) == WAIT_OBJECT_0)
     {
-        CloseHandle(g_uiThread);
-        g_uiThread = nullptr;
-        g_uiThreadId = 0;
-        g_initOk.store(false);
-        g_switcherActive.store(false);
+        CloseUIThreadHandle();
     }
+}
+
+static void RequestShutdownAndJoinUIThread()
+{
+    if (!g_uiThread)
+    {
+        return;
+    }
+
+    g_shutdownRequested.store(true);
+
+    // The queue may not exist yet when initialization times out. Re-post until
+    // the bounded UI-thread work completes and the thread exits.
+    do
+    {
+        if (g_uiThreadId)
+        {
+            PostThreadMessageW(g_uiThreadId, WM_QUIT, 0, 0);
+        }
+    } while (WaitForSingleObject(g_uiThread, 100) == WAIT_TIMEOUT);
+
+    CloseUIThreadHandle();
 }
 
 static bool PostHotkeyToUIThread(bool forward, unsigned int holdModifiers)
@@ -1448,6 +1480,10 @@ static DWORD WINAPI UIThreadProc(LPVOID param)
         if (msg.hwnd == nullptr && msg.message == WM_AWC_HOTKEY)
         {
             g_switcher.OnHotkey(msg.wParam != 0, static_cast<unsigned int>(msg.lParam));
+        }
+        else if (msg.hwnd == nullptr && msg.message == WM_AWC_CANCEL)
+        {
+            g_switcher.OnCancel();
         }
         else
         {
@@ -1507,22 +1543,13 @@ bool InitializeAltWindowCycle(HINSTANCE hinst)
     if (waitResult != WAIT_OBJECT_0)
     {
         Logger::error("Timed out waiting for AltWindowCycle UI thread initialization");
+        RequestShutdownAndJoinUIThread();
         return false;
     }
 
     if (!g_initOk.load())
     {
-        if (WaitForSingleObject(g_uiThread, 2000) == WAIT_OBJECT_0)
-        {
-            CloseHandle(g_uiThread);
-            g_uiThread = nullptr;
-            g_uiThreadId = 0;
-            g_initOk.store(false);
-        }
-        else
-        {
-            Logger::error("Timed out waiting for failed AltWindowCycle UI thread initialization to exit");
-        }
+        RequestShutdownAndJoinUIThread();
         return false;
     }
 
@@ -1531,22 +1558,7 @@ bool InitializeAltWindowCycle(HINSTANCE hinst)
 
 void ShutdownAltWindowCycle()
 {
-    if (!g_uiThread)
-        return; // already shut down
-
-    g_shutdownRequested.store(true);
-
-    // Ask the UI thread's GetMessage loop to exit.
-    PostThreadMessageW(g_uiThreadId, WM_QUIT, 0, 0);
-    if (WaitForSingleObject(g_uiThread, 5000) != WAIT_OBJECT_0)
-    {
-        g_switcherActive.store(false);
-        return;
-    }
-    CloseHandle(g_uiThread);
-    g_uiThread = nullptr;
-    g_uiThreadId = 0;
-    g_switcherActive.store(false);
+    RequestShutdownAndJoinUIThread();
 }
 
 bool HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers)
@@ -1555,19 +1567,18 @@ bool HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers)
     if (!g_uiThread)
         return false;
 
-    // If the overlay is already active, swallow the key and advance the selection.
-    if (g_switcherActive.load())
+    return PostHotkeyToUIThread(forward, holdModifiers);
+}
+
+bool HandleAltWindowCycleCancel()
+{
+    ClearExitedUIThread();
+    if (!g_uiThread || !g_switcherActive.load())
     {
-        return PostHotkeyToUIThread(forward, holdModifiers);
+        return false;
     }
 
-    // Quick check: need >= 2 same-app windows to do anything useful.
-    HWND fg;
-    std::vector<HWND> wins;
-    if (!GetAppWindows(fg, wins) || wins.size() < 2)
-        return false;
-
-    return PostHotkeyToUIThread(forward, holdModifiers);
+    return PostThreadMessageW(g_uiThreadId, WM_AWC_CANCEL, 0, 0) != FALSE;
 }
 
 // =================== Legacy instant-cycle helper =============================
