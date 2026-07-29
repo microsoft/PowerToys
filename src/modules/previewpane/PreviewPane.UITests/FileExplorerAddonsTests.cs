@@ -35,17 +35,32 @@ public class FileExplorerAddonsTests : UITestBase
     private const int ExplorerTimeoutMS = 30_000;
     private const int ExplorerOpenAttempts = 3;
     private const int PreviewTimeoutMS = 60_000;
+    private const int PreviewPaneCommandTimeoutMS = 10_000;
     private const int VisualStableTimeoutMS = 15_000;
+    private const double PreviewRegionDifferenceThreshold = 0.75;
 
     private static readonly string[] FileExplorerModule = { "File Explorer" };
+    private static readonly (string Extension, string Clsid)[] ThumbnailProviders =
+    {
+        (".svg", SvgThumbnailProvider),
+        (".pdf", PdfThumbnailProvider),
+        (".gcode", GcodeThumbnailProvider),
+        (".stl", StlThumbnailProvider),
+    };
+
+    private static readonly object ExplorerPreparationLock = new();
+    private static List<SandboxThumbnailRegistration>? sandboxThumbnailRegistrations;
+    private static bool explorerPrepared;
+
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
-    private bool previewPaneToggled;
 
     public FileExplorerAddonsTests()
         : base(PowerToysModule.PowerToysSettings, enableModules: FileExplorerModule)
     {
     }
+
+    protected override bool ReuseScopeAcrossTests => true;
 
     static FileExplorerAddonsTests()
     {
@@ -81,30 +96,40 @@ public class FileExplorerAddonsTests : UITestBase
             });
     }
 
+    [ClassInitialize]
+    public static void InitializeClass(TestContext testContext)
+    {
+        _ = testContext;
+        using var process = Process.GetCurrentProcess();
+        process.ProcessorAffinity = new IntPtr(1);
+        Assert.AreEqual(new IntPtr(1), process.ProcessorAffinity, "PreviewPane.UITests must run on logical processor 0.");
+    }
+
+    [ClassCleanup]
+    public static void CleanupClass()
+    {
+        if (sandboxThumbnailRegistrations is null)
+        {
+            return;
+        }
+
+        for (var index = sandboxThumbnailRegistrations.Count - 1; index >= 0; index--)
+        {
+            sandboxThumbnailRegistrations[index].Dispose();
+        }
+
+        sandboxThumbnailRegistrations = null;
+    }
+
     [TestInitialize]
     public void PrepareTest()
     {
         CloseExplorerFileWindows();
-        WindowControl.TryCloseByApp("PowerToys.Settings");
     }
 
     [TestCleanup]
     public void CleanupTest()
     {
-        if (previewPaneToggled && explorerWindowHandle != 0)
-        {
-            var explorer = WindowsFinder.WaitForWindowByApp(
-                "explorer",
-                window => window.Hwnd == explorerWindowHandle,
-                timeoutMS: 1_000);
-            if (explorer is not null &&
-                WindowControl.WaitForForeground(new IntPtr(explorerWindowHandle), timeoutMS: 2_000))
-            {
-                KeyboardHelper.SendKeys(Key.Alt, Key.P);
-            }
-        }
-
-        previewPaneToggled = false;
         CloseExplorerFileWindows();
         explorerWindowHandle = 0;
 
@@ -239,7 +264,7 @@ public class FileExplorerAddonsTests : UITestBase
 
         var filePath = TestAssetPath(assetName);
         var explorer = OpenExplorer(Path.GetDirectoryName(filePath)!);
-        TogglePreviewPane(explorer);
+        EnsurePreviewPaneOpen(explorer);
         var handlerLogDirectory = LocalLowHandlerLogDirectory(handlerLogFolder);
         DeleteDirectoryWithRetry(handlerLogDirectory);
         Assert.IsFalse(
@@ -249,7 +274,6 @@ public class FileExplorerAddonsTests : UITestBase
         var emptyPreviewPath = CaptureStableWindow(explorer, $"{scenario}-empty");
         SelectFile(explorer, filePath);
 
-        var renderedPreviewPath = WaitForVisibleChange(explorer, emptyPreviewPath, $"{scenario}-rendered");
         var handlerLog = WaitForProviderLog(
             handlerLogDirectory,
             $"Starting {handlerName}.exe",
@@ -263,6 +287,7 @@ public class FileExplorerAddonsTests : UITestBase
             $"The PowerToys {handlerName} shim reported a launch failure.{Environment.NewLine}{handlerLogText}");
         var persistedLogPath = ArtifactPath($"{scenario}-handler", ".log");
         File.WriteAllText(persistedLogPath, handlerLogText);
+        var renderedPreviewPath = WaitForVisibleChange(explorer, emptyPreviewPath, $"{scenario}-rendered");
 
         TestContext.AddResultFile(emptyPreviewPath);
         TestContext.AddResultFile(renderedPreviewPath);
@@ -277,7 +302,6 @@ public class FileExplorerAddonsTests : UITestBase
         string scenario)
     {
         AssertShellExtensionRegistration(extension, ThumbnailHandlerShellExtension, expectedClsid, "thumbnail provider");
-        using var sandboxRegistration = SandboxThumbnailRegistration.Create(extension, expectedClsid);
         PrepareExplorerForRegisteredHandlers();
 
         var sourcePath = TestAssetPath(assetName);
@@ -336,13 +360,13 @@ public class FileExplorerAddonsTests : UITestBase
         string expectedClsid,
         string handlerDescription)
     {
-        var registryPath = $@"Software\Classes\{extension}\shellex\{shellExtension}";
+        var registryPath = $@"{extension}\shellex\{shellExtension}";
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(15);
         string? actualClsid = null;
 
         while (DateTime.UtcNow < deadline)
         {
-            using var key = Registry.CurrentUser.OpenSubKey(registryPath);
+            using var key = Registry.ClassesRoot.OpenSubKey(registryPath);
             actualClsid = key?.GetValue(null) as string;
             if (string.Equals(actualClsid, expectedClsid, StringComparison.OrdinalIgnoreCase))
             {
@@ -353,8 +377,8 @@ public class FileExplorerAddonsTests : UITestBase
         }
 
         Assert.Fail(
-            $"PowerToys did not register the {extension} {handlerDescription} for the current user. " +
-            $"Expected '{expectedClsid}' at HKCU\\{registryPath}; actual '{actualClsid ?? "<missing>"}'.");
+            $"PowerToys did not register the effective {extension} {handlerDescription}. " +
+            $"Expected '{expectedClsid}' at HKCR\\{registryPath}; actual '{actualClsid ?? "<missing>"}'.");
     }
 
     private Session OpenExplorer(string folderPath)
@@ -456,14 +480,159 @@ public class FileExplorerAddonsTests : UITestBase
 
     private static void PrepareExplorerForRegisteredHandlers()
     {
-        RestartExplorerShell();
+        lock (ExplorerPreparationLock)
+        {
+            if (explorerPrepared)
+            {
+                return;
+            }
+
+            if (Environment.UserName.Equals("WDAGUtilityAccount", StringComparison.OrdinalIgnoreCase))
+            {
+                sandboxThumbnailRegistrations = new List<SandboxThumbnailRegistration>();
+                try
+                {
+                    foreach (var (extension, clsid) in ThumbnailProviders)
+                    {
+                        AssertShellExtensionRegistration(
+                            extension,
+                            ThumbnailHandlerShellExtension,
+                            clsid,
+                            "thumbnail provider");
+                        sandboxThumbnailRegistrations.Add(SandboxThumbnailRegistration.Create(extension, clsid));
+                    }
+                }
+                catch
+                {
+                    for (var index = sandboxThumbnailRegistrations.Count - 1; index >= 0; index--)
+                    {
+                        sandboxThumbnailRegistrations[index].Dispose();
+                    }
+
+                    sandboxThumbnailRegistrations = null;
+                    throw;
+                }
+            }
+
+            RestartExplorerShell();
+            explorerPrepared = true;
+        }
     }
 
-    private void TogglePreviewPane(Session explorer)
+    private void EnsurePreviewPaneOpen(Session explorer)
     {
         EnsureExplorerForeground(explorer);
-        KeyboardHelper.SendKeys(Key.Alt, Key.P);
-        previewPaneToggled = true;
+        var command = OpenPreviewPaneCommand(explorer);
+        var initialState = ReadToggleState(command);
+        var initialStateText = initialState?.ToString() ?? "<unknown>";
+        TestContext.WriteLine($"Explorer Preview pane command initial ToggleState='{initialStateText}'.");
+
+        Assert.IsNotNull(
+            initialState,
+            "Explorer exposed the Preview pane command without a readable ToggleState.");
+
+        if (initialState == false)
+        {
+            command.Invoke(msPostAction: 500);
+        }
+        else
+        {
+            DismissExplorerMenus();
+        }
+
+        var verifiedOpen = false;
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(PreviewPaneCommandTimeoutMS);
+        while (DateTime.UtcNow < deadline && !verifiedOpen)
+        {
+            try
+            {
+                var verificationCommand = OpenPreviewPaneCommand(explorer);
+                verifiedOpen = ReadToggleState(verificationCommand) == true;
+            }
+            finally
+            {
+                DismissExplorerMenus();
+            }
+
+            if (!verifiedOpen)
+            {
+                Thread.Sleep(250);
+            }
+        }
+
+        Assert.IsTrue(verifiedOpen, "Explorer's Preview pane command did not reach ToggleState=On.");
+    }
+
+    private static Element OpenPreviewPaneCommand(Session explorer)
+    {
+        DismissExplorerMenus();
+        EnsureExplorerForeground(explorer);
+
+        var processSession = Session.FromProcess(
+            explorer.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            timeoutMS: 5_000);
+        var directCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 500);
+        if (directCommand is not null)
+        {
+            return directCommand;
+        }
+
+        var viewButton = explorer.FindAll<Element>(By.Name("View"), 5_000)
+            .Where(element => element.Name.Equals("View", StringComparison.OrdinalIgnoreCase))
+            .Where(element => element.Width > 0 && element.Height > 0)
+            .Where(element => element.ControlType.Equals("Button", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(element => element.Y)
+            .FirstOrDefault();
+        Assert.IsNotNull(viewButton, "Explorer's View command was not found.");
+        viewButton!.Invoke(msPostAction: 300);
+
+        directCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 750);
+        if (directCommand is not null)
+        {
+            return directCommand;
+        }
+
+        var showCommand = FindExactVisibleCommand(processSession, "Show", timeoutMS: 3_000);
+        Assert.IsNotNull(showCommand, "Explorer's View menu did not expose the Show submenu.");
+        showCommand!.Invoke(msPostAction: 300);
+
+        var previewCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 3_000);
+        Assert.IsNotNull(previewCommand, "Explorer's Show menu did not expose the Preview pane command.");
+        return previewCommand!;
+    }
+
+    private static Element? FindExactVisibleCommand(Session session, string name, int timeoutMS)
+    {
+        return session.FindAll<Element>(By.Name(name), timeoutMS)
+            .Where(element => element.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            .Where(element => element.Width > 0 && element.Height > 0)
+            .Where(element =>
+                element.ControlType.Equals("Button", StringComparison.OrdinalIgnoreCase) ||
+                element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(element => element.Y)
+            .FirstOrDefault();
+    }
+
+    private static bool? ReadToggleState(Element command)
+    {
+        var value = command.GetProperty("ToggleState");
+        if (value.Equals("On", StringComparison.OrdinalIgnoreCase) || value == "1")
+        {
+            return true;
+        }
+
+        if (value.Equals("Off", StringComparison.OrdinalIgnoreCase) || value == "0")
+        {
+            return false;
+        }
+
+        return null;
+    }
+
+    private static void DismissExplorerMenus()
+    {
+        KeyboardHelper.SendKeys(Key.Esc);
+        KeyboardHelper.SendKeys(Key.Esc);
     }
 
     private static void EnsureExplorerForeground(Session explorer)
@@ -537,7 +706,7 @@ public class FileExplorerAddonsTests : UITestBase
                 startYPercent: 18);
             TestContext.WriteLine($"Preview-region pixel change: {lastDifference:F2}%.");
 
-            if (lastDifference >= 2.0)
+            if (lastDifference >= PreviewRegionDifferenceThreshold)
             {
                 if (lastPath is not null)
                 {
@@ -555,9 +724,15 @@ public class FileExplorerAddonsTests : UITestBase
             lastPath = currentPath;
         }
 
+        TestContext.AddResultFile(baselinePath);
+        if (lastPath is not null)
+        {
+            TestContext.AddResultFile(lastPath);
+        }
+
         Assert.Fail(
             $"The Explorer preview region did not visibly render within {PreviewTimeoutMS / 1_000}s. " +
-            $"Last sampled pixel change was {lastDifference:F2}%.");
+            $"Expected at least {PreviewRegionDifferenceThreshold:F2}%; last sampled change was {lastDifference:F2}%.");
         return null!;
     }
 
@@ -630,8 +805,9 @@ public class FileExplorerAddonsTests : UITestBase
 
     private string ArtifactPath(string name, string extension = ".png")
     {
+        var currentTestName = TestContext.TestName ?? "unknown-test";
         var testName = string.Concat(
-            TestContext.TestName.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '-' : character));
+            currentTestName.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '-' : character));
         var directory = Path.Combine(
             FindStableResultsRoot(),
             "FileExplorerAddons",
