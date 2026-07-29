@@ -9,9 +9,11 @@
 
 namespace CommandLine
 {
-    // Removes argv[0] the way the CRT, CommandLineToArgvW and CreateProcessW all tokenize it - a
-    // quoted name runs to the next quote, an unquoted one to the first whitespace - then trims the
-    // separating spaces/tabs and preserves the remaining command-line text verbatim. Leading
-    // whitespace is skipped first, which the CRT does not do; see CommandLine.cpp.
+    // Removes argv[0] the way the CRT tokenizes it - every quote toggles an in-quotes flag and the
+    // name ends at the first whitespace outside quotes, so neither a quote nor a backslash-escape
+    // terminates it - then trims the separating spaces/tabs and preserves the remaining
+    // command-line text verbatim. Note that CommandLineToArgvW uses a different rule for argv[0];
+    // the CRT's is the one the target CLIs actually parse. Leading whitespace is skipped first,
+    // which the CRT does not do; see CommandLine.cpp.
     std::wstring StripArgumentZero(std::wstring_view commandLine);
 }

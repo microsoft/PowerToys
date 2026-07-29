@@ -32,16 +32,18 @@ namespace CliShimUnitTests
                 { LR"("C:\Program Files\PowerToys\bin\PowerToys.FancyZones.CLI.exe" arg)", L"arg" },
                 { LR"("C:\Program Files\PowerToys\bin\PowerToys.FancyZones.CLI.exe")", L"" },
 
-                // A quoted argv[0] ends at the closing quote even when no whitespace follows, so an
-                // argument glued to it is still forwarded. Toggling quotes instead would swallow it.
-                { LR"("C:\bin\PowerToys.FancyZones.CLI.exe"--help)", L"--help" },
+                // Quotes only toggle, so a quoted argv[0] does not end at the closing quote: an
+                // argument glued to it is part of the program name. CommandLineToArgvW would
+                // forward `--help` here; the CRT - and so every target CLI - sees no arguments.
+                { LR"("C:\bin\PowerToys.FancyZones.CLI.exe"--help)", L"" },
 
-                // Partially quoted program names are ambiguous, and the shim resolves them exactly
-                // as the CRT does, so the target sees the same tail it would have seen had the
-                // caller invoked it directly rather than through the shim.
-                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", LR"(\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)" },
-                { LR"(C:\Program" Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", LR"(Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)" },
-                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe)", LR"(\PowerToys\bin\PowerToys.FancyZones.CLI.exe)" },
+                // Partially quoted program names - the batch idiom of quoting only the variable,
+                // `"%ProgramFiles%"\PowerToys\bin\...`, which cmd.exe passes through verbatim - are
+                // resolved exactly as the CRT resolves them, so the target sees the same tail it
+                // would have seen had the caller invoked it directly rather than through the shim.
+                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", L"arg" },
+                { LR"(C:\Program" Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg)", L"arg" },
+                { LR"("C:\Program Files"\PowerToys\bin\PowerToys.FancyZones.CLI.exe)", L"" },
 
                 { LR"("C:\bin\PowerToys.FancyZones.CLI.exe" "a b")", LR"("a b")" },
                 { LR"(PowerToys.FancyZones.CLI --path "C:\a b\c.png")", LR"(--path "C:\a b\c.png")" },

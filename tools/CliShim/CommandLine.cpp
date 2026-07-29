@@ -14,40 +14,42 @@ namespace CommandLine
 
         size_t index = 0;
 
-        // A non-shell CreateProcessW caller can prepend whitespace; without this skip the
-        // unquoted scan stalls at index 0 and leaks argv[0] into the forwarded tail. This is a
-        // deliberate departure from the CRT, which would report an empty argv[0] instead.
+        // A non-shell CreateProcessW caller can prepend whitespace; without this skip the scan
+        // below stalls at index 0 and leaks argv[0] into the forwarded tail. This is a deliberate
+        // departure from the CRT, which would report an empty argv[0] instead.
         while (index < commandLine.size() && isWhitespace(commandLine[index]))
         {
             ++index;
         }
 
-        // argv[0] is tokenized differently from every later argument, and identically by the CRT,
-        // CommandLineToArgvW and CreateProcessW's own program-name scan: a quoted name runs to the
-        // NEXT quote - backslashes do not escape it and there is no toggling - and an unquoted name
-        // runs to the first whitespace. Matching that rule is what makes the shim transparent: the
-        // target sees the exact tail it would have seen had the caller invoked it directly.
-        // Toggling instead would swallow the argument in `"...\PowerToys.FancyZones.CLI.exe"--help`,
-        // where every other program on the system sees `--help`.
-        if (index < commandLine.size() && commandLine[index] == L'"')
+        // argv[0] is tokenized differently from every later argument, and the rule that matters is
+        // the CRT's, because that is what every target ends up parsing: FileLocksmithCLI is a
+        // native wmain, and the .NET CLIs receive their string[] from the apphost's wmain. The CRT
+        // (ucrt\startup\argv_parsing.cpp, parse_command_line) toggles an in-quotes flag on every
+        // quote while scanning argv[0] and ends the name at the first whitespace found outside
+        // quotes; a quote never terminates the name and a backslash never escapes one.
+        //
+        // CommandLineToArgvW is the odd one out - it ends a quoted argv[0] at the closing quote,
+        // with no toggling - so following it instead would leak the rest of the program name into
+        // the tail of a partially quoted command line such as
+        // `"%ProgramFiles%"\PowerToys\bin\PowerToys.FancyZones.CLI.exe arg`, which cmd.exe passes
+        // through verbatim. Matching the CRT is what makes the shim transparent: the target sees
+        // the exact tail it would have seen had the caller invoked it directly.
+        bool inQuotes = false;
+        while (index < commandLine.size())
         {
+            const wchar_t character = commandLine[index];
             ++index;
 
-            while (index < commandLine.size() && commandLine[index] != L'"')
+            if (character == L'"')
             {
-                ++index;
+                inQuotes = !inQuotes;
+                continue;
             }
 
-            if (index < commandLine.size())
+            if (!inQuotes && isWhitespace(character))
             {
-                ++index;
-            }
-        }
-        else
-        {
-            while (index < commandLine.size() && !isWhitespace(commandLine[index]))
-            {
-                ++index;
+                break;
             }
         }
 
