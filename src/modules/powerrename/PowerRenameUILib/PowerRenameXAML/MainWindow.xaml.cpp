@@ -649,6 +649,12 @@ namespace winrt::PowerRenameUI::implementation
         _TRACER_;
 
         Logger::debug(L"Forced renaming - {}", forceRenaming);
+        if (!m_numericRenameNames.empty())
+        {
+            ApplyNumericMapping();
+            return;
+        }
+
         // Pass updated search and replace terms to the IPowerRenameRegEx handler
         CComPtr<IPowerRenameRegEx> prRegEx;
         if (m_prManager && SUCCEEDED(m_prManager->GetRenameRegEx(&prRegEx)))
@@ -660,10 +666,6 @@ namespace winrt::PowerRenameUI::implementation
             prRegEx->PutReplaceTerm(replaceTerm.c_str(), forceRenaming);
         }
 
-        if (!m_numericRenameNames.empty())
-        {
-            ApplyNumericMapping();
-        }
     }
 
     void MainWindow::ApplyNumericMapping()

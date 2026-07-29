@@ -105,17 +105,6 @@ namespace
         return fields;
     }
 
-    std::string ToUtf8(PCWSTR value)
-    {
-        if (!value) return {};
-        const int length = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value, -1, nullptr, 0, nullptr, nullptr);
-        if (length <= 1) return {};
-        std::string result(static_cast<size_t>(length), '\0');
-        WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, value, -1, result.data(), length, nullptr, nullptr);
-        result.resize(static_cast<size_t>(length) - 1);
-        return result;
-    }
-
     std::wstring DecodeXmlEntities(const std::wstring& value)
     {
         std::wstring result;
@@ -364,12 +353,20 @@ namespace PowerRenameLib
     HRESULT LoadNumericRenameMappingFromXlsx(PCWSTR path, NumericRenameMapping& mappings)
     {
         mappings.clear();
-        const std::string utf8Path = ToUtf8(path);
-        if (utf8Path.empty()) return E_INVALIDARG;
 
-        int zipError = 0;
-        zip_t* archive = zip_open(utf8Path.c_str(), ZIP_RDONLY, &zipError);
-        if (!archive) return E_FAIL;
+        std::vector<unsigned char> archiveBytes;
+        HRESULT hr = ReadFileBytes(path, archiveBytes);
+        if (FAILED(hr) || archiveBytes.empty()) return FAILED(hr) ? hr : E_INVALIDARG;
+
+        zip_error_t zipError{};
+        zip_source_t* source = zip_source_buffer_create(archiveBytes.data(), archiveBytes.size(), 0, nullptr);
+        if (!source) return E_FAIL;
+        zip_t* archive = zip_open_from_source(source, ZIP_RDONLY, &zipError);
+        if (!archive)
+        {
+            zip_source_free(source);
+            return E_FAIL;
+        }
 
         std::vector<std::wstring> sharedStrings;
         std::string sharedBytes;
@@ -390,7 +387,7 @@ namespace PowerRenameLib
         }
 
         std::string worksheetBytes;
-        HRESULT hr = ReadZipEntry(archive, "xl/worksheets/sheet1.xml", worksheetBytes);
+        hr = ReadZipEntry(archive, "xl/worksheets/sheet1.xml", worksheetBytes);
         if (SUCCEEDED(hr))
         {
             std::wstring worksheet;
