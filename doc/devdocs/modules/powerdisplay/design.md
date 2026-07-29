@@ -14,6 +14,7 @@
 6. [Component Design](#component-design)
    - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
    - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
+   - [Tray Icon: Registration, Callbacks and Hover UI](#tray-icon-registration-callbacks-and-hover-ui)
    - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
    - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
    - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
@@ -412,6 +413,72 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 - Each device change event schedules a `DisplayChanged` event after 1 second
 - Subsequent events within the debounce window cancel the previous timer
 - This prevents excessive refreshes when multiple monitors change simultaneously
+
+---
+
+### Tray Icon: Registration, Callbacks and Hover UI
+
+`TrayIconService` owns the notification-area icon. Three concerns live in it.
+
+**Registration and recovery.** The icon is registered with `Shell_NotifyIcon(NIM_ADD)`, which fails
+if Explorer is not ready yet. Nothing polls a healthy registration; a lost one is reported by
+
+- the `TaskbarCreated` broadcast (Explorer restarted),
+- a failing `Shell_NotifyIconGetRect` on the next hover, or
+- the settings-update path,
+
+and each schedules a check through `TrayIconRegistrationBackoff` (250 ms → 500 ms → 1 s → 2 s → 5 s,
+capped). `IsTrayIconRegistrationHealthy` uses `Shell_NotifyIconGetRect`, which also succeeds for an
+icon parked in the notification overflow, so a hidden icon is not mistaken for a lost one.
+
+**NOTIFYICON_VERSION_4.** The icon opts in with `NIM_SETVERSION`. This changes both what the Shell
+sends and how it packs it:
+
+| | Legacy | Version 4 |
+| --- | --- | --- |
+| Icon id | `wParam` | `HIWORD(lParam)` |
+| Event | `lParam` | `LOWORD(lParam)` |
+| Anchor point | not supplied | `wParam` |
+| Left click | `WM_LBUTTONUP` | `NIN_SELECT` (and `NIN_KEYSELECT` from the keyboard) |
+| Right click | `WM_RBUTTONUP` | `WM_CONTEXTMENU`, at a Shell-chosen anchor |
+| Hover | `WM_MOUSEMOVE` | `WM_MOUSEMOVE` plus `NIN_POPUPOPEN`/`NIN_POPUPCLOSE` |
+
+`DispatchTrayNotification` decodes according to whether `NIM_SETVERSION` actually succeeded, and
+`HandleTrayNotification` handles both sets. Version 4 still forwards the raw button messages, so the
+legacy cases are suppressed while version 4 is active - handling both would open the context menu
+twice and toggle the window twice.
+
+**Hover UI.** `NIF_TIP` is supplied without `NIF_SHOWTIP`, which tells the Shell to stop drawing the
+standard tooltip and lets the application present its own hover UI. `TrayWheelFeedbackWindow` is
+that presenter - a no-activate (`WS_EX_NOACTIVATE`), click-through (`WS_EX_TRANSPARENT` plus
+`HTTRANSPARENT`) `TransparentWindow`:
+
+| Moment | Overlay shows |
+| --- | --- |
+| 500 ms after the pointer enters the icon | The app name |
+| `UpdateAdjustmentFeedback(text)` | That text, immediately |
+| 2 s after the last readout | Back to the app name |
+
+`TrayWheelFeedbackSession` owns that timing and `TrayWheelFeedbackPlacement` positions the window
+inward from the nearest outer display edge, clamped to the work area. `UpdateAdjustmentFeedback` is
+the seam for callers that want a transient readout attached to the icon; formatting the text is
+deliberately the caller's job so wording and its localized resources stay with whatever gesture
+produced them.
+
+Two consequences of replacing the Shell tooltip are deliberate and worth knowing before changing
+this code:
+
+- The overlay is created lazily on first hover and then kept for the process lifetime, so the icon
+  costs a XAML window and a 250 ms hover watchdog it did not cost before.
+- A hover that never involves the cursor - keyboard or touch focus in the notification area - shows
+  no text at all, because the overlay is only presented when `GetCursorPos` lands inside the icon
+  rectangle. `szTip` is still supplied, so the icon keeps its UI Automation name and its label in
+  the overflow flyout, but there is no visible hover text for those input methods.
+
+**Testing.** The placement, hover timing, rectangle arithmetic and backoff sequence live in
+`PowerDisplay.Lib/Services` as pure, UI-free types with unit tests in `PowerDisplay.Lib.UnitTests`.
+The Win32 and WinUI glue in `TrayIconService` and `TrayWheelFeedbackWindow` is not unit tested and
+needs manual verification.
 
 ---
 

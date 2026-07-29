@@ -1,0 +1,110 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Services;
+
+namespace PowerDisplay.UnitTests;
+
+[TestClass]
+public class TrayWheelFeedbackPlacementTests
+{
+    private static readonly PixelRect Outer = new(0, 0, 1000, 800);
+    private static readonly PixelRect Work = new(0, 0, 1000, 760);
+
+    [TestMethod]
+    public void Calculate_BottomEdge_PositionsAboveIcon()
+    {
+        var result = Calculate(new TrayIconBounds(700, 760, 740, 800));
+
+        Assert.AreEqual(new PixelRect(620, 702, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_TopEdge_PositionsBelowIcon()
+    {
+        var result = Calculate(new TrayIconBounds(480, 0, 520, 40));
+
+        Assert.AreEqual(new PixelRect(400, 48, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_LeftEdge_PositionsRightOfIcon()
+    {
+        var result = Calculate(new TrayIconBounds(0, 350, 40, 390));
+
+        Assert.AreEqual(new PixelRect(48, 345, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_RightEdge_PositionsLeftOfIcon()
+    {
+        var result = Calculate(new TrayIconBounds(960, 350, 1000, 390));
+
+        Assert.AreEqual(new PixelRect(752, 345, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_ClampsToWorkArea()
+    {
+        var result = Calculate(new TrayIconBounds(0, 760, 40, 800));
+
+        Assert.AreEqual(new PixelRect(0, 702, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_OverflowIconStillUsesNearestOuterEdge()
+    {
+        var result = Calculate(new TrayIconBounds(800, 650, 840, 690));
+
+        Assert.AreEqual(new PixelRect(720, 592, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_OverflowIconStillUsesNearestOuterEdge_NegativeCoordinates()
+    {
+        var result = TrayWheelFeedbackPlacement.Calculate(
+            new TrayIconBounds(-1940, 100, -1900, 140),
+            new PixelRect(-1920, 0, 1920, 1080),
+            new PixelRect(-1920, 0, 1920, 1040),
+            200,
+            50,
+            8);
+
+        Assert.AreEqual(new PixelRect(-1892, 95, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_TiePrefersBottom()
+    {
+        var squareOuter = new PixelRect(0, 0, 800, 800);
+        var squareWork = new PixelRect(0, 0, 800, 760);
+        var result = TrayWheelFeedbackPlacement.Calculate(
+            new TrayIconBounds(380, 380, 420, 420),
+            squareOuter,
+            squareWork,
+            200,
+            50,
+            8);
+
+        Assert.AreEqual(new PixelRect(300, 322, 200, 50), result);
+    }
+
+    [TestMethod]
+    public void Calculate_NegativeMonitorCoordinates_AreHandled()
+    {
+        var result = TrayWheelFeedbackPlacement.Calculate(
+            new TrayIconBounds(-1880, 1000, -1840, 1040),
+            new PixelRect(-1920, 0, 1920, 1080),
+            new PixelRect(-1920, 0, 1920, 1040),
+            200,
+            50,
+            8);
+
+        Assert.AreEqual(new PixelRect(-1920, 942, 200, 50), result);
+    }
+
+    private static PixelRect Calculate(TrayIconBounds icon)
+        => TrayWheelFeedbackPlacement.Calculate(icon, Outer, Work, 200, 50, 8);
+}

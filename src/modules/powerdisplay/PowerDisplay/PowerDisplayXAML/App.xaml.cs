@@ -173,10 +173,14 @@ namespace PowerDisplay
 
                 // Initialize tray icon service
                 Logger.LogTrace("OnLaunched: Initializing TrayIconService");
+
+                // The exit action is Shutdown rather than Environment.Exit directly: the tray icon
+                // now owns an overlay window that has to be closed, and Shutdown is the path that
+                // runs TrayIconService.Destroy.
                 _trayIconService = new TrayIconService(
                     _settingsUtils,
                     ToggleMainWindow,
-                    () => Environment.Exit(0),
+                    Shutdown,
                     OpenSettings);
                 _trayIconService.SetupTrayIcon();
                 Logger.LogTrace("OnLaunched: TrayIconService initialized");
