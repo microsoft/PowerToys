@@ -69,8 +69,6 @@ Each JS extension runs in its own Node.js process. The host spawns the process, 
 
 ---
 
----
-
 ## Known Gaps and Deferred Work
 
 The following capabilities are intentionally not part of the current JS/TS extension surface. They are documented here so contributors know the boundary and the likely shape of a future solution. Each is deferred rather than rejected.

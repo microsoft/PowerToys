@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import { describe, expect, it } from 'vitest';
-import type { ContextItem, IFallbackCommandItem, IListItem } from '../src/types.js';
+import type { ContextItem, Details, IFallbackCommandItem, IListItem } from '../src/types.js';
 import { WireSerializer } from '../src/runtime/serialize.js';
 
 describe('WireSerializer.contextItems', () => {
@@ -71,6 +71,32 @@ describe('WireSerializer.contextItems', () => {
   });
 });
 
+describe('WireSerializer.details', () => {
+  it('serializes a string size', () => {
+    const details: Details = { title: 'A', size: 'large' };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire.size).toBe('large');
+  });
+
+  it('serializes a numeric ContentSize', () => {
+    const details: Details = { title: 'B', size: 1 };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire.size).toBe(1);
+  });
+
+  it('omits size when it is not set', () => {
+    const details: Details = { title: 'C' };
+
+    const wire = new WireSerializer().details(details);
+
+    expect(wire).not.toHaveProperty('size');
+  });
+});
+
 describe('WireSerializer.listItem', () => {
   it('serializes textToSuggest when set', () => {
     const item: IListItem = {
@@ -118,3 +144,4 @@ describe('WireSerializer.commandItem fallback ids', () => {
     expect(new WireSerializer().commandItem(item).id).toBe('fallback-command');
   });
 });
+
