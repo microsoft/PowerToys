@@ -7,17 +7,13 @@ import type { IListItem } from '@microsoft/cmdpal-sdk';
 import { glyphIcon } from '../util.js';
 
 /**
- * A demo of clipboard integration. Mirrors the C# `SampleDataTransferPage`.
- *
- * Not supported yet: the C# page attaches a `DataPackage` to each list item to
- * enable drag and drop (including delayed and image payloads). `IListItem` in
- * the JS protocol has no `DataPackage`, so drag and drop is omitted and the
- * text items expose a copy to clipboard command instead.
+ * A demo of clipboard integration. Mirrors the clipboard portion of the C#
+ * `SampleDataTransferPage`. Each item exposes a copy command.
  */
 export class SampleDataTransferPage extends ListPageBase {
   readonly id = 'sample-data-transfer-page';
   readonly name = 'Open';
-  readonly title = 'Clipboard and Drag-and-Drop Demo';
+  readonly title = 'Clipboard Demo';
 
   override icon = glyphIcon('\uE8C8');
 
@@ -26,7 +22,7 @@ export class SampleDataTransferPage extends ListPageBase {
       new ListItemBase({
         command: new CopyTextCommand('Text data in the Data Package', 'Copy text', 'Copied text'),
         title: 'Item with plain text',
-        subtitle: 'Copy plain text to the clipboard (drag and drop is not supported from JS)',
+        subtitle: 'Copy plain text to the clipboard',
       }),
       new ListItemBase({
         command: new CopyTextCommand(new Date().toLocaleString(), 'Copy timestamp', 'Copied timestamp'),
