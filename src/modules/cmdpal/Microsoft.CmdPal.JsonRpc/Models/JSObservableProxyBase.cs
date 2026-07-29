@@ -79,6 +79,24 @@ internal abstract class JSObservableProxyBase : BaseObservable, IJSPropertyChang
     {
     }
 
+    protected void ReplaceData(JsonElement data, IReadOnlyList<string> propertyNames)
+    {
+        var current = Data;
+        if (current.ValueKind != JsonValueKind.Undefined &&
+            string.Equals(current.GetRawText(), data.GetRawText(), StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Volatile.Write(ref _data, new DataBox(data));
+        OnPropertyChangesApplied(propertyNames);
+
+        foreach (var propertyName in propertyNames)
+        {
+            OnPropertyChanged(ToAbiPropertyName(propertyName));
+        }
+    }
+
     public virtual void Dispose()
     {
         if (_disposed)
