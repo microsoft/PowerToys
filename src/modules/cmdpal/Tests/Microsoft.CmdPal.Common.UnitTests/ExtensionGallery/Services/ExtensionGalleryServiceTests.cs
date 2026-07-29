@@ -285,6 +285,78 @@ public class ExtensionGalleryServiceTests
     }
 
     [TestMethod]
+    public async Task FetchExtensionsAsync_ParsesDocumentedJsonRpcGalleryExample()
+    {
+        // This JSON is the gallery feed example published in
+        // doc/json-rpc-spec/04-manifest-packaging.md. It is fed through the production parser so
+        // the documentation and the real gallery model can never drift apart. The example omits
+        // iconUrl so the parse stays hermetic (no icon is fetched over the network).
+        var feedDirectory = CreateTempDirectory("feed");
+        var cacheDirectory = CreateTempDirectory("cache");
+
+        var documentedJson = """
+            {
+              "extensions": [
+                {
+                  "id": "publisher.cmdpal-my-extension",
+                  "title": "My Extension",
+                  "description": "Does amazing things from the Command Palette.",
+                  "shortDescription": "Does amazing things.",
+                  "author": {
+                    "name": "Your Name",
+                    "url": "https://example.com"
+                  },
+                  "homepage": "https://example.com/my-extension",
+                  "tags": ["cmdpal", "productivity"],
+                  "installSources": [
+                    {
+                      "type": "jsonrpc",
+                      "npm": {
+                        "package": "@publisher/cmdpal-my-extension",
+                        "version": "1.0.0",
+                        "integrity": "sha512-3sxT2b3Ea2u2vLXA7Yl0dOZH3Rm9j1p3T0i8b9m2wJ0kZ8t2K1cQ0f8p7L6r5S4d3F2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w==",
+                        "registry": "https://registry.npmjs.org"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+            """;
+
+        File.WriteAllText(Path.Combine(feedDirectory, "extensions.json"), documentedJson);
+
+        var feedUrl = ToFeedUri(feedDirectory);
+        using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, innerHandler: null);
+
+        var result = await serviceHandle.Service.FetchExtensionsAsync();
+
+        Assert.IsFalse(result.HasError);
+        Assert.AreEqual(1, result.Extensions.Count);
+
+        var extension = result.Extensions[0];
+        Assert.AreEqual("publisher.cmdpal-my-extension", extension.Id);
+        Assert.AreEqual("My Extension", extension.Title);
+        Assert.AreEqual("Does amazing things from the Command Palette.", extension.Description);
+        Assert.AreEqual("Does amazing things.", extension.ShortDescription);
+        Assert.AreEqual("Your Name", extension.Author.Name);
+        Assert.AreEqual("https://example.com", extension.Author.Url);
+        Assert.AreEqual("https://example.com/my-extension", extension.Homepage);
+        CollectionAssert.AreEqual(new List<string> { "cmdpal", "productivity" }, extension.Tags);
+
+        Assert.AreEqual(1, extension.InstallSources.Count);
+        var installSource = extension.InstallSources[0];
+        Assert.AreEqual("jsonrpc", installSource.Type);
+        Assert.IsNotNull(installSource.Npm);
+        Assert.AreEqual("@publisher/cmdpal-my-extension", installSource.Npm!.Package);
+        Assert.AreEqual("1.0.0", installSource.Npm.Version);
+        Assert.AreEqual(
+            "sha512-3sxT2b3Ea2u2vLXA7Yl0dOZH3Rm9j1p3T0i8b9m2wJ0kZ8t2K1cQ0f8p7L6r5S4d3F2a1B0c9D8e7F6g5H4i3J2k1L0m9N8o7P6q5R4s3T2u1V0w==",
+            installSource.Npm.Integrity);
+        Assert.AreEqual("https://registry.npmjs.org", installSource.Npm.Registry);
+    }
+
+    [TestMethod]
     public async Task FetchExtensionsAsync_ReusesFreshHttpIconCache_WithoutAnotherNetworkCall()
     {
         var cacheDirectory = CreateTempDirectory("cache");

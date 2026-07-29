@@ -545,10 +545,9 @@ public class NpmJsExtensionInstallerTests
     [TestMethod]
     public async Task InstallAsync_PreservesMixedScopedAndUnscopedDependencies()
     {
-        // The closure npm ci installs under the package's own node_modules, including @scope
-        // directories, survives promotion. Scoped, unscoped, and mixed dependencies all land in the
-        // promoted extension. The scoped merge discard defect lives only in the phase 6
-        // JsExtensionPackageLayout, which is absent from phase 5.
+        // The publisher-frozen closure npm ci installs under the package's own node_modules, including
+        // @scope directories, survives promotion so scoped, unscoped, and mixed dependencies all land
+        // in the promoted extension.
         var host = CreateHost();
         var runner = new FakeRunner
         {
