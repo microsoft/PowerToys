@@ -52,10 +52,11 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Applies complete tray wheel notches to the configured brightness targets.
+    /// Applies complete tray wheel notches to the configured brightness targets. The brightness
+    /// change is its own feedback, so nothing is reported back to the caller.
     /// </summary>
     /// <param name="notches">The signed number of complete wheel notches.</param>
-    public TrayWheelAdjustmentFeedback? AdjustBrightnessFromTrayWheel(int notches)
+    public void AdjustBrightnessFromTrayWheel(int notches)
     {
         var mode = MouseWheelControlMode.Normalize();
         var adjustments = PlanTrayWheelAdjustments(mode, notches);
@@ -68,7 +69,7 @@ public partial class MainViewModel
                 _trayWheelNoTargetLogged = true;
             }
 
-            return null;
+            return;
         }
 
         _trayWheelNoTargetLogged = false;
@@ -79,7 +80,6 @@ public partial class MainViewModel
         var linkedBrightness = 0;
         var hasLinkedTarget = false;
 
-        var brightnessValues = new List<int>(adjustments.Count);
         foreach (var adjustment in adjustments)
         {
             foreach (var monitor in Monitors)
@@ -91,7 +91,7 @@ public partial class MainViewModel
 
                 if (LinkedLevelsActive && IsLinkedTarget(monitor))
                 {
-                    // The group moves as one, so it contributes a single value to the readout.
+                    // The group moves as one, so only the first linked target sets the master.
                     // Step from the planner's value for this monitor rather than from
                     // LinkedBrightness: the master is positional only - SeedInitialLinkedBrightness
                     // takes it from the lowest-numbered linked monitor and never writes hardware,
@@ -105,14 +105,12 @@ public partial class MainViewModel
                     if (!hasLinkedTarget)
                     {
                         linkedBrightness = adjustment.Brightness;
-                        brightnessValues.Add(linkedBrightness);
                         hasLinkedTarget = true;
                     }
                 }
                 else
                 {
                     monitor.Brightness = adjustment.Brightness;
-                    brightnessValues.Add(adjustment.Brightness);
                 }
 
                 break;
@@ -123,8 +121,6 @@ public partial class MainViewModel
         {
             LinkedBrightness = linkedBrightness;
         }
-
-        return new TrayWheelAdjustmentFeedback(mode, brightnessValues, hasLinkedTarget);
     }
 
     private IReadOnlyList<TrayWheelAdjustmentPlanner.Adjustment> PlanTrayWheelAdjustments(

@@ -14,7 +14,7 @@
 6. [Component Design](#component-design)
    - [PowerDisplay Module Internal Structure](#powerdisplay-module-internal-structure)
    - [DisplayChangeWatcher - Monitor Hot-Plug Detection](#displaychangewatcher---monitor-hot-plug-detection)
-   - [Tray Icon Hover and Mouse Wheel Control](#tray-icon-hover-and-mouse-wheel-control)
+   - [Tray Icon Mouse Wheel Control](#tray-icon-mouse-wheel-control)
    - [DDC/CI and WMI Interaction Architecture](#ddcci-and-wmi-interaction-architecture)
    - [IMonitorController Interface Methods](#imonitorcontroller-interface-methods)
    - [Why WmiLight Instead of System.Management](#why-wmilight-instead-of-systemmanagement)
@@ -416,17 +416,23 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 
 ---
 
-### Tray Icon Hover and Mouse Wheel Control
+### Tray Icon Mouse Wheel Control
 
 Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
-flyout. The scope is chosen by the **Mouse wheel control** setting
+flyout. The scope comes from the **Mouse wheel control** setting
 (`PowerDisplayProperties.MouseWheelControlMode`): `Disabled`, `PrimaryDisplay` (default) or
 `AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
 
+**No feedback UI, on purpose.** Brightness is self-evidencing: the screen changes as you scroll, so
+there is nothing for a readout to add that the display itself does not already show. The tray icon
+keeps the standard Shell tooltip and its existing text, and the notification icon stays on the
+legacy protocol. This is a deliberate departure from volume-style tray controls, where an on-screen
+readout is the only feedback available.
+
 **Why a low-level hook.** The Shell does not forward `WM_MOUSEWHEEL` to a notification icon's
-callback window under any `NOTIFYICON_VERSION`, and a `WS_EX_TRANSPARENT` overlay placed over the
-icon cannot receive wheel input either. `TrayIconMouseWheelListener` therefore installs a
-`WH_MOUSE_LL` hook — but only transiently:
+callback window under any `NOTIFYICON_VERSION`, and a click-through overlay placed over the icon
+cannot receive wheel input either. `TrayIconMouseWheelListener` therefore installs a `WH_MOUSE_LL`
+hook - but only transiently:
 
 - The hook is installed in `EnsureHook()` when the UI thread confirms the pointer is inside the
   rectangle returned by `Shell_NotifyIconGetRect` **and** `CanAdjustBrightnessFromTrayWheel` says
@@ -437,43 +443,16 @@ icon cannot receive wheel input either. `TrayIconMouseWheelListener` therefore i
   the armed rectangle, so a wheel event PowerDisplay will not act on still reaches the window under
   the cursor.
 
-The hook runs on a dedicated background thread with its own message loop; deltas are queued as
-`TrayWheelSample` values and marshalled to the UI thread in batches. `WheelDeltaAccumulator` folds
-high-resolution deltas (precision wheels, touchpads) into whole notches.
+The hook runs on a dedicated background thread with its own message loop. Deltas are queued as
+`TrayWheelSample` values and marshalled to the UI thread in batches; `WheelDeltaAccumulator` folds
+high-resolution deltas (precision wheels, touchpads) into whole notches. Each sample carries the
+hover generation it was captured under, so samples from a hover the UI thread has already retired
+are discarded rather than applied late.
 
-**Hover presentation.** The icon opts into `NOTIFYICON_VERSION_4`, which changes the callback
-packing (`LOWORD(lParam)` carries the event, `wParam` the anchor point) and adds
-`NIN_POPUPOPEN`/`NIN_POPUPCLOSE`. `NIF_TIP` is supplied without `NIF_SHOWTIP`, which tells the Shell
-to stop drawing the standard tooltip and let the application present its own hover UI.
-
-`TrayWheelFeedbackWindow` is that presenter, and it is the **single owner of tray hover text in
-every mode**:
-
-| Moment | Overlay shows |
-| --- | --- |
-| 500 ms after the pointer enters the icon | The app name |
-| Immediately on a wheel adjustment | The scope and the resulting percentage |
-| 2 s after the last adjustment | Back to the app name |
-
-The overlay has to exist regardless of the setting, because the adjustment readout must appear on
-demand and the standard tooltip cannot be shown programmatically. Splitting the two purposes between
-the Shell and the overlay would mean two hover presentations to maintain and test, so the overlay
-draws both and `NIF_SHOWTIP` is never set. **Mouse wheel control set to `Disabled` therefore only
-disables the wheel** - the hover presentation is unchanged.
-
-Two consequences of that choice are deliberate and worth knowing before changing this code:
-
-- A user who turns mouse wheel control off still gets the overlay instead of the standard tooltip,
-  and still pays for the lazily created XAML window and the hover watchdog.
-- A hover that never involves the cursor - keyboard or touch focus in the notification area - shows
-  no text at all, because the overlay is only presented when `GetCursorPos` lands inside the icon
-  rectangle. `szTip` is still supplied, so the icon keeps its UI Automation name and its label in
-  the overflow flyout, but there is no visible hover text for those input methods.
-
-`TrayWheelFeedbackWindow` is a no-activate (`WS_EX_NOACTIVATE`), click-through
-(`WS_EX_TRANSPARENT` plus `HTTRANSPARENT`) `TransparentWindow`. `TrayWheelFeedbackSession` owns the
-timing in the table above and `TrayWheelFeedbackPlacement` positions it inward from the nearest
-outer display edge, clamped to the work area.
+**Hover detection.** The Shell sends `WM_MOUSEMOVE` to the icon's callback window while the pointer
+is over it. `TrayIconService.HandleTrayMouseMove` resolves the icon rectangle with
+`Shell_NotifyIconGetRect`, caching it for a second because that message repeats for every pixel of
+travel.
 
 **Linked brightness.** While linked brightness is on, a wheel notch must move the whole group, so it
 is routed through `MainViewModel.LinkedBrightness` rather than the individual monitor setters. The
@@ -481,18 +460,11 @@ new master value is derived from `TrayWheelAdjustmentPlanner`'s value for the mo
 named, not from the current master: the master is positional only (`SeedInitialLinkedBrightness`
 takes it from the lowest-numbered linked monitor and never writes hardware, and every monitor-list
 rebuild re-seeds it), so stepping it relative to itself would apply a wrong-sized or wrong-signed
-change. The readout says "Linked displays" to make the widened scope explicit.
+change.
 
-**Registration recovery.** Nothing polls a healthy registration. A lost icon is reported by the
-`TaskbarCreated` broadcast, by a failing `Shell_NotifyIconGetRect` on the next hover, or by the
-settings-update path; each schedules a check through `TrayIconRegistrationBackoff`
-(250 ms → 5 s, capped).
-
-**Testing.** The placement, hover timing, feedback formatting, target selection, wheel accumulation
-and backoff logic all live in `PowerDisplay.Lib/Services` as pure, UI-free types with unit tests in
-`PowerDisplay.Lib.UnitTests`. The Win32 and WinUI glue in `TrayIconService`,
-`TrayIconMouseWheelListener` and `TrayWheelFeedbackWindow` is not unit tested and needs manual
-verification.
+**Testing.** Target selection and wheel accumulation are pure logic in `PowerDisplay.Lib/Services`
+with unit tests in `PowerDisplay.Lib.UnitTests`. The Win32 glue in `TrayIconService` and
+`TrayIconMouseWheelListener` is not unit tested and needs manual verification.
 
 ---
 
