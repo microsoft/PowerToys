@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using ManagedCommon;
 
 namespace Microsoft.PowerToys.Settings.UI.Helpers
 {
@@ -31,7 +32,14 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
 
         public async void Execute(object parameter)
         {
-            await _execute();
+            try
+            {
+                await _execute();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("AsyncCommand execution failed", ex);
+            }
         }
 
         public void RaiseCanExecuteChanged()
