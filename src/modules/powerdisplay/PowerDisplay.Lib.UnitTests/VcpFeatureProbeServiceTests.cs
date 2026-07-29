@@ -85,6 +85,7 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(1, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.IsFalse(result[0x10].Replied);
         Assert.AreEqual(1, result[0x10].Attempts);
         Assert.AreEqual(VcpNotSupported, result[0x10].LastError);
     }
@@ -141,17 +142,6 @@ public sealed class VcpFeatureProbeServiceTests
         // The device answered every attempt, so support is proven even though no usable range was
         // obtained. Reconcile relies on this to keep the feature reachable.
         Assert.IsTrue(result[0x10].Replied);
-    }
-
-    [TestMethod]
-    public async Task ProbeAsync_UnansweredCodeIsNotMarkedAsReplied()
-    {
-        var reader = new QueueReader(VcpReadAttempt.Failure(VcpNotSupported));
-        var service = CreateService(reader, new List<TimeSpan>());
-
-        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
-
-        Assert.IsFalse(result[0x10].Replied);
     }
 
     [TestMethod]

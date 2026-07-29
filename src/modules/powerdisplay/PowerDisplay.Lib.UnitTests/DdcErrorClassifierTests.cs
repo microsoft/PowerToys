@@ -54,25 +54,16 @@ public sealed class DdcErrorClassifierTests
 
     [DataTestMethod]
 
-    // The device's final answer: it does not implement the opcode. Retrying only costs I2C
-    // transactions, and it is what lets ProbeCodeAsync stop after a single attempt.
+    // See DdcErrorClassifier.IsTransient's <remarks> for why each of these stays out. The two
+    // handle-class rows are load-bearing here specifically: ProbeCodeAsync consults IsTransient to
+    // decide whether to retry, so an overlap with IsPhysicalMonitorUnavailable would keep hammering
+    // a handle ProbeAsync already knows is gone.
     [DataRow(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported)]
-
-    // Handle-class failures are owned by IsPhysicalMonitorUnavailable, which aborts the whole
-    // probe. They must never also be transient: ProbeCodeAsync consults IsTransient to decide
-    // whether to retry, so an overlap would keep hammering a handle ProbeAsync already knows is gone.
     [DataRow(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle)]
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
-
-    // Permanent bus-level facts: I2C_NOT_SUPPORTED and I2C_DEVICE_DOES_NOT_EXIST.
     [DataRow(unchecked((int)0xC0262580))]
     [DataRow(unchecked((int)0xC0262581))]
-
-    // MCA_INVALID_CAPABILITIES_STRING belongs to the capabilities path, not to a VCP read.
     [DataRow(unchecked((int)0xC0262587))]
-
-    // DDCCI_MONITOR_RETURNED_INVALID_TIMING_STATUS_BYTE reads like a sibling of the framing codes
-    // but is raised only by the get-timing-report command, never by GetVCPFeatureAndVCPFeatureReply.
     [DataRow(unchecked((int)0xC0262586))]
     [DataRow(0)]
     public void IsTransient_RejectsEverythingElse(int errorCode) =>

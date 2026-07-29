@@ -44,33 +44,6 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsTrue(result.InitialValues[0x10].IsLive);
     }
 
-    [TestMethod]
-    public void Reconcile_IndeterminateLiveUsesCachedPositiveEvidence()
-    {
-        var live = new Dictionary<byte, VcpProbeObservation>
-        {
-            [0x10] = VcpProbeObservation.Indeterminate(0x10, unchecked((int)0xC0262589)),
-        };
-        var cache = new Dictionary<byte, KnownGoodVcpFeature>
-        {
-            [0x10] = Cached(0x10, current: 25),
-        };
-
-        var result = VcpDiscoveryEvidence.Reconcile(
-            capabilitiesRaw: string.Empty,
-            parsedCapabilities: null,
-            live: live,
-            cached: cache,
-            includeCache: true);
-
-        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
-        Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
-        Assert.IsFalse(result.InitialValues[0x10].IsLive);
-
-        // The probe spent its full retry budget on 0x10 this cycle; re-reading it is pointless.
-        Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
-    }
-
     [DataTestMethod]
     [DataRow(InvalidPhysicalMonitorHandle)]
     [DataRow(MonitorNoLongerExists)]
@@ -118,6 +91,9 @@ public sealed class VcpDiscoveryEvidenceTests
         Assert.IsFalse(result.IsPhysicalMonitorUnavailable);
         Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x10));
         Assert.AreEqual(25, result.InitialValues[0x10].Value.Current);
+        Assert.IsFalse(result.InitialValues[0x10].IsLive);
+
+        // The probe spent its full retry budget on 0x10 this cycle; re-reading it is pointless.
         Assert.IsFalse(result.InitialValues[0x10].PreferLiveRead);
     }
 
