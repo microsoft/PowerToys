@@ -160,6 +160,9 @@ namespace PowerDisplay.Helpers
 
         private void RunMessageLoop()
         {
+            // This thread owns no windows, so the only messages it can retrieve are the commands
+            // posted to it here and WM_QUIT. There is nothing to translate or dispatch: the hook
+            // proc is called by the system during message retrieval, not through DispatchMessage.
             var running = true;
             while (running)
             {
@@ -189,10 +192,6 @@ namespace PowerDisplay.Helpers
                         break;
                     case WmShutdown:
                         running = false;
-                        break;
-                    default:
-                        _ = TranslateMessageNative(ref message);
-                        _ = DispatchMessageNative(ref message);
                         break;
                 }
             }
@@ -434,13 +433,6 @@ namespace PowerDisplay.Helpers
 
         [LibraryImport("kernel32.dll", EntryPoint = "GetCurrentThreadId")]
         private static partial uint GetCurrentThreadIdNative();
-
-        [LibraryImport("user32.dll", EntryPoint = "TranslateMessage")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static partial bool TranslateMessageNative(ref NativeMessage message);
-
-        [LibraryImport("user32.dll", EntryPoint = "DispatchMessageW")]
-        private static partial nint DispatchMessageNative(ref NativeMessage message);
 
         [LibraryImport("kernel32.dll", EntryPoint = "GetModuleHandleW", StringMarshalling = StringMarshalling.Utf16)]
         private static partial nint GetModuleHandleNative(string? moduleName);

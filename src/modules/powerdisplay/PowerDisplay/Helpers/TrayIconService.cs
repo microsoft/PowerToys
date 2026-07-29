@@ -336,52 +336,49 @@ namespace PowerDisplay.Helpers
             }
 
             var now = Environment.TickCount64;
-            var haveBounds = _cachedBounds is TrayIconBounds cached &&
-                now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
-                cached.Contains(cursor.X, cursor.Y);
+            var previousBounds = _cachedBounds;
 
             TrayIconBounds bounds;
-            if (haveBounds)
+            if (previousBounds is TrayIconBounds cached &&
+                now - _boundsCacheTimestamp <= BoundsCacheLifetimeMs &&
+                cached.Contains(cursor.X, cursor.Y))
             {
-                bounds = _cachedBounds!.Value;
+                bounds = cached;
             }
-            else
+            else if (!TryQueryTrayIconBounds(out bounds) || !bounds.Contains(cursor.X, cursor.Y))
             {
-                if (!TryQueryTrayIconBounds(out bounds) || !bounds.Contains(cursor.X, cursor.Y))
-                {
-                    // The Shell only notifies while the pointer is over the icon, so a rectangle
-                    // that excludes the cursor means either the pointer already moved on or the
-                    // Shell reported a stand-in rectangle for an icon in the notification overflow.
-                    InvalidateMouseWheelHover(disarm: true);
-                    return;
-                }
-            }
-
-            if (!IsMouseWheelAdjustmentReady)
-            {
-                _cachedBounds = bounds;
-                _boundsCacheTimestamp = now;
-                _mouseWheelListener?.Disarm();
+                // The Shell only notifies while the pointer is over the icon, so a rectangle that
+                // excludes the cursor means either the pointer already moved on or the Shell
+                // reported a stand-in rectangle for an icon in the notification overflow.
+                InvalidateMouseWheelHover(disarm: true);
                 return;
-            }
-
-            var previousBounds = _cachedBounds;
-            var startsNewHover =
-                _mouseWheelListener?.IsArmed != true ||
-                !previousBounds.HasValue ||
-                previousBounds.Value != bounds;
-            if (startsNewHover)
-            {
-                unchecked
-                {
-                    _hoverGeneration++;
-                }
-
-                _wheelDeltaAccumulator.Reset();
             }
 
             _cachedBounds = bounds;
             _boundsCacheTimestamp = now;
+
+            if (!IsMouseWheelAdjustmentReady)
+            {
+                _mouseWheelListener?.Disarm();
+                return;
+            }
+
+            // The Shell repeats this message for every pixel of travel, so only touch the hook
+            // thread when something it cares about actually changed. Re-arming on an unchanged
+            // rectangle would post a thread message per pixel for no effect.
+            if (_mouseWheelListener?.IsArmed == true &&
+                previousBounds.HasValue &&
+                previousBounds.Value == bounds)
+            {
+                return;
+            }
+
+            unchecked
+            {
+                _hoverGeneration++;
+            }
+
+            _wheelDeltaAccumulator.Reset();
             EnsureMouseWheelListener();
             _mouseWheelListener?.Arm(bounds, _hoverGeneration);
         }
