@@ -166,7 +166,10 @@
     <value>Replace with</value>
   </data>
   <data name="NumericMappingButton.Content" xml:space="preserve">
-    <value>Load numeric names from CSV or Excel</value>
+    <value>Load numeric mapping from CSV or Excel</value>
+  </data>
+  <data name="ClearNumericMappingButton.Content" xml:space="preserve">
+    <value>Clear mapping</value>
   </data>
   <data name="CounterCheatSheet_Title.Text" xml:space="preserve">
     <value>Replace using advanced counter syntax</value>

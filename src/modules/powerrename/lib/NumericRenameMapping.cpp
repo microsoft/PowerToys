@@ -63,8 +63,18 @@ namespace
         return S_OK;
     }
 
-    std::wstring FirstCsvField(const std::wstring& row)
+    std::wstring TrimField(const std::wstring& field)
     {
+        size_t first = 0;
+        while (first < field.size() && iswspace(field[first])) ++first;
+        size_t last = field.size();
+        while (last > first && iswspace(field[last - 1])) --last;
+        return field.substr(first, last - first);
+    }
+
+    std::vector<std::wstring> ParseCsvFields(const std::wstring& row)
+    {
+        std::vector<std::wstring> fields;
         std::wstring field;
         bool quoted = false;
         for (size_t i = 0; i < row.size(); ++i)
@@ -83,17 +93,16 @@ namespace
             }
             else if (row[i] == L',' && !quoted)
             {
-                break;
+                fields.push_back(TrimField(field));
+                field.clear();
             }
             else
             {
                 field.push_back(row[i]);
             }
         }
-        while (!field.empty() && iswspace(field.back())) field.pop_back();
-        size_t first = 0;
-        while (first < field.size() && iswspace(field[first])) ++first;
-        return field.substr(first);
+        fields.push_back(TrimField(field));
+        return fields;
     }
 
     std::string ToUtf8(PCWSTR value)
@@ -183,6 +192,93 @@ namespace
         return end == std::wstring::npos ? std::wstring{} : tag.substr(valueStart, end - valueStart);
     }
 
+    bool TryParseNumericKey(const std::wstring& value, unsigned long long& number)
+    {
+        number = 0;
+        if (value.empty()) return false;
+        for (const wchar_t character : value)
+        {
+            if (character < L'0' || character > L'9') return false;
+            const unsigned int digit = static_cast<unsigned int>(character - L'0');
+            if (number > (ULLONG_MAX - digit) / 10) return false;
+            number = number * 10 + digit;
+        }
+        return true;
+    }
+
+    HRESULT AddNumericMapping(
+        PowerRenameLib::NumericRenameMapping& mappings,
+        unsigned long long key,
+        const std::wstring& name)
+    {
+        if (!PowerRenameLib::IsValidNumericRenameName(name.c_str())) return E_INVALIDARG;
+        return mappings.emplace(key, name).second ? S_OK : E_INVALIDARG;
+    }
+
+    HRESULT BuildNumericMapping(
+        const std::vector<std::vector<std::wstring>>& rows,
+        PowerRenameLib::NumericRenameMapping& mappings)
+    {
+        mappings.clear();
+
+        bool hasKeyAndNameRows = false;
+        for (const auto& row : rows)
+        {
+            if (row.size() > 1 && !row[1].empty())
+            {
+                hasKeyAndNameRows = true;
+                break;
+            }
+        }
+
+        if (hasKeyAndNameRows)
+        {
+            bool firstRow = true;
+            for (const auto& row : rows)
+            {
+                if (row.empty() || (row.size() == 1 && row[0].empty())) continue;
+                unsigned long long key = 0;
+                if (!TryParseNumericKey(row[0], key))
+                {
+                    if (firstRow)
+                    {
+                        firstRow = false;
+                        continue;
+                    }
+                    mappings.clear();
+                    return E_INVALIDARG;
+                }
+                firstRow = false;
+                if (row.size() < 2 || row[1].empty() || FAILED(AddNumericMapping(mappings, key, row[1])))
+                {
+                    mappings.clear();
+                    return E_INVALIDARG;
+                }
+            }
+        }
+        else
+        {
+            unsigned long long key = 1;
+            for (const auto& row : rows)
+            {
+                if (row.empty() || row[0].empty()) continue;
+                if (FAILED(AddNumericMapping(mappings, key, row[0])))
+                {
+                    mappings.clear();
+                    return E_INVALIDARG;
+                }
+                if (key == ULLONG_MAX)
+                {
+                    mappings.clear();
+                    return E_INVALIDARG;
+                }
+                ++key;
+            }
+        }
+
+        return mappings.empty() ? E_INVALIDARG : S_OK;
+    }
+
     HRESULT ReadZipEntry(zip_t* archive, const char* name, std::string& contents)
     {
         zip_stat_t stat{};
@@ -235,9 +331,9 @@ namespace
 
 namespace PowerRenameLib
 {
-    HRESULT LoadNumericRenameMappingFromCsv(PCWSTR path, std::vector<std::wstring>& names)
+    HRESULT LoadNumericRenameMappingFromCsv(PCWSTR path, NumericRenameMapping& mappings)
     {
-        names.clear();
+        mappings.clear();
         std::vector<unsigned char> bytes;
         HRESULT hr = ReadFileBytes(path, bytes);
         if (FAILED(hr)) return hr;
@@ -245,31 +341,29 @@ namespace PowerRenameLib
         hr = DecodeCsvBytes(bytes, text);
         if (FAILED(hr)) return hr;
 
+        std::vector<std::vector<std::wstring>> rows;
         size_t rowStart = 0;
         while (rowStart <= text.size())
         {
             const size_t rowEnd = text.find_first_of(L"\r\n", rowStart);
             const size_t end = rowEnd == std::wstring::npos ? text.size() : rowEnd;
-            const std::wstring name = FirstCsvField(text.substr(rowStart, end - rowStart));
-            if (!name.empty())
+            const auto fields = ParseCsvFields(text.substr(rowStart, end - rowStart));
+            bool hasValue = false;
+            for (const auto& field : fields)
             {
-                if (!IsValidNumericRenameName(name.c_str()))
-                {
-                    names.clear();
-                    return E_INVALIDARG;
-                }
-                names.push_back(name);
+                hasValue = hasValue || !field.empty();
             }
+            if (hasValue) rows.push_back(fields);
             if (rowEnd == std::wstring::npos) break;
             rowStart = rowEnd + 1;
             if (text[rowEnd] == L'\r' && rowStart < text.size() && text[rowStart] == L'\n') ++rowStart;
         }
-        return names.empty() ? E_INVALIDARG : S_OK;
+        return BuildNumericMapping(rows, mappings);
     }
 
-    HRESULT LoadNumericRenameMappingFromXlsx(PCWSTR path, std::vector<std::wstring>& names)
+    HRESULT LoadNumericRenameMappingFromXlsx(PCWSTR path, NumericRenameMapping& mappings)
     {
-        names.clear();
+        mappings.clear();
         const std::string utf8Path = ToUtf8(path);
         if (utf8Path.empty()) return E_INVALIDARG;
 
@@ -303,37 +397,38 @@ namespace PowerRenameLib
             hr = DecodeXlsxXml(worksheetBytes, worksheet);
             if (SUCCEEDED(hr))
             {
+                std::vector<std::vector<std::wstring>> rows;
                 size_t position = 0;
                 while ((position = worksheet.find(L"<row", position)) != std::wstring::npos)
                 {
                     const size_t rowEnd = worksheet.find(L"</row>", position);
                     if (rowEnd == std::wstring::npos) break;
                     const std::wstring row = worksheet.substr(position, rowEnd - position + 6);
-                    const size_t cellStart = row.find(L"<c");
-                    if (cellStart != std::wstring::npos)
+                    std::vector<std::wstring> values;
+                    size_t cellStart = 0;
+                    while (values.size() < 2 && (cellStart = row.find(L"<c", cellStart)) != std::wstring::npos)
                     {
-                        const size_t cellEnd = row.find(L"</c>", cellStart);
-                        if (cellEnd != std::wstring::npos)
+                        const wchar_t next = cellStart + 2 < row.size() ? row[cellStart + 2] : L'\0';
+                        if (next != L'>' && !iswspace(next))
                         {
-                            const std::wstring value = FirstXlsxCellValue(row.substr(cellStart, cellEnd - cellStart + 4), sharedStrings);
-                            if (!value.empty())
-                            {
-                                if (!IsValidNumericRenameName(value.c_str()))
-                                {
-                                    names.clear();
-                                    hr = E_INVALIDARG;
-                                    break;
-                                }
-                                names.push_back(value);
-                            }
+                            cellStart += 2;
+                            continue;
                         }
+                        const size_t cellEnd = row.find(L"</c>", cellStart);
+                        if (cellEnd == std::wstring::npos) break;
+                        values.push_back(FirstXlsxCellValue(row.substr(cellStart, cellEnd - cellStart + 4), sharedStrings));
+                        cellStart = cellEnd + 4;
                     }
+                    bool hasValue = false;
+                    for (const auto& value : values) hasValue = hasValue || !value.empty();
+                    if (hasValue) rows.push_back(std::move(values));
                     position = rowEnd + 6;
                 }
+                hr = BuildNumericMapping(rows, mappings);
             }
         }
         zip_close(archive);
-        return SUCCEEDED(hr) && !names.empty() ? S_OK : (FAILED(hr) ? hr : E_INVALIDARG);
+        return hr;
     }
 
     bool IsValidNumericRenameName(PCWSTR name)

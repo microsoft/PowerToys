@@ -1,13 +1,15 @@
 #pragma once
 
 #include <windows.h>
+#include <map>
 #include <string>
-#include <vector>
 
 namespace PowerRenameLib
 {
-    HRESULT LoadNumericRenameMappingFromCsv(_In_ PCWSTR path, _Out_ std::vector<std::wstring>& names);
-    HRESULT LoadNumericRenameMappingFromXlsx(_In_ PCWSTR path, _Out_ std::vector<std::wstring>& names);
+    using NumericRenameMapping = std::map<unsigned long long, std::wstring>;
+
+    HRESULT LoadNumericRenameMappingFromCsv(_In_ PCWSTR path, _Out_ NumericRenameMapping& mappings);
+    HRESULT LoadNumericRenameMappingFromXlsx(_In_ PCWSTR path, _Out_ NumericRenameMapping& mappings);
     bool IsValidNumericRenameName(_In_ PCWSTR name);
     bool TryGetNumericFileStem(_In_ PCWSTR fileName, _Out_ unsigned long long& number);
 }

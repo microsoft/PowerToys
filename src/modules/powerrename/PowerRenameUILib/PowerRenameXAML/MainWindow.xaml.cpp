@@ -504,24 +504,35 @@ namespace winrt::PowerRenameUI::implementation
                 co_return;
             }
 
-            std::vector<std::wstring> names;
+            PowerRenameLib::NumericRenameMapping mappings;
             const std::wstring extension = std::filesystem::path(file.Path().c_str()).extension().wstring();
             const HRESULT hr = _wcsicmp(extension.c_str(), L".xlsx") == 0 ?
-                PowerRenameLib::LoadNumericRenameMappingFromXlsx(file.Path().c_str(), names) :
-                PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), names);
+                PowerRenameLib::LoadNumericRenameMappingFromXlsx(file.Path().c_str(), mappings) :
+                PowerRenameLib::LoadNumericRenameMappingFromCsv(file.Path().c_str(), mappings);
             if (FAILED(hr))
             {
                 Logger::error(L"Unable to load numeric rename mapping from {}", file.Path().c_str());
                 co_return;
             }
 
-            m_numericRenameNames = std::move(names);
+            m_numericRenameNames = std::move(mappings);
             SearchReplaceChanged(true);
         }
         catch (const winrt::hresult_error& error)
         {
             Logger::error(L"Unable to select numeric rename mapping: {}", error.message().c_str());
         }
+    }
+
+    void MainWindow::ClearNumericMappingClick(winrt::Windows::Foundation::IInspectable const&, winrt::Microsoft::UI::Xaml::RoutedEventArgs const&)
+    {
+        ClearNumericMapping();
+    }
+
+    void MainWindow::ClearNumericMapping()
+    {
+        m_numericRenameNames.clear();
+        SearchReplaceChanged(true);
     }
 
     HRESULT MainWindow::CreateShellItemArrayFromPaths(
@@ -680,14 +691,15 @@ namespace winrt::PowerRenameUI::implementation
             wil::unique_cotaskmem_string originalNameGuard{ originalName };
 
             unsigned long long number = 0;
-            if (!PowerRenameLib::TryGetNumericFileStem(originalName, number) || number == 0 || number > m_numericRenameNames.size())
+            const auto mapping = PowerRenameLib::TryGetNumericFileStem(originalName, number) ? m_numericRenameNames.find(number) : m_numericRenameNames.end();
+            if (mapping == m_numericRenameNames.end())
             {
                 item->PutNewName(originalName);
                 item->PutStatus(PowerRenameItemRenameStatus::Init);
                 continue;
             }
 
-            std::wstring newName = m_numericRenameNames[static_cast<size_t>(number - 1)];
+            std::wstring newName = mapping->second;
             bool isFolder = false;
             item->GetIsFolder(&isFolder);
             if (!isFolder)

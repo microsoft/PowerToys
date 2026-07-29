@@ -153,6 +153,7 @@ namespace winrt::PowerRenameUI::implementation
         std::wstring ConvertPatternToResourceKey(const std::wstring& pattern);
         void UpdateMetadataSourceFlags(int selectedIndex);
         void ApplyNumericMapping();
+        void ClearNumericMapping();
 
         Shared::Trace::ETWTrace m_etwTrace{};
 
@@ -172,7 +173,7 @@ namespace winrt::PowerRenameUI::implementation
 
 
         bool m_flagValidationInProgress = false;
-        std::vector<std::wstring> m_numericRenameNames;
+        PowerRenameLib::NumericRenameMapping m_numericRenameNames;
 
     public:
         void RegExItemClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::Controls::ItemClickEventArgs const& e);
@@ -183,6 +184,7 @@ namespace winrt::PowerRenameUI::implementation
         void MenuFlyoutItem_Click(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         void OpenDocs(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
         winrt::fire_and_forget SelectNumericMapping(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
+        void ClearNumericMappingClick(winrt::Windows::Foundation::IInspectable const& sender, winrt::Microsoft::UI::Xaml::RoutedEventArgs const& e);
     };
 }
 
