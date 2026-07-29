@@ -987,6 +987,10 @@
     <Project Path="src/modules/previewpane/SvgThumbnailProviderCpp/SvgThumbnailProviderCpp.vcxproj" Id="2bbc9e33-21ec-401c-84da-bb6590a9b2aa" />
   </Folder>
   <Folder Name="/modules/previewpane/Tests/">
+    <Project Path="src/modules/previewpane/PreviewPane.UITests/PreviewPane.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/previewpane/UnitTests-BgcodePreviewHandler/Preview.BgcodePreviewHandler.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
