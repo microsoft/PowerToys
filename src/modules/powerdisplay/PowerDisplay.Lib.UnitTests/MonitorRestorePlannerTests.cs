@@ -9,7 +9,7 @@ using PowerDisplay.Common.Services;
 namespace PowerDisplay.UnitTests;
 
 [TestClass]
-public class MonitorRestorePlannerTests
+public sealed class MonitorRestorePlannerTests
 {
     private static Monitor MonitorWithValue(
         int value,
@@ -36,16 +36,16 @@ public class MonitorRestorePlannerTests
         return monitor;
     }
 
-    [DataTestMethod]
-    [DataRow(MonitorReadFlags.Brightness)]
-    [DataRow(MonitorReadFlags.Contrast)]
-    [DataRow(MonitorReadFlags.Volume)]
-    [DataRow(MonitorReadFlags.ColorTemperature)]
-    public void ShouldWrite_MatchingValueWasNotRead_ReturnsTrue(MonitorReadFlags readFlag)
+    // Only ShouldWrite_MatchingValueWasRead_ReturnsFalse varies the flag across rows. It is the one
+    // case where all three clauses are false, so it is the only one whose verdict depends on the
+    // readFlag switch reading the right field; everywhere else a mis-mapped arm yields a default
+    // that still satisfies the clause under test, and the extra rows pin nothing.
+    [TestMethod]
+    public void ShouldWrite_MatchingValueWasNotRead_ReturnsTrue()
     {
-        var monitor = MonitorWithValue(45, readFlag, MonitorReadFlags.None);
+        var monitor = MonitorWithValue(45, MonitorReadFlags.Brightness, MonitorReadFlags.None);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, MonitorReadFlags.Brightness, 45));
     }
 
     [DataTestMethod]
@@ -60,44 +60,30 @@ public class MonitorRestorePlannerTests
         Assert.IsFalse(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
     }
 
-    [DataTestMethod]
-    [DataRow(MonitorReadFlags.Brightness, MonitorReadFlags.Contrast)]
-    [DataRow(MonitorReadFlags.Contrast, MonitorReadFlags.Volume)]
-    [DataRow(MonitorReadFlags.Volume, MonitorReadFlags.ColorTemperature)]
-    [DataRow(MonitorReadFlags.ColorTemperature, MonitorReadFlags.Brightness)]
-    public void ShouldWrite_MatchingValueOnlyDifferentSettingWasRead_ReturnsTrue(
-        MonitorReadFlags readFlag,
-        MonitorReadFlags differentReadFlag)
+    [TestMethod]
+    public void ShouldWrite_MatchingValueOnlyDifferentSettingWasRead_ReturnsTrue()
     {
-        var monitor = MonitorWithValue(45, readFlag, differentReadFlag);
+        var monitor = MonitorWithValue(45, MonitorReadFlags.Brightness, MonitorReadFlags.Contrast);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 45));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, MonitorReadFlags.Brightness, 45));
     }
 
-    [DataTestMethod]
-    [DataRow(MonitorReadFlags.Brightness)]
-    [DataRow(MonitorReadFlags.Contrast)]
-    [DataRow(MonitorReadFlags.Volume)]
-    [DataRow(MonitorReadFlags.ColorTemperature)]
-    public void ShouldWrite_DifferentValueWasRead_ReturnsTrue(MonitorReadFlags readFlag)
+    [TestMethod]
+    public void ShouldWrite_DifferentValueWasRead_ReturnsTrue()
     {
-        var monitor = MonitorWithValue(45, readFlag, readFlag);
+        var monitor = MonitorWithValue(45, MonitorReadFlags.Contrast, MonitorReadFlags.Contrast);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(60, monitor, readFlag, 60));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(60, monitor, MonitorReadFlags.Contrast, 60));
     }
 
-    [DataTestMethod]
-    [DataRow(MonitorReadFlags.Brightness)]
-    [DataRow(MonitorReadFlags.Contrast)]
-    [DataRow(MonitorReadFlags.Volume)]
-    [DataRow(MonitorReadFlags.ColorTemperature)]
-    public void ShouldWrite_PendingOptimisticValueDisagrees_ReturnsTrue(MonitorReadFlags readFlag)
+    [TestMethod]
+    public void ShouldWrite_PendingOptimisticValueDisagrees_ReturnsTrue()
     {
         // Hardware is known to be at 45 and the restore also wants 45, but the UI is already
         // showing 65 and will commit it once its debounce elapses. Skipping the write here would
         // let that pending commit silently overwrite the restored value.
-        var monitor = MonitorWithValue(45, readFlag, readFlag);
+        var monitor = MonitorWithValue(45, MonitorReadFlags.Volume, MonitorReadFlags.Volume);
 
-        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, readFlag, 65));
+        Assert.IsTrue(MonitorRestorePlanner.ShouldWrite(45, monitor, MonitorReadFlags.Volume, 65));
     }
 }

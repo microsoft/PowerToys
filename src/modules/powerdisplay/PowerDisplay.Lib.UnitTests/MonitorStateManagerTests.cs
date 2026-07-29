@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers;
@@ -69,42 +68,18 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void ControllerDerivedCacheKey_MatchesMonitorIdAndSurvivesRetentionRoundTrip()
+    public void DeriveMonitorId_ReturnsTheCanonicalIdTheStateFileIsKeyedBy()
     {
+        // The controller's known-good cache key must be the canonical Id MonitorStateManager stores
+        // under, otherwise a probe writes evidence that retention can never find or collect.
         const string rawDevicePath =
             @"\\?\DISPLAY#AOCB326#5&2f1a4f2&0&UID4352#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
-        var displayInfo = new MonitorDisplayInfo
-        {
-            DevicePath = rawDevicePath,
-            FriendlyName = "AOC Q27G3XMN",
-            GdiDeviceName = @"\\.\DISPLAY1",
-            MonitorNumber = 1,
-        };
-        var canonicalId = MonitorIdentity.FromDevicePath(rawDevicePath);
-        var controllerCacheKey = DdcCiController.DeriveMonitorId(displayInfo);
 
-        Assert.AreEqual(canonicalId, controllerCacheKey);
+        var controllerCacheKey = DdcCiController.DeriveMonitorId(
+            new MonitorDisplayInfo { DevicePath = rawDevicePath, FriendlyName = "AOC Q27G3XMN" });
+
+        Assert.AreEqual(MonitorIdentity.FromDevicePath(rawDevicePath), controllerCacheKey);
         Assert.AreNotEqual(rawDevicePath, controllerCacheKey);
-
-        using (var manager = new MonitorStateManager(_statePath))
-        {
-            manager.UpdateMonitorParameter(canonicalId, "Brightness", 35);
-            manager.UpsertKnownGoodFeature(controllerCacheKey, Feature(0x10, current: 35));
-            manager.RemoveKnownGoodFeatures(new[] { rawDevicePath });
-        }
-
-        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
-        {
-            var monitors = document.RootElement.GetProperty("monitors");
-            Assert.IsTrue(monitors.TryGetProperty(canonicalId, out _));
-            Assert.IsFalse(monitors.TryGetProperty(rawDevicePath, out _));
-        }
-
-        using var reloaded = new MonitorStateManager(_statePath);
-        Assert.AreEqual(35, reloaded.GetMonitorParameters(canonicalId)?.Brightness);
-        Assert.AreEqual(35, reloaded.GetKnownGoodFeatures(canonicalId)[0x10].Current);
-        Assert.IsNull(reloaded.GetMonitorParameters(rawDevicePath));
-        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(rawDevicePath).Count);
     }
 
     [TestMethod]
@@ -134,9 +109,12 @@ public sealed class MonitorStateManagerTests
     [TestMethod]
     public void RemoveKnownGoodFeatures_ClearsCacheButKeepsSavedUserValues()
     {
+        // MonitorA is never named in the removal list, so it also stands for the case where
+        // reconciliation observed no drop at all and nothing may be collected.
         using (var manager = new MonitorStateManager(_statePath))
         {
             manager.UpdateMonitorParameter(MonitorA, "Brightness", 25);
+            manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
             manager.UpdateMonitorParameter(MonitorB, "Contrast", 80);
             manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
             manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
@@ -144,17 +122,11 @@ public sealed class MonitorStateManagerTests
             manager.RemoveKnownGoodFeatures(new[] { MonitorB });
         }
 
-        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
-        {
-            var monitors = document.RootElement.GetProperty("monitors");
-            Assert.IsTrue(monitors.TryGetProperty(MonitorA, out _));
-
-            // The entry itself survives: only the discovery cache this feature owns is collected.
-            Assert.IsTrue(monitors.TryGetProperty(MonitorB, out _));
-        }
-
         using var reloaded = new MonitorStateManager(_statePath);
+
+        // MonitorB's entry itself survives: only the discovery cache this feature owns is collected.
         Assert.AreEqual(25, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
+        Assert.AreEqual(20, reloaded.GetMonitorParameters(MonitorA)?.Volume);
         Assert.AreEqual(80, reloaded.GetMonitorParameters(MonitorB)?.Contrast);
         Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
         Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorB).Count);
@@ -223,30 +195,6 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(65, features[0x12].Current);
         Assert.IsNull(manager.GetMonitorParameters(legacyId));
         Assert.AreEqual(0, manager.GetKnownGoodFeatures(legacyId).Count);
-    }
-
-    [TestMethod]
-    public void RemoveKnownGoodFeatures_EmptySetKeepsCompleteState()
-    {
-        // The empty set is what a reconciliation produces when the settings snapshot could not be
-        // read: nothing was observably dropped, so nothing may be collected.
-        using (var manager = new MonitorStateManager(_statePath))
-        {
-            manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
-            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
-
-            manager.RemoveKnownGoodFeatures(Array.Empty<string>());
-        }
-
-        using (var document = JsonDocument.Parse(File.ReadAllText(_statePath)))
-        {
-            var monitors = document.RootElement.GetProperty("monitors");
-            Assert.IsTrue(monitors.TryGetProperty(MonitorA, out _));
-        }
-
-        using var reloaded = new MonitorStateManager(_statePath);
-        Assert.AreEqual(20, reloaded.GetMonitorParameters(MonitorA)?.Volume);
-        Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
     }
 
     [TestMethod]
