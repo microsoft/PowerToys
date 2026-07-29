@@ -95,9 +95,10 @@
                                         </ComboBox>
                                     </tkcontrols:SettingsCard>
                                     <!--
-                                        Deliberately not gated on the mouse wheel mode: this step is also the
-                                        default for the command-line relative adjust (AdjustCommandExecutor),
-                                        which stays available when wheel control is off.
+                                        Deliberately not gated on the tray icon wheel mode: this step
+                                        is shared by the flyout sliders and by the command-line
+                                        relative adjust (AdjustCommandExecutor), both of which stay
+                                        available when tray scrolling is off.
                                     -->
                                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelIncrement">
                                         <ComboBox

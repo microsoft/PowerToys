@@ -58,8 +58,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public int MouseWheelIncrement { get; set; }
 
         /// <summary>
-        /// Gets or sets how PowerDisplay handles mouse-wheel input. The selected display target
-        /// applies to tray-icon scrolling; Disabled also turns off wheel input for flyout sliders.
+        /// Gets or sets which displays a mouse-wheel notch over the PowerDisplay tray icon adjusts.
+        /// Scoped to the tray icon: the flyout sliders accept wheel input regardless.
         /// </summary>
         [JsonPropertyName("mouse_wheel_control_mode")]
         public MouseWheelControlMode MouseWheelControlMode { get; set; }

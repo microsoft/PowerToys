@@ -419,9 +419,12 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 ### Tray Icon Mouse Wheel Control
 
 Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
-flyout. The scope comes from the **Mouse wheel control** setting
+flyout. The scope comes from the **Tray icon mouse wheel** setting
 (`PowerDisplayProperties.MouseWheelControlMode`): `Disabled`, `PrimaryDisplay` (default) or
 `AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
+
+The setting is scoped to the tray icon. The flyout sliders accept wheel input regardless, as they
+always have.
 
 **No feedback UI, on purpose.** Brightness is self-evidencing: the screen changes as you scroll, so
 there is nothing for a readout to add that the display itself does not already show. The tray icon

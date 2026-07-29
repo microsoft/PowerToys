@@ -140,17 +140,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial int MouseWheelIncrement { get; set; }
 
     /// <summary>
-    /// Gets or sets the active mouse-wheel control mode loaded from PowerDisplay settings.
+    /// Gets or sets the mouse-wheel mode used for the tray icon, loaded from PowerDisplay settings.
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsMouseWheelControlEnabled))]
     public partial MouseWheelControlMode MouseWheelControlMode { get; set; }
-
-    /// <summary>
-    /// Gets a value indicating whether tray and flyout mouse-wheel adjustment is enabled.
-    /// </summary>
-    public bool IsMouseWheelControlEnabled
-        => MouseWheelControlMode != PowerDisplay.Models.MouseWheelControlMode.Disabled;
 
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
