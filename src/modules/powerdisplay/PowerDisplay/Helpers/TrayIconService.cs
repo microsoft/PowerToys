@@ -270,7 +270,6 @@ namespace PowerDisplay.Helpers
                 _mouseWheelListener ??= new TrayIconMouseWheelListener(
                     OnWheelSampleBatch,
                     OnMouseWheelListenerDisarmed);
-                _mouseWheelListener.SetEnabled(true);
             }
             catch (Exception ex)
             {

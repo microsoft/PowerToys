@@ -18,11 +18,10 @@ namespace PowerDisplay.Helpers
         private const uint WmMouseMove = 0x0200;
         private const uint WmMouseWheel = 0x020A;
         private const uint WmApp = 0x8000;
-        private const uint WmSetEnabled = WmApp + 1;
-        private const uint WmArm = WmApp + 2;
-        private const uint WmDisarm = WmApp + 3;
-        private const uint WmDrainSamples = WmApp + 4;
-        private const uint WmShutdown = WmApp + 5;
+        private const uint WmArm = WmApp + 1;
+        private const uint WmDisarm = WmApp + 2;
+        private const uint WmDrainSamples = WmApp + 3;
+        private const uint WmShutdown = WmApp + 4;
         private const uint PmNoRemove = 0;
         private const int MaxQueuedSamples = 32;
 
@@ -40,7 +39,6 @@ namespace PowerDisplay.Helpers
         private LowLevelMouseProc? _hookProc;
         private uint _threadId;
         private nint _hookHandle;
-        private bool _enabled;
         private volatile bool _armed;
         private int _drainSamplesPosted;
         private bool _hookInstallFailureLogged;
@@ -82,16 +80,6 @@ namespace PowerDisplay.Helpers
         /// Gets a value indicating whether the low-level hook is armed for the current hover.
         /// </summary>
         public bool IsArmed => _armed;
-
-        public void SetEnabled(bool enabled)
-        {
-            if (Volatile.Read(ref _disposed) != 0)
-            {
-                return;
-            }
-
-            PostCommand(WmSetEnabled, enabled ? 1u : 0u);
-        }
 
         public void Arm(TrayIconBounds bounds, long hoverGeneration)
         {
@@ -190,9 +178,6 @@ namespace PowerDisplay.Helpers
 
                 switch (message.Message)
                 {
-                    case WmSetEnabled:
-                        HandleSetEnabled(message.WParam != 0);
-                        break;
                     case WmArm:
                         HandleArm();
                         break;
@@ -213,22 +198,8 @@ namespace PowerDisplay.Helpers
             }
         }
 
-        private void HandleSetEnabled(bool enabled)
-        {
-            _enabled = enabled;
-            if (!enabled)
-            {
-                DisarmCore(notify: true);
-            }
-        }
-
         private void HandleArm()
         {
-            if (!_enabled)
-            {
-                return;
-            }
-
             lock (_pendingStateLock)
             {
                 _activeBounds = _pendingBounds;

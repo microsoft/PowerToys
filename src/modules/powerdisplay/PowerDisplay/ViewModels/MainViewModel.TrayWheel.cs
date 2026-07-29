@@ -29,7 +29,7 @@ public partial class MainViewModel
         get
         {
             var mode = MouseWheelControlMode.Normalize();
-            if (!TryGetTrayWheelScope(mode, notches: 1, out var primaryGdiDeviceName))
+            if (!TryGetTrayWheelScope(mode, out var primaryGdiDeviceName))
             {
                 return false;
             }
@@ -127,7 +127,7 @@ public partial class MainViewModel
         MouseWheelMode mode,
         int notches)
     {
-        if (!TryGetTrayWheelScope(mode, notches, out var primaryGdiDeviceName))
+        if (!TryGetTrayWheelScope(mode, out var primaryGdiDeviceName))
         {
             return [];
         }
@@ -151,19 +151,16 @@ public partial class MainViewModel
     /// modes that need it.
     /// </summary>
     /// <param name="mode">The normalized mouse-wheel mode.</param>
-    /// <param name="notches">The signed number of complete wheel notches.</param>
     /// <param name="primaryGdiDeviceName">The resolved primary GDI name, or <see langword="null"/>
     /// when the mode does not target the primary display.</param>
     /// <returns><see langword="true"/> when a tray wheel adjustment is possible in principle.</returns>
     private bool TryGetTrayWheelScope(
         MouseWheelMode mode,
-        int notches,
         out string? primaryGdiDeviceName)
     {
         primaryGdiDeviceName = null;
 
         if (mode == MouseWheelMode.Disabled ||
-            notches == 0 ||
             MouseWheelIncrement <= 0 ||
             !IsInitialized ||
             !IsInteractionEnabled)
