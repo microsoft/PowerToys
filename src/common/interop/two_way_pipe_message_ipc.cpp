@@ -58,6 +58,9 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send(std::wstring msg)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token)
 {
+    // Legacy overload = no caller authentication: explicitly clear any previously-set policy so this
+    // path can never inherit a policy from a prior parameterized start on the same instance.
+    caller_policy = {};
     output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
     input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
     input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
@@ -65,8 +68,11 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& _caller_policy)
 {
+    // Start threads inline (do not chain into the legacy overload, which would clear the policy).
     caller_policy = _caller_policy;
-    start(_restricted_pipe_token);
+    output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
+    input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
+    input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()

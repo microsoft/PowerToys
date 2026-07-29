@@ -40,14 +40,16 @@ namespace interop_auth
                                    nullptr);
             if (h == INVALID_HANDLE_VALUE)
             {
-                return path;
+                // Fail closed: a path we cannot open/canonicalize must not slip past the
+                // directory-prefix check as a non-canonical raw path.
+                return {};
             }
             wchar_t buf[1024] = {};
             DWORD len = GetFinalPathNameByHandleW(h, buf, ARRAYSIZE(buf), FILE_NAME_NORMALIZED);
             CloseHandle(h);
             if (len == 0 || len >= ARRAYSIZE(buf))
             {
-                return path;
+                return {};
             }
             std::wstring result(buf, len);
             if (result.rfind(L"\\\\?\\", 0) == 0)
@@ -70,6 +72,11 @@ namespace interop_auth
                 return false;
             }
             std::wstring dir = ToLower(CanonicalizePath(directory));
+            if (dir.empty())
+            {
+                // CanonicalizePath failed closed; an empty prefix must not match every path.
+                return false;
+            }
             if (!dir.empty() && dir.back() != L'\\')
             {
                 dir.push_back(L'\\');
@@ -99,7 +106,9 @@ namespace interop_auth
             }
             wchar_t name[256] = {};
             const DWORD n = CertGetNameStringW(cert, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, name, ARRAYSIZE(name));
-            return n > 1 && wcsstr(name, L"Microsoft Corporation") != nullptr;
+            // Case-insensitive: cert display-name casing can vary and this is a secondary check on top
+            // of the machine-root Authenticode chain in ChainsToMachineRoot.
+            return n > 1 && wcsstr(ToLower(name).c_str(), L"microsoft corporation") != nullptr;
         }
 
         // Anchor the signer's chain in the LOCAL MACHINE root store only (HCCE_LOCAL_MACHINE) rather than
