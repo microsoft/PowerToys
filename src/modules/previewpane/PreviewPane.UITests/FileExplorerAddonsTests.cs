@@ -327,7 +327,15 @@ public class FileExplorerAddonsTests : UITestBase
             $"Could not clear the previous {providerName} log before cold thumbnail generation.");
 
         File.Copy(sourcePath, destinationPath);
-        RequestShellThumbnail(destinationPath, 256);
+        KeyboardHelper.SendKeys(Key.F5);
+        SelectFile(explorer, destinationPath);
+        SetExplorerViewAndWait(
+            explorer,
+            assetName,
+            Key.Num1,
+            "extra-large icons",
+            minimumItemHeight: 180,
+            maximumItemHeight: int.MaxValue);
 
         var providerLog = WaitForProviderLog(
             providerLogDirectory,
@@ -345,14 +353,23 @@ public class FileExplorerAddonsTests : UITestBase
         File.WriteAllText(persistedLogPath, providerLogText);
         TestContext.AddResultFile(persistedLogPath);
 
-        KeyboardHelper.SendKeys(Key.F5);
-        SelectFile(explorer, destinationPath);
-        SetExplorerView(explorer, Key.Num1);
         var extraLarge = CaptureStableFileItem(explorer, assetName, $"{scenario}-extra-large");
 
-        SetExplorerView(explorer, Key.Num2);
+        SetExplorerViewAndWait(
+            explorer,
+            assetName,
+            Key.Num2,
+            "large icons",
+            minimumItemHeight: Math.Max(80, extraLarge.Height / 4),
+            maximumItemHeight: extraLarge.Height * 7 / 10);
         var large = CaptureStableFileItem(explorer, assetName, $"{scenario}-large");
-        SetExplorerView(explorer, Key.Num3);
+        SetExplorerViewAndWait(
+            explorer,
+            assetName,
+            Key.Num3,
+            "medium icons",
+            minimumItemHeight: large.Height / 2,
+            maximumItemHeight: large.Height * 9 / 10);
         var medium = CaptureStableFileItem(explorer, assetName, $"{scenario}-medium");
 
         AssertThumbnailSizes(extraLarge, large, medium, extension);
@@ -594,6 +611,43 @@ public class FileExplorerAddonsTests : UITestBase
         KeyboardHelper.SendKeys(Key.Ctrl, Key.Shift, viewKey);
     }
 
+    private void SetExplorerViewAndWait(
+        Session explorer,
+        string fileName,
+        Key viewKey,
+        string viewName,
+        int minimumItemHeight,
+        int maximumItemHeight)
+    {
+        Element? lastItem = null;
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            SetExplorerView(explorer, viewKey);
+            var applied = explorer.WaitFor(
+                () =>
+                {
+                    lastItem = FindVisibleFileItem(explorer, fileName, timeoutMS: 250);
+                    return lastItem is not null &&
+                           lastItem.Height >= minimumItemHeight &&
+                           lastItem.Height <= maximumItemHeight;
+                },
+                timeoutMS: 5_000,
+                pollIntervalMS: 250);
+            if (applied)
+            {
+                TestContext.WriteLine(
+                    $"Explorer applied {viewName} on attempt {attempt}; item bounds: " +
+                    $"{lastItem!.Width}x{lastItem.Height}.");
+                return;
+            }
+        }
+
+        Assert.Fail(
+            $"Explorer did not apply {viewName} after three shortcut attempts. " +
+            $"Expected item height {minimumItemHeight}..{maximumItemHeight}; " +
+            $"last bounds: {lastItem?.Width ?? 0}x{lastItem?.Height ?? 0}.");
+    }
+
     private string CaptureStableWindow(Session explorer, string name)
     {
         var previousPath = CaptureWindow(explorer, $"{name}-initial");
@@ -691,30 +745,15 @@ public class FileExplorerAddonsTests : UITestBase
 
     private ThumbnailCapture CaptureFileItem(Session explorer, string fileName, string name)
     {
-        var displayName = Path.GetFileNameWithoutExtension(fileName);
-        var item = explorer.FindAll<Element>(By.Name(displayName), 5_000)
-            .Where(element => element.Width > 0 && element.Height > 0)
-            .Where(element =>
-                element.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
-                element.Name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase))
-            .ThenByDescending(element => element.Width * element.Height)
-            .FirstOrDefault();
-
+        var item = FindVisibleFileItem(explorer, fileName, timeoutMS: 5_000);
         Assert.IsNotNull(item, $"Explorer did not expose a visible item for '{fileName}'.");
         item!.ScrollIntoView();
-        item = explorer.FindAll<Element>(By.Name(displayName), 5_000)
-            .Where(element => element.Width > 0 && element.Height > 0)
-            .Where(element =>
-                element.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
-                element.Name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase))
-            .ThenByDescending(element => element.Width * element.Height)
-            .First();
+        item = FindVisibleFileItem(explorer, fileName, timeoutMS: 5_000);
+        Assert.IsNotNull(item, $"Explorer did not expose '{fileName}' after scrolling it into view.");
 
         var path = ArtifactPath(name);
         EnsureExplorerForeground(explorer);
-        using (var bitmap = new Bitmap(item.Width, item.Height))
+        using (var bitmap = new Bitmap(item!.Width, item.Height))
         {
             using var graphics = Graphics.FromImage(bitmap);
             graphics.CopyFromScreen(item.X, item.Y, 0, 0, bitmap.Size);
@@ -722,6 +761,19 @@ public class FileExplorerAddonsTests : UITestBase
         }
 
         return new ThumbnailCapture(path, item.Width, item.Height);
+    }
+
+    private static Element? FindVisibleFileItem(Session explorer, string fileName, int timeoutMS)
+    {
+        var displayName = Path.GetFileNameWithoutExtension(fileName);
+        return explorer.FindAll<Element>(By.Name(displayName), timeoutMS)
+            .Where(element => element.Width > 0 && element.Height > 0)
+            .Where(element =>
+                element.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase) ||
+                element.Name.Equals(displayName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(element => element.ControlType.Equals("ListItem", StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(element => element.Width * element.Height)
+            .FirstOrDefault();
     }
 
     private string CaptureWindow(Session explorer, string name)
@@ -812,12 +864,10 @@ public class FileExplorerAddonsTests : UITestBase
         ThumbnailCapture medium,
         string extension)
     {
-        var extraLargeArea = extraLarge.Width * extraLarge.Height;
-        var largeArea = large.Width * large.Height;
-        var mediumArea = medium.Width * medium.Height;
-
         Assert.IsTrue(
-            extraLargeArea > largeArea && largeArea > mediumArea,
+            extraLarge.Height >= 180 &&
+            extraLarge.Height > large.Height &&
+            large.Height > medium.Height,
             $"Explorer did not apply descending icon sizes for {extension}. " +
             $"Extra large: {extraLarge.Width}x{extraLarge.Height}; " +
             $"large: {large.Width}x{large.Height}; medium: {medium.Width}x{medium.Height}.");
@@ -899,47 +949,6 @@ public class FileExplorerAddonsTests : UITestBase
         }
 
         return string.Empty;
-    }
-
-    private static void RequestShellThumbnail(string filePath, int size)
-    {
-        var interfaceId = typeof(IShellItemImageFactory).GUID;
-        var createResult = SHCreateItemFromParsingName(
-            filePath,
-            IntPtr.Zero,
-            ref interfaceId,
-            out var imageFactory);
-        Assert.AreEqual(
-            0,
-            createResult,
-            $"SHCreateItemFromParsingName failed for '{filePath}' with HRESULT 0x{createResult:X8}.");
-
-        IntPtr bitmap = IntPtr.Zero;
-        try
-        {
-            var imageResult = imageFactory.GetImage(
-                new NativeSize(size, size),
-                ShellItemImageFactoryFlags.ThumbnailOnly,
-                out bitmap);
-            Assert.AreEqual(
-                0,
-                imageResult,
-                $"Windows Shell could not generate a {size}px thumbnail for '{filePath}'; " +
-                $"HRESULT 0x{imageResult:X8}.");
-            Assert.AreNotEqual(IntPtr.Zero, bitmap, "Windows Shell returned a null thumbnail bitmap.");
-        }
-        finally
-        {
-            if (bitmap != IntPtr.Zero)
-            {
-                DeleteObject(bitmap);
-            }
-
-            if (imageFactory is not null)
-            {
-                Marshal.FinalReleaseComObject(imageFactory);
-            }
-        }
     }
 
     private string TestAssetPath(string assetName)
@@ -1156,35 +1165,6 @@ public class FileExplorerAddonsTests : UITestBase
     {
         SHChangeNotify(0x08000000, 0, IntPtr.Zero, IntPtr.Zero);
     }
-
-    [Flags]
-    private enum ShellItemImageFactoryFlags : uint
-    {
-        ThumbnailOnly = 0x8,
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private readonly record struct NativeSize(int Width, int Height);
-
-    [ComImport]
-    [Guid("BCC18B79-BA16-442F-80C4-8A59C30C463B")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    private interface IShellItemImageFactory
-    {
-        [PreserveSig]
-        int GetImage(NativeSize size, ShellItemImageFactoryFlags flags, out IntPtr bitmap);
-    }
-
-    [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
-    private static extern int SHCreateItemFromParsingName(
-        string path,
-        IntPtr bindContext,
-        ref Guid interfaceId,
-        [MarshalAs(UnmanagedType.Interface)] out IShellItemImageFactory imageFactory);
-
-    [DllImport("gdi32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DeleteObject(IntPtr handle);
 
     [DllImport("shell32.dll")]
     private static extern void SHChangeNotify(long eventId, uint flags, IntPtr item1, IntPtr item2);
