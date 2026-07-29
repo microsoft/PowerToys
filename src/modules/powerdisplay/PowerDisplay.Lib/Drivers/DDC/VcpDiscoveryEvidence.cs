@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 #pragma warning disable SA1649 // File name should match first type name
-#pragma warning disable SA1402 // File may only contain a single type
 
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
@@ -110,30 +109,23 @@ internal sealed class VcpDiscoveryEvidence
                 var cachedValue = knownGood.ToVcpFeatureValue();
                 if (cachedValue.IsValid)
                 {
-                    // includeCache is only enabled by Maximum compatibility mode; when it is, exact-ID
-                    // cache evidence intentionally supplements parsed capabilities because caps strings
-                    // can omit previously proven continuous VCP support.
+                    // Max-compat only: exact-Id cache evidence supplements parsed capabilities,
+                    // because caps strings can omit continuous VCP support the hardware has proven.
                     //
-                    // Positive cache evidence is deliberately permanent for as long as the monitor
-                    // stays connected: nothing here retracts it, and MonitorStateManager's
-                    // RemoveKnownGoodFeatures only fires once the 30-day settings retention drops the
-                    // monitor entry. In particular a definitive DDCCI_VCP_NOT_SUPPORTED reply does not
-                    // outrank the cache — see Reconcile_VcpNotSupportedStillUsesCachedPositiveEvidence.
+                    // Positive evidence is never retracted, not even by a definitive
+                    // DDCCI_VCP_NOT_SUPPORTED — panels whose DDC/CI engine is busy or asleep return
+                    // that as a generic refusal, and dropping the last cached code would leave
+                    // capabilities null and make BuildMonitorFromPhysical discard the whole display.
+                    // Pinned by Reconcile_VcpNotSupportedStillUsesCachedPositiveEvidence; the full
+                    // trade-off is argued in the PR description.
                     //
-                    // That asymmetry is the point. Retracting on negative evidence trades a mild
-                    // failure for a severe one: a stale positive leaves a control that writes into the
-                    // void, whereas dropping the last cached code leaves Reconcile with null
-                    // capabilities and BuildMonitorFromPhysical discards the display outright, taking
-                    // its rotation and discrete VCPs with it. And NOT_SUPPORTED is not dependable
-                    // negative evidence on the hardware this mode exists for: panels whose DDC/CI
-                    // engine is busy or asleep return it as a generic refusal, which is why the probe
-                    // does not retry it and why one such reply must not delete persisted state.
-                    //
-                    // The window for a false positive is correspondingly narrow. Seeding one requires
-                    // the panel to answer an unimplemented code with a non-zero, in-range maximum; the
-                    // common garbage reply of current=0/max=0 fails VcpFeatureValue.IsValid and is
-                    // never cached. Known limitation: a monitor that does slip through keeps the
-                    // phantom control until its settings entry ages out.
+                    // Known limitation: seeding a false positive needs the panel to answer an
+                    // unimplemented code with a non-zero, in-range maximum, since the common
+                    // current=0/max=0 garbage reply fails VcpFeatureValue.IsValid and is never
+                    // cached. One that does slip through is permanent in practice:
+                    // RemoveKnownGoodFeatures only fires once settings retention drops the monitor
+                    // entry, which requires 30 days both undiscovered and unhidden, so a monitor in
+                    // daily use never reclaims it.
                     if (capabilities?.SupportsVcpCode(code) != true)
                     {
                         // Neither the capabilities string nor a probe reply covered this code, so the

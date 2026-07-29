@@ -292,10 +292,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
 
     /// <summary>
-    /// Determines whether an absolute restore should write the requested value. The hardware
-    /// comparison uses the underlying monitor snapshot; the optimistic UI backing field is passed
-    /// alongside it so a restore is never suppressed while a debounced slider commit is still
-    /// pending (that commit would otherwise overwrite the restored value).
+    /// Determines whether an absolute restore should write the requested value. See
+    /// <see cref="MonitorRestorePlanner.ShouldWrite"/> for the rule; this only supplies the two
+    /// inputs it needs — the monitor snapshot and the optimistic UI value.
     /// </summary>
     internal bool ShouldRestoreValue(int targetValue, MonitorReadFlags readFlag)
         => MonitorRestorePlanner.ShouldWrite(targetValue, _monitor, readFlag, DisplayedValue(readFlag));

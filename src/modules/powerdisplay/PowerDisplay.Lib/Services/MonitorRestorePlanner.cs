@@ -18,13 +18,15 @@ namespace PowerDisplay.Common.Services
         /// <remarks>
         /// <para>
         /// A monitor value without its corresponding <paramref name="readFlag"/> is not an
-        /// observation: it is either a cached value from an earlier session or the never-read
-        /// backing-field default — 0 brightness, 50 contrast, 50 volume, 0x05 color temperature.
-        /// Such a value must not suppress an absolute restore write, even when it equals
-        /// <paramref name="targetValue"/>: that equality is a coincidence rather than evidence
-        /// about the hardware, and honouring it would silently drop the restore. The cost is at
-        /// most one redundant write per monitor rediscovery for a saved value that happens to match
-        /// the default; for VCP 0x14 that write can visibly re-apply the color preset.
+        /// observation: it is either a cached value from an earlier session, the discovery
+        /// placeholder <c>MonitorDiscoveryHelper</c> stamps on every DDC monitor (50 brightness), or
+        /// the never-read backing-field default (0 brightness, 50 contrast, 50 volume, 0x05 color
+        /// temperature). Such a value must not suppress an absolute restore write, even when it
+        /// equals <paramref name="targetValue"/>: that equality is a coincidence rather than
+        /// evidence about the hardware, and honouring it would silently drop the restore. The cost
+        /// is at most one redundant write per monitor rediscovery for a saved value that happens to
+        /// match one of those placeholders — 50 is the mid-slider value, so the coincidence is not
+        /// rare — and for VCP 0x14 that write can visibly re-apply the color preset.
         /// </para>
         /// <para>
         /// <paramref name="displayedValue"/> is the caller's optimistic value — the one the UI is

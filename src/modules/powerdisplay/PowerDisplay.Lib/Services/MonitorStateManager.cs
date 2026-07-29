@@ -400,11 +400,14 @@ namespace PowerDisplay.Common.Services
         /// Marks the in-memory state dirty and schedules the debounced flush.
         /// </summary>
         /// <remarks>
-        /// Dispose has already snapshotted <c>_isDirty</c>, disposed the debouncer and flushed by the
-        /// time a late caller can reach this, so setting the flag again would only leave the instance
-        /// permanently dirty with no path left to clear it. Late observations are dropped on purpose:
-        /// the only writer that can still arrive after Dispose is the synchronous discovery block,
-        /// and whatever it observed is re-derived by the next discovery pass.
+        /// Dispose sets <c>_disposed</c> before it flushes, so a late caller can land here while the
+        /// flush is still in flight. Either way the debouncer has already been disposed and would
+        /// no-op, and re-setting <c>_isDirty</c> would only leave the instance permanently dirty with
+        /// no path left to clear it, so late observations are dropped on purpose. The writer that can
+        /// realistically arrive is the synchronous discovery block, whose observations the next
+        /// discovery pass re-derives; <see cref="UpdateMonitorParameter"/> reaches the same path and
+        /// its value would genuinely be lost, but Dispose runs only from App.Shutdown, immediately
+        /// before the process exits.
         /// </remarks>
         private void MarkDirtyAndScheduleSave()
         {
