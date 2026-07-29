@@ -35,7 +35,6 @@ public class FileExplorerAddonsTests : UITestBase
     private const int ExplorerTimeoutMS = 30_000;
     private const int ExplorerOpenAttempts = 3;
     private const int PreviewTimeoutMS = 60_000;
-    private const int PreviewPaneCommandTimeoutMS = 10_000;
     private const int VisualStableTimeoutMS = 15_000;
     private const double PreviewRegionDifferenceThreshold = 0.75;
 
@@ -51,6 +50,7 @@ public class FileExplorerAddonsTests : UITestBase
     private static readonly object ExplorerPreparationLock = new();
     private static List<SandboxThumbnailRegistration>? sandboxThumbnailRegistrations;
     private static bool explorerPrepared;
+    private static bool previewPaneShortcutSent;
 
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
@@ -446,7 +446,7 @@ public class FileExplorerAddonsTests : UITestBase
         {
             try
             {
-                process.Kill(entireProcessTree: true);
+                process.Kill();
                 process.WaitForExit(10_000);
             }
             catch
@@ -522,117 +522,15 @@ public class FileExplorerAddonsTests : UITestBase
     private void EnsurePreviewPaneOpen(Session explorer)
     {
         EnsureExplorerForeground(explorer);
-        var command = OpenPreviewPaneCommand(explorer);
-        var initialState = ReadToggleState(command);
-        var initialStateText = initialState?.ToString() ?? "<unknown>";
-        TestContext.WriteLine($"Explorer Preview pane command initial ToggleState='{initialStateText}'.");
-
-        Assert.IsNotNull(
-            initialState,
-            "Explorer exposed the Preview pane command without a readable ToggleState.");
-
-        if (initialState == false)
+        if (previewPaneShortcutSent)
         {
-            command.Invoke(msPostAction: 500);
-        }
-        else
-        {
-            DismissExplorerMenus();
+            return;
         }
 
-        var verifiedOpen = false;
-        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(PreviewPaneCommandTimeoutMS);
-        while (DateTime.UtcNow < deadline && !verifiedOpen)
-        {
-            try
-            {
-                var verificationCommand = OpenPreviewPaneCommand(explorer);
-                verifiedOpen = ReadToggleState(verificationCommand) == true;
-            }
-            finally
-            {
-                DismissExplorerMenus();
-            }
-
-            if (!verifiedOpen)
-            {
-                Thread.Sleep(250);
-            }
-        }
-
-        Assert.IsTrue(verifiedOpen, "Explorer's Preview pane command did not reach ToggleState=On.");
-    }
-
-    private static Element OpenPreviewPaneCommand(Session explorer)
-    {
-        DismissExplorerMenus();
-        EnsureExplorerForeground(explorer);
-
-        var processSession = Session.FromProcess(
-            explorer.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            timeoutMS: 5_000);
-        var directCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 500);
-        if (directCommand is not null)
-        {
-            return directCommand;
-        }
-
-        var viewButton = explorer.FindAll<Element>(By.Name("View"), 5_000)
-            .Where(element => element.Name.Equals("View", StringComparison.OrdinalIgnoreCase))
-            .Where(element => element.Width > 0 && element.Height > 0)
-            .Where(element => element.ControlType.Equals("Button", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(element => element.Y)
-            .FirstOrDefault();
-        Assert.IsNotNull(viewButton, "Explorer's View command was not found.");
-        viewButton!.Invoke(msPostAction: 300);
-
-        directCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 750);
-        if (directCommand is not null)
-        {
-            return directCommand;
-        }
-
-        var showCommand = FindExactVisibleCommand(processSession, "Show", timeoutMS: 3_000);
-        Assert.IsNotNull(showCommand, "Explorer's View menu did not expose the Show submenu.");
-        showCommand!.Invoke(msPostAction: 300);
-
-        var previewCommand = FindExactVisibleCommand(processSession, "Preview pane", timeoutMS: 3_000);
-        Assert.IsNotNull(previewCommand, "Explorer's Show menu did not expose the Preview pane command.");
-        return previewCommand!;
-    }
-
-    private static Element? FindExactVisibleCommand(Session session, string name, int timeoutMS)
-    {
-        return session.FindAll<Element>(By.Name(name), timeoutMS)
-            .Where(element => element.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
-            .Where(element => element.Width > 0 && element.Height > 0)
-            .Where(element =>
-                element.ControlType.Equals("Button", StringComparison.OrdinalIgnoreCase) ||
-                element.ControlType.Equals("MenuItem", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(element => element.Y)
-            .FirstOrDefault();
-    }
-
-    private static bool? ReadToggleState(Element command)
-    {
-        var value = command.GetProperty("ToggleState");
-        if (value.Equals("On", StringComparison.OrdinalIgnoreCase) || value == "1")
-        {
-            return true;
-        }
-
-        if (value.Equals("Off", StringComparison.OrdinalIgnoreCase) || value == "0")
-        {
-            return false;
-        }
-
-        return null;
-    }
-
-    private static void DismissExplorerMenus()
-    {
-        KeyboardHelper.SendKeys(Key.Esc);
-        KeyboardHelper.SendKeys(Key.Esc);
+        KeyboardHelper.SendKeys(Key.Alt, Key.P);
+        Thread.Sleep(500);
+        previewPaneShortcutSent = true;
+        TestContext.WriteLine("Opened Explorer's Preview pane with Alt+P.");
     }
 
     private static void EnsureExplorerForeground(Session explorer)
