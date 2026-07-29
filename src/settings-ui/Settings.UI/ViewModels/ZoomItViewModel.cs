@@ -276,6 +276,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SnipCopyToClipboard
+        {
+            get => _zoomItSettings.Properties.SnipCopyToClipboard.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipCopyToClipboard.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipCopyToClipboard.Value = value;
+                    OnPropertyChanged(nameof(SnipCopyToClipboard));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public int ZoominSliderLevel
         {
             get => _zoomItSettings.Properties.ZoominSliderLevel.Value;
