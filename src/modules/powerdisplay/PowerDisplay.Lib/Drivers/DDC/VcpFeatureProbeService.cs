@@ -2,83 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#pragma warning disable SA1649 // File name should match first type name
-#pragma warning disable SA1402 // File may only contain a single type
-
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
-using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
-    internal enum VcpProbeDisposition
-    {
-        Success,
-        Indeterminate,
-        PhysicalMonitorUnavailable,
-    }
-
-    internal readonly record struct VcpReadAttempt(bool IsSuccess, uint Current, uint Maximum, int ErrorCode)
-    {
-        public static VcpReadAttempt Success(uint current, uint maximum) => new(true, current, maximum, 0);
-
-        public static VcpReadAttempt Failure(int errorCode) => new(false, 0, 0, errorCode);
-    }
-
-    internal interface IVcpFeatureReader
-    {
-        VcpReadAttempt Read(IntPtr handle, byte code);
-    }
-
-    /// <summary>
-    /// The production <see cref="IVcpFeatureReader"/>: one <c>GetVCPFeatureAndVCPFeatureReply</c>
-    /// transaction, with no retry, pacing or logging. Those belong to the callers —
-    /// <see cref="VcpFeatureProbeService"/> and <see cref="ContinuousVcpInitializer"/>.
-    /// </summary>
-    internal sealed class NativeVcpFeatureReader : IVcpFeatureReader
-    {
-        public VcpReadAttempt Read(IntPtr handle, byte code) =>
-            GetVCPFeatureAndVCPFeatureReply(handle, code, IntPtr.Zero, out uint current, out uint maximum)
-                ? VcpReadAttempt.Success(current, maximum)
-                : VcpReadAttempt.Failure(Marshal.GetLastWin32Error());
-    }
-
-    internal readonly record struct VcpProbeObservation(
-        byte Code,
-        VcpFeatureValue Value,
-        int Attempts,
-        int? LastError,
-        bool Replied = false)
-    {
-        public bool IsSuccess => Value.IsValid;
-
-        public VcpProbeDisposition Disposition => IsSuccess
-            ? VcpProbeDisposition.Success
-            : LastError is int errorCode && DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode)
-                ? VcpProbeDisposition.PhysicalMonitorUnavailable
-                : VcpProbeDisposition.Indeterminate;
-
-        public static VcpProbeObservation Success(
-            byte code,
-            VcpFeatureValue value,
-            int attempts = 1,
-            int? lastError = null) =>
-            new(code, value, attempts, lastError, true);
-
-        public static VcpProbeObservation Indeterminate(
-            byte code,
-            int? lastError,
-            int attempts = 1,
-            bool replied = false) =>
-            new(code, VcpFeatureValue.Invalid, attempts, lastError, replied);
-    }
-
     internal sealed class VcpFeatureProbeService
     {
         private static readonly TimeSpan TransactionInterval = TimeSpan.FromMilliseconds(100);
@@ -227,5 +160,54 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         private static string FormatError(int? errorCode) =>
             errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
+    }
+
+    internal enum VcpProbeDisposition
+    {
+        Success,
+        Indeterminate,
+        PhysicalMonitorUnavailable,
+    }
+
+    internal readonly record struct VcpReadAttempt(bool IsSuccess, uint Current, uint Maximum, int ErrorCode)
+    {
+        public static VcpReadAttempt Success(uint current, uint maximum) => new(true, current, maximum, 0);
+
+        public static VcpReadAttempt Failure(int errorCode) => new(false, 0, 0, errorCode);
+    }
+
+    internal interface IVcpFeatureReader
+    {
+        VcpReadAttempt Read(IntPtr handle, byte code);
+    }
+
+    internal readonly record struct VcpProbeObservation(
+        byte Code,
+        VcpFeatureValue Value,
+        int Attempts,
+        int? LastError,
+        bool Replied = false)
+    {
+        public bool IsSuccess => Value.IsValid;
+
+        public VcpProbeDisposition Disposition => IsSuccess
+            ? VcpProbeDisposition.Success
+            : LastError is int errorCode && DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode)
+                ? VcpProbeDisposition.PhysicalMonitorUnavailable
+                : VcpProbeDisposition.Indeterminate;
+
+        public static VcpProbeObservation Success(
+            byte code,
+            VcpFeatureValue value,
+            int attempts = 1,
+            int? lastError = null) =>
+            new(code, value, attempts, lastError, true);
+
+        public static VcpProbeObservation Indeterminate(
+            byte code,
+            int? lastError,
+            int attempts = 1,
+            bool replied = false) =>
+            new(code, VcpFeatureValue.Invalid, attempts, lastError, replied);
     }
 }
