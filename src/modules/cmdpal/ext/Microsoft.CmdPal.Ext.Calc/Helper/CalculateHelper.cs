@@ -14,7 +14,7 @@ public static partial class CalculateHelper
         @"^(" +
         @"%|" +
         @"ceil\s*\(|floor\s*\(|exp\s*\(|max\s*\(|min\s*\(|abs\s*\(|log(?:2|10)?\s*\(|logn\s*\(|ln\s*\(|sqrt\s*\(|pow\s*\(|root\s*\(|" +
-        @"factorial\s*\(|sign\s*\(|round\s*\(|rand\s*\(\)|randi\s*\((?=[^\)])|" +
+        @"factorial\s*\(|si?gn\s*\(|round\s*\(|rand\s*\(\)|randi\s*\((?=[^\)])|" +
         @"sin\s*\(|cos\s*\(|tan\s*\(|arcsin\s*\(|arccos\s*\(|arctan\s*\(|" +
         @"cot\s*\(|sec\s*\(|csc\s*\(|arccot\s*\(|arcsec\s*\(|arccsc\s*\(|" +
         @"sinh\s*\(|cosh\s*\(|tanh\s*\(|arsinh\s*\(|arcosh\s*\(|artanh\s*\(|" +

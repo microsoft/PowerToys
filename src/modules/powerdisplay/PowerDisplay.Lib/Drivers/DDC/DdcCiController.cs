@@ -383,7 +383,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
         /// only destroys handles that were in the previous map. A handle dropped on an abandon path
         /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
-        /// one more -- and a discovery runs on every display-topology change, so a docking-station
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
         /// user accumulates them for the process lifetime.
         /// </remarks>
         private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)

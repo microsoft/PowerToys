@@ -104,6 +104,7 @@ public sealed partial class DockItemControl : Control
     private void UpdateCompactState()
     {
         VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
+        UpdateSubtitleVisibilityState();
     }
 
     private const string IconPresenterName = "IconPresenter";
@@ -120,7 +121,6 @@ public sealed partial class DockItemControl : Control
         {
             control.UpdateTextVisibility();
             control.UpdateAlignment();
-            control.UpdateCompactState();
         }
     }
 
@@ -142,6 +142,8 @@ public sealed partial class DockItemControl : Control
     private void UpdateTextVisibility()
     {
         UpdateTextVisibilityState();
+        UpdateSubtitleVisibilityState();
+        UpdateContentSpacingState();
     }
 
     private void UpdateTextVisibilityState()
@@ -166,6 +168,12 @@ public sealed partial class DockItemControl : Control
         VisualStateManager.GoToState(this, stateName, true);
     }
 
+    private void UpdateSubtitleVisibilityState()
+    {
+        var showSubtitle = HasSubtitle && !IsCompact;
+        VisualStateManager.GoToState(this, showSubtitle ? "SubtitleVisible" : "SubtitleHidden", true);
+    }
+
     private void UpdateIconVisibility()
     {
         var shouldShowIcon = ShouldShowIcon();
@@ -175,11 +183,18 @@ public sealed partial class DockItemControl : Control
         }
 
         UpdateIconVisibilityState();
+        UpdateContentSpacingState();
     }
 
     private void UpdateIconVisibilityState()
     {
         VisualStateManager.GoToState(this, ShouldShowIcon() ? "IconVisible" : "IconHidden", true);
+    }
+
+    private void UpdateContentSpacingState()
+    {
+        var showSpacing = TextVisibility != Visibility.Collapsed && HasText && ShouldShowIcon();
+        VisualStateManager.GoToState(this, showSpacing ? "ContentSpacingVisible" : "ContentSpacingHidden", true);
     }
 
     private void UpdateAlignment()
