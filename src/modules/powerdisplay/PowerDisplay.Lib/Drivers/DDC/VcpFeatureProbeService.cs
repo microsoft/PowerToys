@@ -44,7 +44,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 // These errors invalidate the physical-monitor handle, not just the current
                 // VCP feature. Avoid issuing more I2C requests against a stale handle.
-                if (observation.Disposition == VcpProbeDisposition.PhysicalMonitorUnavailable)
+                if (observation.IsPhysicalMonitorUnavailable)
                 {
                     break;
                 }
@@ -95,28 +95,19 @@ namespace PowerDisplay.Common.Drivers.DDC
                     // DDCCI_VCP_NOT_SUPPORTED instead, so a reply proves support even when the
                     // reported range cannot scale a percentage.
                     var value = new VcpFeatureValue((int)result.Current, 0, (int)result.Maximum);
-                    if (value.IsValid)
-                    {
-                        Logger.LogDebug(
-                            $"DDC: [max-compat] VCP probe attempt " +
-                            $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
-                            $"status=success, current={result.Current}, maximum={result.Maximum})");
-                        return Complete(
-                            handle,
-                            VcpProbeObservation.Success(code, value, attempt, lastError));
-                    }
+                    var observation = value.IsValid
+                        ? VcpProbeObservation.Success(code, value, attempt, lastError)
+                        : VcpProbeObservation.Indeterminate(code, lastError, attempt, replied: true);
 
                     Logger.LogDebug(
                         $"DDC: [max-compat] VCP probe attempt " +
                         $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
-                        $"status=invalid-range, current={result.Current}, maximum={result.Maximum})");
+                        $"status={(value.IsValid ? "success" : "invalid-range")}, " +
+                        $"current={result.Current}, maximum={result.Maximum})");
 
-                    // A degenerate range is still a reply, and the reply is the only thing the
-                    // caller reads off this probe. Another attempt could not change that, so the
-                    // remaining budget is not spent on the I2C bus.
-                    return Complete(
-                        handle,
-                        VcpProbeObservation.Indeterminate(code, lastError, attempt, replied: true));
+                    // A reply settles the only question this probe asks, so the remaining budget is
+                    // not spent on the I2C bus even when the reported range is degenerate.
+                    return Complete(handle, observation);
                 }
                 else
                 {
@@ -142,12 +133,11 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         private static VcpProbeObservation Complete(IntPtr handle, VcpProbeObservation observation)
         {
-            var status = observation.Disposition switch
-            {
-                VcpProbeDisposition.Success => "success",
-                VcpProbeDisposition.PhysicalMonitorUnavailable => "physical-monitor-unavailable",
-                _ => "indeterminate",
-            };
+            var status = observation.IsSuccess
+                ? "success"
+                : observation.IsPhysicalMonitorUnavailable
+                    ? "physical-monitor-unavailable"
+                    : "indeterminate";
             var message =
                 $"DDC: [max-compat] VCP probe outcome " +
                 $"(handle=0x{handle:X}, code=0x{observation.Code:X2}, attempts={observation.Attempts}, " +
@@ -167,13 +157,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         private static string FormatError(int? errorCode) =>
             errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
-    }
-
-    internal enum VcpProbeDisposition
-    {
-        Success,
-        Indeterminate,
-        PhysicalMonitorUnavailable,
     }
 
     internal readonly record struct VcpReadAttempt(bool IsSuccess, uint Current, uint Maximum, int ErrorCode)
@@ -197,11 +180,12 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         public bool IsSuccess => Value.IsValid;
 
-        public VcpProbeDisposition Disposition => IsSuccess
-            ? VcpProbeDisposition.Success
-            : LastError is int errorCode && DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode)
-                ? VcpProbeDisposition.PhysicalMonitorUnavailable
-                : VcpProbeDisposition.Indeterminate;
+        /// <summary>
+        /// Gets a value indicating whether the failure invalidated the physical-monitor handle
+        /// itself, so no further request may be issued against it.
+        /// </summary>
+        public bool IsPhysicalMonitorUnavailable =>
+            LastError is int errorCode && DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode);
 
         public static VcpProbeObservation Success(
             byte code,

@@ -46,7 +46,6 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(2, reader.CallCount);
         Assert.IsTrue(result[0x10].IsSuccess);
-        Assert.AreEqual(VcpProbeDisposition.Success, result[0x10].Disposition);
         Assert.AreEqual(2, result[0x10].Attempts);
         Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand, result[0x10].LastError);
         CollectionAssert.AreEqual(
@@ -99,7 +98,7 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(1, reader.CallCount);
         CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
         Assert.AreEqual(1, result.Count);
-        Assert.AreEqual(VcpProbeDisposition.PhysicalMonitorUnavailable, result[0x10].Disposition);
+        Assert.IsTrue(result[0x10].IsPhysicalMonitorUnavailable);
         Assert.AreEqual(errorCode, result[0x10].LastError);
     }
 
@@ -115,8 +114,9 @@ public sealed class VcpFeatureProbeServiceTests
 
         Assert.AreEqual(2, reader.CallCount);
         CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
-        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
-        Assert.AreEqual(VcpProbeDisposition.Success, result[0x12].Disposition);
+        Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.IsFalse(result[0x10].IsPhysicalMonitorUnavailable);
+        Assert.IsTrue(result[0x12].IsSuccess);
     }
 
     [TestMethod]
@@ -153,7 +153,8 @@ public sealed class VcpFeatureProbeServiceTests
         Assert.AreEqual(2, reader.CallCount);
         Assert.AreEqual(2, result[0x10].Attempts);
         Assert.IsTrue(result[0x10].Replied);
-        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
+        Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.IsFalse(result[0x10].IsPhysicalMonitorUnavailable);
 
         // Returning early on the reply must not discard the error the earlier attempt reported.
         Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageChecksum, result[0x10].LastError);
@@ -169,7 +170,8 @@ public sealed class VcpFeatureProbeServiceTests
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
 
-        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
+        Assert.IsFalse(result[0x10].IsSuccess);
+        Assert.IsFalse(result[0x10].IsPhysicalMonitorUnavailable);
         Assert.IsFalse(result[0x10].Replied);
         Assert.IsTrue(result[0x12].IsSuccess);
         Assert.AreEqual(40, result[0x12].Value.Current);
