@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
-  <Target Name="GenerateVersionData" BeforeTargets="PrepareForBuild">
+  <!-- Make sure Inputs/Outputs are set correctly, so that we only regenerate
+  the version header when the version actually changes. Otherwise this will
+  dirty FastUpToDate checks for almost everything -->
+  <Target Name="GenerateVersionData"
+    BeforeTargets="PrepareForBuild"
+    Inputs="$(RepoRoot)src\Version.props"
+    Outputs="$(MSBuildProjectDirectory)\Generated Files\version_gen.h">
     <ItemGroup>
       <HeaderLines Include="#pragma once" />
       <HeaderLines Include="#define VERSION_MAJOR $(Version.Split('.')[0])" />
