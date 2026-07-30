@@ -6967,21 +6967,6 @@ auto GetUniqueScreenshotFilename()
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
-    // ---- Recording startup timing diagnostics ----
-    LARGE_INTEGER _diagFreq, _diagT0, _diagT1;
-    QueryPerformanceFrequency( &_diagFreq );
-    QueryPerformanceCounter( &_diagT0 );
-    auto _diagMs = [&]() -> double {
-        QueryPerformanceCounter( &_diagT1 );
-        return static_cast<double>( _diagT1.QuadPart - _diagT0.QuadPart ) * 1000.0 / _diagFreq.QuadPart;
-    };
-    auto _diagLog = [&]( const wchar_t* label ) {
-        wchar_t buf[256];
-        swprintf_s( buf, L"[RecStartup +%.1fms] %s\n", _diagMs(), label );
-        OutputDebugStringW( buf );
-    };
-    _diagLog( L"entry" );
-
     // Capture the UI thread context so we can resume on it for the save dialog
     winrt::apartment_context uiThread;
 
@@ -6998,7 +6983,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         audioGenerator = std::make_unique<AudioSampleGenerator>(
             g_CaptureAudio, g_CaptureSystemAudio, g_MicMonoMix, g_NoiseCancellation );
         audioInitAction = audioGenerator->InitializeAsync();
-        _diagLog( L"audio InitializeAsync started (background)" );
     }
 
     auto tempFolderPath = std::filesystem::temp_directory_path().wstring();
@@ -7008,13 +6992,11 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // Choose temp file extension based on format
     const wchar_t* tempFileName = (g_RecordingFormat == RecordingFormat::GIF) ? L"zoomit.gif" : L"zoomit.mp4";
     auto file = co_await appFolder.CreateFileAsync( tempFileName, winrt::CreationCollisionOption::ReplaceExisting );
-    _diagLog( L"temp file created" );
 
     // Get the device
     auto d3dDevice = util::CreateD3D11Device();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
-    _diagLog( L"D3D device created" );
 
     // Get the active MONITOR capture device
     HMONITOR hMon = NULL;
@@ -7030,10 +7012,8 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         item = util::CreateCaptureItemForWindow( hWndRecord );
     else
         item = util::CreateCaptureItemForMonitor( hMon );
-    _diagLog( L"capture item created" );
 
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
-    _diagLog( L"file stream opened" );
 
     // Create the appropriate recording session based on format
     OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
@@ -7083,7 +7063,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else
     {
-        _diagLog( L"calling VideoRecordingSession::Create (constructor)" );
         g_RecordingSession = VideoRecordingSession::Create(
                                         g_RecordDevice,
                                         item,
@@ -7092,7 +7071,6 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         std::move(audioGenerator),
                                         audioInitAction,
                                         stream );
-        _diagLog( L"VideoRecordingSession::Create returned" );
 
         recordingStarted = (g_RecordingSession != nullptr);
 
@@ -7131,9 +7109,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         {
             try
             {
-                _diagLog( L"calling co_await StartAsync()" );
                 co_await g_RecordingSession->StartAsync();
-                _diagLog( L"StartAsync returned" );
             }
             catch (const winrt::hresult_error& error)
             {
@@ -10308,6 +10284,21 @@ LRESULT APIENTRY MainWndProc(
         g_SelectRectangle.SetRecordingActive();
         break;
 
+    case WM_USER_RECORDING_NO_FRAMES:
+        // The capture pipeline started but never delivered a single frame,
+        // so recording was aborted.  This is typical on headless / GPU-less
+        // virtual machines, cloud PCs, or remote sessions where
+        // Windows.Graphics.Capture cannot capture the display.  Tear down the
+        // recording border / state and tell the user why nothing was saved.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_NO_FRAMES received\n" );
+        StopRecording();
+        MessageBox( g_hWndMain,
+            L"ZoomIt could not capture any video from the display, so recording was cancelled.\n\n"
+            L"Screen recording uses Windows Graphics Capture, which needs a GPU-backed (WDDM) display. "
+            L"This is often unavailable on virtual machines, cloud PCs, or remote sessions that lack a virtual GPU.",
+            APPNAME, MB_OK | MB_ICONWARNING );
+        break;
+
     case WM_USER_SAVE_CURSOR:
         if( g_Zoomed == TRUE )
         {
@@ -10680,14 +10671,21 @@ LRESULT APIENTRY MainWndProc(
             saveDialog->SetFileName( suggestedName.c_str() );
             saveDialog->SetTitle( L"ZoomIt: Save Zoomed Screen..." );
 
-            // Set default folder to the last save location if available
+            // Set default folder to the configured/last save location if available.
+            // The stored value may be a directory (a user-configured default folder)
+            // or a full file path (the last saved screenshot); handle both.
             if( !g_ScreenshotSaveLocation.empty() )
             {
                 std::filesystem::path lastPath( g_ScreenshotSaveLocation );
-                if( lastPath.has_parent_path() )
+                std::error_code ec;
+                std::filesystem::path folderPath =
+                    std::filesystem::is_directory( lastPath, ec )
+                        ? lastPath
+                        : lastPath.parent_path();
+                if( !folderPath.empty() )
                 {
                     wil::com_ptr<IShellItem> folderItem;
-                    if( SUCCEEDED( SHCreateItemFromParsingName( lastPath.parent_path().c_str(),
+                    if( SUCCEEDED( SHCreateItemFromParsingName( folderPath.c_str(),
                         nullptr, IID_PPV_ARGS( &folderItem ) ) ) )
                     {
                         saveDialog->SetFolder( folderItem.get() );
@@ -10785,6 +10783,49 @@ LRESULT APIENTRY MainWndProc(
                 g_ScreenshotSaveLocation = targetFilePath;
                 wcsncpy_s(g_ScreenshotSaveLocationBuffer, g_ScreenshotSaveLocation.c_str(), _TRUNCATE);
                 reg.WriteRegSettings(RegSettings);
+
+                // When enabled, also place the captured (actual-size) image on the
+                // clipboard so the snip is immediately available to paste. CF_BITMAP
+                // takes ownership of the handle, so hand it a dedicated copy.
+                if( g_SnipCopyToClipboard )
+                {
+                    wil::unique_hdc hdcClipboard( CreateCompatibleDC( hdcScreen ) );
+                    HBITMAP hbmClipboard =
+                        CreateCompatibleBitmap( hdcScreen, saveWidth, saveHeight );
+                    if( hdcClipboard && hbmClipboard )
+                    {
+                        HGDIOBJ hOldClip = SelectObject( hdcClipboard.get(), hbmClipboard );
+                        BitBlt( hdcClipboard.get(),
+                                0, 0,
+                                saveWidth, saveHeight,
+                                hdcActualSize.get(),
+                                0, 0,
+                                SRCCOPY );
+                        SelectObject( hdcClipboard.get(), hOldClip );
+
+                        bool ownershipTransferred = false;
+                        if( OpenClipboard( hWnd ) )
+                        {
+                            EmptyClipboard();
+                            // SetClipboardData only transfers ownership on success;
+                            // on failure the handle is still ours and must be freed.
+                            if( SetClipboardData( CF_BITMAP, hbmClipboard ) != nullptr )
+                            {
+                                ownershipTransferred = true;
+                            }
+                            CloseClipboard();
+                        }
+
+                        if( !ownershipTransferred )
+                        {
+                            DeleteObject( hbmClipboard );
+                        }
+                    }
+                    else if( hbmClipboard )
+                    {
+                        DeleteObject( hbmClipboard );
+                    }
+                }
             }
             g_bSaveInProgress = false;
 

@@ -4971,6 +4971,12 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_SnipSave_Shortcut.Header" xml:space="preserve">
     <value>Save snip to file</value>
   </data>
+  <data name="ZoomIt_SnipCopyToClipboard.Header" xml:space="preserve">
+    <value>Copy to clipboard when saving</value>
+  </data>
+  <data name="ZoomIt_SnipCopyToClipboard.Description" xml:space="preserve">
+    <value>Also copy the snip to the clipboard whenever it is saved to a file</value>
+  </data>
   <data name="ZoomIt_PanoramaSave_Shortcut.Header" xml:space="preserve">
     <value>Save scrolling screenshot to file</value>
   </data>
