@@ -7,7 +7,6 @@
 #include <cwctype>
 #include <cstring>
 #include <map>
-#include <memory>
 #include <mutex>
 
 #pragma comment(lib, "wintrust.lib")
@@ -247,14 +246,9 @@ namespace interop_auth
         }
 
         // --- Per-process verification cache -------------------------------------------------------
-        // The cache is owned per pipe server (a VerificationCache member of each TwoWayPipeMessageIPC),
-        // so cached verdicts are physically partitioned by policy and the key needs only
-        // (PID, process-creation-time). A recycled PID is a miss (creation time is kernel-assigned and
-        // unforgeable). Short TTL + LRU cap; negative results are cached too so a flooding attacker is
-        // verified/logged once per process instance rather than per message.
-        constexpr unsigned long long kCacheTtlMs = 60'000;
-        constexpr size_t kCacheCap = 64;
-
+        // The cache itself is the header-only interop_auth::VerificationCache, owned per pipe server so
+        // verdicts are physically partitioned by policy (key = pid + creation-time). Only the helper to
+        // read a process's unforgeable creation-time key lives here.
         unsigned long long ProcessCreationKey(HANDLE process)
         {
             FILETIME create = {}, exit = {}, kernel = {}, user = {};
@@ -264,89 +258,6 @@ namespace interop_auth
             }
             return (static_cast<unsigned long long>(create.dwHighDateTime) << 32) | create.dwLowDateTime;
         }
-    }
-
-    // Per-server verification cache (opaque type declared in the header). One instance per pipe server,
-    // so cached verdicts are physically partitioned by policy — the key is just (pid, creation-time).
-    struct VerificationCache::Impl
-    {
-        struct Key
-        {
-            DWORD pid = 0;
-            unsigned long long createTime = 0;
-            bool operator<(const Key& other) const
-            {
-                return pid < other.pid || (pid == other.pid && createTime < other.createTime);
-            }
-        };
-
-        struct Entry
-        {
-            bool accepted = false;
-            std::wstring imagePath;
-            const wchar_t* reason = L"";
-            unsigned long long tick = 0;
-        };
-
-        std::mutex mutex;
-        std::map<Key, Entry> map;
-
-        void evict()
-        {
-            const unsigned long long now = GetTickCount64();
-            for (auto it = map.begin(); it != map.end();)
-            {
-                if (now - it->second.tick > kCacheTtlMs)
-                {
-                    it = map.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-            while (map.size() >= kCacheCap)
-            {
-                auto oldest = map.begin();
-                for (auto it = map.begin(); it != map.end(); ++it)
-                {
-                    if (it->second.tick < oldest->second.tick)
-                    {
-                        oldest = it;
-                    }
-                }
-                map.erase(oldest);
-            }
-        }
-    };
-
-    VerificationCache::VerificationCache() :
-        impl(std::make_unique<Impl>())
-    {
-    }
-
-    VerificationCache::~VerificationCache() = default;
-
-    bool VerificationCache::TryGet(DWORD pid, unsigned long long createTime, AuthResult& out)
-    {
-        std::scoped_lock lock(impl->mutex);
-        const auto it = impl->map.find(Impl::Key{ pid, createTime });
-        if (it != impl->map.end() && (GetTickCount64() - it->second.tick) <= kCacheTtlMs)
-        {
-            out.accepted = it->second.accepted;
-            out.imagePath = it->second.imagePath;
-            out.reasonCode = it->second.reason;
-            return true;
-        }
-        return false;
-    }
-
-    void VerificationCache::Put(DWORD pid, unsigned long long createTime, const AuthResult& verdict)
-    {
-        std::scoped_lock lock(impl->mutex);
-        impl->evict();
-        impl->map[Impl::Key{ pid, createTime }] =
-            Impl::Entry{ verdict.accepted, verdict.imagePath, verdict.reasonCode, GetTickCount64() };
     }
 
     unsigned long long GetModuleVersion(const std::wstring& path)

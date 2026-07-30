@@ -3,7 +3,8 @@
 #include <Windows.h>
 
 #include <functional>
-#include <memory>
+#include <map>
+#include <mutex>
 #include <optional>
 #include <string>
 #include <vector>
@@ -52,26 +53,89 @@ namespace interop_auth
         std::function<void(const AuthResult&)> logReject;
     };
 
-    // Per-server verification cache. Each pipe server owns one instance, so cached verdicts are
-    // physically partitioned by policy and the key is simply (pid, process-creation-time) — there is no
-    // shared cross-server state and therefore no need to fold the policy into the cache key. Opaque
-    // (pimpl) so the cache internals stay in the .cpp. Thread-safe.
+    // Per-server verification cache. Header-only (all members inline) so it introduces NO out-of-line
+    // symbols: the common transport header is also compiled by the Workspaces duplicate transport, which
+    // does not link the auth translation unit, so an out-of-line ctor/dtor here would break its link.
+    // Each pipe server owns one instance, so cached verdicts are physically partitioned by policy and the
+    // key is simply (pid, process-creation-time). Thread-safe.
     class VerificationCache
     {
     public:
-        VerificationCache();
-        ~VerificationCache();
-        VerificationCache(const VerificationCache&) = delete;
-        VerificationCache& operator=(const VerificationCache&) = delete;
-
         // On a fresh (within-TTL) hit, fills out.accepted/imagePath/reasonCode and returns true.
-        bool TryGet(DWORD pid, unsigned long long createTime, AuthResult& out);
-        // Stores/refreshes the verdict for this process instance (evicts expired/oldest entries).
-        void Put(DWORD pid, unsigned long long createTime, const AuthResult& verdict);
+        bool TryGet(DWORD pid, unsigned long long createTime, AuthResult& out)
+        {
+            std::scoped_lock lock(m_mutex);
+            const auto it = m_map.find(Key{ pid, createTime });
+            if (it != m_map.end() && (GetTickCount64() - it->second.tick) <= kTtlMs)
+            {
+                out.accepted = it->second.accepted;
+                out.imagePath = it->second.imagePath;
+                out.reasonCode = it->second.reason;
+                return true;
+            }
+            return false;
+        }
+
+        // Stores/refreshes the verdict for this process instance (evicts expired/oldest entries first).
+        void Put(DWORD pid, unsigned long long createTime, const AuthResult& verdict)
+        {
+            std::scoped_lock lock(m_mutex);
+            evictLocked();
+            m_map[Key{ pid, createTime }] =
+                Entry{ verdict.accepted, verdict.imagePath, verdict.reasonCode, GetTickCount64() };
+        }
 
     private:
-        struct Impl;
-        std::unique_ptr<Impl> impl;
+        struct Key
+        {
+            DWORD pid = 0;
+            unsigned long long createTime = 0;
+            bool operator<(const Key& other) const
+            {
+                return pid < other.pid || (pid == other.pid && createTime < other.createTime);
+            }
+        };
+
+        struct Entry
+        {
+            bool accepted = false;
+            std::wstring imagePath;
+            const wchar_t* reason = L"";
+            unsigned long long tick = 0;
+        };
+
+        void evictLocked()
+        {
+            const unsigned long long now = GetTickCount64();
+            for (auto it = m_map.begin(); it != m_map.end();)
+            {
+                if (now - it->second.tick > kTtlMs)
+                {
+                    it = m_map.erase(it);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
+            while (m_map.size() >= kCap)
+            {
+                auto oldest = m_map.begin();
+                for (auto it = m_map.begin(); it != m_map.end(); ++it)
+                {
+                    if (it->second.tick < oldest->second.tick)
+                    {
+                        oldest = it;
+                    }
+                }
+                m_map.erase(oldest);
+            }
+        }
+
+        static constexpr unsigned long long kTtlMs = 60'000; // per-process verdict lifetime
+        static constexpr size_t kCap = 64;                   // small LRU cap (few legit clients)
+        std::mutex m_mutex;
+        std::map<Key, Entry> m_map;
     };
 
     // Authenticates the client connected on `pipe` against `policy`, using `cache` (owned by the caller,
