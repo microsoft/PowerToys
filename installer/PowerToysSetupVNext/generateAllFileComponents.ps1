@@ -326,6 +326,11 @@ Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlug
 Generate-FileList -fileDepsJson "" -fileListName UnitConvImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\UnitConverter\Images"
 Generate-FileComponents -fileListName "UnitConvCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 Generate-FileComponents -fileListName "UnitConvImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+###DevDocs
+Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\DevDocs\Community.PowerToys.Run.Plugin.DevDocs.deps.json" -fileListName DevDocsCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
+Generate-FileList -fileDepsJson "" -fileListName DevDocsImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\DevDocs\Images"
+Generate-FileComponents -fileListName "DevDocsCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
+Generate-FileComponents -fileListName "DevDocsImagesCompFiles" -wxsFilePath $PSScriptRoot\Run.wxs
 ###WebSearch
 Generate-FileList -fileDepsJson "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WebSearch\Community.PowerToys.Run.Plugin.WebSearch.deps.json" -fileListName WebSrchCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -isLauncherPlugin 1
 Generate-FileList -fileDepsJson "" -fileListName WebSrchImagesCompFiles -wxsFilePath $PSScriptRoot\Run.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\RunPlugins\WebSearch\Images"

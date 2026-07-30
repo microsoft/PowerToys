@@ -593,6 +593,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/launcher/Plugins/">
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.DevDocs/Community.PowerToys.Run.Plugin.DevDocs.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.UnitConverter/Community.PowerToys.Run.Plugin.UnitConverter.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -677,6 +681,10 @@
   </Folder>
   <Folder Name="/modules/launcher/Tests/">
     <Project Path="src/modules/launcher/Plugins/Microsoft.Plugin.Folder.UnitTests/Microsoft.Plugin.Folder.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/launcher/Plugins/Community.PowerToys.Run.Plugin.DevDocs.UnitTest/Community.PowerToys.Run.Plugin.DevDocs.UnitTest.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

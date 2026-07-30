@@ -1,0 +1,13 @@
+﻿{
+  "ID": "835960FE-ECD0-49D2-A940-76EBD8B0891E",
+  "ActionKeyword": ";;",
+  "IsGlobal": false,
+  "Name": "DevDocs Search",
+  "Author": "JanJaros",
+  "Version": "1.0.0",
+  "Language": "csharp",
+  "Website": "https://devdocs.io/",
+  "IcoPathDark": "Images\\devdocs.dark.png",
+  "IcoPathLight": "Images\\devdocs.light.png",
+  "ExecuteFileName": "Community.PowerToys.Run.Plugin.DevDocs.dll"
+}

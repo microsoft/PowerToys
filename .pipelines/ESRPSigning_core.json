@@ -165,6 +165,7 @@
             "Wox.Infrastructure.dll",
             "Wox.Plugin.dll",
             "RunPlugins\\Calculator\\Microsoft.PowerToys.Run.Plugin.Calculator.dll",
+            "RunPlugins\\DevDocs\\Community.PowerToys.Run.Plugin.DevDocs.dll",
             "RunPlugins\\Folder\\Microsoft.Plugin.Folder.dll",
             "RunPlugins\\Indexer\\Microsoft.Plugin.Indexer.dll",
             "RunPlugins\\OneNote\\Microsoft.PowerToys.Run.Plugin.OneNote.dll",
