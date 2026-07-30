@@ -22,7 +22,7 @@ namespace ScreenRuler.UITests
         public const string HorizontalSpacingButtonName = "Button_SpacingHorizontal";
         public const string VerticalSpacingButtonName = "Button_SpacingVertical";
         public const string CloseButtonId = "Button_Close";
-        public const string MeasurementUnitComboBoxId = "ComboBox_ScreenRuler_MeasurementUnit";
+        public const string UnitsOfMeasureComboBoxId = "ComboBox_ScreenRuler_UnitsOfMeasure";
 
         /// <summary>
         /// Performs common test initialization: navigate to settings, enable toggle, verify shortcut
@@ -39,7 +39,7 @@ namespace ScreenRuler.UITests
                 toggleSwitch.IsOn,
                 $"Screen Ruler toggle switch should be ON for {testName}");
 
-            SetMeasurementUnit(testBase, "Pixels");
+            SetExtraMeasurementUnit(testBase, "Show only pixels");
 
             var activationKeys = ReadActivationShortcut(testBase);
             Assert.IsNotNull(activationKeys, "Should be able to read activation shortcut");
@@ -103,12 +103,12 @@ namespace ScreenRuler.UITests
         }
 
         /// <summary>
-        /// Select the Screen Ruler measurement unit.
+        /// Select the Screen Ruler extra measurement unit.
         /// </summary>
-        public static void SetMeasurementUnit(UITestBase testBase, string unitName)
+        public static void SetExtraMeasurementUnit(UITestBase testBase, string unitName)
         {
-            var comboBox = testBase.Session.Find<ComboBox>(By.AccessibilityId(MeasurementUnitComboBoxId), 5000);
-            Assert.IsNotNull(comboBox, "Measurement unit combo box should be found");
+            var comboBox = testBase.Session.Find<ComboBox>(By.AccessibilityId(UnitsOfMeasureComboBoxId), 5000);
+            Assert.IsNotNull(comboBox, "Extra measurement unit combo box should be found");
 
             if (!string.Equals(comboBox.Text, unitName, StringComparison.Ordinal))
             {
@@ -116,7 +116,7 @@ namespace ScreenRuler.UITests
                 Task.Delay(500).Wait();
             }
 
-            Assert.AreEqual(unitName, comboBox.Text, "Measurement unit selection should be updated");
+            Assert.AreEqual(unitName, comboBox.Text, "Extra measurement unit selection should be updated");
         }
 
         /// <summary>
@@ -350,8 +350,8 @@ namespace ScreenRuler.UITests
 
             return spacingType switch
             {
-                "Spacing" => Regex.IsMatch(clipboardText, @"^\d+(?:\.\d+)?\s*[x×]\s*\d+(?:\.\d+)?\s+px$"),
-                "Horizontal Spacing" or "Vertical Spacing" => Regex.IsMatch(clipboardText, @"^\d+(?:\.\d+)?\s+px$"),
+                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[�x×]\s*\d+"),
+                "Horizontal Spacing" or "Vertical Spacing" => Regex.IsMatch(clipboardText, @"^\d+$"),
                 _ => false,
             };
         }
@@ -442,8 +442,8 @@ namespace ScreenRuler.UITests
             if (expectedUnit == "px")
             {
                 Assert.IsTrue(
-                    clipboardText.Contains("100 × 100 px") || clipboardText.Contains("100 x 100 px"),
-                    $"Clipboard should contain '100 x 100 px', but contained: '{clipboardText}'");
+                    clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
+                    $"Clipboard should contain '100 x 100', but contained: '{clipboardText}'");
             }
             else
             {

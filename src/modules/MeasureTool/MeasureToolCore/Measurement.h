@@ -26,7 +26,11 @@ struct Measurement
     float Width(const Unit units) const;
     float Height(const Unit units) const;
 
-    using PrintResult = MeasurementLogic::PrintResult;
+    struct PrintResult
+    {
+        size_t crossSymbolPos[2] = {};
+        size_t strLen = {};
+    };
 
     static void InitResources();
     static constexpr Unit GetUnitFromIndex(const int index) noexcept
@@ -40,7 +44,7 @@ struct Measurement
                       const size_t bufSize,
                       const bool printWidth,
                       const bool printHeight,
-                      const Unit units) const;
+                      const int units) const;
 
     void PrintToStream(std::wostream& stream,
                        const bool prependNewLine,

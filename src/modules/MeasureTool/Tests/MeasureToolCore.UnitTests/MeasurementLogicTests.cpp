@@ -5,9 +5,6 @@
 
 #include "MeasurementLogic.h"
 
-#include <array>
-#include <string>
-
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MeasureToolCoreUnitTests
@@ -15,24 +12,6 @@ namespace MeasureToolCoreUnitTests
     namespace
     {
         constexpr float Tolerance = 0.0001f;
-
-        std::wstring Format(const float width,
-                            const float height,
-                            const bool printWidth,
-                            const bool printHeight,
-                            const wchar_t* abbreviation)
-        {
-            std::array<wchar_t, 128> buffer{};
-            const auto result = MeasurementLogic::Format(
-                buffer.data(),
-                buffer.size(),
-                printWidth,
-                printHeight,
-                width,
-                height,
-                abbreviation);
-            return std::wstring(buffer.data(), result.strLen);
-        }
     }
 
     TEST_CLASS (MeasurementLogicTests)
@@ -113,13 +92,5 @@ namespace MeasureToolCoreUnitTests
             Assert::IsTrue(MeasurementLogic::GetUnitFromIndex(5) == MeasurementLogic::Unit::Pixel);
         }
 
-        TEST_METHOD (FormattingProducesOneUnitAndSuffix)
-        {
-            Assert::AreEqual(std::wstring(L"150 \x00D7 100 px"), Format(150.0f, 100.0f, true, true, L"px"));
-            Assert::AreEqual(std::wstring(L"100 \x00D7 66.67 DIP"), Format(100.0f, 66.6667f, true, true, L"DIP"));
-            Assert::AreEqual(std::wstring(L"25.4 mm"), Format(25.4f, 0.0f, true, false, L"mm"));
-            Assert::AreEqual(std::wstring(L"2.54 cm"), Format(0.0f, 2.54f, false, true, L"cm"));
-            Assert::AreEqual(std::wstring(L"1 in"), Format(1.0f, 0.0f, true, false, L"in"));
-        }
     };
 }

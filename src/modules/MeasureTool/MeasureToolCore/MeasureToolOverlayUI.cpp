@@ -147,7 +147,7 @@ namespace
                               text.buffer.size(),
                               drawHorizontalCrossLine,
                               drawVerticalCrossLine,
-                              commonState.units);
+                              commonState.units | Measurement::Unit::Pixel); // Always show pixels.
 
         d2dState.DrawTextBox(text.buffer.data(),
                              measureStringBufLen,

@@ -278,7 +278,7 @@ namespace
                               text.buffer.size(),
                               true,
                               true,
-                              commonState.units);
+                              commonState.units | Measurement::Unit::Pixel); // Always show pixels.
 
         D2D_POINT_2F textBoxPos;
         if (textBoxCenter)

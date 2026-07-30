@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstddef>
-#include <cwchar>
-
 namespace MeasurementLogic
 {
     constexpr float DefaultDpi = 96.0f;
@@ -73,44 +70,5 @@ namespace MeasurementLogic
         default:
             return pixels;
         }
-    }
-
-    struct PrintResult
-    {
-        size_t crossSymbolPos[2] = {};
-        size_t strLen = {};
-    };
-
-    inline PrintResult Format(wchar_t* buffer,
-                              const size_t bufferSize,
-                              const bool printWidth,
-                              const bool printHeight,
-                              const float width,
-                              const float height,
-                              const wchar_t* unitAbbreviation)
-    {
-        PrintResult result;
-
-        if (printWidth)
-        {
-            result.strLen += swprintf_s(buffer + result.strLen, bufferSize - result.strLen, L"%.4g", width);
-            if (printHeight)
-            {
-                result.crossSymbolPos[0] = result.strLen + 1;
-                result.strLen += swprintf_s(buffer + result.strLen, bufferSize - result.strLen, L" \x00D7 ");
-            }
-        }
-
-        if (printHeight)
-        {
-            result.strLen += swprintf_s(buffer + result.strLen, bufferSize - result.strLen, L"%.4g", height);
-        }
-
-        result.strLen += swprintf_s(buffer + result.strLen,
-                                    bufferSize - result.strLen,
-                                    L" %s",
-                                    unitAbbreviation);
-
-        return result;
     }
 }
