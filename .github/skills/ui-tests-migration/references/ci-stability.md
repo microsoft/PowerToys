@@ -52,6 +52,8 @@ Before writing retries, make a table for every external boundary. Peek's stable 
 |---|---|---|---|
 | Top-level window | Win32 | Exact expected HWND exists and owns foreground | Retry foreground; diagnose foreground PID/title/elevation |
 | Explorer selection | Shell view | Exact selected path set plus focused path | Require consecutive samples; repair through `ExplorerShell` |
+| Explorer layout | Shell view | Exact view mode and icon size | Set through `ExplorerShell`; verify item geometry |
+| Shell extension | Explorer + provider | Provider log plus visible content | Drive through Explorer in the user's context; avoid test-host-only COM probes |
 | Toggle hotkey | Runner/module | Any target HWND appeared | Stop resending once a window exists; wait for initialization |
 | Renderer | Product automation peer | Product state is `Loaded`; loading UI is gone | Restart the process tree only after a bounded terminal failure |
 | Visible output | DWM/compositor | Captured pixels match baseline | Capture composed desktop pixels; do not rewrite baselines first |
@@ -240,6 +242,9 @@ likely extra CI iteration.
 - [ ] Process lifecycle is explicit per scenario: close/preserve/input-idle/process-tree restart
 - [ ] Renderer readiness is separate from window/title readiness; composed visuals use visible DWM capture
 - [ ] Explorer-driven tests verify exact selected paths and focused path via `ExplorerShell` (Recipe 13)
+- [ ] Explorer view mode/icon size is set through `ExplorerShell`, then independently verified by item geometry
+- [ ] Shell handlers are activated by Explorer; readiness requires provider logs plus visible output
+- [ ] Derived cleanup captures failure artifacts before closing the window that explains the failure
 - [ ] Capture modules: in-place gesture retry + single re-engage; overlay detected via Win32 (P3 / Recipe 12)
 - [ ] Toggle/ToggleButton presses guarded on the current ToggleState (P4)
 - [ ] Clipboard via ClipboardHelper (STA + retry); no hand-rolled STA wrapper (Recipe 5)

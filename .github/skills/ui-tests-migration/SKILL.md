@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, Windows Sandbox clean-profile validation, Explorer/Shell selection, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic Sandbox execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Windows Sandbox, migrate, port, modernize, flaky, CI stability, Explorer, Shell, WebView2, visual regression."
+description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, Windows Sandbox clean-profile validation, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic Sandbox execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Windows Sandbox, migrate, port, modernize, flaky, CI stability, Explorer, Shell extension, preview pane, thumbnail, WebView2, visual regression."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -55,6 +55,12 @@ module, which tests) comes from the calling prompt.
 >   [PeekFilePreviewTests.cs](../../../src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs)
 >   demonstrates stable Explorer Shell selection, toggle-hotkey activation, process-preserving
 >   pinning tests, renderer readiness, and composed WinUI/WebView visual baselines.
+> - **Explorer/Shell-extension reference (validated across x64 and ARM64 CI)**:
+>   [FileExplorerAddonsTests.cs](../../../src/modules/previewpane/PreviewPane.UITests/FileExplorerAddonsTests.cs)
+>   demonstrates class-scoped runner reuse, one-time Shell restart, state-aware Preview pane
+>   activation, exact Shell selection, deterministic icon sizes, provider-log readiness, and
+>   failure media captured before Explorer teardown. Read
+>   [references/explorer-shell-tests.md](references/explorer-shell-tests.md) before testing Explorer.
 
 ## Required reads (in order)
 
@@ -77,15 +83,18 @@ module, which tests) comes from the calling prompt.
    for the recurring PowerToys patterns (toggle a module + verify its process, read the activation
    shortcut from a `ShortcutControl`, fire a global hotkey reliably, inspect the clipboard, discover
    overlay/editor windows) and the gotchas that bite during migration.
-7. **[references/ci-stability.md](references/ci-stability.md)** — the CI-stability capstone: the
+7. **[references/explorer-shell-tests.md](references/explorer-shell-tests.md)** — required for tests
+  involving Explorer, preview handlers, thumbnail providers, Shell selection, view modes, or Shell
+  restarts. Covers lifecycle boundaries, authoritative signals, and failure evidence.
+8. **[references/ci-stability.md](references/ci-stability.md)** — the CI-stability capstone: the
   Win32-window vs UIA-element mental model, state-boundary worksheet, stable-sample waits, retry
   semantics, foreground/integrity constraints, process lifecycle, composed visual capture, and a
   **pre-flight checklist** to apply BEFORE the first CI push so the first run *validates* instead of
   *discovers*. Read this to spend one CI iteration instead of six.
-  8. **[windows-sandbox-ui-tests](../windows-sandbox-ui-tests/SKILL.md)** — the default clean-desktop
-    execution loop after a successful build: enable Sandbox, package a lean exchange, launch an
-    interactive guest, run with winappcli, collect TRX/logs/screenshots, classify failures, and tear
-    down. Read it when a live run is part of the task.
+9. **[windows-sandbox-ui-tests](../windows-sandbox-ui-tests/SKILL.md)** — the default clean-desktop
+  execution loop after a successful build: enable Sandbox, package a lean exchange, launch an
+  interactive guest, run with winappcli, collect TRX/logs/screenshots, classify failures, and tear
+  down. Read it when a live run is part of the task.
 
 ## Pick your scenario
 
@@ -132,6 +141,7 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
         — references/project-setup.md
 - [ ] 6. Re-implement tests, mapping each API as you go — references/api-mapping.md
         + recipes from references/patterns-and-pitfalls.md
+- [ ] 6a. If Explorer/Shell is involved, apply references/explorer-shell-tests.md
 - [ ] 7. Apply the CI-stability checklist BEFORE building — references/ci-stability.md
   (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
   scope, composed capture, DPI manifest, single-module enable, first-run suppression)

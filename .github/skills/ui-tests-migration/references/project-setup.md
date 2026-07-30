@@ -171,7 +171,9 @@ is set). Set `TF_BUILD=true` and a representative `platform` locally when debugg
 
 Use `ExplorerShell` from `UITestAutomation.Next`. The framework embeds Shell32/SHDocVw interop and
 does not expose COM types in its public API, so consuming test projects should not add their own
-`COMReference` items.
+`COMReference` items. Use `SetSelectionAndWaitForStable` for selected/focused paths and
+`SetViewModeAndIconSizeAndWait` for deterministic icon/list layout; do not duplicate Shell COM
+interop in the test project.
 
 ## 5. Build & run
 

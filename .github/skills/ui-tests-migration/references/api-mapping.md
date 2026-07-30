@@ -32,6 +32,8 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | `IsWindowOpen(name)` | `WindowsFinder.ListByApp(proc).Count > 0` | Or `SessionHelper.IsRunning(scope)` for a process check. |
 | `RestartScopeExe(enableModules?)` | `RestartScope(enableModules?)` | Returns the fresh `Session`. |
 | `ExitScopeExe()` | *(automatic)* `sessionHelper.StopIfStarted()` in `TestCleanup` | Rarely needed manually. |
+| class-level manual launch/cache | `protected override bool ReuseScopeAcrossTests => true` | Keeps the runner/scope alive across a test class; each test still rebinds its `Session`. |
+| capture before custom cleanup | `CaptureFailureArtifactsBeforeCleanupAsync(tail?)` | Call first in derived `[TestCleanup]` before closing diagnostic windows. No-op for passing tests. |
 
 ## `PowerToysModule` enum (values differ!)
 
@@ -141,6 +143,7 @@ is the `Microsoft.PowerToys.UITest.Next` equivalent. "—" means no direct membe
 | Diagnose current foreground owner | `WindowControl.GetForegroundWindowInfo()` |
 | Stop an exact process tree and await exit | `WindowControl.TryKillProcessTreeByNameAndWait(name, timeoutMS)` |
 | Set/read exact Explorer Shell selection | `ExplorerShell.SetSelectionAndWaitForStable(...)` / `TryGetSelection(hwnd)` |
+| Set/read Explorer view mode + icon size | `ExplorerShell.SetViewModeAndIconSizeAndWait(hwnd, ViewMode.Icons, iconSize)` | Uses Shell automation, not a timing-sensitive keyboard shortcut. |
 | Seed module on/off baseline | `SettingsConfigHelper.ConfigureGlobalModuleSettings("ColorPicker", …)` |
 | Edit a module's own settings.json | `SettingsConfigHelper.UpdateModuleSettings(name, default, json => {…})` |
 
