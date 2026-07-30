@@ -5,6 +5,8 @@
     <VersionChannel>private</VersionChannel>
     <!-- Update once when main moves to the next stable release train. -->
     <ReleaseTrainVersion>0.100</ReleaseTrainVersion>
+    <!-- Keep January 1 of the active epoch year. Update on the first release-train minor change of a new year. -->
+    <ReleaseTrainEpoch>2026-01-01</ReleaseTrainEpoch>
     <SourceCommit></SourceCommit>
     <DevEnvironment>Local</DevEnvironment>
 

@@ -35,20 +35,12 @@ function Get-NormalizedVersion {
   }
 
   if ($ReleaseChannel -eq "preview" -and $InputVersion -match "^(\d+)\.(\d+)$") {
-    $major = [int]::Parse($matches[1])
-    $minor = [int]::Parse($matches[2])
-    $now = Get-Date
-    $yyMM = [int]::Parse($now.ToString("yyMM"))
-    $day = $now.ToString("dd")
-    $rev = "001"
-    if ($PipelineBuildNumber -match "_(?<yyMM>\d{4})\.(?<day>\d{2})(?<rev>\d{3})") {
-      $yyMM = [int]::Parse($matches["yyMM"])
-      $day = $matches["day"]
-      $rev = $matches["rev"]
-    }
-
-    $build = [int]::Parse("$day$rev")
-    return "$major.$minor.$yyMM.$build"
+    $metadata = & (Join-Path $PSScriptRoot "resolveBuildMetadata.ps1") `
+      -VersionOverride $InputVersion `
+      -SourceBranch "refs/heads/main" `
+      -BuildReason "Manual" `
+      -BuildNumber $PipelineBuildNumber
+    return $metadata.Version
   }
 
   if ($InputVersion -match "^(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?$") {

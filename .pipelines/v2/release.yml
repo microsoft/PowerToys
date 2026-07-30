@@ -16,7 +16,7 @@ parameters:
     default: false
 
   - name: versionNumber
-    displayName: "Version Override (required for stable; optional for main)"
+    displayName: "Version Override (optional; main and stable default to the release-train version)"
     type: string
     default: ''
 
