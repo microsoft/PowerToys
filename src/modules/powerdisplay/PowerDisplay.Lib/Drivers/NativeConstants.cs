@@ -29,9 +29,9 @@ namespace PowerDisplay.Common.Drivers
         public const byte VcpCodeVolume = 0x62;
 
         /// <summary>
-        /// The percent-scaled VCP features, in the order discovery walks them. The probe, the
-        /// evidence reconciler and the continuous initializer must agree on this set: a code missing
-        /// from one of them is probed but never applied, or applied but never proven.
+        /// The percent-scaled VCP features, in the order discovery walks them. The probe and the
+        /// continuous initializers must agree on this set: a code missing from one of them is
+        /// probed but never applied, or applied but never proven.
         /// </summary>
         /// <remarks>
         /// Discrete-value features (0x14 color preset, 0x60 input source, 0xD6 power mode) are

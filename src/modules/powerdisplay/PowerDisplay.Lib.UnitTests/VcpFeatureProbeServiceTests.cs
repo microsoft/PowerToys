@@ -120,24 +120,43 @@ public sealed class VcpFeatureProbeServiceTests
     }
 
     [TestMethod]
-    public async Task ProbeAsync_InvalidSuccessfulRangeRetriesAndRemainsIndeterminate()
+    public async Task ProbeAsync_InvalidSuccessfulRangeStopsWithoutRetry()
     {
         var reader = new RecordingVcpReader(
-            VcpReadAttempt.Success(current: 10, maximum: 0),
             VcpReadAttempt.Success(current: 10, maximum: 0),
             VcpReadAttempt.Success(current: 10, maximum: 0));
         var service = CreateService(reader, new List<TimeSpan>());
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
 
-        Assert.AreEqual(3, reader.CallCount);
+        // The reply already settles the only question this probe asks, so the remaining budget is
+        // not spent on the I2C bus.
+        Assert.AreEqual(1, reader.CallCount);
         Assert.IsFalse(result[0x10].IsSuccess);
-        Assert.AreEqual(3, result[0x10].Attempts);
+        Assert.AreEqual(1, result[0x10].Attempts);
         Assert.IsNull(result[0x10].LastError);
 
-        // The device answered every attempt, so support is proven even though no usable range was
-        // obtained. Reconcile relies on this to keep the feature reachable.
+        // The device answered, so support is proven even though no usable range was obtained.
         Assert.IsTrue(result[0x10].Replied);
+    }
+
+    [TestMethod]
+    public async Task ProbeAsync_TransientFailureThenInvalidRangeKeepsLastError()
+    {
+        var reader = new RecordingVcpReader(
+            VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageChecksum),
+            VcpReadAttempt.Success(current: 10, maximum: 0));
+        var service = CreateService(reader, new List<TimeSpan>());
+
+        var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
+
+        Assert.AreEqual(2, reader.CallCount);
+        Assert.AreEqual(2, result[0x10].Attempts);
+        Assert.IsTrue(result[0x10].Replied);
+        Assert.AreEqual(VcpProbeDisposition.Indeterminate, result[0x10].Disposition);
+
+        // Returning early on the reply must not discard the error the earlier attempt reported.
+        Assert.AreEqual(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageChecksum, result[0x10].LastError);
     }
 
     [TestMethod]

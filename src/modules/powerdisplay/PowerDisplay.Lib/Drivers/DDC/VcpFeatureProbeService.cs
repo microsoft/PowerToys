@@ -60,7 +60,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             int? lastError = null;
             var attempts = 0;
-            var replied = false;
 
             for (var attempt = 1; attempt <= MaxAttempts; attempt++)
             {
@@ -95,8 +94,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     // The device answered this opcode. Unimplemented codes fail with
                     // DDCCI_VCP_NOT_SUPPORTED instead, so a reply proves support even when the
                     // reported range cannot scale a percentage.
-                    replied = true;
-
                     var value = new VcpFeatureValue((int)result.Current, 0, (int)result.Maximum);
                     if (value.IsValid)
                     {
@@ -113,6 +110,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                         $"DDC: [max-compat] VCP probe attempt " +
                         $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
                         $"status=invalid-range, current={result.Current}, maximum={result.Maximum})");
+
+                    // A degenerate range is still a reply, and the reply is the only thing the
+                    // caller reads off this probe. Another attempt could not change that, so the
+                    // remaining budget is not spent on the I2C bus.
+                    return Complete(
+                        handle,
+                        VcpProbeObservation.Indeterminate(code, lastError, attempt, replied: true));
                 }
                 else
                 {
@@ -128,9 +132,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
+            // Every reply returns from inside the loop, so reaching here means the device never
+            // answered: the retry budget was exhausted, a definitive refusal stopped it, or the
+            // read threw.
             return Complete(
                 handle,
-                VcpProbeObservation.Indeterminate(code, lastError, attempts, replied));
+                VcpProbeObservation.Indeterminate(code, lastError, attempts));
         }
 
         private static VcpProbeObservation Complete(IntPtr handle, VcpProbeObservation observation)
