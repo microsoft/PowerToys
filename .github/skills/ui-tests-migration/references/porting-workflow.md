@@ -185,6 +185,6 @@ that covers it, and explicitly call out any items left as manual-only (e.g. "che
 - [ ] (B) Every actionable sign-off item maps to a test or is explicitly noted as manual-only.
 - [ ] Toggles/settings the test changes are restored in a `finally`; spawned windows are closed.
 - [ ] No product-code edits (or any needed UIA hook is flagged to the user, not silently added).
-- [ ] One deterministic test and then the module suite were run through the default clean Sandbox
-  loop in [windows-sandbox-ui-tests](../../windows-sandbox-ui-tests/SKILL.md), or the exact host
-  prerequisite/environment blocker was reported.
+- [ ] One deterministic test and then the module suite were run through the local VM loop in
+  [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), using a restored baseline or fresh volume
+  when clean-profile behavior matters, or the exact host prerequisite/environment blocker was reported.

@@ -4,12 +4,12 @@
 
 <#
 .SYNOPSIS
-Stages and runs a PowerToys UITest.Next payload inside Windows Sandbox.
+Stages and runs a PowerToys UITest.Next payload inside a persistent local Windows VM.
 
 .DESCRIPTION
-This guest template is dispatched by Invoke-SandboxUiTest.ps1. It reads the generated request,
+This guest template is dispatched by Invoke-LocalVmUiTest.ps1. It reads the generated request,
 extracts archives to guest-local storage, provisions optional WebView2, runs the test executable,
-and exports progress, status, TRX, logs, and attachments through the mapped exchange.
+and exports progress, status, TRX, logs, and attachments through the shared exchange.
 #>
 
 [CmdletBinding()]
@@ -27,24 +27,66 @@ if ($Detached) {
     return
 }
 
+function Resolve-MappedPath {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $pathRoot = [IO.Path]::GetPathRoot($Path)
+    if ($pathRoot -notmatch '^(?<DriveLetter>[A-Za-z]):\\$') {
+        return $Path
+    }
+
+    $driveLetter = $Matches.DriveLetter
+    try {
+        $remotePath = [string](Get-ItemPropertyValue -Path "HKCU:\Network\$driveLetter" -Name RemotePath -ErrorAction Stop)
+    }
+    catch {
+        return $Path
+    }
+    if ([string]::IsNullOrWhiteSpace($remotePath)) {
+        return $Path
+    }
+
+    $relativePath = $Path.Substring($pathRoot.Length).TrimStart('\')
+    if ([string]::IsNullOrWhiteSpace($relativePath)) {
+        return $remotePath.TrimEnd('\')
+    }
+    return Join-Path $remotePath.TrimEnd('\') $relativePath
+}
+
 $request = Get-Content $RequestPath -Raw | ConvertFrom-Json
-$exchangeRoot = 'C:\SandboxExchange'
-$workRoot = 'C:\PowerToysSandboxRun'
+$exchangeRoot = if ($request.PSObject.Properties.Name -contains 'ExchangeRoot') {
+    [string]$request.ExchangeRoot
+}
+else {
+    'C:\LocalVmExchange'
+}
+$exchangeRoot = Resolve-MappedPath -Path $exchangeRoot
+if ([string]::IsNullOrWhiteSpace($exchangeRoot) -or -not [IO.Path]::IsPathRooted($exchangeRoot)) {
+    throw 'ExchangeRoot must be an absolute path.'
+}
+$workRoot = 'C:\PowerToysUiTestRun'
 $testRoot = Join-Path $workRoot 'Tests'
 $productRoot = Join-Path $workRoot 'PowerToys'
 $winAppRoot = Join-Path $workRoot 'winappcli'
 $dotNetRoot = Join-Path $workRoot 'dotnet'
 $localResultsRoot = Join-Path $workRoot 'TestResults'
-$localLog = Join-Path $workRoot 'sandbox-ui-tests.log'
+$localLog = Join-Path $workRoot 'local-vm-ui-tests.log'
 $stagingManifestPath = Join-Path $workRoot 'staging-manifest.json'
-$hostResultsRoot = Join-Path $exchangeRoot "SandboxResults\$($request.RunId)"
+$hostResultsRoot = Join-Path $exchangeRoot "LocalVmResults\$($request.RunId)"
 $startedUtc = [DateTime]::UtcNow
 $exitCode = 1
 $errorMessage = $null
 $transcriptStarted = $false
 $logicalProcessorCount = [Environment]::ProcessorCount
 $processorAffinityMask = if ($null -eq $request.ProcessorAffinityMask) { [UInt64]3 } else { [UInt64]$request.ProcessorAffinityMask }
+$outputHeartbeatSeconds = if ($null -eq $request.OutputHeartbeatSeconds) { 0 } else { [int]$request.OutputHeartbeatSeconds }
 $reusedStagedPayload = $false
+$heartbeatProcess = $null
+$webView2Version = $null
+$exportErrors = @()
 
 function Write-SharedText {
     param(
@@ -85,10 +127,103 @@ function Write-RunProgress {
     Write-SharedText -Path (Join-Path $hostResultsRoot 'progress.json') -Value $payload
 }
 
+function Copy-SharedItem {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+        [Parameter(Mandatory)]
+        [string]$Destination
+    )
+
+    $sourceItem = Get-Item $Path -Force
+    if ($sourceItem.PSIsContainer) {
+        $directoryDestination = Join-Path $Destination $sourceItem.Name
+        New-Item $directoryDestination -ItemType Directory -Force | Out-Null
+        & robocopy.exe $sourceItem.FullName $directoryDestination `
+            /E /R:5 /W:1 /COPY:DAT /DCOPY:DAT /XJ /NP /NFL /NDL /NJH /NJS | Out-Null
+        $robocopyExitCode = $LASTEXITCODE
+        if ($robocopyExitCode -ge 8) {
+            throw "robocopy failed with exit code $robocopyExitCode while exporting '$Path'."
+        }
+        return
+    }
+
+    for ($attempt = 1; $attempt -le 5; $attempt++) {
+        try {
+            Copy-Item $Path $Destination -Recurse -Force -ErrorAction Stop
+            return
+        }
+        catch {
+            if ($attempt -eq 5) {
+                throw
+            }
+            [Threading.Thread]::Sleep(200)
+        }
+    }
+}
+
 function Stop-RunProcesses {
     $cleanupProcesses = @('PowerToys', 'PowerToys.Settings', 'winapp') + @($request.CleanupProcesses)
     Get-Process -Name ($cleanupProcesses | Sort-Object -Unique) -ErrorAction SilentlyContinue |
         Stop-Process -Force -ErrorAction SilentlyContinue
+}
+
+function Start-OutputHeartbeat {
+    if ($outputHeartbeatSeconds -le 0) {
+        return $null
+    }
+
+    $intervalMilliseconds = $outputHeartbeatSeconds * 1000
+    $heartbeatScript = @"
+while (`$true) {
+    Write-Output ('[GuestHeartbeat] ' + [DateTime]::UtcNow.ToString('O'))
+    [Threading.Thread]::Sleep($intervalMilliseconds)
+}
+"@
+    $encodedHeartbeat = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($heartbeatScript))
+    return Start-Process powershell.exe `
+        -ArgumentList '-NoLogo','-NoProfile','-EncodedCommand',$encodedHeartbeat `
+        -NoNewWindow -PassThru
+}
+
+function Get-WebView2RuntimeVersion {
+    $clientId = '{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
+    $registryPaths = @(
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\$clientId",
+        "HKCU:\Software\Microsoft\EdgeUpdate\Clients\$clientId"
+    )
+    foreach ($registryPath in $registryPaths) {
+        try {
+            $versionText = [string](Get-ItemPropertyValue -Path $registryPath -Name 'pv' -ErrorAction Stop)
+            if (-not [string]::IsNullOrWhiteSpace($versionText) -and [version]$versionText -gt [version]'0.0.0.0') {
+                return $versionText
+            }
+        }
+        catch {
+        }
+    }
+
+    $runtimeRoots = @(
+        'C:\Program Files (x86)\Microsoft\EdgeWebView\Application',
+        (Join-Path $env:LOCALAPPDATA 'Microsoft\EdgeWebView\Application')
+    )
+    foreach ($runtimeRoot in $runtimeRoots) {
+        if (-not (Test-Path $runtimeRoot -PathType Container)) {
+            continue
+        }
+        foreach ($versionDirectory in Get-ChildItem $runtimeRoot -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending) {
+            try {
+                if ([version]$versionDirectory.Name -gt [version]'0.0.0.0' -and
+                    (Test-Path (Join-Path $versionDirectory.FullName 'msedgewebview2.exe') -PathType Leaf)) {
+                    return $versionDirectory.Name
+                }
+            }
+            catch {
+            }
+        }
+    }
+
+    return $null
 }
 
 try {
@@ -117,6 +252,8 @@ try {
         }
         Write-RunProgress -Stage 'Configuring' -Detail "Process-tree affinity 0x$($processorAffinityMask.ToString('X')) on $logicalProcessorCount logical processors"
     }
+
+    $heartbeatProcess = Start-OutputHeartbeat
 
     Stop-RunProcesses
     $reuseRequested = $request.PSObject.Properties.Name -contains 'ReuseStagedPayload' -and [bool]$request.ReuseStagedPayload
@@ -198,8 +335,8 @@ try {
     }
 
     if (-not [string]::IsNullOrWhiteSpace($request.WebView2Installer)) {
-        $webView2Root = 'C:\Program Files (x86)\Microsoft\EdgeWebView\Application'
-        if (-not (Test-Path $webView2Root)) {
+        $webView2Version = Get-WebView2RuntimeVersion
+        if ([string]::IsNullOrWhiteSpace($webView2Version)) {
             $installer = Join-Path $exchangeRoot $request.WebView2Installer
             if (-not (Test-Path $installer -PathType Leaf)) {
                 throw "WebView2 installer is missing: $installer"
@@ -211,10 +348,14 @@ try {
                 Stop-Process -Id $installerProcess.Id -Force -ErrorAction SilentlyContinue
                 throw 'WebView2 installation exceeded five minutes.'
             }
-            if ($installerProcess.ExitCode -ne 0 -or -not (Test-Path $webView2Root)) {
-                throw "WebView2 installation failed with exit code $($installerProcess.ExitCode)."
+            $webView2Version = Get-WebView2RuntimeVersion
+            if ([string]::IsNullOrWhiteSpace($webView2Version)) {
+                $installerExitCode = $installerProcess.ExitCode
+                $installerExitCodeHex = '0x{0:X8}' -f ([uint32]([int64]$installerExitCode -band 0xffffffffL))
+                throw "WebView2 installation failed with exit code $installerExitCode ($installerExitCodeHex), and no runtime was detected."
             }
         }
+        Write-RunProgress -Stage 'Preparing' -Detail "Microsoft Edge WebView2 Runtime $webView2Version"
     }
 
     [ordered]@{
@@ -301,9 +442,13 @@ try {
 }
 catch {
     $errorMessage = $_.Exception.Message
-    Write-Host "Sandbox guest runner failed: $errorMessage"
+    Write-Host "Local VM guest runner failed: $errorMessage"
 }
 finally {
+    if ($null -ne $heartbeatProcess) {
+        Stop-Process -Id $heartbeatProcess.Id -Force -ErrorAction SilentlyContinue
+        $heartbeatProcess.Dispose()
+    }
     Stop-RunProcesses
 
     if ($transcriptStarted) {
@@ -312,20 +457,49 @@ finally {
 
     New-Item $hostResultsRoot -ItemType Directory -Force | Out-Null
     if (Test-Path $localResultsRoot) {
-        Copy-Item $localResultsRoot (Join-Path $hostResultsRoot 'TestResults') -Recurse -Force
+        $hostTestResultsRoot = Join-Path $hostResultsRoot 'TestResults'
+        New-Item $hostTestResultsRoot -ItemType Directory -Force | Out-Null
+        foreach ($resultItem in Get-ChildItem $localResultsRoot -Force) {
+            try {
+                Copy-SharedItem -Path $resultItem.FullName -Destination $hostTestResultsRoot
+            }
+            catch {
+                $exportErrors += "Failed to export '$($resultItem.FullName)': $($_.Exception.Message)"
+            }
+        }
     }
     if (Test-Path $localLog) {
-        Copy-Item $localLog (Join-Path $hostResultsRoot 'sandbox-ui-tests.log') -Force
+        try {
+            Copy-SharedItem -Path $localLog -Destination (Join-Path $hostResultsRoot 'local-vm-ui-tests.log')
+        }
+        catch {
+            $exportErrors += "Failed to export '$localLog': $($_.Exception.Message)"
+        }
+    }
+    if ($exportErrors.Count -gt 0) {
+        if ($exitCode -eq 0) {
+            $exitCode = 1
+        }
+        $exportErrorMessage = $exportErrors -join ' '
+        $errorMessage = if ([string]::IsNullOrWhiteSpace($errorMessage)) {
+            $exportErrorMessage
+        }
+        else {
+            "$errorMessage $exportErrorMessage"
+        }
     }
 
     $status = [ordered]@{
         Status = if ($exitCode -eq 0) { 'PASS' } else { 'FAIL' }
         ExitCode = $exitCode
         Error = $errorMessage
+        ExportErrors = @($exportErrors)
         BuildLabel = $request.BuildLabel
         Filter = $request.Filter
         Platform = $request.Platform
         ProcessorAffinityMask = "0x$($processorAffinityMask.ToString('X'))"
+        OutputHeartbeatSeconds = $outputHeartbeatSeconds
+        WebView2Version = $webView2Version
         LogicalProcessorCount = $logicalProcessorCount
         DesktopWidth = 0
         DesktopHeight = 0

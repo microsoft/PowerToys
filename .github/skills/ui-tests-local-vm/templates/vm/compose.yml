@@ -1,0 +1,36 @@
+services:
+  windows:
+    image: "${DOCKUR_IMAGE:-docker.io/dockurr/windows:latest}"
+    container_name: "${VM_CONTAINER_NAME:-powertoys-ui-windows}"
+    environment:
+      VERSION: "${WINDOWS_VERSION:-11}"
+      USERNAME: "${VM_ADMIN_USERNAME:-PTAdmin}"
+      PASSWORD: "${VM_ADMIN_PASSWORD:?Set VM_ADMIN_PASSWORD in .env}"
+      RAM_SIZE: "${VM_RAM_SIZE:-8G}"
+      CPU_CORES: "${VM_CPU_CORES:-4}"
+      DISK_SIZE: "${VM_DISK_SIZE:-128G}"
+      REGION: "${VM_REGION:-en-US}"
+      KEYBOARD: "${VM_KEYBOARD:-en-US}"
+    devices:
+      - /dev/kvm
+      - /dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "127.0.0.1:${VM_VIEWER_PORT:-8006}:8006"
+      - "127.0.0.1:${VM_RDP_PORT:-13389}:3389/tcp"
+      - "127.0.0.1:${VM_RDP_PORT:-13389}:3389/udp"
+      - "127.0.0.1:${VM_WINRM_PORT:-15986}:5986/tcp"
+      # Optional Visual Studio Remote Debugger. Uncomment only when msvsmon is provisioned.
+      # - "127.0.0.1:${VM_MSVSMON_PORT:-14026}:4026/tcp"
+      # - "127.0.0.1:${VM_MSVSMON_WOW64_PORT:-14025}:4025/tcp"
+    volumes:
+      - windows-storage:/storage
+      - ./shared:/shared
+      - ./oem:/oem
+    restart: "no"
+    stop_grace_period: 2m
+
+volumes:
+  windows-storage:
+    name: "${VM_VOLUME_NAME:-powertoys-ui-windows-storage}"
