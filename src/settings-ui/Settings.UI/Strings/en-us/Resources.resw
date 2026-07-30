@@ -4848,6 +4848,27 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
     <value>Press **{0}** to record a specific window</value>
   </data>
+  <data name="ZoomIt_MirrorGroup.Header" xml:space="preserve">
+    <value>DemoMirror</value>
+  </data>
+  <data name="ZoomIt_MirrorGroup.Description" xml:space="preserve">
+    <value>Mirror the screen, a region of the screen, or a window, including the mouse pointer, onto a second monitor, on top of a slide show. Use ZoomIt zoom and draw to annotate the mirrored image.</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut.Header" xml:space="preserve">
+    <value>Mirror activation</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_FullScreen" xml:space="preserve">
+    <value>Press **{0}** to start or stop mirroring the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Crop" xml:space="preserve">
+    <value>Press **{0}** to mirror a portion of the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Window" xml:space="preserve">
+    <value>Press **{0}** to mirror a specific window</value>
+  </data>
+  <data name="ZoomIt_Mirror_TrackWindow.Content" xml:space="preserve">
+    <value>Mirror windows by tracking their screen region, so zoom and draw show in place</value>
+  </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
   </data>
