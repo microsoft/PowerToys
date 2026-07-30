@@ -34,6 +34,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly VcpFeatureProbeService _probeService;
 
         private bool _disposed;
 
@@ -47,6 +48,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public DdcCiController()
         {
             _discoveryHelper = new MonitorDiscoveryHelper();
+            _probeService = new VcpFeatureProbeService(new NativeVcpFeatureReader());
         }
 
         public string Name => "DDC/CI Monitor Controller";
@@ -445,9 +447,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogInfo(
                     $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
 
-                caps = await Task.Run(
-                    () => DdcCiNative.ProbeSupportedVcpFeatures(hPhysicalMonitor),
-                    cancellationToken);
+                var observations = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
+                caps = BuildCapabilitiesFromProbe(observations);
 
                 if (caps != null)
                 {
@@ -463,6 +464,34 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return (capsString ?? string.Empty, caps);
+        }
+
+        /// <summary>
+        /// Synthesizes capabilities from the VCP codes the device answered for, or null when none
+        /// did — which the caller treats the same way as an unusable capabilities string.
+        /// </summary>
+        /// <remarks>
+        /// Membership is decided by <see cref="VcpProbeObservation.Replied"/>, not by whether the
+        /// value was usable. A reply proves the device implements the opcode even when the reported
+        /// range cannot scale a percentage; an unimplemented code fails with
+        /// <c>DDCCI_VCP_NOT_SUPPORTED</c> instead and never sets the flag. Friendly names come from
+        /// <see cref="VcpNames.GetCodeName"/> to keep a single source of truth.
+        /// </remarks>
+        private static VcpCapabilities? BuildCapabilitiesFromProbe(
+            IReadOnlyDictionary<byte, VcpProbeObservation> observations)
+        {
+            var caps = new VcpCapabilities();
+
+            foreach (var observation in observations.Values)
+            {
+                if (observation.Replied)
+                {
+                    caps.SupportedVcpCodes[observation.Code] =
+                        new VcpCodeInfo(observation.Code, VcpNames.GetCodeName(observation.Code));
+                }
+            }
+
+            return caps.SupportedVcpCodes.Count > 0 ? caps : null;
         }
 
         /// <summary>
