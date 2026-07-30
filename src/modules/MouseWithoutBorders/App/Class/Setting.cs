@@ -132,6 +132,18 @@ namespace MouseWithoutBorders.Class
                         {
                             SaveSettings();
                         }
+
+                        if (last_properties.ShowThemeAdaptiveTrayIcon != _settings.Properties.ShowThemeAdaptiveTrayIcon)
+                        {
+                            Common.DoSomethingInUIThread(() =>
+                            {
+                                if (Common.MainForm != null)
+                                {
+                                    Common.MainForm.ConfigureTrayThemeListener();
+                                    Common.MainForm.RefreshTrayIcon();
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -1130,6 +1142,25 @@ namespace MouseWithoutBorders.Class
                 lock (_loadingSettingsLock)
                 {
                     _properties.ShowOriginalUI = value;
+                }
+            }
+        }
+
+        internal bool ShowThemeAdaptiveTrayIcon
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.ShowThemeAdaptiveTrayIcon;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.ShowThemeAdaptiveTrayIcon = value;
                 }
             }
         }

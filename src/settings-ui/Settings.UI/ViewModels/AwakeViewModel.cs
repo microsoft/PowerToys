@@ -147,6 +147,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get => ModuleSettings.Properties.ShowThemeAdaptiveTrayIcon;
+            set
+            {
+                if (ModuleSettings.Properties.ShowThemeAdaptiveTrayIcon != value)
+                {
+                    ModuleSettings.Properties.ShowThemeAdaptiveTrayIcon = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public uint IntervalHours
         {
             get => ModuleSettings.Properties.IntervalHours;

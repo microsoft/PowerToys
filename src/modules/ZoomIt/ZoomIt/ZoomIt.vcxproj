@@ -544,6 +544,9 @@
     <ProjectReference Include="..\..\..\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\common\Themes\Themes.vcxproj">
+      <Project>{98537082-0FDB-40DE-ABD8-0DC5A4269BAB}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="..\..\..\..\deps\spdlog.props" />
@@ -559,4 +562,8 @@
   <Import Project="..\..\..\..\packages\robmikh.common.0.0.23-beta\build\native\robmikh.common.targets" Condition="Exists('..\..\..\..\packages\robmikh.common.0.0.23-beta\build\native\robmikh.common.targets')" />
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   <Import Project="..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
+  <Target Name="CopyThemeAdaptiveTrayIcons" AfterTargets="Build">
+    <Copy SourceFiles="appiconWhite.ico" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('appiconWhite.ico')" />
+    <Copy SourceFiles="appiconDark.ico" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('appiconDark.ico')" />
+  </Target>
 </Project>

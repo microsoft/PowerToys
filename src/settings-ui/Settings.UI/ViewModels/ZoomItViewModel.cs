@@ -229,6 +229,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.ShowTrayIcon.Value = value;
                     OnPropertyChanged(nameof(ShowTrayIcon));
+                    OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ShowThemeAdaptiveTrayIcon
+        {
+            get => _zoomItSettings.Properties.ShowThemeAdaptiveTrayIcon.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.ShowThemeAdaptiveTrayIcon.Value != value)
+                {
+                    _zoomItSettings.Properties.ShowThemeAdaptiveTrayIcon.Value = value;
+                    OnPropertyChanged(nameof(ShowThemeAdaptiveTrayIcon));
                     NotifySettingsChanged();
                 }
             }
