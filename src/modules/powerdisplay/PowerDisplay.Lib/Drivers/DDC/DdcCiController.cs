@@ -352,6 +352,35 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
         /// or unparsable. Cancellation is honored both during the cap-string fetch
@@ -705,6 +734,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning(
                             $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
                             $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
                         break;
                     }
 
@@ -743,6 +778,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         Logger.LogWarning(
                             $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
@@ -756,6 +792,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     if (monitor != null)
                     {
                         monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed or threw. Either way this physical never becomes a
+                        // Monitor, so it never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
                     }
                 }
 
