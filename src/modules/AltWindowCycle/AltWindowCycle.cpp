@@ -377,9 +377,38 @@ static void ForceForeground(HWND hwnd)
         AttachThreadInput(myThread, fgThread, FALSE);
 }
 
-// =================== Active-state flag (written on UI thread, read on runner) ===================
+// =================== UI-thread message plumbing ===============================
 
-static std::atomic<bool> g_switcherActive{ false };
+// Custom thread messages posted to the dedicated UI thread.
+// WM_AWC_HOTKEY: wParam = forward flag (0/1), lParam = held modifier mask.
+static const UINT WM_AWC_HOTKEY = WM_APP + 1;
+static const UINT WM_AWC_CANCEL = WM_APP + 2;
+
+static DWORD g_uiThreadId = 0;
+
+// Escape has to cancel the overlay, but the overlay is WS_EX_NOACTIVATE and never
+// receives keyboard focus. A low-level hook installed only while the overlay is
+// visible keeps Escape out of the runner's global hotkey table, so PowerToys never
+// claims Alt+Escape (a Windows shell shortcut) while the module sits idle.
+static HHOOK g_escapeHook = nullptr;
+
+static LRESULT CALLBACK EscapeHookProc(int code, WPARAM wParam, LPARAM lParam)
+{
+    if (code == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN))
+    {
+        const auto* keyInfo = reinterpret_cast<const KBDLLHOOKSTRUCT*>(lParam);
+
+        // Keep this callback bounded: teardown runs on the UI thread's own message
+        // loop rather than inline, so the OS low-level hook timeout is never at risk.
+        if (keyInfo && keyInfo->vkCode == VK_ESCAPE && g_uiThreadId &&
+            PostThreadMessageW(g_uiThreadId, WM_AWC_CANCEL, 0, 0))
+        {
+            return 1;
+        }
+    }
+
+    return CallNextHookEx(nullptr, code, wParam, lParam);
+}
 
 // =================== Switcher class ===================
 
@@ -410,6 +439,8 @@ private:
     void ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH);
     void RegisterThumbnails();
     void UnregisterThumbnails();
+    void InstallEscapeHook();
+    void RemoveEscapeHook();
     void EnsureFont();
 
     RECT TileRect(int index) const;
@@ -488,6 +519,7 @@ bool Switcher::Init(HINSTANCE instance)
 
 void Switcher::Shutdown()
 {
+    RemoveEscapeHook();
     UnregisterThumbnails();
     if (thumbHost)
     {
@@ -512,7 +544,6 @@ void Switcher::Shutdown()
         DeleteObject(g_thumbSolidBrush);
         g_thumbSolidBrush = nullptr;
     }
-    g_switcherActive.store(false);
     state = St::Idle;
 }
 
@@ -570,13 +601,11 @@ void Switcher::OnHotkey(bool forward, unsigned int holdModifiers)
         ShowOverlayWindow();
         state = St::Visible;
         SetTimer(overlay, TIMER_ID, TIMER_MS, nullptr);
-        g_switcherActive.store(true);
     }
     else
     {
         selected = AltWindowCycleLogic::WrapIndex(forward ? selected + 1 : selected - 1, static_cast<int>(windows.size()));
-        if (state == St::Visible)
-            SetSelection(selected);
+        SetSelection(selected);
     }
 }
 
@@ -611,7 +640,6 @@ void Switcher::Commit()
             ForceForeground(target);
     }
     state = St::Idle;
-    g_switcherActive.store(false);
 }
 
 void Switcher::Cancel()
@@ -621,7 +649,6 @@ void Switcher::Cancel()
         HideOverlayWindow();
     anchorWindow = nullptr;
     state = St::Idle;
-    g_switcherActive.store(false);
 }
 
 // ---- overlay window ----------------------------------------------------------
@@ -739,15 +766,34 @@ void Switcher::ShowOverlayWindow()
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
     SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+    InstallEscapeHook();
 }
 
 void Switcher::HideOverlayWindow()
 {
+    RemoveEscapeHook();
     ShowWindow(overlay, SW_HIDE);
     ShowWindow(thumbHost, SW_HIDE);
     UnregisterThumbnails();
     icons.clear();
     titles.clear();
+}
+
+void Switcher::InstallEscapeHook()
+{
+    if (!g_escapeHook)
+    {
+        g_escapeHook = SetWindowsHookExW(WH_KEYBOARD_LL, EscapeHookProc, nullptr, 0);
+    }
+}
+
+void Switcher::RemoveEscapeHook()
+{
+    if (g_escapeHook)
+    {
+        UnhookWindowsHookEx(g_escapeHook);
+        g_escapeHook = nullptr;
+    }
 }
 
 void Switcher::SetSelection(int index)
@@ -1093,7 +1139,8 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
 
 static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandle,
                            const RECT& rc, const std::wstring& text,
-                           COLORREF textColor)
+                           COLORREF textColor,
+                           UINT alignFlag = DT_LEFT)
 {
     if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !fontHandle)
         return;
@@ -1138,7 +1185,7 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
 
     RECT textRc = fill;
     DrawTextW(textDC, text.c_str(), static_cast<int>(text.size()), &textRc,
-              DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
+              alignFlag | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
 
     SetTextColor(textDC, oldColor);
     SetBkMode(textDC, oldBk);
@@ -1356,6 +1403,20 @@ void Switcher::RenderLayered()
             }
         }
 
+        // Pagination affordance: when the cycle set doesn't fit on one screenful,
+        // the panel is otherwise indistinguishable from "these are all my windows".
+        const int totalPages = AltWindowCycleLogic::PageCount(
+            static_cast<int>(windows.size()), overlayLayout.pageSize);
+        if (totalPages > 1)
+        {
+            const int currentPage = (pageStart / (std::max)(1, overlayLayout.pageSize)) + 1;
+            const std::wstring pageText =
+                std::to_wstring(currentPage) + L" / " + std::to_wstring(totalPages);
+            RECT pageRc = { pad, h - pad, w - pad, h };
+            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,
+                           AltTabStyle::HeaderTextRef(light), DT_CENTER);
+        }
+
         g.Flush();
     }
 
@@ -1402,18 +1463,21 @@ LRESULT CALLBACK Switcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 // =================== Dedicated UI thread =====================================
 
-// Custom thread messages.
-// WM_AWC_HOTKEY: wParam = forward flag (0/1), lParam = held modifier mask.
-static const UINT WM_AWC_HOTKEY = WM_APP + 1;
-static const UINT WM_AWC_CANCEL = WM_APP + 2;
-
 static Switcher g_switcher;
 static HANDLE g_uiThread = nullptr;
-static DWORD g_uiThreadId = 0;
 static std::atomic<bool> g_initOk{ false };
 static std::atomic<bool> g_shutdownRequested{ false };
 static HINSTANCE g_threadHinst = nullptr;
 static HANDLE g_threadReadyEvent = nullptr;
+
+// The runner calls enable()/disable()/on_hotkey() on the same thread that services
+// the centralized WH_KEYBOARD_LL hook, and Windows silently drops hooks that exceed
+// LowLevelHooksTimeout (300 ms by default). Every wait on that thread stays well
+// under that budget; only destroy(), which is followed by FreeLibrary, joins
+// without a bound.
+static const DWORD UIThreadInitWaitMs = 200;
+static const DWORD UIThreadJoinTimeoutMs = 200;
+static const DWORD UIThreadJoinPollMs = 20;
 
 static void CloseUIThreadHandle()
 {
@@ -1422,7 +1486,6 @@ static void CloseUIThreadHandle()
     g_uiThreadId = 0;
     g_threadHinst = nullptr;
     g_initOk.store(false);
-    g_switcherActive.store(false);
 }
 
 static void ClearExitedUIThread()
@@ -1433,26 +1496,50 @@ static void ClearExitedUIThread()
     }
 }
 
-static void RequestShutdownAndJoinUIThread()
+// Asks the UI thread to quit and waits up to `timeoutMs` for it to exit. Returns
+// true when the thread is gone and the globals have been reset; false means the
+// thread is still winding down and the handle was deliberately left open.
+static bool RequestShutdownAndJoinUIThread(DWORD timeoutMs)
 {
     if (!g_uiThread)
     {
-        return;
+        return true;
     }
 
     g_shutdownRequested.store(true);
 
-    // The queue may not exist yet when initialization times out. Re-post until
-    // the bounded UI-thread work completes and the thread exits.
-    do
+    const bool bounded = timeoutMs != INFINITE;
+    const ULONGLONG deadline = bounded ? GetTickCount64() + timeoutMs : 0;
+
+    // The queue may not exist yet when initialization times out, so WM_QUIT is
+    // re-posted until the bounded UI-thread work completes and the thread exits.
+    for (;;)
     {
         if (g_uiThreadId)
         {
             PostThreadMessageW(g_uiThreadId, WM_QUIT, 0, 0);
         }
-    } while (WaitForSingleObject(g_uiThread, 100) == WAIT_TIMEOUT);
+
+        DWORD slice = UIThreadJoinPollMs;
+        if (bounded)
+        {
+            const ULONGLONG now = GetTickCount64();
+            if (now >= deadline)
+            {
+                return false;
+            }
+
+            slice = static_cast<DWORD>((std::min<ULONGLONG>)(UIThreadJoinPollMs, deadline - now));
+        }
+
+        if (WaitForSingleObject(g_uiThread, slice) == WAIT_OBJECT_0)
+        {
+            break;
+        }
+    }
 
     CloseUIThreadHandle();
+    return true;
 }
 
 static bool PostHotkeyToUIThread(bool forward, unsigned int holdModifiers)
@@ -1527,8 +1614,25 @@ static DWORD WINAPI UIThreadProc(LPVOID param)
 bool InitializeAltWindowCycle(HINSTANCE hinst)
 {
     ClearExitedUIThread();
+
+    // A previous disable() may have left a thread winding down. Give it a short,
+    // bounded chance to finish rather than racing a second UI thread onto the
+    // single global Switcher.
+    if (g_uiThread != nullptr && g_shutdownRequested.load())
+    {
+        RequestShutdownAndJoinUIThread(UIThreadJoinTimeoutMs);
+    }
+
     if (g_uiThread != nullptr)
-        return g_initOk.load(); // already running or still starting
+    {
+        if (g_shutdownRequested.load())
+        {
+            Logger::error("AltWindowCycle UI thread from a previous session is still running; enable aborted");
+            return false;
+        }
+
+        return true; // already running or still starting
+    }
 
     g_initOk.store(false);
     g_shutdownRequested.store(false);
@@ -1558,67 +1662,33 @@ bool InitializeAltWindowCycle(HINSTANCE hinst)
     }
     g_uiThreadId = tid;
 
-    // Wait for Init() to complete (up to 5 s to handle slow machines).
-    const DWORD waitResult = WaitForSingleObject(readyEvent, 5000);
+    // Briefly wait for Init() so an outright failure is reported synchronously. A
+    // timeout is not fatal: the thread keeps starting and the first hotkey simply
+    // arrives once its message queue exists.
+    const DWORD waitResult = WaitForSingleObject(readyEvent, UIThreadInitWaitMs);
     CloseHandle(readyEvent);
-    if (waitResult != WAIT_OBJECT_0)
+    if (waitResult == WAIT_OBJECT_0 && !g_initOk.load())
     {
-        Logger::error("Timed out waiting for AltWindowCycle UI thread initialization");
-        RequestShutdownAndJoinUIThread();
-        return false;
-    }
-
-    if (!g_initOk.load())
-    {
-        RequestShutdownAndJoinUIThread();
+        RequestShutdownAndJoinUIThread(UIThreadJoinTimeoutMs);
         return false;
     }
 
     return true;
 }
 
-void ShutdownAltWindowCycle()
+void ShutdownAltWindowCycle(bool blockUntilExit)
 {
-    RequestShutdownAndJoinUIThread();
+    if (!RequestShutdownAndJoinUIThread(blockUntilExit ? INFINITE : UIThreadJoinTimeoutMs))
+    {
+        Logger::warn("AltWindowCycle UI thread did not exit within the disable() budget; it will finish asynchronously");
+    }
 }
 
 bool HandleAltWindowCycleHotkey(bool forward, unsigned int holdModifiers)
 {
     ClearExitedUIThread();
-    if (!g_uiThread)
+    if (!g_uiThread || g_shutdownRequested.load())
         return false;
 
     return PostHotkeyToUIThread(forward, holdModifiers);
-}
-
-bool HandleAltWindowCycleCancel()
-{
-    ClearExitedUIThread();
-    if (!g_uiThread || !g_switcherActive.load())
-    {
-        return false;
-    }
-
-    return PostThreadMessageW(g_uiThreadId, WM_AWC_CANCEL, 0, 0) != FALSE;
-}
-
-// =================== Legacy instant-cycle helper =============================
-
-void CycleForegroundAppWindows(bool forward)
-{
-    HWND fg;
-    std::vector<HWND> wins;
-    if (!GetAppWindows(fg, wins) || wins.size() < 2)
-        return;
-
-    int idx = -1;
-    int n = static_cast<int>(wins.size());
-    for (int i = 0; i < n; ++i)
-        if (wins[i] == fg) { idx = i; break; }
-
-    int target = (idx < 0) ? 0
-               : forward   ? (idx + 1) % n
-                           : (idx + n - 1) % n;
-
-    ForceForeground(wins[target]);
 }

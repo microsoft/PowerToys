@@ -152,6 +152,18 @@ namespace AltWindowCycleLogic
         return (normalizedIndex / pageSize) * pageSize;
     }
 
+    // Number of fixed-size pages the cycle set is split across. 0 when there is
+    // nothing to page; 1 means every window fits on screen at once.
+    inline int PageCount(int windowCount, int pageSize)
+    {
+        if (windowCount <= 0 || pageSize <= 0)
+        {
+            return 0;
+        }
+
+        return (windowCount + pageSize - 1) / pageSize;
+    }
+
     inline RECT TileRect(const OverlayLayout& layout, int index)
     {
         const int col = index % layout.cols;

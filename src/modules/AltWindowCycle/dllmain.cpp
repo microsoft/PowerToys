@@ -42,14 +42,14 @@ namespace
     // ` ~ key (VK_OEM_3) on US layouts.
     const unsigned char DEFAULT_BACKTICK_VK = 0xC0;
 
-    // The configurable hotkeys stay in Settings UI order. The remaining entries
-    // route Escape through the centralized keyboard hook for each configured
-    // modifier combination.
+    // The configurable hotkeys stay in Settings UI order. Escape is handled by a
+    // scoped low-level hook inside the module while the overlay is visible, so it
+    // deliberately does not appear here.
     enum HotkeyId : size_t
     {
         HotkeyNext = 0,
         HotkeyPrevious,
-        HotkeyCancelFirst
+        HotkeyCount
     };
 
     static unsigned int ModifierMaskFromHotkey(const PowertoyModuleIface::Hotkey& hotkey)
@@ -75,15 +75,12 @@ namespace
         return AltWindowCycleLogic::StableHoldModifiers(modifiers);
     }
 
-    static constexpr PowertoyModuleIface::Hotkey CancelHotkeyFromModifiers(unsigned int modifiers)
+    // The overlay commits when the held modifier is released, so a shortcut with no
+    // modifier at all would flash the overlay and immediately dismiss it. Settings UI
+    // won't produce one, but a hand-edited settings.json can.
+    static bool HasModifier(const PowertoyModuleIface::Hotkey& hotkey)
     {
-        PowertoyModuleIface::Hotkey hotkey;
-        hotkey.win = (modifiers & AltWindowCycleLogic::ModifierWin) != 0;
-        hotkey.ctrl = (modifiers & AltWindowCycleLogic::ModifierCtrl) != 0;
-        hotkey.shift = (modifiers & AltWindowCycleLogic::ModifierShift) != 0;
-        hotkey.alt = (modifiers & AltWindowCycleLogic::ModifierAlt) != 0;
-        hotkey.key = static_cast<unsigned char>(VK_ESCAPE);
-        return hotkey;
+        return hotkey.win || hotkey.ctrl || hotkey.shift || hotkey.alt;
     }
 }
 
@@ -100,7 +97,6 @@ private:
 
     void init_settings();
     void parse_settings(PowerToysSettings::PowerToyValues& settings);
-    std::vector<PowertoyModuleIface::Hotkey> cancel_hotkeys() const;
 
     static void parse_hotkey(const winrt::Windows::Data::Json::JsonObject& properties,
                              const wchar_t* key,
@@ -130,7 +126,9 @@ public:
 
     virtual void destroy() override
     {
-        ShutdownAltWindowCycle(); // idempotent
+        // The runner unloads this DLL right after destroy() returns, so the UI
+        // thread must be fully gone before the module code disappears.
+        ShutdownAltWindowCycle(true); // idempotent
         delete this;
     }
 
@@ -192,7 +190,10 @@ public:
     {
         m_enabled = false;
         Trace::EnableAltWindowCycle(false);
-        ShutdownAltWindowCycle();
+
+        // disable() runs on the runner thread that services the centralized
+        // low-level keyboard hook, so it must never block on the UI thread.
+        ShutdownAltWindowCycle(false);
     }
 
     virtual bool is_enabled() override
@@ -207,16 +208,13 @@ public:
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override
     {
-        const auto cancelHotkeys = cancel_hotkeys();
-        const size_t hotkeyCount = HotkeyCancelFirst + cancelHotkeys.size();
-        if (hotkeys && buffer_size >= hotkeyCount)
+        if (hotkeys && buffer_size >= HotkeyCount)
         {
             hotkeys[HotkeyNext] = m_nextHotkey;
             hotkeys[HotkeyPrevious] = m_previousHotkey;
-            std::copy(cancelHotkeys.begin(), cancelHotkeys.end(), hotkeys + HotkeyCancelFirst);
         }
 
-        return hotkeyCount;
+        return HotkeyCount;
     }
 
     virtual bool on_hotkey(size_t hotkeyId) override
@@ -238,11 +236,6 @@ public:
             return HandleAltWindowCycleHotkey(false, ModifierMaskFromHotkey(m_previousHotkey));
         }
 
-        if (hotkeyId >= HotkeyCancelFirst)
-        {
-            return HandleAltWindowCycleCancel();
-        }
-
         return false;
     }
 };
@@ -259,28 +252,6 @@ void AltWindowCycle::init_settings()
     {
         // Error while loading from the settings file. Let default values stay as they are.
     }
-}
-
-std::vector<PowertoyModuleIface::Hotkey> AltWindowCycle::cancel_hotkeys() const
-{
-    std::vector<PowertoyModuleIface::Hotkey> hotkeys;
-    const auto addHotkey = [&hotkeys](PowertoyModuleIface::Hotkey hotkey) {
-        hotkey.key = static_cast<unsigned char>(VK_ESCAPE);
-        hotkey.id = static_cast<int>(HotkeyCancelFirst + hotkeys.size());
-        if (std::find(hotkeys.begin(), hotkeys.end(), hotkey) == hotkeys.end())
-        {
-            hotkeys.push_back(hotkey);
-        }
-    };
-
-    const auto addConfiguredHotkeys = [&addHotkey](const PowertoyModuleIface::Hotkey& configuredHotkey) {
-        addHotkey(configuredHotkey);
-        addHotkey(CancelHotkeyFromModifiers(ModifierMaskFromHotkey(configuredHotkey)));
-    };
-
-    addConfiguredHotkeys(m_nextHotkey);
-    addConfiguredHotkeys(m_previousHotkey);
-    return hotkeys;
 }
 
 void AltWindowCycle::parse_settings(PowerToysSettings::PowerToyValues& settings)
@@ -308,7 +279,7 @@ void AltWindowCycle::parse_settings(PowerToysSettings::PowerToyValues& settings)
     }
 
     // Default: Alt+` cycles to the next window of the focused app.
-    if (!m_nextHotkey.key)
+    if (!m_nextHotkey.key || !HasModifier(m_nextHotkey))
     {
         m_nextHotkey.win = false;
         m_nextHotkey.ctrl = false;
@@ -318,7 +289,7 @@ void AltWindowCycle::parse_settings(PowerToysSettings::PowerToyValues& settings)
     }
 
     // Default: Shift+Alt+` cycles to the previous window of the focused app.
-    if (!m_previousHotkey.key)
+    if (!m_previousHotkey.key || !HasModifier(m_previousHotkey))
     {
         m_previousHotkey.win = false;
         m_previousHotkey.ctrl = false;

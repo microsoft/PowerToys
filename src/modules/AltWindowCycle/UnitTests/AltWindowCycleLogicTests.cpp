@@ -372,6 +372,17 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(0, AltWindowCycleLogic::PageStartForSelection(0, 0, 0));
         }
 
+        TEST_METHOD(PageCountReportsPagesForPaginationAffordance)
+        {
+            Assert::AreEqual(1, AltWindowCycleLogic::PageCount(1, 8));
+            Assert::AreEqual(1, AltWindowCycleLogic::PageCount(8, 8));
+            Assert::AreEqual(2, AltWindowCycleLogic::PageCount(9, 8));
+            Assert::AreEqual(2, AltWindowCycleLogic::PageCount(13, 8));
+            Assert::AreEqual(3, AltWindowCycleLogic::PageCount(17, 8));
+            Assert::AreEqual(0, AltWindowCycleLogic::PageCount(0, 8));
+            Assert::AreEqual(0, AltWindowCycleLogic::PageCount(13, 0));
+        }
+
         TEST_METHOD(TileRectAdvancesAcrossColumnsAndRows)
         {
             const RECT work = { 0, 0, 1920, 1080 };
