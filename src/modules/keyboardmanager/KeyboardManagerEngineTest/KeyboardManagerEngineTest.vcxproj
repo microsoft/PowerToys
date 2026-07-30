@@ -31,7 +31,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;$(RepoRoot)src\;$(RepoRoot)src\modules;$(RepoRoot)src\common\Telemetry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <UseFullPaths>true</UseFullPaths>
     </ClCompile>
     <Link>
