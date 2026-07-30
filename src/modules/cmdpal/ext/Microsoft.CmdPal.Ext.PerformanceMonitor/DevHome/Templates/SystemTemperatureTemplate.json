@@ -25,13 +25,13 @@
               "type": "Column",
               "items": [
                 {
-                  "text": "%Temperature_Widget_Template/CpuTemperature%",
+                  "text": "%Temperature_Widget_Template/ThermalZone%",
                   "type": "TextBlock",
                   "size": "small",
                   "isSubtle": true
                 },
                 {
-                  "text": "${cpuTemperature}",
+                  "text": "${thermalZoneTemperature}",
                   "type": "TextBlock",
                   "size": "${if($host.widgetSize == \"small\", \"medium\", \"extraLarge\")}",
                   "weight": "bolder"
