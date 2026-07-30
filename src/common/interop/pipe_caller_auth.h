@@ -3,6 +3,7 @@
 #include <Windows.h>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -51,8 +52,31 @@ namespace interop_auth
         std::function<void(const AuthResult&)> logReject;
     };
 
-    // Authenticates the client connected on `pipe` against `policy`. Never throws.
-    AuthResult AuthenticateClient(HANDLE pipe, const CallerPolicy& policy);
+    // Per-server verification cache. Each pipe server owns one instance, so cached verdicts are
+    // physically partitioned by policy and the key is simply (pid, process-creation-time) — there is no
+    // shared cross-server state and therefore no need to fold the policy into the cache key. Opaque
+    // (pimpl) so the cache internals stay in the .cpp. Thread-safe.
+    class VerificationCache
+    {
+    public:
+        VerificationCache();
+        ~VerificationCache();
+        VerificationCache(const VerificationCache&) = delete;
+        VerificationCache& operator=(const VerificationCache&) = delete;
+
+        // On a fresh (within-TTL) hit, fills out.accepted/imagePath/reasonCode and returns true.
+        bool TryGet(DWORD pid, unsigned long long createTime, AuthResult& out);
+        // Stores/refreshes the verdict for this process instance (evicts expired/oldest entries).
+        void Put(DWORD pid, unsigned long long createTime, const AuthResult& verdict);
+
+    private:
+        struct Impl;
+        std::unique_ptr<Impl> impl;
+    };
+
+    // Authenticates the client connected on `pipe` against `policy`, using `cache` (owned by the caller,
+    // typically one per pipe server) to avoid re-verifying every message. Never throws.
+    AuthResult AuthenticateClient(HANDLE pipe, const CallerPolicy& policy, VerificationCache& cache);
 
     // File version packed as (VersionMS << 32) | VersionLS. Returns 0 on failure.
     unsigned long long GetModuleVersion(const std::wstring& path);

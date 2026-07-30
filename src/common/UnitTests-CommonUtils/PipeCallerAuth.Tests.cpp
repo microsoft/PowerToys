@@ -53,9 +53,11 @@ namespace UnitTestsCommonUtils
 
         bool MakeConnectedPipe(ConnectedPipe& out)
         {
+            static LONG counter = 0;
             const std::wstring name = L"\\\\.\\pipe\\pt_auth_test_" +
                                       std::to_wstring(GetCurrentProcessId()) + L"_" +
-                                      std::to_wstring(GetTickCount64());
+                                      std::to_wstring(GetTickCount64()) + L"_" +
+                                      std::to_wstring(InterlockedIncrement(&counter));
             HANDLE server = CreateNamedPipeW(name.c_str(),
                                              PIPE_ACCESS_DUPLEX,
                                              PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
@@ -98,7 +100,8 @@ namespace UnitTestsCommonUtils
         TEST_METHOD(DisabledPolicy_Accepts)
         {
             interop_auth::CallerPolicy policy;
-            const auto res = interop_auth::AuthenticateClient(nullptr, policy);
+            interop_auth::VerificationCache cache;
+            const auto res = interop_auth::AuthenticateClient(nullptr, policy, cache);
             Assert::IsTrue(res.accepted);
         }
 
@@ -129,7 +132,8 @@ namespace UnitTestsCommonUtils
             policy.expectedVersion = 0; // skip version match
             policy.requireMicrosoftSignature = false; // test host is not Microsoft-signed
 
-            const auto res = interop_auth::AuthenticateClient(cp.server, policy);
+            interop_auth::VerificationCache cache;
+            const auto res = interop_auth::AuthenticateClient(cp.server, policy, cache);
             Assert::IsTrue(res.accepted, L"legitimate self caller should be accepted");
             Assert::AreEqual(GetCurrentProcessId(), res.pid);
         }
@@ -151,7 +155,8 @@ namespace UnitTestsCommonUtils
             bool logged = false;
             policy.logReject = [&](const interop_auth::AuthResult&) { logged = true; };
 
-            const auto res = interop_auth::AuthenticateClient(cp.server, policy);
+            interop_auth::VerificationCache cache;
+            const auto res = interop_auth::AuthenticateClient(cp.server, policy, cache);
             Assert::IsFalse(res.accepted, L"caller with non-allowlisted basename must be rejected");
             Assert::AreEqual(L"bad-basename", res.reasonCode);
             Assert::IsTrue(logged, L"rejection must invoke the log callback");
@@ -170,9 +175,42 @@ namespace UnitTestsCommonUtils
             policy.allowedBasenames = { BaseOf(exe) };
             policy.requireMicrosoftSignature = false;
 
-            const auto res = interop_auth::AuthenticateClient(cp.server, policy);
+            interop_auth::VerificationCache cache;
+            const auto res = interop_auth::AuthenticateClient(cp.server, policy, cache);
             Assert::IsFalse(res.accepted);
             Assert::AreEqual(L"bad-directory", res.reasonCode);
+        }
+
+        // Each pipe server owns its own cache, so the same client process is evaluated independently
+        // per policy — an accept verdict in one server's cache never bleeds into another server that
+        // has a different (stricter) policy.
+        TEST_METHOD(SeparateCaches_AreIndependent)
+        {
+            const std::wstring exe = CurrentExePath();
+
+            interop_auth::CallerPolicy acceptPolicy;
+            acceptPolicy.enabled = true;
+            acceptPolicy.expectedDirectory = DirOf(exe);
+            acceptPolicy.allowedBasenames = { BaseOf(exe) };
+            acceptPolicy.requireMicrosoftSignature = false;
+
+            interop_auth::CallerPolicy rejectPolicy = acceptPolicy;
+            rejectPolicy.allowedBasenames = { L"not_the_test_host.exe" };
+
+            interop_auth::VerificationCache cacheA; // e.g. the Settings server's cache
+            interop_auth::VerificationCache cacheB; // e.g. the Quick Access server's cache
+
+            ConnectedPipe cp1;
+            Assert::IsTrue(MakeConnectedPipe(cp1), L"failed to set up connected pipe 1");
+            const auto rA = interop_auth::AuthenticateClient(cp1.server, acceptPolicy, cacheA);
+            Assert::IsTrue(rA.accepted, L"self caller accepted under the permissive policy");
+
+            // Same client process (same pid + creation time), different server/cache/policy.
+            ConnectedPipe cp2;
+            Assert::IsTrue(MakeConnectedPipe(cp2), L"failed to set up connected pipe 2");
+            const auto rB = interop_auth::AuthenticateClient(cp2.server, rejectPolicy, cacheB);
+            Assert::IsFalse(rB.accepted, L"a separate server cache must not inherit the other's accept verdict");
+            Assert::AreEqual(L"bad-basename", rB.reasonCode);
         }
     };
 }

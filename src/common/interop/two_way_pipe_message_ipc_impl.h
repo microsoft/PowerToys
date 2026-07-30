@@ -31,6 +31,7 @@ private:
     bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
     interop_auth::CallerPolicy caller_policy;
+    interop_auth::VerificationCache caller_cache;
 
     void send_pipe_message(std::wstring message);
     void consume_output_queue_thread();

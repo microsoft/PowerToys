@@ -375,7 +375,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HAND
     // caller gets no dispatch. When the policy is disabled (managed server / tests) this is a no-op.
     if (caller_policy.enabled)
     {
-        const interop_auth::AuthResult auth = interop_auth::AuthenticateClient(input_pipe_handle, caller_policy);
+        const interop_auth::AuthResult auth = interop_auth::AuthenticateClient(input_pipe_handle, caller_policy, caller_cache);
         if (!auth.accepted)
         {
             FlushFileBuffers(input_pipe_handle);
