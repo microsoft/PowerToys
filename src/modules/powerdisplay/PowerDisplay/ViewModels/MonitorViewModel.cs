@@ -292,28 +292,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public VcpCapabilities? VcpCapabilitiesInfo => _monitor.VcpCapabilitiesInfo;
 
     /// <summary>
-    /// Determines whether an absolute restore should write the requested value. See
-    /// <see cref="MonitorRestorePlanner.ShouldWrite"/> for the rule; this only supplies the two
-    /// inputs it needs — the monitor snapshot and the optimistic UI value.
-    /// </summary>
-    internal bool ShouldRestoreValue(int targetValue, MonitorReadFlags readFlag)
-        => MonitorRestorePlanner.ShouldWrite(targetValue, _monitor, readFlag, DisplayedValue(readFlag));
-
-    /// <summary>
-    /// The value the flyout is currently showing for <paramref name="readFlag"/>, which can lead
-    /// the monitor snapshot while a slider commit is debounced. Color temperature has no optimistic
-    /// backing field and reads straight through to the snapshot.
-    /// </summary>
-    private int DisplayedValue(MonitorReadFlags readFlag) => readFlag switch
-    {
-        MonitorReadFlags.Brightness => _brightness,
-        MonitorReadFlags.Contrast => _contrast,
-        MonitorReadFlags.Volume => _volume,
-        MonitorReadFlags.ColorTemperature => _monitor.CurrentColorTemperature,
-        _ => throw new ArgumentOutOfRangeException(nameof(readFlag), readFlag, "Unsupported restore value flag."),
-    };
-
-    /// <summary>
     /// Gets the icon glyph based on communication method
     /// WMI monitors (laptop internal displays) use laptop icon, others use external monitor icon
     /// </summary>
