@@ -65,7 +65,8 @@ param(
     [switch]$ReuseStagedPayload,
     [switch]$SkipStart,
     [switch]$StopVmAfterRun,
-    [switch]$AllowUnencryptedWinRM,
+    [Alias('AllowUnencryptedWinRM')]
+    [switch]$UseHttpWinRM,
     [switch]$PlanOnly
 )
 
@@ -77,8 +78,8 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 if (($DesktopWidth -eq 0) -ne ($DesktopHeight -eq 0)) {
     throw 'Set both DesktopWidth and DesktopHeight to 0 to disable display validation.'
 }
-if ($AllowUnencryptedWinRM -and $WinRmPort -eq 15986) {
-    Write-Warning 'Unencrypted WinRM was selected with the default HTTPS port. Verify the compose mapping.'
+if ($UseHttpWinRM -and $WinRmPort -eq 15986) {
+    Write-Warning 'HTTP WinRM was selected with the default HTTPS port. Verify the compose mapping.'
 }
 
 $vmRootPath = [IO.Path]::GetFullPath($VmRoot)
@@ -293,7 +294,7 @@ $plan = [ordered]@{
     GuestRunnerSource = $guestRunnerSourcePath
     GuestRequestPath = $guestRequestPath
     StandardUser = $StandardUser
-    WinRM = if ($AllowUnencryptedWinRM) { "http://127.0.0.1:$WinRmPort/wsman" } else { "https://127.0.0.1:$WinRmPort/wsman" }
+    WinRM = if ($UseHttpWinRM) { "http://127.0.0.1:$WinRmPort/wsman" } else { "https://127.0.0.1:$WinRmPort/wsman" }
     ReuseStagedPayload = [bool]$ReuseStagedPayload
     StopVmAfterRun = [bool]$StopVmAfterRun
     PayloadFingerprint = $payloadFingerprint
@@ -333,9 +334,10 @@ try {
         Write-Verbose $startupOutput
     }
 
-    $scheme = if ($AllowUnencryptedWinRM) { 'http' } else { 'https' }
+    $scheme = if ($UseHttpWinRM) { 'http' } else { 'https' }
     $connectionUri = "${scheme}://127.0.0.1:$WinRmPort/wsman"
-    $sessionOption = if ($AllowUnencryptedWinRM) {
+    $authentication = if ($UseHttpWinRM) { 'Negotiate' } else { 'Basic' }
+    $sessionOption = if ($UseHttpWinRM) {
         New-PSSessionOption
     }
     else {
@@ -345,7 +347,7 @@ try {
     do {
         try {
             $session = New-PSSession `
-                -ConnectionUri $connectionUri -Authentication Basic `
+                -ConnectionUri $connectionUri -Authentication $authentication `
                 -Credential $credential -SessionOption $sessionOption -ErrorAction Stop
         }
         catch {

@@ -147,5 +147,6 @@ volume snapshot or creating a fresh volume for repeatable clean-profile checks.
 ## Existing HTTP WinRM VM
 
 An older local VM may expose HTTP WinRM on another loopback port. The controller supports
-`-AllowUnencryptedWinRM -WinRmPort <port>` only as a migration path. Prefer rerunning OEM
-provisioning to create the HTTPS listener, then remove the HTTP port mapping.
+`-UseHttpWinRM -WinRmPort <port>` only as a migration path. It uses Negotiate/NTLM message
+encryption rather than Basic authentication. Prefer rerunning OEM provisioning to create the HTTPS
+listener, then remove the HTTP port mapping.
