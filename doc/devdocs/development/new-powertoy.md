@@ -181,7 +181,7 @@ PowerToys settings are stored per-module as JSON under:
 
 - In `src\settings-ui\Settings.UI.Library\` create `<module>Properties.cs` and `<module>Settings.cs`
 - `<module>Properties.cs` is where you will define your defaults. Every setting needs to be represented here. This should match what was set in the Module Interface.
-- `<module>Settings.cs`is where your settings.json will be built from. The structure should match the following
+- `<module>Settings.cs` is where your settings.json will be built from. The structure should match the following
 ```cs
 public ModuleSettings()
 {
