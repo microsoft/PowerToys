@@ -225,7 +225,6 @@ public sealed class VcpDiscoveryEvidenceTests
         Code = code,
         Current = current,
         Maximum = 100,
-        Source = VcpObservationSource.MaximumCompatibilityProbe,
         LastSuccessfulUtc = CachedUtc,
     };
 }

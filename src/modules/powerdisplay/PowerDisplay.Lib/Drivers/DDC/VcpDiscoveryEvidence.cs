@@ -2,19 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#pragma warning disable SA1649 // File name should match first type name
-
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 
 namespace PowerDisplay.Common.Drivers.DDC;
-
-internal readonly record struct VcpInitialValue(
-    VcpFeatureValue Value,
-    bool IsLive,
-    bool PreferLiveRead = false);
 
 internal sealed class VcpDiscoveryEvidence
 {
@@ -163,3 +156,22 @@ internal sealed class VcpDiscoveryEvidence
         return capabilities;
     }
 }
+
+/// <summary>
+/// The value discovery should start a continuous VCP feature at, and how much the hardware has
+/// already said about it this pass.
+/// </summary>
+/// <param name="Value">The device-native value to apply.</param>
+/// <param name="IsLive">
+/// True when this pass's probe read the value off the hardware, which is what lets the initializer
+/// set the matching <see cref="MonitorReadFlags"/> bit. Cached values stay non-live.
+/// </param>
+/// <param name="PreferLiveRead">
+/// True when the probe never touched this code, so the initializer owes the hardware one read
+/// before it falls back to <paramref name="Value"/>. Never set together with
+/// <paramref name="IsLive"/>.
+/// </param>
+internal readonly record struct VcpInitialValue(
+    VcpFeatureValue Value,
+    bool IsLive,
+    bool PreferLiveRead = false);

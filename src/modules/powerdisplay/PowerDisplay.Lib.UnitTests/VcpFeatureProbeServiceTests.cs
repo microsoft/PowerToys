@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
+using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
@@ -17,7 +18,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_FirstSuccessReturnsValuesWithoutRetry()
     {
-        var reader = new QueueReader(VcpReadAttempt.Success(current: 30, maximum: 100));
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(current: 30, maximum: 100));
         var delays = new List<TimeSpan>();
         var service = CreateService(reader, delays);
 
@@ -35,7 +36,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_TransientFailureThenSuccessRetriesWithPacing()
     {
-        var reader = new QueueReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
             VcpReadAttempt.Success(current: 45, maximum: 100));
         var delays = new List<TimeSpan>();
@@ -56,7 +57,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_ThreeTransientFailuresReturnIndeterminate()
     {
-        var reader = new QueueReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand),
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
@@ -73,7 +74,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_NonTransientFailureDoesNotRetry()
     {
-        var reader = new QueueReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported));
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported));
         var service = CreateService(reader, new List<TimeSpan>());
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
@@ -90,7 +91,7 @@ public sealed class VcpFeatureProbeServiceTests
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public async Task ProbeAsync_PhysicalMonitorUnavailableStopsRemainingFeatureProbes(int errorCode)
     {
-        var reader = new QueueReader(VcpReadAttempt.Failure(errorCode));
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(errorCode));
         var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12, 0x62 });
 
         var result = await service.ProbeAsync(new IntPtr(1), CancellationToken.None);
@@ -105,7 +106,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_VcpNotSupportedContinuesWithRemainingFeatures()
     {
-        var reader = new QueueReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             VcpReadAttempt.Success(current: 20, maximum: 100));
         var service = CreateService(reader, new List<TimeSpan>(), new byte[] { 0x10, 0x12 });
@@ -121,7 +122,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_InvalidSuccessfulRangeRetriesAndRemainsIndeterminate()
     {
-        var reader = new QueueReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Success(current: 10, maximum: 0),
             VcpReadAttempt.Success(current: 10, maximum: 0),
             VcpReadAttempt.Success(current: 10, maximum: 0));
@@ -158,7 +159,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_MultipleCodesRemainSequential()
     {
-        var reader = new QueueReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Success(10, 100),
             VcpReadAttempt.Success(20, 100),
             VcpReadAttempt.Success(30, 100));
@@ -172,7 +173,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_PreCancelledTokenSkipsDelayAndNativeReads()
     {
-        var reader = new QueueReader(VcpReadAttempt.Success(10, 100));
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(10, 100));
         var delays = new List<TimeSpan>();
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
@@ -188,7 +189,7 @@ public sealed class VcpFeatureProbeServiceTests
     [TestMethod]
     public async Task ProbeAsync_CancellationDuringTransactionDelayStopsBeforeNativeRead()
     {
-        var reader = new QueueReader(VcpReadAttempt.Success(10, 100));
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(10, 100));
         var delays = new List<TimeSpan>();
         var delayStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var cancellation = new CancellationTokenSource();
@@ -264,22 +265,6 @@ public sealed class VcpFeatureProbeServiceTests
                 return Task.CompletedTask;
             },
             codes: codes ?? new byte[] { 0x10 });
-
-    private sealed class QueueReader(params VcpReadAttempt[] attempts) : IVcpFeatureReader
-    {
-        private readonly Queue<VcpReadAttempt> _attempts = new(attempts);
-
-        public int CallCount { get; private set; }
-
-        public List<byte> Codes { get; } = new();
-
-        public VcpReadAttempt Read(IntPtr handle, byte code)
-        {
-            CallCount++;
-            Codes.Add(code);
-            return _attempts.Dequeue();
-        }
-    }
 
     private sealed class CoordinatedReader(
         TaskCompletionSource<int> readerThreadId,

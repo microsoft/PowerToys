@@ -101,11 +101,7 @@ internal sealed class ContinuousVcpInitializer
         ApplyValue(monitor, code, value, markAsRead: true);
         _store.UpsertKnownGoodFeature(
             monitor.Id,
-            KnownGoodVcpFeature.From(
-                code,
-                value,
-                VcpObservationSource.CapabilitiesInitialization,
-                _clock.UtcNow));
+            KnownGoodVcpFeature.From(code, value, _clock.UtcNow));
 
         return VcpInitializationResult.Completed;
     }

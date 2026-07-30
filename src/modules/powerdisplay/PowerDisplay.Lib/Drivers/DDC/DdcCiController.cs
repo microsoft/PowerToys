@@ -496,11 +496,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 _knownGoodStore.UpsertKnownGoodFeature(
                     monitorId,
-                    KnownGoodVcpFeature.From(
-                        observation.Code,
-                        observation.Value,
-                        VcpObservationSource.MaximumCompatibilityProbe,
-                        _clock.UtcNow));
+                    KnownGoodVcpFeature.From(observation.Code, observation.Value, _clock.UtcNow));
             }
 
             if (live.Count > 0)
@@ -887,7 +883,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             _knownGoodStore.UpsertKnownGoodFeature(
                 monitor.Id,
-                KnownGoodVcpFeature.From(vcpCode, written, existing.Source, _clock.UtcNow));
+                KnownGoodVcpFeature.From(vcpCode, written, _clock.UtcNow));
         }
 
         public void Dispose()

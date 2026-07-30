@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
+using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
@@ -22,7 +22,7 @@ public sealed class DiscreteVcpInitializerTests
         // pinning: they are what would fail if someone copied ContinuousVcpInitializer's
         // drop-the-monitor branch into this stage. Handle liveness is decided by the
         // maximum-compatibility probe and by ContinuousVcpInitializer before this stage runs.
-        var reader = new RecordingReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Failure(errorCode),
             VcpReadAttempt.Success(current: 0x11, maximum: 0),
             VcpReadAttempt.Success(current: 0x01, maximum: 0));
@@ -48,23 +48,10 @@ public sealed class DiscreteVcpInitializerTests
 
         return new Monitor
         {
-            Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+            Id = MonitorId,
             Handle = new IntPtr(1),
             SupportsColorTemperature = true,
             VcpCapabilitiesInfo = capabilities,
         };
-    }
-
-    private sealed class RecordingReader(params VcpReadAttempt[] results) : IVcpFeatureReader
-    {
-        private readonly Queue<VcpReadAttempt> _results = new(results);
-
-        public List<byte> Codes { get; } = new();
-
-        public VcpReadAttempt Read(IntPtr handle, byte code)
-        {
-            Codes.Add(code);
-            return _results.Dequeue();
-        }
     }
 }

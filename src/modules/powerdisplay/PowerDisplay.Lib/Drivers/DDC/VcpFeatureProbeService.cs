@@ -7,11 +7,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
+using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
@@ -34,9 +36,17 @@ namespace PowerDisplay.Common.Drivers.DDC
         VcpReadAttempt Read(IntPtr handle, byte code);
     }
 
+    /// <summary>
+    /// The production <see cref="IVcpFeatureReader"/>: one <c>GetVCPFeatureAndVCPFeatureReply</c>
+    /// transaction, with no retry, pacing or logging. Those belong to the callers —
+    /// <see cref="VcpFeatureProbeService"/> and <see cref="ContinuousVcpInitializer"/>.
+    /// </summary>
     internal sealed class NativeVcpFeatureReader : IVcpFeatureReader
     {
-        public VcpReadAttempt Read(IntPtr handle, byte code) => DdcCiNative.ReadVcpFeature(handle, code);
+        public VcpReadAttempt Read(IntPtr handle, byte code) =>
+            GetVCPFeatureAndVCPFeatureReply(handle, code, IntPtr.Zero, out uint current, out uint maximum)
+                ? VcpReadAttempt.Success(current, maximum)
+                : VcpReadAttempt.Failure(Marshal.GetLastWin32Error());
     }
 
     internal readonly record struct VcpProbeObservation(

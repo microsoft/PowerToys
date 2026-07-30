@@ -13,7 +13,15 @@ internal static class DdcErrorClassifier
 {
     internal const int ErrorGraphicsI2CErrorTransmittingData = unchecked((int)0xC0262582);
     internal const int ErrorGraphicsI2CErrorReceivingData = unchecked((int)0xC0262583);
+
+    /// <summary>
+    /// The device's final answer that it does not implement the opcode. Deliberately a member of
+    /// neither classification below — it must not be retried, and it is not a handle-class failure —
+    /// so it is named here rather than left as a magic number in the tests that pin that exclusion
+    /// and in the discovery tests that drive a definitive refusal.
+    /// </summary>
     internal const int ErrorGraphicsDdcCiVcpNotSupported = unchecked((int)0xC0262584);
+
     internal const int ErrorGraphicsDdcCiInvalidData = unchecked((int)0xC0262585);
     internal const int ErrorGraphicsMcaInternalError = unchecked((int)0xC0262588);
     internal const int ErrorGraphicsDdcCiInvalidMessageCommand = unchecked((int)0xC0262589);

@@ -10,8 +10,9 @@ using static PowerDisplay.Common.Drivers.PInvoke;
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
-    /// DDC/CI native API wrapper — Win32 primitives only. All retry / fallback
-    /// orchestration lives in <see cref="DdcCiController"/>.
+    /// DDC/CI capabilities-string wrapper — Win32 primitives only. All retry / fallback
+    /// orchestration lives in <see cref="DdcCiController"/>; the VCP read primitive lives on
+    /// <see cref="NativeVcpFeatureReader"/>, behind the <see cref="IVcpFeatureReader"/> seam.
     /// </summary>
     public static class DdcCiNative
     {
@@ -58,16 +59,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogError($"DDC: TryGetCapabilitiesString exception (handle=0x{hPhysicalMonitor:X}): {ex.Message}");
                 return null;
             }
-        }
-
-        internal static VcpReadAttempt ReadVcpFeature(IntPtr handle, byte code)
-        {
-            if (GetVCPFeatureAndVCPFeatureReply(handle, code, IntPtr.Zero, out uint current, out uint maximum))
-            {
-                return VcpReadAttempt.Success(current, maximum);
-            }
-
-            return VcpReadAttempt.Failure(Marshal.GetLastWin32Error());
         }
     }
 }

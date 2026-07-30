@@ -52,7 +52,6 @@ public sealed class MonitorStateManagerTests
                     Code = 0x10,
                     Current = 30,
                     Maximum = 100,
-                    Source = VcpObservationSource.MaximumCompatibilityProbe,
                     LastSuccessfulUtc = SuccessfulUtc,
                 });
         }
@@ -63,7 +62,6 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(1, features.Count);
         Assert.AreEqual(30, features[0x10].Current);
         Assert.AreEqual(100, features[0x10].Maximum);
-        Assert.AreEqual(VcpObservationSource.MaximumCompatibilityProbe, features[0x10].Source);
         Assert.AreEqual(SuccessfulUtc, features[0x10].LastSuccessfulUtc);
     }
 
@@ -282,7 +280,6 @@ public sealed class MonitorStateManagerTests
         Code = code,
         Current = current,
         Maximum = 100,
-        Source = VcpObservationSource.MaximumCompatibilityProbe,
         LastSuccessfulUtc = SuccessfulUtc,
     };
 }

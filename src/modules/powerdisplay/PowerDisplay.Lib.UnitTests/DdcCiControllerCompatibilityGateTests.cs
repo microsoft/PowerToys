@@ -8,9 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
-using PowerDisplay.Common.Interfaces;
-using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
+using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
@@ -28,12 +27,10 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class DdcCiControllerCompatibilityGateTests
 {
-    private const string MonitorId = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1";
-
     [TestMethod]
     public async Task NormalMode_NeitherProbesNorTouchesTheCache()
     {
-        var store = new RecordingStore(Cached(0x10, current: 45, maximum: 100));
+        var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 100));
         var reader = new ScriptedReader();
         using var controller = NewController(store, reader, maxCompatibility: false);
 
@@ -50,7 +47,7 @@ public sealed class DdcCiControllerCompatibilityGateTests
     [TestMethod]
     public async Task MaxCompatibility_PersistsProbeSuccessesAndConsultsTheCache()
     {
-        var store = new RecordingStore();
+        var store = new RecordingKnownGoodStore();
         var reader = new ScriptedReader
         {
             [0x10] = VcpReadAttempt.Success(30, 100),
@@ -70,7 +67,6 @@ public sealed class DdcCiControllerCompatibilityGateTests
         Assert.AreEqual((byte)0x10, persisted.Code);
         Assert.AreEqual(30, persisted.Current);
         Assert.AreEqual(100, persisted.Maximum);
-        Assert.AreEqual(VcpObservationSource.MaximumCompatibilityProbe, persisted.Source);
         Assert.AreEqual(clock.UtcNow, persisted.LastSuccessfulUtc);
 
         Assert.IsTrue(evidence.Capabilities!.SupportsVcpCode(0x10));
@@ -82,7 +78,7 @@ public sealed class DdcCiControllerCompatibilityGateTests
     {
         // Every probe fails, so the only thing keeping the monitor discoverable is the cache the
         // gate handed to Reconcile — this is the path the whole feature exists for.
-        var store = new RecordingStore(Cached(0x10, current: 45, maximum: 100));
+        var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 100));
         var reader = new ScriptedReader
         {
             [0x10] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
@@ -101,7 +97,7 @@ public sealed class DdcCiControllerCompatibilityGateTests
     }
 
     private static DdcCiController NewController(
-        RecordingStore store,
+        RecordingKnownGoodStore store,
         ScriptedReader reader,
         bool maxCompatibility,
         ISystemClock? clock = null) =>
@@ -109,15 +105,6 @@ public sealed class DdcCiControllerCompatibilityGateTests
         {
             MaxCompatibilityMode = maxCompatibility,
         };
-
-    private static KnownGoodVcpFeature Cached(byte code, int current, int maximum) => new()
-    {
-        Code = code,
-        Current = current,
-        Maximum = maximum,
-        Source = VcpObservationSource.MaximumCompatibilityProbe,
-        LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
-    };
 
     private sealed class ScriptedReader : IVcpFeatureReader
     {
@@ -137,38 +124,5 @@ public sealed class DdcCiControllerCompatibilityGateTests
                 ? result
                 : VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported);
         }
-    }
-
-    private sealed class RecordingStore : IKnownGoodVcpStore
-    {
-        private readonly Dictionary<byte, KnownGoodVcpFeature> _cached = new();
-
-        public RecordingStore(params KnownGoodVcpFeature[] cached)
-        {
-            foreach (var feature in cached)
-            {
-                _cached[feature.Code] = feature;
-            }
-        }
-
-        public int GetCallCount { get; private set; }
-
-        public int UpsertCount => Upserts.Count;
-
-        public List<KnownGoodVcpFeature> Upserts { get; } = new();
-
-        public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId)
-        {
-            GetCallCount++;
-            return _cached;
-        }
-
-        public void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature) =>
-            Upserts.Add(feature.Clone());
-    }
-
-    private sealed class FixedClock : ISystemClock
-    {
-        public DateTime UtcNow { get; } = new(2026, 7, 21, 8, 0, 0, DateTimeKind.Utc);
     }
 }

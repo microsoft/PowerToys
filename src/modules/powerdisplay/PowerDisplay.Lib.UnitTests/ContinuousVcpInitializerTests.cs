@@ -6,9 +6,8 @@ using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
-using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
+using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
@@ -18,8 +17,8 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_LiveInitialValueDoesNotReadAgain()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(1));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(1));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
         var evidence = Evidence(new VcpInitialValue(
@@ -41,8 +40,8 @@ public sealed class ContinuousVcpInitializerTests
         // The probe only runs when the capabilities string is unusable, so on the caps-parsed path
         // nothing has confirmed the cached value. It must be re-read before it is trusted,
         // otherwise the cache entry could never be refreshed.
-        var reader = new RecordingReader(VcpReadAttempt.Success(60, 100));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(60, 100));
+        var store = new RecordingKnownGoodStore();
         var clock = new FixedClock();
         var initializer = new ContinuousVcpInitializer(reader, store, clock);
         var monitor = BrightnessMonitor();
@@ -65,8 +64,8 @@ public sealed class ContinuousVcpInitializerTests
         // The probe already issued transactions for this code in this pass — it stopped on a
         // definitive DDCCI_VCP_NOT_SUPPORTED rather than exhausting the budget — so re-reading it
         // here would be pure I2C noise.
-        var reader = new RecordingReader(VcpReadAttempt.Failure(1));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(1));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
@@ -81,8 +80,8 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_AdvertisedCachedCodeUsesCacheWhenLiveReadFails()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
@@ -100,8 +99,8 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_AdvertisedCachedCodeUsesCacheWhenLiveRangeIsInvalid()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Success(60, 0));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(60, 0));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
@@ -119,8 +118,8 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_NoInitialValueReadsOnceAndPersistsSuccess()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Success(55, 100));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(55, 100));
+        var store = new RecordingKnownGoodStore();
         var clock = new FixedClock();
         var initializer = new ContinuousVcpInitializer(reader, store, clock);
         var monitor = BrightnessMonitor();
@@ -131,15 +130,16 @@ public sealed class ContinuousVcpInitializerTests
 
         Assert.AreEqual(1, reader.CallCount);
         Assert.AreEqual(55, monitor.CurrentBrightness);
-        Assert.AreEqual(VcpObservationSource.CapabilitiesInitialization, store.LastFeature!.Source);
+        Assert.AreEqual(55, store.LastFeature!.Current);
+        Assert.AreEqual(100, store.LastFeature.Maximum);
         Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
     }
 
     [TestMethod]
     public void Initialize_InvalidRangeDoesNotApplyOrPersist()
     {
-        var reader = new RecordingReader(VcpReadAttempt.Success(55, 0));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Success(55, 0));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
@@ -158,8 +158,8 @@ public sealed class ContinuousVcpInitializerTests
     [DataRow(DdcErrorClassifier.ErrorGraphicsMonitorNoLongerExists)]
     public void Initialize_PhysicalMonitorUnavailableRejectsCacheAndStopsRemainingReads(int errorCode)
     {
-        var reader = new RecordingReader(VcpReadAttempt.Failure(errorCode));
-        var store = new RecordingStore();
+        var reader = new RecordingVcpReader(VcpReadAttempt.Failure(errorCode));
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessAndContrastMonitor();
         var initialBrightness = monitor.CurrentBrightness;
@@ -181,10 +181,10 @@ public sealed class ContinuousVcpInitializerTests
     [TestMethod]
     public void Initialize_VcpNotSupportedUsesCacheAndContinuesRemainingReads()
     {
-        var reader = new RecordingReader(
+        var reader = new RecordingVcpReader(
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             VcpReadAttempt.Success(60, 100));
-        var store = new RecordingStore();
+        var store = new RecordingKnownGoodStore();
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessAndContrastMonitor();
 
@@ -203,14 +203,14 @@ public sealed class ContinuousVcpInitializerTests
 
     private static Monitor BrightnessMonitor() => new()
     {
-        Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+        Id = MonitorId,
         Handle = new IntPtr(1),
         Capabilities = MonitorCapabilities.DdcCi | MonitorCapabilities.Brightness,
     };
 
     private static Monitor BrightnessAndContrastMonitor() => new()
     {
-        Id = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1",
+        Id = MonitorId,
         Handle = new IntPtr(1),
         Capabilities = MonitorCapabilities.DdcCi |
             MonitorCapabilities.Brightness |
@@ -253,14 +253,7 @@ public sealed class ContinuousVcpInitializerTests
 
     private static Dictionary<byte, KnownGoodVcpFeature> CachedBrightness() => new()
     {
-        [0x10] = new KnownGoodVcpFeature
-        {
-            Code = 0x10,
-            Current = 45,
-            Maximum = 100,
-            Source = VcpObservationSource.MaximumCompatibilityProbe,
-            LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
-        },
+        [0x10] = Cached(0x10, current: 45, maximum: 100),
     };
 
     private static VcpDiscoveryEvidence CachedBrightnessAndContrastEvidence()
@@ -279,37 +272,5 @@ public sealed class ContinuousVcpInitializerTests
                     IsLive: false,
                     PreferLiveRead: true),
             });
-    }
-
-    private sealed class RecordingReader(params VcpReadAttempt[] results) : IVcpFeatureReader
-    {
-        private readonly Queue<VcpReadAttempt> _results = new(results);
-
-        public int CallCount { get; private set; }
-
-        public List<byte> Codes { get; } = new();
-
-        public VcpReadAttempt Read(IntPtr handle, byte code)
-        {
-            CallCount++;
-            Codes.Add(code);
-            return _results.Dequeue();
-        }
-    }
-
-    private sealed class RecordingStore : IKnownGoodVcpStore
-    {
-        public KnownGoodVcpFeature? LastFeature { get; private set; }
-
-        public IReadOnlyDictionary<byte, KnownGoodVcpFeature> GetKnownGoodFeatures(string monitorId) =>
-            new Dictionary<byte, KnownGoodVcpFeature>();
-
-        public void UpsertKnownGoodFeature(string monitorId, KnownGoodVcpFeature feature) =>
-            LastFeature = feature.Clone();
-    }
-
-    private sealed class FixedClock : ISystemClock
-    {
-        public DateTime UtcNow { get; } = new(2026, 7, 21, 8, 0, 0, DateTimeKind.Utc);
     }
 }
