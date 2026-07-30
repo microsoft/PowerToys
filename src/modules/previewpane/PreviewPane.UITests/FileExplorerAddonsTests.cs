@@ -39,6 +39,9 @@ public class FileExplorerAddonsTests : UITestBase
     private const int PreviewPaneOpenTimeoutMS = 10_000;
     private const int PreviewTimeoutMS = 60_000;
     private const int VisualStableTimeoutMS = 15_000;
+    private const int ExtraLargeIconSize = 256;
+    private const int LargeIconSize = 96;
+    private const int MediumIconSize = 48;
     private const double PreviewRegionDifferenceThreshold = 0.75;
     private static readonly TimeSpan FailureRecordingTail = TimeSpan.FromSeconds(2);
 
@@ -318,7 +321,6 @@ public class FileExplorerAddonsTests : UITestBase
         var testFolder = CreateTemporaryFolder();
         var destinationPath = Path.Combine(testFolder, assetName);
         var explorer = OpenExplorer(testFolder);
-        SetExplorerView(explorer, Key.Num6);
         var providerName = providerProcessName["PowerToys.".Length..];
         var providerLogDirectory = LocalLowHandlerLogDirectory(providerName);
         DeleteDirectoryWithRetry(providerLogDirectory);
@@ -332,7 +334,7 @@ public class FileExplorerAddonsTests : UITestBase
         SetExplorerViewAndWait(
             explorer,
             assetName,
-            Key.Num1,
+            ExtraLargeIconSize,
             "extra-large icons",
             minimumItemHeight: 180,
             maximumItemHeight: int.MaxValue);
@@ -358,7 +360,7 @@ public class FileExplorerAddonsTests : UITestBase
         SetExplorerViewAndWait(
             explorer,
             assetName,
-            Key.Num2,
+            LargeIconSize,
             "large icons",
             minimumItemHeight: Math.Max(80, extraLarge.Height / 4),
             maximumItemHeight: extraLarge.Height * 7 / 10);
@@ -366,7 +368,7 @@ public class FileExplorerAddonsTests : UITestBase
         SetExplorerViewAndWait(
             explorer,
             assetName,
-            Key.Num3,
+            MediumIconSize,
             "medium icons",
             minimumItemHeight: large.Height / 2,
             maximumItemHeight: large.Height * 9 / 10);
@@ -605,16 +607,10 @@ public class FileExplorerAddonsTests : UITestBase
             $"Last focused path: '{selection.LastObservation?.FocusedPath ?? "<none>"}'.");
     }
 
-    private static void SetExplorerView(Session explorer, Key viewKey)
-    {
-        EnsureExplorerForeground(explorer);
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.Shift, viewKey);
-    }
-
     private void SetExplorerViewAndWait(
         Session explorer,
         string fileName,
-        Key viewKey,
+        int iconSize,
         string viewName,
         int minimumItemHeight,
         int maximumItemHeight)
@@ -622,7 +618,19 @@ public class FileExplorerAddonsTests : UITestBase
         Element? lastItem = null;
         for (var attempt = 1; attempt <= 3; attempt++)
         {
-            SetExplorerView(explorer, viewKey);
+            var view = ExplorerShell.SetViewModeAndIconSizeAndWait(
+                new IntPtr(explorer.WindowHandle),
+                ExplorerShell.ViewMode.Icons,
+                iconSize,
+                timeoutMS: 5_000);
+            if (!view.Succeeded)
+            {
+                TestContext.WriteLine(
+                    $"Explorer did not report {viewName} on attempt {attempt}; " +
+                    $"last Shell view: {view.LastObservation?.Mode}, icon size: {view.LastObservation?.IconSize}.");
+                continue;
+            }
+
             var applied = explorer.WaitFor(
                 () =>
                 {
@@ -636,7 +644,7 @@ public class FileExplorerAddonsTests : UITestBase
             if (applied)
             {
                 TestContext.WriteLine(
-                    $"Explorer applied {viewName} on attempt {attempt}; item bounds: " +
+                    $"Explorer applied {viewName} ({iconSize}px) on attempt {attempt}; item bounds: " +
                     $"{lastItem!.Width}x{lastItem.Height}.");
                 return;
             }
