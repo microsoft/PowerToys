@@ -82,6 +82,7 @@
     <ClInclude Include="D2DState.h" />
     <ClInclude Include="DxgiAPI.h" />
     <ClInclude Include="Measurement.h" />
+    <ClInclude Include="MeasurementLogic.h" />
     <ClInclude Include="MeasureToolOverlayUI.h" />
     <ClInclude Include="PerGlyphOpacityTextRender.h" />
     <ClInclude Include="resource.h" />
