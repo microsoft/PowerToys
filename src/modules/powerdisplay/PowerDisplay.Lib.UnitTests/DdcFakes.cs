@@ -50,8 +50,11 @@ internal static class DdcFakes
     /// pin both how many native reads happened and against which codes.
     /// </summary>
     /// <remarks>
-    /// Dequeuing past the end throws, which is deliberate: an extra read is a regression, and a
-    /// hard failure names it better than a default-valued result flowing on into the assertions.
+    /// Dequeuing past the end throws rather than yielding a default-valued result, so a fabricated
+    /// reply never reaches the assertions. The throw is not itself the failure message: it is
+    /// raised inside the reader, and <see cref="VcpFeatureProbeService"/>'s catch-all turns it into
+    /// an indeterminate observation. An extra read is named by the <see cref="CallCount"/> and
+    /// <see cref="Codes"/> assertions instead.
     /// </remarks>
     internal sealed class RecordingVcpReader(params VcpReadAttempt[] results) : IVcpFeatureReader
     {

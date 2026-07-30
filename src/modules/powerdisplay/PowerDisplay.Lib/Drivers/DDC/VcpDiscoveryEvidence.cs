@@ -48,7 +48,7 @@ internal sealed class VcpDiscoveryEvidence
     {
         foreach (var observation in live.Values)
         {
-            if (observation.Disposition == VcpProbeDisposition.PhysicalMonitorUnavailable)
+            if (observation.IsPhysicalMonitorUnavailable)
             {
                 // A cache entry can establish feature support when a live feature read is
                 // merely inconclusive, but it cannot make an invalid native handle usable.

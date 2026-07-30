@@ -11,7 +11,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// <summary>
     /// The production <see cref="IVcpFeatureReader"/>: one <c>GetVCPFeatureAndVCPFeatureReply</c>
     /// transaction, with no retry, pacing or logging. Those belong to the callers — see
-    /// <see cref="VcpFeatureProbeService"/> and <see cref="ContinuousVcpInitializer"/>.
+    /// <see cref="VcpFeatureProbeService"/>.
     /// </summary>
     internal sealed class NativeVcpFeatureReader : IVcpFeatureReader
     {
