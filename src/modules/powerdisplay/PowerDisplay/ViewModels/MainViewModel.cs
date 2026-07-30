@@ -98,7 +98,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
         MouseWheelIncrement = 5;
-        MouseWheelControlMode = PowerDisplay.Models.MouseWheelControlMode.PrimaryDisplay;
+        MouseWheelControlMode = PowerDisplay.Models.MouseWheelControlMode.Disabled;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;

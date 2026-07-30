@@ -420,8 +420,13 @@ _deviceWatcher.Updated += OnDeviceUpdated;  // Monitor properties changed
 
 Scrolling the mouse wheel over the notification-area icon adjusts brightness without opening the
 flyout. The scope comes from the **Tray icon mouse wheel** setting
-(`PowerDisplayProperties.MouseWheelControlMode`): `Disabled`, `PrimaryDisplay` (default) or
+(`PowerDisplayProperties.MouseWheelControlMode`): `Disabled` (default), `PrimaryDisplay` or
 `AllDisplays`. The per-notch step reuses the existing **Mouse wheel increment** setting.
+
+**Off by default, on purpose.** The gesture claims a wheel notch that would otherwise reach the
+window under the pointer, and acting on it installs a system-wide `WH_MOUSE_LL` hook. Neither is
+something an existing installation should acquire silently on upgrade, so the feature is opt-in:
+`Disabled` also means the hook is never installed at all.
 
 The setting is scoped to the tray icon. The flyout sliders accept wheel input regardless, as they
 always have.

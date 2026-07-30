@@ -13,15 +13,15 @@ namespace PowerDisplay.UnitTests;
 public class MouseWheelControlModeSettingsTests
 {
     [TestMethod]
-    public void Default_IsPrimaryDisplay()
+    public void Default_IsDisabled()
     {
         var properties = new PowerDisplayProperties();
 
-        Assert.AreEqual(MouseWheelControlMode.PrimaryDisplay, properties.MouseWheelControlMode);
+        Assert.AreEqual(MouseWheelControlMode.Disabled, properties.MouseWheelControlMode);
     }
 
     [TestMethod]
-    public void Deserialize_LegacyJsonMissingField_DefaultsToPrimaryDisplay()
+    public void Deserialize_LegacyJsonMissingField_DefaultsToDisabled()
     {
         const string legacyJson = """
         {
@@ -34,7 +34,7 @@ public class MouseWheelControlModeSettingsTests
         var properties = JsonSerializer.Deserialize<PowerDisplayProperties>(legacyJson);
 
         Assert.IsNotNull(properties);
-        Assert.AreEqual(MouseWheelControlMode.PrimaryDisplay, properties.MouseWheelControlMode);
+        Assert.AreEqual(MouseWheelControlMode.Disabled, properties.MouseWheelControlMode);
     }
 
     [TestMethod]

@@ -18,27 +18,27 @@ namespace ViewModelTests;
 public class PowerDisplay
 {
     [TestMethod]
-    public void MouseWheelMode_DefaultsToPrimaryDisplay()
+    public void MouseWheelMode_DefaultsToDisabled()
     {
         using var viewModel = CreateViewModel(out _);
 
         Assert.AreEqual(
-            (int)MouseWheelControlMode.PrimaryDisplay,
+            (int)MouseWheelControlMode.Disabled,
             viewModel.MouseWheelControlModeIndex);
     }
 
     [TestMethod]
-    public void MouseWheelMode_SetDisabled_PersistsAndRoundTrips()
+    public void MouseWheelMode_SetPrimaryDisplay_PersistsAndRoundTrips()
     {
         using var viewModel = CreateViewModel(out var settings);
 
-        viewModel.MouseWheelControlModeIndex = (int)MouseWheelControlMode.Disabled;
+        viewModel.MouseWheelControlModeIndex = (int)MouseWheelControlMode.PrimaryDisplay;
 
         Assert.AreEqual(
-            MouseWheelControlMode.Disabled,
+            MouseWheelControlMode.PrimaryDisplay,
             settings.Properties.MouseWheelControlMode);
         Assert.AreEqual(
-            (int)MouseWheelControlMode.Disabled,
+            (int)MouseWheelControlMode.PrimaryDisplay,
             viewModel.MouseWheelControlModeIndex);
     }
 
@@ -78,7 +78,7 @@ public class PowerDisplay
         viewModel.MouseWheelControlModeIndex = 99;
 
         Assert.AreEqual(
-            MouseWheelControlMode.PrimaryDisplay,
+            MouseWheelControlMode.Disabled,
             settings.Properties.MouseWheelControlMode);
         CollectionAssert.Contains(
             changedProperties,

@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ActivationShortcut = DefaultActivationShortcut;
             MonitorRefreshDelay = 5;
             MouseWheelIncrement = 5;
-            MouseWheelControlMode = MouseWheelControlMode.PrimaryDisplay;
+            MouseWheelControlMode = MouseWheelControlMode.Disabled;
             Monitors = new List<MonitorInfo>();
             RestoreSettingsOnStartup = false;
             ShowSystemTrayIcon = true;
