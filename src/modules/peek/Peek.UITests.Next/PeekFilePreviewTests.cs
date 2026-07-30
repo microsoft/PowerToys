@@ -114,8 +114,9 @@ public class PeekFilePreviewTests : UITestBase
     }
 
     [TestCleanup]
-    public void CleanupPeekTest()
+    public async Task CleanupPeekTest()
     {
+        await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
         CloseTestWindows();
     }
 

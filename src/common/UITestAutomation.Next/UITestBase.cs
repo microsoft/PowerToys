@@ -261,6 +261,32 @@ public class UITestBase : IDisposable
     }
 
     /// <summary>
+    /// Preserve and capture a failed test's terminal UI before derived cleanup closes its windows.
+    /// Call this at the beginning of a derived <c>[TestCleanup]</c>; passing tests return immediately.
+    /// </summary>
+    /// <param name="failureStateTail">
+    /// Optional time to keep the failed UI visible in the recording before finalizing artifacts.
+    /// </param>
+    protected async Task CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan failureStateTail = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(failureStateTail, TimeSpan.Zero);
+
+        var failed = TestContext.CurrentTestOutcome is
+            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
+        if (!failed)
+        {
+            return;
+        }
+
+        if (failureStateTail > TimeSpan.Zero)
+        {
+            await Task.Delay(failureStateTail);
+        }
+
+        await CaptureFailureArtifactsAsync();
+    }
+
+    /// <summary>
     /// Bring the desktop to a known state before launching: minimize every window, dismiss any
     /// lingering popup with <c>Esc</c>, kill the stale PowerToys processes in
     /// <see cref="StaleProcessNames"/>, and suppress the first-run Welcome/What's-new windows.

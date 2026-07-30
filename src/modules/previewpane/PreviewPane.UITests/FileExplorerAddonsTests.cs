@@ -136,12 +136,7 @@ public class FileExplorerAddonsTests : UITestBase
     [TestCleanup]
     public async Task CleanupTest()
     {
-        if (TestContext.CurrentTestOutcome is
-            UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown)
-        {
-            await Task.Delay(FailureRecordingTail);
-            await CaptureFailureArtifactsAsync();
-        }
+        await CaptureFailureArtifactsBeforeCleanupAsync(FailureRecordingTail);
 
         CloseExplorerFileWindows();
         explorerWindowHandle = 0;
