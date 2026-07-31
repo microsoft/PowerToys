@@ -82,4 +82,16 @@ public sealed class DdcErrorClassifierTests
     [DataRow(0)]
     public void IsPhysicalMonitorUnavailable_RejectsFeatureLevelFailures(int errorCode) =>
         Assert.IsFalse(DdcErrorClassifier.IsPhysicalMonitorUnavailable(errorCode));
+
+    [TestMethod]
+    public void Format_RendersTheUnsignedHexTheSdkDocuments()
+    {
+        // Marshal.GetLastWin32Error hands 0xC026258C back as a negative int, which greps against
+        // nothing. The log has to carry the spelling winerror.h uses.
+        Assert.AreEqual(
+            "0xC026258C",
+            DdcErrorClassifier.Format(DdcErrorClassifier.ErrorGraphicsInvalidPhysicalMonitorHandle));
+        Assert.AreEqual("0x000005B4", DdcErrorClassifier.Format(DdcErrorClassifier.ErrorTimeout));
+        Assert.AreEqual("none", DdcErrorClassifier.Format(null));
+    }
 }

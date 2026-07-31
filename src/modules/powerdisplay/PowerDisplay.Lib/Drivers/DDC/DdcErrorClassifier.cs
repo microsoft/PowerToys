@@ -10,8 +10,12 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// names mirror <c>winerror.h</c> exactly.
     /// </summary>
     /// <remarks>
-    /// <see cref="VcpFeatureProbeService"/> is the only consumer today. The discovery-time value
-    /// reads in <c>DdcCiController.TryGetVcpFeature</c> are still single-shot and unclassified.
+    /// Consumed by <see cref="VcpFeatureProbeService"/>, which retries only what
+    /// <see cref="IsTransient"/> admits, and by <see cref="ContinuousVcpInitializer"/>, which uses
+    /// <see cref="IsPhysicalMonitorUnavailable"/> to tell a dead handle from one feature the device
+    /// refused. The discrete-VCP reads in <c>DdcCiController.Initialize*</c> and the runtime value
+    /// reads behind <c>DdcCiController.GetVcpFeatureAsync</c> are still single-shot and
+    /// unclassified.
     /// </remarks>
     internal static class DdcErrorClassifier
     {
@@ -83,5 +87,13 @@ namespace PowerDisplay.Common.Drivers.DDC
             ErrorGraphicsDdcCiInvalidMessageChecksum or
             ErrorGraphicsDdcCiCurrentCurrentValueGreaterThanMaximumValue or
             ErrorTimeout;
+
+        /// <summary>
+        /// Renders an error for a log line as the unsigned hex the SDK documents it under, so a
+        /// reader can grep it against winerror.h. <c>Marshal.GetLastWin32Error</c> hands these back
+        /// as a negative int, which matches nothing.
+        /// </summary>
+        public static string Format(int? errorCode) =>
+            errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
     }
 }
