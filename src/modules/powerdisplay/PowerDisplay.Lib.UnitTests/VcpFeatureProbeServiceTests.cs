@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
+using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
 
@@ -303,32 +304,5 @@ public sealed class VcpFeatureProbeServiceTests
         public VcpReadAttempt Read(IntPtr handle, byte code) => code == throwingCode
             ? throw new InvalidOperationException("simulated native failure")
             : otherwise;
-    }
-
-    /// <summary>
-    /// Serves a scripted sequence of read results and records what it was asked for, so a test can
-    /// pin both how many native reads happened and against which codes.
-    /// </summary>
-    /// <remarks>
-    /// Dequeuing past the end throws rather than yielding a default-valued result, so a fabricated
-    /// reply never reaches the assertions. The throw is not itself the failure message: it is
-    /// raised inside the reader, and <see cref="VcpFeatureProbeService"/>'s catch-all turns it into
-    /// an indeterminate observation. An extra read is named by the <see cref="CallCount"/> and
-    /// <see cref="Codes"/> assertions instead.
-    /// </remarks>
-    private sealed class RecordingVcpReader(params VcpReadAttempt[] results) : IVcpFeatureReader
-    {
-        private readonly Queue<VcpReadAttempt> _results = new(results);
-
-        public int CallCount { get; private set; }
-
-        public List<byte> Codes { get; } = new();
-
-        public VcpReadAttempt Read(IntPtr handle, byte code)
-        {
-            CallCount++;
-            Codes.Add(code);
-            return _results.Dequeue();
-        }
     }
 }
