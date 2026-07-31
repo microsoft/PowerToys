@@ -103,6 +103,12 @@ internal sealed class ContinuousVcpInitializer
         }
 
         ApplyValue(monitor, code, value, markAsRead: true);
+
+        // Recorded regardless of Maximum compatibility mode, which only gates the *read* side in
+        // DdcCiController. A monitor that reads cleanly today can start failing after a cable or
+        // dock change, and the cache is only worth anything if it was already warm by then —
+        // populating it lazily would leave the first pass after the switch with nothing to fall
+        // back on, which is exactly the pass that needs it.
         _store.UpsertKnownGoodFeature(
             monitor.Id,
             KnownGoodVcpFeature.From(code, value, _clock.UtcNow));
