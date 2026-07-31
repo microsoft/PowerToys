@@ -9,169 +9,170 @@ using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 
-namespace PowerDisplay.Common.Drivers.DDC;
-
-internal sealed class ContinuousVcpInitializer
+namespace PowerDisplay.Common.Drivers.DDC
 {
-    private readonly IVcpFeatureReader _reader;
-    private readonly IKnownGoodVcpStore _store;
-    private readonly ISystemClock _clock;
-
-    public ContinuousVcpInitializer(
-        IVcpFeatureReader reader,
-        IKnownGoodVcpStore store,
-        ISystemClock clock)
+    internal sealed class ContinuousVcpInitializer
     {
-        _reader = reader;
-        _store = store;
-        _clock = clock;
-    }
+        private readonly IVcpFeatureReader _reader;
+        private readonly IKnownGoodVcpStore _store;
+        private readonly ISystemClock _clock;
 
-    /// <summary>
-    /// Applies the continuous VCP features to <paramref name="monitor"/>, reading from
-    /// <see cref="Monitor.Handle"/> where the evidence does not already carry a value that can be
-    /// trusted without one.
-    /// </summary>
-    /// <returns>
-    /// False when a read failed with a handle-class error, which invalidates
-    /// <see cref="Monitor.Handle"/> itself rather than the one feature — the caller must then
-    /// discard the monitor instead of publishing it.
-    /// </returns>
-    public bool Initialize(
-        Monitor monitor,
-        VcpDiscoveryEvidence evidence)
-    {
-        foreach (var code in ContinuousVcpCodes)
+        public ContinuousVcpInitializer(
+            IVcpFeatureReader reader,
+            IKnownGoodVcpStore store,
+            ISystemClock clock)
         {
-            if (!InitializeFeature(monitor, evidence, code))
-            {
-                return false;
-            }
+            _reader = reader;
+            _store = store;
+            _clock = clock;
         }
 
-        return true;
-    }
-
-    private bool InitializeFeature(
-        Monitor monitor,
-        VcpDiscoveryEvidence evidence,
-        byte code)
-    {
-        if (!IsSupported(monitor, code))
+        /// <summary>
+        /// Applies the continuous VCP features to <paramref name="monitor"/>, reading from
+        /// <see cref="Monitor.Handle"/> where the evidence does not already carry a value that can be
+        /// trusted without one.
+        /// </summary>
+        /// <returns>
+        /// False when a read failed with a handle-class error, which invalidates
+        /// <see cref="Monitor.Handle"/> itself rather than the one feature — the caller must then
+        /// discard the monitor instead of publishing it.
+        /// </returns>
+        public bool Initialize(
+            Monitor monitor,
+            VcpDiscoveryEvidence evidence)
         {
+            foreach (var code in ContinuousVcpCodes)
+            {
+                if (!InitializeFeature(monitor, evidence, code))
+                {
+                    return false;
+                }
+            }
+
             return true;
         }
 
-        VcpInitialValue? cachedFallback = null;
-        if (evidence.InitialValues.TryGetValue(code, out var initial))
+        private bool InitializeFeature(
+            Monitor monitor,
+            VcpDiscoveryEvidence evidence,
+            byte code)
         {
-            if (!initial.PreferLiveRead)
+            if (!IsSupported(monitor, code))
             {
-                ApplyValue(monitor, code, initial.Value, markAsRead: initial.IsLive);
                 return true;
             }
 
-            cachedFallback = initial;
-        }
-
-        var read = _reader.Read(monitor.Handle, code);
-        if (!read.IsSuccess)
-        {
-            Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
-            if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
+            VcpInitialValue? cachedFallback = null;
+            if (evidence.InitialValues.TryGetValue(code, out var initial))
             {
-                // Dropping the monitor is deliberate, and the cached fallback is deliberately not
-                // applied: Monitor.Handle is captured once per discovery pass and never refreshed,
-                // so a monitor kept here would answer every later read and write against a handle
-                // already known to be dead. A rediscovery is what repairs it, and DisplayChangeWatcher
-                // schedules one for the topology changes that invalidate a handle.
-                return false;
+                if (!initial.PreferLiveRead)
+                {
+                    ApplyValue(monitor, code, initial.Value, markAsRead: initial.IsLive);
+                    return true;
+                }
+
+                cachedFallback = initial;
             }
 
-            ApplyCachedFallback(monitor, code, cachedFallback);
+            var read = _reader.Read(monitor.Handle, code);
+            if (!read.IsSuccess)
+            {
+                Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
+                if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
+                {
+                    // Dropping the monitor is deliberate, and the cached fallback is deliberately not
+                    // applied: Monitor.Handle is captured once per discovery pass and never refreshed,
+                    // so a monitor kept here would answer every later read and write against a handle
+                    // already known to be dead. A rediscovery is what repairs it, and DisplayChangeWatcher
+                    // schedules one for the topology changes that invalidate a handle.
+                    return false;
+                }
+
+                ApplyCachedFallback(monitor, code, cachedFallback);
+                return true;
+            }
+
+            var value = new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
+            if (!value.IsValid)
+            {
+                Logger.LogWarning(
+                    $"DDC: [{monitor.Id}] Ignoring invalid {VcpNames.GetCodeName(code).ToLowerInvariant()} " +
+                    $"range current={read.Current}, max={read.Maximum}");
+                ApplyCachedFallback(monitor, code, cachedFallback);
+                return true;
+            }
+
+            ApplyValue(monitor, code, value, markAsRead: true);
+
+            // Recorded regardless of Maximum compatibility mode, which only gates the *read* side in
+            // DdcCiController. A monitor that reads cleanly today can start failing after a cable or
+            // dock change, and the cache is only worth anything if it was already warm by then —
+            // populating it lazily would leave the first pass after the switch with nothing to fall
+            // back on, which is exactly the pass that needs it.
+            _store.UpsertKnownGoodFeature(
+                monitor.Id,
+                KnownGoodVcpFeature.From(code, value, _clock.UtcNow));
+
             return true;
         }
 
-        var value = new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
-        if (!value.IsValid)
+        private static void ApplyCachedFallback(
+            Monitor monitor,
+            byte code,
+            VcpInitialValue? cachedFallback)
         {
-            Logger.LogWarning(
-                $"DDC: [{monitor.Id}] Ignoring invalid {VcpNames.GetCodeName(code).ToLowerInvariant()} " +
-                $"range current={read.Current}, max={read.Maximum}");
-            ApplyCachedFallback(monitor, code, cachedFallback);
-            return true;
+            if (cachedFallback is { } fallback)
+            {
+                ApplyValue(monitor, code, fallback.Value, markAsRead: false);
+            }
         }
 
-        ApplyValue(monitor, code, value, markAsRead: true);
-
-        // Recorded regardless of Maximum compatibility mode, which only gates the *read* side in
-        // DdcCiController. A monitor that reads cleanly today can start failing after a cable or
-        // dock change, and the cache is only worth anything if it was already warm by then —
-        // populating it lazily would leave the first pass after the switch with nothing to fall
-        // back on, which is exactly the pass that needs it.
-        _store.UpsertKnownGoodFeature(
-            monitor.Id,
-            KnownGoodVcpFeature.From(code, value, _clock.UtcNow));
-
-        return true;
-    }
-
-    private static void ApplyCachedFallback(
-        Monitor monitor,
-        byte code,
-        VcpInitialValue? cachedFallback)
-    {
-        if (cachedFallback is { } fallback)
+        private static bool IsSupported(Monitor monitor, byte code) => code switch
         {
-            ApplyValue(monitor, code, fallback.Value, markAsRead: false);
-        }
-    }
+            VcpCodeBrightness => monitor.SupportsBrightness,
+            VcpCodeContrast => monitor.SupportsContrast,
+            VcpCodeVolume => monitor.SupportsVolume,
+            _ => false,
+        };
 
-    private static bool IsSupported(Monitor monitor, byte code) => code switch
-    {
-        VcpCodeBrightness => monitor.SupportsBrightness,
-        VcpCodeContrast => monitor.SupportsContrast,
-        VcpCodeVolume => monitor.SupportsVolume,
-        _ => false,
-    };
-
-    private static void ApplyValue(
-        Monitor monitor,
-        byte code,
-        VcpFeatureValue value,
-        bool markAsRead)
-    {
-        switch (code)
+        private static void ApplyValue(
+            Monitor monitor,
+            byte code,
+            VcpFeatureValue value,
+            bool markAsRead)
         {
-            case VcpCodeBrightness:
-                monitor.BrightnessVcpMax = value.Maximum;
-                monitor.CurrentBrightness = value.ToPercentage();
-                if (markAsRead)
-                {
-                    monitor.ReadValues |= MonitorReadFlags.Brightness;
-                }
+            switch (code)
+            {
+                case VcpCodeBrightness:
+                    monitor.BrightnessVcpMax = value.Maximum;
+                    monitor.CurrentBrightness = value.ToPercentage();
+                    if (markAsRead)
+                    {
+                        monitor.ReadValues |= MonitorReadFlags.Brightness;
+                    }
 
-                break;
+                    break;
 
-            case VcpCodeContrast:
-                monitor.ContrastVcpMax = value.Maximum;
-                monitor.CurrentContrast = value.ToPercentage();
-                if (markAsRead)
-                {
-                    monitor.ReadValues |= MonitorReadFlags.Contrast;
-                }
+                case VcpCodeContrast:
+                    monitor.ContrastVcpMax = value.Maximum;
+                    monitor.CurrentContrast = value.ToPercentage();
+                    if (markAsRead)
+                    {
+                        monitor.ReadValues |= MonitorReadFlags.Contrast;
+                    }
 
-                break;
+                    break;
 
-            case VcpCodeVolume:
-                monitor.VolumeVcpMax = value.Maximum;
-                monitor.CurrentVolume = value.ToPercentage();
-                if (markAsRead)
-                {
-                    monitor.ReadValues |= MonitorReadFlags.Volume;
-                }
+                case VcpCodeVolume:
+                    monitor.VolumeVcpMax = value.Maximum;
+                    monitor.CurrentVolume = value.ToPercentage();
+                    if (markAsRead)
+                    {
+                        monitor.ReadValues |= MonitorReadFlags.Volume;
+                    }
 
-                break;
+                    break;
+            }
         }
     }
 }

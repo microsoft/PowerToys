@@ -409,6 +409,9 @@
                     <tkcontrols:SettingsCard Name="ZoomItSnipSaveShortcut" x:Uid="ZoomIt_SnipSave_Shortcut">
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipSaveToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="ZoomItSnipCopyToClipboard" x:Uid="ZoomIt_SnipCopyToClipboard">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SnipCopyToClipboard, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
                         x:Uid="ZoomIt_SnipOcr_Shortcut"
