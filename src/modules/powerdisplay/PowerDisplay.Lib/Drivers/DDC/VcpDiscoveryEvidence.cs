@@ -5,10 +5,19 @@
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
-using static PowerDisplay.Common.Drivers.NativeConstants;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
+    /// <summary>
+    /// What discovery learned about one physical monitor before it is turned into a
+    /// <see cref="Monitor"/>: the capabilities it advertises and the values already read off it.
+    /// </summary>
+    /// <remarks>
+    /// This is the seam between the async fetch stage, which owns the I2C traffic, and the
+    /// synchronous build stage, which owns the <see cref="Monitor"/> object. Carrying the probe's
+    /// values across it is the point: without them the build stage re-reads every code the probe
+    /// just answered.
+    /// </remarks>
     internal sealed class VcpDiscoveryEvidence
     {
         public VcpDiscoveryEvidence(
@@ -29,6 +38,11 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         public VcpCapabilities? Capabilities { get; }
 
+        /// <summary>
+        /// Gets the value discovery should start each feature at, keyed by VCP code. A code that is
+        /// absent still owes the hardware a read; a code that is present carries whether this pass
+        /// read it live or replayed it from the known-good cache.
+        /// </summary>
         public IReadOnlyDictionary<byte, VcpInitialValue> InitialValues { get; }
 
         public bool IsPhysicalMonitorUnavailable { get; }
@@ -40,6 +54,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         public IReadOnlyList<byte> CacheSupplementedCodes { get; }
 
+        /// <summary>
+        /// Folds this pass's probe observations and the monitor's known-good cache into the parsed
+        /// capabilities.
+        /// </summary>
+        /// <remarks>
+        /// The probe only runs when the capabilities string is unusable, so on the parsed path
+        /// <paramref name="live"/> is empty and <paramref name="cached"/> is the only source that can
+        /// still add anything.
+        /// </remarks>
         public static VcpDiscoveryEvidence Reconcile(
             string capabilitiesRaw,
             VcpCapabilities? parsedCapabilities,
@@ -60,14 +83,25 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
-            // Evidence is merged into the parsed instance rather than into a copy: the caller hands
-            // ownership of parsedCapabilities to Reconcile, and the merged object is published as
-            // Monitor.VcpCapabilitiesInfo.
             var capabilities = parsedCapabilities;
             var values = new Dictionary<byte, VcpInitialValue>();
             var cacheSupplementedCodes = new List<byte>();
 
-            foreach (var code in ContinuousVcpCodes)
+            // Driven by what the probe reported and what the cache has already proven, rather than by
+            // NativeConstants.ContinuousVcpCodes, which VcpFeatureProbeService only takes as the
+            // default for its constructor-injected sweep list. Widening that sweep still needs a
+            // matching edit in ContinuousVcpInitializer for the carried value to be used — this loop
+            // only keeps the code from being dropped on the way there.
+            var codes = new List<byte>(live.Keys);
+            foreach (var cachedCode in cached.Keys)
+            {
+                if (!live.ContainsKey(cachedCode))
+                {
+                    codes.Add(cachedCode);
+                }
+            }
+
+            foreach (var code in codes)
             {
                 var probed = live.TryGetValue(code, out var observation);
 
@@ -83,8 +117,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 if (probed && observation.Replied)
                 {
                     // The device answered this VCP code but reported a range that cannot scale a
-                    // percentage. Support is proven even though the value is not, so keep the feature
-                    // reachable and let the initializer read it again or fall back to the cache.
+                    // percentage. A reply is what proves the opcode is implemented — an unimplemented
+                    // code fails with DDCCI_VCP_NOT_SUPPORTED and never sets Replied — so support is
+                    // proven even though the value is not. Keep the feature reachable and let the
+                    // initializer read it again or fall back to the cache.
                     capabilities = MarkSupported(capabilities, code);
                 }
 
@@ -141,18 +177,14 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Records that <paramref name="code"/> is supported, creating the container when discovery
-        /// produced no parsed capabilities. Evidence may only add support: an entry parsed from the
-        /// capabilities string carries discrete-value and custom-name metadata that a synthesized
-        /// <see cref="VcpCodeInfo"/> does not, so an existing entry is never overwritten.
+        /// produced no parsed capabilities. Adds only: an entry parsed from the capabilities string
+        /// carries discrete-value and custom-name metadata a synthesized <see cref="VcpCodeInfo"/>
+        /// does not.
         /// </summary>
         private static VcpCapabilities MarkSupported(VcpCapabilities? capabilities, byte code)
         {
             capabilities ??= new VcpCapabilities();
-            if (!capabilities.SupportsVcpCode(code))
-            {
-                capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
-            }
-
+            capabilities.SupportedVcpCodes.TryAdd(code, new VcpCodeInfo(code, VcpNames.GetCodeName(code)));
             return capabilities;
         }
     }

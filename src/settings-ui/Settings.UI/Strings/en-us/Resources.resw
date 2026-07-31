@@ -3022,6 +3022,54 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
     <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
+  <data name="AltWindowCycle.ModuleDescription" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle.ModuleTitle" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AltWindowCycle_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the next window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Header" xml:space="preserve">
+    <value>Next window</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the previous window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Header" xml:space="preserve">
+    <value>Previous window</value>
+  </data>
+  <data name="Shell_AltWindowCycle.Content" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Title" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Description" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Next.Text" xml:space="preserve">
+    <value>to cycle to the next window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Previous.Text" xml:space="preserve">
+    <value>to cycle to the previous window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the next and previous shortcuts to move through only the windows that belong to your currently focused app.</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
   </data>
@@ -5593,11 +5641,30 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Header" xml:space="preserve">
+    <value>Tray icon mouse wheel</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Description" xml:space="preserve">
+    <value>Choose which displays are adjusted when scrolling over the Power Display tray icon. While linked brightness is on, adjusting any display in the linked group moves the whole group.</value>
+    <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlModeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tray icon mouse wheel mode</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_PrimaryDisplay.Content" xml:space="preserve">
+    <value>Primary display</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_AllDisplays.Content" xml:space="preserve">
+    <value>All displays</value>
+  </data>
   <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
     <value>Mouse wheel increment</value>
   </data>
   <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
-    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
+    <value>How much brightness changes from tray scrolling, and how much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
   </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>

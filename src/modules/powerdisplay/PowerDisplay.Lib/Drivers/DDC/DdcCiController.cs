@@ -33,13 +33,12 @@ namespace PowerDisplay.Common.Drivers.DDC
     public partial class DdcCiController : IMonitorController, IDisposable
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
+        private readonly MonitorDiscoveryHelper _discoveryHelper;
         private readonly IKnownGoodVcpStore _knownGoodStore;
         private readonly ISystemClock _clock;
         private readonly IVcpFeatureReader _vcpReader;
         private readonly VcpFeatureProbeService _probeService;
         private readonly ContinuousVcpInitializer _continuousInitializer;
-        private readonly DiscreteVcpInitializer _discreteInitializer;
-        private readonly MonitorDiscoveryHelper _discoveryHelper;
         private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
         private bool _disposed;
@@ -82,7 +81,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             _delayAsync = delayAsync ?? Task.Delay;
             _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore, _clock);
-            _discreteInitializer = new DiscreteVcpInitializer(_vcpReader);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
@@ -350,10 +348,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                 monitor.VcpCapabilitiesInfo = evidence.Capabilities;
                 UpdateMonitorCapabilitiesFromVcp(monitor, evidence.Capabilities);
 
-                // Initialize current values for every VCP feature the device reports
-                // support for, ordered continuous-range first (percent-scaled),
-                // then discrete-enum VCPs. Each guard is independent — a controller
-                // can support any subset.
+                // Continuous (percent-scaled) VCPs first, then the discrete-enum ones. Only the
+                // continuous stage can discard the monitor, and that is a policy choice rather
+                // than a property of the stage: losing a whole display because 0xD6 answered
+                // badly is worse than showing it without a power control. Note the check is not
+                // on every path — a caps string that parses but advertises none of 0x10/0x12/0x62
+                // leaves the continuous stage nothing to read and suppresses the probe, so such a
+                // monitor is published with a handle no VCP read has exercised.
                 if (!_continuousInitializer.Initialize(monitor, evidence))
                 {
                     Logger.LogWarning(
@@ -361,9 +362,20 @@ namespace PowerDisplay.Common.Drivers.DDC
                     return null;
                 }
 
-                // Discrete VCPs are read last and never discard the monitor: handle liveness has
-                // already been decided by the probe and the continuous stage above.
-                _discreteInitializer.Initialize(monitor);
+                if (monitor.SupportsColorTemperature)
+                {
+                    InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                }
+
+                if (monitor.SupportsInputSource)
+                {
+                    InitializeInputSource(monitor, physical.HPhysicalMonitor);
+                }
+
+                if (monitor.SupportsPowerState)
+                {
+                    InitializePowerState(monitor, physical.HPhysicalMonitor);
+                }
 
                 return monitor;
             }
@@ -534,6 +546,64 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return evidence;
+        }
+
+        /// <summary>
+        /// Initialize input source value for a monitor using VCP 0x60.
+        /// </summary>
+        private static void InitializeInputSource(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
+            {
+                monitor.CurrentInputSource = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.InputSource;
+            }
+        }
+
+        /// <summary>
+        /// Initialize color temperature value for a monitor using VCP 0x14.
+        /// </summary>
+        private static void InitializeColorTemperature(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
+            {
+                monitor.CurrentColorTemperature = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.ColorTemperature;
+            }
+        }
+
+        /// <summary>
+        /// Initialize power state value for a monitor using VCP 0xD6.
+        /// </summary>
+        private static void InitializePowerState(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
+            {
+                monitor.CurrentPowerState = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.PowerState;
+            }
+        }
+
+        /// <summary>
+        /// Wrapper for GetVCPFeatureAndVCPFeatureReply that logs errors on failure.
+        /// </summary>
+        /// <param name="handle">Physical monitor handle</param>
+        /// <param name="vcpCode">VCP code to read</param>
+        /// <param name="monitorId">Monitor ID for logging (optional)</param>
+        /// <param name="currentValue">Output: current value</param>
+        /// <param name="maxValue">Output: maximum value</param>
+        /// <returns>True if successful, false otherwise</returns>
+        private static bool TryGetVcpFeature(IntPtr handle, byte vcpCode, string? monitorId, out uint currentValue, out uint maxValue)
+        {
+            if (GetVCPFeatureAndVCPFeatureReply(handle, vcpCode, IntPtr.Zero, out currentValue, out maxValue))
+            {
+                return true;
+            }
+
+            var lastError = Marshal.GetLastWin32Error();
+            var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
+            Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
+            return false;
         }
 
         /// <summary>
@@ -740,9 +810,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                         continue;
                     }
 
-                    // Heavy sync block (~6 × ~100 ms VCP reads on this one I2C bus).
-                    // Dispatch to the threadpool; await before the next physical because
-                    // they share the same hMonitor's I2C arbitration.
+                    // Heavy sync block (VCP reads on this one I2C bus, minus whatever the probe
+                    // already answered). Dispatch to the threadpool; await before the next physical
+                    // because they share the same hMonitor's I2C arbitration.
                     var monitor = await Task.Run(
                         () => BuildMonitorFromPhysical(physical, info, monitorId, evidence),
                         cancellationToken);

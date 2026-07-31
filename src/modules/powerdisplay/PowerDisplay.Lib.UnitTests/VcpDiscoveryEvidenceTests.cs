@@ -174,6 +174,43 @@ public sealed class VcpDiscoveryEvidenceTests
     }
 
     [TestMethod]
+    public void Reconcile_ProbedCodeOutsideTheDefaultSweepIsStillHonoured()
+    {
+        // Reconcile is driven by what the probe reported, not by NativeConstants.ContinuousVcpCodes,
+        // so widening VcpFeatureProbeService's constructor-injected sweep list does not silently drop
+        // a code that answered. Honouring it here is necessary but not sufficient: the carried value
+        // is only consumed for codes ContinuousVcpInitializer walks, so a widened sweep still needs a
+        // matching edit there.
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: Observations((0x60, VcpProbeObservation.Success(0x60, new VcpFeatureValue(0x11, 0, 0x12)))),
+            cached: new Dictionary<byte, KnownGoodVcpFeature>());
+
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x60));
+        Assert.AreEqual(0x11, result.InitialValues[0x60].Value.Current);
+    }
+
+    [TestMethod]
+    public void Reconcile_ParsedCapabilitiesSurviveWhenNoProbeRan()
+    {
+        // The probe only runs when the caps string is unusable, so the parsed path must be a
+        // pass-through once the cache is empty too: no codes added, no values invented.
+        var parsed = new VcpCapabilities();
+        parsed.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
+
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: "caps",
+            parsedCapabilities: parsed,
+            live: new Dictionary<byte, VcpProbeObservation>(),
+            cached: new Dictionary<byte, KnownGoodVcpFeature>());
+
+        Assert.AreSame(parsed, result.Capabilities);
+        Assert.AreEqual(0, result.InitialValues.Count);
+        Assert.AreEqual("caps", result.CapabilitiesRaw);
+    }
+
+    [TestMethod]
     public void Reconcile_InvalidCachedRangeIsIgnored()
     {
         var cached = Cached(0x10, current: 25);
@@ -218,6 +255,18 @@ public sealed class VcpDiscoveryEvidenceTests
         // 0x10 is advertised by the caps string and cached, and no probe touched it, so it is not
         // cache-supplemented but still owes the hardware one read before the cached value is trusted.
         Assert.IsTrue(result.InitialValues[0x10].PreferLiveRead);
+    }
+
+    private static Dictionary<byte, VcpProbeObservation> Observations(
+        params (byte Code, VcpProbeObservation Observation)[] entries)
+    {
+        var observations = new Dictionary<byte, VcpProbeObservation>();
+        foreach (var (code, observation) in entries)
+        {
+            observations[code] = observation;
+        }
+
+        return observations;
     }
 
     private static KnownGoodVcpFeature Cached(byte code, int current) => new()

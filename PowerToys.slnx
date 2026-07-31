@@ -158,6 +158,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/AltWindowCycle/">
+    <Project Path="src/modules/AltWindowCycle/AltWindowCycle.vcxproj" Id="4d1d41c7-e22b-4a8b-8805-660a100e1d79" />
+    <Project Path="src/modules/AltWindowCycle/UnitTests/AltWindowCycleUnitTests.vcxproj" Id="9ebe5c3a-4a37-477e-9176-07c7cf0eba6e" />
+  </Folder>
   <Folder Name="/modules/AlwaysOnTop/">
     <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
     <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />

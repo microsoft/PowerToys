@@ -77,14 +77,17 @@ namespace PowerDisplay.Common.Drivers.DDC
             var read = _reader.Read(monitor.Handle, code);
             if (!read.IsSuccess)
             {
-                Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
+                Logger.LogError(
+                    $"DDC: [{monitor.Id}] Failed to read VCP 0x{code:X2}, " +
+                    $"error={DdcErrorClassifier.Format(read.ErrorCode)}");
                 if (DdcErrorClassifier.IsPhysicalMonitorUnavailable(read.ErrorCode))
                 {
                     // Dropping the monitor is deliberate, and the cached fallback is deliberately not
                     // applied: Monitor.Handle is captured once per discovery pass and never refreshed,
-                    // so a monitor kept here would answer every later read and write against a handle
-                    // already known to be dead. A rediscovery is what repairs it, and DisplayChangeWatcher
-                    // schedules one for the topology changes that invalidate a handle.
+                    // so a monitor kept here would send every later read and write to a handle already
+                    // known to be dead. A rediscovery is what repairs it — DisplayChangeWatcher
+                    // schedules one for the topology changes that invalidate a handle, and the
+                    // flyout's Refresh button forces one on demand.
                     return false;
                 }
 
@@ -127,6 +130,15 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
         }
 
+        /// <summary>
+        /// Whether <paramref name="monitor"/> advertises <paramref name="code"/>.
+        /// </summary>
+        /// <remarks>
+        /// This switch and <see cref="ApplyValue"/>'s must between them cover every entry in
+        /// <see cref="NativeConstants.ContinuousVcpCodes"/>: a code added to that array without an
+        /// arm here is skipped, and one without an arm there is read and then discarded. Both are
+        /// silent, so the array and the two switches are edited together.
+        /// </remarks>
         private static bool IsSupported(Monitor monitor, byte code) => code switch
         {
             VcpCodeBrightness => monitor.SupportsBrightness,

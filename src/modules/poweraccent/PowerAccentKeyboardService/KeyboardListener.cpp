@@ -51,6 +51,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         }
     }
 
+    void KeyboardListener::ForceReset()
+    {
+        letterPressed = LetterKey::None;
+        m_toolbarVisible = false;
+        m_triggeredWithSpace = false;
+        m_triggeredWithLeftArrow = false;
+        m_triggeredWithRightArrow = false;
+        m_leftShiftPressed = false;
+        m_rightShiftPressed = false;
+    }
+
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
         m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
