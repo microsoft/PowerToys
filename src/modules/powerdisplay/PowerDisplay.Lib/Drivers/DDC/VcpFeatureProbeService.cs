@@ -115,7 +115,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Logger.LogDebug(
                         $"DDC: [max-compat] VCP probe attempt " +
                         $"(handle=0x{handle:X}, code=0x{code:X2}, attempt={attempt}/{MaxAttempts}, " +
-                        $"status=failed, error={FormatError(lastError)})");
+                        $"status=failed, error={DdcErrorClassifier.Format(lastError)})");
                     if (!DdcErrorClassifier.IsTransient(result.ErrorCode))
                     {
                         break;
@@ -141,7 +141,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             var message =
                 $"DDC: [max-compat] VCP probe outcome " +
                 $"(handle=0x{handle:X}, code=0x{observation.Code:X2}, attempts={observation.Attempts}, " +
-                $"status={status}, replied={observation.Replied}, lastError={FormatError(observation.LastError)})";
+                $"status={status}, replied={observation.Replied}, lastError={DdcErrorClassifier.Format(observation.LastError)})";
 
             if (observation.IsSuccess)
             {
@@ -154,9 +154,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             return observation;
         }
-
-        private static string FormatError(int? errorCode) =>
-            errorCode.HasValue ? $"0x{unchecked((uint)errorCode.Value):X8}" : "none";
     }
 
     internal readonly record struct VcpReadAttempt(bool IsSuccess, uint Current, uint Maximum, int ErrorCode)

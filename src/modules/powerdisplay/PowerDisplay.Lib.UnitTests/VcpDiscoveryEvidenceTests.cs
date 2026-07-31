@@ -82,6 +82,21 @@ public sealed class VcpDiscoveryEvidenceTests
     }
 
     [TestMethod]
+    public void Reconcile_ProbedCodeOutsideTheDefaultSweepIsStillHonoured()
+    {
+        // Reconcile is driven by what the probe reported, not by NativeConstants.ContinuousVcpCodes:
+        // VcpFeatureProbeService takes its sweep list as a constructor argument, so widening it must
+        // not need a matching edit here.
+        var result = VcpDiscoveryEvidence.Reconcile(
+            capabilitiesRaw: string.Empty,
+            parsedCapabilities: null,
+            live: Observations((0x60, VcpProbeObservation.Success(0x60, new VcpFeatureValue(0x11, 0, 0x12)))));
+
+        Assert.IsTrue(result.Capabilities!.SupportsVcpCode(0x60));
+        Assert.AreEqual(0x11, result.InitialValues[0x60].Current);
+    }
+
+    [TestMethod]
     public void Reconcile_ParsedCapabilitiesSurviveWhenNoProbeRan()
     {
         // The probe only runs when the caps string is unusable, so the parsed path must be a

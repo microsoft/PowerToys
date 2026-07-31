@@ -48,7 +48,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var read = _reader.Read(monitor.Handle, code);
                 if (!read.IsSuccess)
                 {
-                    Logger.LogError($"[{monitor.Id}] Failed to read VCP 0x{code:X2}, error code: {read.ErrorCode}");
+                    Logger.LogError(
+                        $"DDC: [{monitor.Id}] Failed to read VCP 0x{code:X2}, " +
+                        $"error={DdcErrorClassifier.Format(read.ErrorCode)}");
                     continue;
                 }
 

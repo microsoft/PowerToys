@@ -5,7 +5,6 @@
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
-using static PowerDisplay.Common.Drivers.NativeConstants;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
@@ -77,9 +76,12 @@ namespace PowerDisplay.Common.Drivers.DDC
             var capabilities = parsedCapabilities;
             var values = new Dictionary<byte, VcpFeatureValue>();
 
-            foreach (var code in ContinuousVcpCodes)
+            // Driven by what the probe reported rather than by NativeConstants.ContinuousVcpCodes:
+            // VcpFeatureProbeService takes its sweep list as a constructor argument, so a code it
+            // answered for must not be dropped here just because it is outside the default set.
+            foreach (var (code, observation) in live)
             {
-                if (!live.TryGetValue(code, out var observation) || !observation.Replied)
+                if (!observation.Replied)
                 {
                     continue;
                 }
