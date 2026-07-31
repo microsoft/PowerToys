@@ -13,8 +13,9 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// Consumed by <see cref="VcpFeatureProbeService"/>, which retries only what
     /// <see cref="IsTransient"/> admits, and by <see cref="ContinuousVcpInitializer"/>, which uses
     /// <see cref="IsPhysicalMonitorUnavailable"/> to tell a dead handle from one feature the device
-    /// refused. The runtime value reads behind <c>DdcCiController.GetVcpFeatureAsync</c> are still
-    /// single-shot and unclassified.
+    /// refused. The discrete-VCP reads in <c>DdcCiController.Initialize*</c> and the runtime value
+    /// reads behind <c>DdcCiController.GetVcpFeatureAsync</c> are still single-shot and
+    /// unclassified.
     /// </remarks>
     internal static class DdcErrorClassifier
     {
