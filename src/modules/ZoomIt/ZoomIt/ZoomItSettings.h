@@ -71,6 +71,7 @@ DWORD   g_WebcamBrightness = 50;        // 0=dark, 50=neutral, 100=bright
 BOOLEAN g_RecordAspectRatio = FALSE; // Lock region selection to 16:9
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
+BOOLEAN g_SnipCopyToClipboard = FALSE; // When TRUE, saving a snip also copies it to the clipboard.
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
 DWORD	g_TrimDialogWidth = 0;  // 0 means use default; stored in screen pixels
 DWORD	g_TrimDialogHeight = 0; // 0 means use default; stored in screen pixels
@@ -136,6 +137,7 @@ REG_SETTING RegSettings[] = {
     { L"RecordAspectRatio", SETTING_TYPE_BOOLEAN, 0, &g_RecordAspectRatio, static_cast<DOUBLE>(g_RecordAspectRatio) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
+    { L"SnipCopyToClipboard", SETTING_TYPE_BOOLEAN, 0, &g_SnipCopyToClipboard, static_cast<DOUBLE>(g_SnipCopyToClipboard) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
     { L"TrimDialogWidth", SETTING_TYPE_DWORD, 0, &g_TrimDialogWidth, static_cast<DOUBLE>(0) },
     { L"TrimDialogHeight", SETTING_TYPE_DWORD, 0, &g_TrimDialogHeight, static_cast<DOUBLE>(0) },

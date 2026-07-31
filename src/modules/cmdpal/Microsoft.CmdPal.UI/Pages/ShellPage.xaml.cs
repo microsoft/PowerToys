@@ -1042,6 +1042,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ExpandCompactModeMessage message)
     {
+        // Down/Tab expands the shell synchronously before broadcasting this message so the
+        // host can resize the card. In that case the requested state is already applied;
+        // re-evaluating from the empty query would immediately collapse it again.
+        if (ExpandedMode == message.Expanded)
+        {
+            return;
+        }
+
         // Re-evaluate from the current authoritative page state rather than applying the
         // message's snapshot directly. The message can race with navigation: following a
         // 1-character alias clears the home search (sending a "collapse") right as we
@@ -1099,6 +1107,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         HandleExpandCompactOnUiThread(true);
+        WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(true));
         return true;
     }
 

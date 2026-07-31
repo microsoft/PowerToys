@@ -177,7 +177,7 @@ namespace PowerDisplay
                 _trayIconService = new TrayIconService(
                     _settingsUtils,
                     ToggleMainWindow,
-                    () => Environment.Exit(0),
+                    Shutdown,
                     OpenSettings);
                 _trayIconService.MouseWheelScrolled +=
                     notches => mainWindow.ViewModel.AdjustBrightnessFromTrayWheel(notches);

@@ -34,6 +34,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly VcpFeatureProbeService _probeService;
 
         private bool _disposed;
 
@@ -47,6 +48,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         public DdcCiController()
         {
             _discoveryHelper = new MonitorDiscoveryHelper();
+            _probeService = new VcpFeatureProbeService(new NativeVcpFeatureReader());
         }
 
         public string Name => "DDC/CI Monitor Controller";
@@ -352,6 +354,35 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
         /// or unparsable. Cancellation is honored both during the cap-string fetch
@@ -416,9 +447,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogInfo(
                     $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
 
-                caps = await Task.Run(
-                    () => DdcCiNative.ProbeSupportedVcpFeatures(hPhysicalMonitor),
-                    cancellationToken);
+                var observations = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
+                caps = BuildCapabilitiesFromProbe(observations);
 
                 if (caps != null)
                 {
@@ -434,6 +464,34 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return (capsString ?? string.Empty, caps);
+        }
+
+        /// <summary>
+        /// Synthesizes capabilities from the VCP codes the device answered for, or null when none
+        /// did — which the caller treats the same way as an unusable capabilities string.
+        /// </summary>
+        /// <remarks>
+        /// Membership is decided by <see cref="VcpProbeObservation.Replied"/>, not by whether the
+        /// value was usable. A reply proves the device implements the opcode even when the reported
+        /// range cannot scale a percentage; an unimplemented code fails with
+        /// <c>DDCCI_VCP_NOT_SUPPORTED</c> instead and never sets the flag. Friendly names come from
+        /// <see cref="VcpNames.GetCodeName"/> to keep a single source of truth.
+        /// </remarks>
+        private static VcpCapabilities? BuildCapabilitiesFromProbe(
+            IReadOnlyDictionary<byte, VcpProbeObservation> observations)
+        {
+            var caps = new VcpCapabilities();
+
+            foreach (var observation in observations.Values)
+            {
+                if (observation.Replied)
+                {
+                    caps.SupportedVcpCodes[observation.Code] =
+                        new VcpCodeInfo(observation.Code, VcpNames.GetCodeName(observation.Code));
+                }
+            }
+
+            return caps.SupportedVcpCodes.Count > 0 ? caps : null;
         }
 
         /// <summary>
@@ -705,6 +763,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning(
                             $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
                             $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
                         break;
                     }
 
@@ -743,6 +807,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         Logger.LogWarning(
                             $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
@@ -756,6 +821,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     if (monitor != null)
                     {
                         monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed or threw. Either way this physical never becomes a
+                        // Monitor, so it never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
                     }
                 }
 

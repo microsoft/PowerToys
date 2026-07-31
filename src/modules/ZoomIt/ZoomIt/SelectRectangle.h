@@ -24,7 +24,9 @@ public:
     RECT SelectedRect() const { return m_selectedRect; }
     bool IsActive() const { return m_window != nullptr; }
 
-    bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false );
+    // borderColor sets the initial selection border color (defaults to yellow to
+    // match the capture API). Panorama capture passes blue.
+    bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false, COLORREF borderColor = RGB( 255, 222, 0 ) );
     void Stop();
     void UpdateOwner( HWND window );
     void Hide() { if( m_window ) ShowWindow( m_window.get(), SW_HIDE ); }
