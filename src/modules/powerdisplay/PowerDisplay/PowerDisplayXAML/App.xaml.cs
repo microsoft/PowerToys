@@ -168,7 +168,8 @@ namespace PowerDisplay
 
                 // Create main window
                 Logger.LogInfo("OnLaunched: Creating MainWindow");
-                _mainWindow = new MainWindow();
+                var mainWindow = new MainWindow();
+                _mainWindow = mainWindow;
                 Logger.LogInfo("OnLaunched: MainWindow created");
 
                 // Initialize tray icon service
@@ -178,6 +179,10 @@ namespace PowerDisplay
                     ToggleMainWindow,
                     Shutdown,
                     OpenSettings);
+                _trayIconService.MouseWheelScrolled +=
+                    notches => mainWindow.ViewModel.AdjustBrightnessFromTrayWheel(notches);
+                _trayIconService.CanProcessMouseWheel =
+                    () => mainWindow.ViewModel.CanAdjustBrightnessFromTrayWheel;
                 _trayIconService.SetupTrayIcon();
                 Logger.LogTrace("OnLaunched: TrayIconService initialized");
 
