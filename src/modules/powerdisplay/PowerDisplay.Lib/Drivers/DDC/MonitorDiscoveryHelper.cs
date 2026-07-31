@@ -110,8 +110,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Use the stable DevicePath-based Id derived once by the discovery controller.
-                // A missing DevicePath produces an empty Id, so skip the monitor rather than
-                // persist settings under a key that will not survive the next reboot.
+                // DiscoverFromHandleAsync already rejects an empty Id before it issues any I2C
+                // traffic, so this is a contract check on an internal helper rather than a path
+                // discovery can reach — persisting settings under a key that will not survive the
+                // next reboot is worth two guards.
                 if (string.IsNullOrEmpty(monitorId))
                 {
                     Logger.LogWarning(
