@@ -84,9 +84,11 @@ public sealed class VcpDiscoveryEvidenceTests
     [TestMethod]
     public void Reconcile_ProbedCodeOutsideTheDefaultSweepIsStillHonoured()
     {
-        // Reconcile is driven by what the probe reported, not by NativeConstants.ContinuousVcpCodes:
-        // VcpFeatureProbeService takes its sweep list as a constructor argument, so widening it must
-        // not need a matching edit here.
+        // Reconcile is driven by what the probe reported, not by NativeConstants.ContinuousVcpCodes,
+        // so widening VcpFeatureProbeService's constructor-injected sweep list does not silently drop
+        // a code that answered. Honouring it here is necessary but not sufficient: the carried value
+        // is only consumed for codes ContinuousVcpInitializer walks, so a widened sweep still needs a
+        // matching edit there.
         var result = VcpDiscoveryEvidence.Reconcile(
             capabilitiesRaw: string.Empty,
             parsedCapabilities: null,

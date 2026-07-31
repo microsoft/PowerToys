@@ -70,15 +70,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
-            // Evidence is merged into the parsed instance rather than into a copy: the caller hands
-            // ownership of parsedCapabilities to Reconcile, and the merged object is published as
-            // Monitor.VcpCapabilitiesInfo.
             var capabilities = parsedCapabilities;
             var values = new Dictionary<byte, VcpFeatureValue>();
 
-            // Driven by what the probe reported rather than by NativeConstants.ContinuousVcpCodes:
-            // VcpFeatureProbeService takes its sweep list as a constructor argument, so a code it
-            // answered for must not be dropped here just because it is outside the default set.
+            // Driven by what the probe reported rather than by NativeConstants.ContinuousVcpCodes,
+            // which VcpFeatureProbeService only takes as the default for its constructor-injected
+            // sweep list. Widening that sweep still needs a matching edit in
+            // ContinuousVcpInitializer for the carried value to be used — this loop only keeps the
+            // code from being dropped on the way there.
             foreach (var (code, observation) in live)
             {
                 if (!observation.Replied)
@@ -102,18 +101,14 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Records that <paramref name="code"/> is supported, creating the container when discovery
-        /// produced no parsed capabilities. Evidence may only add support: an entry parsed from the
-        /// capabilities string carries discrete-value and custom-name metadata that a synthesized
-        /// <see cref="VcpCodeInfo"/> does not, so an existing entry is never overwritten.
+        /// produced no parsed capabilities. Adds only: an entry parsed from the capabilities string
+        /// carries discrete-value and custom-name metadata a synthesized <see cref="VcpCodeInfo"/>
+        /// does not.
         /// </summary>
         private static VcpCapabilities MarkSupported(VcpCapabilities? capabilities, byte code)
         {
             capabilities ??= new VcpCapabilities();
-            if (!capabilities.SupportsVcpCode(code))
-            {
-                capabilities.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
-            }
-
+            capabilities.SupportedVcpCodes.TryAdd(code, new VcpCodeInfo(code, VcpNames.GetCodeName(code)));
             return capabilities;
         }
     }
