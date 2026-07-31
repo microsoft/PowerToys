@@ -149,10 +149,13 @@ public sealed class ContinuousVcpInitializerTests
         var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
         var monitor = BrightnessMonitor();
 
-        initializer.Initialize(
+        var result = initializer.Initialize(
             monitor,
             new VcpDiscoveryEvidence(string.Empty, new VcpCapabilities(), new Dictionary<byte, VcpInitialValue>()));
 
+        Assert.IsTrue(
+            result,
+            "An unusable range is the device's answer about one code, not about the handle, so the monitor must survive.");
         Assert.AreEqual(1, reader.CallCount);
         Assert.AreEqual(0, monitor.CurrentBrightness);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));

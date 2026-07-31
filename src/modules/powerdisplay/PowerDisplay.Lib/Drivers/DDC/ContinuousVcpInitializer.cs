@@ -11,6 +11,11 @@ using static PowerDisplay.Common.Drivers.NativeConstants;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
+    /// <summary>
+    /// Applies the percent-scaled VCP features — brightness, contrast, volume — to a freshly built
+    /// <see cref="Monitor"/>, and records every value it reads off the hardware in the known-good
+    /// store so a later pass that cannot read the code has something proven to fall back on.
+    /// </summary>
     internal sealed class ContinuousVcpInitializer
     {
         private readonly IVcpFeatureReader _reader;
@@ -37,9 +42,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <see cref="Monitor.Handle"/> itself rather than the one feature — the caller must then
         /// discard the monitor instead of publishing it.
         /// </returns>
-        public bool Initialize(
-            Monitor monitor,
-            VcpDiscoveryEvidence evidence)
+        public bool Initialize(Monitor monitor, VcpDiscoveryEvidence evidence)
         {
             foreach (var code in ContinuousVcpCodes)
             {
@@ -52,10 +55,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             return true;
         }
 
-        private bool InitializeFeature(
-            Monitor monitor,
-            VcpDiscoveryEvidence evidence,
-            byte code)
+        private bool InitializeFeature(Monitor monitor, VcpDiscoveryEvidence evidence, byte code)
         {
             if (!IsSupported(monitor, code))
             {

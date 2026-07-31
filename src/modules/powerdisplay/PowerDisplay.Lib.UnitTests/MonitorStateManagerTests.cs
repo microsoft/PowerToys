@@ -34,9 +34,22 @@ public sealed class MonitorStateManagerTests
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(_directory))
+        try
         {
-            Directory.Delete(_directory, recursive: true);
+            if (Directory.Exists(_directory))
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
+        }
+        catch (IOException)
+        {
+            // A debounced SaveStateToDiskAsync can still hold the state file when the test's
+            // using-block returns: Dispose cancels the debouncer, but a save already past its
+            // delay is inside File.WriteAllTextAsync with no token to observe. Leaving a temp
+            // directory behind is not worth failing an otherwise green test over.
+        }
+        catch (UnauthorizedAccessException)
+        {
         }
     }
 
@@ -211,6 +224,67 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
+    public void UpsertKnownGoodFeature_UnchangedValueStillRefreshesTheInMemoryTimestamp()
+    {
+        // The save short-circuit must not cost the timestamp its meaning: the support log reads
+        // LastSuccessfulUtc to report when the hardware last answered for a code, so an unchanged
+        // re-observation still has to move it even though it does not earn a disk write.
+        var later = SuccessfulUtc.AddHours(6);
+
+        using var manager = new MonitorStateManager(_statePath);
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
+        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40, observedUtc: later));
+
+        Assert.AreEqual(later, manager.GetKnownGoodFeatures(MonitorA)[0x10].LastSuccessfulUtc);
+    }
+
+    [TestMethod]
+    public void UpsertKnownGoodFeature_UnchangedValueDoesNotScheduleASave()
+    {
+        // Every discovery pass re-reads all three continuous codes, so re-observing an unchanged
+        // value is the common case and must not rewrite the whole state file for a moved timestamp.
+        // Deleting the file and checking Dispose does not recreate it is the observable form of
+        // "never marked dirty": Dispose only flushes when _isDirty was set, and loading from disk
+        // does not set it.
+        using (var seed = new MonitorStateManager(_statePath))
+        {
+            seed.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
+        }
+
+        Assert.IsTrue(File.Exists(_statePath), "The seeding upsert is a real change and must persist.");
+
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            File.Delete(_statePath);
+            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
+        }
+
+        Assert.IsFalse(File.Exists(_statePath), "An unchanged re-observation must not dirty the state.");
+    }
+
+    [TestMethod]
+    public void UpsertKnownGoodFeature_ChangedValueSchedulesASave()
+    {
+        // The control for UpsertKnownGoodFeature_UnchangedValueDoesNotScheduleASave: same shape,
+        // one different Current, and the flush must happen.
+        using (var seed = new MonitorStateManager(_statePath))
+        {
+            seed.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
+        }
+
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            File.Delete(_statePath);
+            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 41));
+        }
+
+        Assert.IsTrue(File.Exists(_statePath));
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.AreEqual(41, reloaded.GetKnownGoodFeatures(MonitorA)[0x10].Current);
+    }
+
+    [TestMethod]
     public void ConcurrentUpsertAndRead_OnSameMonitorDoNotTearTheFeatureMap()
     {
         // Drives the contention `lock (state)` exists for: a single monitor Id, whose one
@@ -224,7 +298,11 @@ public sealed class MonitorStateManagerTests
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 10));
 
-        const int Rounds = 100;
+        // 20 rounds x 64 codes is already ~1300 interleavings, which reproduces the tear reliably.
+        // Every upsert that changes a value also resets the save debouncer, cancelling the pending
+        // Task.Delay with an OperationCanceledException, so a larger count buys nothing but throw
+        // churn and first-chance exception noise under a debugger.
+        const int Rounds = 20;
         Exception? readerFailure = null;
         using var start = new Barrier(2);
 
@@ -275,11 +353,11 @@ public sealed class MonitorStateManagerTests
         Assert.IsNull(readerFailure, $"Concurrent read observed a torn feature map: {readerFailure}");
     }
 
-    private static KnownGoodVcpFeature Feature(byte code, int current) => new()
+    private static KnownGoodVcpFeature Feature(byte code, int current, DateTime? observedUtc = null) => new()
     {
         Code = code,
         Current = current,
         Maximum = 100,
-        LastSuccessfulUtc = SuccessfulUtc,
+        LastSuccessfulUtc = observedUtc ?? SuccessfulUtc,
     };
 }

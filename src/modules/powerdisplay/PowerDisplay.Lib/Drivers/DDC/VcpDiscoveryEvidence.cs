@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
@@ -31,7 +32,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             Capabilities = capabilities;
             InitialValues = initialValues;
             IsPhysicalMonitorUnavailable = isPhysicalMonitorUnavailable;
-            CacheSupplementedCodes = cacheSupplementedCodes ?? System.Array.Empty<byte>();
+            CacheSupplementedCodes = cacheSupplementedCodes ?? Array.Empty<byte>();
         }
 
         public string CapabilitiesRaw { get; }
@@ -62,6 +63,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// The probe only runs when the capabilities string is unusable, so on the parsed path
         /// <paramref name="live"/> is empty and <paramref name="cached"/> is the only source that can
         /// still add anything.
+        /// <para>
+        /// A non-null <paramref name="parsedCapabilities"/> is extended <b>in place</b> and returned
+        /// as the same instance — callers must not assume their input survives unmodified. Reusing
+        /// the container rather than rebuilding it is deliberate: an entry parsed from the
+        /// capabilities string carries discrete-value and custom-name metadata that a synthesized
+        /// <see cref="VcpCodeInfo"/> cannot reproduce, so a copy would have to be a deep one and
+        /// would silently lose whatever a later field addition forgot to carry over. Pinned by
+        /// <c>Reconcile_ParsedCapabilitiesSurviveWhenNoProbeRan</c>, which asserts reference identity.
+        /// </para>
         /// </remarks>
         public static VcpDiscoveryEvidence Reconcile(
             string capabilitiesRaw,
@@ -177,9 +187,9 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Records that <paramref name="code"/> is supported, creating the container when discovery
-        /// produced no parsed capabilities. Adds only: an entry parsed from the capabilities string
-        /// carries discrete-value and custom-name metadata a synthesized <see cref="VcpCodeInfo"/>
-        /// does not.
+        /// produced no parsed capabilities and otherwise extending the caller's instance in place.
+        /// Adds only: an entry parsed from the capabilities string carries discrete-value and custom-name
+        /// metadata a synthesized <see cref="VcpCodeInfo"/> does not.
         /// </summary>
         private static VcpCapabilities MarkSupported(VcpCapabilities? capabilities, byte code)
         {

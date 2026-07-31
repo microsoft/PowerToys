@@ -181,12 +181,32 @@ namespace PowerDisplay.Common.Services
             // proven valid, and the one place untrusted values enter — LoadStateFromDisk — filters
             // them there.
             var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
+            bool valueChanged;
             lock (state)
             {
+                valueChanged =
+                    !state.KnownGoodVcpFeatures.TryGetValue(feature.Code, out var existing) ||
+                    existing.Current != feature.Current ||
+                    existing.Maximum != feature.Maximum;
+
+                // Stored unconditionally so LastSuccessfulUtc stays accurate in memory even when
+                // only the timestamp moved.
                 state.KnownGoodVcpFeatures[feature.Code] = feature.Clone();
             }
 
-            MarkDirtyAndScheduleSave();
+            // Re-observing an unchanged value is the common case: every discovery pass re-reads all
+            // three continuous codes, and the flyout's Refresh button forces one on demand. Marking
+            // the file dirty for a moved timestamp would rewrite the whole state file — and reset
+            // the debouncer, cancelling the pending save with an OperationCanceledException — on
+            // every pass, for a field nothing but the support log reads.
+            //
+            // That last clause is the precondition: LastSuccessfulUtc is diagnostic only. If a
+            // freshness bound is ever reintroduced it becomes load-bearing, and this short-circuit
+            // has to go with it, or a persisted entry will read as older than it is and expire early.
+            if (valueChanged)
+            {
+                MarkDirtyAndScheduleSave();
+            }
         }
 
         /// <summary>
@@ -200,6 +220,13 @@ namespace PowerDisplay.Common.Services
         /// entries were never removed before this cache existed, and a display that returns after a long
         /// absence should still come back with the brightness the user chose. Legacy entries are never
         /// touched here; <see cref="MigrateLegacyKeys"/> either migrates or explicitly drops them.
+        /// <para>
+        /// Known blind spot: a monitor whose physical handle dies mid-discovery seeds an entry — the
+        /// probe persists what it read before the handle went — but never reaches settings.json, so it
+        /// is never named in <paramref name="monitorIds"/> and its cache is never collected. Accepted:
+        /// the entry holds no user values and costs a few dozen bytes, and the monitor rejoins normal
+        /// retention the first time a discovery pass completes for it.
+        /// </para>
         /// </remarks>
         /// <param name="monitorIds">The exact DevicePath monitor Ids that settings no longer references.</param>
         public void RemoveKnownGoodFeatures(IEnumerable<string> monitorIds)
