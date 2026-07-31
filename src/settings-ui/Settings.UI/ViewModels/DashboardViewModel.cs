@@ -493,6 +493,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.EnvironmentVariables => GetModuleItemsEnvironmentVariables(),
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
+                ModuleType.AltWindowCycle => GetModuleItemsAltWindowCycle(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
                 ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
@@ -623,6 +624,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 list.Add(new DashboardModuleActivationItem() { Label = resourceLoader.GetString("Dashboard_Activation"), Activation = activation });
             }
 
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsAltWindowCycle()
+        {
+            ISettingsRepository<AltWindowCycleSettings> moduleSettingsRepository = SettingsRepository<AltWindowCycleSettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AltWindowCycle_NextWindowShortcut/Header"), Shortcut = settings.Properties.NextWindowShortcut.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AltWindowCycle_PreviousWindowShortcut/Header"), Shortcut = settings.Properties.PreviousWindowShortcut.GetKeysList() },
+            };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
