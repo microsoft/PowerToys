@@ -519,8 +519,10 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             if (evidence.CacheSupplementedCodes.Count > 0)
             {
-                // The probe-outcome block above is gated on live.Count, which is zero on the
-                // caps-parsed path — the one path where the cache silently adds a code. See
+                // Logged on its own rather than folded into the probe-outcome block above, which is
+                // gated on live.Count and therefore silent on the caps-parsed path. The two overlap
+                // when a probe ran but no reply proved the code — a duplicate line is cheaper than a
+                // support log that cannot tell a cache-supplied control from an advertised one. See
                 // VcpDiscoveryEvidence.CacheSupplementedCodes.
                 var detail = string.Join(
                     ", ",
@@ -694,6 +696,21 @@ namespace PowerDisplay.Common.Drivers.DDC
                     var physical = physicals[i];
                     var info = matchingInfos[i];
                     var monitorId = DeriveMonitorId(info);
+
+                    // No DevicePath means no stable Id, and every later stage needs one: settings
+                    // persisted under an unstable key would not survive the next reboot, and the
+                    // known-good store rejects an empty key outright. Deciding it here — before any
+                    // I2C traffic — is what keeps that rejection from surfacing as an exception
+                    // mid-pipeline, which the catch below would turn into "drop this hMonitor's
+                    // remaining physicals and leak their handles".
+                    if (string.IsNullOrEmpty(monitorId))
+                    {
+                        Logger.LogWarning(
+                            $"DDC: Skipping monitor #{info.MonitorNumber} (name='{info.FriendlyName}') — " +
+                            $"DevicePath unavailable, cannot derive a stable Id");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
 
 #if DEBUG
                     if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
