@@ -327,7 +327,9 @@ namespace PowerDisplay.Common.Drivers.DDC
             string monitorId,
             VcpDiscoveryEvidence evidence)
         {
-            if (evidence.IsPhysicalMonitorUnavailable || evidence.Capabilities == null)
+            // The caller already skipped the unusable-capabilities and dead-handle cases, each with
+            // its own log line; this null check only carries that contract into the nullable flow.
+            if (evidence.Capabilities == null)
             {
                 return null;
             }
@@ -352,9 +354,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 // support for, ordered continuous-range first (percent-scaled),
                 // then discrete-enum VCPs. Each guard is independent — a controller
                 // can support any subset.
-                var continuousInitialization =
-                    _continuousInitializer.Initialize(monitor, evidence);
-                if (continuousInitialization == VcpInitializationResult.PhysicalMonitorUnavailable)
+                if (!_continuousInitializer.Initialize(monitor, evidence))
                 {
                     Logger.LogWarning(
                         $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during continuous VCP initialization");

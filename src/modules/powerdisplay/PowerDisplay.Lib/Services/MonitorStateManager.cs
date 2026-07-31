@@ -177,12 +177,9 @@ namespace PowerDisplay.Common.Services
             ArgumentException.ThrowIfNullOrEmpty(monitorId);
             ArgumentNullException.ThrowIfNull(feature);
 
-            var value = feature.ToVcpFeatureValue();
-            if (!value.IsValid)
-            {
-                throw new ArgumentOutOfRangeException(nameof(feature), "Known-good VCP values must have a valid range.");
-            }
-
+            // Range validity is not re-checked here: every caller upserts a value it has already
+            // proven valid, and the one place untrusted values enter — LoadStateFromDisk — filters
+            // them there.
             var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
             lock (state)
             {

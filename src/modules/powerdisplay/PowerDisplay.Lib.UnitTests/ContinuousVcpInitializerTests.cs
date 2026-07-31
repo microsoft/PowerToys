@@ -169,7 +169,7 @@ public sealed class ContinuousVcpInitializerTests
             monitor,
             CachedBrightnessAndContrastEvidence());
 
-        Assert.AreEqual(VcpInitializationResult.PhysicalMonitorUnavailable, result);
+        Assert.IsFalse(result, "A handle-class read failure must tell the caller to drop the monitor.");
         Assert.AreEqual(1, reader.CallCount);
         CollectionAssert.AreEqual(new byte[] { 0x10 }, reader.Codes);
         Assert.AreEqual(initialBrightness, monitor.CurrentBrightness);
@@ -192,7 +192,7 @@ public sealed class ContinuousVcpInitializerTests
             monitor,
             CachedBrightnessAndContrastEvidence());
 
-        Assert.AreEqual(VcpInitializationResult.Completed, result);
+        Assert.IsTrue(result);
         CollectionAssert.AreEqual(new byte[] { 0x10, 0x12 }, reader.Codes);
         Assert.AreEqual(45, monitor.CurrentBrightness);
         Assert.IsFalse(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
