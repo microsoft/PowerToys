@@ -84,6 +84,7 @@
                     <tkcontrols:SettingsExpander
                         Name="MouseUtilsMouseButtonLockSettingsExpander"
                         x:Uid="MouseUtils_MouseButtonLock_Options"
+                        AutomationProperties.AutomationId="MouseUtils_MouseButtonLockOptionsId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander.Items>

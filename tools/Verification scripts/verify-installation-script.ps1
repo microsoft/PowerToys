@@ -418,6 +418,7 @@ function Test-CoreFiles {
         
         # Mouse utilities
         'PowerToys.FindMyMouse.dll',
+        'PowerToys.MouseButtonLock.dll',
         'PowerToys.MouseHighlighter.dll',
         'PowerToys.MouseJump.dll',
         'PowerToys.MouseJump.Common.dll',

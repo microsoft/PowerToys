@@ -2648,6 +2648,14 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Jump the mouse pointer quickly to anywhere on your desktop.</value>
     <comment>Mouse as in the hardware peripheral.</comment>
   </data>
+  <data name="Oobe_MouseUtils_MouseButtonLock.Text" xml:space="preserve">
+    <value>Mouse Button Lock</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_MouseButtonLock_Description.Text" xml:space="preserve">
+    <value>Hold a mouse button past a short delay to lock it down, then move the mouse to drag hands-free. Press any mouse button to release.</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
   <data name="Launch_Run.Content" xml:space="preserve">
     <value>Open PowerToys Run</value>
   </data>
