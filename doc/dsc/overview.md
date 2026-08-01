@@ -130,17 +130,18 @@ utilities:
 | ImageResizer           | Resize images from context menu.             | [ImageResizer module][15]             |
 | KeyboardManager        | Remap keys and create shortcuts.             | [KeyboardManager module][16]          |
 | MeasureTool            | Measure pixels on screen.                    | [MeasureTool module][17]              |
-| MouseHighlighter       | Highlight mouse cursor.                      | [MouseHighlighter module][18]         |
-| MouseJump              | Jump across large or multiple displays.      | [MouseJump module][19]                |
-| MousePointerCrosshairs | Display crosshairs centered on mouse.        | [MousePointerCrosshairs module][20]   |
-| Peek                   | Quick file previewer.                        | [Peek module][21]                     |
-| PowerAccent            | Quick accent character selector.             | [PowerAccent module][22]              |
-| PowerOCR               | Extract text from images.                    | [PowerOCR module][23]                 |
-| PowerRename            | Bulk rename files.                           | [PowerRename module][24]              |
-| RegistryPreview        | Visualize and edit registry files.           | [RegistryPreview module][25]          |
-| ShortcutGuide          | Display keyboard shortcuts.                  | [ShortcutGuide module][26]            |
-| Workspaces             | Save and restore application sets.           | [Workspaces module][27]               |
-| ZoomIt                 | Screen zoom and annotation tool.             | [ZoomIt module][28]                   |
+| MouseButtonLock        | Lock mouse buttons for hands-free dragging.  | [MouseButtonLock module][18]          |
+| MouseHighlighter       | Highlight mouse cursor.                      | [MouseHighlighter module][19]         |
+| MouseJump              | Jump across large or multiple displays.      | [MouseJump module][20]                |
+| MousePointerCrosshairs | Display crosshairs centered on mouse.        | [MousePointerCrosshairs module][21]   |
+| Peek                   | Quick file previewer.                        | [Peek module][22]                     |
+| PowerAccent            | Quick accent character selector.             | [PowerAccent module][23]              |
+| PowerOCR               | Extract text from images.                    | [PowerOCR module][24]                 |
+| PowerRename            | Bulk rename files.                           | [PowerRename module][25]              |
+| RegistryPreview        | Visualize and edit registry files.           | [RegistryPreview module][26]          |
+| ShortcutGuide          | Display keyboard shortcuts.                  | [ShortcutGuide module][27]            |
+| Workspaces             | Save and restore application sets.           | [Workspaces module][28]               |
+| ZoomIt                 | Screen zoom and annotation tool.             | [ZoomIt module][29]                   |
 
 ## Common operations
 
@@ -199,16 +200,16 @@ PowerToys.DSC.exe manifest --resource 'settings' --outputDir $outputDir
 
 For complete examples, see:
 
-- [Settings Resource Examples][29]
-- Individual module documentation in the [modules][30] folder
+- [Settings Resource Examples][30]
+- Individual module documentation in the [modules][31] folder
 
 ## See also
 
 - [Settings Resource Reference][03]
 - [PowerToys.DSC.exe Command Reference][01]
-- [Module Documentation][30]
-- [Microsoft DSC Documentation][31]
-- [WinGet Configuration Documentation][32]
+- [Module Documentation][31]
+- [Microsoft DSC Documentation][32]
+- [WinGet Configuration Documentation][33]
 
 <!-- Link reference definitions -->
 [01]: ./modules/
@@ -227,18 +228,19 @@ For complete examples, see:
 [15]: ./modules/ImageResizer.md
 [16]: ./modules/KeyboardManager.md
 [17]: ./modules/MeasureTool.md
-[18]: ./modules/MouseHighlighter.md
-[19]: ./modules/MouseJump.md
-[20]: ./modules/MousePointerCrosshairs.md
-[21]: ./modules/Peek.md
-[22]: ./modules/PowerAccent.md
-[23]: ./modules/PowerOCR.md
-[24]: ./modules/PowerRename.md
-[25]: ./modules/RegistryPreview.md
-[26]: ./modules/ShortcutGuide.md
-[27]: ./modules/Workspaces.md
-[28]: ./modules/ZoomIt.md
-[29]: ./settings-resource.md#examples
-[30]: ./modules/
-[31]: https://learn.microsoft.com/powershell/dsc/overview
-[32]: https://learn.microsoft.com/windows/package-manager/configuration/
+[18]: ./modules/MouseButtonLock.md
+[19]: ./modules/MouseHighlighter.md
+[20]: ./modules/MouseJump.md
+[21]: ./modules/MousePointerCrosshairs.md
+[22]: ./modules/Peek.md
+[23]: ./modules/PowerAccent.md
+[24]: ./modules/PowerOCR.md
+[25]: ./modules/PowerRename.md
+[26]: ./modules/RegistryPreview.md
+[27]: ./modules/ShortcutGuide.md
+[28]: ./modules/Workspaces.md
+[29]: ./modules/ZoomIt.md
+[30]: ./settings-resource.md#examples
+[31]: ./modules/
+[32]: https://learn.microsoft.com/powershell/dsc/overview
+[33]: https://learn.microsoft.com/windows/package-manager/configuration/
