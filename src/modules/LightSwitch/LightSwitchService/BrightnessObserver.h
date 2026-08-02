@@ -41,10 +41,10 @@ private:
     std::atomic<bool> _stop;
     std::thread _thread;
 
-    static std::optional<int> QueryCurrentBrightness()
+    void Run()
     {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        bool coinitCalledHere = SUCCEEDED(hr); // RPC_E_CHANGED_MODE means already initialized
+        bool coinitCalledHere = SUCCEEDED(hr);
 
         IWbemLocator* pLoc = nullptr;
         hr = CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
@@ -52,7 +52,7 @@ private:
         if (FAILED(hr))
         {
             if (coinitCalledHere) CoUninitialize();
-            return std::nullopt;
+            return;
         }
 
         IWbemServices* pSvc = nullptr;
@@ -62,7 +62,7 @@ private:
         {
             pLoc->Release();
             if (coinitCalledHere) CoUninitialize();
-            return std::nullopt;
+            return;
         }
 
         hr = CoSetProxyBlanket(pSvc, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, nullptr,
@@ -73,59 +73,46 @@ private:
             pSvc->Release();
             pLoc->Release();
             if (coinitCalledHere) CoUninitialize();
-            return std::nullopt;
+            return;
         }
 
-        IEnumWbemClassObject* pEnum = nullptr;
-        hr = pSvc->ExecQuery(
-            _bstr_t(L"WQL"),
-            _bstr_t(L"SELECT CurrentBrightness FROM WmiMonitorBrightness WHERE Active = TRUE"),
-            WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
-            nullptr, &pEnum);
-
-        std::optional<int> result = std::nullopt;
-
-        if (SUCCEEDED(hr) && pEnum)
-        {
-            IWbemClassObject* pObj = nullptr;
-            ULONG returned = 0;
-            if (pEnum->Next(WBEM_INFINITE, 1, &pObj, &returned) == WBEM_S_NO_ERROR && returned)
-            {
-                VARIANT vt;
-                VariantInit(&vt);
-                if (SUCCEEDED(pObj->Get(L"CurrentBrightness", 0, &vt, nullptr, nullptr)))
-                {
-                    // CurrentBrightness is VT_UI1 (BYTE)
-                    result = static_cast<int>(vt.bVal);
-                }
-                VariantClear(&vt);
-                pObj->Release();
-            }
-            pEnum->Release();
-        }
-
-        pSvc->Release();
-        pLoc->Release();
-        if (coinitCalledHere) CoUninitialize();
-        return result;
-    }
-
-    void Run()
-    {
         int lastBrightness = -1;
 
         while (!_stop)
         {
-            auto brightness = QueryCurrentBrightness();
-            if (brightness.has_value() && brightness.value() != lastBrightness)
+            IEnumWbemClassObject* pEnum = nullptr;
+            hr = pSvc->ExecQuery(
+                _bstr_t(L"WQL"),
+                _bstr_t(L"SELECT CurrentBrightness FROM WmiMonitorBrightness WHERE Active = TRUE"),
+                WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,
+                nullptr, &pEnum);
+
+            if (SUCCEEDED(hr) && pEnum)
             {
-                lastBrightness = brightness.value();
-                Logger::info(L"[BrightnessObserver] Brightness changed to {}%", lastBrightness);
-                try
+                IWbemClassObject* pObj = nullptr;
+                ULONG returned = 0;
+                if (pEnum->Next(WBEM_INFINITE, 1, &pObj, &returned) == WBEM_S_NO_ERROR && returned)
                 {
-                    _callback(lastBrightness);
+                    VARIANT vt;
+                    VariantInit(&vt);
+                    if (SUCCEEDED(pObj->Get(L"CurrentBrightness", 0, &vt, nullptr, nullptr)))
+                    {
+                        int brightness = static_cast<int>(vt.bVal);
+                        if (brightness != lastBrightness)
+                        {
+                            lastBrightness = brightness;
+                            Logger::info(L"[BrightnessObserver] Brightness changed to {}%", lastBrightness);
+                            try
+                            {
+                                _callback(lastBrightness);
+                            }
+                            catch (...) {}
+                        }
+                    }
+                    VariantClear(&vt);
+                    pObj->Release();
                 }
-                catch (...) {}
+                pEnum->Release();
             }
 
             // Sleep in 1-second increments so we can respond to _stop quickly.
@@ -134,5 +121,9 @@ private:
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
+
+        pSvc->Release();
+        pLoc->Release();
+        if (coinitCalledHere) CoUninitialize();
     }
 };

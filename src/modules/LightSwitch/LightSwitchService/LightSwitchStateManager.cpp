@@ -106,9 +106,16 @@ void LightSwitchStateManager::OnBrightnessChange(int brightness)
 
     if (_state.lastAppliedMode == ScheduleMode::FollowBrightness && _state.isManualOverride)
     {
-        Logger::info(L"[LightSwitchStateManager] Brightness changed while manual override active; "
-                     L"treating as a boundary and clearing manual override.");
-        _state.isManualOverride = false;
+        int threshold = LightSwitchSettings::settings().brightnessThreshold;
+        bool wasLight = (_state.lastBrightness >= 0 && _state.lastBrightness >= threshold);
+        bool willBeLight = (brightness >= threshold);
+
+        if (_state.lastBrightness >= 0 && (wasLight != willBeLight))
+        {
+            Logger::info(L"[LightSwitchStateManager] Brightness crossed threshold while manual override active; "
+                         L"treating as a boundary and clearing manual override.");
+            _state.isManualOverride = false;
+        }
     }
 
     _state.lastBrightness = brightness;
