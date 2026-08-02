@@ -154,15 +154,6 @@ Shortcuts:
           Alt: true
           Keys:
             - F
-      - Name: Show or hide Brave Shields
-        Recommended: true
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: true
-          Keys:
-            - D
       - Name: Show or hide bookmarks bar
         Shortcut:
         - Win: false
