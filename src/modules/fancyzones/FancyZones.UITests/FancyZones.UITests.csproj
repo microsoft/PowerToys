@@ -32,10 +32,4 @@
     <ProjectReference Include="..\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
-	<ProjectReference Include="..\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj" />
-	<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
-  </ItemGroup>
-
 </Project>
