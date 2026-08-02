@@ -23,6 +23,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultLightModeProfile = "";
         public const int DefaultDarkModeProfileId = 0;
         public const int DefaultLightModeProfileId = 0;
+        public const int DefaultBrightnessThreshold = 90;
         public static readonly HotkeySettings DefaultToggleThemeHotkey = new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Win+Shift+D
 
         public LightSwitchProperties()
@@ -43,6 +44,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             LightModeProfile = new StringProperty(DefaultLightModeProfile);
             DarkModeProfileId = new IntProperty(DefaultDarkModeProfileId);
             LightModeProfileId = new IntProperty(DefaultLightModeProfileId);
+            BrightnessThreshold = new IntProperty(DefaultBrightnessThreshold);
         }
 
         [JsonPropertyName("changeSystem")]
@@ -100,5 +102,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("lightModeProfileId")]
         public IntProperty LightModeProfileId { get; set; }
+
+        [JsonPropertyName("brightnessThreshold")]
+        public IntProperty BrightnessThreshold { get; set; }
     }
 }

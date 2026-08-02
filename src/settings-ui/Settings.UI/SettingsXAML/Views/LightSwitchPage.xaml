@@ -72,6 +72,10 @@
                                     x:Uid="LightSwitch_ModeFollowNightLight"
                                     AutomationProperties.AutomationId="FollowNightLightCBItem_LightSwitch"
                                     Tag="FollowNightLight" />
+                                <ComboBoxItem
+                                    x:Uid="LightSwitch_ModeFollowBrightness"
+                                    AutomationProperties.AutomationId="FollowBrightnessCBItem_LightSwitch"
+                                    Tag="FollowBrightness" />
                             </ComboBox>
                             <tkcontrols:SettingsExpander.Items>
                                 <tkcontrols:SettingsCard
@@ -183,6 +187,21 @@
                                         </StackPanel>
 
                                     </InfoBar>
+                                </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard
+                                    x:Name="BrightnessThresholdCard"
+                                    x:Uid="LightSwitch_BrightnessThresholdCard"
+                                    Visibility="Collapsed">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <Slider
+                                            AutomationProperties.AutomationId="BrightnessThreshold_LightSwitch"
+                                            Minimum="1"
+                                            Maximum="100"
+                                            Width="200"
+                                            Value="{x:Bind ViewModel.BrightnessThreshold, Mode=TwoWay}" />
+                                        <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.BrightnessThreshold, Mode=OneWay}" />
+                                        <TextBlock VerticalAlignment="Center" Text="%" />
+                                    </StackPanel>
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>

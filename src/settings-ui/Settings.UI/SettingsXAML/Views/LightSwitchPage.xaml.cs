@@ -373,18 +373,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 case "FixedHours":
                     VisualStateManager.GoToState(this, "ManualState", true);
                     this.TimelineCard.Visibility = Visibility.Visible;
+                    this.BrightnessThresholdCard.Visibility = Visibility.Collapsed;
                     break;
                 case "SunsetToSunrise":
                     VisualStateManager.GoToState(this, "SunsetToSunriseState", true);
                     this.SunriseModeChartState();
+                    this.BrightnessThresholdCard.Visibility = Visibility.Collapsed;
                     break;
                 case "FollowNightLight":
                     VisualStateManager.GoToState(this, "FollowNightLightState", true);
                     TimelineCard.Visibility = Visibility.Collapsed;
+                    this.BrightnessThresholdCard.Visibility = Visibility.Collapsed;
+                    break;
+                case "FollowBrightness":
+                    VisualStateManager.GoToState(this, "FollowBrightnessState", true);
+                    TimelineCard.Visibility = Visibility.Collapsed;
+                    this.BrightnessThresholdCard.Visibility = Visibility.Visible;
                     break;
                 default:
                     VisualStateManager.GoToState(this, "OffState", true);
                     this.TimelineCard.Visibility = Visibility.Collapsed;
+                    this.BrightnessThresholdCard.Visibility = Visibility.Collapsed;
                     break;
             }
         }

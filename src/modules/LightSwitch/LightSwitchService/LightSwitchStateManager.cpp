@@ -32,7 +32,8 @@ void LightSwitchStateManager::OnSettingsChanged()
 void LightSwitchStateManager::OnTick()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    if (_state.lastAppliedMode != ScheduleMode::FollowNightLight)
+    if (_state.lastAppliedMode != ScheduleMode::FollowNightLight &&
+        _state.lastAppliedMode != ScheduleMode::FollowBrightness)
     {
         EvaluateAndApplyIfNeeded();
     }
@@ -95,6 +96,23 @@ void LightSwitchStateManager::OnNightLightChange()
         Logger::debug(L"[LightSwitchStateManager] Night Light change event fired, but no actual change.");
     }
 
+    EvaluateAndApplyIfNeeded();
+}
+
+// Called when display brightness changes (from BrightnessObserver)
+void LightSwitchStateManager::OnBrightnessChange(int brightness)
+{
+    std::lock_guard<std::mutex> lock(_stateMutex);
+
+    if (_state.lastAppliedMode == ScheduleMode::FollowBrightness && _state.isManualOverride)
+    {
+        Logger::info(L"[LightSwitchStateManager] Brightness changed while manual override active; "
+                     L"treating as a boundary and clearing manual override.");
+        _state.isManualOverride = false;
+    }
+
+    _state.lastBrightness = brightness;
+    Logger::info(L"[LightSwitchStateManager] Brightness changed to {}%", brightness);
     EvaluateAndApplyIfNeeded();
 }
 
@@ -205,7 +223,8 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     }
 
     // Handle manual override logic
-    if (_state.isManualOverride)
+    // In FollowBrightness mode, the brightness change itself clears the override (in OnBrightnessChange).
+    if (_state.isManualOverride && _currentSettings.scheduleMode != ScheduleMode::FollowBrightness)
     {
         bool crossedBoundary = false;
         if (_state.lastTickMinutes != -1)
@@ -244,6 +263,18 @@ void LightSwitchStateManager::EvaluateAndApplyIfNeeded()
     if (_currentSettings.scheduleMode == ScheduleMode::FollowNightLight)
     {
         shouldBeLight = !_state.isNightLightActive;
+    }
+    else if (_currentSettings.scheduleMode == ScheduleMode::FollowBrightness)
+    {
+        // Light mode when brightness >= threshold, dark mode when below threshold.
+        // If brightness is unknown (-1), leave the theme unchanged.
+        if (_state.lastBrightness < 0)
+        {
+            Logger::debug(L"[LightSwitchStateManager] Brightness unknown, skipping theme evaluation.");
+            _state.lastTickMinutes = now;
+            return;
+        }
+        shouldBeLight = (_state.lastBrightness >= _currentSettings.brightnessThreshold);
     }
     else
     {
