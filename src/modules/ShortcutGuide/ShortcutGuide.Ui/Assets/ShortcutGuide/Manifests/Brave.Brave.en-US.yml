@@ -1,4 +1,4 @@
-PackageName: BraveSoftware.BraveBrowser
+PackageName: Brave.Brave
 Name: Brave Browser
 WindowFilter: "brave.exe"
 BackgroundProcess: false
