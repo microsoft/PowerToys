@@ -112,6 +112,15 @@ if ($null -ne $webView2Installer) {
     Invoke-OfflineInstaller -Path $webView2Installer.FullName -Arguments @('/silent', '/install')
 }
 
+$windowsApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'
+$windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction SilentlyContinue |
+    Where-Object {
+        $_.ApplicationID -eq $windowsApplicationId -and
+        -not [string]::IsNullOrWhiteSpace($_.PartialProductKey) -and
+        $_.Name -like 'Windows*'
+    } |
+    Select-Object -First 1
+
 [ordered]@{
     ProvisionedUtc = [DateTime]::UtcNow.ToString('O')
     ComputerName = $env:COMPUTERNAME
@@ -121,4 +130,7 @@ if ($null -ne $webView2Installer) {
     HttpsWinRM = 5986
     DotNetSdkInstaller = if ($null -ne $dotNetSdk) { $dotNetSdk.Name } else { $null }
     WebView2Installer = if ($null -ne $webView2Installer) { $webView2Installer.Name } else { $null }
+    WindowsLicenseDescription = [string]$windowsLicense.Description
+    WindowsLicenseStatus = [int]$windowsLicense.LicenseStatus
+    WindowsGracePeriodMinutes = [int]$windowsLicense.GracePeriodRemaining
 } | ConvertTo-Json | Set-Content C:\OEM\ProvisioningReady.json -Encoding utf8

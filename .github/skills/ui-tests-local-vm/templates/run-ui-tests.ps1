@@ -150,7 +150,8 @@ function Copy-SharedItem {
 
     for ($attempt = 1; $attempt -le 5; $attempt++) {
         try {
-            Copy-Item $Path $Destination -Recurse -Force -ErrorAction Stop
+            $fileDestination = Join-Path $Destination $sourceItem.Name
+            Copy-Item $Path $fileDestination -Force -ErrorAction Stop
             return
         }
         catch {
@@ -159,6 +160,27 @@ function Copy-SharedItem {
             }
             [Threading.Thread]::Sleep(200)
         }
+    }
+}
+
+function Expand-PayloadArchive {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+        [Parameter(Mandatory)]
+        [string]$Destination
+    )
+
+    New-Item $Destination -ItemType Directory -Force | Out-Null
+    $tar = Get-Command tar.exe -ErrorAction SilentlyContinue
+    if ($null -eq $tar) {
+        Expand-Archive -Path $Path -DestinationPath $Destination -Force
+        return
+    }
+
+    & $tar.Source -xf $Path -C $Destination
+    if ($LASTEXITCODE -ne 0) {
+        throw "tar.exe failed with exit code $LASTEXITCODE while extracting '$Path'."
     }
 }
 
@@ -322,7 +344,7 @@ try {
         Remove-Item $component.Destination -Recurse -Force -ErrorAction SilentlyContinue
         $stage = if ($reuseRequested) { 'Refreshing' } else { 'Extracting' }
         Write-RunProgress -Stage $stage -Detail "$($component.Name): $($component.Archive)"
-        Expand-Archive -Path $archivePath -DestinationPath $component.Destination -Force
+        Expand-PayloadArchive -Path $archivePath -Destination $component.Destination
         $refreshedComponents += $component.Name
     }
 
@@ -330,7 +352,7 @@ try {
         if (-not [string]::IsNullOrWhiteSpace($request.Archives.ProductOverlay)) {
             $overlayPath = Join-Path $exchangeRoot $request.Archives.ProductOverlay
             Write-RunProgress -Stage 'Overlaying' -Detail $request.BuildLabel
-            Expand-Archive -Path $overlayPath -DestinationPath $productRoot -Force
+            Expand-PayloadArchive -Path $overlayPath -Destination $productRoot
         }
     }
 
@@ -403,6 +425,7 @@ try {
 
     $env:POWERTOYS_INSTALL_DIR = $productRoot
     $env:WINAPP_CLI_PATH = $winApp.FullName
+    $env:WINAPP_CLI_INVOKE_TIMEOUT_SECONDS = '180'
     $env:DOTNET_ROOT = $dotNetRoot
     $env:PATH = "$dotNetRoot;$env:PATH"
     $env:TF_BUILD = 'true'
@@ -470,7 +493,7 @@ finally {
     }
     if (Test-Path $localLog) {
         try {
-            Copy-SharedItem -Path $localLog -Destination (Join-Path $hostResultsRoot 'local-vm-ui-tests.log')
+            Copy-SharedItem -Path $localLog -Destination $hostResultsRoot
         }
         catch {
             $exportErrors += "Failed to export '$localLog': $($_.Exception.Message)"

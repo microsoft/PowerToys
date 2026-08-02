@@ -1,8 +1,11 @@
 [CmdletBinding()]
 param(
     [switch]$WaitForWinRM,
-    [ValidateRange(1, 120)]
-    [int]$TimeoutMinutes = 45
+    [ValidateRange(1, 720)]
+    [int]$TimeoutMinutes = 45,
+    [ValidateSet('GreenFirst', 'Constrained', 'Configured')]
+    [string]$ResourceProfile,
+    [switch]$PlanOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,6 +25,99 @@ if ([string]::IsNullOrWhiteSpace($configuration.VM_ADMIN_PASSWORD) -or
     $configuration.VM_ADMIN_PASSWORD -eq 'replace-with-a-unique-password') {
     throw 'Set a unique VM_ADMIN_PASSWORD in .env before starting the VM.'
 }
+
+function Get-GreenFirstResources {
+    $computer = Get-CimInstance Win32_ComputerSystem
+    $processors = @(Get-CimInstance Win32_Processor)
+    $physicalCores = ($processors | Measure-Object NumberOfCores -Sum).Sum
+    if (-not $physicalCores) {
+        $physicalCores = [Environment]::ProcessorCount
+    }
+
+    $memoryGiB = [math]::Max(8, [math]::Round(($computer.TotalPhysicalMemory / 1GB) / 2))
+    $cpuCores = [math]::Ceiling($physicalCores * 0.60)
+    if ($cpuCores % 2 -ne 0 -and $cpuCores -lt $physicalCores) {
+        $cpuCores++
+    }
+
+    $cpuCores = [math]::Max(2, [math]::Min($physicalCores, $cpuCores))
+    return [pscustomobject]@{
+        HostMemoryGiB = [math]::Round($computer.TotalPhysicalMemory / 1GB, 1)
+        HostPhysicalCores = $physicalCores
+        VmRamSize = "${memoryGiB}G"
+        VmCpuCores = $cpuCores
+        MinimumWslMemoryGiB = $memoryGiB + 4
+    }
+}
+
+function ConvertTo-Gibibytes {
+    param([Parameter(Mandatory)][string]$Size)
+
+    if ($Size -notmatch '^(?<Value>\d+(?:\.\d+)?)(?<Unit>[GgMm])$') {
+        throw "RAM size '$Size' must use G or M units."
+    }
+
+    $value = [double]::Parse($Matches.Value, [Globalization.CultureInfo]::InvariantCulture)
+    if ($Matches.Unit -in @('M', 'm')) {
+        return $value / 1024
+    }
+
+    return $value
+}
+
+$greenFirstResources = Get-GreenFirstResources
+$effectiveProfile = if ($PSBoundParameters.ContainsKey('ResourceProfile')) {
+    $ResourceProfile
+}
+elseif ($configuration.VM_RESOURCE_PROFILE) {
+    switch ($configuration.VM_RESOURCE_PROFILE.ToLowerInvariant()) {
+        'green-first' { 'GreenFirst' }
+        'greenfirst' { 'GreenFirst' }
+        'constrained' { 'Constrained' }
+        'configured' { 'Configured' }
+        default { throw 'VM_RESOURCE_PROFILE must be green-first, constrained, or configured.' }
+    }
+}
+else {
+    'GreenFirst'
+}
+
+switch ($effectiveProfile) {
+    'GreenFirst' {
+        $effectiveRamSize = $greenFirstResources.VmRamSize
+        $effectiveCpuCores = $greenFirstResources.VmCpuCores
+    }
+    'Constrained' {
+        $effectiveRamSize = if ($configuration.VM_CONSTRAINED_RAM_SIZE) { $configuration.VM_CONSTRAINED_RAM_SIZE } else { '8G' }
+        $effectiveCpuCores = if ($configuration.VM_CONSTRAINED_CPU_CORES) { [int]$configuration.VM_CONSTRAINED_CPU_CORES } else { 4 }
+    }
+    'Configured' {
+        if ([string]::IsNullOrWhiteSpace($configuration.VM_RAM_SIZE) -or
+            [string]::IsNullOrWhiteSpace($configuration.VM_CPU_CORES)) {
+            throw 'Configured profile requires VM_RAM_SIZE and VM_CPU_CORES in .env.'
+        }
+
+        $effectiveRamSize = $configuration.VM_RAM_SIZE
+        $effectiveCpuCores = [int]$configuration.VM_CPU_CORES
+    }
+}
+
+$env:VM_RAM_SIZE = $effectiveRamSize
+$env:VM_CPU_CORES = $effectiveCpuCores.ToString([Globalization.CultureInfo]::InvariantCulture)
+$minimumWslMemoryGiB = [math]::Ceiling((ConvertTo-Gibibytes $effectiveRamSize) + 4)
+$resourcePlan = [pscustomobject]@{
+    ResourceProfile = $effectiveProfile
+    HostMemoryGiB = $greenFirstResources.HostMemoryGiB
+    HostPhysicalCores = $greenFirstResources.HostPhysicalCores
+    VmRamSize = $effectiveRamSize
+    VmCpuCores = $effectiveCpuCores
+    MinimumWslMemoryGiB = $minimumWslMemoryGiB
+}
+if ($PlanOnly) {
+    $resourcePlan | ConvertTo-Json
+    return
+}
+
 foreach ($command in @('docker.exe', 'wsl.exe')) {
     if ($null -eq (Get-Command $command -ErrorAction SilentlyContinue)) {
         throw "$command was not found."
@@ -37,6 +133,18 @@ Write-Verbose ($dockerDesktopOutput | Out-String)
 & docker context use desktop-linux | Out-Null
 if ($LASTEXITCODE -ne 0) {
     throw 'Could not select the Docker Desktop Linux context.'
+}
+
+$wslMemoryOutput = & wsl.exe -d docker-desktop -u root -- cat /proc/meminfo 2>&1
+$wslMemoryLine = $wslMemoryOutput | Where-Object { $_ -match '^MemTotal:\s+\d+\s+kB$' } | Select-Object -First 1
+if ($LASTEXITCODE -ne 0 -or $wslMemoryLine -notmatch '^MemTotal:\s+(?<KiB>\d+)\s+kB$') {
+    throw 'Could not determine the Docker Desktop WSL2 memory ceiling.'
+}
+
+$wslMemoryKiB = [long]$Matches.KiB
+$wslMemoryGiB = [math]::Round($wslMemoryKiB / 1MB, 1)
+if ($wslMemoryGiB -lt $minimumWslMemoryGiB) {
+    throw "Docker Desktop WSL2 exposes $wslMemoryGiB GiB, but the $effectiveProfile profile requires at least $minimumWslMemoryGiB GiB for a $effectiveRamSize guest. Increase [wsl2] memory in %UserProfile%\.wslconfig, run 'wsl --shutdown', and restart Docker Desktop."
 }
 
 $kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm && (modprobe kvm_intel 2>/dev/null || modprobe kvm_amd 2>/dev/null)' 2>&1
@@ -82,7 +190,7 @@ if ($WaitForWinRM) {
         }
 
         if ([DateTime]::UtcNow -ge $deadline) {
-            throw "WinRM did not become responsive at $winRmUri within $TimeoutMinutes minute(s)."
+            throw "WinRM did not become responsive at $winRmUri within $TimeoutMinutes minute(s). The container and named volume remain intact; if Windows Setup is visibly progressing, rerun this command with a longer timeout."
         }
         Start-Sleep -Seconds 5
     } while ($true)
@@ -97,6 +205,10 @@ if ($LASTEXITCODE -ne 0 -or $containerState -ne 'running') {
 [pscustomobject]@{
     Container = $containerName
     State = $containerState
+    ResourceProfile = $effectiveProfile
+    Ram = $effectiveRamSize
+    CpuCores = $effectiveCpuCores
+    WslMemoryGiB = $wslMemoryGiB
     Viewer = "http://127.0.0.1:$viewerPort/"
     Rdp = "127.0.0.1:$rdpPort"
     WinRM = "${winRmScheme}://127.0.0.1:$winRmPort/wsman"

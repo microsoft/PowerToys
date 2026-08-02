@@ -1,6 +1,6 @@
 ---
 name: ui-tests-local-vm
-description: "Set up and run PowerToys UITest.Next suites in a persistent local Windows VM hosted by dockur/windows on Docker Desktop with WSL2/KVM. Use for fast agentic UI-test iteration, reusable interactive desktops, non-admin user scenarios, WinRM dispatch, incremental payload refresh, TRX/log/screenshot export, VM baseline customization, .NET/WebView2 provisioning, optional Visual Studio remote debugging, or resettable clean-baseline validation. Complements ui-tests-migration. Keywords: local VM, dockur, Docker, WSL2, KVM, QEMU, UI tests, UITest.Next, winappcli, WinRM, TRX, msvsmon, agentic loop."
+description: "Set up and run PowerToys UITest.Next suites in persistent local Windows VMs hosted by dockur/windows on Docker Desktop with WSL2/KVM. Defaults to Windows 10 LTSC for baseline coverage and uses a separate Windows 11 VM for explicitly Win11-specific behavior. Use for fast agentic UI-test iteration, reusable interactive desktops, non-admin scenarios, WinRM dispatch, payload refresh, evidence export, VM customization, or clean-baseline validation. Keywords: Windows 10, Windows 11, local VM, dockur, Docker, WSL2, KVM, QEMU, UI tests, UITest.Next, winappcli, WinRM, TRX."
 license: MIT
 ---
 
@@ -10,6 +10,14 @@ Run PowerToys `.Next` UI tests in a persistent, interactive Windows VM while kee
 execution off the host. Use this skill as the execution complement to
 [ui-tests-migration](../ui-tests-migration/SKILL.md). Restore a known stopped-volume snapshot or
 create a fresh named volume when clean-profile behavior must be validated.
+
+Use Windows 10 Enterprise LTSC 2021 as the default guest. When requirements include Windows 11-only
+behavior, complete the baseline pass on Windows 10 and run an additional, narrowly filtered pass in
+a separate Windows 11 VM.
+
+Start both guests with the `GreenFirst` resource profile: half of host RAM and approximately 60% of
+physical CPU cores, rounded up to an even count (8 host cores becomes 6 guest vCPUs). Get the target
+suite fully green before lowering resources with the `Constrained` profile.
 
 ## When to use this skill
 
@@ -38,6 +46,18 @@ Do not modify stabilized tests merely to make the local VM green. First prove th
 produces assertion-bearing TRX, and has a useful success rate. Classify environment-specific failures
 separately unless the task explicitly asks for stabilization.
 
+## Guest OS policy
+
+- Default to Windows 10 Enterprise LTSC 2021: `WINDOWS_VERSION=10l`, build 19044/21H2. This is newer
+  than the Windows 10 20H2 baseline.
+- Run all behavior not explicitly scoped to a newer OS on the Windows 10 guest first.
+- For Windows 11-only behavior, such as the tier-1 Explorer context menu, use another VM root,
+  container, and named volume with `WINDOWS_VERSION=11`, then rerun only the relevant tests with
+  `-Platform x64Win11`.
+- Do not upgrade, repurpose, or overwrite the Windows 10 baseline volume to create the Windows 11
+  iteration. Preserve independent reset points and evidence for both guests.
+- A Windows 11 host requirement does not make Windows 11 the default guest target.
+
 ## Required reads
 
 Read only what the task needs:
@@ -59,14 +79,17 @@ Read only what the task needs:
 flowchart LR
     A[Design or edit test] --> B[Host build]
     B --> C[Package changed payload]
-    C --> D[Start or reuse local VM]
+    C --> D[Start or reuse Win10 VM]
     D --> E[Probe standard-user desktop]
     E --> F[Run focused test]
     F --> G[Export status TRX evidence]
     G --> H{Need test change?}
     H -- Yes --> A
     H -- No --> I[Run module suite]
-    I --> J[Optional baseline restore or fresh VM]
+    I --> J{Win11-specific checks?}
+    J -- Yes --> K[Run filtered checks in separate Win11 VM]
+    J -- No --> L[Optional baseline restore or fresh VM]
+    K --> L
 ```
 
 Create and maintain this task list:
@@ -82,7 +105,8 @@ Create and maintain this task list:
 - [ ] 8. Diagnose the first controlling failure without weakening assertions
 - [ ] 9. Rebuild and rerun with -ReuseStagedPayload
 - [ ] 10. Widen to the module suite and report pass rate/root-cause groups
-- [ ] 11. Restore a known baseline or recreate the VM for clean-profile confirmation when required
+- [ ] 11. Run Win11-only checks in a separate Windows 11 VM when required
+- [ ] 12. Restore a known baseline or recreate the VM for clean-profile confirmation when required
 ```
 
 ## Quick start
@@ -104,7 +128,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\MyModule `
   -TestExecutable MyModule.UITests.Next.exe `
   -Filter 'Name=MyModule.FocusedTest' `
-  -Platform x64Win11 `
+  -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `
   -SuiteTimeout 15m `
   -TimeoutMinutes 25 `
@@ -118,6 +142,10 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
 ## Non-negotiable rules
 
 - Build on the host; run PowerToys and tests only in the VM when host execution is prohibited.
+- Use the Windows 10 guest for the default pass. Add a separate Windows 11 pass only for requirements
+  that explicitly depend on Windows 11 behavior.
+- Establish a fully green correctness baseline with `GreenFirst` resources before running the same
+  tests under `Constrained` resources.
 - Keep VM files and writable exchange folders outside the repository.
 - Bind management, RDP, viewer, and debugger ports to `127.0.0.1` unless remote access is intentional.
 - Use HTTPS WinRM and a DPAPI-protected credential file. Never put credentials in prompts, scripts,

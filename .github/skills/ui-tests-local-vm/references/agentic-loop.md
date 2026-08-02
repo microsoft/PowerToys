@@ -4,6 +4,10 @@ This loop assumes the test project follows `Microsoft.PowerToys.UITest.Next`, bu
 Microsoft.Testing.Platform executable, and has already passed the `ui-tests-migration` design and
 CI-stability checks.
 
+Use Windows 10 Enterprise LTSC 2021 as the default guest and run the full baseline there. If the
+requirements explicitly include Windows 11 behavior, run only those checks again in a separate
+Windows 11 VM after the Windows 10 pass.
+
 ## 1. Build on the host
 
 Build only; do not launch PowerToys or tests on the host when the task forbids it.
@@ -75,13 +79,16 @@ Check:
 
 ## 4. Run one focused test
 
+Use the default `GreenFirst` VM resource profile while creating and stabilizing tests. Do not begin
+on the constrained profile: first prove the test and product behavior with sufficient CPU and RAM.
+
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\<Module> `
   -TestExecutable <Module>.UITests.Next.exe `
   -Filter 'Name=<focused-test>' `
-  -Platform x64Win11 `
+  -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `
   -ProcessorAffinityMask 0x3 `
   -DesktopWidth 1920 -DesktopHeight 1080 `
@@ -98,6 +105,10 @@ requires:
 - The guest UNC exchange is accessible.
 
 Failure here is `BLOCKED`, not a test failure.
+
+For an explicitly Windows 11-only check, point the same controller at a separate Windows 11 VM root
+and exchange, use `-Platform x64Win11`, and apply a narrow filter. Do not run the ordinary suite only
+on Windows 11, and do not reuse the Windows 10 volume as the Windows 11 guest.
 
 ## 5. Parse evidence
 
@@ -152,7 +163,7 @@ The VM stays running after each run. Use `-SkipStart` when it is already healthy
 
 ## 7. Widen to the suite
 
-Use a bounded category filter:
+Use a bounded category filter on the Windows 10 guest:
 
 ```pwsh
 -Filter 'TestCategory=<Module>' -SuiteTimeout 45m -TimeoutMinutes 60
@@ -165,6 +176,13 @@ Report:
 - Root-cause groups, not only test names.
 - Guest user/session/display and payload fingerprint.
 - Export errors independently from assertion failures.
+
+After reporting the Windows 10 baseline, run any Windows 11-specific subset against its independent
+Windows 11 baseline and report that evidence separately.
+
+Once the complete target suite is green, restart the same VM with `-ResourceProfile Constrained` and
+repeat the focused-to-suite progression. Keep the green-first TRX as the correctness baseline and
+classify failures that appear only under constrained resources separately.
 
 ## 8. Confirm clean-profile behavior
 

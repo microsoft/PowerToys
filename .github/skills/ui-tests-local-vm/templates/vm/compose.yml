@@ -3,12 +3,14 @@ services:
     image: "${DOCKUR_IMAGE:-docker.io/dockurr/windows:latest}"
     container_name: "${VM_CONTAINER_NAME:-powertoys-ui-windows}"
     environment:
-      VERSION: "${WINDOWS_VERSION:-11}"
+      VERSION: "${WINDOWS_VERSION:-10l}"
       USERNAME: "${VM_ADMIN_USERNAME:-PTAdmin}"
       PASSWORD: "${VM_ADMIN_PASSWORD:?Set VM_ADMIN_PASSWORD in .env}"
       RAM_SIZE: "${VM_RAM_SIZE:-8G}"
       CPU_CORES: "${VM_CPU_CORES:-4}"
       DISK_SIZE: "${VM_DISK_SIZE:-128G}"
+      DISK_CACHE: "${DISK_CACHE:-none}"
+      DISK_IO: "${DISK_IO:-}"
       REGION: "${VM_REGION:-en-US}"
       KEYBOARD: "${VM_KEYBOARD:-en-US}"
     devices:

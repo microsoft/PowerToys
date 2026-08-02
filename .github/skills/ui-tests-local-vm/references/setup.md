@@ -5,10 +5,12 @@ while Windows and installed tools live in the named `/storage` volume.
 
 ## Host requirements
 
-- Windows 11 with hardware virtualization and nested virtualization enabled.
+- Host: Windows 11 with hardware virtualization and nested virtualization enabled. This host
+  requirement does not select the guest OS.
 - Docker Desktop using the WSL2 Linux backend.
 - PowerShell 7, `docker`, and `wsl.exe` on `PATH`.
-- At least 8 GB free RAM and 128 GB free disk for the recommended defaults.
+- Enough free RAM for the green-first guest (half of host RAM), at least 4 GB of Docker/WSL
+  overhead, and 128 GB of free disk.
 - Loopback ports `8006`, `13389`, and `15986` available, or changed in `.env`.
 
 Docker Desktop on Windows requires KVM inside its `docker-desktop` WSL distribution for this
@@ -43,9 +45,21 @@ X:\PowerToysUiTestVm\
 Copy `.env.example` to `.env`, then set a unique administrator password. `.env` is ignored by the
 scaffold and must never be committed or sent through chat.
 
-Pin `DOCKUR_IMAGE` to a tested tag or digest for a team baseline. Choose `WINDOWS_VERSION=11` for the
-broadest current .NET 10 support. Windows 10 Enterprise LTSC is appropriate when Win10 behavior is
-the explicit target; consumer Windows 10 Pro is not the preferred long-lived .NET 10 baseline.
+The default `green-first` resource profile derives half of host RAM and about 60% of physical cores,
+rounded up to an even count (8 host cores becomes 6 guest vCPUs). Run
+`Start-LocalVm.ps1 -PlanOnly` to inspect the result. Ensure `%UserProfile%\.wslconfig` gives WSL2 at
+least 4 GB more than the resolved guest RAM, then run `wsl --shutdown` and restart Docker Desktop
+after changing that ceiling. Use the constrained profile only after the target suite is green.
+
+The default guest is Windows 10 Enterprise LTSC 2021 (`WINDOWS_VERSION=10l`, build 19044/21H2),
+which is newer than Windows 10 20H2. Pin `DOCKUR_IMAGE` to a tested tag or digest for a team baseline.
+Do not replace this default with consumer Windows 10 Pro for a long-lived .NET 10 baseline.
+
+For mixed-version requirements, run the ordinary or cross-version suite on this Windows 10 guest.
+Create another scaffold such as `X:\PowerToysUiTestVm-Win11` only when a requirement explicitly
+depends on Windows 11. Set `WINDOWS_VERSION=11` plus unique `VM_CONTAINER_NAME` and `VM_VOLUME_NAME`
+values there. Stop the Windows 10 VM first or assign different loopback ports. Never turn the
+Windows 10 volume into the Windows 11 baseline.
 
 ## 2. Understand the two accounts
 
@@ -77,8 +91,26 @@ cd X:\PowerToysUiTestVm
 pwsh .\Start-LocalVm.ps1 -WaitForWinRM -TimeoutMinutes 45
 ```
 
-The first boot downloads and installs Windows and can take many minutes. Watch progress at
-`http://127.0.0.1:8006/`. The final desktop must log on as `PTUser`, not the administrator.
+The dockur image is a Linux/QEMU wrapper, not a preinstalled Windows disk. The first boot downloads
+official Windows media and performs a complete unattended installation into the named volume. It can
+take many minutes. Watch progress at `http://127.0.0.1:8006/`.
+
+A clean supplemental Windows 11 installation can exceed four hours on nested virtualization. Use a
+long bounded readiness window such as `-TimeoutMinutes 720`; a timeout does not stop the container or
+destroy the named volume, so resume the same VM instead of recreating it when Setup is still visibly
+progressing.
+
+On a host that is itself a virtual machine, this workflow is deeply nested: host hypervisor ->
+Windows host -> WSL2/Docker Desktop -> KVM/QEMU -> Windows guest. Green-first CPU and RAM remove
+artificial resource scarcity, but Windows Setup image application can still use only a few vCPUs and
+issue low-throughput synchronous writes while expanding `install.wim`. Treat the first ISO install as
+a one-time baseline build. After provisioning and validation, stop and clone/snapshot the named
+volume for future clean runs instead of reinstalling Windows.
+
+Seeing the Windows desktop does not mean provisioning is complete. A visible command window may run
+`C:\OEM\install.bat`, which configures `PTUser`, HTTPS WinRM, auto-logon, and optional prerequisites.
+Do not close it or start tests. Wait for it to exit, for `C:\OEM\ProvisioningReady.json` to exist, and
+for the final desktop to log on as `PTUser`, not the administrator.
 
 After login:
 
@@ -87,6 +119,9 @@ After login:
 3. Confirm `C:\OEM\ProvisioningReady.json` exists.
 4. Confirm `\\host.lan\Data` opens from `PTUser`; `Z:` is optional and must not be used as a durable
    control/result path because Explorer restarts can remove it.
+5. Confirm the Windows license is not an expired time-based evaluation. Expired evaluations shut
+  down hourly and cannot provide a stable test baseline; replace the media or use a properly
+  licensed image rather than disabling licensing enforcement.
 
 ## 5. Save the administrator credential
 

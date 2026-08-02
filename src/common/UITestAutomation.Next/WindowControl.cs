@@ -42,6 +42,10 @@ public static class WindowControl
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
+
     [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern int GetClassNameW(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
 
@@ -77,6 +81,7 @@ public static class WindowControl
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
     private const uint WM_CLOSE = 0x0010;
+    private const uint WM_CONTEXTMENU = 0x007B;
     private const int SW_RESTORE = 9;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -86,6 +91,20 @@ public static class WindowControl
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GUITHREADINFO
+    {
+        public int Size;
+        public uint Flags;
+        public IntPtr ActiveWindow;
+        public IntPtr FocusedWindow;
+        public IntPtr CaptureWindow;
+        public IntPtr MenuOwnerWindow;
+        public IntPtr MoveSizeWindow;
+        public IntPtr CaretWindow;
+        public RECT CaretRectangle;
     }
 
     /// <summary>
@@ -324,6 +343,22 @@ public static class WindowControl
 
     /// <summary>Return the current foreground window handle.</summary>
     public static IntPtr GetForegroundWindowHandle() => GetForegroundWindow();
+
+    /// <summary>Open the context menu owned by the control that currently has focus in a foreground window.</summary>
+    public static bool TryOpenContextMenuForFocusedControl(IntPtr ownerWindow)
+    {
+        if (ownerWindow == IntPtr.Zero || !IsWindow(ownerWindow) || !TryBringToForeground(ownerWindow))
+        {
+            return false;
+        }
+
+        var threadId = GetWindowThreadProcessId(ownerWindow, out _);
+        var threadInfo = new GUITHREADINFO { Size = Marshal.SizeOf<GUITHREADINFO>() };
+        var targetWindow = GetGUIThreadInfo(threadId, ref threadInfo) && threadInfo.FocusedWindow != IntPtr.Zero
+            ? threadInfo.FocusedWindow
+            : ownerWindow;
+        return PostMessageW(targetWindow, WM_CONTEXTMENU, targetWindow, new IntPtr(-1));
+    }
 
     /// <summary>Return process, class, title, and elevation details for the current foreground HWND.</summary>
     public static ForegroundWindowInfo GetForegroundWindowInfo()

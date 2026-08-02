@@ -38,6 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="UITestAutomation.Next.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <COMReference Include="Shell32">
       <VersionMinor>0</VersionMinor>
       <VersionMajor>1</VersionMajor>

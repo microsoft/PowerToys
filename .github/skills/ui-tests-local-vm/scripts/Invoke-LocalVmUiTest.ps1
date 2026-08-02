@@ -9,6 +9,8 @@ Runs PowerToys UITest.Next executables in a persistent dockur/windows VM.
 .DESCRIPTION
 Creates a hash-addressed request, starts or reuses the VM, verifies a non-admin interactive desktop,
 dispatches the shared guest runner through Task Scheduler, and returns durable status/TRX evidence.
+Defaults to an x64 Windows 10 guest. Use x64Win11 only with a separate Windows 11 VM for explicitly
+Windows 11-specific checks.
 
 .EXAMPLE
 pwsh ./Invoke-LocalVmUiTest.ps1 `
@@ -34,7 +36,7 @@ param(
     [string[]]$TestExecutable,
 
     [string]$Filter,
-    [string]$Platform = 'x64Win11',
+    [string]$Platform = 'x64Win10',
     [string]$BuildLabel = 'local',
     [string]$TestsArchive = 'ui-tests.zip',
     [string]$ProductArchive = 'powertoys-runtime.zip',
@@ -361,13 +363,28 @@ try {
     $controlIdentity = Invoke-Command -Session $session -ScriptBlock {
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         $principal = [Security.Principal.WindowsPrincipal]$identity
+        $windowsApplicationId = '55c92734-d682-4d71-983e-d6ec3f16059f'
+        $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.ApplicationID -eq $windowsApplicationId -and
+                -not [string]::IsNullOrWhiteSpace($_.PartialProductKey) -and
+                $_.Name -like 'Windows*'
+            } |
+            Select-Object -First 1
         [pscustomobject]@{
             User = $identity.Name
             IsAdministrator = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+            WindowsLicenseDescription = [string]$windowsLicense.Description
+            WindowsLicenseStatus = [int]$windowsLicense.LicenseStatus
+            WindowsGracePeriodMinutes = [int]$windowsLicense.GracePeriodRemaining
         }
     }
     if (-not $controlIdentity.IsAdministrator) {
         throw "The WinRM control identity '$($controlIdentity.User)' is not an administrator."
+    }
+    if ($controlIdentity.WindowsLicenseDescription.Contains('TIMEBASED_EVAL', [StringComparison]::OrdinalIgnoreCase) -and
+        ([int]$controlIdentity.WindowsLicenseStatus -eq 5 -or [int]$controlIdentity.WindowsGracePeriodMinutes -le 0)) {
+        throw 'The Windows evaluation period has expired. The guest will shut down hourly; replace it with current evaluation media or a properly licensed baseline before running UI tests.'
     }
 
     $escapedProbePath = $guestProbePath.Replace("'", "''")
@@ -494,13 +511,22 @@ Add-Type -AssemblyName System.Windows.Forms
 }
 finally {
     if ($null -ne $session) {
-        Invoke-Command -Session $session -ScriptBlock {
-            param($ProbeTaskName, $TestTaskName)
-            foreach ($name in @($ProbeTaskName, $TestTaskName)) {
-                Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
+        try {
+            if ($session.State -eq 'Opened') {
+                Invoke-Command -Session $session -ScriptBlock {
+                    param($ProbeTaskName, $TestTaskName)
+                    foreach ($name in @($ProbeTaskName, $TestTaskName)) {
+                        Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
+                    }
+                } -ArgumentList $probeTaskName, $testTaskName -ErrorAction Stop
             }
-        } -ArgumentList $probeTaskName, $testTaskName -ErrorAction SilentlyContinue
-        Remove-PSSession $session
+        }
+        catch {
+            Write-Warning "Scheduled-task cleanup was skipped because the WinRM session was unavailable: $($_.Exception.Message)"
+        }
+        finally {
+            Remove-PSSession $session -ErrorAction SilentlyContinue
+        }
     }
     if ($StopVmAfterRun) {
         $stopScript = Join-Path $vmRootPath 'Stop-LocalVm.ps1'
