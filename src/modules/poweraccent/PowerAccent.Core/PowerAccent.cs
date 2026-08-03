@@ -266,6 +266,7 @@ public partial class PowerAccent : IDisposable
                 }
         }
 
+        _keyboardListener.ForceReset();
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;

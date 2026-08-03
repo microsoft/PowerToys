@@ -288,6 +288,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.LightSwitchModuleInterface.dll",
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
+            L"PowerToys.AltWindowCycle.dll",
         };
 
         for (auto moduleSubdir : knownModules)
@@ -352,7 +353,14 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
         result = -1;
     }
     Trace::UnregisterProvider();
-    QuickAccessHost::stop();
+    // When the full Windows session is ending, the OS reaps the Quick Access
+    // host process in parallel, so its stop timeout is pure dead time against
+    // the quiesce budget. User exits and Restart Manager ENDSESSION_CLOSEAPP
+    // requests retain the full graceful cleanup.
+    if (!is_system_session_ending())
+    {
+        QuickAccessHost::stop();
+    }
     return result;
 }
 

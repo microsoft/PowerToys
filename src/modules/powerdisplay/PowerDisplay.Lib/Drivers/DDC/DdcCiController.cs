@@ -34,6 +34,8 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly VcpFeatureProbeService _probeService;
+        private readonly ContinuousVcpInitializer _continuousInitializer;
 
         private bool _disposed;
 
@@ -47,6 +49,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         public DdcCiController()
         {
             _discoveryHelper = new MonitorDiscoveryHelper();
+            var vcpReader = new NativeVcpFeatureReader();
+            _probeService = new VcpFeatureProbeService(vcpReader);
+            _continuousInitializer = new ContinuousVcpInitializer(vcpReader);
         }
 
         public string Name => "DDC/CI Monitor Controller";
@@ -283,10 +288,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         private Monitor? BuildMonitorFromPhysical(
             PHYSICAL_MONITOR physical,
             MonitorDisplayInfo info,
-            string capsString,
-            VcpCapabilities? caps)
+            VcpDiscoveryEvidence evidence)
         {
-            if (caps == null)
+            // The caller already skipped the unusable-capabilities and dead-handle cases, each with
+            // its own log line; this null check only carries that contract into the nullable flow.
+            if (evidence.Capabilities == null)
             {
                 return null;
             }
@@ -299,31 +305,26 @@ namespace PowerDisplay.Common.Drivers.DDC
                     return null;
                 }
 
-                if (!string.IsNullOrEmpty(capsString))
+                if (!string.IsNullOrEmpty(evidence.CapabilitiesRaw))
                 {
-                    monitor.CapabilitiesRaw = capsString;
+                    monitor.CapabilitiesRaw = evidence.CapabilitiesRaw;
                 }
 
-                monitor.VcpCapabilitiesInfo = caps;
-                UpdateMonitorCapabilitiesFromVcp(monitor, caps);
+                monitor.VcpCapabilitiesInfo = evidence.Capabilities;
+                UpdateMonitorCapabilitiesFromVcp(monitor, evidence.Capabilities);
 
-                // Initialize current values for every VCP feature the device reports
-                // support for, ordered continuous-range first (percent-scaled),
-                // then discrete-enum VCPs. Each guard is independent — a controller
-                // can support any subset.
-                if (monitor.SupportsBrightness)
+                // Continuous (percent-scaled) VCPs first, then the discrete-enum ones. Only the
+                // continuous stage can discard the monitor, and that is a policy choice rather
+                // than a property of the stage: losing a whole display because 0xD6 answered
+                // badly is worse than showing it without a power control. Note the check is not
+                // on every path — a caps string that parses but advertises none of 0x10/0x12/0x62
+                // leaves the continuous stage nothing to read and suppresses the probe, so such a
+                // monitor is published with a handle no VCP read has exercised.
+                if (!_continuousInitializer.Initialize(monitor, evidence))
                 {
-                    InitializeBrightness(monitor, physical.HPhysicalMonitor);
-                }
-
-                if (monitor.SupportsContrast)
-                {
-                    InitializeContrast(monitor, physical.HPhysicalMonitor);
-                }
-
-                if (monitor.SupportsVolume)
-                {
-                    InitializeVolume(monitor, physical.HPhysicalMonitor);
+                    Logger.LogWarning(
+                        $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during continuous VCP initialization");
+                    return null;
                 }
 
                 if (monitor.SupportsColorTemperature)
@@ -352,13 +353,42 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
+            }
+
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
         /// or unparsable. Cancellation is honored both during the cap-string fetch
         /// (cooperative — checked between attempts) and during the 1 s delay between
         /// retries.
         /// </summary>
-        private async Task<(string CapsString, VcpCapabilities? Caps)> FetchCapabilitiesWithFallbackAsync(
+        private async Task<VcpDiscoveryEvidence> FetchCapabilitiesWithFallbackAsync(
             IntPtr hPhysicalMonitor,
             CancellationToken cancellationToken)
         {
@@ -411,29 +441,37 @@ namespace PowerDisplay.Common.Drivers.DDC
                     $"DDC: cap string still empty after {maxAttempts} attempts (handle=0x{hPhysicalMonitor:X})");
             }
 
+            IReadOnlyDictionary<byte, VcpProbeObservation> live =
+                new Dictionary<byte, VcpProbeObservation>();
+
             if (caps == null && MaxCompatibilityMode)
             {
                 Logger.LogInfo(
                     $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
 
-                caps = await Task.Run(
-                    () => DdcCiNative.ProbeSupportedVcpFeatures(hPhysicalMonitor),
-                    cancellationToken);
+                live = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
+            }
 
-                if (caps != null)
+            var evidence = VcpDiscoveryEvidence.Reconcile(capsString ?? string.Empty, caps, live);
+
+            if (live.Count > 0)
+            {
+                var message =
+                    $"DDC: [max-compat] probe outcome for handle=0x{hPhysicalMonitor:X}: " +
+                    $"{evidence.InitialValues.Count}/{live.Count} feature(s) read, " +
+                    $"{evidence.Capabilities?.SupportedVcpCodes.Count ?? 0} advertised";
+
+                if (evidence.Capabilities != null)
                 {
-                    Logger.LogInfo(
-                        $"DDC: [max-compat] recovered monitor (handle=0x{hPhysicalMonitor:X}) " +
-                        $"with {caps.SupportedVcpCodes.Count} probed feature(s)");
+                    Logger.LogInfo(message);
                 }
                 else
                 {
-                    Logger.LogWarning(
-                        $"DDC: [max-compat] probe returned no supported features for handle=0x{hPhysicalMonitor:X}");
+                    Logger.LogWarning(message);
                 }
             }
 
-            return (capsString ?? string.Empty, caps);
+            return evidence;
         }
 
         /// <summary>
@@ -469,72 +507,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 monitor.CurrentPowerState = (int)current;
                 monitor.ReadValues |= MonitorReadFlags.PowerState;
-            }
-        }
-
-        /// <summary>
-        /// Initialize brightness value for a monitor using VCP 0x10.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeBrightness(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
-            {
-                var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                if (!brightnessInfo.IsValid)
-                {
-                    Logger.LogWarning(
-                        $"DDC: [{monitor.Id}] Ignoring invalid brightness range current={current}, max={max}");
-                    return;
-                }
-
-                monitor.BrightnessVcpMax = (int)max;
-                monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-                monitor.ReadValues |= MonitorReadFlags.Brightness;
-            }
-        }
-
-        /// <summary>
-        /// Initialize contrast value for a monitor using VCP 0x12.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeContrast(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
-            {
-                var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                if (!contrastInfo.IsValid)
-                {
-                    Logger.LogWarning(
-                        $"DDC: [{monitor.Id}] Ignoring invalid contrast range current={current}, max={max}");
-                    return;
-                }
-
-                monitor.ContrastVcpMax = (int)max;
-                monitor.CurrentContrast = contrastInfo.ToPercentage();
-                monitor.ReadValues |= MonitorReadFlags.Contrast;
-            }
-        }
-
-        /// <summary>
-        /// Initialize volume value for a monitor using VCP 0x62.
-        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
-        /// </summary>
-        private static void InitializeVolume(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
-            {
-                var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                if (!volumeInfo.IsValid)
-                {
-                    Logger.LogWarning(
-                        $"DDC: [{monitor.Id}] Ignoring invalid volume range current={current}, max={max}");
-                    return;
-                }
-
-                monitor.VolumeVcpMax = (int)max;
-                monitor.CurrentVolume = volumeInfo.ToPercentage();
-                monitor.ReadValues |= MonitorReadFlags.Volume;
             }
         }
 
@@ -705,6 +677,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                         Logger.LogWarning(
                             $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
                             $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
                         break;
                     }
 
@@ -736,26 +714,41 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                     // Async caps fetch (retry + max-compat probe). Awaits Task.Delay between
                     // retries instead of blocking the threadpool.
-                    var (capsString, caps) = await FetchCapabilitiesWithFallbackAsync(
+                    var evidence = await FetchCapabilitiesWithFallbackAsync(
                         physical.HPhysicalMonitor, cancellationToken);
 
-                    if (caps == null)
+                    if (evidence.IsPhysicalMonitorUnavailable)
                     {
                         Logger.LogWarning(
-                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle is no longer valid");
+                        ReleaseAbandonedPhysical(physical);
                         continue;
                     }
 
-                    // Heavy sync block (~6 × ~100 ms VCP reads on this one I2C bus).
-                    // Dispatch to the threadpool; await before the next physical because
-                    // they share the same hMonitor's I2C arbitration.
+                    if (evidence.Capabilities == null)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
+
+                    // Heavy sync block (VCP reads on this one I2C bus, minus whatever the probe
+                    // already answered). Dispatch to the threadpool; await before the next physical
+                    // because they share the same hMonitor's I2C arbitration.
                     var monitor = await Task.Run(
-                        () => BuildMonitorFromPhysical(physical, info, capsString, caps),
+                        () => BuildMonitorFromPhysical(physical, info, evidence),
                         cancellationToken);
 
                     if (monitor != null)
                     {
                         monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed or threw. Either way this physical never becomes a
+                        // Monitor, so it never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
                     }
                 }
 
