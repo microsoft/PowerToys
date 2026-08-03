@@ -47,7 +47,39 @@ namespace KeyboardManagerEditorUI.Interop
                 throw new InvalidOperationException("Failed to create mapping configuration");
             }
 
-            KeyboardManagerInterop.LoadMappingSettings(_configHandle);
+            ConfigurationLoaded = LoadWithRetry();
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the engine configuration was read successfully.
+        /// </summary>
+        /// <remarks>
+        /// When it was not, the in-memory configuration is empty but says nothing about the file on
+        /// disk. Because this editor saves each mapping immediately, writing that empty
+        /// configuration back would replace every remap the user has with whatever they just
+        /// edited, so <see cref="SaveSettings"/> refuses while this is false.
+        /// </remarks>
+        public bool ConfigurationLoaded { get; }
+
+        private bool LoadWithRetry()
+        {
+            if (KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            {
+                return true;
+            }
+
+            // Same one-shot retry the classic editor does in its constructor: the engine may be
+            // rewriting the file at the moment the editor starts.
+            Logger.LogWarning("Failed to load the Keyboard Manager configuration, retrying once");
+            System.Threading.Thread.Sleep(500);
+
+            if (KeyboardManagerInterop.LoadMappingSettings(_configHandle))
+            {
+                return true;
+            }
+
+            Logger.LogError("Could not load the Keyboard Manager configuration; the editor will not save changes");
+            return false;
         }
 
         public List<KeyMapping> GetSingleKeyMappings()
@@ -289,6 +321,13 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool SaveSettings()
         {
+            if (!ConfigurationLoaded)
+            {
+                // Writing the empty in-memory configuration here would wipe every remap on disk.
+                Logger.LogError("Refusing to save: the Keyboard Manager configuration was never loaded");
+                return false;
+            }
+
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
 

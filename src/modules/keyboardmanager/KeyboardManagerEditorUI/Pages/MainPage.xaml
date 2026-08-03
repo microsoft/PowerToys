@@ -100,6 +100,14 @@
                 IsClosable="True"
                 IsOpen="False"
                 Severity="Informational" />
+
+            <!--  Engine configuration could not be read; saving is blocked  -->
+            <InfoBar
+                x:Name="ConfigLoadFailedBanner"
+                Margin="16,16,16,0"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Error" />
         </StackPanel>
 
         <ContentControl
@@ -239,10 +247,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -331,10 +341,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -453,10 +465,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -545,10 +559,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
@@ -618,10 +634,12 @@
                                                                 Orientation="Horizontal"
                                                                 Spacing="8">
                                                                 <ToggleSwitch
+                                                                    x:Uid="MappingEnabledToggle"
                                                                     IsOn="{x:Bind IsActive}"
                                                                     Style="{StaticResource RightAlignedCompactToggleSwitchStyle}"
                                                                     Toggled="ToggleSwitch_Toggled" />
                                                                 <Button
+                                                                    x:Uid="MappingOverflowButton"
                                                                     VerticalAlignment="Center"
                                                                     Content="{ui:FontIcon Glyph=&#xE712;,
                                                                                           FontSize=14}"
