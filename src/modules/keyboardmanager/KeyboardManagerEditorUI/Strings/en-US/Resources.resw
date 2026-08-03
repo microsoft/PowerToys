@@ -222,6 +222,14 @@
   <data name="ExactMatchCheckBox.Content" xml:space="preserve">
     <value>Exact match</value>
   </data>
+  <data name="ExactMatchCheckBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Only trigger when exactly these keys are pressed. Holding any additional modifier will not activate the shortcut.</value>
+    <comment>Tooltip explaining what the "Exact match" option does.</comment>
+  </data>
+  <data name="ExactMatchBadge.Text" xml:space="preserve">
+    <value>Exact match</value>
+    <comment>Badge shown on a mapping row whose origin shortcut requires an exact match.</comment>
+  </data>
   <data name="MouseButton_Left.Content" xml:space="preserve">
     <value>Left</value>
   </data>

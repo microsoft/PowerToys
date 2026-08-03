@@ -548,8 +548,10 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UpdateAppSpecificCheckBoxState()
         {
-            // Only enable app-specific remapping for shortcuts (multiple keys).
-            bool isShortcut = _triggerKeys.Count > 1;
+            // Only enable app-specific remapping for shortcuts (multiple keys). Count only the
+            // non-empty entries: auto-grow appends an empty placeholder after a modifier is picked,
+            // so a raw Count of 2 can still mean a single-key trigger.
+            bool isShortcut = _triggerKeys.Count(k => !string.IsNullOrEmpty(k)) > 1;
             bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
 
             try

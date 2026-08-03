@@ -68,6 +68,12 @@
             x:Key="StringVisibilityConverter"
             EmptyValue="Collapsed"
             NotEmptyValue="Visible" />
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <Style x:Key="ExactMatchBadgeStyle" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -223,6 +229,10 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
@@ -311,6 +321,10 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
@@ -428,6 +442,10 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
@@ -517,6 +535,10 @@
                                                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                                     <controls:IconLabelControl ActionType="Program" Label="{x:Bind AppName}" />
                                                                 </StackPanel>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
@@ -586,6 +608,10 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
+                                                                <TextBlock
+                                                                    x:Uid="ExactMatchBadge"
+                                                                    Style="{StaticResource ExactMatchBadgeStyle}"
+                                                                    Visibility="{x:Bind ExactMatch, Converter={StaticResource BoolToVisibilityConverter}}" />
                                                             </StackPanel>
                                                             <StackPanel
                                                                 Grid.Column="1"
