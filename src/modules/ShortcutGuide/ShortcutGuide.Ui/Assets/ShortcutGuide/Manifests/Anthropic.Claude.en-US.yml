@@ -65,7 +65,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - '<Enter>'
+              - "<Enter>"
       - Name: New line in message
         Shortcut:
           - Win: false
@@ -73,7 +73,7 @@ Shortcuts:
             Shift: true
             Alt: false
             Keys:
-              - '<Enter>'
+              - "<Enter>"
       - Name: Toggle extended thinking
         Shortcut:
           - Win: false
@@ -105,4 +105,4 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - '<Esc>'
+              - "<Escape>"
