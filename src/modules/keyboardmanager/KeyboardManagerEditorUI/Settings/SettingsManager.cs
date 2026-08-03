@@ -32,6 +32,12 @@ namespace KeyboardManagerEditorUI.Settings
         /// </summary>
         internal static bool IsNativeServiceAvailable => _mappingService is not null;
 
+        /// <summary>
+        /// Gets a value indicating whether the engine configuration was read successfully. When it
+        /// was not, this store must not be seeded or reconciled from the (empty) service view.
+        /// </summary>
+        internal static bool EngineConfigurationLoaded => _mappingService?.ConfigurationLoaded == true;
+
         public static EditorSettings EditorSettings { get; set; }
 
         static SettingsManager()
@@ -55,7 +61,10 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 if (!File.Exists(_settingsFilePath))
                 {
-                    if (_mappingService is not null)
+                    // Only seed from the service when it actually read the engine configuration:
+                    // seeding from an empty view would write an empty store and, on the next save,
+                    // present it as the user's whole configuration.
+                    if (_mappingService is not null && _mappingService.ConfigurationLoaded)
                     {
                         EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService();
                         WriteSettings(createdSettings);
@@ -136,14 +145,27 @@ namespace KeyboardManagerEditorUI.Settings
                 return;
             }
 
+            if (!service.ConfigurationLoaded)
+            {
+                // The service view is empty because the load failed, not because the user has no
+                // remaps. Reconciling against it would mark every stored mapping inactive.
+                ManagedCommon.Logger.LogWarning("Skipping reconciliation: the engine configuration was not loaded");
+                return;
+            }
+
             bool shortcutSettingsChanged = false;
 
             // Process all shortcut mappings
             foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
             {
-                if (!ShortcutMappingExists(mapping))
+                ShortcutSettings? existing = FindByOrigin(mapping);
+                if (existing is null)
                 {
                     AddShortcutMapping(EditorSettings, mapping);
+                    shortcutSettingsChanged = true;
+                }
+                else if (RepairFromService(existing, mapping))
+                {
                     shortcutSettingsChanged = true;
                 }
             }
@@ -271,14 +293,57 @@ namespace KeyboardManagerEditorUI.Settings
         /// OS-level and app-specific remaps in separate tables and allows the same origin in both,
         /// so matching on the origin alone would hide one of them from the editor.
         /// </summary>
-        /// <remarks>
-        /// Deliberately does not compare the operation type. GetShortcutRemap reports
-        /// operationType 0 for shortcut-to-text remaps (the text target lives in a different union
-        /// slot), so including it here would leave every text mapping unmatched.
-        /// </remarks>
         private static bool ShortcutMappingExists(ShortcutKeyMapping mapping)
         {
-            return EditorSettings.ShortcutSettingsDictionary.Values.Any(s => IsSameOrigin(s.Shortcut, mapping));
+            return FindByOrigin(mapping) is not null;
+        }
+
+        private static ShortcutSettings? FindByOrigin(ShortcutKeyMapping mapping)
+        {
+            return EditorSettings.ShortcutSettingsDictionary.Values.FirstOrDefault(s => IsSameOrigin(s.Shortcut, mapping));
+        }
+
+        /// <summary>
+        /// Brings a stored row back in line with what the engine actually has for that origin.
+        /// </summary>
+        /// <remarks>
+        /// Needed as a repair step, not just for tidiness: earlier builds recorded every
+        /// shortcut-to-text remap as a key remap with an empty target, because GetShortcutRemap
+        /// reported operationType 0 for text. Those rows are already in users' editorSettings.json
+        /// and would otherwise stay filed under key remappings forever, showing a blank target and
+        /// losing the text when opened for editing.
+        /// </remarks>
+        private static bool RepairFromService(ShortcutSettings stored, ShortcutKeyMapping fromService)
+        {
+            ShortcutOperationType previousType = stored.Shortcut.OperationType;
+            if (stored.Shortcut.Equals(fromService))
+            {
+                return false;
+            }
+
+            // Keep the editor-only state (Id, IsActive, Profiles); the engine owns the payload.
+            stored.Shortcut = fromService;
+
+            if (previousType != fromService.OperationType)
+            {
+                if (EditorSettings.ShortcutsByOperationType.TryGetValue(previousType, out var previousBucket))
+                {
+                    previousBucket.Remove(stored.Id);
+                }
+
+                if (!EditorSettings.ShortcutsByOperationType.TryGetValue(fromService.OperationType, out var newBucket))
+                {
+                    newBucket = new List<string>();
+                    EditorSettings.ShortcutsByOperationType[fromService.OperationType] = newBucket;
+                }
+
+                if (!newBucket.Contains(stored.Id))
+                {
+                    newBucket.Add(stored.Id);
+                }
+            }
+
+            return true;
         }
 
         private static bool IsSameOrigin(ShortcutKeyMapping left, ShortcutKeyMapping right)
