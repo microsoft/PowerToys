@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             PasteAsPlainTextShortcut = DefaultPasteAsPlainTextShortcut;
             PasteAsMarkdownShortcut = new();
             PasteAsJsonShortcut = new();
+            PasteAsSingleLineShortcut = new();
             CustomActions = new();
             AdditionalActions = new();
             IsAIEnabled = false;
@@ -98,6 +99,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-as-json-hotkey")]
         public HotkeySettings PasteAsJsonShortcut { get; set; }
+
+        [JsonPropertyName("paste-as-single-line-hotkey")]
+        public HotkeySettings PasteAsSingleLineShortcut { get; set; }
 
         [JsonPropertyName("custom-actions")]
         [CmdConfigureIgnoreAttribute]

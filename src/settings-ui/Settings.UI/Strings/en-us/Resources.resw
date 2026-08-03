@@ -2016,6 +2016,9 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsJson_Shortcut.Header" xml:space="preserve">
     <value>Paste as JSON directly</value>
   </data>
+  <data name="PasteAsSingleLine_Shortcut.Header" xml:space="preserve">
+    <value>Paste as single line directly</value>
+  </data>
   <data name="ImageToText.Header" xml:space="preserve">
     <value>Image to text</value>
   </data>
