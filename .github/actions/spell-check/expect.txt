@@ -49,6 +49,7 @@ ANDSCANS
 animatedvisuals
 Animnate
 AOC
+AOCB
 aocfnapldcnfbofgmbbllojgocaelgdd
 aot
 apicontract
@@ -2208,6 +2209,7 @@ xcopy
 xdf
 xfd
 xhair
+XMN
 xmp
 Xoshiro
 xsi
