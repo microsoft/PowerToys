@@ -44,6 +44,16 @@ namespace KeyboardManagerEditorUI
             // at all - which is exactly what happened in #49399.
             Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
 
+            // The editor is a standalone executable a user can start directly, so it has to honour
+            // the policy itself - the classic editor does the same check in wWinMain. Without it,
+            // an administrator disabling Keyboard Manager by GPO does not stop anyone from
+            // rewriting default.json through this window.
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredKeyboardManagerEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                Environment.Exit(0);
+            }
+
             // Before anything touches the configuration: a second instance would race the first one
             // on default.json and editorSettings.json.
             if (!SingleInstanceGuard.TryAcquire())
