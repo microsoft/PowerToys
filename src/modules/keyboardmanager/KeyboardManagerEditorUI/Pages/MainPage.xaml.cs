@@ -129,6 +129,16 @@ namespace KeyboardManagerEditorUI.Pages
                 MappingState = "Error";
             }
 
+            // A failed configuration read leaves the editor showing an empty list that looks like
+            // "you have no remaps". Saving is blocked in that state (KeyboardMappingService), so
+            // say why rather than letting the user hit an unexplained save failure.
+            if (_mappingService is { ConfigurationLoaded: false })
+            {
+                ConfigLoadFailedBanner.Title = ResourceHelper.GetString("Error_ConfigLoadFailed_Title");
+                ConfigLoadFailedBanner.Message = ResourceHelper.GetString("Error_ConfigLoadFailed_Message");
+                ConfigLoadFailedBanner.IsOpen = true;
+            }
+
             Unloaded += All_Unloaded;
 
             CheckServiceStatus();
@@ -774,10 +784,38 @@ namespace KeyboardManagerEditorUI.Pages
                         LoadAllMappings();
                         break;
                 }
+
+                // The row that had focus is gone and the flyout closed with it, so without this a
+                // screen-reader user gets no confirmation that anything happened.
+                AnnounceToScreenReader(ResourceHelper.GetString("Announcement_MappingDeleted"));
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error deleting mapping: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Raises a live-region notification on the page so assistive technology reports an action
+        /// whose only visible effect is that something disappeared.
+        /// </summary>
+        private void AnnounceToScreenReader(string message)
+        {
+            try
+            {
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.FromElement(this);
+                peer ??= Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(this);
+
+                peer?.RaiseNotificationEvent(
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationKind.ItemRemoved,
+                    Microsoft.UI.Xaml.Automation.Peers.AutomationNotificationProcessing.MostRecent,
+                    message,
+                    "KeyboardManagerEditorMappingChanged");
+            }
+            catch (Exception ex)
+            {
+                // Announcements are best-effort; never let one break the delete.
+                Logger.LogWarning("Could not raise an accessibility notification: " + ex.Message);
             }
         }
 

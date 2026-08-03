@@ -16,6 +16,7 @@
         HorizontalAlignment="Center"
         HorizontalContentAlignment="Center"
         VerticalContentAlignment="Center"
+        AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneWay}"
         CornerRadius="{StaticResource OverlayCornerRadius}"
         FontSize="16"
         Style="{StaticResource DefaultKeyVisualDropDownButtonStyle}">

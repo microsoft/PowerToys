@@ -230,6 +230,39 @@
     <value>Exact match</value>
     <comment>Badge shown on a mapping row whose origin shortcut requires an exact match.</comment>
   </data>
+  <data name="Error_ConfigLoadFailed_Title" xml:space="preserve">
+    <value>Your remappings could not be loaded</value>
+  </data>
+  <data name="Error_ConfigLoadFailed_Message" xml:space="preserve">
+    <value>The Keyboard Manager configuration file could not be read, so the list below may be incomplete. Changes cannot be saved until you close and reopen the editor.</value>
+  </data>
+  <data name="TriggerKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record the keys to remap</value>
+    <comment>Accessible name for the button that starts and stops recording the trigger key or shortcut.</comment>
+  </data>
+  <data name="ActionKeyToggleBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Record the keys to send instead</value>
+    <comment>Accessible name for the button that starts and stops recording the target key or shortcut.</comment>
+  </data>
+  <data name="MappingEnabledToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Mapping enabled</value>
+    <comment>Accessible name for the per-row switch that turns a mapping on or off.</comment>
+  </data>
+  <data name="MappingOverflowButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options for this mapping</value>
+    <comment>Accessible name for the per-row button that opens the delete menu.</comment>
+  </data>
+  <data name="KeyDropDown_AccessibleName" xml:space="preserve">
+    <value>Key: {0}. Select a different key</value>
+    <comment>{0} is the name of the currently selected key, for example "Ctrl".</comment>
+  </data>
+  <data name="KeyDropDown_Empty_AccessibleName" xml:space="preserve">
+    <value>No key selected. Select a key</value>
+  </data>
+  <data name="Announcement_MappingDeleted" xml:space="preserve">
+    <value>Mapping deleted</value>
+    <comment>Announced to screen readers after a mapping row is removed.</comment>
+  </data>
   <data name="MouseButton_Left.Content" xml:space="preserve">
     <value>Left</value>
   </data>
