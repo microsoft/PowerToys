@@ -69,25 +69,17 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
         /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
         /// </param>
-        /// <param name="probeCodes">
-        /// Sweep list for the maximum-compatibility probe; defaults to
-        /// <see cref="NativeConstants.ContinuousVcpCodes"/>. Forwarded from
-        /// <see cref="VcpFeatureProbeService"/>, which has always accepted it, so a test can widen the
-        /// sweep and prove the known-good cache stays bounded to the codes
-        /// <see cref="ContinuousVcpInitializer"/> can actually apply.
-        /// </param>
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
             ISystemClock clock,
             IVcpFeatureReader reader,
-            Func<TimeSpan, CancellationToken, Task>? delayAsync = null,
-            IReadOnlyList<byte>? probeCodes = null)
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             _knownGoodStore = knownGoodStore;
             _clock = clock;
             _vcpReader = reader;
             _delayAsync = delayAsync ?? Task.Delay;
-            _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync, probeCodes);
+            _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
             _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore, _clock);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
@@ -519,14 +511,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             // different question from whether the reading was real. Keeping it is the point: a dead
             // handle usually means a cable or KVM switch, and the next rediscovery is exactly the
             // pass that wants the value this one managed to read.
-            //
-            // Bounded to ContinuousVcpCodes because VcpFeatureProbeService takes its sweep list
-            // through the constructor. Widening that list without a matching arm in
-            // ContinuousVcpInitializer would persist a code nothing ever applies, while Reconcile
-            // would still mark it supported — lighting up a control that reads as unknown and writes
-            // into the void. The bound keeps that contract in code rather than in a comment.
-            foreach (var observation in live.Values.Where(value =>
-                         value.IsSuccess && Array.IndexOf(ContinuousVcpCodes, value.Code) >= 0))
+            foreach (var observation in live.Values.Where(value => value.IsSuccess))
             {
                 _knownGoodStore.UpsertKnownGoodFeature(
                     monitorId,

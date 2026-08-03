@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -126,43 +125,12 @@ public sealed class DdcCiControllerCompatibilityGateTests
         Assert.AreEqual(30, store.Upserts[0].Current);
     }
 
-    [TestMethod]
-    public async Task MaxCompatibility_OnlyContinuousCodesReachTheCache()
-    {
-        // The probe's sweep list is constructor-injectable, but the known-good cache may not follow
-        // it past the codes ContinuousVcpInitializer has an arm for. Drop the ContinuousVcpCodes
-        // bound in FetchCapabilitiesWithFallbackAsync and 0x60 is persisted forever, after which
-        // Reconcile marks it supported on every later pass and nothing ever applies a value for it.
-        var store = new RecordingKnownGoodStore();
-        var reader = new ScriptedReader
-        {
-            [0x10] = VcpReadAttempt.Success(30, 100),
-            [0x60] = VcpReadAttempt.Success(0x11, 0x12),
-        };
-        using var controller = NewController(
-            store,
-            reader,
-            maxCompatibility: true,
-            probeCodes: new byte[] { 0x10, 0x60 });
-
-        var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
-            IntPtr.Zero, MonitorId, CancellationToken.None);
-
-        Assert.IsTrue(
-            evidence.Capabilities!.SupportsVcpCode(0x60),
-            "A widened sweep still reaches Reconcile; only persistence is bounded.");
-        CollectionAssert.AreEqual(
-            new byte[] { 0x10 },
-            store.Upserts.Select(feature => feature.Code).ToArray());
-    }
-
     private static DdcCiController NewController(
         RecordingKnownGoodStore store,
         ScriptedReader reader,
         bool maxCompatibility,
-        ISystemClock? clock = null,
-        IReadOnlyList<byte>? probeCodes = null) =>
-        new(store, clock ?? new FixedClock(), reader, (_, _) => Task.CompletedTask, probeCodes)
+        ISystemClock? clock = null) =>
+        new(store, clock ?? new FixedClock(), reader, (_, _) => Task.CompletedTask)
         {
             MaxCompatibilityMode = maxCompatibility,
         };

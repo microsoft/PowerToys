@@ -298,10 +298,10 @@ public sealed class MonitorStateManagerTests
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 10));
 
-        // 20 rounds x 64 codes is already ~1300 interleavings, which reproduces the tear reliably.
-        // Every upsert that changes a value also resets the save debouncer, cancelling the pending
-        // Task.Delay with an OperationCanceledException, so a larger count buys nothing but throw
-        // churn and first-chance exception noise under a debugger.
+        // 20 rounds x 64 codes is already ~1300 interleaved operations, which reproduces the tear
+        // reliably. Every upsert that changes a value also resets the save debouncer, cancelling the
+        // pending Task.Delay with an OperationCanceledException, so a larger count buys nothing but
+        // throw churn and first-chance exception noise under a debugger.
         const int Rounds = 20;
         Exception? readerFailure = null;
         using var start = new Barrier(2);
