@@ -127,11 +127,11 @@ namespace ShortcutGuide.Pages
                 ? (IReadOnlyList<ShortcutEntry>)pinnedItems
                 : Array.Empty<ShortcutEntry>();
             var filteredPinned = FilterShortcuts(pinned, normalizedQuery);
-            if (filteredPinned.Length > 0 || !isSearchActive)
+            if (filteredPinned.Count > 0 || !isSearchActive)
             {
                 this.Rows.Add(ShortcutListItem.Header(
                     ResourceLoaderInstance.ResourceLoader.GetString("PinnedHeaderTxt/Text")));
-                if (filteredPinned.Length == 0)
+                if (filteredPinned.Count == 0)
                 {
                     this.Rows.Add(ShortcutListItem.Empty(
                         ResourceLoaderInstance.ResourceLoader.GetString("PinnedEmptyText/Text")));
@@ -148,7 +148,7 @@ namespace ShortcutGuide.Pages
                 .Where(s => s.Recommended)
                 .ToList() ?? new List<ShortcutEntry>();
             var filteredRecommended = FilterShortcuts(recommended, normalizedQuery);
-            if (filteredRecommended.Length > 0)
+            if (filteredRecommended.Count > 0)
             {
                 this.Rows.Add(ShortcutListItem.Header(
                     ResourceLoaderInstance.ResourceLoader.GetString("RecommendedHeaderText/Text")));
@@ -184,7 +184,7 @@ namespace ShortcutGuide.Pages
                     }
 
                     var items = FilterShortcuts(category.Properties ?? Array.Empty<ShortcutEntry>(), normalizedQuery);
-                    if (items.Length == 0)
+                    if (items.Count == 0)
                     {
                         continue;
                     }
@@ -198,7 +198,7 @@ namespace ShortcutGuide.Pages
             if (taskbarCategory is { } tb && tb.Properties is { Length: > 0 } taskbarItems)
             {
                 var filteredTaskbarItems = FilterShortcuts(taskbarItems, normalizedQuery);
-                if (filteredTaskbarItems.Length > 0)
+                if (filteredTaskbarItems.Count > 0)
                 {
                     this.Rows.Add(ShortcutListItem.Header(
                         ResourceLoaderInstance.ResourceLoader.GetString("TaskbarHeaderTxt/Text")));
@@ -230,8 +230,13 @@ namespace ShortcutGuide.Pages
             }
         }
 
-        private static ShortcutEntry[] FilterShortcuts(IEnumerable<ShortcutEntry> shortcuts, string query)
+        private static IReadOnlyList<ShortcutEntry> FilterShortcuts(IReadOnlyList<ShortcutEntry> shortcuts, string query)
         {
+            if (query.Length == 0)
+            {
+                return shortcuts;
+            }
+
             return shortcuts
                 .Where(shortcut => ShortcutSearchMatcher.Matches(shortcut, query))
                 .ToArray();

@@ -57,6 +57,9 @@
             Margin="16,16,16,8"
             AutomationProperties.LiveSetting="Polite"
             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            IsHitTestVisible="False"
+            TextWrapping="Wrap"
+            VerticalAlignment="Top"
             Visibility="Collapsed" />
     </Grid>
 </Page>
