@@ -100,10 +100,14 @@ struct CaptureFrame
 class CaptureFrameWait
 {
 public:
+    // borderRequired false suppresses the system capture border before the
+    // session starts; the process must already hold borderless capture
+    // access for it to take effect.
     CaptureFrameWait(
         winrt::Direct3D11::IDirect3DDevice const& device,
         winrt::GraphicsCaptureItem const& item,
-        winrt::SizeInt32 const& size );
+        winrt::SizeInt32 const& size,
+        bool borderRequired = true );
     ~CaptureFrameWait();
 
     std::optional<CaptureFrame> TryGetNextFrame();
@@ -123,6 +127,11 @@ public:
         {
             m_session.IsBorderRequired( show );
         }
+    }
+    void RecreateFramePool( winrt::SizeInt32 const& size )
+    {
+        auto lock = m_lock.lock_exclusive();
+        m_framePool.Recreate( m_device, winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized, 1, size );
     }
 
 private:
