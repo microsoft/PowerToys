@@ -5,9 +5,9 @@
 using System;
 
 using ManagedCommon;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
-using WinUIEx;
 using WorkspacesLauncherUI.Views;
 
 namespace WorkspacesLauncherUI
@@ -16,7 +16,7 @@ namespace WorkspacesLauncherUI
     /// Status window showing workspace launch progress.
     /// Hosts <see cref="StatusPage"/> which owns the ViewModel and renders the app list.
     /// </summary>
-    public sealed partial class StatusWindow : WindowEx
+    public sealed partial class StatusWindow : Window
     {
         public StatusWindow()
         {
@@ -24,7 +24,19 @@ namespace WorkspacesLauncherUI
 
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(AppTitleBar);
-            AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
+
+            // Configure window size and behavior
+            var appWindow = this.AppWindow;
+            appWindow.Resize(new Windows.Graphics.SizeInt32(360, 360));
+            appWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
+
+            if (appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.IsResizable = false;
+                presenter.IsMaximizable = false;
+                presenter.IsMinimizable = false;
+                presenter.IsAlwaysOnTop = true;
+            }
 
             // Set title from resources
             string title;
@@ -45,7 +57,19 @@ namespace WorkspacesLauncherUI
 
             this.Closed += Window_Closed;
 
-            this.CenterOnScreen();
+            // Center on screen
+            CenterOnScreen(appWindow);
+        }
+
+        private static void CenterOnScreen(AppWindow appWindow)
+        {
+            var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
+            if (displayArea != null)
+            {
+                int centerX = (displayArea.WorkArea.Width - appWindow.Size.Width) / 2;
+                int centerY = (displayArea.WorkArea.Height - appWindow.Size.Height) / 2;
+                appWindow.Move(new Windows.Graphics.PointInt32(centerX, centerY));
+            }
         }
 
         private void StatusPage_CloseRequested(object sender, EventArgs e)
