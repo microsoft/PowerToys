@@ -299,14 +299,14 @@ namespace ShortcutGuide
                 return;
             }
 
-            _activeWindowsKey = pressedWindowsKey;
-            _closeOnWindowsKeyRelease = action == ShortcutGuideWindowsKeyAction.TaskbarIndicators ||
-                                        settings.Properties?.CloseOnWindowsKeyRelease?.Value != false;
-
             if (OverlayWindow.AppWindow.IsVisible)
             {
                 return;
             }
+
+            _activeWindowsKey = pressedWindowsKey;
+            _closeOnWindowsKeyRelease = action == ShortcutGuideWindowsKeyAction.TaskbarIndicators ||
+                                        settings.Properties?.CloseOnWindowsKeyRelease?.Value != false;
 
             if (action == ShortcutGuideWindowsKeyAction.OpenShortcutGuide)
             {

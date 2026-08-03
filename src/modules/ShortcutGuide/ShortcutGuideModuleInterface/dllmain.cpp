@@ -319,7 +319,16 @@ private:
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
-            auto propertiesObject = settingsObject.GetNamedObject(L"properties");
+            winrt::Windows::Data::Json::JsonObject propertiesObject;
+            try
+            {
+                propertiesObject = settingsObject.GetNamedObject(L"properties");
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Shortcut Guide settings properties");
+            }
+
             try
             {
                 // Parse HotKey
