@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using WorkspacesLauncherUI.Data;
@@ -34,41 +33,9 @@ namespace WorkspacesLauncherUI.Models
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Loading))]
-        [NotifyPropertyChangedFor(nameof(StateGlyph))]
-        [NotifyPropertyChangedFor(nameof(StateColor))]
-        [NotifyPropertyChangedFor(nameof(StateColorValue))]
+        [NotifyPropertyChangedFor(nameof(LaunchStateInt))]
         private LaunchingState _launchState;
 
-        partial void OnLaunchStateChanged(LaunchingState value)
-        {
-            _stateColorBrush = null;
-        }
-
-        public string StateGlyph
-        {
-            get => LaunchState switch
-            {
-                LaunchingState.LaunchedAndMoved => "\uE73E",
-                LaunchingState.Failed => "\uEA39",
-                _ => "\uEA39",
-            };
-        }
-
-        private SolidColorBrush _stateColorBrush;
-
-        public Brush StateColor
-        {
-            get => _stateColorBrush ??= new SolidColorBrush(StateColorValue);
-        }
-
-        public Windows.UI.Color StateColorValue
-        {
-            get => LaunchState switch
-            {
-                LaunchingState.LaunchedAndMoved => Windows.UI.Color.FromArgb(255, 0, 128, 0),
-                LaunchingState.Failed => Windows.UI.Color.FromArgb(255, 254, 0, 0),
-                _ => Windows.UI.Color.FromArgb(255, 254, 0, 0),
-            };
-        }
+        public int LaunchStateInt => (int)LaunchState;
     }
 }

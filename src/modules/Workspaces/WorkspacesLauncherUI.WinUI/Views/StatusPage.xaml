@@ -63,16 +63,24 @@
                                             IsActive="True" />
                                     </tkcontrols:Case>
                                     <tkcontrols:Case Value="False">
-                                        <TextBlock
-                                            Width="20"
-                                            Height="20"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            FontSize="20"
-                                            Foreground="{x:Bind StateColor, Mode=OneWay}"
-                                            Text="{x:Bind StateGlyph, Mode=OneWay}" />
+                                        <tkcontrols:SwitchPresenter
+                                            TargetType="x:Int32"
+                                            Value="{x:Bind LaunchStateInt, Mode=OneWay}">
+                                            <tkcontrols:Case IsDefault="True" Value="3">
+                                                <FontIcon
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                                    Glyph="&#xEA39;" />
+                                            </tkcontrols:Case>
+                                            <tkcontrols:Case Value="2">
+                                                <FontIcon
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    FontSize="16"
+                                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                    Glyph="&#xE73E;" />
+                                            </tkcontrols:Case>
+                                        </tkcontrols:SwitchPresenter>
                                     </tkcontrols:Case>
                                 </tkcontrols:SwitchPresenter>
                             </Grid>

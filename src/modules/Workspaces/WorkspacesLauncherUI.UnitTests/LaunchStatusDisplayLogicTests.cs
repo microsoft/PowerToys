@@ -57,64 +57,50 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusIcon_WhenSuccessful_ShowsGreenCheckmarkGlyph()
+        public void StatusIcon_WhenSuccessful_ExposesLaunchedAndMovedState()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.LaunchedAndMoved };
-            Assert.AreEqual("\uE73E", app.StateGlyph, "LaunchedAndMoved should show checkmark glyph");
+            Assert.AreEqual((int)LaunchingState.LaunchedAndMoved, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusIcon_WhenFailed_ShowsRedErrorGlyph()
+        public void StatusIcon_WhenFailed_ExposesFailedState()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Failed };
-            Assert.AreEqual("\uEA39", app.StateGlyph, "Failed should show error glyph");
+            Assert.AreEqual((int)LaunchingState.Failed, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusIcon_WhenCanceled_ShowsRedErrorGlyph()
+        public void StatusIcon_WhenCanceled_ExposesCanceledState()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Canceled };
-            Assert.AreEqual("\uEA39", app.StateGlyph, "Canceled should fall through to default error glyph");
+            Assert.AreEqual((int)LaunchingState.Canceled, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusColor_WhenSuccessful_IsGreenRgb0_128_0()
+        public void LaunchStateInt_WhenSuccessful_ReturnsExpectedValue()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.LaunchedAndMoved };
-            var color = app.StateColorValue;
-
-            Assert.AreNotEqual(default(Windows.UI.Color), color);
-            Assert.AreEqual(0, color.R, "Green color R component");
-            Assert.AreEqual(128, color.G, "Green color G component");
-            Assert.AreEqual(0, color.B, "Green color B component");
-            Assert.AreEqual(255, color.A, "Green color A component");
+            Assert.AreEqual(2, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusColor_WhenFailed_IsRedRgb254_0_0()
+        public void LaunchStateInt_WhenFailed_ReturnsExpectedValue()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Failed };
-            var color = app.StateColorValue;
-
-            Assert.AreNotEqual(default(Windows.UI.Color), color);
-            Assert.AreEqual(254, color.R, "Red color R component");
-            Assert.AreEqual(0, color.G, "Red color G component");
-            Assert.AreEqual(0, color.B, "Red color B component");
+            Assert.AreEqual(3, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StatusColor_WhenCanceled_IsRedRgb254_0_0()
+        public void LaunchStateInt_WhenCanceled_ReturnsExpectedValue()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Canceled };
-            var color = app.StateColorValue;
-
-            Assert.AreNotEqual(default(Windows.UI.Color), color);
-            Assert.AreEqual(254, color.R, "Canceled should fall through to red");
+            Assert.AreEqual(4, app.LaunchStateInt);
         }
 
         [TestMethod]
@@ -135,7 +121,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StateProgression_WaitingToSuccess_TransitionsSpinnerToGreenCheckmark()
+        public void StateProgression_WaitingToSuccess_TransitionsSpinnerToComplete()
         {
             var app = new AppLaunching { Name = "Test", LaunchState = LaunchingState.Waiting };
             Assert.IsTrue(app.Loading);
@@ -145,25 +131,19 @@ namespace WorkspacesLauncherUI.UnitTests
 
             app.LaunchState = LaunchingState.LaunchedAndMoved;
             Assert.IsFalse(app.Loading);
-            Assert.AreEqual("\uE73E", app.StateGlyph);
-            var color = app.StateColorValue;
-            Assert.AreEqual(0, color.R);
-            Assert.AreEqual(128, color.G);
+            Assert.AreEqual((int)LaunchingState.LaunchedAndMoved, app.LaunchStateInt);
         }
 
         [TestMethod]
         [TestCategory("Model")]
-        public void StateProgression_WaitingToFailed_TransitionsSpinnerToRedError()
+        public void StateProgression_WaitingToFailed_TransitionsSpinnerToError()
         {
             var app = new AppLaunching { Name = "Test", LaunchState = LaunchingState.Waiting };
             Assert.IsTrue(app.Loading);
 
             app.LaunchState = LaunchingState.Failed;
             Assert.IsFalse(app.Loading);
-            Assert.AreEqual("\uEA39", app.StateGlyph);
-            var color = app.StateColorValue;
-            Assert.AreEqual(254, color.R);
-            Assert.AreEqual(0, color.G);
+            Assert.AreEqual((int)LaunchingState.Failed, app.LaunchStateInt);
         }
     }
 }
