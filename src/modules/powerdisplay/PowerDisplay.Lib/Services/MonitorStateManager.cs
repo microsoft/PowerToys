@@ -210,53 +210,6 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Clears the cached known-good VCP observations for each exact DevicePath monitor Id in
-        /// <paramref name="monitorIds"/>, leaving the user's saved brightness, contrast, volume, color
-        /// temperature and capabilities untouched.
-        /// </summary>
-        /// <remarks>
-        /// The known-good cache is discovery state owned by maximum-compatibility mode, so it is
-        /// collected once settings stops referencing a monitor. Saved user values are not: monitor state
-        /// entries were never removed before this cache existed, and a display that returns after a long
-        /// absence should still come back with the brightness the user chose. Legacy entries are never
-        /// touched here; <see cref="MigrateLegacyKeys"/> either migrates or explicitly drops them.
-        /// <para>
-        /// Known blind spot: a monitor whose physical handle dies mid-discovery seeds an entry — the
-        /// probe persists what it read before the handle went — but never reaches settings.json, so it
-        /// is never named in <paramref name="monitorIds"/> and its cache is never collected. Accepted:
-        /// the entry holds no user values and costs a few dozen bytes, and the monitor rejoins normal
-        /// retention the first time a discovery pass completes for it.
-        /// </para>
-        /// </remarks>
-        /// <param name="monitorIds">The exact DevicePath monitor Ids that settings no longer references.</param>
-        public void RemoveKnownGoodFeatures(IEnumerable<string> monitorIds)
-        {
-            ArgumentNullException.ThrowIfNull(monitorIds);
-            var removed = false;
-
-            foreach (var monitorId in monitorIds)
-            {
-                if (string.IsNullOrEmpty(monitorId) ||
-                    MonitorIdentity.IsLegacyId(monitorId) ||
-                    !_states.TryGetValue(monitorId, out var state))
-                {
-                    continue;
-                }
-
-                lock (state)
-                {
-                    removed |= state.KnownGoodVcpFeatures.Count > 0;
-                    state.KnownGoodVcpFeatures.Clear();
-                }
-            }
-
-            if (removed)
-            {
-                MarkDirtyAndScheduleSave();
-            }
-        }
-
-        /// <summary>
         /// One-shot upgrade migration: rewrite legacy <c>"{Source}_{EdidId}_{N}"</c> keys
         /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on
         /// (EdidId, MonitorNumber). Legacy keys are always removed; if no exact match is

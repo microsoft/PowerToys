@@ -153,10 +153,11 @@ namespace PowerDisplay.Common.Drivers.DDC
                         // Known limitation: seeding a false positive needs the panel to answer an
                         // unimplemented code with a non-zero, in-range maximum, since the common
                         // current=0/max=0 garbage reply fails VcpFeatureValue.IsValid and is never
-                        // cached. One that does slip through is permanent in practice:
-                        // RemoveKnownGoodFeatures only fires once settings retention drops the monitor
-                        // entry, which requires 30 days both undiscovered and unhidden, so a monitor in
-                        // daily use never reclaims it.
+                        // cached. One that does slip through is permanent — nothing retracts a cached
+                        // code, so the control stays in the flyout until the user clears
+                        // monitor_state.json. Accepted for the same reason the retraction above is:
+                        // the panels this mode exists for refuse codes they do implement far more
+                        // often than they answer codes they do not.
                         if (capabilities?.SupportsVcpCode(code) != true)
                         {
                             cacheSupplementedCodes.Add(code);

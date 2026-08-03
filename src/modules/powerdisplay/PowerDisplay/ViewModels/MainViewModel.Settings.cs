@@ -543,21 +543,6 @@ public partial class MainViewModel
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
                 PowerDisplaySettings.ModuleName);
 
-            // Collect only the monitors this reconciliation observably dropped — the Rebuild input
-            // minus its output.
-            //
-            // Cleanup must be driven by an observed drop, never by absence from the rebuilt list. A
-            // missing or corrupt settings.json makes GetSettingsOrDefault return — and persist — a
-            // defaults object whose monitor list is empty and is indistinguishable from a real one;
-            // pruning by absence would then delete the saved brightness, contrast, volume, color
-            // temperature and known-good VCP cache of every monitor not connected at that instant.
-            // With no observed drop there is nothing to delete.
-            var droppedStateIds = new HashSet<string>(
-                retentionInput.Select(monitor => monitor.Id).Where(id => !string.IsNullOrEmpty(id)),
-                MonitorIdComparer.Instance);
-            droppedStateIds.ExceptWith(monitors.Select(monitor => monitor.Id));
-            _stateManager.RemoveKnownGoodFeatures(droppedStateIds);
-
             // Signal Settings UI that monitor list has been updated
             SignalMonitorsRefreshEvent();
         }

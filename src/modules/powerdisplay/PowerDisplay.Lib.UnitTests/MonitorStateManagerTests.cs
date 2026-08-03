@@ -4,7 +4,6 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Drivers.DDC;
@@ -118,67 +117,6 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void RemoveKnownGoodFeatures_ClearsCacheButKeepsSavedUserValues()
-    {
-        // MonitorA is never named in the removal list, so it also stands for the case where
-        // reconciliation observed no drop at all and nothing may be collected.
-        using (var manager = new MonitorStateManager(_statePath))
-        {
-            manager.UpdateMonitorParameter(MonitorA, "Brightness", 25);
-            manager.UpdateMonitorParameter(MonitorA, "Volume", 20);
-            manager.UpdateMonitorParameter(MonitorB, "Contrast", 80);
-            manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
-            manager.UpsertKnownGoodFeature(MonitorB, Feature(0x10, current: 80));
-
-            manager.RemoveKnownGoodFeatures(new[] { MonitorB });
-        }
-
-        using var reloaded = new MonitorStateManager(_statePath);
-
-        // MonitorB's entry itself survives: only the discovery cache this feature owns is collected.
-        Assert.AreEqual(25, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
-        Assert.AreEqual(20, reloaded.GetMonitorParameters(MonitorA)?.Volume);
-        Assert.AreEqual(80, reloaded.GetMonitorParameters(MonitorB)?.Contrast);
-        Assert.AreEqual(1, reloaded.GetKnownGoodFeatures(MonitorA).Count);
-        Assert.AreEqual(0, reloaded.GetKnownGoodFeatures(MonitorB).Count);
-    }
-
-    [TestMethod]
-    public void RemoveKnownGoodFeatures_MatchesIdsCaseInsensitively()
-    {
-        using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 20));
-
-        manager.RemoveKnownGoodFeatures(new[] { MonitorA.ToLowerInvariant() });
-
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorA).Count);
-    }
-
-    [TestMethod]
-    public void RemoveKnownGoodFeatures_LegacyEntryRemainsAvailableForMigration()
-    {
-        const string legacyId = "DDC_AOCB326_1";
-
-        using (var manager = new MonitorStateManager(_statePath))
-        {
-            manager.UpdateMonitorParameter(legacyId, "Brightness", 42);
-            manager.UpsertKnownGoodFeature(legacyId, Feature(0x10, current: 42));
-
-            manager.RemoveKnownGoodFeatures(new[] { legacyId });
-            Assert.AreEqual(42, manager.GetMonitorParameters(legacyId)?.Brightness);
-            Assert.AreEqual(1, manager.GetKnownGoodFeatures(legacyId).Count);
-
-            manager.MigrateLegacyKeys(new[] { (MonitorA, 1) });
-            Assert.AreEqual(42, manager.GetMonitorParameters(MonitorA)?.Brightness);
-            Assert.IsNull(manager.GetMonitorParameters(legacyId));
-        }
-
-        using var reloaded = new MonitorStateManager(_statePath);
-        Assert.AreEqual(42, reloaded.GetMonitorParameters(MonitorA)?.Brightness);
-        Assert.IsNull(reloaded.GetMonitorParameters(legacyId));
-    }
-
-    [TestMethod]
     public void MigrateLegacyKeys_MergesMissingFieldsAndFeaturesIntoCanonicalState()
     {
         const string legacyId = "DDC_AOCB326_1";
@@ -282,75 +220,6 @@ public sealed class MonitorStateManagerTests
 
         using var reloaded = new MonitorStateManager(_statePath);
         Assert.AreEqual(41, reloaded.GetKnownGoodFeatures(MonitorA)[0x10].Current);
-    }
-
-    [TestMethod]
-    public void ConcurrentUpsertAndRead_OnSameMonitorDoNotTearTheFeatureMap()
-    {
-        // Drives the contention `lock (state)` exists for: a single monitor Id, whose one
-        // MonitorState is the lock object shared by the discovery thread upserting several VCP
-        // codes and the debounced save enumerating that same KnownGoodVcpFeatures dictionary.
-        // Remove the locks and the reader's ToDictionary inside GetKnownGoodFeatures observes a
-        // dictionary whose version changed mid-enumeration, and throws InvalidOperationException.
-        //
-        // Two different monitor Ids would not reproduce it: GetOrAdd maps them to two MonitorState
-        // instances and therefore two disjoint locks.
-        using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 10));
-
-        // 20 rounds x 64 codes is already ~1300 interleaved operations, which reproduces the tear
-        // reliably. Every upsert that changes a value also resets the save debouncer, cancelling the
-        // pending Task.Delay with an OperationCanceledException, so a larger count buys nothing but
-        // throw churn and first-chance exception noise under a debugger.
-        const int Rounds = 20;
-        Exception? readerFailure = null;
-        using var start = new Barrier(2);
-
-        var writer = new Thread(() =>
-        {
-            start.SignalAndWait();
-            for (var round = 0; round < Rounds; round++)
-            {
-                for (byte code = 0x20; code < 0x60; code++)
-                {
-                    manager.UpsertKnownGoodFeature(MonitorA, Feature(code, current: code));
-                }
-
-                manager.RemoveKnownGoodFeatures(new[] { MonitorA });
-            }
-        })
-        {
-            IsBackground = true,
-        };
-
-        var reader = new Thread(() =>
-        {
-            start.SignalAndWait();
-            try
-            {
-                for (var round = 0; round < Rounds; round++)
-                {
-                    foreach (var pair in manager.GetKnownGoodFeatures(MonitorA))
-                    {
-                        Assert.AreEqual(100, pair.Value.Maximum);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                readerFailure = ex;
-            }
-        })
-        {
-            IsBackground = true,
-        };
-
-        writer.Start();
-        reader.Start();
-
-        Assert.IsTrue(writer.Join(TimeSpan.FromSeconds(30)), "Writer thread did not finish.");
-        Assert.IsTrue(reader.Join(TimeSpan.FromSeconds(30)), "Reader thread did not finish.");
-        Assert.IsNull(readerFailure, $"Concurrent read observed a torn feature map: {readerFailure}");
     }
 
     private static KnownGoodVcpFeature Feature(byte code, int current, DateTime? observedUtc = null) => new()
