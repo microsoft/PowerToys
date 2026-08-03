@@ -43,9 +43,9 @@ public sealed class MonitorStateManagerTests
         }
         catch (IOException)
         {
-            // A debounced SaveStateToDiskAsync can still hold the state file when the test's
+            // A debounced SaveStateToDisk can still hold the state file when the test's
             // using-block returns: Dispose cancels the debouncer, but a save already past its
-            // delay is inside File.WriteAllTextAsync with no token to observe. Leaving a temp
+            // delay is inside WriteStateFile with no token to observe. Leaving a temp
             // directory behind is not worth failing an otherwise green test over.
         }
         catch (UnauthorizedAccessException)
