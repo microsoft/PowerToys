@@ -458,6 +458,12 @@
   <data name="Validation_OneKeyMapping_Message" xml:space="preserve">
     <value>A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.</value>
   </data>
+  <data name="Validation_ShortcutMissingModifier_Title" xml:space="preserve">
+    <value>Shortcut needs a modifier key</value>
+  </data>
+  <data name="Validation_ShortcutMissingModifier_Message" xml:space="preserve">
+    <value>A shortcut must include at least one modifier key (Win, Ctrl, Alt or Shift) along with an action key.</value>
+  </data>
   <data name="Warning_ShortcutStartWithModifier" xml:space="preserve">
     <value>Shortcuts must start with a modifier key (Ctrl, Alt, Shift, or Win).</value>
   </data>

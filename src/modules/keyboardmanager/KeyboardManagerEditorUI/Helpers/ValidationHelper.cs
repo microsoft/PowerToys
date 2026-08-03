@@ -28,6 +28,7 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
+            { ValidationErrorType.ShortcutMissingModifier, (ResourceHelper.GetString("Validation_ShortcutMissingModifier_Title"), ResourceHelper.GetString("Validation_ShortcutMissingModifier_Message")) },
         };
 
         public static ValidationErrorType ValidateKeyMapping(
@@ -53,6 +54,12 @@ namespace KeyboardManagerEditorUI.Helpers
                 (remappedKeys.Count > 1 && ContainsOnlyModifierKeys(remappedKeys)))
             {
                 return ValidationErrorType.ModifierOnly;
+            }
+
+            if ((originalKeys.Count > 1 && !ContainsModifierKey(originalKeys)) ||
+                (remappedKeys.Count > 1 && !ContainsModifierKey(remappedKeys)))
+            {
+                return ValidationErrorType.ShortcutMissingModifier;
             }
 
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
@@ -101,6 +108,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.ModifierOnly;
             }
 
+            if (originalKeys.Count > 1 && !ContainsModifierKey(originalKeys))
+            {
+                return ValidationErrorType.ShortcutMissingModifier;
+            }
+
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
             {
                 return ValidationErrorType.EmptyAppName;
@@ -145,6 +157,11 @@ namespace KeyboardManagerEditorUI.Helpers
             if (keys.Count > 1 && ContainsOnlyModifierKeys(keys))
             {
                 return ValidationErrorType.ModifierOnly;
+            }
+
+            if (keys.Count > 1 && !ContainsModifierKey(keys))
+            {
+                return ValidationErrorType.ShortcutMissingModifier;
             }
 
             if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
@@ -230,6 +247,26 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             return keys.All(key =>
+            {
+                int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(key);
+                var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);
+                return keyType != KeyType.Action;
+            });
+        }
+
+        /// <summary>
+        /// Returns true when at least one of the keys is a modifier. A multi-key shortcut without a
+        /// modifier is rejected by the engine's own notion of a valid shortcut
+        /// (<c>EditorHelpers::IsValidShortcut</c>), so it would be stored but never match.
+        /// </summary>
+        public static bool ContainsModifierKey(List<string> keys)
+        {
+            if (keys == null || keys.Count == 0)
+            {
+                return false;
+            }
+
+            return keys.Any(key =>
             {
                 int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(key);
                 var keyType = (KeyType)KeyboardManagerInterop.GetKeyType(keyCode);

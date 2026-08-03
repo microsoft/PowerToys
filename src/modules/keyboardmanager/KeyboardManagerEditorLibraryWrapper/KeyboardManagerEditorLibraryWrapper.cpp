@@ -543,6 +543,16 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
         Shortcut originalShortcut(originalKeys);
         originalShortcut.exactMatch = (exactMatch != 0);
 
+        // AddOSLevelShortcut/AddAppSpecificShortcut only reject duplicates, so without this an
+        // origin the engine can never match - a "shortcut" with no modifier, for instance - would
+        // be written to default.json and silently do nothing. The classic editor gates on the same
+        // predicate in LoadingAndSavingRemappingHelper::ApplyShortcutRemappings.
+        if (!EditorHelpers::IsValidShortcut(originalShortcut))
+        {
+            Logger::warn(L"Refusing to add a remap for an invalid origin shortcut: {0}", originalKeys ? originalKeys : L"null");
+            return false;
+        }
+
         KeyShortcutTextUnion targetShortcut;
 
         switch (operationType)
