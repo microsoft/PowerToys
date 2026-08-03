@@ -345,10 +345,10 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                     }
                     m_toolbarVisible = false;
 
-                    // In press-and-hold the base letter already typed on key-down and no trigger
-                    // key was consumed, so let this key-up pass through to avoid a stuck-key
-                    // perception. Trigger modes keep swallowing it as before.
-                    return m_settings.activationKey != PowerAccentActivationKey::PressAndHold;
+                    // The matching letter key-down was passed to the rest of the hook chain.
+                    // Pass its key-up through as well so downstream hooks and applications do not
+                    // retain a stale pressed-key state after a false start.
+                    return false;
                 }
                 Logger::debug(L"Hide toolbar event and input char");
 
