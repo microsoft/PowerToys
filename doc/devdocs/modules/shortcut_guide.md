@@ -17,6 +17,8 @@ Shortcut Guide is a PowerToy that displays an overlay of available keyboard shor
 ## Usage
 - Press the user-defined hotkey to display the overlay
 - Press the hotkey again or press ESC to dismiss the overlay
+- Use the title-bar search box to filter shortcuts on the selected application page
+- Press Ctrl+F to focus search. Escape clears an active search before dismissing the overlay
 
 ## Build and Debug Instructions
 
