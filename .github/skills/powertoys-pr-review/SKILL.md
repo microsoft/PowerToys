@@ -108,6 +108,7 @@ Auto-detect these at the start of each session with [scripts/Get-ForkConfig.ps1]
 | [Request-CopilotReview.ps1](./scripts/Request-CopilotReview.ps1) | Request Copilot as reviewer and poll until the review posts |
 | [Get-UnresolvedCopilotThreads.ps1](./scripts/Get-UnresolvedCopilotThreads.ps1) | Count unresolved Copilot threads (stranded-loop / resume check) |
 | [Sync-ForkMain.ps1](./scripts/Sync-ForkMain.ps1) | Fast-forward the clone's `main` from upstream and push it to the fork |
+| [Show-ReviewDashboard.ps1](./scripts/Show-ReviewDashboard.ps1) | Serve a single-window HTML dashboard for a batch of PRs: live status tracker while reviews run (polls `/status`), then an approval surface capturing per-PR/per-suggestion decisions to a file the agent resumes from |
 
 ## References
 
@@ -117,3 +118,4 @@ Auto-detect these at the start of each session with [scripts/Get-ForkConfig.ps1]
 - [copilot-review-loop.md](./references/copilot-review-loop.md) — Steps 4–8: request, fix/push/resolve loop, summarize
 - [build-and-test.md](./references/build-and-test.md) — Steps 3, 7, 7b: local build, module chain, end-to-end tests
 - [drafting-and-posting.md](./references/drafting-and-posting.md) — Steps 9–10: suggestion format, freshness re-check, posting
+- [approval-dashboard.md](./references/approval-dashboard.md) — optional interactive UI for approving/holding/editing drafted actions across a multi-PR session

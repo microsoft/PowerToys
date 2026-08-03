@@ -87,8 +87,10 @@ Each suggestion must use the exact ` ```suggestion ` format, reference the corre
    - List of all suggested code fixes with **severity label** and file/line references.
    - The worktree path and **end-to-end testing instructions** (Step 7b) so the user can verify.
    - A **multi-suggestion warning** if there are 2+ suggestions on the same file.
-2. **Stop. Do not execute any further commands against the original repo.**
-3. **Wait for the user to explicitly say** "post it", "approve", "go ahead", or "submit".
+
+   For a **single PR**, presenting this inline as text is fine. For a **multi-PR session** (2+ PRs drafted), prefer the **approval dashboard** — build a `review-data.json` and launch [scripts/Show-ReviewDashboard.ps1](../scripts/Show-ReviewDashboard.ps1); it renders every PR with expandable suggestions and per-PR/per-suggestion post/hold controls, and writes the user's choices to `review-decisions.json`. Full flow and schemas: [approval-dashboard.md](./approval-dashboard.md).
+2. **Stop. Do not execute any further commands against the original repo.** (When using the dashboard, launch it, tell the user the URL, and end the turn.)
+3. **Wait for the user to explicitly say** "post it", "approve", "go ahead", or "submit" — or, with the dashboard, to submit their decisions and type the resume phrase `pr-review: actions ready`. Then read `review-decisions.json` and act on each PR per its `prAction` + `instructions`.
    - "Looks good" without an explicit post instruction → ask "Shall I post this review to the original PR now?"
    - If the user asks for changes, revise and present again.
    - "Skip" / "don't post" → post nothing.
