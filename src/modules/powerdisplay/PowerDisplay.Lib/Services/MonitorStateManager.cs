@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Serialization;
@@ -28,6 +27,7 @@ namespace PowerDisplay.Common.Services
         private readonly string _stateFilePath;
         private readonly ConcurrentDictionary<string, MonitorState> _states = new(MonitorIdComparer.Instance);
         private readonly SimpleDebouncer _saveDebouncer;
+        private readonly object _writeLock = new();
 
         private volatile bool _disposed;
         private volatile bool _isDirty; // Track pending changes for flush on dispose
@@ -54,15 +54,24 @@ namespace PowerDisplay.Common.Services
         /// Uses PathConstants for consistent path management.
         /// </summary>
         public MonitorStateManager()
+            : this(PathConstants.MonitorStateFilePath, ensureDefaultDirectory: true)
         {
-            // Use PathConstants for consistent path management
-            PathConstants.EnsurePowerDisplayFolderExists();
-            _stateFilePath = PathConstants.MonitorStateFilePath;
+        }
 
-            // Initialize debouncer for batching rapid updates (e.g., slider drag)
+        internal MonitorStateManager(string stateFilePath)
+            : this(stateFilePath, ensureDefaultDirectory: false)
+        {
+        }
+
+        private MonitorStateManager(string stateFilePath, bool ensureDefaultDirectory)
+        {
+            if (ensureDefaultDirectory)
+            {
+                PathConstants.EnsurePowerDisplayFolderExists();
+            }
+
+            _stateFilePath = stateFilePath;
             _saveDebouncer = new SimpleDebouncer(SaveDebounceMs);
-
-            // Load existing state if available
             LoadStateFromDisk();
         }
 
@@ -117,7 +126,7 @@ namespace PowerDisplay.Common.Services
                 // Schedule debounced save (SimpleDebouncer handles cancellation of previous calls)
                 if (shouldSave)
                 {
-                    _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                    _saveDebouncer.Debounce(SaveStateToDisk);
                 }
             }
             catch (Exception ex)
@@ -203,7 +212,7 @@ namespace PowerDisplay.Common.Services
                 }
 
                 _isDirty = true;
-                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                _saveDebouncer.Debounce(SaveStateToDisk);
 
                 Logger.LogInfo(
                     $"[MonitorStateManager] Legacy migration finished: {migrated} migrated, {dropped} dropped (no match).");
@@ -263,10 +272,41 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
-        /// Save current state to disk immediately (async).
-        /// Called by timer after debounce period.
+        /// Serializes the current state and publishes the whole file. Both save paths go through here.
         /// </summary>
-        private async Task SaveStateToDiskAsync()
+        /// <remarks>
+        /// <c>_writeLock</c> serializes the two callers — the debounced save and the flush in
+        /// <see cref="Dispose"/> — because cancelling the debouncer cannot reach a save already past
+        /// its delay, and the write opens with <c>FileShare.Read</c>, so a colliding write loses at
+        /// <c>CreateFile</c> and is dropped whole. <see cref="BuildStateJson"/> runs inside the lock,
+        /// so the last snapshot built is the one that lands. Both paths write synchronously:
+        /// <see cref="Dispose"/> has to flush without awaiting, the file is a few hundred bytes, and
+        /// the async API was the only reason there were two write paths to collide in the first place.
+        /// <para>
+        /// The bytes go to a temp file and are renamed in, as <c>CrashDetectionScope</c> and
+        /// <c>ProfileStore</c> do, because an in-place write truncates before it writes and not every
+        /// exit path runs <see cref="Dispose"/> — the runner's Terminate event and its exit watchdog
+        /// both call <c>Environment.Exit</c> outright. The rename keeps an interrupted write from
+        /// emptying the file and dropping every monitor's state instead of just the last change.
+        /// Deliberately no <c>Flush(flushToDisk: true)</c>: the threat here is process death, which
+        /// the page cache survives, not power loss — and this flush runs on the UI thread at shutdown,
+        /// where a FlushFileBuffers on a busy disk would be felt.
+        /// </para>
+        /// </remarks>
+        internal void WriteStateFile()
+        {
+            lock (_writeLock)
+            {
+                var tempPath = _stateFilePath + ".tmp";
+                File.WriteAllText(tempPath, BuildStateJson());
+                File.Move(tempPath, _stateFilePath, overwrite: true);
+            }
+        }
+
+        /// <summary>
+        /// Writes the current state to disk. Called by the debouncer after the quiet period.
+        /// </summary>
+        private void SaveStateToDisk()
         {
             try
             {
@@ -275,42 +315,22 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
-                var json = BuildStateJson();
-
-                // Write to disk asynchronously
-                await File.WriteAllTextAsync(_stateFilePath, json);
-
-                // Clear dirty flag after successful save
+                // Cleared before the snapshot, not after it: a change landing mid-write re-marks
+                // dirty and is saved by the debounce that change schedules. Clearing afterwards
+                // swallows that bit and Dispose then skips the flush entirely.
                 _isDirty = false;
+                WriteStateFile();
             }
             catch (Exception ex)
             {
+                _isDirty = true;
                 Logger.LogError($"Failed to save monitor state: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Save current state to disk synchronously.
-        /// Called during Dispose to flush pending changes without risk of deadlock.
-        /// </summary>
-        private void SaveStateToDiskSync()
-        {
-            try
-            {
-                var json = BuildStateJson();
-
-                // Write to disk synchronously - safe for Dispose
-                File.WriteAllText(_stateFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to save monitor state (sync): {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Build the JSON string for state file.
-        /// Shared logic between async and sync save methods.
+        /// Called by <see cref="WriteStateFile"/> under the write lock.
         /// </summary>
         /// <returns>JSON string for state file</returns>
         private string BuildStateJson()
@@ -354,13 +374,20 @@ namespace PowerDisplay.Common.Services
             _disposed = true;
             _isDirty = false;
 
-            // Dispose debouncer first to cancel any pending saves
+            // Dispose the debouncer first so no further save is scheduled. A save already past its
+            // delay is beyond its reach, which is what _writeLock covers.
             _saveDebouncer?.Dispose();
 
-            // Flush any pending changes before disposing using sync method to avoid deadlock
             if (wasDirty)
             {
-                SaveStateToDiskSync();
+                try
+                {
+                    WriteStateFile();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to flush monitor state on dispose: {ex.Message}");
+                }
             }
 
             GC.SuppressFinalize(this);
