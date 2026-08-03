@@ -47,8 +47,6 @@ namespace PowerDisplay.Common.Services
 
             public int? Volume { get; set; }
 
-            public string? CapabilitiesRaw { get; set; }
-
             public Dictionary<byte, KnownGoodVcpFeature> KnownGoodVcpFeatures { get; } = new();
         }
 
@@ -279,7 +277,6 @@ namespace PowerDisplay.Common.Services
                 clone.ColorTemperatureVcp = source.ColorTemperatureVcp;
                 clone.Contrast = source.Contrast;
                 clone.Volume = source.Volume;
-                clone.CapabilitiesRaw = source.CapabilitiesRaw;
 
                 foreach (var feature in source.KnownGoodVcpFeatures)
                 {
@@ -298,7 +295,6 @@ namespace PowerDisplay.Common.Services
                 canonical.ColorTemperatureVcp ??= legacy.ColorTemperatureVcp;
                 canonical.Contrast ??= legacy.Contrast;
                 canonical.Volume ??= legacy.Volume;
-                canonical.CapabilitiesRaw ??= legacy.CapabilitiesRaw;
 
                 foreach (var feature in legacy.KnownGoodVcpFeatures)
                 {
@@ -338,7 +334,6 @@ namespace PowerDisplay.Common.Services
                             ColorTemperatureVcp = entry.ColorTemperatureVcp,
                             Contrast = entry.Contrast,
                             Volume = entry.Volume,
-                            CapabilitiesRaw = entry.CapabilitiesRaw,
                         };
 
                         // Guarded like stateFile.Monitors above: an explicit JSON null lands here
@@ -471,7 +466,6 @@ namespace PowerDisplay.Common.Services
                         ColorTemperatureVcp = state.ColorTemperatureVcp,
                         Contrast = state.Contrast,
                         Volume = state.Volume,
-                        CapabilitiesRaw = state.CapabilitiesRaw,
                         KnownGoodVcpFeatures = state.KnownGoodVcpFeatures.Values
                             .OrderBy(feature => feature.Code)
                             .Select(feature => feature.Clone())
