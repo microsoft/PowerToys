@@ -474,7 +474,7 @@
     <comment>{0} is the temperature string, e.g. "72 °C"</comment>
   </data>
   <data name="Temperature_Usage_Unknown" xml:space="preserve">
-    <value>—</value>
+    <value>N/A</value>
   </data>
   <data name="Temperature_Usage_Unknown_Label" xml:space="preserve">
     <value>Thermal zone: N/A</value>

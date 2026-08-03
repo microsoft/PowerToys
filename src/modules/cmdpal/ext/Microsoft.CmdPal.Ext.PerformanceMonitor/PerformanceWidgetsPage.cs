@@ -1536,6 +1536,10 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
     private readonly DataManager _dataManager;
 
+    // Tracked explicitly so GetItemTitle doesn't have to string-compare display values.
+    private bool _hasReading;
+    private string _lastTemperatureString = string.Empty;
+
     public SystemTemperatureWidgetPage()
     {
         _dataManager = new(DataType.Temperature, () => UpdateWidget());
@@ -1551,6 +1555,7 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
             if (!stats.IsAvailable)
             {
+                _hasReading = false;
                 ContentData["thermalZoneTemperature"] = Resources.GetResource("Temperature_Usage_Unknown");
                 ContentData["temperatureSource"] = Resources.GetResource("Temperature_Usage_Unavailable");
                 return;
@@ -1558,16 +1563,20 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
             ContentData["temperatureSource"] = Resources.GetResource("Temperature_Source_Acpi");
 
-            if (stats.CpuTemperatureCelsius < 0)
+            if (stats.TemperatureCelsius < 0)
             {
+                _hasReading = false;
                 ContentData["thermalZoneTemperature"] = Resources.GetResource("Temperature_Usage_Unknown");
                 return;
             }
 
-            ContentData["thermalZoneTemperature"] = $"{stats.CpuTemperatureCelsius:F1} \u00b0C";
+            _hasReading = true;
+            _lastTemperatureString = $"{stats.TemperatureCelsius:F1} \u00b0C";
+            ContentData["thermalZoneTemperature"] = _lastTemperatureString;
         }
         catch (Exception e)
         {
+            _hasReading = false;
             ContentData.Clear();
             ContentData["errorMessage"] = e.Message;
         }
@@ -1585,8 +1594,7 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
 
     public string GetItemTitle(bool isBandPage)
     {
-        if (!ContentData.TryGetValue("thermalZoneTemperature", out var temp)
-            || temp == Resources.GetResource("Temperature_Usage_Unknown"))
+        if (!_hasReading)
         {
             return isBandPage
                 ? Resources.GetResource("Temperature_Usage_Unknown")
@@ -1594,11 +1602,11 @@ internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposa
         }
 
         return isBandPage
-            ? temp
+            ? _lastTemperatureString
             : string.Format(
                 System.Globalization.CultureInfo.CurrentCulture,
                 Resources.GetResource("Temperature_Usage_Label"),
-                temp);
+                _lastTemperatureString);
     }
 
     internal override void PushActivate()

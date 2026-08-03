@@ -7,9 +7,10 @@ using System.Diagnostics;
 
 namespace CoreWidgetProvider.Helpers;
 
-// Reads CPU temperature from the "Thermal Zone Information" PDH category (ACPI thermal zones).
+// Reads temperature from the "Thermal Zone Information" PDH category (ACPI thermal zones).
 // Raw counter values are in tenths of Kelvin; we convert to Celsius on read.
 // Not available on all systems (e.g. VMs without ACPI thermal zones) - check IsAvailable first.
+// Note: ACPI thermal zones often reflect an ambient/skin/motherboard sensor, not a CPU die.
 internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, IDisposable
 {
     private const string CategoryName = "Thermal Zone Information";
@@ -18,13 +19,17 @@ internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, I
     // Tenths of Kelvin -> Celsius: (raw - 2731.5) / 10
     private const double TenthsKelvinOffset = 2731.5;
 
+    // Plausibility range: reject readings outside this window as sensor noise or bad samples.
+    private const double MinPlausibleCelsius = -20.0;
+    private const double MaxPlausibleCelsius = 150.0;
+
     private readonly PerformanceCounter? _thermalCounter;
     private bool _readFailureLogged;
 
     public bool IsAvailable => _thermalCounter is not null;
 
-    /// <summary>Gets the last sampled CPU thermal zone temperature in °C, or -1 if unavailable.</summary>
-    public double CpuTemperatureCelsius { get; private set; } = -1;
+    /// <summary>Gets the last sampled thermal zone temperature in °C, or -1 if unavailable or out of range.</summary>
+    public double TemperatureCelsius { get; private set; } = -1;
 
     public TemperatureStats()
     {
@@ -58,19 +63,23 @@ internal sealed partial class TemperatureStats : PerformanceCounterSourceBase, I
     {
         if (_thermalCounter is null)
         {
-            CpuTemperatureCelsius = -1;
+            TemperatureCelsius = -1;
             return;
         }
 
         try
         {
             var raw = _thermalCounter.NextValue();
-            CpuTemperatureCelsius = (raw - TenthsKelvinOffset) / 10.0;
+            var celsius = (raw - TenthsKelvinOffset) / 10.0;
+
+            TemperatureCelsius = celsius >= MinPlausibleCelsius && celsius <= MaxPlausibleCelsius
+                ? celsius
+                : -1;
         }
         catch (Exception ex)
         {
             LogFailureOnce(ref _readFailureLogged, $"Failed to read {CategoryName}\\{CounterName}.", ex);
-            CpuTemperatureCelsius = -1;
+            TemperatureCelsius = -1;
         }
     }
 
