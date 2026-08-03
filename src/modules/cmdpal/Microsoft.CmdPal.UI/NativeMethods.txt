@@ -1,6 +1,7 @@
 GetPhysicallyInstalledSystemMemory
 GlobalMemoryStatusEx
 GetSystemInfo
+GetActiveWindow
 GetForegroundWindow
 SetForegroundWindow
 GetWindowRect
