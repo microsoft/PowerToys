@@ -48,7 +48,10 @@ public record DockSettings
     public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
-    private ImmutableList<DockBandSettings>? _startBands = ImmutableList.Create(
+
+    // Band lists use EquatableList backing fields so the compiler-synthesized record equality
+    // compares them by content, not by reference. See EquatableList<T> for why this matters.
+    private readonly EquatableList<DockBandSettings> _startBands = new(ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.core",
@@ -59,23 +62,23 @@ public record DockSettings
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
             ShowTitles = false,
-        });
+        }));
 
     public ImmutableList<DockBandSettings> StartBands
     {
-        get => _startBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _startBands = value;
+        get => _startBands.List;
+        init => _startBands = new(value);
     }
 
-    private ImmutableList<DockBandSettings>? _centerBands = ImmutableList<DockBandSettings>.Empty;
+    private readonly EquatableList<DockBandSettings> _centerBands = new(ImmutableList<DockBandSettings>.Empty);
 
     public ImmutableList<DockBandSettings> CenterBands
     {
-        get => _centerBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _centerBands = value;
+        get => _centerBands.List;
+        init => _centerBands = new(value);
     }
 
-    private ImmutableList<DockBandSettings>? _endBands = ImmutableList.Create(
+    private readonly EquatableList<DockBandSettings> _endBands = new(ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "PerformanceMonitor",
@@ -85,12 +88,12 @@ public record DockSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
-        });
+        }));
 
     public ImmutableList<DockBandSettings> EndBands
     {
-        get => _endBands ?? ImmutableList<DockBandSettings>.Empty;
-        init => _endBands = value;
+        get => _endBands.List;
+        init => _endBands = new(value);
     }
 
     public bool ShowLabels { get; init; } = true;
@@ -99,12 +102,12 @@ public record DockSettings
     /// Gets the per-monitor dock configurations. Each entry overrides global
     /// settings for a specific display. Empty by default (all monitors use global).
     /// </summary>
-    private ImmutableList<DockMonitorConfig>? _monitorConfigs = ImmutableList<DockMonitorConfig>.Empty;
+    private readonly EquatableList<DockMonitorConfig> _monitorConfigs = new(ImmutableList<DockMonitorConfig>.Empty);
 
     public ImmutableList<DockMonitorConfig> MonitorConfigs
     {
-        get => _monitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
-        init => _monitorConfigs = value ?? ImmutableList<DockMonitorConfig>.Empty;
+        get => _monitorConfigs.List;
+        init => _monitorConfigs = new(value);
     }
 
     /// <summary>
@@ -192,20 +195,41 @@ public sealed record DockMonitorConfig
     /// </summary>
     public bool IsCustomized { get; init; }
 
+    // Nullable EquatableList backing fields give the synthesized record equality structural
+    // comparison of the per-monitor bands while preserving null ("inherit global") vs. an
+    // explicit (possibly empty) list. See EquatableList<T>.
+    private readonly EquatableList<DockBandSettings>? _startBands;
+
     /// <summary>
     /// Gets the per-monitor start bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? StartBands { get; init; }
+    public ImmutableList<DockBandSettings>? StartBands
+    {
+        get => _startBands?.List;
+        init => _startBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
+
+    private readonly EquatableList<DockBandSettings>? _centerBands;
 
     /// <summary>
     /// Gets the per-monitor center bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? CenterBands { get; init; }
+    public ImmutableList<DockBandSettings>? CenterBands
+    {
+        get => _centerBands?.List;
+        init => _centerBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
+
+    private readonly EquatableList<DockBandSettings>? _endBands;
 
     /// <summary>
     /// Gets the per-monitor end bands. Only used when <see cref="IsCustomized"/> is <c>true</c>.
     /// </summary>
-    public ImmutableList<DockBandSettings>? EndBands { get; init; }
+    public ImmutableList<DockBandSettings>? EndBands
+    {
+        get => _endBands?.List;
+        init => _endBands = value is null ? null : new EquatableList<DockBandSettings>(value);
+    }
 
     /// <summary>
     /// Gets the UTC timestamp when this monitor was last seen connected. Used for

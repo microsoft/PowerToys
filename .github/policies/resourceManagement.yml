@@ -56,7 +56,44 @@ configuration:
       - addReply:
           reply: This issue has been marked as duplicate and has not had any activity for **1 day**. It will be closed for housekeeping purposes.
       - closeIssue
+    # ─── PR Needs-Author-Feedback: close after 7+7 days of inactivity ───
+    - description: Close PRs with Needs-Author-Feedback + Status-No recent activity after 7 more days
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - hasLabel:
+          label: Status-No recent activity
+      - noActivitySince:
+          days: 7
+      actions:
+      - addReply:
+          reply: This pull request has been automatically closed because it has been marked as requiring author feedback but has not had any activity for **14 days**. If you would like to continue working on this, please reopen the PR and push your changes.
+      - closeIssue
+    - description: Warn PRs with Needs-Author-Feedback after 7 days of no activity
+      frequencies:
+      - hourly:
+          hour: 6
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - noActivitySince:
+          days: 7
+      - isNotLabeledWith:
+          label: Status-No recent activity
+      actions:
+      - addLabel:
+          label: Status-No recent activity
+      - addReply:
+          reply: This pull request has been automatically marked as stale because it has been marked as requiring author feedback but has not had any activity for **7 days**. It will be closed if no further activity occurs **within 7 days of this comment**. To keep this PR active, please push your changes or leave a comment.
     eventResponderTasks:
+    # ─── When issue/PR author comments, swap Needs-Author-Feedback → Needs-Triage ───
     - if:
       - payloadType: Issue_Comment
       - isAction:
@@ -74,6 +111,23 @@ configuration:
       - addLabel:
           label: Needs-Team-Response
       description: 
+    # ─── When PR author pushes commits, swap Needs-Author-Feedback → Needs-Triage ───
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Synchronize
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: Needs-Author-Feedback
+      - isOpen
+      then:
+      - addLabel:
+          label: Needs-Triage
+      - removeLabel:
+          label: Needs-Author-Feedback
+      description: 
+    # ─── Remove "Status-No recent activity" on any issue update (not close) ───
     - if:
       - payloadType: Issues
       - not:
@@ -85,10 +139,21 @@ configuration:
       - removeLabel:
           label: Status-No recent activity
       description: 
+    # ─── Remove "Status-No recent activity" on any issue comment ───
     - if:
       - payloadType: Issue_Comment
       - hasLabel:
           label: Status-No recent activity
+      then:
+      - removeLabel:
+          label: Status-No recent activity
+      description: 
+    # ─── Remove "Status-No recent activity" on PR updates (push, review, etc.) ───
+    - if:
+      - payloadType: Pull_Request
+      - hasLabel:
+          label: Status-No recent activity
+      - isOpen
       then:
       - removeLabel:
           label: Status-No recent activity

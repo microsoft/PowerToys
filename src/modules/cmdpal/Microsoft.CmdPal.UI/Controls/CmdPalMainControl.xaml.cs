@@ -127,6 +127,16 @@ public sealed partial class CmdPalMainControl : UserControl
     }
 
     /// <summary>
+    /// When <paramref name="stretch"/> is <see langword="true"/>, the card stretches to fill
+    /// the entire window vertically (non-compact mode). When <see langword="false"/>, the card
+    /// sizes itself to its content and anchors to the top of the window (compact mode).
+    /// </summary>
+    public void SetCardStretch(bool stretch)
+    {
+        CardBorder.VerticalAlignment = stretch ? VerticalAlignment.Stretch : VerticalAlignment.Top;
+    }
+
+    /// <summary>
     /// Forwards the host window's activation state to the current backdrop so the system can
     /// render its active / inactive appearance correctly.
     /// </summary>

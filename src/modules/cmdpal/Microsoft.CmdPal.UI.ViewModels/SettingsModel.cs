@@ -11,6 +11,10 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record SettingsModel
 {
+    // LOAD BEARNING: Some SettingsChanged subscribers react selectively (e.g.
+    // MainWindow.MainWindowSettingsComparer, DockWindowManager.OnSettingsChanged). If a new
+    // setting needs a live reaction, add it there too - otherwise it won't take effect.
+
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
@@ -42,7 +46,7 @@ public record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
-    public bool CompactMode { get; set; } = true;
+    public bool CompactMode { get; set; }
 
     // When compact mode is on and the palette is centered on launch, this is the relative
     // height from the bottom of the screen (as a percentage) at which the collapsed search
@@ -86,6 +90,8 @@ public record SettingsModel
     }
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public ToastPosition ToastPosition { get; init; } = ToastPosition.UseSystemSettings;
 
     public bool DisableAnimations { get; init; } = true;
 
@@ -452,6 +458,14 @@ public enum MonitorBehavior
     ToFocusedWindow = 2,
     InPlace = 3,
     ToLast = 4,
+}
+
+public enum ToastPosition
+{
+    UseSystemSettings = 0,
+    BottomCenter = 1,
+    TopLeft = 2,
+    TopCenter = 3,
 }
 
 public enum EscapeKeyBehavior
