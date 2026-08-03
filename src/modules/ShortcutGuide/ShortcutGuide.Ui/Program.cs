@@ -23,6 +23,8 @@ namespace ShortcutGuide
 
         public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
 
+        internal static string WindowsKeyTriggerEventName { get; private set; } = string.Empty;
+
         [STAThread]
         public static void Main(string[] args)
         {
@@ -30,12 +32,18 @@ namespace ShortcutGuide
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
             LogForegroundCapture(ForegroundWindowHandle);
 
-            // The module interface passes: <powertoys_pid> [telemetry]
+            // The module interface passes: <powertoys_pid> <windows_key_event_name>, or
+            // <powertoys_pid> telemetry for the short-lived telemetry process.
             if (args.Length >= 2 && args[1] == "telemetry")
             {
                 Logger.LogInfo("Telemetry mode requested. Sending settings telemetry.");
                 SendSettingsTelemetry();
                 return;
+            }
+
+            if (args.Length >= 2)
+            {
+                WindowsKeyTriggerEventName = args[1];
             }
 
             if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
@@ -157,6 +165,9 @@ namespace ShortcutGuide
                     var props = settings.Properties;
                     PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSettingsEvent(
                         props.OpenShortcutGuide?.ToString() ?? string.Empty,
+                        props.WindowsKeyAction?.Value ?? (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators,
+                        props.PressTime?.Value ?? ShortcutGuideProperties.DefaultPressTimeMs,
+                        props.CloseOnWindowsKeyRelease?.Value ?? true,
                         props.Theme?.Value ?? "system",
                         props.DisabledApps?.Value ?? string.Empty));
                 }

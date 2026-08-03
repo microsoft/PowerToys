@@ -11,6 +11,20 @@
 #include "Generated Files/resource.h"
 #include <common/SettingsAPI/settings_objects.h>
 
+namespace
+{
+    enum class WindowsKeyAction
+    {
+        Off = 0,
+        TaskbarIndicators = 1,
+        OpenShortcutGuide = 2,
+    };
+
+    constexpr UINT defaultWindowsKeyPressTime = 900;
+    constexpr UINT minimumWindowsKeyPressTime = 100;
+    constexpr UINT maximumWindowsKeyPressTime = 5000;
+}
+
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD /*ul_reason_for_call*/, LPVOID /*lpReserved*/)
 {
     return TRUE;
@@ -39,6 +53,12 @@ public:
         if (!triggerEvent)
         {
             Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_TRIGGER_EVENT, get_last_error_or_default(GetLastError()));
+        }
+
+        windowsKeyTriggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::SHORTCUT_GUIDE_WINDOWS_KEY_TRIGGER_EVENT);
+        if (!windowsKeyTriggerEvent)
+        {
+            Logger::warn(L"Failed to create {} event. {}", CommonSharedConstants::SHORTCUT_GUIDE_WINDOWS_KEY_TRIGGER_EVENT, get_last_error_or_default(GetLastError()));
         }
 
         InitSettings();
@@ -132,6 +152,10 @@ public:
         {
             CloseHandle(triggerEvent);
         }
+        if (windowsKeyTriggerEvent)
+        {
+            CloseHandle(windowsKeyTriggerEvent);
+        }
 
         delete this;
     }
@@ -158,6 +182,22 @@ public:
         SetEvent(triggerEvent);
     }
 
+    virtual void on_win_key_long_press() override
+    {
+        Logger::trace("on_win_key_long_press()");
+        if (!_enabled || m_windowsKeyAction == WindowsKeyAction::Off)
+        {
+            return;
+        }
+
+        if (!IsProcessActive())
+        {
+            StartProcess();
+        }
+
+        SetEvent(windowsKeyTriggerEvent);
+    }
+
     virtual void send_settings_telemetry() override
     {
         Logger::trace("Send settings telemetry");
@@ -166,8 +206,8 @@ public:
             Logger::error("Failed to create a process to send settings telemetry");
         }
     }
-    virtual bool keep_track_of_pressed_win_key() override { return true; }
-    virtual UINT milliseconds_win_key_must_be_pressed() override { return 900; }
+    virtual bool keep_track_of_pressed_win_key() override { return m_windowsKeyAction != WindowsKeyAction::Off; }
+    virtual UINT milliseconds_win_key_must_be_pressed() override { return m_windowsKeyPressTime; }
 
 private:
     std::wstring app_name;
@@ -179,13 +219,11 @@ private:
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
-    // If the module should be activated through the legacy pressing windows key behavior.
-    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS = 900;
-    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS = 900;
-    UINT m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
-    UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
+    WindowsKeyAction m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+    UINT m_windowsKeyPressTime = defaultWindowsKeyPressTime;
 
     HANDLE triggerEvent;
+    HANDLE windowsKeyTriggerEvent;
     HANDLE exitEvent;
 
     bool StartProcess(std::wstring args = L"")
@@ -200,12 +238,21 @@ private:
             ResetEvent(triggerEvent);
         }
 
+        if (windowsKeyTriggerEvent)
+        {
+            ResetEvent(windowsKeyTriggerEvent);
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring executable_args = L"";
         executable_args.append(std::to_wstring(powertoys_pid));
-        if (!args.empty())
+        executable_args.append(L" ");
+        if (args.empty())
         {
-            executable_args.append(L" ");
+            executable_args.append(CommonSharedConstants::SHORTCUT_GUIDE_WINDOWS_KEY_TRIGGER_EVENT);
+        }
+        else
+        {
             executable_args.append(args);
         }
 
@@ -266,13 +313,17 @@ private:
 
     void ParseSettings(PowerToysSettings::PowerToyValues& settings)
     {
+        m_windowsKeyAction = WindowsKeyAction::TaskbarIndicators;
+        m_windowsKeyPressTime = defaultWindowsKeyPressTime;
+
         auto settingsObject = settings.get_raw_json();
         if (settingsObject.GetView().Size())
         {
+            auto propertiesObject = settingsObject.GetNamedObject(L"properties");
             try
             {
                 // Parse HotKey
-                auto jsonHotkeyObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"open_shortcutguide");
+                auto jsonHotkeyObject = propertiesObject.GetNamedObject(L"open_shortcutguide");
                 auto hotkey = PowerToysSettings::HotkeyObject::from_json(jsonHotkeyObject);
                 m_hotkey = HotkeyEx();
                 if (hotkey.win_pressed())
@@ -301,6 +352,41 @@ private:
             {
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
+
+            try
+            {
+                if (propertiesObject.HasKey(L"win_key_action"))
+                {
+                    const auto propertyObject = propertiesObject.GetNamedObject(L"win_key_action");
+                    const auto action = static_cast<int>(propertyObject.GetNamedNumber(L"value"));
+                    if (action >= static_cast<int>(WindowsKeyAction::Off) &&
+                        action <= static_cast<int>(WindowsKeyAction::OpenShortcutGuide))
+                    {
+                        m_windowsKeyAction = static_cast<WindowsKeyAction>(action);
+                    }
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Shortcut Guide Windows-key action");
+            }
+
+            try
+            {
+                if (propertiesObject.HasKey(L"press_time"))
+                {
+                    const auto propertyObject = propertiesObject.GetNamedObject(L"press_time");
+                    const auto pressTime = static_cast<int>(propertyObject.GetNamedNumber(L"value"));
+                    const auto clampedPressTime = (std::max)(
+                        static_cast<int>(minimumWindowsKeyPressTime),
+                        (std::min)(pressTime, static_cast<int>(maximumWindowsKeyPressTime)));
+                    m_windowsKeyPressTime = static_cast<UINT>(clampedPressTime);
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize Shortcut Guide Windows-key hold duration");
+            }
         }
         else
         {
@@ -312,14 +398,6 @@ private:
             Logger::info("Shortcut Guide is going to use default shortcut");
             m_hotkey.modifiersMask = MOD_SHIFT | MOD_WIN;
             m_hotkey.vkCode = VK_OEM_2;
-        }
-    }
-
-    void WindowsKeyPressBehavior()
-    {
-        if (IsProcessActive())
-        {
-            TerminateProcess(m_hProcess, 0);
         }
     }
 };

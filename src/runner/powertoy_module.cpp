@@ -79,6 +79,7 @@ void PowertoyModule::update_hotkeys()
 void PowertoyModule::UpdateHotkeyEx()
 {
     CentralizedHotkeys::UnregisterHotkeysForModule(pt_module->get_key());
+    CentralizedKeyboardHook::ClearModulePressedKeyActions(pt_module->get_key());
 
     auto container = pt_module->GetHotkeyEx();
     if (container.has_value() && pt_module->is_enabled())
@@ -99,14 +100,14 @@ void PowertoyModule::UpdateHotkeyEx()
     }
 
     // HACK:
-    // Just for enabling the shortcut guide legacy behavior of pressing the Windows Key.
+    // Just for enabling the Shortcut Guide behavior of holding the Windows key.
     // This is not the sort of behavior we'd like to have generalized on other modules.
     // But this was a way to bring back the long windows key behavior that the community wanted back while maintaining the separate process.
     if (pt_module->keep_track_of_pressed_win_key())
     {
         auto modulePtr = pt_module.get();
         auto action = [modulePtr] {
-            modulePtr->OnHotkeyEx();
+            modulePtr->on_win_key_long_press();
             return false;
         };
         CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_LWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);

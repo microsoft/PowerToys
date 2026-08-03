@@ -135,7 +135,7 @@ public:
         return false;
     }
 
-    /* These are for enabling the legacy behavior of showing the shortcut guide after pressing the win key.
+    /* These are for enabling Shortcut Guide behavior after holding the Windows key.
      * keep_track_of_pressed_win_key returns true if the module wants to keep track of the win key being pressed.
      * milliseconds_win_key_must_be_pressed returns the number of milliseconds the win key should be pressed before triggering the module.
      * Don't use these for new modules.
@@ -153,6 +153,11 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
     {
         return powertoys_gpo::gpo_rule_configured_not_configured;
+    }
+
+    virtual void on_win_key_long_press()
+    {
+        OnHotkeyEx();
     }
 
     // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.

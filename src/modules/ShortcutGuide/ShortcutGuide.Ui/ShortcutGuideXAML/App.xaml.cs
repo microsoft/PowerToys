@@ -43,9 +43,15 @@ namespace ShortcutGuide
 
         private EventWaitHandle? _launchedEvent;
 
+        private EventWaitHandle? _windowsKeyLaunchedEvent;
+
         private Thread? _listenForLaunchedEventThread;
 
         private static readonly UIntPtr _ignoreKeyEventFlag = 0x5557;
+
+        private volatile int _activeWindowsKey;
+
+        private volatile bool _closeOnWindowsKeyRelease = true;
 
         public App()
         {
@@ -92,6 +98,19 @@ namespace ShortcutGuide
                     Logger.LogError($"Failed to open existing event '{Constants.ShortcutGuideTriggerEvent()}': {ex.Message}");
                 }
 
+                if (!string.IsNullOrEmpty(Program.WindowsKeyTriggerEventName))
+                {
+                    try
+                    {
+                        _windowsKeyLaunchedEvent = EventWaitHandle.OpenExisting(Program.WindowsKeyTriggerEventName);
+                        Logger.LogInfo($"Opened Shortcut Guide Windows-key trigger event '{Program.WindowsKeyTriggerEventName}'.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to open existing event '{Program.WindowsKeyTriggerEventName}': {ex.Message}");
+                    }
+                }
+
                 _listenForLaunchedEventThread = new Thread(ListenForLaunchedEvents)
                 {
                     IsBackground = true,
@@ -105,23 +124,24 @@ namespace ShortcutGuide
                 },
                 (int key) =>
                 {
-                    if (OverlayWindow.AppWindow.IsVisible)
+                    if (_activeWindowsKey != 0)
                     {
-                        OverlayWindow.DispatcherQueue.TryEnqueue(() =>
+                        if (_closeOnWindowsKeyRelease && OverlayWindow.AppWindow.IsVisible)
                         {
-                            OverlayWindow.CloseAnimated();
-                        });
+                            OverlayWindow.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                OverlayWindow.CloseAnimated();
+                            });
+                        }
 
                         NativeMethods.SendInput(1, [new() { Type = 1, Data = new() { Keyboard = new NativeMethods.KEYBDINPUT { WVk = 0xFF, DwFlags = 0x2 } } }], Marshal.SizeOf<NativeMethods.INPUT>());
-                        SendSingleKeyboardInput((short)key, 0x2); // key up
+                        _activeWindowsKey = 0;
                     }
-                    else
-                    {
-                        SendSingleKeyboardInput((short)key, 0x2); // key up
-                    }
+
+                    SendSingleKeyboardInput((short)key, 0x2); // key up
                 },
-                () => true,
-                (int key, nuint specialFlags) => key == 91 && specialFlags != _ignoreKeyEventFlag);
+                () => _activeWindowsKey != 0,
+                (int key, nuint specialFlags) => key == _activeWindowsKey && specialFlags != _ignoreKeyEventFlag);
             }
             catch (Exception ex)
             {
@@ -138,6 +158,8 @@ namespace ShortcutGuide
             {
                 0xA5 => true, // VK_RMENU (Right Alt - AltGr)
                 0xA3 => true, // VK_RCONTROL
+                0x5B => true, // VK_LWIN
+                0x5C => true, // VK_RWIN
                 0x2D => true, // VK_INSERT
                 0x2E => true, // VK_DELETE
                 0x23 => true, // VK_END
@@ -177,58 +199,48 @@ namespace ShortcutGuide
 
         private void ListenForLaunchedEvents()
         {
-            if (_launchedEvent == null)
+            var handles = new List<WaitHandle>();
+            int shortcutEventIndex = -1;
+            int windowsKeyEventIndex = -1;
+
+            if (_launchedEvent != null)
+            {
+                shortcutEventIndex = handles.Count;
+                handles.Add(_launchedEvent);
+            }
+
+            if (_windowsKeyLaunchedEvent != null)
+            {
+                windowsKeyEventIndex = handles.Count;
+                handles.Add(_windowsKeyLaunchedEvent);
+            }
+
+            if (handles.Count == 0)
             {
                 return;
             }
 
-            var handles = new WaitHandle[] { _launchedEvent };
+            var waitHandles = handles.ToArray();
             try
             {
                 Logger.LogInfo("Shortcut Guide show-event listener started.");
                 while (true)
                 {
-                    var index = WaitHandle.WaitAny(handles);
-                    if (index == 0)
+                    var index = WaitHandle.WaitAny(waitHandles);
+                    if (index == shortcutEventIndex)
                     {
                         Logger.LogInfo("Shortcut Guide trigger event signaled.");
                         OverlayWindow.DispatcherQueue.TryEnqueue(async () =>
                         {
-                            // VK_LWIN long-press shows only the taskbar pane.
-                            // Use the Win32 key state directly: WPF's
-                            // System.Windows.Input.Keyboard is not initialized
-                            // on the WinUI UI thread.
-                            const int VK_LWIN = 0x5B;
-                            bool winKeyDown = (NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0;
-
-                            if (winKeyDown)
-                            {
-                                if (OverlayWindow.AppWindow.IsVisible)
-                                {
-                                    return;
-                                }
-
-                                OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                                OverlayWindow.ShowOverlay();
-                                OverlayWindow.UpdateTaskbarPaneLayout();
-                                OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
-                                return;
-                            }
-
-                            if (OverlayWindow.AppWindow.IsVisible)
-                            {
-                                OverlayWindow.CloseAnimated();
-                                OverlayWindow.MainPaneControl.Hide();
-                            }
-                            else
-                            {
-                                Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
-                                OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                                OverlayWindow.ShowOverlay();
-                                await OverlayWindow.MainPaneControl.Open();
-                                OverlayWindow.UpdateTaskbarPaneLayout();
-                                OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
-                            }
+                            await HandleShortcutTriggerAsync();
+                        });
+                    }
+                    else if (index == windowsKeyEventIndex)
+                    {
+                        Logger.LogInfo("Shortcut Guide Windows-key trigger event signaled.");
+                        OverlayWindow.DispatcherQueue.TryEnqueue(async () =>
+                        {
+                            await HandleWindowsKeyTriggerAsync();
                         });
                     }
                     else
@@ -243,6 +255,77 @@ namespace ShortcutGuide
             catch (ThreadInterruptedException)
             {
             }
+        }
+
+        private static async Task HandleShortcutTriggerAsync()
+        {
+            if (OverlayWindow.AppWindow.IsVisible)
+            {
+                OverlayWindow.CloseAnimated();
+                OverlayWindow.MainPaneControl.Hide();
+                return;
+            }
+
+            Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
+            OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+            OverlayWindow.ShowOverlay();
+            await OverlayWindow.MainPaneControl.Open();
+            OverlayWindow.UpdateTaskbarPaneLayout();
+            OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
+        }
+
+        private async Task HandleWindowsKeyTriggerAsync()
+        {
+            const int VK_LWIN = 0x5B;
+            const int VK_RWIN = 0x5C;
+
+            var settings = SettingsUtils.Default.GetSettingsOrDefault<ShortcutGuideSettings>(
+                Microsoft.PowerToys.Settings.UI.Library.ShortcutGuideSettings.ModuleName);
+            var action = settings.Properties?.WindowsKeyAction?.Value switch
+            {
+                (int)ShortcutGuideWindowsKeyAction.Off => ShortcutGuideWindowsKeyAction.Off,
+                (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide => ShortcutGuideWindowsKeyAction.OpenShortcutGuide,
+                _ => ShortcutGuideWindowsKeyAction.TaskbarIndicators,
+            };
+
+            int pressedWindowsKey = (NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0
+                ? VK_LWIN
+                : (NativeMethods.GetAsyncKeyState(VK_RWIN) & 0x8000) != 0
+                    ? VK_RWIN
+                    : 0;
+
+            if (action == ShortcutGuideWindowsKeyAction.Off || pressedWindowsKey == 0)
+            {
+                return;
+            }
+
+            _activeWindowsKey = pressedWindowsKey;
+            _closeOnWindowsKeyRelease = action == ShortcutGuideWindowsKeyAction.TaskbarIndicators ||
+                                        settings.Properties?.CloseOnWindowsKeyRelease?.Value != false;
+
+            if (OverlayWindow.AppWindow.IsVisible)
+            {
+                return;
+            }
+
+            if (action == ShortcutGuideWindowsKeyAction.OpenShortcutGuide)
+            {
+                Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
+            }
+
+            OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
+            OverlayWindow.ShowOverlay();
+
+            if (action == ShortcutGuideWindowsKeyAction.TaskbarIndicators)
+            {
+                OverlayWindow.UpdateTaskbarPaneLayout();
+                OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
+                return;
+            }
+
+            await OverlayWindow.MainPaneControl.Open();
+            OverlayWindow.UpdateTaskbarPaneLayout();
+            OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
         }
 
         private void LoadData()
@@ -311,7 +394,9 @@ namespace ShortcutGuide
 
         public void Dispose()
         {
+            _winKeyUpKeyboardHook?.Dispose();
             _launchedEvent?.Dispose();
+            _windowsKeyLaunchedEvent?.Dispose();
 
             if (_listenForLaunchedEventThread == null)
             {

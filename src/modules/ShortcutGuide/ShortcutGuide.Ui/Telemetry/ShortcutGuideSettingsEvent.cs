@@ -15,15 +15,30 @@ public class ShortcutGuideSettingsEvent : EventBase, IEvent
 {
     public string Hotkey { get; }
 
+    public int WindowsKeyAction { get; }
+
+    public int WindowsKeyPressTime { get; }
+
+    public bool CloseOnWindowsKeyRelease { get; }
+
     public string Theme { get; }
 
     public string DisabledApps { get; }
 
     public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServicePerformance;
 
-    public ShortcutGuideSettingsEvent(string hotkey, string theme, string disabledApps)
+    public ShortcutGuideSettingsEvent(
+        string hotkey,
+        int windowsKeyAction,
+        int windowsKeyPressTime,
+        bool closeOnWindowsKeyRelease,
+        string theme,
+        string disabledApps)
     {
         Hotkey = hotkey;
+        WindowsKeyAction = windowsKeyAction;
+        WindowsKeyPressTime = windowsKeyPressTime;
+        CloseOnWindowsKeyRelease = closeOnWindowsKeyRelease;
         Theme = theme;
         DisabledApps = disabledApps;
     }
