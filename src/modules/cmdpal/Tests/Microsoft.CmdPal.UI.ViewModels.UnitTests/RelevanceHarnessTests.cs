@@ -12,55 +12,42 @@ using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Windows.Foundation;
 using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Golden-set relevance harness for the main/root page ranker. Every case is expressed as a
+/// End-to-end relevance harness for the main/root page ranker. Every case is expressed as a
 /// realistic query paired with an ordering constraint (rank-1, or "X must rank above Y") and
 /// asserted against the REAL <see cref="MainListPage.ScoreTopLevelItem"/> scoring path, sorted
 /// exactly the way the product sorts (positive scores, descending). The intent is to lock in
 /// "results seem logical and relevant" as an objective, extendable yardstick: to add a new
 /// scenario, drop another entry in the fixture and another constraint in a test.
 ///
-/// This file also carries focused per-tier unit tests for <see cref="MainListRanker"/> that
-/// cover the pieces the golden set cannot easily drive through app/command mocks - alias-exact
-/// and fallback-floor classification, and the packing invariants that guarantee a higher tier
-/// always outranks a lower one regardless of within-tier score.
+/// Focused, per-tier unit tests for the <see cref="MainListRanker"/> primitives live alongside
+/// this harness in <see cref="MainListRankerTests"/>.
 /// </summary>
 [TestClass]
 public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
 {
-    // A lightweight IListItem stand-in for a top-level command or installed app. Mirrors the
-    // mock used by RecentCommandsTests so the harness exercises the same real scoring path,
-    // not a reimplementation. ProviderId lets a test key a per-provider weight lookup.
-    private sealed partial record ListItemMock(
-        string Title,
-        string? Subtitle = "",
-        string? GivenId = "",
-        string? ProviderId = "") : IListItem
+    // A lightweight top-level-command / installed-app stand-in built on the real ListItem
+    // toolkit type, so the harness drives the same scoring path as the product (as the sibling
+    // RecentCommandsTests does) rather than a reimplementation. ProviderId lets a test key a
+    // per-provider weight lookup; Id is derived deterministically so frecency history can target it.
+    private sealed partial class ListItemMock : ListItem
     {
-        public string Id => string.IsNullOrEmpty(GivenId) ? GenerateId() : GivenId;
+        public ListItemMock(string title, string? subtitle = "", string? givenId = "", string? providerId = "")
+        {
+            Title = title;
+            Subtitle = subtitle ?? string.Empty;
+            ProviderId = providerId ?? string.Empty;
+            Id = string.IsNullOrEmpty(givenId) ? GenerateId() : givenId;
+            Command = new NoOpCommand() { Id = Id };
+        }
 
-        public IDetails Details => throw new NotImplementedException();
+        public string Id { get; }
 
-        public string Section => throw new NotImplementedException();
-
-        public ITag[] Tags => throw new NotImplementedException();
-
-        public string TextToSuggest => throw new NotImplementedException();
-
-        public ICommand Command => new NoOpCommand() { Id = Id };
-
-        public IIconInfo Icon => throw new NotImplementedException();
-
-        public IContextItem[] MoreCommands => throw new NotImplementedException();
-
-#pragma warning disable CS0067
-        public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged;
-#pragma warning restore CS0067
+        public string ProviderId { get; }
 
         private string GenerateId()
         {
@@ -77,7 +64,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     // A representative slice of the main page: installed apps + top-level commands with
     // realistic titles, subtitles and shared prefixes/acronyms. Deliberately includes the
     // "confusable" clusters users complain about (Calc*, Visual Studio *, Command Prompt vs
-    // Control Panel) so the golden constraints below have real competition to beat.
+    // Control Panel) so the ordering constraints below have real competition to beat.
     private static List<ListItemMock> Fixture() => new()
     {
         new("Command Prompt", "Run the classic command interpreter"),
@@ -149,9 +136,9 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
             $"Query '{query}' should rank '{higher}' above '{lower}'. Actual order: [{string.Join(", ", ranked)}]");
     }
 
-    // Golden set: the tier ladder, end to end.
+    // End-to-end cases: the tier ladder, exercised through the real scorer.
     [TestMethod]
-    public void Golden_ExactTitleBeatsPrefix()
+    public void EndToEnd_ExactTitleBeatsPrefix()
     {
         // "Paint" is an exact title; "Paint 3D" only has it as a prefix. Exact must win.
         AssertRank1("paint", "Paint");
@@ -159,7 +146,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_PrefixBeatsWordBoundary()
+    public void EndToEnd_PrefixBeatsWordBoundary()
     {
         // "co" is a title prefix of Command Prompt and Control Panel, but only a word-boundary
         // match for "Code" inside Visual Studio Code. Prefix outranks word-boundary.
@@ -168,7 +155,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_WordBoundaryBeatsFuzzy()
+    public void EndToEnd_WordBoundaryBeatsFuzzy()
     {
         // "man" starts the word "Manager" in Task Manager (word-boundary), but is only a loose
         // subsequence (m..a..n) of "Command Prompt" (fuzzy). Word-boundary must win.
@@ -177,7 +164,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_AcronymSurfacesTheRightApp()
+    public void EndToEnd_AcronymSurfacesTheRightApp()
     {
         // "vsc" is the acronym of Visual Studio Code (V-S-C); Visual Studio 2022 (V-S-2) is not
         // a match. The acronym should surface the obviously-right app at rank 1.
@@ -185,7 +172,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_ComplaintCase_SingleLetterSurfacesFrecentApp()
+    public void EndToEnd_ComplaintCase_SingleLetterSurfacesFrecentApp()
     {
         // "c" prefixes several apps (Calculator, Calendar, Command Prompt, Control Panel). With
         // no signal they tie; a user who keeps opening Calculator should see it at rank 1. This
@@ -201,21 +188,21 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_ComplaintCase_CodeSurfacesVsCode()
+    public void EndToEnd_ComplaintCase_CodeSurfacesVsCode()
     {
         // Typing "code" should put Visual Studio Code first (word-boundary on "Code").
         AssertRank1("code", "Visual Studio Code");
     }
 
     [TestMethod]
-    public void Golden_ComplaintCase_SetSurfacesSettings()
+    public void EndToEnd_ComplaintCase_SetSurfacesSettings()
     {
         // Typing "set" should put Windows Settings first (word-boundary on "Settings").
         AssertRank1("set", "Windows Settings");
     }
 
     [TestMethod]
-    public void Golden_FrecencyReordersWithinTierOnly()
+    public void EndToEnd_FrecencyReordersWithinTierOnly()
     {
         // Heavy use of Visual Studio Code (a word-boundary match for "co") must NOT lift it over
         // Command Prompt / Control Panel, which are prefix matches a whole tier above it.
@@ -232,7 +219,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_FrecencyBreaksTieWithinTier()
+    public void EndToEnd_FrecencyBreaksTieWithinTier()
     {
         // "vs" is an acronym match for both Visual Studio Code and Visual Studio 2022 (same
         // tier). With no history they tie; the recently/repeatedly used one should climb to the
@@ -250,13 +237,13 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_ProviderHigherBreaksAnExactTie()
+    public void EndToEnd_ProviderHigherBreaksAnExactTie()
     {
         // Two providers surface an identically-titled "Settings" command. Everything else being
         // equal (same tier, same lexical quality, no frecency), a provider marked Higher should
         // sort above the Normal one. Provider weight is a within-tier nudge for near-ties only.
-        var alpha = new ListItemMock("Settings", "From provider Alpha", ProviderId: "alpha");
-        var bravo = new ListItemMock("Settings", "From provider Bravo", ProviderId: "bravo");
+        var alpha = new ListItemMock("Settings", "From provider Alpha", providerId: "alpha");
+        var bravo = new ListItemMock("Settings", "From provider Bravo", providerId: "bravo");
         var items = new List<ListItemMock> { alpha, bravo };
 
         var matcher = CreateMatcher();
@@ -283,7 +270,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
-    public void Golden_ProviderWeightCannotCrossTierBoundary()
+    public void EndToEnd_ProviderWeightCannotCrossTierBoundary()
     {
         // Even marked Higher, a word-boundary match (Visual Studio Code for "co") must stay
         // below a prefix match (Command Prompt). Provider weight is clamped within a tier.
@@ -293,181 +280,5 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
                 : ProviderSearchWeight.Normal;
 
         AssertRanksAbove("co", "Command Prompt", "Visual Studio Code", providerWeightLookup: boostVsCode);
-    }
-
-    // Per-tier unit tests for MainListRanker.
-    [TestMethod]
-    public void ClassifyTier_AliasExact_WinsEvenOverFallback()
-    {
-        // Alias-exact is the strongest, most explicit signal - it beats even a fallback flag.
-        Assert.AreEqual(
-            RankTier.AliasExact,
-            MainListRanker.ClassifyTier("gh", "GitHub", isFallback: true, isAliasExact: true, isAliasSubstringMatch: false, matchedLexically: false));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_Fallback_SitsAtTheFloor()
-    {
-        // A fallback that is not an alias-exact match lands on the floor tier regardless of any
-        // lexical match, so dynamic fallbacks appear after direct command/app matches.
-        Assert.AreEqual(
-            RankTier.FallbackFloor,
-            MainListRanker.ClassifyTier("anything", "Some Fallback", isFallback: true, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_ExactTitle()
-    {
-        Assert.AreEqual(
-            RankTier.ExactTitle,
-            MainListRanker.ClassifyTier("calculator", "Calculator", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_Prefix()
-    {
-        Assert.AreEqual(
-            RankTier.Prefix,
-            MainListRanker.ClassifyTier("cal", "Calculator", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_WordBoundary()
-    {
-        Assert.AreEqual(
-            RankTier.AcronymWordBoundary,
-            MainListRanker.ClassifyTier("code", "Visual Studio Code", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_Acronym()
-    {
-        Assert.AreEqual(
-            RankTier.AcronymWordBoundary,
-            MainListRanker.ClassifyTier("vs", "Visual Studio Code", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_Fuzzy()
-    {
-        // Lexically matched, but not exact/prefix/word-boundary/acronym.
-        Assert.AreEqual(
-            RankTier.Fuzzy,
-            MainListRanker.ClassifyTier("cmd", "Command Prompt", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: true));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_None_WhenNothingMatched()
-    {
-        Assert.AreEqual(
-            RankTier.None,
-            MainListRanker.ClassifyTier("zzz", "Command Prompt", isFallback: false, isAliasExact: false, isAliasSubstringMatch: false, matchedLexically: false));
-    }
-
-    [TestMethod]
-    public void ClassifyTier_AliasSubstring_FloorsToFuzzyEvenWithNoLexicalMatch()
-    {
-        // A partial alias match (the alias starts with the query) keeps the item visible at the
-        // Fuzzy floor even when nothing matched lexically. Without this it would fall through to
-        // None and disappear. A stronger title relationship still wins over this floor.
-        Assert.AreEqual(
-            RankTier.Fuzzy,
-            MainListRanker.ClassifyTier("zz", "Some Command", isFallback: false, isAliasExact: false, isAliasSubstringMatch: true, matchedLexically: false));
-    }
-
-    [TestMethod]
-    public void Pack_HigherTierAlwaysOutranksLowerTier()
-    {
-        // The core invariant: a higher tier with the WORST possible within-tier score still
-        // outranks a lower tier with the BEST possible within-tier score. This is what makes
-        // "an exact match always beats a fuzzy one" true no matter how much frecency piles up.
-        RankTier[] ascending =
-        {
-            RankTier.FallbackFloor,
-            RankTier.Fuzzy,
-            RankTier.AcronymWordBoundary,
-            RankTier.Prefix,
-            RankTier.ExactTitle,
-            RankTier.AliasExact,
-        };
-
-        for (var i = 0; i < ascending.Length - 1; i++)
-        {
-            var lower = MainListRanker.Pack(ascending[i], MainListRanker.TierStride - 1);
-            var higher = MainListRanker.Pack(ascending[i + 1], 0);
-            Assert.IsTrue(
-                higher > lower,
-                $"{ascending[i + 1]} (min within-tier) must outrank {ascending[i]} (max within-tier)");
-        }
-    }
-
-    [TestMethod]
-    public void Pack_NoneIsZeroAndFiltered()
-    {
-        Assert.AreEqual(0, MainListRanker.Pack(RankTier.None, 999_999));
-    }
-
-    [TestMethod]
-    public void Pack_WithinTierScoreIsClampedToItsBand()
-    {
-        // An absurd within-tier score must never spill into the next tier's band.
-        var packed = MainListRanker.Pack(RankTier.Fuzzy, double.MaxValue);
-        Assert.AreEqual(RankTier.Fuzzy, MainListRanker.TierOf(packed));
-
-        var nextTierFloor = MainListRanker.Pack(RankTier.AcronymWordBoundary, 0);
-        Assert.IsTrue(packed < nextTierFloor, "A clamped within-tier score must stay below the next tier");
-    }
-
-    [TestMethod]
-    public void Pack_WithinTierScoreOrdersItemsInTheSameTier()
-    {
-        var low = MainListRanker.Pack(RankTier.Prefix, 10);
-        var high = MainListRanker.Pack(RankTier.Prefix, 20);
-        Assert.IsTrue(high > low, "Within the same tier, a higher within-tier score sorts higher");
-        Assert.AreEqual(MainListRanker.TierOf(low), MainListRanker.TierOf(high), "Both remain in the same tier");
-    }
-
-    [TestMethod]
-    public void TierOf_RoundTripsEveryTier()
-    {
-        foreach (RankTier tier in Enum.GetValues(typeof(RankTier)))
-        {
-            if (tier == RankTier.None)
-            {
-                continue;
-            }
-
-            var packed = MainListRanker.Pack(tier, 42);
-            Assert.AreEqual(tier, MainListRanker.TierOf(packed), $"Packing then unpacking {tier} should round-trip");
-        }
-    }
-
-    [TestMethod]
-    public void WithinTierScore_LexicalQualityLeads()
-    {
-        // More lexical quality raises the within-tier score, all else equal.
-        var lowLexical = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
-        var highLexical = MainListRanker.WithinTierScore(lexicalQuality: 6, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
-        Assert.IsTrue(highLexical > lowLexical, "Higher lexical quality should raise the within-tier score");
-    }
-
-    [TestMethod]
-    public void WithinTierScore_FrecencyBreaksTies()
-    {
-        var noFrecency = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 0, aliasSubstringBonus: 0, providerBonus: 0);
-        var withFrecency = MainListRanker.WithinTierScore(lexicalQuality: 5, frecencyWeight: 3, aliasSubstringBonus: 0, providerBonus: 0);
-        Assert.IsTrue(withFrecency > noFrecency, "Frecency should raise the within-tier score for otherwise-equal items");
-    }
-
-    [TestMethod]
-    public void ProviderBonus_LowerIsBelowNormalIsBelowHigher()
-    {
-        Assert.IsTrue(
-            MainListRanker.ProviderBonus(ProviderSearchWeight.Lower) < MainListRanker.ProviderBonus(ProviderSearchWeight.Normal),
-            "Lower should subtract relative to Normal");
-        Assert.IsTrue(
-            MainListRanker.ProviderBonus(ProviderSearchWeight.Normal) < MainListRanker.ProviderBonus(ProviderSearchWeight.Higher),
-            "Higher should add relative to Normal");
-        Assert.AreEqual(0.0, MainListRanker.ProviderBonus(ProviderSearchWeight.Normal), "Normal is the neutral default");
     }
 }
