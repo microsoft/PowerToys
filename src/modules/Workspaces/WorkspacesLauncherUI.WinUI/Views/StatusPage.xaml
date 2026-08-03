@@ -84,23 +84,35 @@
 
         <Button
             x:Name="DismissButton"
-            x:Uid="DismissButton"
             Grid.Row="1"
             Margin="0,16,4,0"
             HorizontalAlignment="Stretch"
-            Click="DismissButton_Click"
+            AutomationProperties.Name="{x:Bind DismissLabel.Text, Mode=OneWay}"
+            Click="CloseButton_Click"
             Style="{ThemeResource AccentButtonStyle}"
-            TabIndex="1" />
+            TabIndex="1">
+            <TextBlock
+                x:Name="DismissLabel"
+                x:Uid="DismissLabel"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </Button>
 
         <Button
             x:Name="CancelButton"
-            x:Uid="CancelButton"
             Grid.Row="1"
             Grid.Column="1"
             Margin="4,16,0,0"
             HorizontalAlignment="Stretch"
-            Click="CancelButton_Click"
+            AutomationProperties.Name="{x:Bind CancelLabel.Text, Mode=OneWay}"
+            Click="CloseButton_Click"
             Command="{x:Bind ViewModel.CancelLaunchCommand}"
-            TabIndex="2" />
+            TabIndex="2">
+            <TextBlock
+                x:Name="CancelLabel"
+                x:Uid="CancelLabel"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </Button>
     </Grid>
 </Page>

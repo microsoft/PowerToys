@@ -39,16 +39,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CancelButton.Content" xml:space="preserve">
+  <data name="CancelLabel.Text" xml:space="preserve">
     <value>Cancel launch</value>
   </data>
-  <data name="CancelButton.AutomationProperties.Name" xml:space="preserve">
-    <value>Cancel launch</value>
-  </data>
-  <data name="DismissButton.Content" xml:space="preserve">
-    <value>Dismiss</value>
-  </data>
-  <data name="DismissButton.AutomationProperties.Name" xml:space="preserve">
+  <data name="DismissLabel.Text" xml:space="preserve">
     <value>Dismiss</value>
   </data>
   <data name="LauncherWindowTitle" xml:space="preserve">
