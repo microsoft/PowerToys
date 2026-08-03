@@ -9,6 +9,12 @@ param(
 
     [string]$BuildNumber = $env:BUILD_BUILDNUMBER,
 
+    [AllowEmptyString()]
+    [string]$BuildDate = "",
+
+    [AllowEmptyString()]
+    [string]$DailyVersionSequence = "",
+
     [string]$VersionPropsPath = (Join-Path $PSScriptRoot "..\src\Version.props")
 )
 
@@ -61,6 +67,27 @@ function Test-VersionParts {
     }
 }
 
+function Get-VersionDate {
+    param(
+        [AllowEmptyString()][string]$DateOverride,
+        [Parameter(Mandatory)]$BuildStamp
+    )
+
+    if ([string]::IsNullOrWhiteSpace($DateOverride)) {
+        return $BuildStamp.Date
+    }
+
+    try {
+        return [datetime]::ParseExact(
+            $DateOverride,
+            "yyyyMMdd",
+            [Globalization.CultureInfo]::InvariantCulture)
+    }
+    catch {
+        throw "Build date '$DateOverride' must use the yyyyMMdd format"
+    }
+}
+
 function Get-ReleaseTrainMetadata {
     param([Parameter(Mandatory)][string]$Path)
 
@@ -96,9 +123,37 @@ function Get-ReleaseTrainMetadata {
     }
 }
 
-function Get-GeneratedVersion {
+function Get-ReleaseVersion {
     param(
         [Parameter(Mandatory)][string]$ReleaseTrain,
+        [Parameter(Mandatory)][datetime]$Epoch,
+        [Parameter(Mandatory)]$BuildStamp,
+        [Parameter(Mandatory)][int]$DailySequence
+    )
+
+    if ($BuildStamp.Date -lt $Epoch) {
+        throw "Build date '$($BuildStamp.Date.ToString("yyyy-MM-dd"))' is before ReleaseTrainEpoch '$($Epoch.ToString("yyyy-MM-dd"))'"
+    }
+
+    if ($DailySequence -lt 1 -or $DailySequence -gt 9) {
+        throw "Daily release sequence '$DailySequence' is outside the YDDDB-supported range 1-9"
+    }
+
+    $yearOffset = $BuildStamp.Date.Year - $Epoch.Year
+    if ($yearOffset -gt 6) {
+        throw "Release train year offset '$yearOffset' exceeds the MSI-safe YDDDB range 0-6; advance the release train and reset ReleaseTrainEpoch"
+    }
+
+    $thirdComponent = ($yearOffset * 10000) + ($BuildStamp.Date.DayOfYear * 10) + $DailySequence
+    if ($thirdComponent -gt [UInt16]::MaxValue) {
+        throw "Generated version component '$thirdComponent' exceeds 65535; advance the release train and reset ReleaseTrainEpoch"
+    }
+
+    return "$ReleaseTrain.$thirdComponent.0"
+}
+
+function Get-PrivateVersion {
+    param(
         [Parameter(Mandatory)][datetime]$Epoch,
         [Parameter(Mandatory)]$BuildStamp
     )
@@ -110,10 +165,24 @@ function Get-GeneratedVersion {
 
     $thirdComponent = ($extendedDay * 100) + $BuildStamp.Revision
     if ($thirdComponent -gt [UInt16]::MaxValue) {
-        throw "Generated version component '$thirdComponent' exceeds 65535; advance the release train and reset ReleaseTrainEpoch"
+        throw "Generated private version component '$thirdComponent' exceeds 65535"
     }
 
-    return "$ReleaseTrain.$thirdComponent.0"
+    return "0.0.$thirdComponent.0"
+}
+
+function Get-ReleaseDailySequence {
+    param([AllowEmptyString()][string]$Sequence)
+
+    if ([string]::IsNullOrWhiteSpace($Sequence)) {
+        throw "DailyVersionSequence is required for main and stable builds"
+    }
+
+    if ($Sequence -notmatch "^\d+$") {
+        throw "Daily release sequence '$Sequence' must be numeric"
+    }
+
+    return [int]::Parse($Sequence)
 }
 
 function Get-PreviewVersion {
@@ -141,7 +210,7 @@ function Get-PreviewVersion {
     }
 
     if ($inputVersion -notmatch "^(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)\.(?<build>\d+)$") {
-        throw "Preview version override must be major.minor or major.minor.extendedDayBuild.0, optionally followed by -preview"
+        throw "Preview version override must be major.minor or major.minor.YDDDB.0, optionally followed by -preview"
     }
 
     if ("$($matches["major"]).$($matches["minor"])" -ne $ReleaseTrain) {
@@ -203,7 +272,6 @@ if ($isScheduled -and -not $isMain) {
 $releaseMetadata = Get-ReleaseTrainMetadata -Path $VersionPropsPath
 $releaseTrain = $releaseMetadata.Version
 $buildStamp = Get-BuildStamp -PipelineBuildNumber $BuildNumber
-$generatedVersion = Get-GeneratedVersion -ReleaseTrain $releaseTrain -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp
 
 if ($isMain) {
     if ($isScheduled -and -not [string]::IsNullOrWhiteSpace($VersionOverride)) {
@@ -212,6 +280,9 @@ if ($isMain) {
 
     $intent = if ($isScheduled) { "preview-release" } else { "preview-validation" }
     $channel = "preview"
+    $buildStamp.Date = Get-VersionDate -DateOverride $BuildDate -BuildStamp $buildStamp
+    $releaseDailySequence = Get-ReleaseDailySequence -Sequence $DailyVersionSequence
+    $generatedVersion = Get-ReleaseVersion -ReleaseTrain $releaseTrain -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp -DailySequence $releaseDailySequence
     $version = Get-PreviewVersion -ReleaseTrain $releaseTrain -Override $VersionOverride -GeneratedVersion $generatedVersion
     $allowPublicSymbols = $false
     $shouldPublishPreview = $isScheduled
@@ -223,6 +294,9 @@ elseif ($isStable) {
 
     $intent = "stable-release"
     $channel = "stable"
+    $buildStamp.Date = Get-VersionDate -DateOverride $BuildDate -BuildStamp $buildStamp
+    $releaseDailySequence = Get-ReleaseDailySequence -Sequence $DailyVersionSequence
+    $generatedVersion = Get-ReleaseVersion -ReleaseTrain $releaseTrain -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp -DailySequence $releaseDailySequence
     $version = Get-StableVersion -Override $VersionOverride -GeneratedVersion $generatedVersion
     $allowPublicSymbols = $true
     $shouldPublishPreview = $false
@@ -234,7 +308,7 @@ else {
 
     $intent = "private-validation"
     $channel = "private"
-    $version = Get-GeneratedVersion -ReleaseTrain "0.0" -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp
+    $version = Get-PrivateVersion -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp
     $allowPublicSymbols = $false
     $shouldPublishPreview = $false
 }

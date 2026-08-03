@@ -42,6 +42,14 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
   - template: templates/variables-nuget-package-version.yml
+  - name: versionDate
+    value: $[format('{0:yyyyMMdd}', pipeline.startTime)]
+  - ${{ if or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.SourceBranch'], 'refs/heads/stable')) }}:
+    - name: dailyVersionSequence
+      value: $[counter(format('release-{0:yyyyMMdd}', pipeline.startTime), 1)]
+  - ${{ else }}:
+    - name: dailyVersionSequence
+      value: 0
 
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
@@ -110,7 +118,10 @@ extends:
 
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
-                    $metadata = .pipelines/resolveBuildMetadata.ps1 -VersionOverride '${{ parameters.versionNumber }}'
+                    $metadata = .pipelines/resolveBuildMetadata.ps1 `
+                      -VersionOverride '${{ parameters.versionNumber }}' `
+                      -BuildDate '$(versionDate)' `
+                      -DailyVersionSequence '$(dailyVersionSequence)'
                     $publishSymbolsToPublic = $${{ parameters.publishSymbolsToPublic }}
                     if ($publishSymbolsToPublic -and -not $metadata.AllowPublicSymbols) {
                       throw "Public symbols are only supported for manually queued stable-branch releases"

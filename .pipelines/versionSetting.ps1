@@ -12,7 +12,11 @@ Param(
 
   [string]$SourceCommit = $env:BUILD_SOURCEVERSION,
 
-  [string]$BuildNumber = $env:BUILD_BUILDNUMBER
+  [string]$BuildNumber = $env:BUILD_BUILDNUMBER,
+
+  [string]$BuildDate = $env:VERSIONDATE,
+
+  [string]$DailyVersionSequence = $env:DAILYVERSIONSEQUENCE
 )
 
 Write-Host $PSScriptRoot
@@ -23,7 +27,9 @@ function Get-NormalizedVersion {
     [string]$InputVersion,
     [Parameter(Mandatory = $true)]
     [string]$ReleaseChannel,
-    [string]$PipelineBuildNumber
+    [string]$PipelineBuildNumber,
+    [string]$PipelineBuildDate,
+    [string]$PipelineDailyVersionSequence
   )
 
   if ($InputVersion -match "^(?<numeric>\d+\.\d+(?:\.\d+){0,2})-(?<suffix>preview)$") {
@@ -39,7 +45,9 @@ function Get-NormalizedVersion {
       -VersionOverride $InputVersion `
       -SourceBranch "refs/heads/main" `
       -BuildReason "Manual" `
-      -BuildNumber $PipelineBuildNumber
+      -BuildNumber $PipelineBuildNumber `
+      -BuildDate $PipelineBuildDate `
+      -DailyVersionSequence $PipelineDailyVersionSequence
     return $metadata.Version
   }
 
@@ -55,7 +63,12 @@ function Get-NormalizedVersion {
   throw "Build format does not match the expected pattern (w.x, w.x.y, w.x.y.z, or w.x.y.z-preview for preview channel)"
 }
 
-$versionNumber = Get-NormalizedVersion -InputVersion $versionNumber -ReleaseChannel $Channel -PipelineBuildNumber $BuildNumber
+$versionNumber = Get-NormalizedVersion `
+  -InputVersion $versionNumber `
+  -ReleaseChannel $Channel `
+  -PipelineBuildNumber $BuildNumber `
+  -PipelineBuildDate $BuildDate `
+  -PipelineDailyVersionSequence $DailyVersionSequence
 foreach ($part in ($versionNumber -split '\.')) {
   $value = [int]::Parse($part)
   if ($value -lt 0 -or $value -gt [UInt16]::MaxValue) {

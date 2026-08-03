@@ -58,7 +58,10 @@ jobs:
   - pwsh: |-
       $effectiveVersionNumber = '${{ parameters.resolvedVersionNumber }}'
       if ([string]::IsNullOrWhiteSpace($effectiveVersionNumber) -or $effectiveVersionNumber.StartsWith('$(')) {
-        $metadata = .pipelines/resolveBuildMetadata.ps1 -VersionOverride '${{ parameters.versionNumber }}'
+        $metadata = .pipelines/resolveBuildMetadata.ps1 `
+          -VersionOverride '${{ parameters.versionNumber }}' `
+          -BuildDate '$(versionDate)' `
+          -DailyVersionSequence '$(dailyVersionSequence)'
         if ($${{ parameters.includePublicSymbolServer }} -and -not $metadata.AllowPublicSymbols) {
           throw "Public symbols are only supported for manually queued stable-branch releases"
         }
