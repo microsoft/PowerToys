@@ -220,9 +220,16 @@ namespace KeyboardManagerEditorUI.Helpers
         {
             int upperLimit = isEditMode ? 1 : 0;
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+            string targetApp = appName ?? string.Empty;
+
+            // Compare inside one target-app bucket only. The engine keeps app-specific and OS-level
+            // remaps in separate tables and tries app-specific first, falling through to OS-level
+            // when nothing matches (KeyboardManager::HandleKeyboardHookEvent), so an app-specific
+            // override of a global shortcut is a supported configuration rather than a duplicate.
+            // The classic editor compares the same way, after lower-casing both names.
             return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
                 .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString) &&
-                                   (string.IsNullOrEmpty(settings.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || settings.Shortcut.TargetApp == appName)) > upperLimit;
+                                   string.Equals(settings.Shortcut.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase)) > upperLimit;
         }
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)

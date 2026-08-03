@@ -141,7 +141,7 @@ namespace KeyboardManagerEditorUI.Settings
             // Process all shortcut mappings
             foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
             {
-                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == mapping.OriginalKeys))
+                if (!ShortcutMappingExists(mapping))
                 {
                     AddShortcutMapping(EditorSettings, mapping);
                     shortcutSettingsChanged = true;
@@ -176,7 +176,7 @@ namespace KeyboardManagerEditorUI.Settings
                     TargetText = mapping.TargetText,
                 };
 
-                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s => s.Shortcut.OriginalKeys == shortcutMapping.OriginalKeys))
+                if (!ShortcutMappingExists(shortcutMapping))
                 {
                     AddShortcutMapping(EditorSettings, shortcutMapping);
                     shortcutSettingsChanged = true;
@@ -266,6 +266,27 @@ namespace KeyboardManagerEditorUI.Settings
                 s.Shortcut.TargetKeys == mapping.TargetKeys);
         }
 
+        /// <summary>
+        /// A shortcut is identified by its origin keys *and* its target app: the engine keeps
+        /// OS-level and app-specific remaps in separate tables and allows the same origin in both,
+        /// so matching on the origin alone would hide one of them from the editor.
+        /// </summary>
+        /// <remarks>
+        /// Deliberately does not compare the operation type. GetShortcutRemap reports
+        /// operationType 0 for shortcut-to-text remaps (the text target lives in a different union
+        /// slot), so including it here would leave every text mapping unmatched.
+        /// </remarks>
+        private static bool ShortcutMappingExists(ShortcutKeyMapping mapping)
+        {
+            return EditorSettings.ShortcutSettingsDictionary.Values.Any(s => IsSameOrigin(s.Shortcut, mapping));
+        }
+
+        private static bool IsSameOrigin(ShortcutKeyMapping left, ShortcutKeyMapping right)
+        {
+            return left.OriginalKeys == right.OriginalKeys &&
+                   string.Equals(left.TargetApp ?? string.Empty, right.TargetApp ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
+
         private static bool IsMappingActiveInService(
             ShortcutSettings shortcutSettings,
             List<KeyToTextMapping> keyToTextMappings,
@@ -295,7 +316,7 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
-            return shortcutKeyMappings.Any(m => m.OriginalKeys == shortcutSettings.Shortcut.OriginalKeys);
+            return shortcutKeyMappings.Any(m => IsSameOrigin(m, shortcutSettings.Shortcut));
         }
     }
 }
