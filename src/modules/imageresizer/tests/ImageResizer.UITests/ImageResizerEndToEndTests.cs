@@ -42,6 +42,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private static string? originalSettingsContent;
     private static bool originalSizesFileExisted;
     private static string? originalSizesContent;
+    private static bool modernContextMenuExplorerRefreshed;
 
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
@@ -156,25 +157,35 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         Assert.IsNotNull(removeButton, "The removable preset was not shown in Image Resizer settings.");
         removeButton!.Click();
 
+        // The confirmation dialog can swallow the first click before its button is hit-testable, so
+        // re-press Yes on every poll until the preset is actually gone.
         var settingsProcess = Session.FromProcess("PowerToys.Settings");
-        var confirmButton = FindExact<Button>(settingsProcess, "Yes");
-        Assert.IsNotNull(confirmButton, "The preset removal confirmation dialog did not appear.");
-        confirmButton!.Click();
         Assert.IsTrue(
             settings.WaitFor(
-                () => FindExact<Button>(settings, "Remove the Remove Me preset", timeoutMS: 250) is null,
-                timeoutMS: 5_000,
-                pollIntervalMS: 250),
+                () =>
+                {
+                    FindExact<Button>(settingsProcess, "Yes", timeoutMS: 500)?.Click();
+                    return FindExact<Button>(settings, "Remove the Remove Me preset", timeoutMS: 250) is null;
+                },
+                timeoutMS: 15_000,
+                pollIntervalMS: 500),
             "The preset remained visible after confirming its removal.");
 
         settings.Find<Button>(By.AccessibilityId("AddSizeButton")).Click();
         var editNewPreset = FindExact<Button>(settings, "Edit the New size 1 preset");
         Assert.IsNotNull(editNewPreset, "Adding a preset did not create 'New size 1'.");
-        editNewPreset!.Click();
+        editNewPreset!.Click(msPostAction: 500);
 
+        // The inline editor can take a moment to expand; wait for its Name field instead of
+        // asserting on the first probe.
         settingsProcess = Session.FromProcess("PowerToys.Settings");
-        var nameBox = FindExact<TextBox>(settingsProcess, "Name");
-        Assert.IsNotNull(nameBox, "The new preset editor did not expose its Name field.");
+        TextBox? nameBox = null;
+        Assert.IsTrue(
+            settings.WaitFor(
+                () => (nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 500)) is not null,
+                timeoutMS: 15_000,
+                pollIntervalMS: 500),
+            "The new preset editor did not expose its Name field.");
         nameBox!.SetText("UITest Custom");
         KeyboardHelper.SendKeys(Key.Esc);
 
@@ -604,8 +615,21 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     {
         var menuReady = menu.WindowHandle != 0 &&
             WindowsFinder.ListAll().Any(window => window.Hwnd == menu.WindowHandle);
-        var commandPresent = HasVisibleMenuItem(menu, ContextMenuCaption);
-        return new ContextMenuObservation(menuReady, commandPresent);
+        if (!menuReady)
+        {
+            return new ContextMenuObservation(false, false);
+        }
+
+        try
+        {
+            return new ContextMenuObservation(true, HasVisibleMenuItem(menu, ContextMenuCaption));
+        }
+        catch (Exception)
+        {
+            // The transient menu popup can vanish mid-query (winappcli reports its HWND as gone);
+            // treat it as not-yet-stable so the caller reopens it.
+            return new ContextMenuObservation(false, false);
+        }
     }
 
     private static bool HasVisibleMenuItem(Session menu, string name) =>
@@ -637,6 +661,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
     private Session OpenExplorer(string folderPath)
     {
+        EnsureModernContextMenuRegistered();
         CloseExplorerFileWindows();
         var existingHandles = WindowsFinder.ListByApp(ExplorerProcessName)
             .Where(IsExplorerFileWindow)
@@ -659,6 +684,51 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         explorerWindowHandle = explorer!.WindowHandle;
         EnsureExplorerForeground(explorer);
         return explorer;
+    }
+
+    // The Windows 11 tier-1 (modern) context menu is a sparse MSIX package the module registers at
+    // runtime; an Explorer already running when it registers only surfaces the entry after the shell
+    // restarts. Do this once per run, after registration has had time to settle.
+    private static void EnsureModernContextMenuRegistered()
+    {
+        if (!IsWindows11OrNewer() || modernContextMenuExplorerRefreshed)
+        {
+            return;
+        }
+
+        modernContextMenuExplorerRefreshed = true;
+        Thread.Sleep(3_000);
+
+        var previousProcessIds = Process.GetProcessesByName(ExplorerProcessName)
+            .Select(process =>
+            {
+                var id = process.Id;
+                process.Dispose();
+                return id;
+            })
+            .ToHashSet();
+
+        WindowControl.TryKillProcessByName(ExplorerProcessName);
+
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(30);
+        while (DateTime.UtcNow < deadline)
+        {
+            var current = Process.GetProcessesByName(ExplorerProcessName);
+            var hasFreshShell = current.Any(process => !previousProcessIds.Contains(process.Id));
+            foreach (var process in current)
+            {
+                process.Dispose();
+            }
+
+            if (hasFreshShell)
+            {
+                break;
+            }
+
+            Thread.Sleep(500);
+        }
+
+        Thread.Sleep(2_000);
     }
 
     private static Session SelectFiles(Session explorer, params string[] filePaths)

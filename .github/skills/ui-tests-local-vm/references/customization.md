@@ -120,19 +120,14 @@ RAM and approximately 60% of host physical CPU cores, rounding the CPU allocatio
 count. For example, a 64 GB / 8-core host runs a 32 GB / 6-vCPU guest. Establish correctness and
 stable timings with this profile before investigating resource sensitivity.
 
-Guest RAM is a physical host commitment, not a soft maximum. The dockur QEMU command does not attach
-a memory-balloon device, and Windows touches most guest RAM during boot, so a 32 GB guest normally
-appears as roughly 33-34 GB of resident QEMU/container memory even during installation. Size the WSL
-ceiling and host workload with that commitment in mind.
-
 For a disposable first-time baseline build, dockur supports `DISK_CACHE=writeback`; it automatically
 uses threaded AIO because native AIO requires direct caching. This can improve Setup's synchronous
 write workload, but it risks losing recent guest writes if QEMU, Docker, WSL, or the host fails. Do
 not switch cache mode mid-install. Keep the default `none` for durable retained baselines unless the
 faster installation tradeoff is intentional, then stop and snapshot the completed volume promptly.
 
-Only after the suite is green, rerun with `-ResourceProfile Constrained`. Its defaults are 8 GB RAM
-and 4 vCPUs and can be changed with `VM_CONSTRAINED_RAM_SIZE` and `VM_CONSTRAINED_CPU_CORES` in
+Only after the suite is green, rerun with `-ResourceProfile Constrained`. Its defaults are 4 GB RAM
+and 2 vCPUs and can be changed with `VM_CONSTRAINED_RAM_SIZE` and `VM_CONSTRAINED_CPU_CORES` in
 `.env`. Treat failures introduced only by this second phase as resource-pressure findings; do not
 weaken assertions to accommodate them.
 
