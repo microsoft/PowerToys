@@ -352,7 +352,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Search weight</value>
   </data>
   <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.Description" xml:space="preserve">
-    <value>Nudge this provider's results up or down among equally-relevant matches. It never overrides a stronger text match.</value>
+    <value>Nudge this provider's results up or down among equally-relevant matches.</value>
   </data>
   <data name="Settings_ExtensionPage_SearchWeight_SettingsCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Search weight</value>
