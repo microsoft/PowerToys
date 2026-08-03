@@ -122,6 +122,21 @@ namespace KeyboardManagerEditorUI.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool AreShortcutsEqual([MarshalAs(UnmanagedType.LPWStr)] string lShort, [MarshalAs(UnmanagedType.LPWStr)] string rShortcut);
 
+        /// <summary>
+        /// Wraps EditorHelpers::DoKeysOverlap. Returns a <see cref="ShortcutOverlap"/> value.
+        /// </summary>
+        [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int DoKeysOverlap(int first, int second);
+
+        /// <summary>
+        /// Wraps EditorHelpers::DoShortcutsOverlap. Returns a <see cref="ShortcutOverlap"/> value.
+        /// </summary>
+        [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
+        internal static extern int DoShortcutsOverlap([MarshalAs(UnmanagedType.LPWStr)] string first, [MarshalAs(UnmanagedType.LPWStr)] string second);
+
+        [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int GetCombinedKey(int keyCode);
+
         // String Management Functions
         [DllImport(DllName, CallingConvention = Convention)]
         internal static extern void FreeString(IntPtr str);

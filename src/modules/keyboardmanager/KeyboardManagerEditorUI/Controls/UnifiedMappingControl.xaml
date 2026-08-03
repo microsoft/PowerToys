@@ -72,6 +72,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <ToggleButton
                             x:Name="TriggerKeyToggleBtn"
+                            x:Uid="TriggerKeyToggleBtn"
                             MinHeight="86"
                             Padding="8,24,8,24"
                             HorizontalAlignment="Stretch"
@@ -142,6 +143,7 @@
                 Background="{ThemeResource TextControlBackgroundFocused}"
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
+                TextChanged="AppNameTextBox_TextChanged"
                 Visibility="Collapsed" />
         </StackPanel>
         <!--  Arrow Separator  -->
@@ -238,6 +240,7 @@
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton
                         x:Name="ActionKeyToggleBtn"
+                        x:Uid="ActionKeyToggleBtn"
                         MinHeight="86"
                         Padding="8,24,8,24"
                         HorizontalAlignment="Stretch"

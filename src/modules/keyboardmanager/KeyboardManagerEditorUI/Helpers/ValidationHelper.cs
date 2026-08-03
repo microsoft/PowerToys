@@ -72,12 +72,26 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
+            // The classic editor runs the illegal-shortcut check on whichever column is being
+            // edited, so a reserved combination is rejected as a target too. Windows intercepts
+            // Win+L and Ctrl+Alt+Del before the engine can synthesize them, so remapping *to* one
+            // produces a mapping that silently never works.
+            if (remappedKeys.Count > 1 && IsIllegalShortcut(remappedKeys, mappingService))
+            {
+                return ValidationErrorType.IllegalShortcut;
+            }
+
             if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
 
             if (originalKeys.Count == 1 && HasConflictingModifierMapping(originalKeys[0], isEditMode, mappingService))
+            {
+                return ValidationErrorType.ConflictingModifier;
+            }
+
+            if (originalKeys.Count > 1 && HasOverlappingShortcut(originalKeys, isEditMode, mappingService, appName))
             {
                 return ValidationErrorType.ConflictingModifier;
             }
@@ -240,10 +254,71 @@ namespace KeyboardManagerEditorUI.Helpers
                 return false;
             }
 
+            // A single key remapped onto its own combined or side-specific form (Ctrl -> Left Ctrl)
+            // is a self-map too: the origin is expanded to the left/right pair before it reaches
+            // the engine, so one half of the mapping points at itself. The classic editor rejects
+            // this through IsKeyRemappingToItsCombinedKey.
+            if (originalKeys.Count == 1 && remappedKeys.Count == 1)
+            {
+                int originalKey = mappingService.GetKeyCodeFromName(originalKeys[0]);
+                int remappedKey = mappingService.GetKeyCodeFromName(remappedKeys[0]);
+                if (originalKey != 0 && remappedKey != 0 && IsKeyRemappingToItsCombinedKey(originalKey, remappedKey))
+                {
+                    return true;
+                }
+            }
+
             string originalKeysString = BuildKeyCodeString(originalKeys, mappingService);
             string remappedKeysString = BuildKeyCodeString(remappedKeys, mappingService);
 
             return KeyboardManagerInterop.AreShortcutsEqual(originalKeysString, remappedKeysString);
+        }
+
+        /// <summary>
+        /// Mirrors BufferValidationHelpers::IsKeyRemappingToItsCombinedKey: true when one of the
+        /// keys is the combined form and both belong to the same modifier family.
+        /// </summary>
+        private static bool IsKeyRemappingToItsCombinedKey(int first, int second)
+        {
+            int firstCombined = KeyboardManagerInterop.GetCombinedKey(first);
+            int secondCombined = KeyboardManagerInterop.GetCombinedKey(second);
+
+            return (first == firstCombined || second == secondCombined) && firstCombined == secondCombined;
+        }
+
+        /// <summary>
+        /// True when the shortcut covers, or is covered by, an already stored shortcut for the same
+        /// target app - for example Ctrl+A against Left Ctrl+A. Equality is already reported as a
+        /// duplicate, so only the covering case is treated as a conflict here.
+        /// </summary>
+        private static bool HasOverlappingShortcut(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName)
+        {
+            string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
+            string targetApp = appName ?? string.Empty;
+            int upperLimit = isEditMode ? 1 : 0;
+            int conflicts = 0;
+
+            foreach (var settings in SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values)
+            {
+                string existing = settings.Shortcut.OriginalKeys;
+                if (string.IsNullOrEmpty(existing) ||
+                    !string.Equals(settings.Shortcut.TargetApp ?? string.Empty, targetApp, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var overlap = (ShortcutOverlap)KeyboardManagerInterop.DoShortcutsOverlap(existing, shortcutKeysString);
+                if (overlap == ShortcutOverlap.ConflictingModifierShortcut)
+                {
+                    conflicts++;
+                    if (conflicts > upperLimit)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool ContainsOnlyModifierKeys(List<string> keys)
@@ -340,6 +415,12 @@ namespace KeyboardManagerEditorUI.Helpers
         /// Checks if a single key conflicts with existing single-key mappings via modifier variants.
         /// E.g., remapping LCtrl when Ctrl is already mapped, or vice versa.
         /// </summary>
+        /// <remarks>
+        /// Delegates the actual rule to EditorHelpers::DoKeysOverlap through the wrapper. Comparing
+        /// key types directly, as this used to, also flags a left/right pair of the same modifier
+        /// (Left Ctrl against Right Ctrl), which the classic editor explicitly allows - the two
+        /// cover disjoint physical keys.
+        /// </remarks>
         private static bool HasConflictingModifierMapping(string keyName, bool isEditMode, KeyboardMappingService mappingService)
         {
             int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(keyName);
@@ -371,10 +452,8 @@ namespace KeyboardManagerEditorUI.Helpers
                         continue; // Exact match handled by DuplicateMapping
                     }
 
-                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
-
-                    // Same modifier type (e.g., Ctrl and LCtrl) = conflict
-                    if (existingKeyType == keyType)
+                    var overlap = (ShortcutOverlap)KeyboardManagerInterop.DoKeysOverlap(existingKeyCode, keyCode);
+                    if (overlap == ShortcutOverlap.ConflictingModifierKey)
                     {
                         conflictCount++;
                         if (conflictCount > upperLimit)

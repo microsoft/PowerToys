@@ -544,6 +544,20 @@ namespace KeyboardManagerEditorUI.Controls
             AppNameTextBox.Visibility = AppSpecificCheckBox.IsChecked == true
                 ? Visibility.Visible
                 : Visibility.Collapsed;
+
+            // Scoping a mapping to an app changes what counts as a duplicate, and an empty app name
+            // is itself an error, so the dialog's state has to be recomputed.
+            RaiseValidationStateChanged();
+        }
+
+        private void AppNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
+            RaiseValidationStateChanged();
         }
 
         private void UpdateAppSpecificCheckBoxState()
