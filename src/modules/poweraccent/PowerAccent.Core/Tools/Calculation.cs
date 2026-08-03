@@ -76,9 +76,13 @@ namespace PowerAccent.Core.Tools
             double contentWidth = Math.Max(measuredContentWidth, itemCount * minItemWidth);
             double width = Math.Max(contentWidth + chromeWidth, descriptionMinWidth);
 
-            // Math.Max on the upper bound: a display narrower than a single cell would otherwise
-            // invert the clamp bounds and throw.
-            return Math.Clamp(width, minItemWidth, Math.Max(minItemWidth, maxWidth));
+            // One cell plus the chrome is the narrowest bar that can still draw a glyph: the chrome
+            // is the surface's own margin and border, so flooring at minItemWidth alone would
+            // describe a window whose entire client area is margin. Math.Max on the upper bound
+            // because a display narrower than that floor would otherwise invert the clamp bounds
+            // and throw (Math.Clamp documents ArgumentException when max is less than min).
+            double floorWidth = minItemWidth + chromeWidth;
+            return Math.Clamp(width, floorWidth, Math.Max(floorWidth, maxWidth));
         }
     }
 }

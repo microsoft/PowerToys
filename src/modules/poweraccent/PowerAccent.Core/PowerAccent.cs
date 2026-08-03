@@ -398,7 +398,9 @@ public partial class PowerAccent : IDisposable
     /// </summary>
     /// <returns>The maximum width in DIPs (device-independent pixels), accounting for
     /// screen padding.</returns>
-    public double GetDisplayMaxWidth()
+    /// <remarks>Private on purpose: the toolbar width must go through
+    /// <see cref="GetDisplayWidth"/> so the measured content width is always applied.</remarks>
+    private double GetDisplayMaxWidth()
     {
         // activeDisplay.Size.Width is in raw physical pixels; divide by the DPI scale to
         // convert to DIPs (device-independent pixels), since ScreenMinPadding and the

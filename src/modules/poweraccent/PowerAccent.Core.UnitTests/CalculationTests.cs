@@ -146,15 +146,17 @@ public sealed class CalculationTests
         Assert.AreEqual(caret.Y + 20, point.Y);   // 30
     }
 
-    // Accent-bar width, in DIP. These mirror the WinUI 3 Selector's constants: a cell is at least 48
-    // wide, 51 is taken up outside the list (the surface's 24+24 margin, its 1px borders and a 1px
-    // rounding allowance) and the description row, when shown, floors the whole bar at 648.
+    // Representative inputs to a pure function, in DIP, chosen to look like the WinUI 3 Selector: a
+    // cell of at least 48, 51 taken up outside the list and a 648 floor while the description row
+    // shows. GetToolbarWidth never sees these as constants - MainWindow reads the real chrome off
+    // the live surface - so these values pin the arithmetic, not the Selector's XAML.
     private const double MinItemWidth = 48;
     private const double ChromeWidth = 51;
     private const double DescriptionMinWidth = 648;
     private const double MaxWidth = 1770;   // 1920 DIP display minus the 150 screen padding
 
-    // The list is measured, so a bar whose glyphs all fit the 48px cell is exactly count * 48 + chrome.
+    // A bar whose glyphs all measure exactly the 48px cell: the measurement and the item-count floor
+    // agree, so this pins the common case rather than which of the two won.
     [TestMethod]
     public void GetToolbarWidth_NarrowGlyphs_HugsTheItemCount()
     {
@@ -185,6 +187,39 @@ public sealed class CalculationTests
             MaxWidth);
 
         Assert.AreEqual((20 * 60) + ChromeWidth, width);
+    }
+
+    // The narrowest crossing point of the same regression: one DIP over the item-count floor still
+    // has to come from the measurement. This is the cheapest case that fails if GetToolbarWidth ever
+    // goes back to sizing from the item count alone.
+    [TestMethod]
+    public void GetToolbarWidth_MeasuredOneDipOverEstimate_UsesMeasuredWidth()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: (12 * MinItemWidth) + 1,
+            itemCount: 12,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual((12 * MinItemWidth) + 1 + ChromeWidth, width);
+    }
+
+    // The floor is a floor in both directions: a list whose containers are only partly realized
+    // measures less than the whole bar needs, and the item-count estimate has to win instead.
+    [TestMethod]
+    public void GetToolbarWidth_MeasuredBelowEstimate_KeepsTheItemCountFloor()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 500,   // 12 fully realized cells would be 576
+            itemCount: 12,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual((12 * MinItemWidth) + ChromeWidth, width);
     }
 
     // A list that has not realized its containers measures 0. The item-count estimate is a valid
@@ -247,7 +282,24 @@ public sealed class CalculationTests
         Assert.AreEqual((20 * MinItemWidth) + ChromeWidth, width);
     }
 
-    // A display too narrow to hold even one cell would invert the clamp bounds; one cell wins.
+    // The display always wins over the description row's minimum. A portrait 1080x1920 panel at 150%
+    // gives (1080 / 1.5) - 150 = 570 usable DIP, which is narrower than DescriptionMinWidth.
+    [TestMethod]
+    public void GetToolbarWidth_DescriptionMinimumWiderThanDisplay_ClampsToDisplay()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 3 * MinItemWidth,
+            itemCount: 3,
+            MinItemWidth,
+            ChromeWidth,
+            DescriptionMinWidth,
+            maxWidth: 570);
+
+        Assert.AreEqual(570.0, width);
+    }
+
+    // A display too narrow to hold even one cell would invert the clamp bounds; the narrowest bar
+    // that can still draw a glyph - one cell plus the chrome around it - wins.
     [TestMethod]
     public void GetToolbarWidth_DisplayNarrowerThanOneCell_FallsBackToOneCell()
     {
@@ -259,6 +311,6 @@ public sealed class CalculationTests
             descriptionMinWidth: 0,
             maxWidth: 10);
 
-        Assert.AreEqual(MinItemWidth, width);
+        Assert.AreEqual(MinItemWidth + ChromeWidth, width);
     }
 }

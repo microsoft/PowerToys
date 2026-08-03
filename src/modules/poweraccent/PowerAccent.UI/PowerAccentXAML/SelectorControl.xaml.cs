@@ -43,7 +43,9 @@ public sealed partial class SelectorControl : UserControl
     /// count. The measurement is taken explicitly instead of read from the last layout pass because
     /// the bar is rebuilt on every summon while the window is still hidden, so no pass has run for
     /// the new items; measuring against an infinite width also yields the true content width rather
-    /// than whatever the enclosing ScrollViewer would have clipped it to.
+    /// than whatever the ScrollViewer inside the ListView's own template would have clipped it to.
+    /// A caller that measures before the surface has been templated and laid out may get less than
+    /// the items need, so <c>MainWindow</c> measures again after its first layout pass.
     /// </remarks>
     internal double MeasureContentWidthDip()
     {
