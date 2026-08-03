@@ -40,6 +40,8 @@ ALLINPUT
 Allman
 Allmodule
 ALLNOISE
+allowlist
+allowlisted
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
@@ -120,6 +122,8 @@ backticks
 Badflags
 Badmode
 Badparam
+basename
+basenames
 bbwe
 BCIE
 Belarusian
@@ -182,6 +186,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+canonicalize
 CANRENAME
 Canvascustomlayout
 CAPTUREBLT
@@ -366,6 +371,7 @@ debouncer
 debugbreak
 decryptor
 Dedup
+deduped
 Deduplicator
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -679,6 +685,7 @@ hbr
 HBRBACKGROUND
 hbrush
 hcblack
+HCCE
 HCRYPTHASH
 HCRYPTPROV
 hcursor
@@ -1384,6 +1391,7 @@ Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
+PKIX
 plib
 ploc
 ploca
@@ -1753,6 +1761,7 @@ SNAPPROCESS
 snk
 snwprintf
 softline
+softpub
 SOURCECLIENTAREAONLY
 sourced
 sourcedoc
@@ -1977,6 +1986,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 unescaped
+unforgeable
 ungroup
 UNICODETEXT
 unins
@@ -1992,6 +2002,7 @@ unparsable
 unremapped
 Unsend
 Unsubscribes
+untampered
 untriaged
 unvirtualized
 unwide
@@ -2145,6 +2156,7 @@ winrt
 winsdk
 winsta
 WINTHRESHOLD
+wintrust
 WINVER
 winword
 winxamlmanager
