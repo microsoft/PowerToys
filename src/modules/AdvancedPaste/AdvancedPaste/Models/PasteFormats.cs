@@ -20,6 +20,16 @@ public enum PasteFormats
 
     [PasteFormatMetadata(
         IsCoreAction = true,
+        ResourceId = "PasteAsSingleLine",
+        IconGlyph = "\uE8E9",
+        RequiresAIService = false,
+        CanPreview = false,
+        SupportedClipboardFormats = ClipboardFormat.Text,
+        KernelFunctionDescription = "Takes clipboard text and replaces line breaks with spaces to produce a single line.")]
+    SingleLine,
+
+    [PasteFormatMetadata(
+        IsCoreAction = true,
         ResourceId = "PasteAsMarkdown",
         IconGlyph = "\ue8a5",
         RequiresAIService = false,
