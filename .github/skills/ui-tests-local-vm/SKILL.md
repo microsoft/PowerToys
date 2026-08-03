@@ -96,6 +96,10 @@ Create and maintain this task list:
 
 ```markdown
 - [ ] 1. Read ui-tests-migration guidance for the target test surface
+- [ ] 1a. Read the target module's dev docs — `doc/devdocs/modules/<module>.md` (search `doc/devdocs/`,
+        including `common/`, if the exact file is missing) — for development-cycle gotchas such as
+        Release/`NDEBUG` registration gating, signed sparse-MSIX context menus, and Explorer restarts,
+        so a module's registration/deployment requirements do not surface as opaque test failures.
 - [ ] 2. Scaffold or verify the local VM - references/setup.md
 - [ ] 3. Build product and test projects on the host to exit code 0
 - [ ] 4. Package a lean exchange and verify archive hashes

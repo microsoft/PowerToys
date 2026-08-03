@@ -95,6 +95,22 @@ The dockur image is a Linux/QEMU wrapper, not a preinstalled Windows disk. The f
 official Windows media and performs a complete unattended installation into the named volume. It can
 take many minutes. Watch progress at `http://127.0.0.1:8006/`.
 
+### Watch the guest in the VS Code integrated browser (agent-visible)
+
+The viewer at `http://127.0.0.1:<VM_VIEWER_PORT>/` (default `8006`; use the VM's own port, for example
+`8007` for a second Windows 11 VM) is a live noVNC canvas. Open it in VS Code's integrated Simple
+Browser so an agent can watch the unattended install, confirm the `PTUser` desktop, or drive Windows
+Setup on the rare occasion it needs input:
+
+- **Automatic (agent-driven).** Have the agent open the viewer URL with its integrated-browser tool
+  (the VS Code browser `open_browser_page`/Simple Browser integration). VS Code opens the Simple
+  Browser tab and returns a page id, and the page is shared with the agent immediately — no manual
+  step. The agent then reads or screenshots the noVNC canvas (a screenshot shows the install
+  percentage and, later, the live desktop) and can click or type into the guest.
+
+The canvas is for observation and occasional input only; it is never a durable control or result
+channel. Always drive tests and collect evidence through WinRM and the shared exchange.
+
 A clean supplemental Windows 11 installation can exceed four hours on nested virtualization. Use a
 long bounded readiness window such as `-TimeoutMinutes 720`; a timeout does not stop the container or
 destroy the named volume, so resume the same VM instead of recreating it when Setup is still visibly

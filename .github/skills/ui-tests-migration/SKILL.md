@@ -129,6 +129,13 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 
 ```markdown
 - [ ] 1. Identify the module + scenario (A port / B greenfield) — this SKILL.md "Pick your scenario"
+- [ ] 1a. Read the module's developer docs — `doc/devdocs/modules/<module>.md` (if the exact file is
+        missing, search `doc/devdocs/`, including `doc/devdocs/common/`) — to learn its
+        development-cycle specifics BEFORE writing tests: how its shell extensions / context menus
+        register, whether they need a **Release** build (`NDEBUG`) or a **signed** sparse MSIX package,
+        and any Explorer-restart or first-run needs. Skipping this produces opaque failures — e.g. a
+        context-menu entry never appears because a Debug build compiles registration out, or an
+        unsigned `.msix` fails to register (`0x800B0100`).
 - [ ] 2. Read the two reference examples (ColorPicker .Next + ScreenRuler legacy) end-to-end
 - [ ] 3. Inventory the source:
         • Scenario A → list every [TestMethod] + shared helper in the legacy project

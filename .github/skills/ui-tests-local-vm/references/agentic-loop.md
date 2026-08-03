@@ -48,6 +48,14 @@ Compress-Archive -Path '<product-runtime>\*' `
   -DestinationPath '<exchange>\powertoys-runtime.zip' -Force
 ```
 
+**Build the product runtime in Release for any shell-extension test.** The runtime context-menu
+registration for Image Resizer, File Locksmith, New+, and PowerRename is compiled behind
+`#if defined(ENABLE_REGISTRATION) || defined(NDEBUG)`, so a **Debug** runtime silently omits it: the
+module enables and logs normally, but the entry never appears in Explorer and menu assertions fail
+with no obvious cause (for example, "Explorer did not show 'Resize with Image Resizer'"). CI ships
+Release for this reason. If you must validate against a Debug runtime, rebuild only the affected
+module DLL with `ENABLE_REGISTRATION` defined and overlay it via `product-overlay.zip`.
+
 Use the repository-pinned winappcli build and a private .NET runtime matching the test executable.
 Even when .NET 10 is installed in the VM baseline, the private runtime remains the default for
 reproducibility and revision comparison.
