@@ -98,6 +98,15 @@ The module includes multiple language-specific character sets and special charac
 - Special character sets (currency symbols, mathematical notations, etc.)
 - These sets are defined in the core component and can be extended
 
+### Toolbar Sizing and Reveal
+
+The overlay owns no layout of its own, so `MainWindow` sizes and shows it by hand. Two rules matter:
+
+- **The width is measured, never derived from the character count.** An accent cell is a `MinWidth` of 48 DIP, not a fixed 48: a glyph wider than that (₹, ‰, ﷼, a CJK fallback) grows its cell. `SelectorControl.MeasureContentWidthDip` measures the list against an unbounded width and `Calculation.GetToolbarWidth` floors that at one minimum cell per character, applies the description row's minimum and caps it at the display's usable width. A count-based estimate makes the window narrower than its own content, and the list then scrolls silently inside it.
+- **The window is shown before its content exists, so the content is unveiled separately.** A hidden WinUI 3 window renders nothing, which means the HWND becomes visible while the freshly rebuilt bar has never been laid out. `MainWindow` therefore shows the bar with `Selector.Opacity = 0`, lays it out, and unveils it once `CompositionTarget.Rendering` confirms the first frame was composed (with a timeout, since composition stops ticking when there is nothing on screen to compose). This is the WinUI 3 counterpart of the WPF implementation, which rendered the toolbar off screen and then moved it into view.
+
+For the same reason the hide path leaves the characters in the list: `Hide()` only queues the dismissal, so clearing them there would render a blank bar while the window is still on screen.
+
 ### Known Behaviors
 
 - The module has a specific timing mechanism for activation that users have become accustomed to. Initially, this was considered a bug (where the toolbar would still appear even after quickly tapping and releasing keys), but it has been maintained as expected behavior since users rely on it.

@@ -7,6 +7,7 @@ using System;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
 using CoreSize = PowerAccent.Core.Size;
 
@@ -14,22 +15,35 @@ namespace PowerAccent.UI;
 
 public sealed partial class MainWindow : TransparentWindow, IDisposable
 {
-    // Accent-bar geometry (DIP). Width is derived from the item count (count * ItemWidthDip) plus
-    // HorizontalSurfaceOverheadDip (Surface outer margin + its 1px border on each side), not
-    // measured from the ListView: its DesiredSize (wrapped in a ScrollViewer) is racy while item
-    // containers realize and intermittently reports 0, yielding a blank/clipped bar.
-    // The one-row bar hugs its content like the WPF original, capped at the monitor width; beyond
-    // that it scrolls and ScrollIntoView reveals the selected glyph.
-    private const double RowHeightDip = 92;          // one row of accent pills (item Height=48 + card border)
-    private const double DescriptionHeightDip = 36;  // extra row shown when the Unicode description is on
-    private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
+    // Accent-bar geometry (DIP). The one-row bar hugs its content like the WPF original, capped at
+    // the monitor's max usable width; beyond that it scrolls and ScrollIntoView reveals the selected
+    // glyph. Its width is measured from the character list (SelectorControl.MeasureContentWidthDip)
+    // plus the space outside the list, NOT derived from the item count: an accent cell is a MINIMUM
+    // of 48 DIP, so a glyph wider than that grows its cell and a count * 48 estimate would size the
+    // window narrower than its own content (issue #49488).
+    private const double RowHeightDip = 92;            // one row of accent pills (item Height=48 + card border)
+    private const double DescriptionHeightDip = 36;    // extra row shown when the Unicode description is on
+    private const double MinItemWidthDip = 48;         // one accent cell's minimum (ListViewItem MinWidth=48)
     private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
 
     // Prevents the fractional pixels that may occur with scaled displays from truncating the character list.
     private const double LayoutRoundingDip = 1;
 
+    // Upper bound on how long the bar may stay invisible while waiting for its first composed frame
+    // (see PowerAccent_OnChangeDisplay). Composition stops ticking when there is nothing to compose
+    // - the overlay fully occluded by an exclusive full-screen app, a locked session - so the wait
+    // always needs a way out; on that path the bar simply appears the way it used to.
+    private const int RevealTimeoutMs = 150;
+
+    // Rendering ticks to wait before unveiling. Rendering fires just before each frame is composed,
+    // so the first tick is the frame that draws the new bar and the second one confirms it landed.
+    private const int FramesBeforeReveal = 2;
+
     private readonly Core.PowerAccent _powerAccent;
+    private readonly DispatcherQueueTimer _revealTimer;
     private int _selectedIndex = -1;
+    private int _showGeneration;
+    private int _renderedFrames;
     private bool _active;
 
     // The view model lives on the SelectorControl (the x:Bind target); expose it here for the
@@ -49,6 +63,11 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // responsiveness. TransientSurface defaults to Transition.None (no animation);
         // SubscribeSurfaceTo forwards to the inner surface so it follows this window's Show/Hide.
         Selector.SubscribeSurfaceTo(this);
+
+        _revealTimer = DispatcherQueue.CreateTimer();
+        _revealTimer.IsRepeating = false;
+        _revealTimer.Interval = TimeSpan.FromMilliseconds(RevealTimeoutMs);
+        _revealTimer.Tick += (_, _) => Reveal();
 
         _powerAccent = new Core.PowerAccent(RunOnUiThread);
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
@@ -80,18 +99,24 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         if (!isActive)
         {
             _active = false;
+            _showGeneration++;
 
             // Release always-on-top before hiding so the dormant overlay does not keep a discrete
             // GPU awake on hybrid-graphics laptops (issue #34849 / PR #41044). IsAlwaysOnTop is the
             // WinUIEx WindowEx property (same as the sibling PowerDisplay).
             IsAlwaysOnTop = false;
             Hide();
-            ViewModel.Characters.Clear();
             _selectedIndex = -1;
+
+            // The characters are deliberately left in place. Hide() only queues the dismissal, so
+            // clearing them here empties the list while the window is still on screen, and that
+            // blank bar is exactly the frame the next summon would start from. The next summon
+            // clears and refills them anyway.
             return;
         }
 
         _active = true;
+        int generation = ++_showGeneration;
         ViewModel.ShowDescription = _powerAccent.ShowUnicodeDescription;
 
         ViewModel.Characters.Clear();
@@ -105,6 +130,14 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
             : string.Empty;
 
+        // Show the bar transparent and unveil it once it has actually been drawn. A hidden WinUI 3
+        // window renders nothing, so the HWND would otherwise become visible while the new
+        // characters are still un-laid-out, and the first frames would show the previous bar at its
+        // previous size, clipped by the new (already correct) client area - issue #49489. This is
+        // the WinUI 3 counterpart of the WPF fix in #46593, which rendered the toolbar off screen
+        // and only then moved it into view.
+        Selector.Opacity = 0;
+
         // Always-on-top only while shown, so the overlay sits above the foreground app (Show uses
         // SW_SHOWNA and never activates it); released on hide (see above). Then size and show.
         IsAlwaysOnTop = true;
@@ -113,10 +146,17 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (_active)
+            if (!_active || generation != _showGeneration)
             {
-                Selector.ScrollSelectedIntoView(_selectedIndex);
+                return;
             }
+
+            // Runs after TransparentWindow.Show has made the window visible and flipped the surface
+            // out of Collapsed, so this is the first point at which the bar can lay out at all -
+            // and ScrollIntoView needs realized containers to land on the right offset.
+            Selector.UpdateLayout();
+            Selector.ScrollSelectedIntoView(_selectedIndex);
+            WaitForFirstFrameThenReveal();
         });
 
         Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Core.Telemetry.PowerAccentShowAccentMenuEvent());
@@ -137,21 +177,18 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
     private void SizeAndPosition()
     {
-        // Width hugs the content: item count * ItemWidthDip plus the space outside the ListView (see
-        // the class-level note on why the ListView is not measured), capped at the monitor's max
-        // usable width so long lists scroll.
-        double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
-        double contentWidthDip = (ViewModel.Characters.Count * ItemWidthDip) + Selector.HorizontalSurfaceOverheadDip + LayoutRoundingDip;
-
-        // The Unicode description row needs room for a readable line; the WPF original gave it a
-        // 600px MinWidth. Widen a short accent bar to match when the row is shown (the accent bar
+        // Width hugs the content: the measured character list plus the space outside it (see the
+        // class-level note), floored at one minimum cell per character and capped at the monitor's
+        // max usable width so long lists scroll. The Unicode description row needs room for a
+        // readable line, so it widens a short bar to the WPF original's minimum (the accent bar
         // itself stays centered within the wider window).
-        if (ViewModel.ShowDescription)
-        {
-            contentWidthDip = Math.Max(contentWidthDip, DescriptionMinWidthDip);
-        }
+        double widthDip = _powerAccent.GetDisplayWidth(
+            Selector.MeasureContentWidthDip(),
+            ViewModel.Characters.Count,
+            MinItemWidthDip,
+            Selector.HorizontalSurfaceOverheadDip + LayoutRoundingDip,
+            ViewModel.ShowDescription ? DescriptionMinWidthDip : 0);
 
-        double widthDip = Math.Clamp(contentWidthDip, ItemWidthDip, maxWidthDip);
         double heightDip = RowHeightDip + (ViewModel.ShowDescription ? DescriptionHeightDip : 0);
 
         // Calculation works in physical pixels; GetDisplayCoordinates multiplies the DIP size by
@@ -173,8 +210,43 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         FlyoutWindowHelper.MoveAndResizeOnDisplay(this, display, rect);
     }
 
+    // Unveils the bar once the compositor has drawn it, or after RevealTimeoutMs if it never does.
+    private void WaitForFirstFrameThenReveal()
+    {
+        _renderedFrames = 0;
+
+        // Re-arms rather than stacks: a summon that lands while an earlier one is still waiting
+        // reuses the same handler and timer, so there is only ever one pending reveal.
+        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
+        CompositionTarget.Rendering += OnRenderingBeforeReveal;
+        _revealTimer.Start();
+    }
+
+    private void OnRenderingBeforeReveal(object sender, object e)
+    {
+        if (++_renderedFrames < FramesBeforeReveal)
+        {
+            return;
+        }
+
+        Reveal();
+    }
+
+    private void Reveal()
+    {
+        _revealTimer.Stop();
+        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
+
+        if (_active)
+        {
+            Selector.Opacity = 1;
+        }
+    }
+
     public void Dispose()
     {
+        _revealTimer.Stop();
+        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
         _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         GC.SuppressFinalize(this);

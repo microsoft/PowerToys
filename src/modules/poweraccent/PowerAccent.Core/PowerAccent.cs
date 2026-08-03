@@ -408,6 +408,36 @@ public partial class PowerAccent : IDisposable
     }
 
     /// <summary>
+    /// Calculates the width the toolbar should be given on the active display.
+    /// </summary>
+    /// <remarks>The caller measures its own character list and passes the result in; this
+    /// applies the minimum-cell-width floor, the description row's minimum width and the
+    /// active display's maximum width.</remarks>
+    /// <param name="measuredContentWidth">Width the character list needs, in DIPs; 0 when it
+    /// could not be measured yet.</param>
+    /// <param name="itemCount">Number of accent characters in the bar.</param>
+    /// <param name="minItemWidth">Minimum width of a single accent cell, in DIPs.</param>
+    /// <param name="chromeWidth">Width taken up outside the character list, in DIPs.</param>
+    /// <param name="descriptionMinWidth">Minimum width of the bar while the Unicode description
+    /// row is shown, in DIPs; 0 while that row is hidden.</param>
+    /// <returns>The toolbar width in DIPs.</returns>
+    public double GetDisplayWidth(
+        double measuredContentWidth,
+        int itemCount,
+        double minItemWidth,
+        double chromeWidth,
+        double descriptionMinWidth)
+    {
+        return Calculation.GetToolbarWidth(
+            measuredContentWidth,
+            itemCount,
+            minItemWidth,
+            chromeWidth,
+            descriptionMinWidth,
+            GetDisplayMaxWidth());
+    }
+
+    /// <summary>
     /// Gets the user-configured position preference for the toolbar display. For example
     /// <see cref="Position.TopLeft"/>.
     /// </summary>

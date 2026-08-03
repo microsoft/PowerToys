@@ -145,4 +145,120 @@ public sealed class CalculationTests
 
         Assert.AreEqual(caret.Y + 20, point.Y);   // 30
     }
+
+    // Accent-bar width, in DIP. These mirror the WinUI 3 Selector's constants: a cell is at least 48
+    // wide, 51 is taken up outside the list (the surface's 24+24 margin, its 1px borders and a 1px
+    // rounding allowance) and the description row, when shown, floors the whole bar at 648.
+    private const double MinItemWidth = 48;
+    private const double ChromeWidth = 51;
+    private const double DescriptionMinWidth = 648;
+    private const double MaxWidth = 1770;   // 1920 DIP display minus the 150 screen padding
+
+    // The list is measured, so a bar whose glyphs all fit the 48px cell is exactly count * 48 + chrome.
+    [TestMethod]
+    public void GetToolbarWidth_NarrowGlyphs_HugsTheItemCount()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 18 * MinItemWidth,
+            itemCount: 18,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual((18 * MinItemWidth) + ChromeWidth, width);
+    }
+
+    // The regression this guards (issue #49488): the cell is a MinWidth, not a fixed width, so wide
+    // glyphs (₹, ‰, ﷼, CJK fallbacks) grow it. The measured width has to win over count * 48,
+    // otherwise the window is narrower than its own content and the list silently scrolls.
+    [TestMethod]
+    public void GetToolbarWidth_WideGlyphs_UsesMeasuredWidthOverItemCount()
+    {
+        // 20 cells that measured 60 wide instead of the 48 minimum.
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 20 * 60,
+            itemCount: 20,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual((20 * 60) + ChromeWidth, width);
+    }
+
+    // A list that has not realized its containers measures 0. The item-count estimate is a valid
+    // lower bound, so it must be used rather than collapsing the bar to a single cell.
+    [TestMethod]
+    public void GetToolbarWidth_UnmeasuredList_FallsBackToItemCount()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 0,
+            itemCount: 12,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual((12 * MinItemWidth) + ChromeWidth, width);
+    }
+
+    // Longer character sets stop growing at the display's maximum and scroll instead.
+    [TestMethod]
+    public void GetToolbarWidth_ContentWiderThanDisplay_ClampsToMaxWidth()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 90 * MinItemWidth,
+            itemCount: 90,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual(MaxWidth, width);
+    }
+
+    // The Unicode description row needs a readable line, so it widens a short bar - but only up.
+    [TestMethod]
+    public void GetToolbarWidth_ShortBarWithDescription_WidensToDescriptionMinimum()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 3 * MinItemWidth,
+            itemCount: 3,
+            MinItemWidth,
+            ChromeWidth,
+            DescriptionMinWidth,
+            MaxWidth);
+
+        Assert.AreEqual(DescriptionMinWidth, width);
+    }
+
+    [TestMethod]
+    public void GetToolbarWidth_LongBarWithDescription_KeepsTheContentWidth()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 20 * MinItemWidth,
+            itemCount: 20,
+            MinItemWidth,
+            ChromeWidth,
+            DescriptionMinWidth,
+            MaxWidth);
+
+        Assert.AreEqual((20 * MinItemWidth) + ChromeWidth, width);
+    }
+
+    // A display too narrow to hold even one cell would invert the clamp bounds; one cell wins.
+    [TestMethod]
+    public void GetToolbarWidth_DisplayNarrowerThanOneCell_FallsBackToOneCell()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: MinItemWidth,
+            itemCount: 1,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            maxWidth: 10);
+
+        Assert.AreEqual(MinItemWidth, width);
+    }
 }
