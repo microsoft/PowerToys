@@ -44,6 +44,15 @@ namespace KeyboardManagerEditorUI
             // at all - which is exactly what happened in #49399.
             Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
 
+            // Before anything touches the configuration: a second instance would race the first one
+            // on default.json and editorSettings.json.
+            if (!SingleInstanceGuard.TryAcquire())
+            {
+                Logger.LogInfo("Another Keyboard Manager editor is already running, activating it and exiting");
+                SingleInstanceGuard.ActivateExistingInstance();
+                Environment.Exit(0);
+            }
+
             this.InitializeComponent();
 
             UnhandledException += App_UnhandledException;
@@ -80,6 +89,11 @@ namespace KeyboardManagerEditorUI
             });
 
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
+
+            // Close with whichever launcher started us, so an orphaned editor cannot hold the
+            // engine-suspend event set for the rest of the session.
+            ParentProcessWatcher.CloseWhenParentExits(
+                () => MainWindow.DispatcherQueue.TryEnqueue(() => MainWindow.Close()));
         }
 
         /// <summary>
