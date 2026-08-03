@@ -15,11 +15,11 @@ namespace ShortcutGuide.UnitTests.ManifestsTests;
 public sealed class WindowsShellManifestTests
 {
     [TestMethod]
-    public void DesktopShortcuts_ContainsDesktopPeekShortcut()
+    public void WindowsKeyShortcuts_ContainsDesktopPeekShortcut()
     {
         var manifest = LoadWindowsShellManifest();
-        var desktopShortcuts = manifest.Shortcuts.Single(category => category.SectionName == "Desktop Shortcuts");
-        var desktopPeekShortcut = desktopShortcuts.Properties.Single(entry => entry.Name == "Peek at desktop temporarily");
+        var windowsKeyShortcuts = manifest.Shortcuts.Single(category => category.SectionName == "Windows key");
+        var desktopPeekShortcut = windowsKeyShortcuts.Properties.Single(entry => entry.Name == "Peek at desktop temporarily");
 
         Assert.AreEqual(1, desktopPeekShortcut.Shortcut.Length);
         Assert.AreEqual(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: true, keys: [","]), desktopPeekShortcut.Shortcut[0]);
