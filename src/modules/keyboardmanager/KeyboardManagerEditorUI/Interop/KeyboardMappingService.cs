@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -14,6 +15,26 @@ namespace KeyboardManagerEditorUI.Interop
 {
     public class KeyboardMappingService : IDisposable
     {
+        /// <summary>
+        /// Combined modifier key codes and the left/right pair each one stands for.
+        /// </summary>
+        /// <remarks>
+        /// The engine matches single-key remaps against the raw vkCode reported by the low-level
+        /// hook (<c>KeyboardEventHandlers::HandleSingleKeyRemapEvent</c>), which is always the
+        /// side-specific code - it is never VK_CONTROL/VK_MENU/VK_SHIFT, and VK_WIN_BOTH is not a
+        /// real virtual key at all. The key dropdown still offers the combined keys, so a remap
+        /// stored under one of them would never fire. The classic editor works around this by
+        /// expanding on save (<c>LoadingAndSavingRemappingHelper::ApplySingleKeyRemappings</c>) and
+        /// collapsing on load (<c>PreProcessRemapTable</c>); we do the same here.
+        /// </remarks>
+        private static readonly (int Combined, int Left, int Right)[] CombinedModifierKeys =
+        {
+            (0x11, 0xA2, 0xA3),   // VK_CONTROL -> VK_LCONTROL, VK_RCONTROL
+            (0x12, 0xA4, 0xA5),   // VK_MENU    -> VK_LMENU,    VK_RMENU
+            (0x10, 0xA0, 0xA1),   // VK_SHIFT   -> VK_LSHIFT,   VK_RSHIFT
+            (0x104, 0x5B, 0x5C),  // VK_WIN_BOTH-> VK_LWIN,     VK_RWIN
+        };
+
         private IntPtr _configHandle;
         private bool _disposed;
 
@@ -48,7 +69,12 @@ namespace KeyboardManagerEditorUI.Interop
                 }
             }
 
-            return result;
+            return CollapseCombinedModifiers(
+                result,
+                m => m.OriginalKey,
+                (m, key) => m.OriginalKey = key,
+                (left, right) => left.IsShortcut == right.IsShortcut && left.TargetKey == right.TargetKey,
+                (m, combined) => !m.IsShortcut && m.TargetKey == combined.ToString(CultureInfo.InvariantCulture));
         }
 
         public List<ShortcutKeyMapping> GetShortcutMappings()
@@ -125,7 +151,12 @@ namespace KeyboardManagerEditorUI.Interop
                 }
             }
 
-            return result;
+            return CollapseCombinedModifiers(
+                result,
+                m => m.OriginalKey,
+                (m, key) => m.OriginalKey = key,
+                (left, right) => left.TargetText == right.TargetText,
+                (m, combined) => false);
         }
 
         public string GetKeyDisplayName(int keyCode)
@@ -164,7 +195,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool AddSingleKeyMapping(int originalKey, int targetKey)
         {
-            return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);
+            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, key, targetKey), isTextRemap: false);
         }
 
         public bool AddSingleKeyMapping(int originalKey, string targetKeys)
@@ -176,12 +207,10 @@ namespace KeyboardManagerEditorUI.Interop
 
             if (!targetKeys.Contains(';') && int.TryParse(targetKeys, out int targetKey))
             {
-                return KeyboardManagerInterop.AddSingleKeyRemap(_configHandle, originalKey, targetKey);
+                return AddSingleKeyMapping(originalKey, targetKey);
             }
-            else
-            {
-                return KeyboardManagerInterop.AddSingleKeyToShortcutRemap(_configHandle, originalKey, targetKeys);
-            }
+
+            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyToShortcutRemap(_configHandle, key, targetKeys), isTextRemap: false);
         }
 
         public bool AddSingleKeyToTextMapping(int originalKey, string targetText)
@@ -191,7 +220,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return false;
             }
 
-            return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
+            return AddExpanded(originalKey, key => KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, key, targetText), isTextRemap: true);
         }
 
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut, bool exactMatch = false)
@@ -265,7 +294,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool DeleteSingleKeyMapping(int originalKey)
         {
-            return KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, originalKey);
+            return DeleteExpanded(originalKey, key => KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, key));
         }
 
         public bool DeleteSingleKeyToTextMapping(int originalKey)
@@ -275,7 +304,7 @@ namespace KeyboardManagerEditorUI.Interop
                 return false;
             }
 
-            return KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, originalKey);
+            return DeleteExpanded(originalKey, key => KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, key));
         }
 
         public bool DeleteShortcutMapping(string originalKeys, string targetApp = "")
@@ -286,6 +315,114 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return KeyboardManagerInterop.DeleteShortcutRemap(_configHandle, originalKeys, targetApp ?? string.Empty);
+        }
+
+        /// <summary>
+        /// Returns the key codes the engine actually has to be told about for a given origin key:
+        /// the left/right pair for a combined modifier, the key itself for anything else.
+        /// </summary>
+        private static int[] ExpandCombinedModifier(int keyCode)
+        {
+            foreach (var (combined, left, right) in CombinedModifierKeys)
+            {
+                if (keyCode == combined)
+                {
+                    return new[] { left, right };
+                }
+            }
+
+            return new[] { keyCode };
+        }
+
+        /// <summary>
+        /// Collapses a left/right pair that shares the same target back into its combined key, so
+        /// the editor shows (and matches) one "Ctrl" row rather than "LCtrl" plus "RCtrl".
+        /// </summary>
+        private static List<T> CollapseCombinedModifiers<T>(
+            List<T> mappings,
+            Func<T, int> getKey,
+            Action<T, int> setKey,
+            Func<T, T, bool> haveSameTarget,
+            Func<T, int, bool> targetsCombinedKey)
+            where T : class
+        {
+            foreach (var (combined, left, right) in CombinedModifierKeys)
+            {
+                int leftIndex = mappings.FindIndex(m => getKey(m) == left);
+                int rightIndex = mappings.FindIndex(m => getKey(m) == right);
+
+                if (leftIndex < 0 || rightIndex < 0 || !haveSameTarget(mappings[leftIndex], mappings[rightIndex]))
+                {
+                    continue;
+                }
+
+                // Collapsing "LCtrl -> Ctrl" + "RCtrl -> Ctrl" would produce "Ctrl -> Ctrl".
+                // The classic editor skips that case too (CombineRemappings).
+                if (targetsCombinedKey(mappings[leftIndex], combined))
+                {
+                    continue;
+                }
+
+                setKey(mappings[leftIndex], combined);
+                mappings.RemoveAt(rightIndex);
+            }
+
+            return mappings;
+        }
+
+        /// <summary>
+        /// Applies <paramref name="add"/> to every expanded origin key, rolling back on failure so a
+        /// combined modifier is never left half-mapped.
+        /// </summary>
+        private bool AddExpanded(int originalKey, Func<int, bool> add, bool isTextRemap)
+        {
+            int[] keys = ExpandCombinedModifier(originalKey);
+            if (keys.Length == 1)
+            {
+                return add(keys[0]);
+            }
+
+            var added = new List<int>(keys.Length);
+            foreach (int key in keys)
+            {
+                if (add(key))
+                {
+                    added.Add(key);
+                    continue;
+                }
+
+                foreach (int done in added)
+                {
+                    if (isTextRemap)
+                    {
+                        KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, done);
+                    }
+                    else
+                    {
+                        KeyboardManagerInterop.DeleteSingleKeyRemap(_configHandle, done);
+                    }
+                }
+
+                Logger.LogWarning($"Could not remap key {key} (expanded from {originalKey}); rolled the mapping back");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Applies <paramref name="delete"/> to every expanded origin key. Succeeds if any side was
+        /// present, so remaps written before the expansion existed can still be removed.
+        /// </summary>
+        private bool DeleteExpanded(int originalKey, Func<int, bool> delete)
+        {
+            bool deletedAny = false;
+            foreach (int key in ExpandCombinedModifier(originalKey))
+            {
+                deletedAny |= delete(key);
+            }
+
+            return deletedAny;
         }
 
         public void Dispose()
