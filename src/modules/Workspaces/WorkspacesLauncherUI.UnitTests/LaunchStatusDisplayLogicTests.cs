@@ -60,7 +60,7 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusIcon_WhenSuccessful_ShowsGreenCheckmarkGlyph()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.LaunchedAndMoved };
-            Assert.AreEqual("\U0000F78C", app.StateGlyph, "LaunchedAndMoved should show checkmark glyph");
+            Assert.AreEqual("\uE73E", app.StateGlyph, "LaunchedAndMoved should show checkmark glyph");
         }
 
         [TestMethod]
@@ -68,7 +68,7 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusIcon_WhenFailed_ShowsRedErrorGlyph()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Failed };
-            Assert.AreEqual("\U0000EF2C", app.StateGlyph, "Failed should show error glyph");
+            Assert.AreEqual("\uEA39", app.StateGlyph, "Failed should show error glyph");
         }
 
         [TestMethod]
@@ -76,7 +76,7 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusIcon_WhenCanceled_ShowsRedErrorGlyph()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Canceled };
-            Assert.AreEqual("\U0000EF2C", app.StateGlyph, "Canceled should fall through to default error glyph");
+            Assert.AreEqual("\uEA39", app.StateGlyph, "Canceled should fall through to default error glyph");
         }
 
         [TestMethod]
@@ -145,7 +145,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
             app.LaunchState = LaunchingState.LaunchedAndMoved;
             Assert.IsFalse(app.Loading);
-            Assert.AreEqual("\U0000F78C", app.StateGlyph);
+            Assert.AreEqual("\uE73E", app.StateGlyph);
             var color = app.StateColorValue;
             Assert.AreEqual(0, color.R);
             Assert.AreEqual(128, color.G);
@@ -160,7 +160,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
             app.LaunchState = LaunchingState.Failed;
             Assert.IsFalse(app.Loading);
-            Assert.AreEqual("\U0000EF2C", app.StateGlyph);
+            Assert.AreEqual("\uEA39", app.StateGlyph);
             var color = app.StateColorValue;
             Assert.AreEqual(254, color.R);
             Assert.AreEqual(0, color.G);

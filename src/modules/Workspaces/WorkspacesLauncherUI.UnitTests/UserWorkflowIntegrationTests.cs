@@ -51,7 +51,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 App("Microsoft Edge", @"C:\edge.exe", LaunchingState.Waiting)));
 
             Assert.IsFalse(vm.AppsListed[0].Loading, "Moved app should stop loading");
-            Assert.AreEqual("\U0000F78C", vm.AppsListed[0].StateGlyph, "Moved app should show checkmark");
+            Assert.AreEqual("\uE73E", vm.AppsListed[0].StateGlyph, "Moved app should show checkmark");
 
             SimulateIpcMessage(BuildMessage(
                 1234,
@@ -60,7 +60,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 App("Microsoft Edge", @"C:\edge.exe", LaunchingState.LaunchedAndMoved)));
 
             Assert.IsTrue(vm.AppsListed.All(a => !a.Loading), "All apps should stop loading");
-            Assert.IsTrue(vm.AppsListed.All(a => a.StateGlyph == "\U0000F78C"), "All apps should show checkmark");
+            Assert.IsTrue(vm.AppsListed.All(a => a.StateGlyph == "\uE73E"), "All apps should show checkmark");
         }
 
         [TestMethod]
@@ -76,14 +76,14 @@ namespace WorkspacesLauncherUI.UnitTests
                 App("Calculator", @"C:\Windows\calc.exe", LaunchingState.LaunchedAndMoved)));
 
             Assert.IsFalse(vm.AppsListed[0].Loading);
-            Assert.AreEqual("\U0000F78C", vm.AppsListed[0].StateGlyph);
+            Assert.AreEqual("\uE73E", vm.AppsListed[0].StateGlyph);
 
             Assert.IsFalse(vm.AppsListed[1].Loading);
-            Assert.AreEqual("\U0000EF2C", vm.AppsListed[1].StateGlyph);
+            Assert.AreEqual("\uEA39", vm.AppsListed[1].StateGlyph);
             var color = vm.AppsListed[1].StateColorValue;
             Assert.AreEqual(254, color.R);
 
-            Assert.AreEqual("\U0000F78C", vm.AppsListed[2].StateGlyph);
+            Assert.AreEqual("\uE73E", vm.AppsListed[2].StateGlyph);
         }
 
         [TestMethod]
@@ -209,7 +209,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 App("App2", @"C:\missing2.exe", LaunchingState.Failed)));
 
             Assert.IsTrue(vm.AppsListed.All(a => !a.Loading), "Failed apps should not show loading");
-            Assert.IsTrue(vm.AppsListed.All(a => a.StateGlyph == "\U0000EF2C"), "Failed apps should show error glyph");
+            Assert.IsTrue(vm.AppsListed.All(a => a.StateGlyph == "\uEA39"), "Failed apps should show error glyph");
         }
 
         [TestMethod]
