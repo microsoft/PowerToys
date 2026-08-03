@@ -48,6 +48,15 @@ namespace KeyboardManagerEditorUI
 
             UnhandledException += App_UnhandledException;
 
+            // Stop the engine from applying the existing remappings while the editor is open, so
+            // recording a trigger captures the physical key rather than what it is remapped to.
+            // Released in MainWindow_Closed. The classic editor does the same via EventLocker.
+            EditorWindowEventLock.Acquire();
+
+            // Backstop for exit paths that do not go through MainWindow_Closed: the event is
+            // manual-reset and outlives this process, so leaving it set would disable the engine.
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => EditorWindowEventLock.Release();
+
             SettingsManager.CorrelateServiceAndEditorMappings();
         }
 
@@ -79,6 +88,10 @@ namespace KeyboardManagerEditorUI
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             Logger.LogError("Unhandled exception", e.Exception);
+
+            // This handler leaves e.Handled false, so the process is about to go down. Leaving the
+            // suspend event set would keep the engine disabled until it is restarted.
+            EditorWindowEventLock.Release();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;
