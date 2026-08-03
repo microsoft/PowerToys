@@ -23,6 +23,9 @@
     <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="PowerDisplay.Lib.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="WmiLight" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
       <PrivateAssets>all</PrivateAssets>

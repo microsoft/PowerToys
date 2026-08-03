@@ -10,6 +10,7 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
+ACRYLICBLURBEHIND
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -39,6 +40,8 @@ ALLINPUT
 Allman
 Allmodule
 ALLNOISE
+allowlist
+allowlisted
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
@@ -48,6 +51,7 @@ ANDSCANS
 animatedvisuals
 Animnate
 AOC
+AOCB
 aocfnapldcnfbofgmbbllojgocaelgdd
 aot
 apicontract
@@ -93,6 +97,7 @@ ASSOCSTR
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
+AWC
 ATRIOX
 aumid
 AUO
@@ -117,6 +122,8 @@ backticks
 Badflags
 Badmode
 Badparam
+basename
+basenames
 bbwe
 BCIE
 Belarusian
@@ -136,8 +143,8 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
-Blackmagic
 bla
+Blackmagic
 BLENDFUNCTION
 blittable
 Blockquotes
@@ -179,6 +186,7 @@ CALG
 callbackptr
 calpwstr
 Cangjie
+canonicalize
 CANRENAME
 Canvascustomlayout
 CAPTUREBLT
@@ -356,12 +364,14 @@ DCBA
 DCOM
 DCR
 ddc
+DDCCI
 DDEIf
 Deact
 debouncer
 debugbreak
 decryptor
 Dedup
+deduped
 Deduplicator
 DEFAULTBOOTSTRAPPERINSTALLFOLDER
 DEFAULTCOLOR
@@ -401,8 +411,8 @@ devmgmt
 DEVMODE
 DEVMODEW
 DEVNODES
-devpal
 devpackages
+devpal
 DEVTYP
 dfx
 DIALOGEX
@@ -464,6 +474,7 @@ dwm
 dwmapi
 DWMCOLORIZATIONCOLORCHANGED
 DWMCOMPOSITIONCHANGED
+DWMSBT
 DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
@@ -541,9 +552,9 @@ extensionsdk
 EXTRALIGHT
 EXTRINSICPROPERTIES
 eyetracker
+Fairlight
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
-Fairlight
 FARPROC
 fdw
 fdx
@@ -646,6 +657,7 @@ GRABANDMOVEMODULEINTERFACE
 gradians
 GRC
 grctlext
+Greenshot
 GRGX
 Gridcustomlayout
 gridlines
@@ -674,6 +686,7 @@ hbr
 HBRBACKGROUND
 hbrush
 hcblack
+HCCE
 HCRYPTHASH
 HCRYPTPROV
 hcursor
@@ -687,6 +700,8 @@ hdwwiz
 Headered
 Helpline
 helptext
+HELPTEXTA
+HELPTEXTW
 hgdiobj
 HGFE
 hglobal
@@ -1111,6 +1126,7 @@ MSIRESTARTMANAGERCONTROL
 MSIs
 msixbundle
 MSIXCA
+msll
 MSLLHOOKSTRUCT
 Mso
 mspub
@@ -1376,6 +1392,7 @@ Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
+PKIX
 plib
 ploc
 ploca
@@ -1388,6 +1405,7 @@ pnid
 PNMLINK
 Poc
 Podcasts
+PARGB
 POINTERID
 POINTERUPDATE
 Pokedex
@@ -1638,6 +1656,7 @@ selfhost
 SENDCHANGE
 sendvirtualinput
 serverside
+SETAUTOHIDEBAREX
 SETBUDDYINT
 SETCONTEXT
 SETCURSEL
@@ -1651,7 +1670,6 @@ SETPOWEROFFACTIVE
 SETRANGE
 SETREDRAW
 SETRULES
-SETAUTOHIDEBAREX
 SETSCREENSAVEACTIVE
 SETSTICKYKEYS
 SETTEXT
@@ -1744,6 +1762,7 @@ SNAPPROCESS
 snk
 snwprintf
 softline
+softpub
 SOURCECLIENTAREAONLY
 sourced
 sourcedoc
@@ -1854,6 +1873,7 @@ SYSLIB
 sysmenu
 systemai
 SYSTEMAPPS
+SYSTEMBACKDROP
 SYSTEMMODAL
 systemroot
 SYSTEMTIME
@@ -1928,6 +1948,7 @@ tracerpt
 trackbar
 trafficmanager
 transicc
+TRANSIENTWINDOW
 transitioning
 TRAYMOUSEMESSAGE
 triaging
@@ -1966,6 +1987,7 @@ uncompilable
 UNCPRIORITY
 UNDNAME
 unescaped
+unforgeable
 ungroup
 UNICODETEXT
 unins
@@ -1981,6 +2003,7 @@ unparsable
 unremapped
 Unsend
 Unsubscribes
+untampered
 untriaged
 unvirtualized
 unwide
@@ -2005,6 +2028,8 @@ uwp
 uxt
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 VARTYPE
@@ -2020,6 +2045,7 @@ VCRT
 vcruntime
 vcvars
 vdupq
+VERBA
 VERBSONLY
 VERBW
 VERIFYCONTEXT
@@ -2069,7 +2095,7 @@ WANTNUKEWARNING
 WANTPALM
 WASDK
 wbem
-Wca
+wca
 WCE
 wcex
 WCRAPI
@@ -2097,6 +2123,7 @@ winappcli
 winappsdk
 windir
 WINDOWCREATED
+WINDOWCOMPOSITIONATTRIBDATA
 WINDOWDESTROYED
 windowedge
 WINDOWINFO
@@ -2130,6 +2157,7 @@ winrt
 winsdk
 winsta
 WINTHRESHOLD
+wintrust
 WINVER
 winword
 winxamlmanager
@@ -2194,6 +2222,7 @@ xcopy
 xdf
 xfd
 xhair
+XMN
 xmp
 Xoshiro
 xsi

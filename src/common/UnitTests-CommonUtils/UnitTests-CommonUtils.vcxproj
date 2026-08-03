@@ -48,6 +48,10 @@
     <ClCompile Include="OsDetect.Tests.cpp" />
     <ClCompile Include="Threading.Tests.cpp" />
     <ClCompile Include="ProcessPath.Tests.cpp" />
+    <ClCompile Include="PipeCallerAuth.Tests.cpp" />
+    <ClCompile Include="..\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Window.Tests.cpp" />
     <ClCompile Include="GameMode.Tests.cpp" />
     <ClCompile Include="Gpo.Tests.cpp" />
