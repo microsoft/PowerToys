@@ -176,16 +176,17 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         Assert.IsNotNull(editNewPreset, "Adding a preset did not create 'New size 1'.");
         editNewPreset!.Click(msPostAction: 500);
 
-        // The inline editor can take a moment to expand; wait for its Name field instead of
-        // asserting on the first probe.
+        // The expander toggle can miss its hit-test, leaving the editor collapsed; re-open it (the
+        // pencil is only present while collapsed) until its Name field is exposed.
         settingsProcess = Session.FromProcess("PowerToys.Settings");
-        TextBox? nameBox = null;
-        Assert.IsTrue(
-            settings.WaitFor(
-                () => (nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 500)) is not null,
-                timeoutMS: 15_000,
-                pollIntervalMS: 500),
-            "The new preset editor did not expose its Name field.");
+        var nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 2_000);
+        for (var attempt = 0; nameBox is null && attempt < 5; attempt++)
+        {
+            FindExact<Button>(settings, "Edit the New size 1 preset", timeoutMS: 1_000)?.Click(msPostAction: 750);
+            nameBox = FindExact<TextBox>(settingsProcess, "Name", timeoutMS: 2_000);
+        }
+
+        Assert.IsNotNull(nameBox, "The new preset editor did not expose its Name field.");
         nameBox!.SetText("UITest Custom");
         KeyboardHelper.SendKeys(Key.Esc);
 
