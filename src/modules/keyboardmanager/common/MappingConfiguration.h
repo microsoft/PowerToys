@@ -81,8 +81,12 @@ public:
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
-private:
+    // Parses the single-key remap section of a settings JSON object into singleKeyReMap /
+    // aloneSingleKeyReMap, routing by the optional per-entry "condition" field. Public so the
+    // dual-key (tap-alone) condition round-trip can be unit tested without touching disk.
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
+
+private:
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
