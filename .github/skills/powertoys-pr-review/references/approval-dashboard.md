@@ -31,7 +31,7 @@ The page preserves user edits across polls: once the user changes any control or
    ./scripts/Show-ReviewDashboard.ps1 -DataPath <path>\review-data.json -Port 8787
    ```
    For an unattended session, launch it detached so it survives the turn; tell the user the URL and note the PID so it can be stopped later.
-3. **Tell the user** the URL (`http://localhost:8787`), then **stop and end the turn** — this is the Step 10 mandatory stop. The user reviews at their own pace, sets a disposition per PR, toggles individual suggestions to post/hold, optionally edits the drafted comment, and can type free-text instructions (e.g. "also ask for a demo", "rebase first then give me build + e2e steps", "hold the low-severity ones"). Clicking **Submit decisions** writes `review-decisions.json` next to the data file and shows the resume phrase.
+3. **Tell the user** the URL (`http://localhost:8787`), then **stop and end the turn** — this is the Step 10 mandatory stop. The user reviews at their own pace, sets a disposition per PR, toggles individual suggestions to post/hold (**all suggestions, including low severity, default to post** — the user unchecks any to hold), optionally edits the drafted comment, and can type free-text instructions (e.g. "also ask for a demo", "rebase first then give me build + e2e steps", "hold the low-severity ones"). Each PR's detail pane shows a **Run &amp; verify (already built)** block whose Launch line is the concrete `<worktree>\x64\Debug\PowerToys.exe` (auto-derived from the PR's `worktree`, since Step 7 already built it). Clicking **Submit decisions** writes `review-decisions.json` next to the data file and shows the resume phrase.
 4. The user returns to the Copilot session and types the resume phrase: **`pr-review: actions ready`**.
 5. The agent reads `review-decisions.json`, and for each PR **runs the mandatory freshness re-check** (Step 10.4) before doing anything, then executes only the approved actions with the Step 10 posting commands.
 
@@ -57,13 +57,14 @@ The page preserves user edits across polls: once the user changes any control or
       "firstTimer": true,
       "forkPr": "fork PR #153",         // optional label
       "forkPrUrl": "https://github.com/<owner>/PowerToys/pull/153",
-      "worktree": "C:\\PowerToys-90d8", // where the user can build/test
+      "worktree": "C:\\PowerToys-90d8", // the PR's build worktree; dashboard derives the Launch path from it
       "status": "reviewed-pending-approval",
       "disposition": "Request changes", // Phase 0 verdict (0e)
       "context": "niels9001 asked for a re-review; CI re-triggered.",
       "phase0Note": "CLA on file. Demo requested. CI green. In-scope. No duplicate.",
       "contextComment": "Thanks @tonur! ...", // drafted batched asks / summary (editable in UI)
-      "testInstructions": "Build x64/Debug, run ..., confirm ...",
+      "exePath": "",                    // optional; only if the built exe isn't <worktree>\x64\Debug\PowerToys.exe
+      "testInstructions": "Enable Advanced Paste, bind the hotkey, paste multi-line text, confirm keystroke output.", // run-and-verify steps (app already built in Step 7 — don't say "build")
       "suggestions": [
         {
           "id": "s1",                   // stable id used in the decisions file

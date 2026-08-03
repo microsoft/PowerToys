@@ -82,22 +82,26 @@ Get-Content "$env:LOCALAPPDATA\Microsoft\PowerToys\RunnerLogs\runner-log_$(Get-D
 
 ## Step 7b: End-to-end testing instructions
 
-After a successful build, give the user a way to verify the change in under two minutes.
+After the Step 7 full build, `x64/Debug/PowerToys.exe` **already exists in the worktree** — the instructions you hand the user (and the `testInstructions` you put in `review-data.json`) should therefore be *run-and-verify*, not "build then run". Give the **concrete, resolved launch path**, not a `<worktree>` placeholder: substitute the actual worktree directory for this PR (e.g. `C:\PowerToys-90d8\x64\Debug\PowerToys.exe`), since the user is often coming straight from the dashboard and just wants to double-click / paste one path.
 
 **Always include:**
-1. **Launch command** — the exact path to `PowerToys.exe` in the worktree (e.g., `<worktree>\x64\Debug\PowerToys.exe`).
+1. **Launch command** — the exact, resolved path to the already-built `PowerToys.exe` in this PR's worktree (e.g. `C:\PowerToys-90d8\x64\Debug\PowerToys.exe`). Do **not** tell the user to rebuild; Step 7 already did.
 2. **How to access the feature** — what to click / shortcut to press / setting to change.
 3. **What to look for** — specific UI elements, output text, or behaviors that confirm the change.
 4. **Test scenarios** — 2–4 concrete steps exercising the new behavior, including edge cases addressed by the review fixes.
 
-**Template:**
+If the Step 7 build did **not** run (e.g. review was held before build), say so explicitly and point at the Step 7 build commands instead of implying a ready exe.
+
+**Template (build already done):**
 ```
-## End-to-End Testing
-1. Launch: <worktree>\x64\Debug\PowerToys.exe
+## Run & verify (already built)
+1. Launch: C:\PowerToys-<id>\x64\Debug\PowerToys.exe
 2. <How to trigger the feature>
 3. <What to verify — expected output/behavior>
 4. <Edge case from the review fixes, if applicable>
 ```
+
+> Dashboard note: `review-data.json` carries each PR's `worktree`; the dashboard auto-derives `<worktree>\x64\Debug\PowerToys.exe` as the Launch line, so your `testInstructions` can start at step 2 (how to trigger). Set an explicit `exePath` only if the built exe lives elsewhere.
 
 ## Known environment issues and workarounds
 

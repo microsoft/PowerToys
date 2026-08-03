@@ -181,7 +181,7 @@ function fmtBody(b){
   html = html.replace(/```([\s\S]*?)```/g, (m,code)=>'<pre>'+esc(code.trim())+'</pre>');
   return html;
 }
-function defaultSug(sev){ return (sev==='low') ? 'hold' : 'post'; }
+function defaultSug(sev){ return 'post'; }
 function prByNum(n){ return (DATA.prs||[]).find(p=>p.number==n); }
 function phaseOf(pr){
   let p = (pr.phase||'').toLowerCase();
@@ -238,6 +238,7 @@ function renderDetail(n){
   const status = pr.status ? '<span class="badge b-status">'+esc(pr.status)+'</span>' : '';
   const disp = pr.disposition ? '<span class="badge b-disp">'+esc(pr.disposition)+'</span>' : '';
   const forkLink = pr.forkPr ? ' · fork '+(pr.forkPrUrl?('<a href="'+esc(pr.forkPrUrl)+'" target="_blank">'+esc(pr.forkPr)+'</a>'):esc(pr.forkPr)) : '';
+  const exePath = pr.exePath ? pr.exePath : (pr.worktree ? (pr.worktree.replace(/[\\/]+$/,'') + '\\x64\\Debug\\PowerToys.exe') : '');
 
   let statusHtml='';
   if(ph==='progress'){ statusHtml = '<div class="statusbar">Review in progress — '+esc(statusText(pr)||'working…')+'</div>'; }
@@ -269,7 +270,7 @@ function renderDetail(n){
     + (pr.phase0Note?('<div class="section-title">Context / process (Phase 0)</div><div class="ctx">'+esc(pr.phase0Note)+'</div>'):'')
     + (pr.contextComment?('<div class="section-title">Drafted comment to author <span class="toggle" id="edtog" onclick="ed()">edit</span></div><div class="ctx" id="ctxbox">'+esc(st.contextComment)+'</div>'):'')
     + ((pr.suggestions&&pr.suggestions.length)?('<div class="section-title">Code suggestions ('+pr.suggestions.length+') — click to expand</div>'+sugHtml):'<div class="section-title muted">No code suggestions yet</div>')
-    + (pr.testInstructions?('<div class="section-title">Local build / e2e</div><div class="ctx">'+esc(pr.testInstructions)+'</div>'):'')
+    + ((exePath||pr.testInstructions)?('<div class="section-title">Run &amp; verify (already built)</div><div class="ctx">'+(exePath?('<strong>Launch:</strong> <span class="file">'+esc(exePath)+'</span>\n\n'):'')+esc(pr.testInstructions||'')+'</div>'):'')
     + '<div class="actionrow"><span class="section-title" style="margin:0">Action</span>'
     +   '<select onchange="setAction('+n+',this.value)">'
     +     '<option value="post-subset"'+opt('post-subset')+'>Post checked suggestions (as comments)</option>'
