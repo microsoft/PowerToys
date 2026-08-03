@@ -32,21 +32,11 @@
     <ManifestTool Condition="Exists('$(WindowsSdkDir)bin\x64\mt.exe')">$(WindowsSdkDir)bin\x64\mt.exe</ManifestTool>
   </PropertyGroup>
 
-  <!-- Auto-restore NuGet for native vcxproj (PackageReference) when building inside VS -->
-  <Target Name="EnsureNuGetRestoreForVcxproj" BeforeTargets="PrepareForBuild" Condition="
-            '$(BuildingInsideVisualStudio)' == 'true'
-            and '$(DesignTimeBuild)' != 'true'
-            and '$(RestoreInProgress)' != 'true'
-            and '$(MSBuildProjectExtension)' == '.vcxproj'
-            and '$(RestoreProjectStyle)' == 'PackageReference'
-            and '$(MSBuildProjectExtensionsPath)' != ''
-            and !Exists('$(MSBuildProjectExtensionsPath)project.assets.json')
-          ">
-
-    <Message Importance="normal" Text="NuGet assets missing for $(MSBuildProjectName); running Restore...; IntDir=$(IntDir); BaseIntermediateOutputPath=$(BaseIntermediateOutputPath)" />
-
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" Properties="RestoreInProgress=true" BuildInParallel="false" />
-  </Target>
+  <!--
+    NuGet auto-restore for native vcxproj projects lives in Cpp.Build.targets: this file is imported
+    before Microsoft.Common.CurrentVersion.targets in the C++ import chain, so a $(BuildDependsOn)
+    override here would be discarded.
+  -->
 
   <!--
     The Microsoft.Web.WebView2 package's managed .targets unconditionally references the WPF

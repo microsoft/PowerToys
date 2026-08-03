@@ -13,4 +13,66 @@
   -->
   <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(VcpkgEnabled)' == 'true' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets')" />
+
+  <!--
+    Auto-restore NuGet for native projects that use PackageReference.
+
+    A native project gets its WindowsAppSDK / WIL / CppWinRT include directories, WinMD references
+    and MIDL settings from the NuGet-generated imports (obj\*.nuget.g.props), which MSBuild pulls in
+    while *evaluating* the project. When those assets are missing as the build starts (fresh clone,
+    deleted obj, a project added to the solution after the last restore), restoring from inside the
+    build is too late: this project instance was already evaluated without the package imports, so
+    the compile fails with confusing errors such as
+      error C1083: Cannot open include file: 'wil/resource.h'
+      error C1083: Cannot open include file: 'winrt/Microsoft.UI.Composition.h'
+      error MIDL2009: [msg]undefined symbol [context]: IUnknown
+    even though a restore reported success moments earlier in the same log.
+
+    So rather than restoring in place, restore and then re-invoke the build through the MSBuild task
+    with an extra global property. The differing global properties force MSBuild to evaluate the
+    project again from scratch instead of reusing the cached pre-restore instance, so the second
+    pass sees the restored package imports. The outer pass is made a no-op by pointing its
+    Build/Rebuild dependencies at that single target.
+
+    This has to live here rather than in Directory.Build.targets: for C++ projects that file is
+    imported before Microsoft.Common.CurrentVersion.targets, which would then reset
+    $(BuildDependsOn). $(ForceImportAfterCppTargets) is the last import of
+    Microsoft.Cpp.Current.targets, so the override below survives.
+
+    Builds that use `msbuild -restore` or a separate `/t:restore` pass already have their assets in
+    place by the time the build pass runs, so the condition is false and nothing changes for them.
+  -->
+  <PropertyGroup>
+    <_PTVcxprojNeedsRestore Condition="
+            '$(DesignTimeBuild)' != 'true'
+            and '$(_PTNuGetRestorePass)' != 'true'
+            and '$(MSBuildIsRestoring)' != 'true'
+            and '$(MSBuildProjectExtension)' == '.vcxproj'
+            and '$(RestoreProjectStyle)' == 'PackageReference'
+            and '$(MSBuildProjectExtensionsPath)' != ''
+            and !Exists('$(MSBuildProjectExtensionsPath)project.assets.json')
+          ">true</_PTVcxprojNeedsRestore>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_PTVcxprojNeedsRestore)' == 'true'">
+    <BuildDependsOn>EnsureNuGetRestoreForVcxproj</BuildDependsOn>
+    <RebuildDependsOn>EnsureNuGetRestoreForVcxproj</RebuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="EnsureNuGetRestoreForVcxproj" Condition="'$(_PTVcxprojNeedsRestore)' == 'true'">
+    <Message Importance="high" Text="NuGet assets are missing for $(MSBuildProjectName); restoring and re-running its build so the restored package imports take effect." />
+
+    <!-- The MSBuild task's Properties attribute *replaces* the inherited global properties, so the
+         values the outer build was invoked with have to be forwarded explicitly. Leaving them out
+         makes the child builds fall back to the project defaults (Win32) and fail with MSB8013. -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);_PTNuGetRestorePass=true;MSBuildIsRestoring=true;ExcludeRestorePackageImports=true"
+             BuildInParallel="false" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);Platform=$(Platform);_PTNuGetRestorePass=true"
+             BuildInParallel="false" />
+  </Target>
 </Project>
