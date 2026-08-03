@@ -227,19 +227,15 @@ function Get-PreviewVersion {
     return ($parts | ForEach-Object { [int]::Parse($_) }) -join "."
 }
 
-function Get-StableVersion {
+function Get-MsiSafeVersionOverride {
     param(
-        [Parameter(Mandatory)][AllowEmptyString()][string]$Override,
-        [Parameter(Mandatory)][string]$GeneratedVersion
+        [Parameter(Mandatory)][string]$Override,
+        [Parameter(Mandatory)][string]$VersionKind
     )
 
     $inputVersion = $Override.Trim()
-    if ([string]::IsNullOrWhiteSpace($inputVersion)) {
-        return $GeneratedVersion
-    }
-
     if ($inputVersion -notmatch "^(?<major>\d+)\.(?<minor>\d+)\.(?<revision>\d+)(?:\.(?<build>\d+))?$") {
-        throw "Stable version override must be numeric major.minor.patch or major.minor.patch.build"
+        throw "$VersionKind version override must be numeric major.minor.patch or major.minor.patch.build"
     }
 
     $parts = @($matches["major"], $matches["minor"], $matches["revision"])
@@ -252,14 +248,27 @@ function Get-StableVersion {
 
     Test-VersionParts -Parts $parts
     if ([int]::Parse($parts[0]) -gt 255 -or [int]::Parse($parts[1]) -gt 255) {
-        throw "Stable version '$inputVersion' must keep major and minor within the MSI-supported range 0-255"
+        throw "$VersionKind version '$inputVersion' must keep major and minor within the MSI-supported range 0-255"
     }
 
     if ([int]::Parse($parts[3]) -ne 0) {
-        throw "Stable version '$inputVersion' must use 0 for the fourth component"
+        throw "$VersionKind version '$inputVersion' must use 0 for the fourth component"
     }
 
     return ($parts | ForEach-Object { [int]::Parse($_) }) -join "."
+}
+
+function Get-StableVersion {
+    param(
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Override,
+        [Parameter(Mandatory)][string]$GeneratedVersion
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Override)) {
+        return $GeneratedVersion
+    }
+
+    return Get-MsiSafeVersionOverride -Override $Override -VersionKind "Stable"
 }
 
 $isMain = $SourceBranch -eq "refs/heads/main"
@@ -303,13 +312,14 @@ elseif ($isStable) {
     $shouldPublishPreview = $false
 }
 else {
-    if (-not [string]::IsNullOrWhiteSpace($VersionOverride)) {
-        throw "Version overrides are not supported for private branch builds"
-    }
-
     $intent = "private-validation"
     $channel = "private"
-    $version = Get-PrivateVersion -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp
+    $version = if ([string]::IsNullOrWhiteSpace($VersionOverride)) {
+        Get-PrivateVersion -Epoch $releaseMetadata.Epoch -BuildStamp $buildStamp
+    }
+    else {
+        Get-MsiSafeVersionOverride -Override $VersionOverride -VersionKind "Private"
+    }
     $allowPublicSymbols = $false
     $shouldPublishPreview = $false
 }

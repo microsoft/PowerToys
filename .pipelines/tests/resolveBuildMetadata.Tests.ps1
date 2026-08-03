@@ -74,6 +74,32 @@ Describe "resolveBuildMetadata" {
         $result.Version | Should Be "0.0.21103.0"
     }
 
+    It "allows an explicit MSI-safe version for private validation" {
+        $result = & $scriptPath `
+            -VersionOverride "0.100.2151.0" `
+            -SourceBranch "refs/heads/LegendaryBlair/preview-version" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2608.03001-preview-version" `
+            -VersionPropsPath (New-VersionProps)
+
+        $result.Intent | Should Be "private-validation"
+        $result.Channel | Should Be "private"
+        $result.Version | Should Be "0.100.2151.0"
+        $result.AllowPublicSymbols | Should Be $false
+        $result.ShouldPublishPreview | Should Be $false
+    }
+
+    It "rejects a private override with a nonzero fourth component" {
+        Assert-Throws {
+            & $scriptPath `
+                -VersionOverride "0.100.2151.1" `
+                -SourceBranch "refs/heads/LegendaryBlair/preview-version" `
+                -BuildReason "Manual" `
+                -BuildNumber "PowerToys Signed YAML Release Build_2608.03001-preview-version" `
+                -VersionPropsPath (New-VersionProps)
+        }
+    }
+
     It "increments the year digit across a calendar year boundary" {
         $result = & $scriptPath `
             -SourceBranch "refs/heads/main" `
