@@ -181,32 +181,23 @@ namespace PowerDisplay.Common.Services
             // proven valid, and the one place untrusted values enter — LoadStateFromDisk — filters
             // them there.
             var state = _states.GetOrAdd(monitorId, _ => new MonitorState());
-            bool valueChanged;
             lock (state)
             {
-                valueChanged =
-                    !state.KnownGoodVcpFeatures.TryGetValue(feature.Code, out var existing) ||
-                    existing.Current != feature.Current ||
-                    existing.Maximum != feature.Maximum;
+                // Re-observing an unchanged value is the common case: every discovery pass re-reads
+                // all three continuous codes, and the flyout's Refresh button forces one on demand.
+                // Rewriting the whole state file for it would also reset the debouncer, cancelling
+                // the pending save with an OperationCanceledException, on every pass.
+                if (state.KnownGoodVcpFeatures.TryGetValue(feature.Code, out var existing) &&
+                    existing.Current == feature.Current &&
+                    existing.Maximum == feature.Maximum)
+                {
+                    return;
+                }
 
-                // Stored unconditionally so LastSuccessfulUtc stays accurate in memory even when
-                // only the timestamp moved.
                 state.KnownGoodVcpFeatures[feature.Code] = feature.Clone();
             }
 
-            // Re-observing an unchanged value is the common case: every discovery pass re-reads all
-            // three continuous codes, and the flyout's Refresh button forces one on demand. Marking
-            // the file dirty for a moved timestamp would rewrite the whole state file — and reset
-            // the debouncer, cancelling the pending save with an OperationCanceledException — on
-            // every pass, for a field nothing but the support log reads.
-            //
-            // That last clause is the precondition: LastSuccessfulUtc is diagnostic only. If a
-            // freshness bound is ever reintroduced it becomes load-bearing, and this short-circuit
-            // has to go with it, or a persisted entry will read as older than it is and expire early.
-            if (valueChanged)
-            {
-                MarkDirtyAndScheduleSave();
-            }
+            MarkDirtyAndScheduleSave();
         }
 
         /// <summary>

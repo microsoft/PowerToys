@@ -20,11 +20,10 @@ namespace PowerDisplay.UnitTests;
 public sealed class DdcCiControllerKnownGoodRefreshTests
 {
     [TestMethod]
-    public void RefreshKnownGoodAfterWrite_RefreshesCurrentAndTimestamp()
+    public void RefreshKnownGoodAfterWrite_RefreshesCurrent()
     {
         var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 50));
-        var clock = new FixedClock();
-        using var controller = new DdcCiController(store, clock, new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         // The device range is 0-50, so the write path scaled the slider against 50 and handed
         // SetVCPFeature a raw 20 — the same maximum the cache entry was established with.
@@ -33,7 +32,6 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
         var refreshed = store.GetKnownGoodFeatures(MonitorId)[0x10];
         Assert.AreEqual(20, refreshed.Current);
         Assert.AreEqual(50, refreshed.Maximum);
-        Assert.AreEqual(clock.UtcNow, refreshed.LastSuccessfulUtc);
     }
 
     [TestMethod]
@@ -43,7 +41,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
         // 100 while the cache holds the read-proven device range of 50. Accepting the write here
         // would overwrite that range with the placeholder and mis-scale every later write.
         var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 50));
-        using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(ScaledMonitor(brightnessVcpMax: 100), 0x10, 20);
 
@@ -59,7 +57,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
         // A successful SetVCPFeature is not evidence that the device implements the code, so a
         // write must never establish a cache entry a read has not already proven.
         var store = new RecordingKnownGoodStore();
-        using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(ScaledMonitor(brightnessVcpMax: 50), 0x10, 20);
 
@@ -71,7 +69,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
     public void RefreshKnownGoodAfterWrite_OutOfRangeValueIsRejected()
     {
         var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 50));
-        using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(ScaledMonitor(brightnessVcpMax: 50), 0x10, 51);
 
@@ -85,7 +83,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
         // Only the continuous codes carry a percent-scaled maximum; 0x14 is a discrete preset and
         // has no cache entry to keep aligned.
         var store = new RecordingKnownGoodStore(Cached(0x14, current: 5, maximum: 11));
-        using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(ScaledMonitor(brightnessVcpMax: 50), 0x14, 6);
 
@@ -100,7 +98,7 @@ public sealed class DdcCiControllerKnownGoodRefreshTests
         // happening is the production guard itself: drop `string.IsNullOrEmpty(monitor.Id)` and both
         // assertions flip.
         var store = new RecordingKnownGoodStore(Cached(0x10, current: 45, maximum: 50));
-        using var controller = new DdcCiController(store, new FixedClock(), new UnusedReader());
+        using var controller = new DdcCiController(store, new UnusedReader());
 
         controller.RefreshKnownGoodAfterWrite(new Monitor { BrightnessVcpMax = 50 }, 0x10, 20);
 

@@ -17,7 +17,6 @@ public sealed class MonitorStateManagerTests
 {
     private const string MonitorA = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1";
     private const string MonitorB = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID2";
-    private static readonly DateTime SuccessfulUtc = new(2026, 7, 21, 8, 0, 0, DateTimeKind.Utc);
 
     private string _directory = null!;
     private string _statePath = null!;
@@ -64,7 +63,6 @@ public sealed class MonitorStateManagerTests
                     Code = 0x10,
                     Current = 30,
                     Maximum = 100,
-                    LastSuccessfulUtc = SuccessfulUtc,
                 });
         }
 
@@ -74,7 +72,6 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(1, features.Count);
         Assert.AreEqual(30, features[0x10].Current);
         Assert.AreEqual(100, features[0x10].Maximum);
-        Assert.AreEqual(SuccessfulUtc, features[0x10].LastSuccessfulUtc);
     }
 
     [TestMethod]
@@ -162,28 +159,12 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
-    public void UpsertKnownGoodFeature_UnchangedValueStillRefreshesTheInMemoryTimestamp()
-    {
-        // The save short-circuit must not cost the timestamp its meaning: the support log reads
-        // LastSuccessfulUtc to report when the hardware last answered for a code, so an unchanged
-        // re-observation still has to move it even though it does not earn a disk write.
-        var later = SuccessfulUtc.AddHours(6);
-
-        using var manager = new MonitorStateManager(_statePath);
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
-        manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40, observedUtc: later));
-
-        Assert.AreEqual(later, manager.GetKnownGoodFeatures(MonitorA)[0x10].LastSuccessfulUtc);
-    }
-
-    [TestMethod]
     public void UpsertKnownGoodFeature_UnchangedValueDoesNotScheduleASave()
     {
         // Every discovery pass re-reads all three continuous codes, so re-observing an unchanged
-        // value is the common case and must not rewrite the whole state file for a moved timestamp.
-        // Deleting the file and checking Dispose does not recreate it is the observable form of
-        // "never marked dirty": Dispose only flushes when _isDirty was set, and loading from disk
-        // does not set it.
+        // value is the common case and must not rewrite the whole state file. Deleting the file and
+        // checking Dispose does not recreate it is the observable form of "never marked dirty":
+        // Dispose only flushes when _isDirty was set, and loading from disk does not set it.
         using (var seed = new MonitorStateManager(_statePath))
         {
             seed.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
@@ -222,11 +203,10 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(41, reloaded.GetKnownGoodFeatures(MonitorA)[0x10].Current);
     }
 
-    private static KnownGoodVcpFeature Feature(byte code, int current, DateTime? observedUtc = null) => new()
+    private static KnownGoodVcpFeature Feature(byte code, int current) => new()
     {
         Code = code,
         Current = current,
         Maximum = 100,
-        LastSuccessfulUtc = observedUtc ?? SuccessfulUtc,
     };
 }

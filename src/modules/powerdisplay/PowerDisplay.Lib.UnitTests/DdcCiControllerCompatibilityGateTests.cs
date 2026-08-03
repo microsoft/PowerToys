@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Drivers.DDC;
-using PowerDisplay.Common.Services;
 using static PowerDisplay.UnitTests.DdcFakes;
 
 namespace PowerDisplay.UnitTests;
@@ -22,7 +21,7 @@ namespace PowerDisplay.UnitTests;
 /// <remarks>
 /// <see cref="IntPtr.Zero"/> is a safe handle to drive this with: DdcCiNative.TryGetCapabilitiesString
 /// short-circuits on it without issuing a native call, so the capabilities string is deterministically
-/// unusable and every remaining decision comes from the injected reader, clock and store.
+/// unusable and every remaining decision comes from the injected reader and store.
 /// </remarks>
 [TestClass]
 public sealed class DdcCiControllerCompatibilityGateTests
@@ -54,8 +53,7 @@ public sealed class DdcCiControllerCompatibilityGateTests
             [0x12] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             [0x62] = VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
         };
-        var clock = new FixedClock();
-        using var controller = NewController(store, reader, maxCompatibility: true, clock);
+        using var controller = NewController(store, reader, maxCompatibility: true);
 
         var evidence = await controller.FetchCapabilitiesWithFallbackAsync(
             IntPtr.Zero, MonitorId, CancellationToken.None);
@@ -67,7 +65,6 @@ public sealed class DdcCiControllerCompatibilityGateTests
         Assert.AreEqual((byte)0x10, persisted.Code);
         Assert.AreEqual(30, persisted.Current);
         Assert.AreEqual(100, persisted.Maximum);
-        Assert.AreEqual(clock.UtcNow, persisted.LastSuccessfulUtc);
 
         Assert.IsTrue(evidence.Capabilities!.SupportsVcpCode(0x10));
         Assert.IsTrue(evidence.InitialValues[0x10].IsLive);
@@ -128,9 +125,8 @@ public sealed class DdcCiControllerCompatibilityGateTests
     private static DdcCiController NewController(
         RecordingKnownGoodStore store,
         ScriptedReader reader,
-        bool maxCompatibility,
-        ISystemClock? clock = null) =>
-        new(store, clock ?? new FixedClock(), reader, (_, _) => Task.CompletedTask)
+        bool maxCompatibility) =>
+        new(store, reader, (_, _) => Task.CompletedTask)
         {
             MaxCompatibilityMode = maxCompatibility,
         };

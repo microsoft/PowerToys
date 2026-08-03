@@ -24,7 +24,7 @@ public sealed class ContinuousVcpInitializerTests
         // maximum and the percent scaling have to survive the seam for the assertions to hold.
         var reader = new RecordingVcpReader(VcpReadAttempt.Failure(1));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
         var evidence = Evidence(new VcpInitialValue(
             new VcpFeatureValue(15, 0, 50),
@@ -48,8 +48,7 @@ public sealed class ContinuousVcpInitializerTests
         // otherwise the cache entry could never be refreshed.
         var reader = new RecordingVcpReader(VcpReadAttempt.Success(60, 100));
         var store = new RecordingKnownGoodStore();
-        var clock = new FixedClock();
-        var initializer = new ContinuousVcpInitializer(reader, store, clock);
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
         var evidence = CachedEvidence(parsedAdvertisesBrightness: false);
 
@@ -61,7 +60,6 @@ public sealed class ContinuousVcpInitializerTests
         Assert.IsTrue(monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness));
         Assert.AreEqual(60, store.LastFeature!.Current);
         Assert.AreEqual(100, store.LastFeature.Maximum);
-        Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
     }
 
     [TestMethod]
@@ -72,7 +70,7 @@ public sealed class ContinuousVcpInitializerTests
         // here would be pure I2C noise.
         var reader = new RecordingVcpReader(VcpReadAttempt.Failure(1));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
 
         initializer.Initialize(monitor, ProbeExhaustedCachedEvidence());
@@ -88,7 +86,7 @@ public sealed class ContinuousVcpInitializerTests
     {
         var reader = new RecordingVcpReader(VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiInvalidMessageCommand));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
 
         initializer.Initialize(
@@ -107,7 +105,7 @@ public sealed class ContinuousVcpInitializerTests
     {
         var reader = new RecordingVcpReader(VcpReadAttempt.Success(60, 0));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
 
         initializer.Initialize(
@@ -126,8 +124,7 @@ public sealed class ContinuousVcpInitializerTests
     {
         var reader = new RecordingVcpReader(VcpReadAttempt.Success(55, 100));
         var store = new RecordingKnownGoodStore();
-        var clock = new FixedClock();
-        var initializer = new ContinuousVcpInitializer(reader, store, clock);
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
 
         initializer.Initialize(
@@ -138,7 +135,6 @@ public sealed class ContinuousVcpInitializerTests
         Assert.AreEqual(55, monitor.CurrentBrightness);
         Assert.AreEqual(55, store.LastFeature!.Current);
         Assert.AreEqual(100, store.LastFeature.Maximum);
-        Assert.AreEqual(clock.UtcNow, store.LastFeature.LastSuccessfulUtc);
     }
 
     [TestMethod]
@@ -146,7 +142,7 @@ public sealed class ContinuousVcpInitializerTests
     {
         var reader = new RecordingVcpReader(VcpReadAttempt.Success(55, 0));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessMonitor();
 
         var result = initializer.Initialize(
@@ -169,7 +165,7 @@ public sealed class ContinuousVcpInitializerTests
     {
         var reader = new RecordingVcpReader(VcpReadAttempt.Failure(errorCode));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessAndContrastMonitor();
         var initialBrightness = monitor.CurrentBrightness;
         var initialContrast = monitor.CurrentContrast;
@@ -194,7 +190,7 @@ public sealed class ContinuousVcpInitializerTests
             VcpReadAttempt.Failure(DdcErrorClassifier.ErrorGraphicsDdcCiVcpNotSupported),
             VcpReadAttempt.Success(60, 100));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = BrightnessAndContrastMonitor();
 
         var result = initializer.Initialize(
@@ -228,7 +224,7 @@ public sealed class ContinuousVcpInitializerTests
             VcpReadAttempt.Success(15, 50),
             VcpReadAttempt.Success(20, 40),
             VcpReadAttempt.Success(7, 10));
-        var initializer = new ContinuousVcpInitializer(reader, new RecordingKnownGoodStore(), new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, new RecordingKnownGoodStore());
         var monitor = AllContinuousMonitor();
 
         var result = initializer.Initialize(monitor, EmptyEvidence());
@@ -254,7 +250,7 @@ public sealed class ContinuousVcpInitializerTests
         // it is the one whose ApplyValue arm has no neighbour to shadow a mistake.
         var reader = new RecordingVcpReader(VcpReadAttempt.Failure(1));
         var store = new RecordingKnownGoodStore();
-        var initializer = new ContinuousVcpInitializer(reader, store, new FixedClock());
+        var initializer = new ContinuousVcpInitializer(reader, store);
         var monitor = VolumeMonitor();
 
         var result = initializer.Initialize(

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
@@ -25,25 +24,14 @@ internal static class DdcFakes
     internal const string MonitorId = @"\\?\DISPLAY#AOCB326#5&ABC&0&UID1";
 
     /// <summary>
-    /// A cache entry as a completed probe would have written it, stamped a day before
-    /// <see cref="FixedClock"/> so a refresh moving the timestamp forward is observable.
+    /// A cache entry as a completed probe would have written it.
     /// </summary>
     internal static KnownGoodVcpFeature Cached(byte code, int current, int maximum) => new()
     {
         Code = code,
         Current = current,
         Maximum = maximum,
-        LastSuccessfulUtc = new DateTime(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc),
     };
-
-    /// <summary>
-    /// A clock pinned to a fixed instant, so a persisted <c>LastSuccessfulUtc</c> can be asserted
-    /// exactly rather than for mere recency.
-    /// </summary>
-    internal sealed class FixedClock : ISystemClock
-    {
-        public DateTime UtcNow { get; } = new(2026, 7, 21, 8, 0, 0, DateTimeKind.Utc);
-    }
 
     /// <summary>
     /// Serves a scripted sequence of read results and records what it was asked for, so a test can

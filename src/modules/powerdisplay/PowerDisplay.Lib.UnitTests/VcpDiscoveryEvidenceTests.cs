@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +13,6 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public sealed class VcpDiscoveryEvidenceTests
 {
-    private static readonly DateTime CachedUtc = new(2026, 7, 20, 8, 0, 0, DateTimeKind.Utc);
     private static readonly int[] VolumePresets = { 0x00, 0x10, 0x20, 0x30 };
 
     [TestMethod]
@@ -274,6 +272,5 @@ public sealed class VcpDiscoveryEvidenceTests
         Code = code,
         Current = current,
         Maximum = 100,
-        LastSuccessfulUtc = CachedUtc,
     };
 }

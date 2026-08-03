@@ -35,7 +35,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
         private readonly IKnownGoodVcpStore _knownGoodStore;
-        private readonly ISystemClock _clock;
         private readonly IVcpFeatureReader _vcpReader;
         private readonly VcpFeatureProbeService _probeService;
         private readonly ContinuousVcpInitializer _continuousInitializer;
@@ -57,13 +56,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         public DdcCiController(IKnownGoodVcpStore knownGoodStore)
             : this(
                 knownGoodStore,
-                new SystemClock(),
                 new NativeVcpFeatureReader())
         {
         }
 
         /// <param name="knownGoodStore">Persisted store for known-good VCP observations.</param>
-        /// <param name="clock">Clock used to stamp known-good observations.</param>
         /// <param name="reader">VCP feature reader; the production implementation wraps Dxva2.</param>
         /// <param name="delayAsync">
         /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
@@ -71,16 +68,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </param>
         internal DdcCiController(
             IKnownGoodVcpStore knownGoodStore,
-            ISystemClock clock,
             IVcpFeatureReader reader,
             Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
         {
             _knownGoodStore = knownGoodStore;
-            _clock = clock;
             _vcpReader = reader;
             _delayAsync = delayAsync ?? Task.Delay;
             _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
-            _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore, _clock);
+            _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
@@ -515,7 +510,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 _knownGoodStore.UpsertKnownGoodFeature(
                     monitorId,
-                    KnownGoodVcpFeature.From(observation.Code, observation.Value, _clock.UtcNow));
+                    KnownGoodVcpFeature.From(observation.Code, observation.Value));
             }
 
             if (live.Count > 0)
@@ -545,9 +540,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 // VcpDiscoveryEvidence.CacheSupplementedCodes.
                 var detail = string.Join(
                     ", ",
-                    evidence.CacheSupplementedCodes.Select(code => cached.TryGetValue(code, out var knownGood)
-                        ? $"0x{code:X2} (last successful {knownGood.LastSuccessfulUtc:u})"
-                        : $"0x{code:X2}"));
+                    evidence.CacheSupplementedCodes.Select(code => $"0x{code:X2}"));
 
                 Logger.LogInfo(
                     $"DDC: [max-compat] cached evidence added feature(s) not advertised by capabilities " +
@@ -977,7 +970,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
             _knownGoodStore.UpsertKnownGoodFeature(
                 monitor.Id,
-                KnownGoodVcpFeature.From(vcpCode, written, _clock.UtcNow));
+                KnownGoodVcpFeature.From(vcpCode, written));
         }
 
         public void Dispose()

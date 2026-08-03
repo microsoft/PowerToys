@@ -5,7 +5,6 @@
 using ManagedCommon;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 
@@ -20,16 +19,13 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         private readonly IVcpFeatureReader _reader;
         private readonly IKnownGoodVcpStore _store;
-        private readonly ISystemClock _clock;
 
         public ContinuousVcpInitializer(
             IVcpFeatureReader reader,
-            IKnownGoodVcpStore store,
-            ISystemClock clock)
+            IKnownGoodVcpStore store)
         {
             _reader = reader;
             _store = store;
-            _clock = clock;
         }
 
         /// <summary>
@@ -114,7 +110,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             // back on, which is exactly the pass that needs it.
             _store.UpsertKnownGoodFeature(
                 monitor.Id,
-                KnownGoodVcpFeature.From(code, value, _clock.UtcNow));
+                KnownGoodVcpFeature.From(code, value));
 
             return true;
         }
