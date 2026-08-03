@@ -144,7 +144,8 @@ function Get-ReleaseVersion {
         throw "Release train year offset '$yearOffset' exceeds the MSI-safe YDDDB range 0-6; advance the release train and reset ReleaseTrainEpoch"
     }
 
-    $thirdComponent = ($yearOffset * 10000) + ($BuildStamp.Date.DayOfYear * 10) + $DailySequence
+    $thirdComponentText = "{0}{1:D3}{2}" -f $yearOffset, $BuildStamp.Date.DayOfYear, $DailySequence
+    $thirdComponent = [int]::Parse($thirdComponentText)
     if ($thirdComponent -gt [UInt16]::MaxValue) {
         throw "Generated version component '$thirdComponent' exceeds 65535; advance the release train and reset ReleaseTrainEpoch"
     }
