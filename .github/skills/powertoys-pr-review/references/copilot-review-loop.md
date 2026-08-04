@@ -2,6 +2,8 @@
 
 The fork Copilot loop is **not optional** and is independent of the posting decision (Critical Rule 11). Drive it to convergence before drafting Step 9.
 
+> **Reviewing 2+ PRs?** Run the loop for each PR **concurrently**, not one-by-one — see [batch-parallel.md](./batch-parallel.md) (one background sub-agent per PR, builds serialized, orchestrator is the single writer of `review-data.json`). The per-PR steps below are identical; only the orchestration differs.
+
 ## Step 4: Request Copilot review
 
 Run [scripts/Request-CopilotReview.ps1](../scripts/Request-CopilotReview.ps1), or:

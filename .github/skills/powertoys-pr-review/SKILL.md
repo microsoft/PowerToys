@@ -25,6 +25,7 @@ Review a `microsoft/PowerToys` pull request the way a maintainer would, given a 
 | Mode | Trigger | What changes |
 | --- | --- | --- |
 | **Standard review** | "review PR N" | Phase 0 (context) **and** Steps 0–10 (code) in parallel. |
+| **Batch (parallel)** | "review PRs N1, N2, N3, …" (2+ numbers) | **Review all PRs concurrently, not one-by-one** — fan out one background sub-agent per PR (capped at 3–5 in flight), each driving its own fork loop to convergence while their long waits (Copilot review polling, builds) overlap. Launch the dashboard up front as the live tracker. See [batch-parallel.md](./references/batch-parallel.md). |
 | **Self-check** | The PR author is the current user (own fork owner) | **Skip fork-mirroring** (Steps 1–2c) — you already own the branch; review/build in the author's own worktree. Run Phase 0 on yourself to pre-empt what maintainers will demand. |
 
 ## Prerequisites (verify on first run)
@@ -53,7 +54,7 @@ If a prerequisite is missing, guide the user through setup ([references/prerequi
 9. **Always sync the fork's main before creating or updating the fork PR** to prevent diff bloat from a stale base (Step 2c).
 10. **Resume, do not restart (Step 0).** Before mirroring, check for a prior interrupted run on PR `N` and pick up from the matching step instead of re-mirroring. Re-mirroring clobbers prior commits and review replies.
 11. **The fork Copilot loop (Steps 4–8) is not optional and is independent of the posting decision.** "Just show me" / "do not post" changes only **Step 10**. You must still drive the fork loop to convergence: fix valid issues, commit, push, reply-and-resolve every Copilot thread, and re-request review until a freshly-requested review returns **zero** new comments and there are **zero** unresolved Copilot threads. Final suggestions come from the *converged* net diff, never raw round-1 output.
-12. **Never leave a fork PR stranded at round 1 — especially in a batch.** Drive each PR to convergence before starting the next, or set a `manage_schedule` monitor per PR to keep the loop going across turns. A half-finished loop is not "done".
+12. **For 2+ PRs, review them in parallel — do NOT serialize.** Fan out one background sub-agent per PR (cap 3–5 concurrent) so the long blocking waits (Copilot review polling, local builds) overlap instead of stacking; see [batch-parallel.md](./references/batch-parallel.md). Sequential is only the fallback when sub-agents are unavailable. Either way, **never leave any fork PR stranded at round 1** — every PR must reach the Rule 11 converged state (0 new comments, 0 unresolved threads) before Step 9. A half-finished loop is not "done".
 
 ## Phase 0: Context & Process Review
 
@@ -119,3 +120,4 @@ Auto-detect these at the start of each session with [scripts/Get-ForkConfig.ps1]
 - [build-and-test.md](./references/build-and-test.md) — Steps 3, 7, 7b: local build, module chain, end-to-end tests
 - [drafting-and-posting.md](./references/drafting-and-posting.md) — Steps 9–10: suggestion format, freshness re-check, posting
 - [approval-dashboard.md](./references/approval-dashboard.md) — optional interactive UI for approving/holding/editing drafted actions across a multi-PR session
+- [batch-parallel.md](./references/batch-parallel.md) — how to review 2+ PRs concurrently (sub-agent fan-out, build serialization, single-writer status, aggregation)
