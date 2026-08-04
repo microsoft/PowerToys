@@ -11,7 +11,7 @@ public static partial class SingleLineTextHelper
 {
     [GeneratedRegex(
         "[ \\t]*(?:(?:\\r\\n|[\\n\\r\\u000B\\u000C\\u0085\\u2028\\u2029])[ \\t]*)+",
-        RegexOptions.CultureInvariant)]
+        RegexOptions.CultureInvariant | RegexOptions.NonBacktracking)]
     private static partial Regex LineBreakRegex();
 
     public static string Convert(string text)
