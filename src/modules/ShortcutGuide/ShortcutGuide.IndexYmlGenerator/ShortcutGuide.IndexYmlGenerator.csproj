@@ -11,6 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <AssemblyName>PowerToys.ShortcutGuide.IndexYmlGenerator</AssemblyName>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
 
   <ItemGroup>

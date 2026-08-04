@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using ShortcutGuide.Models;
@@ -44,7 +45,10 @@ namespace ShortcutGuide.Helpers
         {
             try
             {
-                string serialized = JsonSerializer.Serialize(App.PinnedShortcuts);
+                string serialized = JsonSerializer.Serialize(
+                    App.PinnedShortcuts,
+                    typeof(Dictionary<string, List<ShortcutEntry>>),
+                    ShortcutGuideJsonContext.Default);
                 string pinnedPath = SettingsUtils.Default.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
                 File.WriteAllText(pinnedPath, serialized);
             }
