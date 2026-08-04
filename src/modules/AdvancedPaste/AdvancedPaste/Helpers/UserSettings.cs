@@ -177,8 +177,9 @@ namespace AdvancedPaste.Settings
                                     mode = "disabled";
                                 }
 
-                                IsPythonScriptsEnabled = !string.Equals(mode, "disabled", StringComparison.OrdinalIgnoreCase);
+                                var isWindowsMode = string.Equals(mode, "windows", StringComparison.OrdinalIgnoreCase);
                                 PythonUseWsl = string.Equals(mode, "wsl", StringComparison.OrdinalIgnoreCase);
+                                IsPythonScriptsEnabled = isWindowsMode || PythonUseWsl;
 
                                 if (PythonUseWsl)
                                 {

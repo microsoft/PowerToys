@@ -148,13 +148,17 @@ public sealed class PasteFormatExecutor(
         }
         finally
         {
-            try
+            _ = Task.Run(async () =>
             {
-                System.IO.Directory.Delete(snapshotDirectory, recursive: true);
-            }
-            catch
-            {
-            }
+                await Task.Delay(TimeSpan.FromSeconds(30));
+                try
+                {
+                    System.IO.Directory.Delete(snapshotDirectory, recursive: true);
+                }
+                catch
+                {
+                }
+            });
         }
     }
 
