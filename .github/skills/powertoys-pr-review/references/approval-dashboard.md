@@ -73,7 +73,12 @@ The page preserves user edits across polls: once the user changes any control or
           "file": "src/.../IntegrationTestUserSettings.cs",
           "line": 40,                   // 0 if not line-anchored
           "verified": true,             // spot-verified against the real diff
-          "body": "Explanation ... \n\n```suggestion\n<corrected code>\n```"
+          "body": "Explanation ... \n\n```suggestion\n<corrected code>\n```",
+          "status": "Fix pushed · verified on x64 Debug build", // optional; short state/verification note shown in the meta row
+          "detail": "Why it matters ...",   // optional; extra prose rendered under a "Why it matters" heading
+          "fix": "```suggestion\n<corrected code>\n```", // optional; a dedicated "Suggested change" block (use if you keep `body` prose-only)
+          "codeUrl": "https://github.com/owner/repo/blob/<sha>/path#L40", // optional; exact permalink to the code
+          "threadUrl": "https://github.com/owner/repo/pull/49/files#r12345" // optional; existing review thread
         }
       ]
     }
@@ -82,6 +87,13 @@ The page preserves user edits across polls: once the user changes any control or
 ```
 
 `body` uses the same format as [drafting-and-posting.md](./drafting-and-posting.md#format-for-each-suggestion-comment) — prose plus a fenced ` ```suggestion ` block. The dashboard highlights the suggestion fence.
+
+### Code-suggestion pane behavior
+- Each suggestion is a collapsible card. **Expanded state is persistent** — clicking a card's header toggles it open/closed and it *stays* that way across the 2.5s status polls (open state is held per-PR in the page's JS state, not just as a DOM class). Switching PR tabs naturally shows that PR's own open state.
+- **Critical/high** suggestions default to **open**; medium/low default to collapsed. Use **expand all / collapse all** in the section header to flip them in bulk.
+- The card body renders, in order: a **meta row** (`location`, `status`, `verified`), a **Finding** section (`body`), an optional **Why it matters** section (`detail`), an optional **Suggested change** section (`fix`), and a **links row**.
+- The links row always includes a **View in PR diff ↗** link that deep-links to the exact file/line in the PR's *Files changed* tab (anchor computed client-side as `#diff-<sha256(path)>R<line>`; falls back to `/files` if the fragment is stale). `codeUrl` and `threadUrl`, if present, add **Exact code link ↗** and **Review thread ↗**.
+- The detail pane only re-renders on poll when that PR's data actually changed, so scroll position and open cards are preserved while you read.
 
 ## review-decisions.json schema (produced by the page)
 

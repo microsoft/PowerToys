@@ -133,12 +133,27 @@ $htmlTemplate = @'
   textarea { width:100%; background:#0d1117; color:#e6edf3; border:1px solid #30363d; border-radius:8px; padding:10px; font:inherit; font-size:13px; resize:vertical; }
   .sug { border:1px solid #21262d; border-radius:8px; margin:8px 0; overflow:hidden; }
   .sug-head { display:flex; gap:10px; align-items:center; padding:9px 12px; cursor:pointer; background:#0f141b; }
-  .sug-head .grow { flex:1; }
+  .sug-head:hover { background:#131a23; }
+  .sug-head .caret { color:#8b949e; font-size:10px; width:12px; flex:0 0 auto; transition:transform .12s ease; }
+  .sug.open .sug-head .caret { transform:rotate(90deg); }
+  .sug.open .sug-head { background:#131a23; border-bottom:1px solid #21262d; }
+  .sug-head .grow { flex:1; font-weight:600; }
   .sug-head .file { color:#8b949e; font-size:12px; font-family:ui-monospace,Consolas,monospace; }
-  .sug-body { display:none; padding:10px 12px; border-top:1px solid #21262d; }
+  .sug-body { display:none; padding:12px 14px; }
   .sug.open .sug-body { display:block; }
   .sug-body pre { background:#0d1117; border:1px solid #21262d; border-radius:6px; padding:10px; overflow:auto; font-family:ui-monospace,Consolas,monospace; font-size:12.5px; white-space:pre-wrap; }
   .sug-body pre.suggestion { border-color:#2b4a34; background:#0e1a12; }
+  .sug-meta { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center; margin-bottom:10px; }
+  .sug-meta > span { font-size:12.5px; color:#c9d1d9; }
+  .sug-meta .k { color:#8b949e; margin-right:6px; text-transform:uppercase; letter-spacing:.4px; font-size:10.5px; }
+  .sug-field { margin-top:12px; }
+  .sug-field .lbl { font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; color:#8b949e; margin-bottom:4px; }
+  .sug-field .val { font-size:13px; line-height:1.5; }
+  .sug-links { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; padding-top:10px; border-top:1px dashed #21262d; }
+  .sug-links a { color:#58a6ff; font-size:12.5px; text-decoration:none; }
+  .sug-links a:hover { text-decoration:underline; }
+  .expander { font-size:11.5px; color:#58a6ff; cursor:pointer; user-select:none; margin-left:8px; font-weight:400; text-transform:none; letter-spacing:0; }
+  .expander:hover { text-decoration:underline; }
   .actionrow { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
   select { font:inherit; background:#0d1117; color:#e6edf3; border:1px solid #30363d; border-radius:6px; padding:6px 8px; }
   label.chk { font-size:12.5px; color:#c9d1d9; display:inline-flex; gap:6px; align-items:center; }
@@ -204,8 +219,12 @@ function sevCounts(pr){
 }
 function ensureState(pr){
   let st = state[pr.number];
-  if(!st){ st = state[pr.number] = { prAction:'post-subset', postContext:true, contextComment:(pr.contextComment||''), instructions:'', sug:{}, reviewed:false, edited:false }; }
-  (pr.suggestions||[]).forEach(s=>{ if(!(s.id in st.sug)) st.sug[s.id]= defaultSug((s.severity||'').toLowerCase()); });
+  if(!st){ st = state[pr.number] = { prAction:'post-subset', postContext:true, contextComment:(pr.contextComment||''), instructions:'', sug:{}, open:{}, reviewed:false, edited:false }; }
+  if(!st.open) st.open = {};
+  (pr.suggestions||[]).forEach(s=>{
+    if(!(s.id in st.sug)) st.sug[s.id]= defaultSug((s.severity||'').toLowerCase());
+    if(!(s.id in st.open)) st.open[s.id]= ['critical','high'].includes((s.severity||'').toLowerCase());
+  });
   if(!st.edited && (!st.contextComment)) st.contextComment = pr.contextComment||'';
   return st;
 }
@@ -249,15 +268,32 @@ function renderDetail(n){
   let sugHtml='';
   (pr.suggestions||[]).forEach(s=>{
     const sev=(s.severity||'low').toLowerCase();
-    const ver = s.verified ? ' · <span class="muted">verified vs diff</span>' : '';
     const checked = st.sug[s.id]==='post' ? 'checked' : '';
-    sugHtml += '<div class="sug">'
-      + '<div class="sug-head" onclick="this.parentElement.classList.toggle(\'open\')">'
+    const isOpen = !!st.open[s.id];
+    const fileTxt = esc(s.file||'')+(s.line?(':'+s.line):'');
+    const meta = '<div class="sug-meta">'
+      + (s.file?('<span><span class="k">location</span><span class="file">'+fileTxt+'</span></span>'):'')
+      + (s.status?('<span><span class="k">status</span>'+esc(s.status)+'</span>'):'')
+      + (s.verified?('<span><span class="k">verified</span>vs diff</span>'):'')
+      + '</div>';
+    const links = '<div class="sug-links">'
+      + '<a class="codelink" target="_blank" rel="noopener" data-prurl="'+esc(pr.url||'')+'" data-path="'+esc(s.file||'')+'" data-line="'+esc(s.line||'')+'" href="'+esc((pr.url||'')+(pr.url?'/files':''))+'">View in PR diff \u2197</a>'
+      + (s.codeUrl?('<a target="_blank" rel="noopener" href="'+esc(s.codeUrl)+'">Exact code link \u2197</a>'):'')
+      + (s.threadUrl?('<a target="_blank" rel="noopener" href="'+esc(s.threadUrl)+'">Review thread \u2197</a>'):'')
+      + '</div>';
+    const bodyInner = meta
+      + '<div class="sug-field"><div class="lbl">Finding</div><div class="val">'+fmtBody(s.body)+'</div></div>'
+      + (s.detail?('<div class="sug-field"><div class="lbl">Why it matters</div><div class="val">'+fmtBody(s.detail)+'</div></div>'):'')
+      + (s.fix?('<div class="sug-field"><div class="lbl">Suggested change</div><div class="val">'+fmtBody(s.fix)+'</div></div>'):'')
+      + links;
+    sugHtml += '<div class="sug'+(isOpen?' open':'')+'" id="sug-'+esc(s.id)+'">'
+      + '<div class="sug-head" onclick="toggleSug('+n+',\''+esc(s.id)+'\')">'
+      + '<span class="caret">\u25B6</span>'
       + '<span class="badge sev sev-'+sev+'">'+esc(sev)+'</span>'
       + '<span class="grow">'+esc(s.title)+'</span>'
-      + '<span class="file">'+esc(s.file||'')+(s.line?(':'+s.line):'')+'</span>'
+      + '<span class="file">'+fileTxt+'</span>'
       + '<label class="chk" onclick="event.stopPropagation()"><input type="checkbox" '+checked+' onchange="setSug('+n+',\''+esc(s.id)+'\',this.checked)"> post</label>'
-      + '</div><div class="sug-body">'+fmtBody(s.body)+ver+'</div></div>';
+      + '</div><div class="sug-body">'+bodyInner+'</div></div>';
   });
 
   const opt = v => (st.prAction===v?' selected':'');
@@ -269,7 +305,7 @@ function renderDetail(n){
     + statusHtml
     + (pr.phase0Note?('<div class="section-title">Context / process (Phase 0)</div><div class="ctx">'+esc(pr.phase0Note)+'</div>'):'')
     + (pr.contextComment?('<div class="section-title">Drafted comment to author <span class="toggle" id="edtog" onclick="ed()">edit</span></div><div class="ctx" id="ctxbox">'+esc(st.contextComment)+'</div>'):'')
-    + ((pr.suggestions&&pr.suggestions.length)?('<div class="section-title">Code suggestions ('+pr.suggestions.length+') — click to expand</div>'+sugHtml):'<div class="section-title muted">No code suggestions yet</div>')
+    + ((pr.suggestions&&pr.suggestions.length)?('<div class="section-title">Code suggestions ('+pr.suggestions.length+')<span class="expander" onclick="expandAll('+n+',true)">expand all</span><span class="expander" onclick="expandAll('+n+',false)">collapse all</span></div>'+sugHtml):'<div class="section-title muted">No code suggestions yet</div>')
     + ((exePath||pr.testInstructions)?('<div class="section-title">Run &amp; verify (already built)</div><div class="ctx">'+(exePath?('<strong>Launch:</strong> <span class="file">'+esc(exePath)+'</span>\n\n'):'')+esc(pr.testInstructions||'')+'</div>'):'')
     + '<div class="actionrow"><span class="section-title" style="margin:0">Action</span>'
     +   '<select onchange="setAction('+n+',this.value)">'
@@ -285,6 +321,34 @@ function renderDetail(n){
     + '<div class="section-title">Instructions / next steps for the agent (optional)</div>'
     + '<textarea rows="2" placeholder="e.g. also ask for a demo · hold the low-severity ones · rebase first, then give me local build + e2e steps" oninput="setIns('+n+',this.value)">'+esc(st.instructions)+'</textarea>'
     + '<div class="navbtns"><button onclick="nav(-1)">&larr; Prev</button><button onclick="nav(1)">Next &rarr;</button></div>';
+  state[n]._sig = JSON.stringify(pr);
+  applyCodeLinks();
+}
+function toggleSug(n,id){
+  const st = state[n]; if(!st) return;
+  if(!st.open) st.open = {};
+  st.open[id] = !st.open[id];
+  const el = document.getElementById('sug-'+id);
+  if(el) el.classList.toggle('open', !!st.open[id]);
+}
+function expandAll(n,open){
+  const st=state[n], pr=prByNum(n); if(!st||!pr) return;
+  if(!st.open) st.open = {};
+  (pr.suggestions||[]).forEach(s=>{ st.open[s.id]=open; });
+  document.querySelectorAll('#detail .sug').forEach(el=> el.classList.toggle('open', open));
+}
+async function sha256hex(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function applyCodeLinks(){
+  if(!(window.crypto && crypto.subtle)) return;
+  const links = document.querySelectorAll('#detail a.codelink[data-path]');
+  for(const a of links){
+    const prurl=a.getAttribute('data-prurl'), path=a.getAttribute('data-path'), line=a.getAttribute('data-line');
+    if(!prurl || !path) continue;
+    try{ const h=await sha256hex(path); a.href = prurl.replace(/\/+$/,'') + '/files#diff-'+h+(line?('R'+line):''); }catch(e){}
+  }
 }
 function ed(){ const box=document.getElementById('ctxbox'); const t=document.getElementById('edtog'); const on=box.contentEditable!=='true'; box.contentEditable=on; box.style.outline=on?'1px solid #2ea043':''; t.textContent=on?'done':'edit'; if(on){ box.focus(); } state[current].contextComment=box.innerText; box.oninput=()=>{ state[current].contextComment=box.innerText; markEdited(current); }; }
 function nav(d){ const arr=(DATA.prs||[]).map(p=>p.number); let i=arr.indexOf(current)+d; if(i<0)i=0; if(i>=arr.length)i=arr.length-1; selectPR(arr[i]); }
@@ -315,7 +379,8 @@ async function poll(){
     if(first){ selectPR(DATA.prs[0].number); }
     else if(current!=null){
       const st = state[current]; const editingBox = document.activeElement && document.activeElement.id==='ctxbox';
-      if(!st.edited && !editingBox) renderDetail(current);
+      const pr = prByNum(current); const sig = pr ? JSON.stringify(pr) : '';
+      if(!st.edited && !editingBox && sig !== st._sig) renderDetail(current);
     }
   }catch(e){ /* transient (file mid-write); keep last view */ }
 }
