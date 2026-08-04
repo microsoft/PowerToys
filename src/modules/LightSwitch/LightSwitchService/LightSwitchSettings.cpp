@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <logger.h>
+#include <algorithm>
 #include <LightSwitchService/trace.h>
 
 using namespace std;
@@ -257,7 +258,10 @@ void LightSwitchSettings::LoadSettings()
         // BrightnessThreshold
         if (const auto jsonVal = values.get_int_value(L"brightnessThreshold"))
         {
-            auto val = std::max(0, std::min(100, *jsonVal));
+            int val = *jsonVal;
+            if (val < 0) val = 0;
+            if (val > 100) val = 100;
+
             if (m_settings.brightnessThreshold != val)
             {
                 m_settings.brightnessThreshold = val;

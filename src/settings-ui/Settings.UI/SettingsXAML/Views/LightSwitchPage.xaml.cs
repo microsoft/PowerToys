@@ -96,6 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             this.ViewModel.InitializeScheduleMode();
+            ModeSelector_SelectionChanged(null, null);
         }
 
         private async void GetGeoLocation_Click(object sender, RoutedEventArgs e)
@@ -305,6 +306,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 this.moduleSettingsRepository.ReloadSettings();
                 this.LoadSettings(this.generalSettingsRepository, this.moduleSettingsRepository);
+                ModeSelector_SelectionChanged(null, null);
 
                 this.suppressViewModelUpdates = false;
             });
