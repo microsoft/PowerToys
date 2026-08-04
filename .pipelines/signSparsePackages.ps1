@@ -102,18 +102,18 @@ function Import-CertTrust {
     )
 
     if (Get-ChildItem $StorePath -ErrorAction SilentlyContinue | Where-Object { $_.Thumbprint -eq $Thumbprint }) {
-        return
+        return $true
     }
     try {
         Import-Certificate -FilePath $CerPath -CertStoreLocation $StorePath -ErrorAction Stop | Out-Null
+        return $true
     }
     catch {
         if ($Optional) {
             Write-Warning "Could not import test cert into $StorePath (admin may be required): $($_.Exception.Message)"
+            return $false
         }
-        else {
-            throw
-        }
+        throw
     }
 }
 
@@ -137,16 +137,19 @@ function Get-TrustedSigningCert {
     }
 
     # Force-trust so AddPackageByUriAsync accepts the signature. A self-signed cert is its own root,
-    # so it must live in both Root (chain) and TrustedPeople (AppX sideload allow-list). Machine
-    # stores cover machine-level provisioning; CurrentUser stores cover per-user add and non-elevated
-    # local runs.
+    # so it must live in a Root store (chain) and TrustedPeople (AppX sideload allow-list). Use the
+    # LocalMachine stores: they import silently and the elevated CI test agent can write them.
+    # CurrentUser\Root is deliberately NOT used -- importing into the user Root store raises a CryptoAPI
+    # consent dialog that fails non-interactively ("UI is not allowed in this operation"), even elevated.
     $cerPath = Join-Path $env:TEMP ("pt-test-signer-{0}.cer" -f $cert.Thumbprint)
     Export-Certificate -Cert $cert -FilePath $cerPath -Force | Out-Null
 
-    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\CurrentUser\Root'
-    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\CurrentUser\TrustedPeople'
-    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\Root' -Optional
-    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\TrustedPeople' -Optional
+    $rootTrusted = Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\Root' -Optional
+    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\TrustedPeople' -Optional | Out-Null
+    Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\CurrentUser\TrustedPeople' -Optional | Out-Null
+    if (-not $rootTrusted) {
+        Write-Warning "Could not establish machine root trust for '$Subject' (run elevated). Signed packages may not register."
+    }
 
     $certCache[$Subject] = $cert
     return $cert
