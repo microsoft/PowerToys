@@ -55,8 +55,24 @@ private:
 
     HANDLE editorIsRunningEvent = nullptr;
 
+    // Watchdog state used to detect a low level hook that Windows dropped, see
+    // KeyboardManager.cpp. Only touched from the engine's message loop thread, which is also
+    // the thread the hook procedure runs on. lastHookEventTick is in GetTickCount units so it
+    // can be compared against LASTINPUTINFO::dwTime.
+    UINT_PTR hookWatchdogTimerId = 0;
+    DWORD lastHookEventTick = 0;
+    bool hookProbePending = false;
+    int missedHookProbes = 0;
+
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+
+    // Timer procedure which verifies that the low level hook is still installed
+    static void CALLBACK HookWatchdogTimerProc(HWND window, UINT message, UINT_PTR timerId, DWORD elapsed);
+
+    void StartHookWatchdog();
+    void StopHookWatchdog();
+    void VerifyHookIsStillInstalled();
 
     // Load settings from the file.
     void LoadSettings();

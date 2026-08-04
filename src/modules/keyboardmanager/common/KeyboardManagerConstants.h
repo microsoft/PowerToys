@@ -87,6 +87,14 @@ namespace KeyboardManagerConstants
     inline const ULONG_PTR KEYBOARDMANAGER_SINGLEKEY_FLAG = 0x11; // Single key remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SUPPRESS_FLAG = 0x111; // Key events which must be suppressed
+    inline const ULONG_PTR KEYBOARDMANAGER_HOOK_PROBE_FLAG = 0x1001; // Probe used to verify the low level hook is still installed
+
+    // How often the engine verifies that its low level keyboard hook is still installed
+    inline const UINT HookWatchdogIntervalMs = 5000;
+
+    // How many probes in a row have to go unseen before the hook is treated as dropped. A
+    // single miss can also mean the probe simply has not been dispatched yet.
+    inline const int HookWatchdogMissesBeforeReinstall = 2;
 
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;

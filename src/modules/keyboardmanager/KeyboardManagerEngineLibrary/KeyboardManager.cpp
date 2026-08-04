@@ -110,6 +110,17 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
     {
         event.lParam = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
         event.wParam = wParam;
+
+        keyboardManagerObjectPtr->lastHookEventTick = GetTickCount();
+
+        // Answer the watchdog probe and swallow it so it never reaches anything else.
+        if (event.lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_HOOK_PROBE_FLAG)
+        {
+            keyboardManagerObjectPtr->hookProbePending = false;
+            keyboardManagerObjectPtr->missedHookProbes = 0;
+            return 1;
+        }
+
         event.lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event.lParam->vkCode, event.lParam->flags & LLKHF_EXTENDED);
 
         if (keyboardManagerObjectPtr->HandleKeyboardHookEvent(&event) == 1)
@@ -124,6 +135,105 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
     }
 
     return CallNextHookEx(hookHandleCopy, nCode, wParam, lParam);
+}
+
+// Windows silently unregisters a low level hook whose callback exceeds
+// LowLevelHooksTimeout (300 ms by default), and there is no notification and no API to ask
+// whether a HHOOK is still installed. Until now nothing reinstalled it, so a single slow
+// callback could leave every remap dead until PowerToys was restarted.
+//
+// Inject a tagged key event and check on the next tick whether the hook saw it. The probe
+// uses an unassigned virtual key and the hook swallows it, so applications never see it.
+//
+// The probe is only sent when the system reports user input that the hook did not observe.
+// Injecting on an idle machine would refresh the system idle timer and keep the display
+// awake, and a hook dropped while nobody is typing does no harm until typing resumes, at
+// which point the comparison below notices it.
+void KeyboardManager::VerifyHookIsStillInstalled()
+{
+    if (!hookHandle)
+    {
+        hookProbePending = false;
+        missedHookProbes = 0;
+        return;
+    }
+
+    if (hookProbePending)
+    {
+        ++missedHookProbes;
+        if (missedHookProbes >= KeyboardManagerConstants::HookWatchdogMissesBeforeReinstall)
+        {
+            Logger::warn(L"Low level keyboard hook stopped receiving events. Reinstalling it.");
+            Trace::Error(0, L"Low level keyboard hook was dropped", L"KeyboardManager::VerifyHookIsStillInstalled");
+
+            // Both calls reset the watchdog state through StopHookWatchdog.
+            StopLowlevelKeyboardHook();
+            StartLowlevelKeyboardHook();
+            return;
+        }
+    }
+
+    LASTINPUTINFO lastInput{};
+    lastInput.cbSize = sizeof(lastInput);
+    if (!GetLastInputInfo(&lastInput))
+    {
+        return;
+    }
+
+    // Wrap safe comparison. A positive result means the system registered input after the
+    // last event the hook saw, which is the only situation worth probing.
+    if (static_cast<int>(lastInput.dwTime - lastHookEventTick) <= 0)
+    {
+        hookProbePending = false;
+        missedHookProbes = 0;
+        return;
+    }
+
+    INPUT probe{};
+    probe.type = INPUT_KEYBOARD;
+    probe.ki.wVk = static_cast<WORD>(KeyboardManagerConstants::DUMMY_KEY);
+    probe.ki.dwFlags = KEYEVENTF_KEYUP;
+    probe.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_HOOK_PROBE_FLAG;
+
+    hookProbePending = true;
+    if (!inputHandler.SendVirtualInput({ probe }))
+    {
+        // The probe never entered the input stream, so its absence says nothing about the
+        // hook. Do not count it as a miss.
+        hookProbePending = false;
+    }
+}
+
+void CALLBACK KeyboardManager::HookWatchdogTimerProc(HWND, UINT, UINT_PTR, DWORD)
+{
+    if (keyboardManagerObjectPtr != nullptr)
+    {
+        keyboardManagerObjectPtr->VerifyHookIsStillInstalled();
+    }
+}
+
+void KeyboardManager::StartHookWatchdog()
+{
+    if (!hookWatchdogTimerId)
+    {
+        hookWatchdogTimerId = SetTimer(nullptr, 0, KeyboardManagerConstants::HookWatchdogIntervalMs, HookWatchdogTimerProc);
+        if (!hookWatchdogTimerId)
+        {
+            Logger::error(L"Failed to start the keyboard hook watchdog. {}", get_last_error_or_default(GetLastError()));
+        }
+    }
+}
+
+void KeyboardManager::StopHookWatchdog()
+{
+    if (hookWatchdogTimerId)
+    {
+        KillTimer(nullptr, hookWatchdogTimerId);
+        hookWatchdogTimerId = 0;
+    }
+
+    hookProbePending = false;
+    missedHookProbes = 0;
 }
 
 void KeyboardManager::StartLowlevelKeyboardHook()
@@ -145,12 +255,17 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             show_last_error_message(L"SetWindowsHookEx", errorCode, L"PowerToys - Keyboard Manager");
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
+            return;
         }
     }
+
+    StartHookWatchdog();
 }
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
+    StopHookWatchdog();
+
     if (hookHandle)
     {
         UnhookWindowsHookEx(hookHandle);
