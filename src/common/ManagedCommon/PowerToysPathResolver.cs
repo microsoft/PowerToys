@@ -18,7 +18,7 @@ namespace ManagedCommon
         private const string PowerToysExe = "PowerToys.exe";
 
         /// <summary>
-        /// Gets the PowerToys installation path by checking registry entries
+        /// Gets the PowerToys installation path from the running process or registry entries.
         /// </summary>
         /// <returns>The path to PowerToys installation directory, or null if not found</returns>
         public static string GetPowerToysInstallPath()
