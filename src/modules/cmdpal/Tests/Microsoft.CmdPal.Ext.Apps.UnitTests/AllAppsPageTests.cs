@@ -710,7 +710,7 @@ public class AllAppsPageTests : AppsTestBase
 
         Assert.AreEqual(Properties.Resources.no_apps_found, Page.GetItems().Single().Title);
         Page.Filters!.CurrentFilterId = AllAppsFilters.HiddenFilterId;
-        var hiddenItem = (AppListItem)Page.GetItems().Single();
+        var hiddenItem = Page.GetItems().OfType<AppListItem>().Single();
         Assert.AreSame(visibleItem, hiddenItem);
         var unhideCommand = hiddenItem.MoreCommands
             .OfType<CommandContextItem>()

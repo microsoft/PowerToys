@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -817,10 +818,10 @@ public class AppCatalogTests
                 settingsPath,
                 "{\"DisabledProgramSources\":[{\"UniqueIdentifier\":\"win32:hidden\"}]}");
             var settings = new AllAppsSettings(settingsPath);
-            var visibility = new SettingsAppVisibilityStore(settings);
+            using var visibility = new SettingsAppVisibilityStore(settings);
             var item = CreateCatalogItem("Hidden", identity: "win32:hidden");
 
-            Assert.IsTrue(visibility.IsHidden(item));
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(item));
         }
         finally
         {
@@ -918,6 +919,142 @@ public class AppCatalogTests
             await catalog.SetAppHiddenAsync(preferred.Identity, hidden: false);
             Assert.AreEqual(legacyId, provider.GetCommandItem(legacyId)?.Command?.Id);
 
+            form.SubmitForm("{\"apps.ExcludedAppNames\":\"[\\\"*Editor*\\\"]\"}", string.Empty);
+            await WaitForConditionAsync(() => list.GetSnapshot().PatternHiddenItems.Count == 1);
+            Assert.IsNull(provider.GetCommandItem(legacyId));
+            form.SubmitForm("{\"apps.ExcludedAppNames\":\"[]\"}", string.Empty);
+            await WaitForConditionAsync(() => provider.GetCommandItem(legacyId) is not null);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task ExclusionPatterns_UpdateHiddenSectionsWithoutRescanningAndPreserveManualHiding(bool useCache)
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+        try
+        {
+            AppCatalogItem[] apps =
+            [
+                CreateCatalogItem("Visible"),
+                CreateCatalogItem("Manual"),
+                CreateCatalogItem("Manual Updater"),
+                CreateCatalogItem("Utility Updater"),
+                CreateCatalogItem("Portable"),
+            ];
+            using var source = new TestAppSource("test", apps);
+            var cached = new AppCatalogCacheFile
+            {
+                Sources = [new AppCatalogSourceSnapshot { SourceId = "test", Items = [.. apps] }],
+            };
+            var cache = new TestCache(useCache ? cached : null);
+            var settings = new AllAppsSettings(settingsPath);
+            settings.Settings.Update(new JsonObject
+            {
+                ["apps.ExcludedAppPaths"] = new JsonArray(JsonValue.Create(@"C:\Apps\Portable.exe")),
+            }.ToJsonString());
+            using var catalog = CreateCatalog([source], cache, new SettingsAppVisibilityStore(settings));
+            using var list = new AppListItemSource(catalog, settings);
+            using var page = new AllAppsPage(list);
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !list.IsLoading);
+            var initial = list.GetSnapshot();
+            Assert.AreEqual("Portable", initial.PatternHiddenItems.Single().Title);
+            var rows = initial.VisibleItems.Concat(initial.PatternHiddenItems).ToDictionary(item => item.Title);
+            await catalog.SetAppHiddenAsync(rows["Manual"].App.CatalogId, hidden: true);
+            await catalog.SetAppHiddenAsync(rows["Manual Updater"].App.CatalogId, hidden: true);
+            var loadCount = source.LoadCount;
+            var saveCount = cache.SaveCount;
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+
+            var values = new JsonObject
+            {
+                ["apps.ExcludedAppNames"] = new JsonArray(JsonValue.Create("*updater*")).ToJsonString(),
+            };
+            form.SubmitForm(values.ToJsonString(), string.Empty);
+            await WaitForConditionAsync(() => list.GetSnapshot().PatternHiddenItems.Count == 3
+                && rows["Manual Updater"].MoreCommands.OfType<CommandContextItem>().Last().Title == Properties.Resources.edit_exclusion_patterns);
+
+            Assert.AreEqual("Visible", list.GetSnapshot().VisibleItems.Single().Title);
+            Assert.AreEqual("Manual", list.GetSnapshot().HiddenItems.Single().Title);
+            Assert.AreSame(rows["Manual Updater"], list.GetSnapshot().PatternHiddenItems.Single(item => item.Title == "Manual Updater"));
+            Assert.AreEqual("Visible", page.GetItems().Single().Title);
+            var provider = new AllAppsCommandProvider(page, list, settings);
+            Assert.IsNull(provider.GetCommandItem(rows["Utility Updater"].Command!.Id));
+
+            page.Filters!.CurrentFilterId = AllAppsFilters.HiddenFilterId;
+            CollectionAssert.AreEqual(
+                new[] { Properties.Resources.hidden_manually, "Manual", Properties.Resources.hidden_by_exclusion_patterns, "Manual Updater", "Portable", "Utility Updater" },
+                page.GetItems().Select(item => item.Title).ToArray());
+            Assert.AreEqual(Properties.Resources.unhide_app, rows["Manual"].MoreCommands.OfType<CommandContextItem>().Last().Command!.Name);
+            Assert.IsInstanceOfType<Microsoft.CommandPalette.Extensions.IContentPage>(rows["Utility Updater"].MoreCommands.OfType<CommandContextItem>().Last().Command);
+
+            page.SearchText = "Updater";
+            CollectionAssert.AreEqual(
+                new[] { Properties.Resources.hidden_by_exclusion_patterns, "Manual Updater", "Utility Updater" },
+                page.GetItems().Select(item => item.Title).ToArray());
+
+            form.SubmitForm("{\"apps.ExcludedAppNames\":\"[]\",\"apps.ExcludedAppPaths\":\"[]\"}", string.Empty);
+            await WaitForConditionAsync(() => list.GetSnapshot().PatternHiddenItems.Count == 0
+                && rows["Manual Updater"].MoreCommands.OfType<CommandContextItem>().Last().Command!.Name == Properties.Resources.unhide_app);
+
+            Assert.AreEqual(2, list.GetSnapshot().HiddenItems.Count);
+            Assert.AreSame(rows["Manual Updater"], list.GetSnapshot().HiddenItems.Single(item => item.Title == "Manual Updater"));
+            Assert.AreSame(rows["Utility Updater"], list.GetSnapshot().VisibleItems.Single(item => item.Title == "Utility Updater"));
+            Assert.AreSame(rows["Portable"], list.GetSnapshot().VisibleItems.Single(item => item.Title == "Portable"));
+            Assert.AreSame(rows["Utility Updater"], provider.GetCommandItem(rows["Utility Updater"].Command!.Id));
+            Assert.AreEqual(loadCount, source.LoadCount);
+            Assert.AreEqual(saveCount, cache.SaveCount);
+            Assert.AreEqual(useCache ? 0 : 1, loadCount);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task UninstallerFilterChange_ReprojectsAndPreservesHiddenPreference()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+        try
+        {
+            var normalItem = CreateCatalogItem("Visible");
+            var uninstallerItem = CreateCatalogItem("Uninstall Contoso");
+            using var source = new TestAppSource("test", [normalItem, uninstallerItem]);
+            var cache = new TestCache(null);
+            var visibility = new MutableVisibilityStore();
+            var settings = new AllAppsSettings(settingsPath);
+            var filter = new UninstallerAppCatalogFilter(settings);
+            using var catalog = new AppCatalog(
+                new MutableSourceProvider([source]),
+                cache,
+                visibility,
+                [filter],
+                timeProvider: TestTimeProvider,
+                invalidationDelay: TimeSpan.Zero);
+            await catalog.RefreshAsync();
+            await catalog.SetAppHiddenAsync(uninstallerItem.Identity, hidden: true);
+            var settingsForm = (SettingsForm)settings.Settings.ToContent()[0];
+
+            settingsForm.SubmitForm("{\"apps.HideUninstallers\":\"true\"}", string.Empty);
+            await WaitForConditionAsync(() => catalog.Items.Count == 1 && catalog.HiddenItems.Count == 0);
+
+            Assert.AreEqual("Visible", catalog.Items[0].Name);
+            Assert.AreEqual(1, source.LoadCount);
+            Assert.AreEqual(1, cache.SaveCount);
+
+            settingsForm.SubmitForm("{\"apps.HideUninstallers\":\"false\"}", string.Empty);
+            await WaitForConditionAsync(() => catalog.HiddenItems.Count == 1);
+
+            Assert.AreEqual("Uninstall Contoso", catalog.HiddenItems[0].Name);
+            Assert.AreEqual(1, source.LoadCount);
+            Assert.AreEqual(1, cache.SaveCount);
         }
         finally
         {
@@ -1038,11 +1175,21 @@ public class AppCatalogTests
 
     private sealed class VisibleApps : IAppVisibilityStore
     {
-        public bool IsHidden(AppCatalogItem item) => false;
+        public event EventHandler? Changed
+        {
+            add { }
+            remove { }
+        }
+
+        public AppVisibility GetVisibility(AppCatalogItem item) => AppVisibility.Visible;
 
         public bool SetHidden(AppCatalogItem item, bool hidden) => false;
 
         public void Persist()
+        {
+        }
+
+        public void Dispose()
         {
         }
     }
@@ -1051,7 +1198,14 @@ public class AppCatalogTests
     {
         private readonly HashSet<string> _hiddenIds = new(StringComparer.OrdinalIgnoreCase);
 
-        public bool IsHidden(AppCatalogItem item) => _hiddenIds.Contains(item.Identity);
+        public event EventHandler? Changed
+        {
+            add { }
+            remove { }
+        }
+
+        public AppVisibility GetVisibility(AppCatalogItem item)
+            => _hiddenIds.Contains(item.Identity) ? AppVisibility.Hidden : AppVisibility.Visible;
 
         public int PersistCount { get; private set; }
 
@@ -1061,6 +1215,10 @@ public class AppCatalogTests
         }
 
         public void Persist() => PersistCount++;
+
+        public void Dispose()
+        {
+        }
     }
 
     private sealed class MutableCatalogFilter : IAppCatalogFilter
@@ -1078,6 +1236,8 @@ public class AppCatalogTests
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        public void Dispose() => Changed = null;
     }
 
     private sealed class ThrowingCatalogFilter : IAppCatalogFilter
@@ -1094,6 +1254,8 @@ public class AppCatalogTests
             _fail = true;
             Changed?.Invoke(this, EventArgs.Empty);
         }
+
+        public void Dispose() => Changed = null;
     }
 
     private sealed class RecordingLogger<T> : MEL.ILogger<T>

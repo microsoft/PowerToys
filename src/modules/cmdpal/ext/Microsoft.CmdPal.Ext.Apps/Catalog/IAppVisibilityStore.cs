@@ -2,20 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
+internal enum AppVisibility
+{
+    Visible,
+    Hidden,
+    HiddenByPattern,
+}
+
 /// <summary>
-/// Reads and mutates the user's explicit visibility preference for canonical catalog items.
+/// Reads visibility rules and mutates explicit visibility preferences for canonical catalog items.
 /// </summary>
 /// <remarks>
-/// Visibility is separate from automatic catalog exclusion so hidden items can be shown and restored by the UI.
+/// Hidden items remain available in the Hidden apps view; catalog filters can exclude items entirely.
 /// </remarks>
-internal interface IAppVisibilityStore
+internal interface IAppVisibilityStore : IDisposable
 {
+    event EventHandler? Changed;
+
     /// <summary>
-    /// Determines whether the user explicitly hid the item.
+    /// Determines whether the item is visible, explicitly hidden, or hidden by a pattern.
     /// </summary>
-    bool IsHidden(AppCatalogItem item);
+    AppVisibility GetVisibility(AppCatalogItem item);
 
     /// <summary>
     /// Updates the in-memory preference and reports whether it changed.

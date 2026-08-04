@@ -4,7 +4,10 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Text.Json.Nodes;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,6 +18,156 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 [TestClass]
 public class AllAppsSettingsTests
 {
+    [TestMethod]
+    [DataRow("*updater*", "", "Contoso UPDATER", @"C:\Apps\Contoso.exe", true)]
+    [DataRow("Contoso", "", "Contoso Updater", @"C:\Apps\Contoso.exe", false)]
+    [DataRow(" App ? ", "", "App 1", @"C:\Apps\App.exe", true)]
+    [DataRow("App ?", "", "App 10", @"C:\Apps\App.exe", false)]
+    [DataRow("[App]", "", "[App]", @"C:\Apps\App.exe", true)]
+    [DataRow("", @"c:\tools\*", "Editor", @"C:\Tools\Nested\Editor.exe", true)]
+    [DataRow("", @"C:\Tools\*", "Editor", @"C:\Toolshed\Editor.exe", false)]
+    [DataRow("", "C:/Tools/*.exe", "Editor", @"C:\Tools\Editor.exe", true)]
+    [DataRow("", @"\\server\share\*", "Editor", @"\\SERVER\Share\Editor.exe", true)]
+    [DataRow("No match", @"C:\Tools\*", "Editor", @"C:\Tools\Editor.exe", true)]
+    [DataRow("*Editor*", @"C:\Other\*", "Editor", @"C:\Tools\Editor.exe", true)]
+    [DataRow(" ", " ", "Editor", @"C:\Tools\Editor.exe", false)]
+    public void ExclusionPatterns_MatchNamesOrPathsWithSimpleWildcards(
+        string namePattern, string pathPattern, string name, string path, bool expected)
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+            settings.Settings.Update(new JsonObject
+            {
+                ["apps.ExcludedAppNames"] = new JsonArray(JsonValue.Create(namePattern)),
+                ["apps.ExcludedAppPaths"] = new JsonArray(JsonValue.Create(pathPattern)),
+            }.ToJsonString());
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            var item = new AppCatalogItem(
+                "win32:app",
+                0,
+                new AppCatalogSourceReference("test", path),
+                [],
+                new Win32AppPayload { Name = name, FullPath = path });
+
+            Assert.AreEqual(expected ? AppVisibility.HiddenByPattern : AppVisibility.Visible, visibility.GetVisibility(item));
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public void ExclusionPatterns_FormSubmissionPersistsAndIgnoresUnrelatedSettingsChanges()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            var changedCount = 0;
+            visibility.Changed += (_, _) => changedCount++;
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+            var values = new JsonObject
+            {
+                ["apps.ExcludedAppNames"] = new JsonArray(JsonValue.Create("*Updater*")).ToJsonString(),
+                ["apps.ExcludedAppPaths"] = new JsonArray(JsonValue.Create(@"C:\Tools\*")).ToJsonString(),
+            };
+            form.SubmitForm(values.ToJsonString(), string.Empty);
+
+            Assert.AreEqual(1, changedCount);
+            var reloaded = new AllAppsSettings(settingsPath);
+            Assert.AreEqual("*Updater*", reloaded.ExcludedAppNames.Single());
+            Assert.AreEqual(@"C:\Tools\*", reloaded.ExcludedAppPaths.Single());
+
+            form.SubmitForm("{\"apps.HideAppDescriptions\":\"true\"}", string.Empty);
+            Assert.AreEqual(1, changedCount);
+            visibility.Dispose();
+            form.SubmitForm("{\"apps.ExcludedAppNames\":\"[]\"}", string.Empty);
+            Assert.AreEqual(1, changedCount);
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public void PathExclusions_CoverShortcutsAliasesPackagesAndMergedRepresentations()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            var settings = new AllAppsSettings(settingsPath);
+            settings.Settings.Update(new JsonObject
+            {
+                ["apps.ExcludedAppPaths"] = new JsonArray(JsonValue.Create(@"C:\Hidden\*")),
+            }.ToJsonString());
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            IAppCatalogPayload[] payloads =
+            [
+                new Win32AppPayload { LnkFilePath = @"C:\Hidden\App.lnk" },
+                new Win32AppPayload { AppExecutionAliasTargetPath = @"C:\Hidden\App.exe" },
+                new PackagedAppSnapshot { PackageLocation = @"C:\Hidden\Package" },
+            ];
+            foreach (var payload in payloads)
+            {
+                var item = new AppCatalogItem("app", 0, new AppCatalogSourceReference("test", "app"), [], payload);
+                Assert.AreEqual(AppVisibility.HiddenByPattern, visibility.GetVisibility(item));
+            }
+
+            var preferred = new AppCatalogItem("app", 0, new AppCatalogSourceReference("test", "app"), [], new PackagedAppSnapshot());
+            var shortcut = new AppCatalogItem("app", 1, new AppCatalogSourceReference("shortcuts", @"C:\Hidden\App.lnk"), [], new Win32AppPayload());
+            var target = new AppCatalogItem("app", 1, new AppCatalogSourceReference("other", "app"), [@"C:\Hidden\App.exe"], new Win32AppPayload());
+
+            Assert.AreEqual(AppVisibility.Visible, visibility.GetVisibility(preferred));
+            Assert.AreEqual(AppVisibility.HiddenByPattern, visibility.GetVisibility(preferred.MergeProvenance(shortcut)));
+            Assert.AreEqual(AppVisibility.HiddenByPattern, visibility.GetVisibility(preferred.MergeProvenance(target)));
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
+    [TestMethod]
+    public void SettingsVisibilityStore_PersistsHiddenIdentityAcrossSettingsReload()
+    {
+        var settingsPath = TemporarySettingsPath();
+        try
+        {
+            File.WriteAllText(settingsPath, "{\"futureSetting\":\"preserved\"}");
+            var item = CreateCatalogItem("win32:stable-identity");
+            var settings = new AllAppsSettings(settingsPath);
+            using var visibility = new SettingsAppVisibilityStore(settings);
+
+            Assert.IsTrue(visibility.SetHidden(item, hidden: true));
+            visibility.Persist();
+            StringAssert.Contains(File.ReadAllText(settingsPath), "\"futureSetting\": \"preserved\"");
+            var temporaryFiles = Directory.GetFiles(
+                Path.GetDirectoryName(settingsPath)!,
+                $"{Path.GetFileName(settingsPath)}.*.tmp");
+            Assert.AreEqual(0, temporaryFiles.Length);
+
+            var reloadedSettings = new AllAppsSettings(settingsPath);
+            using var reloadedVisibility = new SettingsAppVisibilityStore(reloadedSettings);
+            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(item));
+
+            Assert.IsTrue(reloadedVisibility.SetHidden(item, hidden: false));
+            reloadedVisibility.Persist();
+
+            var unhiddenSettings = new AllAppsSettings(settingsPath);
+            using var unhiddenVisibility = new SettingsAppVisibilityStore(unhiddenSettings);
+            Assert.AreEqual(AppVisibility.Visible, unhiddenVisibility.GetVisibility(item));
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
+    }
+
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
@@ -39,57 +192,22 @@ public class AllAppsSettingsTests
             }
 
             var settings = new AllAppsSettings(settingsPath);
-            var visibility = new SettingsAppVisibilityStore(settings);
+            using var visibility = new SettingsAppVisibilityStore(settings);
             Assert.IsTrue(visibility.SetHidden(oldItem, hidden: true));
             visibility.Persist();
 
             var reloaded = new AllAppsSettings(settingsPath);
-            var reloadedVisibility = new SettingsAppVisibilityStore(reloaded);
-            Assert.IsTrue(reloadedVisibility.IsHidden(item));
+            using var reloadedVisibility = new SettingsAppVisibilityStore(reloaded);
+            Assert.AreEqual(AppVisibility.Hidden, reloadedVisibility.GetVisibility(item));
             Assert.IsTrue(reloaded.SetAppHidden(item.Identity, hidden: true));
             Assert.IsTrue(reloadedVisibility.SetHidden(item, hidden: false));
-            Assert.IsFalse(reloadedVisibility.IsHidden(item));
+            Assert.AreEqual(AppVisibility.Visible, reloadedVisibility.GetVisibility(item));
             Assert.IsFalse(reloaded.IsAppHidden(oldIdentity));
             reloadedVisibility.Persist();
 
-            var unhiddenVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
-            Assert.IsFalse(unhiddenVisibility.IsHidden(oldItem));
-            Assert.IsFalse(unhiddenVisibility.IsHidden(item));
-        }
-        finally
-        {
-            File.Delete(settingsPath);
-        }
-    }
-
-    [TestMethod]
-    public void SettingsVisibilityStore_PersistsHiddenIdentityAcrossSettingsReload()
-    {
-        var settingsPath = TemporarySettingsPath();
-        try
-        {
-            File.WriteAllText(settingsPath, "{\"futureSetting\":\"preserved\"}");
-            var item = CreateCatalogItem("win32:stable-identity");
-            var settings = new AllAppsSettings(settingsPath);
-            var visibility = new SettingsAppVisibilityStore(settings);
-
-            Assert.IsTrue(visibility.SetHidden(item, hidden: true));
-            visibility.Persist();
-            StringAssert.Contains(File.ReadAllText(settingsPath), "\"futureSetting\": \"preserved\"");
-            var temporaryFiles = Directory.GetFiles(
-                Path.GetDirectoryName(settingsPath)!,
-                $"{Path.GetFileName(settingsPath)}.*.tmp");
-            Assert.AreEqual(0, temporaryFiles.Length);
-
-            var reloadedSettings = new AllAppsSettings(settingsPath);
-            var reloadedVisibility = new SettingsAppVisibilityStore(reloadedSettings);
-            Assert.IsTrue(reloadedVisibility.IsHidden(item));
-
-            Assert.IsTrue(reloadedVisibility.SetHidden(item, hidden: false));
-            reloadedVisibility.Persist();
-
-            var unhiddenSettings = new AllAppsSettings(settingsPath);
-            Assert.IsFalse(new SettingsAppVisibilityStore(unhiddenSettings).IsHidden(item));
+            using var unhiddenVisibility = new SettingsAppVisibilityStore(new AllAppsSettings(settingsPath));
+            Assert.AreEqual(AppVisibility.Visible, unhiddenVisibility.GetVisibility(oldItem));
+            Assert.AreEqual(AppVisibility.Visible, unhiddenVisibility.GetVisibility(item));
         }
         finally
         {
@@ -110,7 +228,8 @@ public class AllAppsSettingsTests
             var settings = new AllAppsSettings(settingsPath);
             var item = CreateCatalogItem("win32:legacy");
 
-            Assert.IsTrue(new SettingsAppVisibilityStore(settings).IsHidden(item));
+            using var visibility = new SettingsAppVisibilityStore(settings);
+            Assert.AreEqual(AppVisibility.Hidden, visibility.GetVisibility(item));
             Assert.IsTrue(settings.HideAppDescriptions);
         }
         finally

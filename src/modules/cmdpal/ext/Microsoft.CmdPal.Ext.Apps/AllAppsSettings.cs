@@ -78,7 +78,13 @@ public partial class AllAppsSettings : JsonSettingsManager
 
     public bool HideAppDescriptions => _hideAppDescriptions.Value;
 
+    public bool HideUninstallers => _hideUninstallers.Value;
+
     public bool EnableCatalogDiagnostics => _enableCatalogDiagnostics.Value;
+
+    public IReadOnlyList<string> ExcludedAppNames => _excludedAppNames.Value ?? [];
+
+    public IReadOnlyList<string> ExcludedAppPaths => _excludedAppPaths.Value ?? [];
 
     /// <summary>Gets user-selected folders whose application shortcuts should be indexed recursively.</summary>
     public IReadOnlyList<string> CustomShortcutFolders => _customShortcutFolders.Value ?? [];
@@ -166,11 +172,29 @@ public partial class AllAppsSettings : JsonSettingsManager
         Resources.hide_app_descriptions_description,
         false);
 
+    private readonly ToggleSetting _hideUninstallers = new(
+        Namespaced(nameof(HideUninstallers)),
+        Resources.hide_uninstallers,
+        Resources.hide_uninstallers_description,
+        false);
+
     private readonly ToggleSetting _enableCatalogDiagnostics = new(
         Namespaced(nameof(EnableCatalogDiagnostics)),
         Resources.enable_catalog_diagnostics,
         Resources.enable_catalog_diagnostics_description,
         false);
+
+    private readonly StringListSetting _excludedAppNames = new(
+        Namespaced(nameof(ExcludedAppNames)),
+        Resources.excluded_app_names,
+        Resources.excluded_app_names_description,
+        []);
+
+    private readonly StringListSetting _excludedAppPaths = new(
+        Namespaced(nameof(ExcludedAppPaths)),
+        Resources.excluded_app_paths,
+        Resources.excluded_app_paths_description,
+        []);
 
     private readonly FilePathListSetting _customShortcutFolders = new(
         Namespaced(nameof(CustomShortcutFolders)),
@@ -233,6 +257,9 @@ public partial class AllAppsSettings : JsonSettingsManager
         Settings.Add(_portableAppFolders);
         Settings.Add(_searchResultLimitSource);
         Settings.Add(_hideAppDescriptions);
+        Settings.Add(_hideUninstallers);
+        Settings.Add(_excludedAppNames);
+        Settings.Add(_excludedAppPaths);
         Settings.Add(_enableCatalogDiagnostics);
 
         LoadSettings();

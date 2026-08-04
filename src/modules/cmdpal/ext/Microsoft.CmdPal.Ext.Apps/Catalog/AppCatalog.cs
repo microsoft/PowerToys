@@ -80,6 +80,7 @@ public sealed partial class AppCatalog : IAppCatalog
         }
 
         _sourceProvider.Changed += OnSourceProviderChanged;
+        _visibilityStore.Changed += OnFilterChanged;
     }
 
     public event EventHandler<AppCatalogChangedEventArgs>? Changed;
@@ -537,22 +538,22 @@ public sealed partial class AppCatalog : IAppCatalog
 
         var newSource = source.Where((_, index) => index != sourceIndex).ToArray();
         AppItem[] newDestination = [.. destination, app];
-        var hiddenCatalogIds = new HashSet<string>(
-            publishedState.HiddenCatalogIds,
-            StringComparer.OrdinalIgnoreCase);
-        _ = hidden
-            ? hiddenCatalogIds.Add(app.CatalogId)
-            : hiddenCatalogIds.Remove(app.CatalogId);
+        var visibilityById = new Dictionary<string, AppVisibility>(
+            publishedState.VisibilityById,
+            StringComparer.OrdinalIgnoreCase)
+        {
+            [app.CatalogId] = hidden ? AppVisibility.Hidden : AppVisibility.Visible,
+        };
 
         var snapshot = hidden
-            ? new AppCatalogSnapshot(newSource, newDestination)
-            : new AppCatalogSnapshot(newDestination, newSource);
+            ? new AppCatalogSnapshot(newSource, newDestination, publishedState.Snapshot.PatternHiddenItems)
+            : new AppCatalogSnapshot(newDestination, newSource, publishedState.Snapshot.PatternHiddenItems);
         Volatile.Write(
             ref _publishedState,
             publishedState with
             {
                 Snapshot = snapshot,
-                HiddenCatalogIds = hiddenCatalogIds,
+                VisibilityById = visibilityById,
             });
     }
 
@@ -584,9 +585,10 @@ public sealed partial class AppCatalog : IAppCatalog
         var merged = MergeSnapshots(snapshots);
         var catalogItems = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
         var publishedApps = new Dictionary<string, AppItem>(StringComparer.OrdinalIgnoreCase);
-        var hiddenCatalogIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visibilityById = new Dictionary<string, AppVisibility>(StringComparer.OrdinalIgnoreCase);
         List<AppItem> visibleItems = [];
         List<AppItem> hiddenItems = [];
+        List<AppItem> patternHiddenItems = [];
         List<AppCatalogItemChange> changes = [];
 
         foreach (var item in merged.Values)
@@ -616,25 +618,30 @@ public sealed partial class AppCatalog : IAppCatalog
                 }
             }
 
-            var hidden = _visibilityStore.IsHidden(item);
+            var visibility = _visibilityStore.GetVisibility(item);
+            var hidden = visibility != AppVisibility.Visible;
             catalogItems[item.Identity] = item;
             publishedApps[item.Identity] = app!;
-            if (hidden)
+            visibilityById[item.Identity] = visibility;
+            if (visibility == AppVisibility.HiddenByPattern)
+            {
+                patternHiddenItems.Add(app!);
+            }
+            else if (visibility == AppVisibility.Hidden)
             {
                 hiddenItems.Add(app!);
-                hiddenCatalogIds.Add(item.Identity);
             }
             else
             {
                 visibleItems.Add(app!);
             }
 
-            var wasHidden = previousState.HiddenCatalogIds.Contains(item.Identity);
+            previousState.VisibilityById.TryGetValue(item.Identity, out var previousVisibility);
             if (!existed)
             {
                 changes.Add(new AppCatalogItemChange(AppCatalogChangeKind.Added, item.Identity, app, hidden));
             }
-            else if (!unchanged || hidden != wasHidden)
+            else if (!unchanged || visibility != previousVisibility)
             {
                 changes.Add(new AppCatalogItemChange(AppCatalogChangeKind.Updated, item.Identity, app, hidden));
             }
@@ -651,10 +658,10 @@ public sealed partial class AppCatalog : IAppCatalog
         return new Publication(
             new PublishedState(
                 snapshots,
-                new AppCatalogSnapshot(visibleItems.AsReadOnly(), hiddenItems.AsReadOnly()),
+                new AppCatalogSnapshot(visibleItems.AsReadOnly(), hiddenItems.AsReadOnly(), patternHiddenItems.AsReadOnly()),
                 catalogItems,
                 publishedApps,
-                hiddenCatalogIds),
+                visibilityById),
             changes.AsReadOnly());
     }
 
@@ -1112,10 +1119,13 @@ public sealed partial class AppCatalog : IAppCatalog
         _disposeCancellation.Cancel();
         _sourceProvider.Changed -= OnSourceProviderChanged;
         _sourceProvider.Dispose();
+        _visibilityStore.Changed -= OnFilterChanged;
+        _visibilityStore.Dispose();
 
         foreach (var filter in _filters)
         {
             filter.Changed -= OnFilterChanged;
+            filter.Dispose();
         }
 
         foreach (var source in sources)
@@ -1251,14 +1261,14 @@ public sealed partial class AppCatalog : IAppCatalog
         AppCatalogSnapshot Snapshot,
         IReadOnlyDictionary<string, AppCatalogItem> CatalogItems,
         IReadOnlyDictionary<string, AppItem> PublishedApps,
-        IReadOnlySet<string> HiddenCatalogIds)
+        IReadOnlyDictionary<string, AppVisibility> VisibilityById)
     {
         public static PublishedState Empty { get; } = new(
             new Dictionary<string, IReadOnlyList<AppCatalogItem>>(StringComparer.Ordinal),
             new AppCatalogSnapshot([], []),
             new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase),
             new Dictionary<string, AppItem>(StringComparer.OrdinalIgnoreCase),
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+            new Dictionary<string, AppVisibility>(StringComparer.OrdinalIgnoreCase));
     }
 
     private sealed record Publication(

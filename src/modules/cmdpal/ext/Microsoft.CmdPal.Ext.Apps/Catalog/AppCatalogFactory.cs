@@ -43,6 +43,7 @@ public static class AppCatalogFactory
                 AppCatalogCache.DefaultPath(),
                 loggerFactory.CreateLogger<AppCatalogCache>()),
             new SettingsAppVisibilityStore(settings),
+            [new UninstallerAppCatalogFilter(settings)],
             logger: loggerFactory.CreateLogger<AppCatalog>());
     }
 }

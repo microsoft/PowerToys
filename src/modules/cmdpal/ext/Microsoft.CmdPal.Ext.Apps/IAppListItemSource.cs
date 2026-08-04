@@ -24,7 +24,7 @@ public interface IAppListItemSource : IDisposable
     event EventHandler? Changed;
 
     /// <summary>
-    /// Gets an atomic snapshot of visible and explicitly hidden application list items.
+    /// Gets an atomic snapshot of visible and hidden application list items.
     /// </summary>
     AppListItemSnapshot GetSnapshot();
 
@@ -45,7 +45,7 @@ public interface IAppListItemSource : IDisposable
 }
 
 /// <summary>
-/// Represents one atomic publication of visible and explicitly hidden application list items.
+/// Represents one atomic publication of visible and hidden application list items.
 /// </summary>
 public sealed class AppListItemSnapshot
 {
@@ -54,12 +54,15 @@ public sealed class AppListItemSnapshot
     /// </summary>
     /// <param name="visibleItems">Applications eligible for normal user-facing views.</param>
     /// <param name="hiddenItems">Applications explicitly hidden by the user.</param>
+    /// <param name="patternHiddenItems">Applications hidden by global exclusion patterns.</param>
     public AppListItemSnapshot(
         IReadOnlyList<AppListItem> visibleItems,
-        IReadOnlyList<AppListItem> hiddenItems)
+        IReadOnlyList<AppListItem> hiddenItems,
+        IReadOnlyList<AppListItem>? patternHiddenItems = null)
     {
         VisibleItems = visibleItems ?? throw new ArgumentNullException(nameof(visibleItems));
         HiddenItems = hiddenItems ?? throw new ArgumentNullException(nameof(hiddenItems));
+        PatternHiddenItems = patternHiddenItems ?? [];
     }
 
     /// <summary>
@@ -71,4 +74,7 @@ public sealed class AppListItemSnapshot
     /// Gets applications explicitly hidden by the user.
     /// </summary>
     public IReadOnlyList<AppListItem> HiddenItems { get; }
+
+    /// <summary>Gets applications hidden by global name or path exclusion patterns.</summary>
+    public IReadOnlyList<AppListItem> PatternHiddenItems { get; }
 }
