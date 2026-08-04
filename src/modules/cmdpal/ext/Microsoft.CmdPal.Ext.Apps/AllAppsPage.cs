@@ -30,6 +30,8 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
     };
 
     private readonly Separator _allAppsSeparator = new(Resources.all_apps);
+    private readonly Separator _manuallyHiddenSeparator = new(Resources.hidden_manually);
+    private readonly Separator _patternHiddenSeparator = new(Resources.hidden_by_exclusion_patterns);
     private readonly ListItem _noAppsPlaceholder = new(new NoOpCommand())
     {
         Title = Resources.no_apps_found,
@@ -81,11 +83,9 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
             return [_refreshingBanner];
         }
 
-        var result = new IListItem[appItems.Length + 2];
-        result[0] = _refreshingBanner;
-        result[1] = _allAppsSeparator;
-        appItems.CopyTo(result, 2);
-        return result;
+        return _filters.CurrentFilterId == AllAppsFilters.HiddenFilterId
+            ? [_refreshingBanner, .. appItems]
+            : [_refreshingBanner, _allAppsSeparator, .. appItems];
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -117,14 +117,35 @@ public sealed partial class AllAppsPage : DynamicListPage, IDisposable
         RaiseItemsChanged();
     }
 
-    private AppListItem[] GetFilteredAppItems()
+    private IListItem[] GetFilteredAppItems()
     {
         var filterId = _filters.CurrentFilterId;
         var snapshot = _appListItemSource.GetSnapshot();
-        var candidates = filterId == AllAppsFilters.HiddenFilterId
-            ? snapshot.HiddenItems
-            : snapshot.VisibleItems;
+        if (filterId != AllAppsFilters.HiddenFilterId)
+        {
+            return FilterAppItems(snapshot.VisibleItems, filterId);
+        }
 
+        var manuallyHidden = FilterAppItems(snapshot.HiddenItems, filterId);
+        var patternHidden = FilterAppItems(snapshot.PatternHiddenItems, filterId);
+        List<IListItem> items = [];
+        if (manuallyHidden.Length > 0)
+        {
+            items.Add(_manuallyHiddenSeparator);
+            items.AddRange(manuallyHidden);
+        }
+
+        if (patternHidden.Length > 0)
+        {
+            items.Add(_patternHiddenSeparator);
+            items.AddRange(patternHidden);
+        }
+
+        return [.. items];
+    }
+
+    private AppListItem[] FilterAppItems(IReadOnlyList<AppListItem> candidates, string filterId)
+    {
         var query = SearchText.Trim();
         if (string.IsNullOrWhiteSpace(query))
         {

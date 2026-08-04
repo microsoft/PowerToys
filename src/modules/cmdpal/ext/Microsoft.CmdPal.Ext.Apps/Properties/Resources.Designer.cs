@@ -115,6 +115,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Edit exclusion patterns.
+        /// </summary>
+        internal static string edit_exclusion_patterns {
+            get {
+                return ResourceManager.GetString("edit_exclusion_patterns", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Enable app catalog diagnostics.
         /// </summary>
         internal static string enable_catalog_diagnostics {
@@ -168,6 +177,42 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps by name.
+        /// </summary>
+        internal static string excluded_app_names {
+            get {
+                return ResourceManager.GetString("excluded_app_names", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps whose names match any pattern, ignoring case. Use * for any text and ? for one character, for example *Updater*. Matching apps appear in Hidden apps..
+        /// </summary>
+        internal static string excluded_app_names_description {
+            get {
+                return ResourceManager.GetString("excluded_app_names_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps by path.
+        /// </summary>
+        internal static string excluded_app_paths {
+            get {
+                return ResourceManager.GetString("excluded_app_paths", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide apps by executable, shortcut, or package folder path, ignoring case. Use * for any text and ? for one character, for example C:\Tools\*. Matching apps appear in Hidden apps..
+        /// </summary>
+        internal static string excluded_app_paths_description {
+            get {
+                return ResourceManager.GetString("excluded_app_paths_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to File.
         /// </summary>
@@ -223,6 +268,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Hidden by exclusion patterns.
+        /// </summary>
+        internal static string hidden_by_exclusion_patterns {
+            get {
+                return ResourceManager.GetString("hidden_by_exclusion_patterns", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden manually.
+        /// </summary>
+        internal static string hidden_manually {
+            get {
+                return ResourceManager.GetString("hidden_manually", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Hide app.
         /// </summary>
         internal static string hide_app {
@@ -249,6 +312,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Hide uninstallers.
+        /// </summary>
+        internal static string hide_uninstallers {
+            get {
+                return ResourceManager.GetString("hide_uninstallers", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide common uninstaller shortcuts and executables from the app list.
+        /// </summary>
+        internal static string hide_uninstallers_description {
+            get {
+                return ResourceManager.GetString("hide_uninstallers_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
         /// </summary>
