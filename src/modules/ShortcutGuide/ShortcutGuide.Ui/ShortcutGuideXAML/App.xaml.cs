@@ -26,12 +26,12 @@ namespace ShortcutGuide
     {
         internal static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts { get; private set; } = new Dictionary<string, List<ShortcutEntry>>();
 
-        internal static ShortcutGuideSettings ShortcutGuideSettings { get; private set; } = null!;
+        internal static ShortcutGuideSettings ShortcutGuideSettings => SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
 
-        internal static ShortcutGuideProperties ShortcutGuideProperties { get; private set; } = null!;
+        internal static ShortcutGuideProperties ShortcutGuideProperties => ShortcutGuideSettings.Properties;
 
         /// <summary>
-        /// The single transparent host that replaces the previous MainWindow +
+        /// Gets the single transparent host that replaces the previous MainWindow +
         /// TaskbarWindow pair. The two surfaces are now XAML pseudo-windows
         /// inside this one window.
         /// </summary>
@@ -107,10 +107,13 @@ namespace ShortcutGuide
                 {
                     if (OverlayWindow.AppWindow.IsVisible)
                     {
-                        OverlayWindow.DispatcherQueue.TryEnqueue(() =>
+                        if (ShortcutGuideProperties.WindowsKeyAction.Value != ((int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide) || ShortcutGuideProperties.CloseOnWindowsKeyRelease.Value)
                         {
-                            OverlayWindow.CloseAnimated();
-                        });
+                            OverlayWindow.DispatcherQueue.TryEnqueue(() =>
+                            {
+                                OverlayWindow.CloseAnimated();
+                            });
+                        }
 
                         NativeMethods.SendInput(1, [new() { Type = 1, Data = new() { Keyboard = new NativeMethods.KEYBDINPUT { WVk = 0xFF, DwFlags = 0x2 } } }], Marshal.SizeOf<NativeMethods.INPUT>());
                         SendSingleKeyboardInput((short)key, 0x2); // key up
@@ -199,9 +202,15 @@ namespace ShortcutGuide
                             // System.Windows.Input.Keyboard is not initialized
                             // on the WinUI UI thread.
                             const int VK_LWIN = 0x5B;
-                            bool winKeyDown = (NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0;
+                            const int VK_RWIN = 0x5C;
+                            bool winKeyDown = ((NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0) ||
+                                              ((NativeMethods.GetAsyncKeyState(VK_RWIN) & 0x8000) != 0);
+                            if (winKeyDown && ShortcutGuideProperties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.Off)
+                            {
+                                return;
+                            }
 
-                            if (winKeyDown)
+                            if (winKeyDown && ShortcutGuideProperties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators)
                             {
                                 if (OverlayWindow.AppWindow.IsVisible)
                                 {
@@ -268,9 +277,6 @@ namespace ShortcutGuide
                     Logger.LogWarning($"Failed to load pinned shortcuts from '{pinnedPath}'. Falling back to empty list. Reason: {ex.Message}");
                 }
             }
-
-            ShortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig;
-            ShortcutGuideProperties = ShortcutGuideSettings.Properties;
 
             try
             {

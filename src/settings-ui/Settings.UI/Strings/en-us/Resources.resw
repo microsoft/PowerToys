@@ -1171,6 +1171,28 @@ opera.exe</value>
     <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
+  <data name="ShortcutGuide_WindowsKeyAction.Header" xml:space="preserve">
+    <value>Hold Windows key</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction.Description" xml:space="preserve">
+    <value>Choose what happens after holding the Windows key</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_TaskbarIndicators.Content" xml:space="preserve">
+    <value>Show taskbar indicators</value>
+  </data>
+  <data name="ShortcutGuide_WindowsKeyAction_OpenShortcutGuide.Content" xml:space="preserve">
+    <value>Open Shortcut Guide</value>
+  </data>
+  <data name="ShortcutGuide_PressTime.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="ShortcutGuide_CloseOnWindowsKeyRelease.Content" xml:space="preserve">
+    <value>Close Shortcut Guide when the Windows key is released</value>
+  </data>
   <data name="ShortcutGuide_WindowPosition.Header" xml:space="preserve">
     <value>Window position</value>
   </data>

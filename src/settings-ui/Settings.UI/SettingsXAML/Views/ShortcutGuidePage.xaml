@@ -26,6 +26,44 @@
                     <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsExpander
+                        Name="ShortcutGuideWindowsKeyAction"
+                        x:Uid="ShortcutGuide_WindowsKeyAction"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="ShortcutGuide_WindowsKeyAction"
+                            SelectedIndex="{x:Bind ViewModel.WindowsKeyActionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ShortcutGuide_WindowsKeyAction_Off" />
+                            <ComboBoxItem x:Uid="ShortcutGuide_WindowsKeyAction_TaskbarIndicators" />
+                            <ComboBoxItem x:Uid="ShortcutGuide_WindowsKeyAction_OpenShortcutGuide" />
+                        </ComboBox>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="ShortcutGuidePressTime"
+                                x:Uid="ShortcutGuide_PressTime"
+                                IsEnabled="{x:Bind ViewModel.IsWindowsKeyHoldEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="ShortcutGuide_PressTime"
+                                    LargeChange="100"
+                                    Maximum="5000"
+                                    Minimum="100"
+                                    SmallChange="50"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.PressTime, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ShortcutGuideCloseOnWindowsKeyRelease"
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind ViewModel.IsOpenShortcutGuideWindowsKeyAction, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <CheckBox
+                                    x:Uid="ShortcutGuide_CloseOnWindowsKeyRelease"
+                                    AutomationProperties.AutomationId="ShortcutGuide_CloseOnWindowsKeyRelease"
+                                    IsChecked="{x:Bind ViewModel.CloseOnWindowsKeyRelease, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
