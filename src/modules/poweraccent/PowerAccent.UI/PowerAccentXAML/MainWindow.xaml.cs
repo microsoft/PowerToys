@@ -33,7 +33,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     private readonly Core.PowerAccent _powerAccent;
     private int _selectedIndex = -1;
     private int _showGeneration;
-    private bool _active;
 
     // The view model lives on the SelectorControl (the x:Bind target); expose it here for the
     // PowerAccent event handlers that populate the accent list and description.
@@ -56,9 +55,9 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // Cloak the overlay instead of hiding it. A hidden WinUI 3 window renders nothing, so the
         // bar would become visible while the characters of the new summon are still un-laid-out and
         // the first frames would show the previous summon's content - issue #49489. Cloaked, the
-        // window stays shown (and therefore painted) while invisible, so every summon lays its bar
-        // out off screen and Reveal() only ever puts a finished bar on screen. This also warms the
-        // XAML tree up now rather than on the first summon.
+        // window stays shown (and therefore laid out and painted) while invisible, so every summon
+        // builds its bar out of sight and Reveal() never has a wrong frame to put on screen. This
+        // also warms the XAML tree up now rather than on the first summon.
         EnableCloakedHide();
 
         _powerAccent = new Core.PowerAccent(RunOnUiThread);
@@ -90,10 +89,9 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     {
         if (!isActive)
         {
-            _active = false;
-
             // Invalidate any layout callback still queued for the summon being dismissed, so it
-            // cannot reveal a bar that is on its way out.
+            // cannot reveal a bar that is on its way out. Every dismissal bumps the counter and
+            // every summon captures it, so this is the only liveness check the callback needs.
             _showGeneration++;
 
             // Release always-on-top before hiding so the dormant overlay does not keep a discrete
@@ -110,7 +108,6 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             return;
         }
 
-        _active = true;
         int generation = ++_showGeneration;
         ViewModel.ShowDescription = _powerAccent.ShowUnicodeDescription;
 
@@ -134,7 +131,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
-            if (!_active || generation != _showGeneration)
+            if (generation != _showGeneration)
             {
                 return;
             }
@@ -150,9 +147,12 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             Selector.UpdateLayout();
             Selector.ScrollSelectedIntoView(_selectedIndex);
 
-            // Everything above happened on a window that was shown but cloaked, so the bar is
-            // already laid out, sized, positioned and painted. Uncloaking is the first moment
-            // anything reaches the screen, and what it puts there is finished.
+            // Everything above happened on a window that was shown but cloaked, so the bar is laid
+            // out, sized and positioned before anything reaches the screen. Uncloaking hands DWM the
+            // last composed frame until the next one lands, and that frame is the dormant window's -
+            // empty, because the surface sits Collapsed between summons. So the worst case here is a
+            // single frame of nothing, never a frame of the previous summon's bar (issue #49489).
+            // That is what the surface's Collapsed dormant state buys, and why it must stay.
             Reveal();
         });
 
