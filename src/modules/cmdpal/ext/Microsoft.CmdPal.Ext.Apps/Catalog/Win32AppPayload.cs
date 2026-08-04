@@ -31,6 +31,18 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
 
     public string LnkFilePath { get; init; } = string.Empty;
 
+    /// <summary>Gets arguments that distinguish otherwise identical executable representations.</summary>
+    public string Arguments { get; init; } = string.Empty;
+
+    /// <summary>Gets the shortcut working directory that distinguishes launch behavior.</summary>
+    public string WorkingDirectory { get; init; } = string.Empty;
+
+    /// <summary>Gets the packaged application identity represented by this Win32 entry.</summary>
+    public string PackagedAppUserModelId { get; init; } = string.Empty;
+
+    /// <summary>Gets the executable target resolved from an app execution alias.</summary>
+    public string AppExecutionAliasTargetPath { get; init; } = string.Empty;
+
     public Win32Program.ApplicationType AppType { get; init; }
 
     /// <summary>Captures only the application data needed after discovery completes.</summary>
@@ -46,8 +58,37 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
             FullPath = program.FullPath,
             ParentDirectory = program.ParentDirectory,
             LnkFilePath = program.LnkFilePath,
+            Arguments = program.Arguments,
+            WorkingDirectory = program.WorkingDirectory,
+            PackagedAppUserModelId = !string.IsNullOrWhiteSpace(program.PackagedAppUserModelId)
+                ? program.PackagedAppUserModelId
+                : program.AppExecutionAlias?.Aumid ?? string.Empty,
+            ExplicitAppUserModelId = program.ExplicitAppUserModelId,
+            AppExecutionAliasTargetPath = program.AppExecutionAlias?.TargetPath ?? string.Empty,
             AppType = program.AppType,
         };
+    }
+
+    /// <inheritdoc />
+    string? IAppCatalogPayload.GetCanonicalIdentityHint()
+    {
+        return string.IsNullOrEmpty(Arguments) && string.IsNullOrEmpty(DistinctWorkingDirectory) && !string.IsNullOrWhiteSpace(PackagedAppUserModelId)
+            ? AppIdentity.ForPackaged(PackagedAppUserModelId)
+            : null;
+    }
+
+    /// <inheritdoc />
+    string? IAppCatalogPayload.GetCanonicalTargetPath()
+    {
+        if (!string.IsNullOrEmpty(Arguments) || !string.IsNullOrEmpty(DistinctWorkingDirectory) || !Win32Program.UsesExecutableTargetIdentity(AppType))
+        {
+            return null;
+        }
+
+        var targetPath = !string.IsNullOrWhiteSpace(PackagedAppUserModelId)
+            ? AppExecutionAliasTargetPath
+            : FullPath;
+        return string.IsNullOrWhiteSpace(targetPath) ? null : targetPath;
     }
 
     /// <inheritdoc />
@@ -65,14 +106,26 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
             Type = GetApplicationType(),
             IcoPath = iconPath,
             ExePath = LaunchPath,
+            Arguments = Arguments,
             DirPath = ParentDirectory,
+            UserModelId = !string.IsNullOrWhiteSpace(PackagedAppUserModelId)
+                ? PackagedAppUserModelId
+                : ExplicitAppUserModelId,
             Commands = GetCommands(),
             AppIdentifier = $"{Name}|{FullPath}",
-            FullExecutablePath = FullPath,
+            FullExecutablePath = !string.IsNullOrWhiteSpace(AppExecutionAliasTargetPath) ? AppExecutionAliasTargetPath : FullPath,
         };
     }
 
     private string LaunchPath => !string.IsNullOrEmpty(LnkFilePath) ? LnkFilePath : FullPath;
+
+    private string DistinctWorkingDirectory => Win32Program.GetDistinctWorkingDirectory(
+        !string.IsNullOrWhiteSpace(AppExecutionAliasTargetPath) ? AppExecutionAliasTargetPath : FullPath,
+        WorkingDirectory,
+        ExplicitAppUserModelId);
+
+    /// <inheritdoc />
+    public string GetCommandId() => AppCommand.GenerateId(Name, Description, LaunchPath);
 
     private string GetApplicationType()
     {
@@ -149,4 +202,7 @@ internal sealed record Win32AppPayload : IAppCatalogPayload
 
         return PathHelpers.IsShortcutFile($"{Name}|{FullPath}");
     }
+
+    /// <summary>Gets the explicit Windows application ID retained as metadata, independent of launch identity.</summary>
+    public string ExplicitAppUserModelId { get; init => field = value ?? string.Empty; } = string.Empty;
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -114,6 +115,7 @@ public partial class AllAppsCommandProvider : CommandProvider
             }
         }
 
-        return null;
+        var alias = items.OfType<AppListItem>().FirstOrDefault(item => item.App.CommandIds.Contains(id, StringComparer.Ordinal));
+        return alias is null ? null : new AppCommandAlias(alias, id);
     }
 }
