@@ -162,7 +162,7 @@
                     x:Name="RevertButton"
                     x:Uid="RevertButton"
                     Click="RevertButtonClicked"
-                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay}"
+                    IsEnabled="{x:Bind EditedProject.IsRevertEnabled, Mode=OneWay}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="RevertButtonToolTip" />
@@ -188,7 +188,7 @@
                     x:Name="SaveButton"
                     x:Uid="SaveBtn"
                     Click="SaveButtonClicked"
-                    IsEnabled="{Binding CanBeSaved, Mode=OneWay}"
+                    IsEnabled="{x:Bind EditedProject.CanBeSaved, Mode=OneWay}"
                     Style="{ThemeResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
@@ -259,13 +259,13 @@
                                 HorizontalAlignment="Left"
                                 GotFocus="EditNameTextBox_GotFocus"
                                 KeyDown="EditNameTextBoxKeyDown"
-                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Text="{x:Bind EditedProject.Name, Mode=TwoWay}"
                                 TextChanged="EditNameTextBox_TextChanged" />
                             <CheckBox
                                 x:Uid="CreateShortcutCheckBox"
                                 Margin="0,4,0,0"
-                                IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}" />
-                            <CheckBox x:Uid="MoveExistingWindowsCheckBox" IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
+                                IsChecked="{x:Bind EditedProject.IsShortcutNeeded, Mode=TwoWay}" />
+                            <CheckBox x:Uid="MoveExistingWindowsCheckBox" IsChecked="{x:Bind EditedProject.MoveExistingWindows, Mode=TwoWay}" />
                         </StackPanel>
                     </Grid>
                     <ItemsRepeater
@@ -273,7 +273,7 @@
                         x:Uid="CapturedAppListControl"
                         Grid.Row="1"
                         ItemTemplate="{StaticResource AppListDataTemplateSelector}"
-                        ItemsSource="{Binding ApplicationsListed, Mode=OneWay}">
+                        ItemsSource="{x:Bind EditedProject.ApplicationsListed, Mode=OneWay}">
                         <ItemsRepeater.Layout>
                             <StackLayout Spacing="4" />
                         </ItemsRepeater.Layout>
