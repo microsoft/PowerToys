@@ -1175,21 +1175,28 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         var scripts = new List<PythonScriptMetadata>();
-
-        foreach (var file in Directory.EnumerateFiles(folderPath, "*.py", SearchOption.TopDirectoryOnly))
+        try
         {
-            try
+            foreach (var file in Directory.EnumerateFiles(folderPath, "*.py", SearchOption.TopDirectoryOnly))
             {
-                var metadata = ReadMetadata(file);
-                if (metadata != null)
+                try
                 {
-                    scripts.Add(metadata);
+                    var metadata = ReadMetadata(file);
+                    if (metadata != null)
+                    {
+                        scripts.Add(metadata);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to discover script {file}", ex);
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to discover script {file}", ex);
-            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Logger.LogError($"Failed to enumerate Python scripts in {folderPath}", ex);
+            return [];
         }
 
         return scripts;

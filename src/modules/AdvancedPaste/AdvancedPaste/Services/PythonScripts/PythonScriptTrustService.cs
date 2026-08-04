@@ -90,12 +90,7 @@ public sealed class PythonScriptTrustService(IUserSettings userSettings) : IPyth
             hash.AppendData([0]);
 
             using var stream = File.OpenRead(file);
-            var buffer = new byte[81920];
-            int bytesRead;
-            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-            {
-                hash.AppendData(buffer.AsSpan(0, bytesRead));
-            }
+            hash.AppendData(SHA256.HashData(stream));
         }
 
         return Convert.ToHexStringLower(hash.GetHashAndReset());
