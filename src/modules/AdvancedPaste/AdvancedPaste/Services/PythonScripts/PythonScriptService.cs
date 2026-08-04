@@ -1366,82 +1366,62 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             return;
         }
 
-        // Try plain pip3 first; if the environment is managed (PEP 668), retry with --break-system-packages.
-        foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
+        var quotedPackages = string.Join(
+            ' ',
+            sanitizedPackages.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(QuoteForBash));
+        var installCmd = $"pip3 install --user {quotedPackages}";
+        var wslArgs = BuildWslArgs($"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"");
+        var psi = new ProcessStartInfo("wsl.exe", wslArgs)
         {
-            var quotedPackages = string.Join(
-                ' ',
-                sanitizedPackages.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(QuoteForBash));
-            var installCmd = $"pip3 install {quotedPackages} {extraArgs}".TrimEnd();
-            var wslArgs = BuildWslArgs($"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"");
-            var psi = new ProcessStartInfo("wsl.exe", wslArgs)
-            {
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8,
-            };
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
+        };
 
-            using var process = Process.Start(psi);
-            if (process is null)
-            {
-                continue;
-            }
+        using var process = Process.Start(psi)
+            ?? throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
+                new InvalidOperationException("Failed to start pip3 in WSL."));
 
-            var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
-            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCts.CancelAfter(timeoutMs);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(timeoutMs);
 
-            try
-            {
-                await process.WaitForExitAsync(timeoutCts.Token);
-                await Task.WhenAll(stdoutTask, stderrTask);
-            }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                process.Kill(entireProcessTree: true);
-                throw new PasteActionException(
-                    string.Format(
-                        System.Globalization.CultureInfo.CurrentCulture,
-                        ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallTimeout"),
-                        packages,
-                        _userSettings.PythonScriptTimeoutSeconds),
-                    new TimeoutException());
-            }
-
-            if (process.ExitCode == 0)
-            {
-                return;
-            }
-
-            var stderr = await stderrTask;
-
-            // If it failed for a reason OTHER than externally-managed-environment, throw immediately.
-            if (!stderr.Contains("externally-managed-environment", StringComparison.OrdinalIgnoreCase))
-            {
-                var (summary, _) = ParsePipInstallError(stderr);
-                throw new PasteActionException(
-                    string.Format(
-                        System.Globalization.CultureInfo.CurrentCulture,
-                        ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
-                        packages,
-                        summary),
-                    new InvalidOperationException($"pip3 exited with code {process.ExitCode}."),
-                    aiServiceMessage: stderr.Length > 3000 ? stderr[^3000..] : stderr);
-            }
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token);
+            await Task.WhenAll(stdoutTask, stderrTask);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            process.Kill(entireProcessTree: true);
+            throw new PasteActionException(
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallTimeout"),
+                    packages,
+                    _userSettings.PythonScriptTimeoutSeconds),
+                new TimeoutException());
         }
 
-        throw new PasteActionException(
-            string.Format(
-                System.Globalization.CultureInfo.CurrentCulture,
-                ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
-                packages,
-                "externally-managed-environment: both plain pip3 and --break-system-packages failed."),
-            new InvalidOperationException("pip3 install failed in WSL."));
+        if (process.ExitCode != 0)
+        {
+            var stderr = await stderrTask;
+            var (summary, _) = ParsePipInstallError(stderr);
+            throw new PasteActionException(
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
+                    packages,
+                    summary),
+                new InvalidOperationException($"pip3 exited with code {process.ExitCode}."),
+                aiServiceMessage: stderr.Length > 3000 ? stderr[^3000..] : stderr);
+        }
     }
 
     public string TryFindPythonExecutable(string overridePath = null)
