@@ -53,27 +53,79 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
+function Select-SignToolByArch {
+    param([string[]]$Paths)
+
+    $paths = @($Paths | Where-Object { $_ } | Select-Object -Unique)
+    if (-not $paths) { return $null }
+    $archPref = @($env:PROCESSOR_ARCHITECTURE, 'x64', 'x86', 'arm64') |
+        ForEach-Object { $_.ToLower() } | Select-Object -Unique
+    foreach ($arch in $archPref) {
+        $match = $paths | Where-Object { $_ -match "\\$arch\\" } | Select-Object -First 1
+        if ($match) { return $match }
+    }
+    return $paths[0]
+}
+
+# Locate signtool.exe on the agent: PATH, then any Windows Kits install (all versions/layouts,
+# including the App Certification Kit), then a restored SDK BuildTools NuGet package.
 function Find-SignTool {
-    $cmd = Get-Command signtool -ErrorAction SilentlyContinue
+    $cmd = Get-Command signtool.exe -ErrorAction SilentlyContinue
     if ($cmd) { return $cmd.Source }
 
-    $roots = @(
-        "${env:ProgramFiles(x86)}\Windows Kits\10\bin",
-        "$env:ProgramFiles\Windows Kits\10\bin"
-    )
-    foreach ($root in $roots) {
-        if (-not (Test-Path $root)) { continue }
-        $versions = Get-ChildItem $root -Directory -ErrorAction SilentlyContinue |
-            Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
-            Sort-Object Name -Descending
-        foreach ($v in $versions) {
-            foreach ($arch in @('x64', 'x86', 'arm64')) {
-                $candidate = Join-Path $v.FullName "$arch\signtool.exe"
-                if (Test-Path $candidate) { return $candidate }
-            }
+    $found = @()
+    $kitRoots = @(
+        "${env:ProgramFiles(x86)}\Windows Kits",
+        "$env:ProgramFiles\Windows Kits",
+        "$env:ProgramW6432\Windows Kits"
+    ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+    foreach ($root in $kitRoots) {
+        # Scope to bin\ and the App Certification Kit so the huge Include\ / Lib\ trees are skipped.
+        $scopes = Get-ChildItem -Path $root -Directory -Recurse -Depth 1 -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -eq 'bin' -or $_.Name -eq 'App Certification Kit' } |
+            Select-Object -ExpandProperty FullName
+        foreach ($scope in $scopes) {
+            $found += Get-ChildItem -Path $scope -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue |
+                Select-Object -ExpandProperty FullName
         }
     }
-    throw "signtool.exe not found. Install the Windows SDK."
+
+    $nugetRoots = @($env:NUGET_PACKAGES, (Join-Path $env:USERPROFILE '.nuget\packages')) |
+        Where-Object { $_ } |
+        ForEach-Object { Join-Path $_ 'microsoft.windows.sdk.buildtools' } |
+        Where-Object { Test-Path $_ } | Select-Object -Unique
+    foreach ($root in $nugetRoots) {
+        $found += Get-ChildItem -Path $root -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+    }
+
+    return Select-SignToolByArch -Paths $found
+}
+
+# Last resort when the agent has no Windows SDK: fetch signtool from the public
+# Microsoft.Windows.SDK.BuildTools NuGet package (cached in TEMP across runs). Best-effort.
+function Get-SignToolFromNuget {
+    try {
+        $index = Invoke-RestMethod 'https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/index.json' -UseBasicParsing
+        $version = @($index.versions | Where-Object { $_ -match '^\d+\.\d+\.\d+\.\d+$' })[-1]
+        if (-not $version) { return $null }
+
+        $dest = Join-Path $env:TEMP "pt-sdk-buildtools-$version"
+        if (-not (Get-ChildItem -Path $dest -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue)) {
+            Write-Host "signtool not found on the agent; fetching Windows SDK BuildTools $version from NuGet."
+            $nupkg = Join-Path $env:TEMP "sdk-buildtools-$version.zip"
+            Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.buildtools/$version/microsoft.windows.sdk.buildtools.$version.nupkg" -OutFile $nupkg -UseBasicParsing
+            Expand-Archive -Path $nupkg -DestinationPath $dest -Force
+            Remove-Item $nupkg -Force -ErrorAction SilentlyContinue
+        }
+        $paths = Get-ChildItem -Path $dest -Recurse -Filter 'signtool.exe' -File -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty FullName
+        return Select-SignToolByArch -Paths $paths
+    }
+    catch {
+        Write-Warning "Could not obtain signtool from NuGet: $($_.Exception.Message)"
+        return $null
+    }
 }
 
 # Read <Identity Publisher="..."> straight out of the .msix/.appx (a zip) without extracting it.
@@ -156,6 +208,8 @@ function Get-TrustedSigningCert {
 }
 
 $signtool = Find-SignTool
+if (-not $signtool) { $signtool = Get-SignToolFromNuget }
+if (-not $signtool) { throw 'signtool.exe not found and could not be fetched from NuGet. Install the Windows SDK.' }
 Write-Host "Using signtool: $signtool"
 
 $packages = @()
