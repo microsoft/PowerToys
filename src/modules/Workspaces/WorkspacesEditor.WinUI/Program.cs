@@ -35,6 +35,16 @@ namespace WorkspacesEditor
                 return;
             }
 
+            if (args.Length > 0 && int.TryParse(args[0], out int powerToysRunnerPid))
+            {
+                Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+                RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
+                {
+                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor.");
+                    Environment.Exit(0);
+                });
+            }
+
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
