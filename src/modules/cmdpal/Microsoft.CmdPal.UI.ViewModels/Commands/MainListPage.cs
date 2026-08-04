@@ -64,19 +64,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private RoScored<IListItem>[]? _filteredItems;
     private RoScored<IListItem>[]? _filteredApps;
 
-    // Global/special fallbacks are re-scored lazily on the render path (GetSearchViewItems)
-    // instead of being frozen at keystroke time. Their dynamic titles are resolved
-    // asynchronously off the typing path by the fallback update manager, so deferring the
-    // score lets slow fallback results fold into the already-rendered list with fresh, correct
-    // scores from the same ranker. Fallbacks always classify at the FallbackFloor tier, so this
-    // only reorders them among themselves and can never leapfrog deterministic command/app
-    // results. We snapshot the source list and the precomputed query together so a superseding
-    // keystroke atomically replaces both.
+    // Global/special fallbacks are scored on the render path, not at keystroke time, because
+    // their titles resolve asynchronously. We snapshot the source list and query together so a
+    // superseding keystroke replaces both atomically.
     private IReadOnlyList<IListItem>? _globalFallbackSources;
     private FuzzyQuery _globalFallbackQuery;
 
-    // Common fallbacks use rank-based (query-independent) scores, so freezing them is safe;
-    // only their live titles decide whether they render, so they still fold in as they resolve.
+    // Common fallbacks use query-independent scores, so freezing them is safe; only their live
+    // titles decide whether they render.
     private IEnumerable<RoScored<IListItem>>? _fallbackItems;
 
     private bool _includeApps;
@@ -274,11 +269,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private IListItem[] GetSearchViewItems()
     {
-        // Re-score the global fallbacks against their current titles so that any fallback whose
-        // dynamic title resolved asynchronously (after first paint) folds into the list with a
-        // fresh score from the same ranker. This runs on the render path and is cheap because
-        // there are only a handful of configured global fallbacks. Deterministic command/app
-        // results below do not depend on this, so first paint never waits on the (async) fallbacks.
+        // Score global fallbacks against their current titles so a fallback whose title
+        // resolved after first paint gets the right score. Cheap: only a handful are configured.
         var validScoredFallbacks = ScoreDeferredFallbacks(_globalFallbackSources, _globalFallbackQuery, _scoringFunction);
 
         var validFallbacks = _fallbackItems?
@@ -295,11 +287,8 @@ public sealed partial class MainListPage : DynamicListPage,
             AppResultLimit);
     }
 
-    // Scores the current global-fallback snapshot against its query using the supplied ranker,
-    // dropping any whose (possibly still unresolved) title is empty. Extracted and made static
-    // so the fast-first-paint fold-in can be unit tested with a fake slow source: deterministic
-    // command/app results are produced entirely without this method, and re-scoring here always
-    // reflects the latest snapshot, so a superseding keystroke's snapshot replaces any stale one.
+    // Scores the current global-fallback snapshot against its query, dropping any whose title is
+    // still empty. Static so it can be unit tested with a fake slow source.
     internal static List<RoScored<IListItem>>? ScoreDeferredFallbacks(
         IReadOnlyList<IListItem>? sources,
         in FuzzyQuery query,
@@ -629,10 +618,8 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // Snapshot the global fallbacks and query, but do NOT score them here. Their dynamic
-            // titles are updated asynchronously by the fallback update manager (BeginUpdate, above),
-            // which runs off the typing path. Scoring is deferred to the render path so late fallback
-            // resolutions fold in with fresh scores instead of a value frozen against a stale title.
+            // Snapshot the global fallbacks and query, but score them later on the render path,
+            // since their titles are still resolving asynchronously (BeginUpdate, above).
             _globalFallbackSources = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).ToArray();
             _globalFallbackQuery = searchQuery;
 
