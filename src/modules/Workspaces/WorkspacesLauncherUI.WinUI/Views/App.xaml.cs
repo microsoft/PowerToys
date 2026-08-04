@@ -54,7 +54,7 @@ namespace WorkspacesLauncherUI
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+            DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
             _ipcManager = new TwoWayPipeMessageIPCManaged(
                 "\\\\.\\pipe\\powertoys_workspaces_ui_",
