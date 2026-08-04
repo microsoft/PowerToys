@@ -78,7 +78,7 @@ $verPropReadFileLocation = $verPropWriteFileLocation;
 [XML]$verProps = Get-Content $verPropReadFileLocation
 $verProps.Project.PropertyGroup.Version = $versionNumber;
 $verProps.Project.PropertyGroup.VersionChannel = $Channel;
-$verProps.Project.PropertyGroup.SourceCommit = if ([string]::IsNullOrWhiteSpace($SourceCommit)) { "unknown" } else { $SourceCommit };
+$verProps.Project.PropertyGroup.SourceCommit = if ([string]::IsNullOrWhiteSpace($SourceCommit)) { "" } else { $SourceCommit };
 $verProps.Project.PropertyGroup.DevEnvironment = $DevEnvironment;
 
 Write-Host "xml" $verProps.Project.PropertyGroup.Version 

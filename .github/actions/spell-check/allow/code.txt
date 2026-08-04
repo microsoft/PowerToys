@@ -401,6 +401,17 @@ HHH
 riday
 YYY
 
+# Release versioning identifiers and format fragments
+DAILYVERSIONSEQUENCE
+DDNNN
+Mdd
+SOURCEBRANCH
+SOURCEVERSION
+VERSIONDATE
+YDDD
+YDDDB
+YYMM
+
 # Unicode
 precomposed
 
