@@ -29,6 +29,9 @@ namespace FancyZonesEditor.Utils
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
+        [DllImport("user32.dll")]
+        private static extern uint GetDpiForWindow(IntPtr hWnd);
+
         // PInvokes used to pull the editor window to the foreground.
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -127,6 +130,23 @@ namespace FancyZonesEditor.Utils
             {
                 SetThreadDpiAwarenessContext(oldContext);
             }
+        }
+
+        /// <summary>
+        /// Returns the DIP-to-pixel scale of the monitor a window is on. Usable before the window
+        /// has been activated, unlike <c>XamlRoot.RasterizationScale</c>.
+        /// </summary>
+        /// <param name="hwnd">Handle of the window.</param>
+        /// <returns>The scale factor, or 1.0 when it cannot be determined.</returns>
+        public static double GetWindowScale(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero)
+            {
+                return 1.0;
+            }
+
+            uint dpi = GetDpiForWindow(hwnd);
+            return dpi == 0 ? 1.0 : dpi / 96.0;
         }
 
         /// <summary>

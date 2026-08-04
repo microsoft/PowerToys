@@ -16,6 +16,8 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
 
+            PrePlaceOnOverlayMonitor();
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(DragBar);
 

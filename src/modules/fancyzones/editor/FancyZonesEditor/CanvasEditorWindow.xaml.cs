@@ -23,6 +23,8 @@ namespace FancyZonesEditor
             // Window; WinUI's Window is not a DependencyObject, so the DataContext is set here.
             NewZoneButton.DataContext = layout;
 
+            PrePlaceOnOverlayMonitor();
+
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(DragBar);
 

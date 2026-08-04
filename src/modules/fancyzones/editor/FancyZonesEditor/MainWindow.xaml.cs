@@ -53,6 +53,8 @@ namespace FancyZonesEditor
         {
             InitializeComponent();
 
+            PrePlaceOnOverlayMonitor();
+
             Title = ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title");
             RootGrid.DataContext = _settings;
 

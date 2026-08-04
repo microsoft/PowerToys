@@ -50,6 +50,16 @@ namespace FancyZonesEditor
         }
 
         /// <summary>
+        /// Puts the window on the overlay's monitor before it is activated, so the first frame is
+        /// already on the right display instead of at WinUI's default rect on the primary one.
+        /// The content-sized rect is applied later, once layout has run.
+        /// </summary>
+        protected void PrePlaceOnOverlayMonitor()
+        {
+            MoveAndResize(OverlayWorkArea);
+        }
+
+        /// <summary>
         /// Sizes the window to its content, clamped to the overlay monitor's work area, and
         /// centers it there.
         /// </summary>
@@ -68,7 +78,7 @@ namespace FancyZonesEditor
             // but the second call below runs after the new scale is known and is authoritative.
             MoveAndResize(workArea);
 
-            double scale = root.XamlRoot?.RasterizationScale ?? 1.0;
+            double scale = root.XamlRoot?.RasterizationScale ?? NativeMethods.GetWindowScale(Hwnd);
             root.Measure(new Size(workArea.Width / scale, workArea.Height / scale));
             Size desired = root.DesiredSize;
 
