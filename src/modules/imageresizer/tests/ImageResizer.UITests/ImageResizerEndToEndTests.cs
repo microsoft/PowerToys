@@ -464,12 +464,28 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             "All selected images must be in the same folder.");
 
         var explorer = OpenExplorer(folderPath);
-        var menuDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(35);
+        var menuDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(90);
         Session? menu = null;
         Element? resizeMenuItem = null;
+        var selectionFailures = 0;
         do
         {
-            explorer = SelectFiles(explorer, filePaths);
+            var selected = TrySelectFilesStable(explorer, filePaths, timeoutMS: 12_000);
+            if (selected is null)
+            {
+                // A view opened during the one-time shell restart can stay empty; reopen it.
+                if (++selectionFailures >= 2)
+                {
+                    selectionFailures = 0;
+                    explorer = OpenExplorer(folderPath);
+                }
+
+                Thread.Sleep(300);
+                continue;
+            }
+
+            selectionFailures = 0;
+            explorer = selected;
             menu = OpenContextMenu(explorer, useClassicMenu: !UseModernContextMenu);
             if (menu is not null)
             {
@@ -534,23 +550,36 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         bool useClassicMenu,
         bool expected)
     {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(45);
+        var folder = Path.GetDirectoryName(filePaths[0])!;
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(90);
         var lastObservation = new ContextMenuObservation(false, false);
+        var selectionFailures = 0;
 
         do
         {
             KeyboardHelper.SendKeys(Key.Esc);
 
-            // On a slow agent Explorer can re-render its file view asynchronously after the module
-            // toggles, dropping the selection so the right-click never targets the file. Re-establish
-            // a stable selection before each attempt (mirrors the Peek Explorer-activation pattern).
-            var selected = TrySelectFilesStable(explorer, filePaths, timeoutMS: 8_000);
+            // On a slow agent Explorer can render its file view asynchronously after the module
+            // toggles (or open an empty view right after the one-time shell restart). Re-establish a
+            // stable selection before each attempt and reopen a fresh window if it keeps failing.
+            var selected = TrySelectFilesStable(explorer, filePaths, timeoutMS: 12_000);
             if (selected is null)
             {
+                TestContext.WriteLine(
+                    $"Selection not established. folder='{folder}' exists={Directory.Exists(folder)} " +
+                    $"files=[{(Directory.Exists(folder) ? string.Join(", ", Directory.GetFiles(folder).Select(Path.GetFileName)) : "<none>")}] " +
+                    $"fixtureOnDisk={filePaths.All(File.Exists)} temp='{Path.GetTempPath()}'.");
+                if (++selectionFailures >= 2)
+                {
+                    selectionFailures = 0;
+                    explorer = OpenExplorer(folder);
+                }
+
                 Thread.Sleep(300);
                 continue;
             }
 
+            selectionFailures = 0;
             explorer = selected;
             var menu = OpenContextMenu(explorer, useClassicMenu);
             if (menu is null)
@@ -597,7 +626,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             return null;
         }
 
-        var menu = WaitForContextMenuSurface(firstSurfaceClass, timeoutMS: 10_000);
+        var menu = WaitForContextMenuSurface(firstSurfaceClass, timeoutMS: 15_000);
         if (menu is null || !useClassicMenu || !IsWindows11OrNewer())
         {
             return menu;
@@ -622,7 +651,9 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             return null;
         }
 
-        return WaitForContextMenuSurface(ClassicContextMenuClassName, timeoutMS: 10_000);
+        // The classic surface can take noticeably longer to render than the modern popup on a slow
+        // agent, so allow more time for it to appear.
+        return WaitForContextMenuSurface(ClassicContextMenuClassName, timeoutMS: 25_000);
     }
 
     private static Session? WaitForContextMenuSurface(
@@ -883,6 +914,16 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             ? System.Drawing.Imaging.ImageFormat.Gif
             : System.Drawing.Imaging.ImageFormat.Png;
         image.Save(path, imageFormat);
+
+        // Confirm the fixture actually reached disk before Explorer is asked to show it; retry once
+        // to absorb a slow or locked temp on constrained agents.
+        if (!File.Exists(path))
+        {
+            Thread.Sleep(500);
+            image.Save(path, imageFormat);
+        }
+
+        Assert.IsTrue(File.Exists(path), $"Image fixture was not written to disk at '{path}' (temp='{Path.GetTempPath()}').");
         return path;
     }
 
