@@ -493,6 +493,41 @@ public sealed class PythonScriptServiceTests
     }
 
     [TestMethod]
+    public void ReadMetadata_IgnoresNestedFunctions()
+    {
+        var scriptPath = CreateTempScript(
+            "def helper():\n" +
+            "    def advanced_paste_from_html_to_text(html):\n" +
+            "        return html\n" +
+            "def advanced_paste_from_text_to_text(text):\n" +
+            "    return text\n");
+
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Text, metadata.SupportedFormats);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
+    public void ReadMetadata_IgnoresFunctionsInsideMultilineStrings()
+    {
+        var scriptPath = CreateTempScript(
+            "EXAMPLE = \"\"\"\n" +
+            "def advanced_paste_from_html_to_text(html):\n" +
+            "    return html\n" +
+            "\"\"\"\n" +
+            "def advanced_paste_from_text_to_text(text):\n" +
+            "    return text\n");
+
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Text, metadata.SupportedFormats);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
     public void ReadMetadata_RejectsFormatsTagThatConflictsWithFunctionName()
     {
         var scriptPath = CreateTempScript(

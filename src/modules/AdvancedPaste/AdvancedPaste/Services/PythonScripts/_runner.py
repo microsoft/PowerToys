@@ -31,6 +31,7 @@ Protocol:
   - Errors: stderr (displayed to user on failure)
 """
 
+import contextlib
 import importlib.util
 import json
 import os
@@ -180,7 +181,8 @@ def main():
         sys.exit(1)
 
     # Load the user script.
-    module = _load_user_module(script_path)
+    with contextlib.redirect_stdout(sys.stderr):
+        module = _load_user_module(script_path)
 
     # Discover the single advanced_paste_from_* function.
     ap_result = _discover_ap_function(module)
@@ -244,7 +246,8 @@ def main():
         sys.exit(1)
 
     # Call the function.
-    result = fn(input_value)
+    with contextlib.redirect_stdout(sys.stderr):
+        result = fn(input_value)
     output = _format_output(result, output_type)
 
     # Output JSON result.

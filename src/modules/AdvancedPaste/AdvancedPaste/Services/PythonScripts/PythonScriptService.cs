@@ -744,15 +744,6 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 allLines.Add(line);
                 var trimmed = line.Trim();
 
-                // Detect function: def advanced_paste_from_<input>_to_<output>(...)
-                var apMatch = ApFunctionRegex.Match(trimmed);
-                if (apMatch.Success)
-                {
-                    apFunctionCount++;
-                    apDetectedFormats |= ApInputTypeToFormat(apMatch.Groups[1].Value);
-                    outputTypeHint = apMatch.Groups[2].Value;
-                }
-
                 if (!trimmed.StartsWith('#'))
                 {
                     continue;
@@ -814,20 +805,18 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             while ((remainingLine = reader.ReadLine()) is not null)
             {
                 allLines.Add(remainingLine);
-                var trimmedRemaining = remainingLine.Trim();
-
-                var apMatchRemaining = ApFunctionRegex.Match(trimmedRemaining);
-                if (apMatchRemaining.Success)
-                {
-                    apFunctionCount++;
-                    apDetectedFormats |= ApInputTypeToFormat(apMatchRemaining.Groups[1].Value);
-                    outputTypeHint = apMatchRemaining.Groups[2].Value;
-                }
             }
         }
         catch (Exception ex)
         {
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
+        }
+
+        foreach (var match in FindTopLevelActionFunctions(allLines))
+        {
+            apFunctionCount++;
+            apDetectedFormats |= ApInputTypeToFormat(match.Groups[1].Value);
+            outputTypeHint = match.Groups[2].Value;
         }
 
         // Only include scripts that define exactly one advanced_paste_from_* function.
@@ -860,6 +849,58 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
 
         return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, IsV2: true, OutputTypeHint: outputTypeHint);
+    }
+
+    private static IReadOnlyList<Match> FindTopLevelActionFunctions(IReadOnlyList<string> lines)
+    {
+        var matches = new List<Match>();
+        string tripleQuote = null;
+
+        foreach (var line in lines)
+        {
+            var code = line.Split('#', 2)[0];
+            if (tripleQuote is not null)
+            {
+                if (CountOccurrences(code, tripleQuote) % 2 != 0)
+                {
+                    tripleQuote = null;
+                }
+
+                continue;
+            }
+
+            var match = ApFunctionRegex.Match(code);
+            if (match.Success)
+            {
+                matches.Add(match);
+            }
+
+            var doubleQuotes = CountOccurrences(code, "\"\"\"");
+            var singleQuotes = CountOccurrences(code, "'''");
+            if (doubleQuotes % 2 != 0)
+            {
+                tripleQuote = "\"\"\"";
+            }
+            else if (singleQuotes % 2 != 0)
+            {
+                tripleQuote = "'''";
+            }
+        }
+
+        return matches;
+    }
+
+    private static int CountOccurrences(string value, string token)
+    {
+        var count = 0;
+        var startIndex = 0;
+        while ((startIndex = value.IndexOf(token, startIndex, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            startIndex += token.Length;
+        }
+
+        return count;
     }
 
     /// <summary>
