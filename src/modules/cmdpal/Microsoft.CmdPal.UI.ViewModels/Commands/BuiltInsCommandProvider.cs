@@ -13,13 +13,13 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 /// </summary>
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
+    private readonly IRootPageAccessor _rootPageAccessor;
     private readonly OpenSettingsCommand openSettings = new();
     private readonly OpenGallerySettingsCommand openGallerySettings = new();
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
     private readonly NewExtensionPage _newExtension = new();
-    private readonly GoHomeDockCommand _goHomeDockCommand = new();
 
     public override ICommandItem[] TopLevelCommands() =>
         [
@@ -41,8 +41,9 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
             _fallbackLogItem,
         ];
 
-    public BuiltInsCommandProvider()
+    public BuiltInsCommandProvider(IRootPageAccessor rootPageAccessor)
     {
+        _rootPageAccessor = rootPageAccessor;
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
         Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
@@ -50,7 +51,8 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
 
     public override ICommandItem[]? GetDockBands()
     {
-        return [new WrappedDockItem(_goHomeDockCommand, Properties.Resources.builtin_command_palette_title)];
+        var rootPage = _rootPageAccessor.GetRootPage();
+        return [new WrappedDockItem(rootPage, Properties.Resources.builtin_command_palette_title)];
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);

@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
+  <!--
+    Microsoft ResX Schema
+
     Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
     associated with the data types.
-    
+
     Example:
-    
+
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-                
-    There are any number of "resheader" rows that contain simple 
+
+    There are any number of "resheader" rows that contain simple
     name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
     mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
     extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
     read any of the formats listed below.
-    
+
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-    
+
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
+    value   : The object must be serialized with
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
+    value   : The object must be serialized into a byte array
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -3044,6 +3044,54 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
     <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
   </data>
+  <data name="AltWindowCycle.ModuleDescription" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle.ModuleTitle" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AltWindowCycle_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the next window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Header" xml:space="preserve">
+    <value>Next window</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the previous window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Header" xml:space="preserve">
+    <value>Previous window</value>
+  </data>
+  <data name="Shell_AltWindowCycle.Content" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Title" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Description" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Next.Text" xml:space="preserve">
+    <value>to cycle to the next window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Previous.Text" xml:space="preserve">
+    <value>to cycle to the previous window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the next and previous shortcuts to move through only the windows that belong to your currently focused app.</value>
+  </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
   </data>
@@ -3176,6 +3224,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Peek_AlwaysRunNotElevated.Description" xml:space="preserve">
     <value>Runs Peek without admin permissions to improve access to network shares. To apply this change, you must disable and re-enable Peek.</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
+  <data name="Peek_AlwaysOnTop.Header" xml:space="preserve">
+    <value>Peek window is always on top</value>
+    <comment>Peek is a product name, do not loc</comment>
+  </data>
+  <data name="Peek_ShowTaskbarIcon.Header" xml:space="preserve">
+    <value>Show Peek icon on the taskbar</value>
     <comment>Peek is a product name, do not loc</comment>
   </data>
   <data name="Peek_CloseAfterLosingFocus.Header" xml:space="preserve">
@@ -3376,8 +3432,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>key refers to a physical key on a keyboard</comment>
   </data>
   <data name="QuickAccent_Activation_Shortcut.Description" xml:space="preserve">
-    <value>Press this key after holding down the target letter</value>
-    <comment>key refers to a physical key on a keyboard</comment>
+    <value>Choose how the accent menu opens</value>
+    <comment>The accent menu is the Quick Accent character picker</comment>
   </data>
   <data name="QuickAccent_Activation_Key_Arrows.Content" xml:space="preserve">
     <value>Left/Right Arrow</value>
@@ -3390,6 +3446,10 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_Activation_Key_Either.Content" xml:space="preserve">
     <value>Left, Right or Space</value>
     <comment>All are keys on a keyboard</comment>
+  </data>
+  <data name="QuickAccent_Activation_Key_PressAndHold.Content" xml:space="preserve">
+    <value>Press and hold the letter</value>
+    <comment>Activation mode where holding the letter key itself opens the accent menu, like on iOS or macOS</comment>
   </data>
   <data name="QuickAccent_Toolbar.Header" xml:space="preserve">
     <value>Toolbar</value>
@@ -3433,6 +3493,14 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_InputTimeMs.Description" xml:space="preserve">
     <value>How long a key must be held before the accent menu appears</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Header" xml:space="preserve">
+    <value>Hold duration (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="QuickAccent_HoldDurationMs.Description" xml:space="preserve">
+    <value>How long to hold the letter before the accent menu appears</value>
     <comment>ms = milliseconds</comment>
   </data>
   <data name="QuickAccent_ExcludedApps.Description" xml:space="preserve">
@@ -3592,6 +3660,12 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="QuickAccent_SelectedLanguage_Special" xml:space="preserve">
     <value>Special Characters</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Belarusian" xml:space="preserve">
+    <value>Belarusian Latin</value>
+  </data>
+  <data name="QuickAccent_SelectedLanguage_Belarusian_Cyrillic" xml:space="preserve">
+    <value>Belarusian Cyrillic</value>
   </data>
   <data name="QuickAccent_SelectedLanguage_Bulgarian" xml:space="preserve">
     <value>Bulgarian</value>
@@ -4454,22 +4528,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus.ModuleDescription" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates</value>
   </data>
   <data name="NewPlus_Product_Name.Content" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>
-    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
     <value>New+</value>
-    <comment>Localize product name in accordance with Windows New</comment>
+    <comment>Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
@@ -4556,7 +4630,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus.Title" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="Oobe_NewPlus.Description" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates.</value>
@@ -4844,6 +4918,27 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
     <value>Press **{0}** to record a specific window</value>
   </data>
+  <data name="ZoomIt_MirrorGroup.Header" xml:space="preserve">
+    <value>DemoMirror</value>
+  </data>
+  <data name="ZoomIt_MirrorGroup.Description" xml:space="preserve">
+    <value>Mirror the screen, a region of the screen, or a window, including the mouse pointer, onto a second monitor, on top of a slide show. Use ZoomIt zoom and draw to annotate the mirrored image.</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut.Header" xml:space="preserve">
+    <value>Mirror activation</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_FullScreen" xml:space="preserve">
+    <value>Press **{0}** to start or stop mirroring the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Crop" xml:space="preserve">
+    <value>Press **{0}** to mirror a portion of the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Window" xml:space="preserve">
+    <value>Press **{0}** to mirror a specific window</value>
+  </data>
+  <data name="ZoomIt_Mirror_TrackWindow.Content" xml:space="preserve">
+    <value>Mirror windows by tracking their screen region, so zoom and draw show in place</value>
+  </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
   </data>
@@ -4964,11 +5059,17 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip activation</value>
   </data>
-  <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the snip to a file</value>
+  <data name="ZoomIt_SnipSave_Shortcut.Header" xml:space="preserve">
+    <value>Save snip to file</value>
   </data>
-  <data name="ZoomIt_Panorama_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the scrolling screenshot to a file</value>
+  <data name="ZoomIt_SnipCopyToClipboard.Header" xml:space="preserve">
+    <value>Copy to clipboard when saving</value>
+  </data>
+  <data name="ZoomIt_SnipCopyToClipboard.Description" xml:space="preserve">
+    <value>Also copy the snip to the clipboard whenever it is saved to a file</value>
+  </data>
+  <data name="ZoomIt_PanoramaSave_Shortcut.Header" xml:space="preserve">
+    <value>Save scrolling screenshot to file</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
     <value>Text recognition and extraction</value>
@@ -5583,11 +5684,30 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Header" xml:space="preserve">
+    <value>Tray icon mouse wheel</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Description" xml:space="preserve">
+    <value>Choose which displays are adjusted when scrolling over the Power Display tray icon. While linked brightness is on, adjusting any display in the linked group moves the whole group.</value>
+    <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlModeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tray icon mouse wheel mode</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_PrimaryDisplay.Content" xml:space="preserve">
+    <value>Primary display</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_AllDisplays.Content" xml:space="preserve">
+    <value>All displays</value>
+  </data>
   <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
     <value>Mouse wheel increment</value>
   </data>
   <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
-    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
+    <value>How much brightness changes from tray scrolling, and how much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
   </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>

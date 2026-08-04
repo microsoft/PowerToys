@@ -15,8 +15,8 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
-    private CultureInfo originalCulture;
-    private CultureInfo originalUiCulture;
+    private CultureInfo originalCulture = null!;
+    private CultureInfo originalUiCulture = null!;
 
     [TestInitialize]
     public void Setup()
@@ -166,7 +166,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsTrue(results.Length > 0, $"Query '{query}' should return at least one result");
 
         var firstItem = results.FirstOrDefault();
-        Assert.IsTrue(firstItem.Title.StartsWith("Error: Invalid input", StringComparison.CurrentCulture), $"Query '{query}' should return an error result for invalid input");
+        Assert.IsTrue(firstItem!.Title.StartsWith("Error: Invalid input", StringComparison.CurrentCulture), $"Query '{query}' should return an error result for invalid input");
     }
 
     [DataTestMethod]
@@ -201,7 +201,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(results);
         var firstResult = results.FirstOrDefault();
-        Assert.IsTrue(firstResult.Subtitle.StartsWith(expectedSubtitle, StringComparison.CurrentCulture), $"Could not find result with subtitle starting with '{expectedSubtitle}' for query '{query}'");
+        Assert.IsTrue(firstResult!.Subtitle.StartsWith(expectedSubtitle, StringComparison.CurrentCulture), $"Could not find result with subtitle starting with '{expectedSubtitle}' for query '{query}'");
     }
 
     [DataTestMethod]
@@ -218,7 +218,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(resultsList);
         var firstResult = resultsList.FirstOrDefault();
-        Assert.IsTrue(firstResult.Title.Contains(expectedResult, StringComparison.CurrentCulture), $"Delimiter query '{query}' result not match {expectedResult} current result {firstResult.Title}");
+        Assert.IsTrue(firstResult!.Title.Contains(expectedResult, StringComparison.CurrentCulture), $"Delimiter query '{query}' result not match {expectedResult} current result {firstResult.Title}");
     }
 
     [TestMethod]

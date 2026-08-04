@@ -541,6 +541,9 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         {
             if (disposing)
             {
+                _catalog.PackageInstalling -= Catalog_PackageInstalling;
+                _catalog.PackageUninstalling -= Catalog_PackageUninstalling;
+                _catalog.PackageUpdating -= Catalog_PackageUpdating;
                 _getInstalledExtensionsLock.Dispose();
             }
 

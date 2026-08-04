@@ -241,12 +241,12 @@
                                         <CheckBox
                                             x:Uid="LightSwitch_DarkModeProfileCheckbox"
                                             IsChecked="{x:Bind ViewModel.EnableDarkModeProfile, Mode=TwoWay}"
-                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                            IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}" />
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
-                                        IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                        DisplayMemberPath="DisplayName"
+                                        IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedDarkModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
@@ -255,12 +255,12 @@
                                         <CheckBox
                                             x:Uid="LightSwitch_LightModeProfileCheckbox"
                                             IsChecked="{x:Bind ViewModel.EnableLightModeProfile, Mode=TwoWay}"
-                                            IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}" />
+                                            IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}" />
                                     </tkcontrols:SettingsCard.Header>
                                     <ComboBox
                                         MinWidth="200"
-                                        DisplayMemberPath="Name"
-                                        IsEnabled="{x:Bind ViewModel.IsPowerDisplayEnabled, Mode=OneWay}"
+                                        DisplayMemberPath="DisplayName"
+                                        IsEnabled="{x:Bind ViewModel.CanSelectPowerDisplayProfile, Mode=OneWay}"
                                         ItemsSource="{x:Bind ViewModel.AvailableProfiles, Mode=OneWay}"
                                         SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>

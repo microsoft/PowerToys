@@ -50,6 +50,9 @@
     <None Update="DevHome\Templates\SystemMemoryTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="DevHome\Templates\SystemDiskUsageTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="DevHome\Templates\SystemNetworkUsageTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -57,8 +60,15 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
   <ItemGroup>
-    <Content Update="Assets\**\*.*">
+    <None Remove="Assets\PerformanceMonitorExtension.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="Assets\PerformanceMonitorExtension.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\PerformanceMonitorExtension.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
