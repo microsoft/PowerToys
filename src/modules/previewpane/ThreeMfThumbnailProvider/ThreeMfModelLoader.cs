@@ -1,17 +1,21 @@
 // Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System.IO;
 using System.IO.Compression;
-using System.Xml.Linq;
-
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using System.Xml.Linq;
+
+using Color = System.Windows.Media.Color;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 {
     internal static class ThreeMfModelLoader
     {
         private static readonly string[] ThumbnailExtensions = { ".png", ".jpg", ".jpeg" };
+
+        private static readonly char[] TransformSeparators = { ' ' };
 
         public static System.Drawing.Bitmap TryLoadEmbeddedThumbnail(Stream stream, uint maxSize)
         {
@@ -277,7 +281,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
             }
 
             var values = transformValue
-                .Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(TransformSeparators, StringSplitOptions.RemoveEmptyEntries)
                 .Select(ParseDouble)
                 .ToArray();
 
@@ -287,10 +291,22 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
             }
 
             return new Matrix3D(
-                values[0], values[1], values[2], 0,
-                values[3], values[4], values[5], 0,
-                values[6], values[7], values[8], 0,
-                values[9], values[10], values[11], 1);
+                values[0],
+                values[1],
+                values[2],
+                0,
+                values[3],
+                values[4],
+                values[5],
+                0,
+                values[6],
+                values[7],
+                values[8],
+                0,
+                values[9],
+                values[10],
+                values[11],
+                1);
         }
 
         private static double ParseDouble(string value)

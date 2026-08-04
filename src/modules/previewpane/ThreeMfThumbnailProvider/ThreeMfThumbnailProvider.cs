@@ -14,6 +14,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Bitmap = System.Drawing.Bitmap;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 {

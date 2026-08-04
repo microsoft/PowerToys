@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
                     Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
-                        filePath = Path.ChangeExtension(filePath, ".bmp");
+                        filePath = filePath.Replace(".3mf", ".bmp", StringComparison.OrdinalIgnoreCase);
                         thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
                     }
                 }
