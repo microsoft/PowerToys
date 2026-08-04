@@ -92,7 +92,30 @@ namespace WorkspacesEditor.ViewModels
 
         private IEnumerable<Project> GetFilteredWorkspaces()
         {
-            return Workspaces;
+            if (Workspaces == null)
+            {
+                return Enumerable.Empty<Project>();
+            }
+
+            if (string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                return Workspaces;
+            }
+
+            return Workspaces.Where(x =>
+            {
+                if (x.Name != null && x.Name.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (x.Applications == null)
+                {
+                    return false;
+                }
+
+                return x.Applications.Any(app => app.AppName != null && app.AppName.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase));
+            });
         }
 
         /// <summary>
@@ -127,6 +150,14 @@ namespace WorkspacesEditor.ViewModels
 
         [ObservableProperty]
         private int _orderByIndex;
+
+        [ObservableProperty]
+        private string _searchTerm;
+
+        partial void OnSearchTermChanged(string value)
+        {
+            RefreshWorkspacesView();
+        }
 
         partial void OnOrderByIndexChanged(int value)
         {

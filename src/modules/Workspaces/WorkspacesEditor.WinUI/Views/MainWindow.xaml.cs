@@ -22,6 +22,9 @@ namespace WorkspacesEditor
 {
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        public const int MinWindowWidth = 750;
+        public const int MinWindowHeight = 680;
+
         private readonly CancellationTokenSource _cancellationToken = new();
 
         public MainWindow()
