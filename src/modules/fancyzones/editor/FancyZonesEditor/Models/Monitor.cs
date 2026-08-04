@@ -7,9 +7,11 @@ using System.Reflection;
 
 using FancyZonesEditor.Utils;
 using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
+using Windows.Graphics;
 
 namespace FancyZonesEditor.Models
 {
@@ -17,6 +19,7 @@ namespace FancyZonesEditor.Models
     {
         private LayoutSettings _settings;
         private Rect _virtualWorkArea;
+        private RectInt32 _expectedRect;
 
         public Monitor(Rect workArea, Size monitorSize)
         {
@@ -40,6 +43,11 @@ namespace FancyZonesEditor.Models
             // The HWND already exists once the WinUI Window is constructed, so the overlay can be
             // positioned right away using the same DPI-unaware context as the C++ backend.
             ApplyWorkAreaPosition();
+
+            // Placing the overlay can cross a DPI boundary, and the default WM_DPICHANGED handling
+            // then rescales the window off the work area. Rather than suppressing the message,
+            // the rect that was actually achieved is remembered and restored whenever it drifts.
+            Window.AppWindow.Changed += OnOverlayWindowChanged;
         }
 
         public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
@@ -147,6 +155,33 @@ namespace FancyZonesEditor.Models
                 (int)_virtualWorkArea.Y,
                 (int)_virtualWorkArea.Width,
                 (int)_virtualWorkArea.Height);
+
+            // Remember the physical rect that placement produced so drift can be detected.
+            _expectedRect = new RectInt32(
+                Window.AppWindow.Position.X,
+                Window.AppWindow.Position.Y,
+                Window.AppWindow.Size.Width,
+                Window.AppWindow.Size.Height);
+        }
+
+        private void OnOverlayWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if (!args.DidSizeChange && !args.DidPositionChange)
+            {
+                return;
+            }
+
+            if (sender.Position.X == _expectedRect.X &&
+                sender.Position.Y == _expectedRect.Y &&
+                sender.Size.Width == _expectedRect.Width &&
+                sender.Size.Height == _expectedRect.Height)
+            {
+                return;
+            }
+
+            // Restoring to the remembered rect is loop-safe: the next notification matches it.
+            sender.MoveAndResize(_expectedRect);
+            Window.ReapplyChrome();
         }
     }
 }

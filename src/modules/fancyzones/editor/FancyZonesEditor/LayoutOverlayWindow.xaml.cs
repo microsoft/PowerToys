@@ -4,11 +4,10 @@
 
 using System;
 
-using FancyZonesEditor.Utils;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
 using WinRT.Interop;
-using WinUIEx;
 
 namespace FancyZonesEditor
 {
@@ -16,17 +15,25 @@ namespace FancyZonesEditor
     /// Full-work-area, borderless window that hosts the layout preview or the zone editor for
     /// a single monitor.
     /// </summary>
-    public sealed partial class LayoutOverlayWindow : WindowEx
+    /// <remarks>
+    /// Derives from the shared <see cref="TransparentWindow"/> so the WPF
+    /// <c>AllowsTransparency="True"</c> scrim survives the migration: the host HWND is made
+    /// see-through with a <c>TransparentTintBackdrop</c> and the visible tint comes from the
+    /// root grid's semi-transparent <c>BackdropBrush</c>. Unlike a transient toast this overlay
+    /// must take keyboard focus for the zone editors, so it is shown with the regular
+    /// <c>Activate()</c> rather than the base class's no-activate <c>Show()</c>.
+    /// </remarks>
+    public sealed partial class LayoutOverlayWindow : TransparentWindow
     {
         public LayoutOverlayWindow()
         {
             InitializeComponent();
 
             Hwnd = WindowNative.GetWindowHandle(this);
-            ExtendsContentIntoTitleBar = true;
 
-            // Keep the overlay out of the taskbar and Alt+Tab.
-            NativeMethods.SetWindowStyleToolWindow(Hwnd);
+            // The overlay spans a whole monitor, so its edges coincide with the screen edges and
+            // any residual DWM frame would read as a full-screen outline.
+            ApplyFullBleedHardening();
         }
 
         public IntPtr Hwnd { get; }
@@ -81,6 +88,17 @@ namespace FancyZonesEditor
         {
             RootGrid.KeyDown += keyDown;
             RootGrid.KeyUp += keyUp;
+        }
+
+        /// <summary>
+        /// Re-applies the transparent, frameless chrome. Windows resets some DWM attributes
+        /// (border color, corner preference) when a window crosses a DPI boundary, which would
+        /// otherwise reveal an OS-drawn outline around the monitor-sized overlay.
+        /// </summary>
+        public void ReapplyChrome()
+        {
+            ApplyTransparentChrome();
+            ApplyFullBleedHardening();
         }
     }
 }

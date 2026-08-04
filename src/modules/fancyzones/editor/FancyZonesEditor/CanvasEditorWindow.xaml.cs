@@ -37,8 +37,7 @@ namespace FancyZonesEditor
 
         private void OnRootLoaded(object sender, RoutedEventArgs e)
         {
-            SizeToContent();
-            CenterOnOverlayMonitor();
+            SizeToContentAndCenter();
             NewZoneButton.Focus(FocusState.Programmatic);
         }
 

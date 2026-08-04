@@ -46,6 +46,11 @@ namespace FancyZonesEditor
             SizeChanged += CanvasZone_SizeChanged;
             GotFocus += CanvasZone_GotFocus;
             LostFocus += CanvasZone_LostFocus;
+
+            // The drag thumbs cover the whole zone and mark the pointer event handled, so the
+            // focus/z-order shim must run even for already-handled events. WPF used the
+            // tunneling PreviewMouseDown, which WinUI does not have.
+            AddHandler(PointerPressedEvent, new PointerEventHandler(Zone_PointerPressed), handledEventsToo: true);
         }
 
         public enum ResizeMode
@@ -62,12 +67,6 @@ namespace FancyZonesEditor
         public void FocusZone()
         {
             Focus(FocusState.Programmatic);
-        }
-
-        protected override void OnPointerPressed(PointerRoutedEventArgs e)
-        {
-            Canvas.SetZIndex(this, zIndex++);
-            base.OnPointerPressed(e);
         }
 
         private static bool IsKeyDown(VirtualKey key)
@@ -101,7 +100,8 @@ namespace FancyZonesEditor
 
         private void Zone_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            // Set (keyboard) focus on this zone when clicked
+            // Raise the zone above its siblings and give it (keyboard) focus when clicked.
+            Canvas.SetZIndex(this, zIndex++);
             Focus(FocusState.Programmatic);
         }
 

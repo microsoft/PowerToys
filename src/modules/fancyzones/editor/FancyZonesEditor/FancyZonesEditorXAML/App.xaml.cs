@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
@@ -37,6 +38,7 @@ namespace FancyZonesEditor
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
 
         private bool _isDisposed;
+        private bool _settingsPersisted;
 
         public App()
         {
@@ -52,6 +54,11 @@ namespace FancyZonesEditor
 
             if (!string.IsNullOrEmpty(languageTag))
             {
+                // The .resw strings are resolved by MRT, which follows the app's primary language
+                // override rather than the thread's UI culture - the culture alone (all the WPF
+                // editor needed) would leave the whole editor in the system language.
+                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = languageTag;
+
                 try
                 {
                     Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
@@ -148,11 +155,19 @@ namespace FancyZonesEditor
                 _dispatcherQueue.TryEnqueue(Shutdown);
             });
 
-            ParseSettings();
+            var parsingErrors = ParseSettings();
 
             MainWindowSettings.UpdateSelectedLayoutModel();
 
             Overlay.Show();
+
+            // The dialogs can only be hosted once an overlay window exists, so parsing errors are
+            // collected during startup and reported here. WPF could show a MessageBox with no
+            // window at all.
+            foreach (string error in parsingErrors)
+            {
+                ShowMessageDialog(error, ResourceLoaderInstance.GetString("Error_Parsing_Data_Title"));
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -196,7 +211,7 @@ namespace FancyZonesEditor
             _debugMode = true;
         }
 
-        private static void ReportParsingError(ParsingResult parseResult)
+        private static void ReportParsingError(ParsingResult parseResult, List<string> errors)
         {
             if (parseResult.Result)
             {
@@ -204,7 +219,7 @@ namespace FancyZonesEditor
             }
 
             Logger.LogError(ParsingErrorReportTag + ": " + parseResult.Message + "; " + ParsingErrorDataTag + ": " + parseResult.MalformedData);
-            ShowMessageDialog(parseResult.Message, ResourceLoaderInstance.GetString("Error_Parsing_Data_Title"));
+            errors.Add(parseResult.Message);
         }
 
         private static void ShowReportMessageBox()
@@ -214,14 +229,18 @@ namespace FancyZonesEditor
                 ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title"));
         }
 
-        private static void ParseSettings()
+        private static List<string> ParseSettings()
         {
-            ReportParsingError(FancyZonesEditorIO.ParseParams());
-            ReportParsingError(FancyZonesEditorIO.ParseLayoutTemplates());
-            ReportParsingError(FancyZonesEditorIO.ParseCustomLayouts());
-            ReportParsingError(FancyZonesEditorIO.ParseDefaultLayouts());
-            ReportParsingError(FancyZonesEditorIO.ParseLayoutHotkeys());
-            ReportParsingError(FancyZonesEditorIO.ParseAppliedLayouts());
+            var errors = new List<string>();
+
+            ReportParsingError(FancyZonesEditorIO.ParseParams(), errors);
+            ReportParsingError(FancyZonesEditorIO.ParseLayoutTemplates(), errors);
+            ReportParsingError(FancyZonesEditorIO.ParseCustomLayouts(), errors);
+            ReportParsingError(FancyZonesEditorIO.ParseDefaultLayouts(), errors);
+            ReportParsingError(FancyZonesEditorIO.ParseLayoutHotkeys(), errors);
+            ReportParsingError(FancyZonesEditorIO.ParseAppliedLayouts(), errors);
+
+            return errors;
         }
 
         private void App_WaitExit()
@@ -238,11 +257,37 @@ namespace FancyZonesEditor
         }
 
         /// <summary>
-        /// Cancels the native waiter thread, disposes the app and exits. Replaces
-        /// <c>Application.Shutdown()</c> plus the WPF <c>Exit</c> event handler.
+        /// Writes every FancyZones settings file back to disk and tears the overlays down.
+        /// WPF ran this from <c>MainWindow.Closing</c>, which <c>Application.Shutdown()</c>
+        /// reached on its way out; WinUI's <c>Application.Exit()</c> does not close windows the
+        /// same way, so every exit path calls this explicitly. It is idempotent because both the
+        /// window-close path and the shutdown path can reach it.
+        /// </summary>
+        public void PersistSettings()
+        {
+            if (_settingsPersisted)
+            {
+                return;
+            }
+
+            _settingsPersisted = true;
+
+            FancyZonesEditorIO.SerializeAppliedLayouts();
+            FancyZonesEditorIO.SerializeCustomLayouts();
+            FancyZonesEditorIO.SerializeLayoutHotkeys();
+            FancyZonesEditorIO.SerializeLayoutTemplates();
+            FancyZonesEditorIO.SerializeDefaultLayouts();
+            Overlay.CloseLayoutWindow();
+        }
+
+        /// <summary>
+        /// Persists pending edits, cancels the native waiter thread, disposes the app and exits.
+        /// Replaces <c>Application.Shutdown()</c> plus the WPF <c>Exit</c> event handler.
         /// </summary>
         public void Shutdown()
         {
+            PersistSettings();
+
             NativeThreadCTS.Cancel();
             Dispose();
 
@@ -253,7 +298,10 @@ namespace FancyZonesEditor
         private void OnUnhandledException(object sender, System.UnhandledExceptionEventArgs args)
         {
             Logger.LogError("Unhandled exception", (Exception)args.ExceptionObject);
-            ShowReportMessageBox();
+
+            // The exception can surface on any thread, and ContentDialog must be built on the UI
+            // thread, so the report is marshalled back.
+            _dispatcherQueue.TryEnqueue(ShowReportMessageBox);
         }
     }
 }

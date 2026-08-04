@@ -30,6 +30,9 @@ namespace FancyZonesEditor
             ResizerThumb.DragStarted += (s, e) => DragStarted?.Invoke(this, e);
             ResizerThumb.DragDelta += (s, e) => DragDelta?.Invoke(this, e);
             ResizerThumb.DragCompleted += (s, e) => DragCompleted?.Invoke(this, e);
+
+            GotFocus += (_, _) => FocusRing.Opacity = 1;
+            LostFocus += (_, _) => FocusRing.Opacity = 0;
         }
 
         public event DragStartedEventHandler DragStarted;

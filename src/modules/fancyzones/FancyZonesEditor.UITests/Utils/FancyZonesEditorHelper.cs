@@ -12,7 +12,6 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UITests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ModernWpf.Controls;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
 

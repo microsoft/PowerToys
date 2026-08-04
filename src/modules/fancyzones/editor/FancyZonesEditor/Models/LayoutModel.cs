@@ -137,6 +137,16 @@ namespace FancyZonesEditor.Models
             }
         }
 
+        // The blank layout is a template, but it is not a starting point for a custom layout -
+        // the WPF markup expressed this by collapsing its whole context menu.
+        public bool CanCreateCustomFromTemplate
+        {
+            get
+            {
+                return Type != LayoutType.Custom && Type != LayoutType.Blank;
+            }
+        }
+
         // Canvas layouts have freely positioned zones, so the zone spacing controls do not apply to them.
         public bool SupportsSpacing
         {

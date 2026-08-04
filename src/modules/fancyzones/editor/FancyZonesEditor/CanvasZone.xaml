@@ -9,7 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     IsTabStop="True"
     KeyDown="Zone_KeyDown"
-    PointerPressed="Zone_PointerPressed"
     mc:Ignorable="d">
     <UserControl.Resources>
         <Style x:Key="CanvasZoneThumbStyle" TargetType="Thumb">

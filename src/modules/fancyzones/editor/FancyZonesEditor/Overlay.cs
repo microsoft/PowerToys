@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -178,6 +179,11 @@ namespace FancyZonesEditor
                 if (!Monitors[i].Window.Visible)
                 {
                     Monitors[i].Window.Activate();
+
+                    // Activate() alone does not reliably lift every overlay above the windows
+                    // already on its monitor - Windows can refuse the foreground change - so each
+                    // overlay is raised explicitly, without stealing activation from the picker.
+                    NativeMethods.BringWindowToTopNoActivate(Monitors[i].Window.Hwnd);
                 }
             }
         }
@@ -353,6 +359,10 @@ namespace FancyZonesEditor
 
             // reset main window owner to keep it on the top
             _mainWindow.SetOwner(CurrentLayoutWindow.Hwnd);
+
+            // The picker is concealed rather than hidden while a zone editor is open, so it has
+            // to be revealed again here.
+            _mainWindow.Reveal();
 
             // window is set to topmost to make sure it shows on top of PowerToys settings page
             // we can reset topmost flag right after it is shown

@@ -33,7 +33,7 @@ namespace FancyZonesEditor
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : OverlayChildWindow
     {
         private const int MinimalForDefaultWrapPanelsHeight = 900;
         private const int DefaultWrapPanelItemSize = 164;
@@ -45,8 +45,6 @@ namespace FancyZonesEditor
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
         private readonly MonitorViewModel _monitorViewModel = new MonitorViewModel();
-        private readonly Rect _workArea;
-        private readonly bool _spanZonesAcrossMonitors;
 
         private ContentDialog _openedDialog;
         private bool _haveTriedToGetFocusAlready;
@@ -54,9 +52,6 @@ namespace FancyZonesEditor
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
-
-            _spanZonesAcrossMonitors = spanZonesAcrossMonitors;
-            _workArea = workArea;
 
             Title = ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title");
             RootGrid.DataContext = _settings;
@@ -66,7 +61,10 @@ namespace FancyZonesEditor
             CustomGridView.ItemsSource = MainWindowSettingsModel.CustomModels;
 
             MainWindowSettingsModel.CustomModels.CollectionChanged += CustomModels_CollectionChanged;
+            _settings.PropertyChanged += Settings_PropertyChanged;
             UpdateEmptyCustomLayoutsMessage();
+            SyncAppliedSelection();
+            Monitors.SelectedIndex = App.Overlay.CurrentDesktop;
 
             // WinUI cannot x:Bind to a named element from a Window-rooted XAML tree, so the
             // accessibility labels the WPF markup declared are wired up here instead.
@@ -76,8 +74,14 @@ namespace FancyZonesEditor
             AutomationProperties.SetLabeledBy(LayoutNameText, NameHeaderText);
 
             RootGrid.KeyUp += MainWindow_KeyUp;
-            RootGrid.KeyDown += MainWindow_KeyDown;
             RootGrid.Loaded += RootGrid_Loaded;
+
+            // The ScrollViewer handles the wheel itself, so the horizontal-scroll shim has to be
+            // registered for already-handled events; WPF used the tunneling PreviewMouseWheel.
+            MonitorScrollViewer.AddHandler(
+                UIElement.PointerWheelChangedEvent,
+                new PointerEventHandler(MonitorScrollViewer_PointerWheelChanged),
+                handledEventsToo: true);
 
             Closed += OnClosing;
 
@@ -112,13 +116,45 @@ namespace FancyZonesEditor
         /// <param name="ownerHwnd">Handle of the layout overlay window.</param>
         public void SetOwner(IntPtr ownerHwnd)
         {
-            NativeMethods.SetWindowOwner(WindowNative.GetWindowHandle(this), ownerHwnd);
+            NativeMethods.SetWindowOwner(Hwnd, ownerHwnd);
+        }
+
+        /// <summary>
+        /// Brings the picker back after a zone editing session concealed it.
+        /// </summary>
+        public void Reveal()
+        {
+            RevealWindow();
         }
 
         public void Update()
         {
             RootGrid.DataContext = null;
             RootGrid.DataContext = _settings;
+            SyncAppliedSelection();
+            Monitors.SelectedIndex = App.Overlay.CurrentDesktop;
+        }
+
+        private void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainWindowSettingsModel.AppliedModel))
+            {
+                SyncAppliedSelection();
+            }
+        }
+
+        /// <summary>
+        /// Keeps the highlighted card on the layout that is actually applied. The WPF
+        /// ItemContainerStyle bound <c>IsSelected</c> to <c>IsApplied</c> and therefore tracked
+        /// the model live; WinUI cannot bind inside a Setter, so the GridView's own selection is
+        /// driven from the applied model instead.
+        /// </summary>
+        private void SyncAppliedSelection()
+        {
+            LayoutModel applied = _settings.AppliedModel;
+
+            TemplatesGridView.SelectedItem = MainWindowSettingsModel.TemplateModels.Contains(applied) ? applied : null;
+            CustomGridView.SelectedItem = MainWindowSettingsModel.CustomModels.Contains(applied) ? applied : null;
         }
 
         private static bool IsCtrlKeyDown()
@@ -129,44 +165,12 @@ namespace FancyZonesEditor
 
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
-            SizeToContent();
-            PositionWindow();
+            SizeToContentAndCenter();
 
             if (!_haveTriedToGetFocusAlready)
             {
                 BringWindowToFront();
             }
-        }
-
-        /// <summary>
-        /// WinUI 3 has no <c>SizeToContent</c>; the window is measured and resized to the content,
-        /// clamped to the work area the way the WPF MaxWidth/MaxHeight did.
-        /// </summary>
-        private void SizeToContent()
-        {
-            RootGrid.Measure(new Size(_workArea.Width, _workArea.Height));
-            Size desired = RootGrid.DesiredSize;
-
-            double scale = RootGrid.XamlRoot?.RasterizationScale ?? 1.0;
-            int width = (int)Math.Ceiling(Math.Min(desired.Width, _workArea.Width) * scale);
-            int height = (int)Math.Ceiling(Math.Min(desired.Height, _workArea.Height) * scale);
-
-            AppWindow.ResizeClient(new SizeInt32(Math.Max(width, 1), Math.Max(height, 1)));
-        }
-
-        private void PositionWindow()
-        {
-            IntPtr hwnd = WindowNative.GetWindowHandle(this);
-
-            // Move onto the target monitor first (virtual coordinates, matching how the overlay
-            // is positioned), then center within that monitor's work area.
-            NativeMethods.SetWindowPositionDpiUnaware(hwnd, (int)_workArea.X, (int)_workArea.Y, AppWindow.Size.Width, AppWindow.Size.Height);
-
-            var display = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
-            RectInt32 area = display.WorkArea;
-            AppWindow.Move(new PointInt32(
-                area.X + ((area.Width - AppWindow.Size.Width) / 2),
-                area.Y + ((area.Height - AppWindow.Size.Height) / 2)));
         }
 
         private void BringWindowToFront()
@@ -225,16 +229,15 @@ namespace FancyZonesEditor
             }
         }
 
-        // Prevent closing the dialog with enter
-        private void MainWindow_KeyDown(object sender, KeyRoutedEventArgs e)
+        // Prevent Enter from committing the dialog while the focus is on a layout-type radio
+        // button that is not checked yet. Handled on the dialog itself: it is hosted in a popup,
+        // so a handler on the window's root grid never sees these keys.
+        private void Dialog_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == VirtualKey.Enter && _openedDialog != null)
+            if (e.Key == VirtualKey.Enter && e.OriginalSource is RadioButton source && source.IsChecked != true)
             {
-                if (e.OriginalSource is RadioButton source && source.IsChecked != true)
-                {
-                    source.IsChecked = true;
-                    e.Handled = true;
-                }
+                source.IsChecked = true;
+                e.Handled = true;
             }
         }
 
@@ -251,7 +254,8 @@ namespace FancyZonesEditor
             }
             else
             {
-                OnClosing(this, null);
+                // Let the regular close path run: Closed -> OnClosing -> App.Shutdown.
+                Close();
             }
         }
 
@@ -382,12 +386,8 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            App.FancyZonesEditorIO.SerializeAppliedLayouts();
-            App.FancyZonesEditorIO.SerializeCustomLayouts();
-            App.FancyZonesEditorIO.SerializeLayoutHotkeys();
-            App.FancyZonesEditorIO.SerializeLayoutTemplates();
-            App.FancyZonesEditorIO.SerializeDefaultLayouts();
-            App.Overlay.CloseLayoutWindow();
+            // Serialization and overlay teardown live in App.Shutdown so that every exit path -
+            // this one, the FZE exit event and the runner exiting - persists pending edits.
             ((App)Application.Current).Shutdown();
         }
 
@@ -459,7 +459,7 @@ namespace FancyZonesEditor
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
-            AppWindow.Hide();
+            ConcealWindow();
             App.Overlay.OpenEditor(_settings.SelectedModel);
         }
 
@@ -498,7 +498,7 @@ namespace FancyZonesEditor
 
             selectedLayoutModel.InitTemplateZones();
 
-            AppWindow.Hide();
+            ConcealWindow();
 
             App.Overlay.CurrentDataContext = selectedLayoutModel;
             App.Overlay.OpenEditor(selectedLayoutModel);
@@ -602,8 +602,10 @@ namespace FancyZonesEditor
         }
 
         /// <summary>
-        /// Applies the per-container automation metadata and selection state that the WPF
-        /// ItemContainerStyle set with {Binding} inside Setters - unsupported in WinUI 3.
+        /// Applies the per-container automation metadata that the WPF ItemContainerStyle set with
+        /// {Binding} inside Setters - unsupported in WinUI 3. The applied-layout highlight is not
+        /// set here: it is driven by <see cref="SyncAppliedSelection"/> so it keeps tracking the
+        /// model after the container has been realized.
         /// </summary>
         private void Layouts_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
@@ -614,7 +616,6 @@ namespace FancyZonesEditor
 
             AutomationProperties.SetName(container, model.Name ?? string.Empty);
             AutomationProperties.SetAutomationId(container, model.AutomationId ?? string.Empty);
-            container.IsSelected = model.IsApplied;
         }
 
         private void Monitors_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
@@ -626,7 +627,6 @@ namespace FancyZonesEditor
 
             AutomationProperties.SetName(container, monitor.AccessibleName ?? string.Empty);
             AutomationProperties.SetHelpText(container, monitor.AccessibleHelpText ?? string.Empty);
-            container.IsSelected = monitor.Selected;
         }
 
         private void ComboBox_KeyDown(object sender, KeyRoutedEventArgs e)

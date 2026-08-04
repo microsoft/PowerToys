@@ -1,4 +1,4 @@
-﻿<winuiex:WindowEx
+﻿<local:OverlayChildWindow
     x:Class="FancyZonesEditor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -9,8 +9,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:FancyZonesEditor.Models"
     xmlns:utils="using:FancyZonesEditor.Utils"
-    xmlns:viewmodels="using:FancyZonesEditor.ViewModels"
-    xmlns:winuiex="using:WinUIEx"
     MinWidth="360"
     mc:Ignorable="d">
 
@@ -21,10 +19,13 @@
         Background="{ThemeResource PrimaryBackgroundBrush}">
         <Grid.Resources>
             <DataTemplate x:Key="MonitorItemTemplate" x:DataType="utils:MonitorInfoModel">
-                <Border
-                    Width="{x:Bind DisplayWidth}"
-                    Height="{x:Bind DisplayHeight}"
-                    ToolTipService.ToolTip="{x:Bind AccessibleHelpText}">
+                <Border Width="{x:Bind DisplayWidth}" Height="{x:Bind DisplayHeight}">
+                    <ToolTipService.ToolTip>
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold" Text="{x:Bind AccessibleName}" />
+                            <TextBlock Text="{x:Bind Dimensions}" />
+                        </StackPanel>
+                    </ToolTipService.ToolTip>
                     <StackPanel VerticalAlignment="Center" Orientation="Vertical">
                         <TextBlock
                             HorizontalAlignment="Center"
@@ -79,12 +80,12 @@
                             <MenuFlyoutItem
                                 Click="DuplicateLayout_Click"
                                 Text="{helpers:StringResource Key=Create_Custom_From_Template}"
-                                Visibility="{x:Bind IsTemplateLayout}">
+                                Visibility="{x:Bind CanCreateCustomFromTemplate}">
                                 <MenuFlyoutItem.Icon>
                                     <FontIcon Glyph="&#xE8C8;" />
                                 </MenuFlyoutItem.Icon>
                             </MenuFlyoutItem>
-                            <MenuFlyoutSeparator Visibility="{x:Bind IsCustom}" />
+                            <MenuFlyoutSeparator Visibility="{x:Bind IsNotBlankLayout}" />
                             <MenuFlyoutItem
                                 Click="DeleteLayout_Click"
                                 Text="{helpers:StringResource Key=Delete}"
@@ -151,9 +152,9 @@
         <!--  Monitor picker strip  -->
         <Grid Background="{ThemeResource TertiaryBackgroundBrush}">
             <ScrollViewer
+                x:Name="MonitorScrollViewer"
                 HorizontalScrollBarVisibility="Auto"
                 HorizontalScrollMode="Enabled"
-                PointerWheelChanged="MonitorScrollViewer_PointerWheelChanged"
                 VerticalScrollBarVisibility="Disabled"
                 VerticalScrollMode="Disabled">
                 <Grid>
@@ -280,6 +281,7 @@
             MaxWidth="320"
             Background="{ThemeResource PrimaryBackgroundBrush}"
             Closed="Dialog_Closed"
+            KeyDown="Dialog_KeyDown"
             Opened="Dialog_Opened"
             PrimaryButtonClick="EditLayoutDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
@@ -657,6 +659,7 @@
             x:Name="NewLayoutDialog"
             Background="{ThemeResource PrimaryBackgroundBrush}"
             Closed="Dialog_Closed"
+            KeyDown="Dialog_KeyDown"
             Opened="Dialog_Opened"
             PrimaryButtonClick="NewLayoutDialog_PrimaryButtonClick"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
@@ -748,4 +751,4 @@
             </StackPanel>
         </ContentDialog>
     </Grid>
-</winuiex:WindowEx>
+</local:OverlayChildWindow>

@@ -11,7 +11,6 @@ using FancyZonesEditorCommon.Data;
 using Microsoft.FancyZonesEditor.UnitTests.Utils;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ModernWpf.Controls;
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 using static FancyZonesEditorCommon.Data.EditorParameters;
 using static FancyZonesEditorCommon.Data.LayoutHotkeys;

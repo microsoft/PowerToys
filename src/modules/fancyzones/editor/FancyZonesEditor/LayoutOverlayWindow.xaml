@@ -1,11 +1,11 @@
-﻿<winuiex:WindowEx
+﻿<commonwin:TransparentWindow
     x:Class="FancyZonesEditor.LayoutOverlayWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commonwin="using:Microsoft.PowerToys.Common.UI.Controls.Window"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winuiex="using:WinUIEx"
     Title="FancyZones Layout"
     IsMaximizable="False"
     IsMinimizable="False"
@@ -17,7 +17,8 @@
     <!--
         The overlay hosts whatever surface the editor is currently showing (a LayoutPreview
         or one of the zone editors). WinUI's Window carries neither Content chrome nor a
-        DataContext, so this root Grid owns both.
+        DataContext, so this root Grid owns both - including the translucent scrim that the
+        WPF window drew through AllowsTransparency.
     -->
     <Grid x:Name="RootGrid" Background="{ThemeResource BackdropBrush}" />
-</winuiex:WindowEx>
+</commonwin:TransparentWindow>

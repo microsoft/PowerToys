@@ -14,9 +14,18 @@
     <!--
         WinUI's Thumb is sealed, so the resizer is a UserControl that hosts one and
         re-exposes its drag events. The rotation for horizontal resizers is applied to
-        this Grid.
+        this Grid, and the focus ring replaces the keyboard-focus colour change the WPF
+        ControlTemplate trigger used to make.
     -->
     <Grid x:Name="Body">
+        <Border
+            x:Name="FocusRing"
+            Width="54"
+            Height="54"
+            BorderBrush="{ThemeResource AccentFillColorSecondaryBrush}"
+            BorderThickness="3"
+            CornerRadius="27"
+            Opacity="0" />
         <Thumb x:Name="ResizerThumb" Style="{StaticResource GridResizerThumbStyle}" />
     </Grid>
 </UserControl>

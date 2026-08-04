@@ -53,7 +53,6 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="RootBorder.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
-                                        <Setter Target="CheckGlyph.Opacity" Value="0.6" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -68,6 +67,11 @@
                                 </VisualState>
                             </VisualStateGroup>
 
+                            <!--
+                                CheckGlyph.Opacity is owned exclusively by this group: driving it
+                                from CommonStates as well would let a pointer-over transition
+                                revert the checked outline.
+                            -->
                             <VisualStateGroup x:Name="CheckStates">
                                 <VisualState x:Name="Checked">
                                     <VisualState.Setters>
