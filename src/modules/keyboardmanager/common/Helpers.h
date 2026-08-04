@@ -51,8 +51,10 @@ namespace Helpers
     // Function to return window handle for a full screen UWP app
     HWND GetFullscreenUWPWindowHandle();
 
-    // Function to return the executable name of the application in focus
-    std::wstring GetCurrentApplication(bool keepPath);
+    // Function to return the executable name of the application owning the given window.
+    // When resolvedFromUWPFrame is supplied it is set to true if the name had to be resolved
+    // through the ApplicationFrameHost frame window, which callers cannot cache by window handle.
+    std::wstring GetApplicationForWindow(HWND windowHandle, bool keepPath, bool* resolvedFromUWPFrame = nullptr);
 
     // Function to set key events for modifier keys: When shortcutToCompare is passed (non-empty shortcut), then the key event is sent only if both shortcut's don't have the same modifier key. When keyToBeReleased is passed (non-NULL), then the key event is sent if either the shortcuts don't have the same modifier or if the shortcutToBeSent's modifier matches the keyToBeReleased
     void SetModifierKeyEvents(const Shortcut& shortcutToBeSent, const Modifiers& modifiersKeys, std::vector<INPUT>& keyEventArray, bool isKeyDown, ULONG_PTR extraInfoFlag, const Shortcut& shortcutToCompare = Shortcut(), const DWORD& keyToBeReleased = NULL);

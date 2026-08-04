@@ -57,7 +57,43 @@ namespace KeyboardManagerInput
         // Function to get the foreground process name
         void GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
         {
-            foregroundProcess = Helpers::GetCurrentApplication(false);
+            // This is called for every key event, down and up, from inside the low-level
+            // keyboard hook. Resolving the name costs an OpenProcess plus a
+            // QueryFullProcessImageName, and Windows silently drops hooks whose callbacks
+            // exceed LowLevelHooksTimeout (300 ms by default). Cache the result and only pay
+            // that cost when the foreground window actually changes. The key includes the
+            // owning process id so a recycled window handle cannot serve a stale name.
+            // Only accessed from the (serialized) low-level keyboard hook thread.
+            const HWND foregroundWindow = GetForegroundWindow();
+            DWORD foregroundProcessId = 0;
+            if (foregroundWindow != nullptr)
+            {
+                GetWindowThreadProcessId(foregroundWindow, &foregroundProcessId);
+            }
+
+            if (!m_foregroundCacheValid ||
+                foregroundWindow != m_cachedForegroundWindow ||
+                foregroundProcessId != m_cachedForegroundProcessId)
+            {
+                bool resolvedFromUWPFrame = false;
+                m_cachedForegroundProcessName = Helpers::GetApplicationForWindow(foregroundWindow, false, &resolvedFromUWPFrame);
+                m_cachedForegroundWindow = foregroundWindow;
+                m_cachedForegroundProcessId = foregroundProcessId;
+
+                // A full-screen UWP app is reached through an ApplicationFrameHost frame
+                // window, which can outlive the hosted app it currently shows. That makes the
+                // frame window unusable as a cache key, so keep resolving it on every event.
+                m_foregroundCacheValid = !resolvedFromUWPFrame;
+            }
+
+            foregroundProcess = m_cachedForegroundProcessName;
         }
+
+    private:
+        // Cached result of the last foreground process lookup, see GetForegroundProcess.
+        HWND m_cachedForegroundWindow = nullptr;
+        DWORD m_cachedForegroundProcessId = 0;
+        std::wstring m_cachedForegroundProcessName;
+        bool m_foregroundCacheValid = false;
     };
 }

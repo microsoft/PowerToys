@@ -218,15 +218,19 @@ namespace Helpers
         return guiThreadInfo.hwndFocus;
     }
 
-    // Function to return the executable name of the application in focus
-    std::wstring GetCurrentApplication(bool keepPath)
+    // Function to return the executable name of the application owning the given window
+    std::wstring GetApplicationForWindow(HWND windowHandle, bool keepPath, bool* resolvedFromUWPFrame)
     {
-        HWND current_window_handle = GetForegroundWindow();
+        if (resolvedFromUWPFrame != nullptr)
+        {
+            *resolvedFromUWPFrame = false;
+        }
+
         std::wstring process_name;
 
-        if (current_window_handle != nullptr)
+        if (windowHandle != nullptr)
         {
-            std::wstring process_path = get_process_path(current_window_handle);
+            std::wstring process_path = get_process_path(windowHandle);
             process_name = process_path;
 
             // Get process name from path
@@ -241,6 +245,11 @@ namespace Helpers
                 HWND fullscreen_window_handle = GetFullscreenUWPWindowHandle();
                 if (fullscreen_window_handle != nullptr)
                 {
+                    if (resolvedFromUWPFrame != nullptr)
+                    {
+                        *resolvedFromUWPFrame = true;
+                    }
+
                     process_path = get_process_path(fullscreen_window_handle);
                     process_name = process_path;
 
