@@ -34,6 +34,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
     private readonly MEL.ILogger<AppListItemSource> _logger;
 
     private PublishedState _publishedState = new(new AppListItemSnapshot([], []), IsLoading: true, HideDescriptions: false, ResultLimit: 0);
+    private CommandContextItem? _editExclusionPatterns;
     private bool _initializationCompleted;
     private int _userRefreshCount;
     private InterlockedBoolean _synchronizeRequested;
@@ -199,26 +200,34 @@ public sealed partial class AppListItemSource : IAppListItemSource
         var hideDescriptions = _settings.HideAppDescriptions;
         var resultLimit = _settings.EffectiveSearchResultLimit;
         var presentationChanged = state.HideDescriptions != hideDescriptions;
-        var existingItems = new Dictionary<string, (AppListItem Item, bool Hidden)>(StringComparer.OrdinalIgnoreCase);
+        var existingItems = new Dictionary<string, (AppListItem Item, AppVisibility Visibility)>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in snapshot.VisibleItems)
         {
-            existingItems[item.App.CatalogId] = (item, false);
+            existingItems[item.App.CatalogId] = (item, AppVisibility.Visible);
         }
 
         foreach (var item in snapshot.HiddenItems)
         {
-            existingItems[item.App.CatalogId] = (item, true);
+            existingItems[item.App.CatalogId] = (item, AppVisibility.Hidden);
         }
 
-        var commandAliases = _settings.RetainAppCommandAliases(catalogSnapshot.Items.Concat(catalogSnapshot.HiddenItems));
+        foreach (var item in snapshot.PatternHiddenItems)
+        {
+            existingItems[item.App.CatalogId] = (item, AppVisibility.HiddenByPattern);
+        }
+
+        var commandAliases = _settings.RetainAppCommandAliases(catalogSnapshot.Items.Concat(catalogSnapshot.HiddenItems).Concat(catalogSnapshot.PatternHiddenItems));
         var updated = new AppListItemSnapshot(
-            BuildList(catalogSnapshot.Items, hidden: false, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
-            BuildList(catalogSnapshot.HiddenItems, hidden: true, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems), commandAliases: commandAliases);
+            BuildList(catalogSnapshot.Items, AppVisibility.Visible, hideDescriptions, existingItems, presentationChanged ? null : snapshot.VisibleItems),
+            BuildList(catalogSnapshot.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems, presentationChanged ? null : snapshot.HiddenItems),
+            BuildList(catalogSnapshot.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems, presentationChanged ? null : snapshot.PatternHiddenItems),
+            commandAliases);
 
         var resolutionChanged = !updated.HasSameCommandResolution(snapshot);
 
         if (ReferenceEquals(updated.VisibleItems, snapshot.VisibleItems)
-            && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems))
+            && ReferenceEquals(updated.HiddenItems, snapshot.HiddenItems)
+            && ReferenceEquals(updated.PatternHiddenItems, snapshot.PatternHiddenItems))
         {
             if (!resolutionChanged && !presentationChanged && state.ResultLimit == resultLimit)
             {
@@ -243,16 +252,17 @@ public sealed partial class AppListItemSource : IAppListItemSource
 
         // Property notifications can change the catalog again. Publish first and drain those
         // changes in the next pass without holding a lock across consumer callbacks.
-        UpdatePresentation(updated.VisibleItems, hidden: false, hideDescriptions, existingItems);
-        UpdatePresentation(updated.HiddenItems, hidden: true, hideDescriptions, existingItems);
+        UpdatePresentation(updated.VisibleItems, AppVisibility.Visible, hideDescriptions, existingItems);
+        UpdatePresentation(updated.HiddenItems, AppVisibility.Hidden, hideDescriptions, existingItems);
+        UpdatePresentation(updated.PatternHiddenItems, AppVisibility.HiddenByPattern, hideDescriptions, existingItems);
         RaiseChanged();
     }
 
     private IReadOnlyList<AppListItem> BuildList(
         IReadOnlyList<AppItem> apps,
-        bool hidden,
+        AppVisibility visibility,
         bool hideDescriptions,
-        IReadOnlyDictionary<string, (AppListItem Item, bool Hidden)> existingItems,
+        IReadOnlyDictionary<string, (AppListItem Item, AppVisibility Visibility)> existingItems,
         IReadOnlyList<AppListItem>? previousItems)
     {
         var items = new List<AppListItem>(apps.Count);
@@ -269,7 +279,7 @@ public sealed partial class AppListItemSource : IAppListItemSource
                 {
                     Subtitle = hideDescriptions ? string.Empty : app.Subtitle,
                 };
-                SetVisibilityCommand(item, hidden);
+                SetVisibilityCommand(item, visibility);
                 items.Add(item);
             }
         }
@@ -281,34 +291,38 @@ public sealed partial class AppListItemSource : IAppListItemSource
 
     private void UpdatePresentation(
         IReadOnlyList<AppListItem> items,
-        bool hidden,
+        AppVisibility visibility,
         bool hideDescriptions,
-        IReadOnlyDictionary<string, (AppListItem Item, bool Hidden)> existingItems)
+        IReadOnlyDictionary<string, (AppListItem Item, AppVisibility Visibility)> existingItems)
     {
         foreach (var item in items)
         {
             item.Subtitle = hideDescriptions ? string.Empty : item.App.Subtitle;
             if (existingItems.TryGetValue(item.App.CatalogId, out var previous)
                 && ReferenceEquals(previous.Item, item)
-                && previous.Hidden != hidden)
+                && previous.Visibility != visibility)
             {
-                SetVisibilityCommand(item, hidden);
+                SetVisibilityCommand(item, visibility);
             }
         }
     }
 
-    private void SetVisibilityCommand(AppListItem item, bool hidden)
+    private void SetVisibilityCommand(AppListItem item, AppVisibility visibility)
     {
-        item.MoreCommands =
-        [
-            .. item.App.Commands ?? [],
-            new CommandContextItem(
+        var hidden = visibility == AppVisibility.Hidden;
+        var command = visibility == AppVisibility.HiddenByPattern
+            ? _editExclusionPatterns ??= new CommandContextItem(_settings.Settings.SettingsPage) { Title = Resources.edit_exclusion_patterns }
+            : new CommandContextItem(
                 new AnonymousCommand(() => _ = SetAppHiddenAsync(item.App.CatalogId, !hidden))
                 {
                     Name = hidden ? Resources.unhide_app : Resources.hide_app,
                     Icon = hidden ? Icons.Unhide : Icons.Hide,
                     Result = CommandResult.KeepOpen(),
-                }),
+                });
+        item.MoreCommands =
+        [
+            .. item.App.Commands ?? [],
+            command,
         ];
     }
 

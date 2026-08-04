@@ -22,7 +22,7 @@ public interface IAppListItemSource : IDisposable
     event EventHandler? Changed;
 
     /// <summary>
-    /// Gets an atomic snapshot of visible and explicitly hidden application list items.
+    /// Gets an atomic snapshot of visible and hidden application list items.
     /// </summary>
     AppListItemSnapshot GetSnapshot();
 

@@ -299,7 +299,34 @@
   <data name="hide_app_descriptions_description" xml:space="preserve">
     <value>Hide description text next to app results for a cleaner look</value>
   </data>
+  <data name="hide_uninstallers" xml:space="preserve">
+    <value>Hide uninstallers</value>
+  </data>
+  <data name="hide_uninstallers_description" xml:space="preserve">
+    <value>Hide common uninstaller shortcuts and executables from the app list</value>
+  </data>
   <data name="unhide_app" xml:space="preserve">
     <value>Unhide app</value>
+  </data>
+  <data name="excluded_app_names" xml:space="preserve">
+    <value>Hide apps by name</value>
+  </data>
+  <data name="excluded_app_names_description" xml:space="preserve">
+    <value>Hide apps whose names match any pattern, ignoring case. Use * for any text and ? for one character, for example *Updater*. Matching apps appear in Hidden apps.</value>
+  </data>
+  <data name="excluded_app_paths" xml:space="preserve">
+    <value>Hide apps by path</value>
+  </data>
+  <data name="excluded_app_paths_description" xml:space="preserve">
+    <value>Hide apps by executable, shortcut, or package folder path, ignoring case. Use * for any text and ? for one character, for example C:\Tools\*. Matching apps appear in Hidden apps.</value>
+  </data>
+  <data name="hidden_manually" xml:space="preserve">
+    <value>Hidden manually</value>
+  </data>
+  <data name="hidden_by_exclusion_patterns" xml:space="preserve">
+    <value>Hidden by exclusion patterns</value>
+  </data>
+  <data name="edit_exclusion_patterns" xml:space="preserve">
+    <value>Edit exclusion patterns</value>
   </data>
 </root>
