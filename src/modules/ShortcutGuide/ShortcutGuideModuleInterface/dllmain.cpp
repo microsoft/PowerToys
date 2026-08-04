@@ -167,7 +167,7 @@ public:
         }
     }
     virtual bool keep_track_of_pressed_win_key() override { return true; }
-    virtual UINT milliseconds_win_key_must_be_pressed() override { return 900; }
+    virtual UINT milliseconds_win_key_must_be_pressed() override { return m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts; }
 
 private:
     std::wstring app_name;
@@ -301,6 +301,9 @@ private:
             {
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
+
+            auto jsonDurationObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
+            m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = static_cast<UINT>(jsonDurationObject.GetNamedNumber(L"value"));
         }
         else
         {
