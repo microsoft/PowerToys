@@ -2510,5 +2510,53 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_BACK));
         }
+
+        // Test that a remap left invoked because its target modifiers went up unseen does not block other remaps
+        TEST_METHOD (InvokedShortcutWithReleasedTargetModifiers_ShouldNotBlockOtherShortcuts_OnNextInvocation)
+        {
+            // Remap Ctrl+A to Alt+V
+            Shortcut firstSrc;
+            firstSrc.SetKey(VK_CONTROL);
+            firstSrc.SetKey(0x41);
+            Shortcut firstDest;
+            firstDest.SetKey(VK_MENU);
+            firstDest.SetKey(0x56);
+            testState.AddOSLevelShortcut(firstSrc, firstDest);
+
+            // Remap Ctrl+B to Alt+X
+            Shortcut secondSrc;
+            secondSrc.SetKey(VK_CONTROL);
+            secondSrc.SetKey(0x42);
+            Shortcut secondDest;
+            secondDest.SetKey(VK_MENU);
+            secondDest.SetKey(0x58);
+            testState.AddOSLevelShortcut(secondSrc, secondDest);
+
+            std::vector<INPUT> firstShortcutDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(firstShortcutDown);
+
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[firstSrc].isShortcutInvoked);
+
+            // The user lets go of every key but the engine never observes those events, for
+            // example because the release reached an elevated window. Only the keyboard state
+            // changes, so the remap stays invoked while its target modifiers are already up
+            // and none of the paths that clear the invoked state can run again.
+            mockedInputHandler.ResetKeyboardState();
+
+            std::vector<INPUT> secondShortcutDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_CONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'B' } },
+            };
+            mockedInputHandler.SendVirtualInput(secondShortcutDown);
+
+            // The stranded remap must be cleared and the second remap must still be applied
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[firstSrc].isShortcutInvoked);
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[secondSrc].isShortcutInvoked);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_MENU));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x58));
+        }
     };
 }

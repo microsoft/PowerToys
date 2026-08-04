@@ -307,6 +307,60 @@ namespace KeyboardEventHandlers
     }
     */
 
+    // Function to clear shortcut remaps that can no longer leave the invoked state.
+    //
+    // While a shortcut-to-shortcut remap is invoked, the target shortcut's modifiers are held
+    // down by injection, and every path that clears isShortcutInvoked for it sits behind a
+    // check that those modifiers are still reported as held. If they go up without Keyboard
+    // Manager observing the events - the release reached an elevated window while PowerToys
+    // is not elevated, another low-level hook swallowed it, or the session was switched -
+    // none of those paths can run again. The remap then stays invoked, and the invoked check
+    // below makes that single entry skip every other shortcut remap, so all of them appear to
+    // stop working at once.
+    void RecoverStrandedShortcutRemaps(KeyboardManagerInput::InputInterface& ii, State& state, const std::optional<std::wstring>& activatedApp)
+    {
+        ShortcutRemapTable& reMap = state.GetShortcutRemapTable(activatedApp);
+        bool recoveredAny = false;
+
+        for (auto& it : reMap)
+        {
+            if (!it.second.isShortcutInvoked || it.second.targetShortcut.index() != 1)
+            {
+                continue;
+            }
+
+            const Shortcut& targetShortcut = std::get<Shortcut>(it.second.targetShortcut);
+
+            // A target without modifiers is never gated on their state, so it can still be
+            // cleared normally and must not be touched here.
+            if (targetShortcut.CheckModifiersKeyboardState(ii))
+            {
+                continue;
+            }
+
+            // The injected action key can still be down even though its modifiers are gone,
+            // so release it instead of leaving the user with a stuck key.
+            if (ii.GetVirtualKeyState(targetShortcut.GetActionKey()))
+            {
+                std::vector<INPUT> keyEventList;
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                ii.SendVirtualInput(keyEventList);
+            }
+
+            it.second.isShortcutInvoked = false;
+            it.second.modifierKeysInvoked.Reset();
+            it.second.isOriginalActionKeyPressed = false;
+            recoveredAny = true;
+        }
+
+        // The activated app stays pinned for as long as an app-specific remap is invoked, so
+        // release it too once nothing is invoked any more.
+        if (recoveredAny && activatedApp)
+        {
+            state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+        }
+    }
+
     // Function to handle a shortcut remap
     intptr_t HandleShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp) noexcept
     {
@@ -314,6 +368,14 @@ namespace KeyboardEventHandlers
 
         // Check if any shortcut is currently in the invoked state
         bool isShortcutInvoked = state.CheckShortcutRemapInvoked(activatedApp);
+
+        // Nothing is invoked in the overwhelming majority of events, so only pay for the
+        // stranded-state scan when there is something that could be stranded.
+        if (isShortcutInvoked)
+        {
+            RecoverStrandedShortcutRemaps(ii, state, activatedApp);
+            isShortcutInvoked = state.CheckShortcutRemapInvoked(activatedApp);
+        }
 
         // Get shortcut table for given activatedApp
         ShortcutRemapTable& reMap = state.GetShortcutRemapTable(activatedApp);
