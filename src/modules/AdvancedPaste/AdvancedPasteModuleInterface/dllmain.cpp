@@ -383,12 +383,11 @@ private:
         {
             if (settingsObject.GetView().Size())
             {
-                const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS> defaultHotkeys{
+                const std::array<std::pair<Hotkey*, LPCWSTR>, NUM_DEFAULT_HOTKEYS - 1> defaultHotkeys{
                     { { &m_paste_as_plain_hotkey, JSON_KEY_PASTE_AS_PLAIN_HOTKEY },
                       { &m_advanced_paste_ui_hotkey, JSON_KEY_ADVANCED_PASTE_UI_HOTKEY },
                       { &m_paste_as_markdown_hotkey, JSON_KEY_PASTE_AS_MARKDOWN_HOTKEY },
-                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY },
-                      { &m_paste_as_single_line_hotkey, JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY } }
+                      { &m_paste_as_json_hotkey, JSON_KEY_PASTE_AS_JSON_HOTKEY } }
                 };
 
                 for (auto& [hotkey, keyName] : defaultHotkeys)
@@ -402,6 +401,11 @@ private:
                 if (settingsObject.HasKey(JSON_KEY_PROPERTIES))
                 {
                     const auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+
+                    if (propertiesObject.HasKey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY))
+                    {
+                        m_paste_as_single_line_hotkey = parse_single_hotkey(JSON_KEY_PASTE_AS_SINGLE_LINE_HOTKEY, settingsObject);
+                    }
 
                     if (propertiesObject.HasKey(JSON_KEY_ADDITIONAL_ACTIONS))
                     {
