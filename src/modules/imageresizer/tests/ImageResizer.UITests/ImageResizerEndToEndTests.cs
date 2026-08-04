@@ -42,7 +42,8 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private static string? originalSettingsContent;
     private static bool originalSizesFileExisted;
     private static string? originalSizesContent;
-    private static bool modernContextMenuExplorerRefreshed;
+    private static bool contextMenuExplorerRefreshed;
+    private static bool? modernContextMenuRegistered;
 
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
@@ -114,19 +115,22 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             toggle = SetModuleEnabled(toggle, false);
             var explorer = OpenExplorer(folder);
             explorer = SelectFiles(explorer, fixture);
-            AssertContextMenuPresence(explorer, useClassicMenu: false, expected: false);
-            if (IsWindows11OrNewer())
+
+            // The classic (registry-COM) surface is always available; the modern (sparse-MSIX)
+            // surface only registers on signed/official/installed builds.
+            AssertContextMenuPresence(explorer, useClassicMenu: true, expected: false);
+            if (UseModernContextMenu)
             {
-                AssertContextMenuPresence(explorer, useClassicMenu: true, expected: false);
+                AssertContextMenuPresence(explorer, useClassicMenu: false, expected: false);
             }
 
             toggle = SetModuleEnabled(toggle, true);
             explorer = OpenExplorer(folder);
             explorer = SelectFiles(explorer, fixture);
-            AssertContextMenuPresence(explorer, useClassicMenu: false, expected: true);
-            if (IsWindows11OrNewer())
+            AssertContextMenuPresence(explorer, useClassicMenu: true, expected: true);
+            if (UseModernContextMenu)
             {
-                AssertContextMenuPresence(explorer, useClassicMenu: true, expected: true);
+                AssertContextMenuPresence(explorer, useClassicMenu: false, expected: true);
             }
         }
         finally
@@ -468,7 +472,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         do
         {
             explorer = SelectFiles(explorer, filePaths);
-            menu = OpenContextMenu(explorer, useClassicMenu: false);
+            menu = OpenContextMenu(explorer, useClassicMenu: !UseModernContextMenu);
             if (menu is not null)
             {
                 resizeMenuItem = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000);
@@ -662,7 +666,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
     private Session OpenExplorer(string folderPath)
     {
-        EnsureModernContextMenuRegistered();
+        EnsureContextMenuHandlerLoaded();
         CloseExplorerFileWindows();
         var existingHandles = WindowsFinder.ListByApp(ExplorerProcessName)
             .Where(IsExplorerFileWindow)
@@ -687,17 +691,17 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         return explorer;
     }
 
-    // The Windows 11 tier-1 (modern) context menu is a sparse MSIX package the module registers at
-    // runtime; an Explorer already running when it registers only surfaces the entry after the shell
-    // restarts. Do this once per run, after registration has had time to settle.
-    private static void EnsureModernContextMenuRegistered()
+    // Both context-menu handlers are registered at runtime when the module is enabled (the classic
+    // registry-COM handler always, plus the modern sparse-MSIX package on signed builds). An
+    // Explorer that was already running only surfaces them after the shell restarts, so do it once.
+    private static void EnsureContextMenuHandlerLoaded()
     {
-        if (!IsWindows11OrNewer() || modernContextMenuExplorerRefreshed)
+        if (contextMenuExplorerRefreshed)
         {
             return;
         }
 
-        modernContextMenuExplorerRefreshed = true;
+        contextMenuExplorerRefreshed = true;
         Thread.Sleep(3_000);
 
         var previousProcessIds = Process.GetProcessesByName(ExplorerProcessName)
@@ -1047,6 +1051,30 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     }
 
     private static bool IsWindows11OrNewer() => Environment.OSVersion.Version.Build >= 22_000;
+
+    // The modern (tier-1) context menu is a sparse MSIX package that only registers on signed builds
+    // (official/installed). Unsigned PR/CI builds cannot register it, so the tests drive the classic
+    // (registry-COM) surface there and only assert the modern surface when it is actually present.
+    private static bool UseModernContextMenu => modernContextMenuRegistered ??= DetectModernContextMenuRegistered();
+
+    private static bool DetectModernContextMenuRegistered()
+    {
+        if (!IsWindows11OrNewer())
+        {
+            return false;
+        }
+
+        try
+        {
+            return new Windows.Management.Deployment.PackageManager()
+                .FindPackagesForUser(string.Empty)
+                .Any(package => package.Id.Name.Contains("ImageResizerContextMenu", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
 
     private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
         window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
