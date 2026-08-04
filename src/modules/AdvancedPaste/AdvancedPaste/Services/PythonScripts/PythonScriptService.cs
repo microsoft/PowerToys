@@ -21,6 +21,7 @@ using ManagedCommon;
 using Microsoft.Win32;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace AdvancedPaste.Services.PythonScripts;
 
@@ -481,7 +482,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 if (!string.IsNullOrEmpty(imagePath))
                 {
                     var file = await StorageFile.GetFileFromPathAsync(imagePath);
-                    dataPackage.SetStorageItems([file]);
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(file));
                 }
 
                 break;
@@ -720,7 +721,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         var explicitRequirements = new List<PythonRequirement>();
         var allLines = new List<string>();
         var isEnabled = true;
-        bool hasExplicitFormats = false;
+        ClipboardFormat? explicitFormats = null;
         bool hasExplicitPlatform = false;
         ClipboardFormat apDetectedFormats = ClipboardFormat.None;
         int apFunctionCount = 0;
@@ -789,8 +790,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 tag = ParseTag(trimmed, "@advancedpaste:formats");
                 if (tag != null)
                 {
-                    supportedFormats = ParseFormats(tag);
-                    hasExplicitFormats = true;
+                    explicitFormats = ParseFormats(tag);
                     continue;
                 }
 
@@ -842,11 +842,14 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             return null;
         }
 
-        // Infer supported formats from advanced_paste_from_* function names.
-        if (!hasExplicitFormats)
+        if (explicitFormats is { } taggedFormats && taggedFormats != ClipboardFormat.None && taggedFormats != apDetectedFormats)
         {
-            supportedFormats = apDetectedFormats;
+            Logger.LogWarning($"Script '{scriptPath}' has an @advancedpaste:formats tag that conflicts with its function name. Skipping.");
+            return null;
         }
+
+        // V2 input format is defined by the function name. Legacy format tags must not override it.
+        supportedFormats = apDetectedFormats;
 
         // Determine platform based on user setting (UseWsl) unless script explicitly declares one.
         if (!hasExplicitPlatform)
@@ -970,7 +973,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         "unittest", "urllib", "uu", "uuid", "venv", "warnings", "wave", "weakref",
         "webbrowser", "winreg", "winsound", "wsgiref", "xdrlib", "xml", "xmlrpc",
         "zipapp", "zipfile", "zipimport", "zlib", "_io", "_collections_abc",
-        "typing_extensions", "ntpath", "posixpath", "genericpath", "stat",
+        "ntpath", "posixpath", "genericpath", "stat",
     };
 
     /// <summary>
@@ -1164,6 +1167,14 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
         foreach (var req in metadata.Requirements)
         {
+            var importRoot = req.ImportName.Split('.')[0];
+            var scriptDirectory = Path.GetDirectoryName(metadata.ScriptPath) ?? string.Empty;
+            if (File.Exists(Path.Combine(scriptDirectory, $"{importRoot}.py")) ||
+                File.Exists(Path.Combine(scriptDirectory, importRoot, "__init__.py")))
+            {
+                continue;
+            }
+
             bool installed = string.Equals(metadata.Platform, PlatformLinux, StringComparison.OrdinalIgnoreCase)
                 ? await IsInstalledInWslAsync(req.ImportName, cancellationToken)
                 : await IsInstalledOnWindowsAsync(req.ImportName, cancellationToken);
@@ -1304,6 +1315,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             ?? throw new PasteActionException(
                 ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
                 new InvalidOperationException("Failed to start pip."));
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
         int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -1312,6 +1325,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         try
         {
             await process.WaitForExitAsync(timeoutCts.Token);
+            await Task.WhenAll(stdoutTask, stderrTask);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -1327,7 +1341,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
         if (process.ExitCode != 0)
         {
-            var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+            var stderr = await stderrTask;
             var (summary, _) = ParsePipInstallError(stderr);
             throw new PasteActionException(
                 string.Format(
@@ -1355,7 +1369,10 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         // Try plain pip3 first; if the environment is managed (PEP 668), retry with --break-system-packages.
         foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
         {
-            var installCmd = $"pip3 install {sanitizedPackages} {extraArgs}".TrimEnd();
+            var quotedPackages = string.Join(
+                ' ',
+                sanitizedPackages.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(QuoteForBash));
+            var installCmd = $"pip3 install {quotedPackages} {extraArgs}".TrimEnd();
             var wslArgs = BuildWslArgs($"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"");
             var psi = new ProcessStartInfo("wsl.exe", wslArgs)
             {
@@ -1373,12 +1390,16 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 continue;
             }
 
+            var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCts.CancelAfter(timeoutMs);
 
             try
             {
                 await process.WaitForExitAsync(timeoutCts.Token);
+                await Task.WhenAll(stdoutTask, stderrTask);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
@@ -1397,7 +1418,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 return;
             }
 
-            var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+            var stderr = await stderrTask;
 
             // If it failed for a reason OTHER than externally-managed-environment, throw immediately.
             if (!stderr.Contains("externally-managed-environment", StringComparison.OrdinalIgnoreCase))
@@ -1717,6 +1738,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         return string.Join(' ', safeTokens);
     }
 
+    private static string QuoteForBash(string value) => $"'{value.Replace("'", "'\"'\"'")}'";
+
     /// <summary>
     /// Validates that a module import name is a safe Python identifier (e.g. "numpy", "PIL.Image").
     /// Rejects names containing shell metacharacters or spaces.
@@ -1952,7 +1975,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     }
 
                     var file = await StorageFile.GetFileFromPathAsync(winImagePath);
-                    dataPackage.SetStorageItems([file]);
+                    dataPackage.SetBitmap(RandomAccessStreamReference.CreateFromFile(file));
                 }
 
                 break;

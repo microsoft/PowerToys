@@ -65,73 +65,96 @@ public sealed class PasteFormatExecutor(
         CancellationToken cancellationToken,
         IProgress<double> progress)
     {
-        // Security: ensure the script is trusted before executing.
-        if (!_pythonScriptTrustService.IsTrusted(scriptPath))
+        string trustedHash;
+        try
         {
-            string hash;
-            try
-            {
-                hash = _pythonScriptTrustService.ComputeHash(scriptPath);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-                throw new PasteActionException(
-                    string.Format(System.Globalization.CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptNotFound"), scriptPath),
-                    new System.IO.FileNotFoundException(null, scriptPath));
-            }
+            trustedHash = _pythonScriptTrustService.ComputeHash(scriptPath);
+        }
+        catch (System.IO.FileNotFoundException)
+        {
+            throw new PasteActionException(
+                string.Format(System.Globalization.CultureInfo.CurrentCulture, ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptNotFound"), scriptPath),
+                new System.IO.FileNotFoundException(null, scriptPath));
+        }
 
-            var approved = await _pythonScriptTrustService.RequestTrustAsync(scriptPath, hash);
+        // Trust covers the entry script and all Python helpers beneath its directory.
+        if (!_pythonScriptTrustService.IsTrusted(scriptPath, trustedHash))
+        {
+            var approved = await _pythonScriptTrustService.RequestTrustAsync(scriptPath, trustedHash);
 
             if (!approved)
             {
                 throw new OperationCanceledException("User declined to trust the Python script.");
             }
 
-            _pythonScriptTrustService.StoreTrust(scriptPath, hash);
+            _pythonScriptTrustService.StoreTrust(scriptPath, trustedHash);
         }
 
-        var metadata = _pythonScriptService.ReadMetadata(scriptPath);
+        var scriptRoot = System.IO.Path.GetDirectoryName(scriptPath)
+            ?? throw new InvalidOperationException("The Python script path has no parent directory.");
+        var snapshotDirectory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "PowerToys-AdvancedPaste", System.Guid.NewGuid().ToString("N"));
+        var snapshotScriptPath = System.IO.Path.Combine(snapshotDirectory, System.IO.Path.GetRelativePath(scriptRoot, scriptPath));
 
-        if (metadata is null)
+        try
         {
-            throw new InvalidOperationException($"Script '{scriptPath}' does not define a valid advanced_paste_from_*_to_*() function.");
-        }
-
-        // Pre-flight: check for missing packages and offer to install them.
-        var missingPackages = await _pythonScriptService.GetMissingRequirementsAsync(metadata, cancellationToken);
-        if (missingPackages.Count > 0)
-        {
-            var approved = await _pythonScriptTrustService.RequestInstallAsync(metadata.Name, missingPackages);
-            if (!approved)
+            foreach (var sourceFile in System.IO.Directory.EnumerateFiles(scriptRoot, "*.py", System.IO.SearchOption.AllDirectories))
             {
-                throw new OperationCanceledException("User declined to install missing Python packages.");
+                var destinationFile = System.IO.Path.Combine(snapshotDirectory, System.IO.Path.GetRelativePath(scriptRoot, sourceFile));
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(destinationFile)!);
+                System.IO.File.Copy(sourceFile, destinationFile);
             }
 
-            await _pythonScriptService.InstallRequirementsAsync(missingPackages, metadata.Platform, cancellationToken);
-        }
+            if (!string.Equals(_pythonScriptTrustService.ComputeHash(snapshotScriptPath), trustedHash, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The Python script changed while it was being prepared for execution. Please try again.");
+            }
 
-        var detectedFormat = await clipboardData.GetAvailableFormatsAsync();
+            var metadata = _pythonScriptService.ReadMetadata(snapshotScriptPath);
 
-        // V2 interface: script defines advanced_paste_from_*_to_*() — use unified runner.
-        if (metadata.IsV2)
-        {
-            return await _pythonScriptService.ExecuteScriptAsync(scriptPath, metadata.Platform, clipboardData, detectedFormat, cancellationToken, progress);
-        }
+            if (metadata is null)
+            {
+                throw new InvalidOperationException($"Script '{scriptPath}' does not define a valid advanced_paste_from_*_to_*() function.");
+            }
 
-        // Legacy paths for backward compatibility.
-        if (string.Equals(metadata.Platform, "linux", StringComparison.OrdinalIgnoreCase))
-        {
-            return await _pythonScriptService.ExecuteWslScriptAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);
-        }
-        else
-        {
-            // Windows mode: script modifies the clipboard in-process; we return the updated clipboard.
-            await _pythonScriptService.ExecuteWindowsScriptAsync(scriptPath, detectedFormat, cancellationToken, progress);
+            // Pre-flight: check for missing packages and offer to install them.
+            var missingPackages = await _pythonScriptService.GetMissingRequirementsAsync(metadata, cancellationToken);
+            if (missingPackages.Count > 0)
+            {
+                var approved = await _pythonScriptTrustService.RequestInstallAsync(metadata.Name, missingPackages);
+                if (!approved)
+                {
+                    throw new OperationCanceledException("User declined to install missing Python packages.");
+                }
 
-            // Re-read clipboard after script has run.
+                await _pythonScriptService.InstallRequirementsAsync(missingPackages, metadata.Platform, cancellationToken);
+            }
+
+            var detectedFormat = await clipboardData.GetAvailableFormatsAsync();
+
+            if (metadata.IsV2)
+            {
+                return await _pythonScriptService.ExecuteScriptAsync(snapshotScriptPath, metadata.Platform, clipboardData, detectedFormat, cancellationToken, progress);
+            }
+
+            if (string.Equals(metadata.Platform, "linux", StringComparison.OrdinalIgnoreCase))
+            {
+                return await _pythonScriptService.ExecuteWslScriptAsync(snapshotScriptPath, clipboardData, detectedFormat, cancellationToken, progress);
+            }
+
+            await _pythonScriptService.ExecuteWindowsScriptAsync(snapshotScriptPath, detectedFormat, cancellationToken, progress);
             return Clipboard.GetContent() is { } updatedView
                 ? await DataPackageFromViewAsync(updatedView)
                 : new DataPackage();
+        }
+        finally
+        {
+            try
+            {
+                System.IO.Directory.Delete(snapshotDirectory, recursive: true);
+            }
+            catch
+            {
+            }
         }
     }
 

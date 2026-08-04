@@ -522,11 +522,29 @@ private:
         constexpr int clipboard_poll_attempts = 5;
         constexpr auto clipboard_poll_delay = std::chrono::milliseconds(30);
 
+        const auto clipboard_sequence_changed = [&](DWORD initial_sequence) {
+            for (int poll_attempt = 0; poll_attempt < clipboard_poll_attempts; ++poll_attempt)
+            {
+                if (GetClipboardSequenceNumber() != initial_sequence)
+                {
+                    return true;
+                }
+
+                std::this_thread::sleep_for(clipboard_poll_delay);
+            }
+
+            return false;
+        };
+
         bool copy_succeeded = false;
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
             const auto initial_sequence = GetClipboardSequenceNumber();
             copy_succeeded = try_send_copy_message();
+            if (copy_succeeded)
+            {
+                copy_succeeded = clipboard_sequence_changed(initial_sequence);
+            }
 
             if (!copy_succeeded)
             {
@@ -590,6 +608,13 @@ private:
                 try_inject_modifier_key_restore(inputs, VK_LMENU);
                 try_inject_modifier_key_restore(inputs, VK_RMENU);
 
+                // Prevent the Start menu from opening when the physical Win key is released.
+                INPUT dummy_event = {};
+                dummy_event.type = INPUT_KEYBOARD;
+                dummy_event.ki.wVk = 0xFF;
+                dummy_event.ki.dwFlags = KEYEVENTF_KEYUP;
+                inputs.push_back(dummy_event);
+
                 auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
                 if (uSent != inputs.size())
                 {
@@ -606,19 +631,7 @@ private:
 
             if (copy_succeeded)
             {
-                bool sequence_changed = false;
-                for (int poll_attempt = 0; poll_attempt < clipboard_poll_attempts; ++poll_attempt)
-                {
-                    if (GetClipboardSequenceNumber() != initial_sequence)
-                    {
-                        sequence_changed = true;
-                        break;
-                    }
-
-                    std::this_thread::sleep_for(clipboard_poll_delay);
-                }
-
-                copy_succeeded = sequence_changed;
+                copy_succeeded = clipboard_sequence_changed(initial_sequence);
             }
 
             if (copy_succeeded)

@@ -12,6 +12,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -361,7 +363,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     if (newMode == "wsl")
                     {
-                        RefreshWslDistros();
+                        _ = RefreshWslDistrosAsync();
                     }
 
                     if (_scriptsDiscovered)
@@ -458,7 +460,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>
         /// Queries installed WSL distributions and populates AvailableWslDistros.
         /// </summary>
-        public void RefreshWslDistros()
+        public async Task RefreshWslDistrosAsync()
         {
             var distros = new List<string> { string.Empty }; // first = system default
 
@@ -475,28 +477,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 using var process = System.Diagnostics.Process.Start(psi);
                 if (process != null)
                 {
-                    // WaitForExit first with timeout to avoid blocking indefinitely on ReadToEnd().
-                    // If the process doesn't finish in time, kill it and wait for exit before reading.
-                    if (!process.WaitForExit(5000))
-                    {
-                        try
-                        {
-                            process.Kill();
-                        }
-                        catch
-                        {
-                        }
+                    var outputTask = process.StandardOutput.ReadToEndAsync();
+                    using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-                        // After Kill, wait briefly for the process to actually terminate.
-                        // If it still hasn't exited, skip reading but still update with default-only list.
-                        if (!process.WaitForExit(2000))
-                        {
-                            AvailableWslDistros = distros;
-                            return;
-                        }
+                    try
+                    {
+                        await process.WaitForExitAsync(timeoutCts.Token);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        process.Kill(entireProcessTree: true);
+                        await process.WaitForExitAsync();
                     }
 
-                    var output = process.StandardOutput.ReadToEnd();
+                    var output = await outputTask;
 
                     var names = output
                         .Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -1718,6 +1712,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (ShouldReplacePasteAIConfiguration(target.PasteAIConfiguration, incomingConfig))
             {
                 PasteAIConfiguration = incomingConfig;
+            }
+
+            target.PythonScripts = source.PythonScripts ?? new AdvancedPastePythonScriptSettings();
+            OnPropertyChanged(nameof(PythonScriptsModeIndex));
+            OnPropertyChanged(nameof(IsPythonScriptsEnabled));
+            OnPropertyChanged(nameof(IsWindowsMode));
+            OnPropertyChanged(nameof(IsWslMode));
+            OnPropertyChanged(nameof(ScriptsFolder));
+            OnPropertyChanged(nameof(PythonExecutablePath));
+            OnPropertyChanged(nameof(WslDistribution));
+            OnPropertyChanged(nameof(WslDistributionIndex));
+
+            if (_scriptsDiscovered)
+            {
+                RefreshPythonScripts();
             }
         }
 

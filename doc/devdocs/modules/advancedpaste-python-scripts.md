@@ -5,11 +5,12 @@ discovered automatically from a configurable folder and appear as actions in the
 
 ## Quick start
 
-1. Open the scripts folder — by default `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts`.
+1. In **Settings → Advanced Paste → Python scripts**, select **Windows Python** or **WSL Python**.
+2. Open the scripts folder — by default `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts`.
    You can change this in **Settings → Advanced Paste → Python scripts → Scripts folder**.
-2. Drop a `.py` file into the folder.
-3. Define one `advanced_paste_from_<input>_to_<output>` function (see [Writing a script](#writing-a-script)).
-4. Open the Advanced Paste UI (`Win+Shift+V`) — your script will appear in the action list.
+3. Drop a `.py` file into the folder.
+4. Define one `advanced_paste_from_<input>_to_<output>` function (see [Writing a script](#writing-a-script)).
+5. Open the Advanced Paste UI (`Win+Shift+V`) — your script will appear in the action list.
 
 > **Important:** Each `.py` file must define exactly one `advanced_paste_from_<input>_to_<output>`
 > function. Scripts with zero or multiple such functions are ignored.

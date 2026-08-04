@@ -10,9 +10,9 @@ namespace AdvancedPaste.Services.PythonScripts;
 public interface IPythonScriptTrustService
 {
     /// <summary>
-    /// Returns true if the script at <paramref name="scriptPath"/> is currently trusted (hash matches stored value).
+    /// Returns true if the supplied hash for <paramref name="scriptPath"/> matches the stored value.
     /// </summary>
-    bool IsTrusted(string scriptPath);
+    bool IsTrusted(string scriptPath, string hash);
 
     /// <summary>
     /// Shows a UI confirmation dialog for the script. Returns true if the user approved execution.

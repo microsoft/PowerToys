@@ -82,7 +82,14 @@ public sealed class AdvancedPastePythonScriptSettings
 
             if (!string.IsNullOrEmpty(ScriptsFolder))
             {
-                WindowsSettings.ScriptsFolder = ScriptsFolder;
+                if (string.Equals(Mode, "wsl", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    WslSettings.ScriptsFolder = ScriptsFolder;
+                }
+                else
+                {
+                    WindowsSettings.ScriptsFolder = ScriptsFolder;
+                }
             }
 
             if (!string.IsNullOrEmpty(PythonExecutablePath))

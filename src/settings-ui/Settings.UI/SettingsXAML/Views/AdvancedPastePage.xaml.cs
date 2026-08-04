@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using LanguageModelProvider;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -68,7 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
                 if (ViewModel.IsWslMode)
                 {
-                    ViewModel.RefreshWslDistros();
+                    await ViewModel.RefreshWslDistrosAsync();
                 }
 
                 if (OpenScriptsFolderButton is not null)
@@ -310,13 +311,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void OpenScriptsFolder_Click(object sender, RoutedEventArgs e)
         {
             var folder = ViewModel?.ScriptsFolder;
-            if (!string.IsNullOrEmpty(folder) && System.IO.Directory.Exists(folder))
+            if (string.IsNullOrEmpty(folder))
             {
+                return;
+            }
+
+            try
+            {
+                System.IO.Directory.CreateDirectory(folder);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = folder,
                     UseShellExecute = true,
                 });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to open the Advanced Paste scripts folder: {folder}", ex);
             }
         }
 
@@ -335,10 +346,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (System.IO.File.Exists(action.ScriptPath))
             {
-                var startInfo = new System.Diagnostics.ProcessStartInfo(action.ScriptPath)
+                var startInfo = new System.Diagnostics.ProcessStartInfo("notepad.exe")
                 {
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                 };
+                startInfo.ArgumentList.Add(action.ScriptPath);
                 System.Diagnostics.Process.Start(startInfo);
             }
         }

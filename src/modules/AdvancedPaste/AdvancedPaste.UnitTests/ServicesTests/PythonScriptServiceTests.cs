@@ -124,6 +124,16 @@ public sealed class PythonScriptServiceTests
     }
 
     [TestMethod]
+    public void MergeWithAutoDetectedImports_DetectsTypingExtensions()
+    {
+        var result = PythonScriptService.MergeWithAutoDetectedImports(["import typing_extensions"], []);
+
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual("typing_extensions", result[0].ImportName);
+        Assert.AreEqual("typing_extensions", result[0].PipPackage);
+    }
+
+    [TestMethod]
     public void MergeWithAutoDetectedImports_SkipsComments()
     {
         var lines = new[]
@@ -476,6 +486,19 @@ public sealed class PythonScriptServiceTests
         var scriptPath = CreateTempScript(
             "def advanced_paste_from_text_to_text(text):\n    return text\n\n" +
             "def advanced_paste_from_html_to_text(html):\n    return html\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNull(metadata);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
+    public void ReadMetadata_RejectsFormatsTagThatConflictsWithFunctionName()
+    {
+        var scriptPath = CreateTempScript(
+            "# @advancedpaste:formats image\n" +
+            "def advanced_paste_from_text_to_text(text):\n    return text\n");
+
         var metadata = _service.ReadMetadata(scriptPath);
 
         Assert.IsNull(metadata);
