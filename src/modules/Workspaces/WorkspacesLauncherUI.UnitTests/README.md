@@ -28,16 +28,16 @@ If you get NuGet restore errors on first build:
 
 ## Run Tests
 
-### Option 1: dotnet test (recommended for CI)
+### Option 1: vstest.console.exe
 
 ```powershell
-dotnet test "<output-dir>\tests\WorkspacesLauncherUI.Tests\PowerToys.WorkspacesLauncherUI.Tests.dll" --verbosity normal
+& "<path-to-vstest.console.exe>" "<output-dir>\tests\WorkspacesLauncherUI.Tests\PowerToys.WorkspacesLauncherUI.Tests.dll" /Platform:x64
 ```
 
 The output directory depends on your platform/config. For arm64 Debug:
 
 ```powershell
-dotnet test "arm64\Debug\tests\WorkspacesLauncherUI.Tests\PowerToys.WorkspacesLauncherUI.Tests.dll" --verbosity normal
+& "<path-to-vstest.console.exe>" "arm64\Debug\tests\WorkspacesLauncherUI.Tests\PowerToys.WorkspacesLauncherUI.Tests.dll" /Platform:ARM64
 ```
 
 ### Option 2: Visual Studio Test Explorer
@@ -50,19 +50,19 @@ dotnet test "arm64\Debug\tests\WorkspacesLauncherUI.Tests\PowerToys.WorkspacesLa
 ### Option 3: Filter by category
 
 ```powershell
-dotnet test <dll-path> --filter "TestCategory=Scenario"
-dotnet test <dll-path> --filter "TestCategory=Deserialization"
-dotnet test <dll-path> --filter "TestCategory=ViewModel"
-dotnet test <dll-path> --filter "TestCategory=Model"
-dotnet test <dll-path> --filter "TestCategory=Serialization"
-dotnet test <dll-path> --filter "TestCategory=DataModel"
-dotnet test <dll-path> --filter "TestCategory=Converter"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=Scenario"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=Deserialization"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=ViewModel"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=Model"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=Serialization"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=DataModel"
+& "<path-to-vstest.console.exe>" <dll-path> /TestCaseFilter:"TestCategory=Converter"
 ```
 
 ### Generate TRX Report
 
 ```powershell
-dotnet test <dll-path> --logger "trx;LogFileName=TestResults.trx"
+& "<path-to-vstest.console.exe>" <dll-path> /Logger:"trx;LogFileName=TestResults.trx"
 ```
 
 Report saved to `TestResults/TestResults.trx`.
