@@ -302,8 +302,29 @@ private:
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
             }
 
-            auto jsonDurationObject = settingsObject.GetNamedObject(L"properties").GetNamedObject(L"press_time");
-            m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = static_cast<UINT>(jsonDurationObject.GetNamedNumber(L"value"));
+try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(L"properties");
+                if (propertiesObject.HasKey(L"press_time"))
+                {
+                    auto jsonDurationObject = propertiesObject.GetNamedObject(L"press_time");
+                    if (jsonDurationObject.HasKey(L"value"))
+                    {
+                        auto pressTime = static_cast<UINT>(jsonDurationObject.GetNamedNumber(L"value"));
+                        if (pressTime < 100)
+                        {
+                            pressTime = 100;
+                        }
+                        else if (pressTime > 5000)
+                        {
+                            pressTime = 5000;
+                        }
+
+                        m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = pressTime;
+                    }
+                }
+            }
+            catch (...) { /* Keep defaults */ }
         }
         else
         {
