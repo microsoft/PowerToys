@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <Windows.h>
 #include "async_message_queue.h"
 #include <WinSafer.h>
@@ -28,7 +29,7 @@ private:
     std::wstring outgoing_message; // Store the updated json settings.
 
     HANDLE current_connect_pipe_handle = NULL;
-    bool closed = false;
+    std::atomic_bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
     interop_auth::CallerPolicy caller_policy;
     interop_auth::VerificationCache caller_cache;

@@ -77,7 +77,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
 {
-    closed = true;
+    closed.store(true);
     input_queue.interrupt();
     input_queue_thread.join();
     output_queue.interrupt();
@@ -165,7 +165,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread()
 {
-    while (!closed)
+    while (!closed.load())
     {
         std::wstring message = output_queue.pop_message();
         if (message.length() == 0)
@@ -440,10 +440,15 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
     // pipe name instead of silently sharing it. The flag is only valid on the first
     // instance; subsequent instances must omit it.
     bool first_instance = true;
-    while (!closed)
+    while (!closed.load())
     {
         {
             std::unique_lock lock(pipe_connect_handle_mutex);
+            if (closed.load())
+            {
+                break;
+            }
+
             DWORD open_mode = PIPE_ACCESS_DUPLEX | WRITE_DAC;
             if (first_instance)
             {
@@ -495,7 +500,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_input_queue_thread()
 {
-    while (!closed)
+    while (!closed.load())
     {
         outgoing_message = L"";
         std::wstring message = input_queue.pop_message();
