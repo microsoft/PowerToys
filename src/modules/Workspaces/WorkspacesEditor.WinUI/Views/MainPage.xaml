@@ -101,6 +101,7 @@
                     <ItemsRepeater
                         x:Name="WorkspacesList"
                         MaxWidth="1000"
+                        AutomationProperties.AutomationId="WorkspacesItemsControl"
                         AutomationProperties.Name="Workspace list"
                         ItemsSource="{x:Bind ViewModel.WorkspacesView, Mode=OneWay}">
                         <ItemsRepeater.Layout>
@@ -110,6 +111,7 @@
                             <DataTemplate x:DataType="models:Project">
                                 <tkcontrols:SettingsCard
                                     HorizontalAlignment="Stretch"
+                                    AutomationProperties.AutomationId="WorkspaceItem"
                                     AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                                     Click="WorkspaceCardClicked"
                                     DataContext="{x:Bind}"
