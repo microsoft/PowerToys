@@ -56,6 +56,7 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
     private const int DwmwaNcRenderingPolicy = 2;
+    private const int DwmwaCloak = 13;
     private const int DwmwaWindowCornerPreference = 33;
     private const int DwmwaBorderColor = 34;
     private const int DwmwcpDoNotRound = 1;
@@ -63,6 +64,7 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private const int GwlExStyle = -20;
     private const int WsExDlgModalFrame = 0x00000001;
+    private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExWindowEdge = 0x00000100;
     private const int WsExClientEdge = 0x00000200;
@@ -73,12 +75,15 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     private const uint SwpNoActivate = 0x0010;
     private const uint SwpFrameChanged = 0x0020;
 
+    private const int SwHide = 0;
     private const int SwShowNa = 8;
 
     private readonly nint _hwnd;
 
     private bool _inputHooked;
     private bool _seenActivated;
+    private bool _cloakWhenHidden;
+    private bool _cloaked;
 
     public TransparentWindow()
     {
@@ -211,7 +216,9 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// <summary>
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
     /// <see cref="Showing"/> without a transition, so subscribed content animates
-    /// in using its own configured show transition.
+    /// in using its own configured show transition. After
+    /// <see cref="EnableCloakedHide"/> the window stays cloaked here and only
+    /// becomes visible on <see cref="Reveal"/>.
     /// </summary>
     public void Show() => RaiseShow(null);
 
@@ -219,6 +226,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
     /// <see cref="Showing"/> so subscribed content animates in using
     /// <paramref name="transition"/>, overriding its configured show transition.
+    /// After <see cref="EnableCloakedHide"/> the window stays cloaked here and only
+    /// becomes visible on <see cref="Reveal"/>.
     /// </summary>
     /// <param name="transition">The transition the content should play.</param>
     public void Show(Transition transition) => RaiseShow(transition);
@@ -238,8 +247,9 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     /// <summary>
     /// Raises <see cref="Hiding"/> so subscribed content animates out, then hides
-    /// the underlying <see cref="Microsoft.UI.Windowing.AppWindow"/> once every
-    /// deferral taken by a handler has completed (immediately if none were taken).
+    /// the underlying <see cref="Microsoft.UI.Windowing.AppWindow"/> - or cloaks the
+    /// window when <see cref="EnableCloakedHide"/> was called - once every deferral
+    /// taken by a handler has completed (immediately if none were taken).
     /// </summary>
     public void Hide()
     {
@@ -249,8 +259,110 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             {
                 var args = new HidingEventArgs();
                 Hiding?.Invoke(this, args);
-                args.RunWhenComplete(AppWindow.Hide);
+                args.RunWhenComplete(HideCore);
             });
+    }
+
+    /// <summary>
+    /// Switches this window from hiding to <b>cloaking</b>, and immediately puts it
+    /// into that state.
+    /// </summary>
+    /// <remarks>
+    /// <para>A hidden WinUI 3 window renders nothing, so its composition surface keeps
+    /// whatever frame it was showing when it was hidden, and the next <see cref="Show()"/>
+    /// puts that stale frame back on screen before the new content has been laid out.
+    /// A cloaked window is equally invisible but stays <c>SW_SHOWNA</c>-shown, so XAML
+    /// keeps laying it out and painting it and there is no stale frame to put back.</para>
+    /// <para>This changes what the show sequence means: <see cref="Show()"/> still raises
+    /// <see cref="Showing"/> so the content lays out and animates in, but the window stays
+    /// cloaked - <see cref="Reveal"/> is what puts it on screen. A consumer that rebuilds
+    /// its content on every summon can therefore lay that content out while still invisible
+    /// and reveal a window that is correct in its first visible frame.</para>
+    /// <para>Enabling it also warms the window up: the XAML tree is built, templated and
+    /// painted right away rather than on the first summon.</para>
+    /// <para>Call this once, from the consumer's constructor after its content has been
+    /// set. Cloaking is a DWM feature; if DWM refuses, the window falls back to an
+    /// ordinary hide.</para>
+    /// </remarks>
+    protected void EnableCloakedHide()
+    {
+        _cloakWhenHidden = true;
+        HideCore();
+    }
+
+    /// <summary>
+    /// Puts a cloaked window on screen. Consumers call this once the content that
+    /// <see cref="Show()"/> laid out is ready to be seen. Does nothing unless
+    /// <see cref="EnableCloakedHide"/> was called and the window is currently cloaked.
+    /// </summary>
+    public void Reveal()
+    {
+        if (!_cloaked)
+        {
+            return;
+        }
+
+        // Clear the state first and ignore the result: an uncloak that fails leaves an
+        // invisible window either way, and keeping the flag set would wedge it there for
+        // good by making every later Reveal a no-op.
+        _cloaked = false;
+        _ = SetCloak(false);
+
+        // Restore hit-testing: the window is on screen again, so it must behave like any
+        // other window (see CloakAndKeepShown for why it is click-through while cloaked).
+        ApplyExStyleBit(WsExTransparent, false);
+    }
+
+    private void HideCore()
+    {
+        if (_cloakWhenHidden)
+        {
+            CloakAndKeepShown();
+            return;
+        }
+
+        AppWindow.Hide();
+    }
+
+    private void CloakAndKeepShown()
+    {
+        // Cloak first: everything below leaves the window shown, so it must already be
+        // invisible by the time it is. If DWM refuses, fall back to a real hide rather
+        // than leaving a visible window behind - a stale first frame is a glitch, a
+        // dismissed overlay that stays on screen is a broken feature.
+        if (!SetCloak(true))
+        {
+            AppWindow.Hide();
+            return;
+        }
+
+        _cloaked = true;
+
+        // Cloaking only takes the window out of composition, not out of hit-testing, and
+        // this HWND sits exactly where the user is working. Make it click-through so the
+        // invisible window cannot swallow input meant for the app underneath it.
+        ApplyExStyleBit(WsExTransparent, true);
+
+        // Hide, then show again without activation. SW_HIDE is what hands the foreground
+        // back to whatever window should own it (only the OS can pick the right one); the
+        // SW_SHOWNA that follows leaves this window "shown", which is what keeps XAML
+        // painting it, while the cloak keeps it off screen.
+        _ = ShowWindow(_hwnd, SwHide);
+        _ = ShowWindow(_hwnd, SwShowNa);
+    }
+
+    private bool SetCloak(bool cloak)
+    {
+        if (_hwnd == 0)
+        {
+            return false;
+        }
+
+        unsafe
+        {
+            int value = cloak ? 1 : 0;
+            return DwmSetWindowAttribute(_hwnd, DwmwaCloak, &value, sizeof(int)) == 0;
+        }
     }
 
     private void OnActivatedForDismiss(object sender, WindowActivatedEventArgs args)
