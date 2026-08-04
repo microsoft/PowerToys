@@ -54,6 +54,17 @@ public sealed class ClipboardHelperTests
             root => root.Equals(@"Z:\", StringComparison.OrdinalIgnoreCase) ? DriveType.Network : DriveType.Fixed));
     }
 
+    [TestMethod]
+    public void IsRemoteOrUncPath_ReturnsTrue_WhenLocalPathTraversesReparsePoint()
+    {
+        Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(
+            @"C:\Users\Public\link\file.txt",
+            _ => DriveType.Fixed,
+            path => path.Equals(@"C:\Users\Public\link", StringComparison.OrdinalIgnoreCase)
+                ? FileAttributes.Directory | FileAttributes.ReparsePoint
+                : FileAttributes.Directory));
+    }
+
     private static bool ClassifyPath(string path)
     {
         return ClipboardHelper.IsRemoteOrUncPath(path, _ => DriveType.Fixed);

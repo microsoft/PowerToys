@@ -184,11 +184,19 @@ namespace MouseWithoutBorders
         {
             bool isRemoteOrUnc = true;
             bool classified = Launch.ImpersonateLoggedOnUserAndDoSomething(
-                () => isRemoteOrUnc = IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType));
+                () => isRemoteOrUnc = IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType, File.GetAttributes));
             return !classified || isRemoteOrUnc;
         }
 
         internal static bool IsRemoteOrUncPath(string path, Func<string, DriveType> getDriveType)
+        {
+            return IsRemoteOrUncPath(path, getDriveType, _ => FileAttributes.Normal);
+        }
+
+        internal static bool IsRemoteOrUncPath(
+            string path,
+            Func<string, DriveType> getDriveType,
+            Func<string, FileAttributes> getAttributes)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -209,7 +217,38 @@ namespace MouseWithoutBorders
                 }
 
                 string root = Path.GetPathRoot(fullPath);
-                return !string.IsNullOrEmpty(root) && getDriveType(root) == DriveType.Network;
+                if (string.IsNullOrEmpty(root) || getDriveType(root) == DriveType.Network)
+                {
+                    return true;
+                }
+
+                string currentPath = root;
+                foreach (string component in fullPath[root.Length..].Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+                {
+                    if (string.IsNullOrEmpty(component))
+                    {
+                        continue;
+                    }
+
+                    currentPath = Path.Combine(currentPath, component);
+                    try
+                    {
+                        if ((getAttributes(currentPath) & FileAttributes.ReparsePoint) != 0)
+                        {
+                            return true;
+                        }
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        break;
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        break;
+                    }
+                }
+
+                return false;
             }
             catch (Exception)
             {
