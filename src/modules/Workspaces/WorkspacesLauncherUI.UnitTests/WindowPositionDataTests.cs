@@ -24,7 +24,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("DataModel")]
-        public void PositionEquality_DifferentXCoordinate_ReturnsFalse()
+        public void PositionEquality_DifferentXPosition_ReturnsFalse()
         {
             var pos1 = new PositionWrapper { X = 100, Y = 200, Width = 800, Height = 600 };
             var pos2 = new PositionWrapper { X = 101, Y = 200, Width = 800, Height = 600 };
@@ -33,7 +33,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
         [TestMethod]
         [TestCategory("DataModel")]
-        public void PositionEquality_DifferentYCoordinate_ReturnsFalse()
+        public void PositionEquality_DifferentYPosition_ReturnsFalse()
         {
             var pos1 = new PositionWrapper { X = 100, Y = 200, Width = 800, Height = 600 };
             var pos2 = new PositionWrapper { X = 100, Y = 201, Width = 800, Height = 600 };

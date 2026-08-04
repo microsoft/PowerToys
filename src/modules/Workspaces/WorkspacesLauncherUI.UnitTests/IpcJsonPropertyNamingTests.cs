@@ -128,7 +128,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [TestCategory("Serialization")]
         public void StringConversion_AllLowercase_NoTransformation()
         {
-            Assert.AreEqual("alllowercase", "alllowercase".UpperCamelCaseToDashCase());
+            Assert.AreEqual("lowercase", "lowercase".UpperCamelCaseToDashCase());
         }
 
         [TestMethod]
