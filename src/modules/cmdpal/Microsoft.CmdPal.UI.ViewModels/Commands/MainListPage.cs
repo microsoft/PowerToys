@@ -50,6 +50,10 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
 
+    // All main-page search telemetry state and emission is owned by this dedicated type, keeping
+    // MainListPage responsible for producing results rather than for tracking telemetry bookkeeping.
+    private readonly MainListPageSearchTelemetry _searchTelemetry = new();
+
     // Stable separator instances so that the VM cache and InPlaceUpdateList
     // recognise them across successive GetItems() calls
     private readonly Separator _pinnedSeparator = new(Resources.home_sections_pinned_title);
@@ -88,28 +92,6 @@ public sealed partial class MainListPage : DynamicListPage,
     private InterlockedBoolean _refreshRequested;
 
     private CancellationTokenSource? _cancellationTokenSource;
-
-    // Search telemetry. Emitted only when a search settles (trailing-edge debounce) so we never
-    // send an event on every keystroke, and only for non-identifying aggregates (query length,
-    // result count, latency) - never the raw query text. Selection telemetry is emitted from
-    // UpdateHistory. All emission is measured at boundaries, never inside the per-item scoring loop.
-    private static readonly TimeSpan SearchTelemetrySettleDelay = TimeSpan.FromMilliseconds(600);
-    private readonly ThrottledDebouncedAction _searchTelemetryDebounce;
-    private readonly Lock _searchTelemetryLock = new();
-    private (int QueryLength, int ResultCount, long LatencyMs) _pendingSearchTelemetry;
-
-    // Snapshots of the most recent rendered search results, read off the hot path (only when the
-    // user invokes a result) to resolve the invoked item's visible rank and ranker tier.
-    private IReadOnlyList<IListItem>? _lastSearchViewItems;
-    private IReadOnlyList<RoScored<IListItem>>? _lastScoredGlobalFallbacks;
-
-    // Scored inputs and query length captured together with _lastSearchViewItems at render time, so
-    // selection telemetry resolves rank, tier, and query length from one coherent generation even
-    // after a newer query has already published fresh scored fields.
-    private RoScored<IListItem>[]? _lastSearchViewFilteredItems;
-    private RoScored<IListItem>[]? _lastSearchViewFilteredApps;
-    private IEnumerable<RoScored<IListItem>>? _lastSearchViewFallbackItems;
-    private int _lastSearchViewQueryLength;
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
     private DateTimeOffset _last = DateTimeOffset.UtcNow;
@@ -174,8 +156,6 @@ public sealed partial class MainListPage : DynamicListPage,
             RaiseItemsChangedThrottle);
 
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
-
-        _searchTelemetryDebounce = new ThrottledDebouncedAction(EmitSearchResultsTelemetry, SearchTelemetrySettleDelay);
 
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
@@ -313,12 +293,13 @@ public sealed partial class MainListPage : DynamicListPage,
         // Snapshot the rendered order plus every scored input and the query length together, so
         // selection telemetry resolves an invoked item's rank, tier, and query length from this one
         // generation off the hot path. These are plain reference assignments - no extra allocation.
-        _lastSearchViewItems = result;
-        _lastScoredGlobalFallbacks = validScoredFallbacks;
-        _lastSearchViewFilteredItems = _filteredItems;
-        _lastSearchViewFilteredApps = _filteredApps;
-        _lastSearchViewFallbackItems = _fallbackItems;
-        _lastSearchViewQueryLength = SearchText?.Length ?? 0;
+        _searchTelemetry.CaptureSearchView(
+            result,
+            _filteredItems,
+            _filteredApps,
+            validScoredFallbacks,
+            _fallbackItems,
+            SearchText?.Length ?? 0);
 
         return result;
     }
@@ -487,7 +468,7 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 // An alias query supersedes any normal query whose settled-search telemetry is
                 // still pending in the debounce; drop it so the superseded query never emits.
-                _searchTelemetryDebounce.Cancel();
+                _searchTelemetry.CancelPendingResults();
 
                 if (_filteredItemsIncludesApps != _includeApps)
                 {
@@ -551,13 +532,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 ClearResults();
 
                 // Drop any pending settled-search telemetry so a cleared query never emits.
-                _searchTelemetryDebounce.Cancel();
-                _lastSearchViewItems = null;
-                _lastScoredGlobalFallbacks = null;
-                _lastSearchViewFilteredItems = null;
-                _lastSearchViewFilteredApps = null;
-                _lastSearchViewFallbackItems = null;
-                _lastSearchViewQueryLength = 0;
+                _searchTelemetry.ClearSearchView();
 
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
                 RequestRefresh(fullRefresh: true, interval: wasAlreadyEmpty ? null : TimeSpan.Zero);
@@ -708,7 +683,7 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 var deterministicResultCount = (_filteredItems?.Length ?? 0)
                     + Math.Min(_filteredApps?.Length ?? 0, AppResultLimit);
-                QueueSearchResultsTelemetry(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
+                _searchTelemetry.QueueSearchResults(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
             }
 
             if (isUserInput)
@@ -869,164 +844,7 @@ public sealed partial class MainListPage : DynamicListPage,
             RecentCommands = state.RecentCommands.WithHistoryItem(id),
         });
 
-        EmitSelectionTelemetry(topLevelOrAppItem);
-    }
-
-    // Emits selection telemetry when the user invokes a result during an active search. Runs only
-    // on invoke (a deliberate, infrequent user action - never on the typing/scoring path) and
-    // captures only non-identifying aggregates: the query LENGTH, the invoked item's visible rank,
-    // and its ranker tier. Nothing is emitted for the default (no-search) view, or when the invoked
-    // item is not among the last rendered search results.
-    private void EmitSelectionTelemetry(IListItem invoked)
-    {
-        // Resolve everything from the last rendered search-view snapshot so the invoked item's rank,
-        // tier, and the reported query length all come from one generation. If the last render was
-        // the default (no-search) view, _lastSearchViewItems is null and nothing is emitted.
-        var lastView = _lastSearchViewItems;
-        if (lastView is null || _lastSearchViewQueryLength <= 0)
-        {
-            return;
-        }
-
-        var index = ResolveVisibleIndex(lastView, invoked, _resultsSeparator, _fallbacksSeparator);
-        if (index < 0)
-        {
-            return;
-        }
-
-        var packed = (_lastSearchViewFilteredItems ?? Enumerable.Empty<RoScored<IListItem>>())
-            .Concat(_lastSearchViewFilteredApps ?? Enumerable.Empty<RoScored<IListItem>>())
-            .Concat(_lastScoredGlobalFallbacks ?? Enumerable.Empty<RoScored<IListItem>>());
-
-        var tier = ResolveSelectedTier(invoked, packed, _lastSearchViewFallbackItems);
-        if (tier == RankTier.None)
-        {
-            return;
-        }
-
-        WeakReferenceMessenger.Default.Send(BuildSearchSelectedMessage(_lastSearchViewQueryLength, index, tier));
-    }
-
-    // Stores the latest settled-search metrics and (re)arms the debounce. Only the query LENGTH is
-    // retained - the query text is never stored for telemetry.
-    private void QueueSearchResultsTelemetry(int queryLength, int resultCount, long latencyMs)
-    {
-        lock (_searchTelemetryLock)
-        {
-            _pendingSearchTelemetry = (queryLength, resultCount, latencyMs);
-        }
-
-        _searchTelemetryDebounce.Invoke();
-    }
-
-    private void EmitSearchResultsTelemetry()
-    {
-        (int QueryLength, int ResultCount, long LatencyMs) snapshot;
-        lock (_searchTelemetryLock)
-        {
-            snapshot = _pendingSearchTelemetry;
-        }
-
-        if (snapshot.QueryLength <= 0)
-        {
-            return;
-        }
-
-        WeakReferenceMessenger.Default.Send(
-            BuildSearchResultsMessage(snapshot.QueryLength, snapshot.ResultCount, snapshot.LatencyMs));
-    }
-
-    // Builds the settled-search telemetry payload from a query string, capturing only its LENGTH.
-    // Exposed for tests to prove the raw query text is never carried.
-    internal static TelemetrySearchResultsMessage BuildSearchResultsMessage(string query, int resultCount, long latencyMs)
-        => BuildSearchResultsMessage(query?.Length ?? 0, resultCount, latencyMs);
-
-    internal static TelemetrySearchResultsMessage BuildSearchResultsMessage(int queryLength, int resultCount, long latencyMs)
-    {
-        var length = Math.Max(queryLength, 0);
-        var count = Math.Max(resultCount, 0);
-        var latency = latencyMs < 0 ? 0UL : (ulong)latencyMs;
-        return new TelemetrySearchResultsMessage(length, count, count == 0, latency);
-    }
-
-    // Builds the selection telemetry payload, capturing only the query LENGTH, the selected rank,
-    // and the ranker tier. Exposed for tests to prove the raw query text is never carried.
-    internal static TelemetrySearchResultSelectedMessage BuildSearchSelectedMessage(string query, int selectedIndex, RankTier selectedTier)
-        => BuildSearchSelectedMessage(query?.Length ?? 0, selectedIndex, selectedTier);
-
-    internal static TelemetrySearchResultSelectedMessage BuildSearchSelectedMessage(int queryLength, int selectedIndex, RankTier selectedTier)
-        => new(Math.Max(queryLength, 0), selectedIndex, selectedTier);
-
-    // Zero-based visible rank of an invoked item within the rendered results, skipping the section
-    // separators. Returns -1 when the item is not present (e.g. it was invoked from a different view).
-    internal static int ResolveVisibleIndex(IReadOnlyList<IListItem>? renderedResults, IListItem invoked, params IListItem[] separators)
-    {
-        if (renderedResults is null)
-        {
-            return -1;
-        }
-
-        var visible = 0;
-        foreach (var item in renderedResults)
-        {
-            var isSeparator = false;
-            foreach (var separator in separators)
-            {
-                if (ReferenceEquals(item, separator))
-                {
-                    isSeparator = true;
-                    break;
-                }
-            }
-
-            if (isSeparator)
-            {
-                continue;
-            }
-
-            if (ReferenceEquals(item, invoked))
-            {
-                return visible;
-            }
-
-            visible++;
-        }
-
-        return -1;
-    }
-
-    // Resolves the ranker tier of an invoked item. Packed sources (commands, apps, global
-    // fallbacks) decode their tier via MainListRanker.TierOf; common fallbacks carry rank-based
-    // (non-packed) scores, so they are reported at the fallback floor. Returns None when the item
-    // is not found in any source.
-    internal static RankTier ResolveSelectedTier(
-        IListItem invoked,
-        IEnumerable<RoScored<IListItem>>? packedResults,
-        IEnumerable<RoScored<IListItem>>? fallbackResults)
-    {
-        if (packedResults is not null)
-        {
-            foreach (var scored in packedResults)
-            {
-                if (ReferenceEquals(scored.Item, invoked))
-                {
-                    return MainListRanker.TierOf(scored.Score);
-                }
-            }
-        }
-
-        if (fallbackResults is not null)
-        {
-            foreach (var scored in fallbackResults)
-            {
-                if (ReferenceEquals(scored.Item, invoked))
-                {
-                    return RankTier.FallbackFloor;
-                }
-            }
-        }
-
-        return RankTier.None;
+        _searchTelemetry.ReportSelection(topLevelOrAppItem, _resultsSeparator, _fallbacksSeparator);
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)
@@ -1137,7 +955,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _fallbackUpdateManager.Dispose();
-        _searchTelemetryDebounce.Dispose();
+        _searchTelemetry.Dispose();
 
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;

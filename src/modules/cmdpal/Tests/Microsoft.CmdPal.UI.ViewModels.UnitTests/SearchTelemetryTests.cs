@@ -57,7 +57,7 @@ public partial class SearchTelemetryTests
     public void SearchResultsMessage_CapturesQueryLengthNotText()
     {
         const string query = "hello world";
-        var message = MainListPage.BuildSearchResultsMessage(query, resultCount: 4, latencyMs: 12);
+        var message = MainListPageSearchTelemetry.BuildSearchResultsMessage(query, resultCount: 4, latencyMs: 12);
 
         Assert.AreEqual(query.Length, message.QueryLength);
         Assert.AreEqual(4, message.ResultCount);
@@ -68,18 +68,18 @@ public partial class SearchTelemetryTests
     [TestMethod]
     public void SearchResultsMessage_SetsNoResultsFlagWhenCountIsZero()
     {
-        var noResults = MainListPage.BuildSearchResultsMessage("abc", resultCount: 0, latencyMs: 5);
+        var noResults = MainListPageSearchTelemetry.BuildSearchResultsMessage("abc", resultCount: 0, latencyMs: 5);
         Assert.IsTrue(noResults.NoResults);
         Assert.AreEqual(0, noResults.ResultCount);
 
-        var hasResults = MainListPage.BuildSearchResultsMessage("abc", resultCount: 3, latencyMs: 5);
+        var hasResults = MainListPageSearchTelemetry.BuildSearchResultsMessage("abc", resultCount: 3, latencyMs: 5);
         Assert.IsFalse(hasResults.NoResults);
     }
 
     [TestMethod]
     public void SearchResultsMessage_ClampsNegativeInputs()
     {
-        var message = MainListPage.BuildSearchResultsMessage(queryLength: -3, resultCount: -1, latencyMs: -100);
+        var message = MainListPageSearchTelemetry.BuildSearchResultsMessage(queryLength: -3, resultCount: -1, latencyMs: -100);
 
         Assert.AreEqual(0, message.QueryLength);
         Assert.AreEqual(0, message.ResultCount);
@@ -104,7 +104,7 @@ public partial class SearchTelemetryTests
     public void SelectedMessage_CapturesQueryLengthIndexAndTier()
     {
         const string query = "code";
-        var message = MainListPage.BuildSearchSelectedMessage(query, selectedIndex: 2, selectedTier: RankTier.Prefix);
+        var message = MainListPageSearchTelemetry.BuildSearchSelectedMessage(query, selectedIndex: 2, selectedTier: RankTier.Prefix);
 
         Assert.AreEqual(query.Length, message.QueryLength);
         Assert.AreEqual(2, message.SelectedIndex);
@@ -134,8 +134,8 @@ public partial class SearchTelemetryTests
             Scored(fuzzy, MainListRanker.Pack(RankTier.Fuzzy, withinTierScore: 10)),
         };
 
-        Assert.AreEqual(RankTier.ExactTitle, MainListPage.ResolveSelectedTier(exact, packed, fallbackResults: null));
-        Assert.AreEqual(RankTier.Fuzzy, MainListPage.ResolveSelectedTier(fuzzy, packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.ExactTitle, MainListPageSearchTelemetry.ResolveSelectedTier(exact, packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.Fuzzy, MainListPageSearchTelemetry.ResolveSelectedTier(fuzzy, packed, fallbackResults: null));
     }
 
     [TestMethod]
@@ -147,7 +147,7 @@ public partial class SearchTelemetryTests
         // fallback floor rather than being decoded as a packed tier.
         var fallbacks = new List<RoScored<IListItem>> { Scored(fallback, 3) };
 
-        Assert.AreEqual(RankTier.FallbackFloor, MainListPage.ResolveSelectedTier(fallback, packedResults: null, fallbacks));
+        Assert.AreEqual(RankTier.FallbackFloor, MainListPageSearchTelemetry.ResolveSelectedTier(fallback, packedResults: null, fallbacks));
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public partial class SearchTelemetryTests
 
         var packed = new List<RoScored<IListItem>> { Scored(known, MainListRanker.Pack(RankTier.Prefix, 1)) };
 
-        Assert.AreEqual(RankTier.None, MainListPage.ResolveSelectedTier(unknown, packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.None, MainListPageSearchTelemetry.ResolveSelectedTier(unknown, packed, fallbackResults: null));
     }
 
     [TestMethod]
@@ -174,11 +174,11 @@ public partial class SearchTelemetryTests
 
         var rendered = new IListItem[] { resultsSeparator, a, b, fallbacksSeparator, c };
 
-        Assert.AreEqual(0, MainListPage.ResolveVisibleIndex(rendered, a, resultsSeparator, fallbacksSeparator));
-        Assert.AreEqual(1, MainListPage.ResolveVisibleIndex(rendered, b, resultsSeparator, fallbacksSeparator));
-        Assert.AreEqual(2, MainListPage.ResolveVisibleIndex(rendered, c, resultsSeparator, fallbacksSeparator));
-        Assert.AreEqual(-1, MainListPage.ResolveVisibleIndex(rendered, missing, resultsSeparator, fallbacksSeparator));
-        Assert.AreEqual(-1, MainListPage.ResolveVisibleIndex(null, a, resultsSeparator, fallbacksSeparator));
+        Assert.AreEqual(0, MainListPageSearchTelemetry.ResolveVisibleIndex(rendered, a, resultsSeparator, fallbacksSeparator));
+        Assert.AreEqual(1, MainListPageSearchTelemetry.ResolveVisibleIndex(rendered, b, resultsSeparator, fallbacksSeparator));
+        Assert.AreEqual(2, MainListPageSearchTelemetry.ResolveVisibleIndex(rendered, c, resultsSeparator, fallbacksSeparator));
+        Assert.AreEqual(-1, MainListPageSearchTelemetry.ResolveVisibleIndex(rendered, missing, resultsSeparator, fallbacksSeparator));
+        Assert.AreEqual(-1, MainListPageSearchTelemetry.ResolveVisibleIndex(null, a, resultsSeparator, fallbacksSeparator));
     }
 
     [TestMethod]
