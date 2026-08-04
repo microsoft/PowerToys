@@ -92,21 +92,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 
         private static ZipArchiveEntry FindThumbnailEntry(ZipArchive archive)
         {
-            // Prefer relationship targets and explicitly named thumbnail files before any Metadata/* image.
-            // Some slicer packages ship multiple Metadata PNGs (plates, picks, etc.).
-            var relationshipTargets = GetThumbnailTargetsFromRelationships(archive);
-            foreach (var target in relationshipTargets)
-            {
-                var entry = archive.GetEntry(target) ??
-                            archive.Entries.FirstOrDefault(e =>
-                                e.FullName.Replace('\\', '/').EndsWith(target.TrimStart('/'), StringComparison.OrdinalIgnoreCase));
-
-                if (entry != null)
-                {
-                    return entry;
-                }
-            }
-
+            // Prefer files actually named thumbnail* (e.g. Auxiliaries/.thumbnails/thumbnail_3mf.png).
+            // Slicer packages often also ship dark Metadata/plate_*.png previews and relationships that
+            // point at those plates; those are a last resort only.
             ZipArchiveEntry namedThumbnail = null;
             ZipArchiveEntry metadataFallback = null;
 
@@ -130,7 +118,24 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
                 }
             }
 
-            return namedThumbnail ?? metadataFallback;
+            if (namedThumbnail != null)
+            {
+                return namedThumbnail;
+            }
+
+            foreach (var target in GetThumbnailTargetsFromRelationships(archive))
+            {
+                var entry = archive.GetEntry(target) ??
+                            archive.Entries.FirstOrDefault(e =>
+                                e.FullName.Replace('\\', '/').EndsWith(target.TrimStart('/'), StringComparison.OrdinalIgnoreCase));
+
+                if (entry != null)
+                {
+                    return entry;
+                }
+            }
+
+            return metadataFallback;
         }
 
         private static IEnumerable<string> GetThumbnailTargetsFromRelationships(ZipArchive archive)
