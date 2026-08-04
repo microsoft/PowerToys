@@ -111,6 +111,11 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
             _active = false;
             _showGeneration++;
 
+            // Drop any reveal still pending for the summon being dismissed. Same motivation as
+            // releasing always-on-top below: the Rendering handler forces the UI thread to run every
+            // frame, so it must not outlive the visible bar.
+            CancelPendingReveal();
+
             // Release always-on-top before hiding so the dormant overlay does not keep a discrete
             // GPU awake on hybrid-graphics laptops (issue #34849 / PR #41044). IsAlwaysOnTop is the
             // WinUIEx WindowEx property (same as the sibling PowerDisplay).
@@ -244,13 +249,29 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     // Starts the fallback deadline for the reveal, tagged with the summon that armed it.
     private void ArmRevealTimeout(int generation)
     {
+        // Cancel before re-tagging, not after. The Stop() inside CancelPendingReveal is what kills
+        // the previous summon's watchdog, and that watchdog was the only remaining path that would
+        // have driven its still-attached Rendering handler through Reveal(). Leaving the handler on
+        // would let it unveil THIS summon after FramesBeforeReveal ticks - before the layout
+        // callback below has run - and the generation guard in Reveal() cannot reject it, because
+        // the two assignments underneath put _revealGeneration and _showGeneration back in sync.
+        CancelPendingReveal();
+
         _revealGeneration = generation;
         _renderedFrames = 0;
 
         // Restart rather than extend: DispatcherQueueTimer does not document what Start() does to a
         // timer that is already running, so the deadline is reset explicitly.
-        _revealTimer.Stop();
         _revealTimer.Start();
+    }
+
+    // Drops a pending reveal. The watchdog and the per-frame handler always come off together: the
+    // handler forces the UI thread to run every frame, and the watchdog is what guarantees it is
+    // detached on a session where no frames arrive at all.
+    private void CancelPendingReveal()
+    {
+        _revealTimer.Stop();
+        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
     }
 
     // Unveils the bar once the compositor has drawn it, or after RevealTimeoutMs if it never does.
@@ -278,8 +299,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     {
         // Unconditional: the handler forces the UI thread to run every frame, so it has to come off
         // even when the reveal itself is dropped as stale just below.
-        _revealTimer.Stop();
-        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
+        CancelPendingReveal();
 
         // Same guard as the layout callback. A reveal armed by an earlier summon must not unveil a
         // newer one before its own layout pass has run - that is exactly the stale frame of #49489.
@@ -291,8 +311,7 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
 
     public void Dispose()
     {
-        _revealTimer.Stop();
-        CompositionTarget.Rendering -= OnRenderingBeforeReveal;
+        CancelPendingReveal();
         _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
         GC.SuppressFinalize(this);

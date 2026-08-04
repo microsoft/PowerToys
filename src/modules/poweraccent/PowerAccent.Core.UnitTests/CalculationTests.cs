@@ -313,4 +313,24 @@ public sealed class CalculationTests
 
         Assert.AreEqual(MinItemWidth + ChromeWidth, width);
     }
+
+    // The only input that drives the result BELOW the floor, and so the only one that pins the lower
+    // clamp bound: every other case reaches it with a width that is already >= one cell plus chrome,
+    // where the upper Math.Max alone satisfies the assertion. An empty list is defensive rather than
+    // reachable - PowerAccent only summons for a letter with a non-empty mapping - but the branch
+    // exists, and without this case Math.Clamp(width, floorWidth, ...) can be weakened to
+    // Math.Clamp(width, 0, ...) with every other test still green.
+    [TestMethod]
+    public void GetToolbarWidth_EmptyList_FallsBackToOneCellPlusChrome()
+    {
+        var width = Calculation.GetToolbarWidth(
+            measuredContentWidth: 0,
+            itemCount: 0,
+            MinItemWidth,
+            ChromeWidth,
+            descriptionMinWidth: 0,
+            MaxWidth);
+
+        Assert.AreEqual(MinItemWidth + ChromeWidth, width);
+    }
 }
