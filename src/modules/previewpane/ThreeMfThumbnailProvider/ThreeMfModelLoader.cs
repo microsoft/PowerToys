@@ -92,23 +92,8 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
 
         private static ZipArchiveEntry FindThumbnailEntry(ZipArchive archive)
         {
-            foreach (var entry in archive.Entries)
-            {
-                var name = entry.FullName.Replace('\\', '/');
-                if (name.Contains("Metadata/", StringComparison.OrdinalIgnoreCase) &&
-                    ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return entry;
-                }
-
-                if (name.EndsWith("thumbnail.png", StringComparison.OrdinalIgnoreCase) ||
-                    name.EndsWith("thumbnail.jpg", StringComparison.OrdinalIgnoreCase) ||
-                    name.EndsWith("thumbnail.jpeg", StringComparison.OrdinalIgnoreCase))
-                {
-                    return entry;
-                }
-            }
-
+            // Prefer relationship targets and explicitly named thumbnail files before any Metadata/* image.
+            // Some slicer packages ship multiple Metadata PNGs (plates, picks, etc.).
             var relationshipTargets = GetThumbnailTargetsFromRelationships(archive);
             foreach (var target in relationshipTargets)
             {
@@ -122,7 +107,30 @@ namespace Microsoft.PowerToys.ThumbnailHandler.ThreeMf
                 }
             }
 
-            return null;
+            ZipArchiveEntry namedThumbnail = null;
+            ZipArchiveEntry metadataFallback = null;
+
+            foreach (var entry in archive.Entries)
+            {
+                var name = entry.FullName.Replace('\\', '/');
+                var fileName = name.Contains('/') ? name[(name.LastIndexOf('/') + 1)..] : name;
+
+                if (ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)) &&
+                    fileName.Contains("thumbnail", StringComparison.OrdinalIgnoreCase))
+                {
+                    namedThumbnail ??= entry;
+                    continue;
+                }
+
+                if (metadataFallback == null &&
+                    name.Contains("Metadata/", StringComparison.OrdinalIgnoreCase) &&
+                    ThumbnailExtensions.Any(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                {
+                    metadataFallback = entry;
+                }
+            }
+
+            return namedThumbnail ?? metadataFallback;
         }
 
         private static IEnumerable<string> GetThumbnailTargetsFromRelationships(ZipArchive archive)
