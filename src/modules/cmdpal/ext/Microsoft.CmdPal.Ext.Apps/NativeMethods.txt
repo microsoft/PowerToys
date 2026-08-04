@@ -16,6 +16,12 @@ IAppxManifestProperties
 IShellLinkW
 ShellLink
 IPersistFile
+IPropertyStore
+SHGetPropertyStoreFromParsingName
+PKEY_Link_TargetParsingPath
+PKEY_AppUserModel_ID
+PropVariantClear
+PropVariantToStringAlloc
 CoTaskMemFree
 IUnknown
 IShellItemImageFactory

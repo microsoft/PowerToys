@@ -24,7 +24,7 @@ internal sealed partial class AppCommand : InvokableCommand
     {
         _app = app;
         Name = Resources.run_command_action!;
-        Id = GenerateId();
+        Id = GenerateId(app.Name, app.Subtitle, app.ExePath);
         Icon = Icons.GenericAppIcon;
     }
 
@@ -86,11 +86,11 @@ internal sealed partial class AppCommand : InvokableCommand
         return CommandResult.Dismiss();
     }
 
-    private string GenerateId()
+    internal static string GenerateId(string name, string subtitle, string exePath)
     {
         // Use WyHash64 to generate stable ID hashes.
         // manually seeding with 0, so that the hash is stable across launches
-        var result = WyHash64.ComputeHash64(_app.Name + _app.Subtitle + _app.ExePath, seed: 0);
-        return $"{_app.Name}_{result}";
+        var result = WyHash64.ComputeHash64(name + subtitle + exePath, seed: 0);
+        return $"{name}_{result}";
     }
 }

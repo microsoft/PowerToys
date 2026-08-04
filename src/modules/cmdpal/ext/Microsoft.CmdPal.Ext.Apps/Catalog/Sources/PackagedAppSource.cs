@@ -62,7 +62,7 @@ internal sealed partial class PackagedAppSource : IAppSource
                     {
                         app.UpdateLogoPath(theme);
                         var snapshot = PackagedAppSnapshot.From(app);
-                        var identity = $"packaged:{app.UserModelId}";
+                        var identity = AppIdentity.ForPackaged(app.UserModelId);
                         items.Add(new AppCatalogItem(
                             identity,
                             priority: 0,

@@ -34,7 +34,7 @@ public static partial class ReparsePoint
     private const int E_INVALID_PROTOCOL_FORMAT = unchecked((int)0x83760002);
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-    private enum AppExecutionAliasReparseTagBufferLayoutVersion : uint
+    internal enum AppExecutionAliasReparseTagBufferLayoutVersion : uint
     {
         Invalid = 0,
 
@@ -83,16 +83,11 @@ public static partial class ReparsePoint
     }
 
     /// <summary>
-    /// Gets the target of the specified reparse point.
+    /// Reads the package identity and resolved executable target carried by an app execution alias.
     /// </summary>
-    /// <param name="reparsePoint">The path of the reparse point.</param>
-    /// <returns>
-    /// The target of the reparse point.
-    /// </returns>
-    /// <exception cref="IOException">
-    /// Thrown when the reparse point specified is not a reparse point or is invalid.
-    /// </exception>
-    public static string? GetTarget(string reparsePoint)
+    /// <param name="reparsePoint">The path of the possible app execution alias.</param>
+    /// <returns>The alias metadata, or <see langword="null"/> when the path is not an app execution alias.</returns>
+    internal static AppExecutionAliasInfo? GetAppExecutionAliasInfo(string reparsePoint)
     {
         using (SafeFileHandle reparsePointHandle = new SafeFileHandle(
             Kernel32.CreateFile(
@@ -156,11 +151,9 @@ public static partial class ReparsePoint
 
                         if (aliasReparseHeader.ReparseTag == IO_REPARSE_TAG_APPEXECLINK)
                         {
-                            var metadata = AppExecutionAliasMetadata.FromPersistedRepresentationIntPtr(
+                            return AppExecutionAliasInfo.FromPersistedRepresentationIntPtr(
                                 outBuffer,
                                 aliasReparseHeader.Version);
-
-                            return metadata.ExePath;
                         }
                     }
 
@@ -176,17 +169,23 @@ public static partial class ReparsePoint
         return null;
     }
 
-    private sealed class AppExecutionAliasMetadata
+    /// <summary>
+    /// Describes the package application represented by an app execution alias reparse point.
+    /// </summary>
+    internal sealed record AppExecutionAliasInfo
     {
-        public string PackageFullName { get; init; } = string.Empty;
-
-        public string PackageFamilyName { get; init; } = string.Empty;
-
+        /// <summary>Gets the application user model identifier represented by the alias.</summary>
         public string Aumid { get; init; } = string.Empty;
 
-        public string ExePath { get; init; } = string.Empty;
+        /// <summary>Gets the resolved executable path targeted by the alias.</summary>
+        public string TargetPath { get; init; } = string.Empty;
 
-        public static AppExecutionAliasMetadata FromPersistedRepresentationIntPtr(IntPtr reparseDataBufferPtr, AppExecutionAliasReparseTagBufferLayoutVersion version)
+        /// <summary>Decodes AUMID and target strings from an app-execution-alias reparse buffer.</summary>
+        /// <param name="reparseDataBufferPtr">A readable native buffer containing a validated reparse header and its null-terminated strings.</param>
+        /// <param name="version">The supported app-execution-alias buffer layout version.</param>
+        internal static AppExecutionAliasInfo FromPersistedRepresentationIntPtr(
+            IntPtr reparseDataBufferPtr,
+            AppExecutionAliasReparseTagBufferLayoutVersion version)
         {
             unsafe
             {
@@ -197,7 +196,7 @@ public static partial class ReparsePoint
                 string? packageFullName = null;
                 string? packageFamilyName = null;
                 string? aumid = null;
-                string? exePath = null;
+                string? targetPath = null;
 
                 VerifyVersion(version);
 
@@ -213,7 +212,7 @@ public static partial class ReparsePoint
                             if (aumid is not null)
                             {
                                 dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
-                                exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                                targetPath = Marshal.PtrToStringUni(dataBufferPtr);
                             }
                         }
 
@@ -232,19 +231,17 @@ public static partial class ReparsePoint
                             {
                                 dataBufferPtr += Encoding.Unicode.GetByteCount(aumid) + Encoding.Unicode.GetByteCount("\0");
 
-                                exePath = Marshal.PtrToStringUni(dataBufferPtr);
+                                targetPath = Marshal.PtrToStringUni(dataBufferPtr);
                             }
                         }
 
                         break;
                 }
 
-                return new AppExecutionAliasMetadata
+                return new AppExecutionAliasInfo
                 {
-                    PackageFullName = packageFullName ?? string.Empty,
-                    PackageFamilyName = packageFamilyName ?? string.Empty,
                     Aumid = aumid ?? string.Empty,
-                    ExePath = exePath ?? string.Empty,
+                    TargetPath = targetPath ?? string.Empty,
                 };
             }
         }

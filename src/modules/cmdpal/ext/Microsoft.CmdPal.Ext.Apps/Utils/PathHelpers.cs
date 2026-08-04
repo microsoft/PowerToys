@@ -13,6 +13,21 @@ internal static class PathHelpers
         NormalizeDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
     /// <summary>
+    /// Returns a full path without a trailing directory separator, or the original value when normalization fails.
+    /// </summary>
+    internal static string NormalizePath(string path)
+    {
+        try
+        {
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return path;
+        }
+    }
+
+    /// <summary>
     /// Determines whether the given path is inside the specified directory.
     /// Uses pure string comparison (no filesystem access). Directory comparison
     /// is boundary-aware ("C:\\Windows\\System32Apps" does not match "C:\\Windows\\System32").

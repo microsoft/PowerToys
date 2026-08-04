@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -20,8 +21,21 @@ internal sealed class AppCatalogItem
         string identity,
         AppCatalogProvenance provenance,
         ImmutableArray<string> matchTerms,
-        IAppCatalogPayload payload)
-        : this(identity, provenance, payload, NormalizeMatchTerms(matchTerms))
+        IAppCatalogPayload payload,
+        ImmutableArray<string> commandIds = default,
+        ImmutableArray<string> identityAliases = default)
+        : this(
+            identity,
+            provenance,
+            payload,
+            NormalizeMatchTerms(matchTerms),
+            (commandIds.IsDefault ? [] : commandIds)
+                .Append((payload ?? throw new ArgumentNullException(nameof(payload))).GetCommandId())
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+                .ToImmutableArray(),
+            NormalizeIdentityAliases(identity, identityAliases.IsDefault ? [] : identityAliases))
     {
     }
 
@@ -31,12 +45,15 @@ internal sealed class AppCatalogItem
         int priority,
         AppCatalogSourceReference sourceReference,
         IReadOnlyList<string> matchTerms,
-        IAppCatalogPayload payload)
+        IAppCatalogPayload payload,
+        ImmutableArray<string> identityAliases = default)
         : this(
             identity,
             new AppCatalogProvenance(priority, sourceReference),
             payload,
-            NormalizeMatchTerms(matchTerms))
+            NormalizeMatchTerms(matchTerms),
+            [(payload ?? throw new ArgumentNullException(nameof(payload))).GetCommandId()],
+            NormalizeIdentityAliases(identity, identityAliases.IsDefault ? [] : identityAliases))
     {
     }
 
@@ -44,12 +61,16 @@ internal sealed class AppCatalogItem
         string identity,
         AppCatalogProvenance provenance,
         IAppCatalogPayload payload,
-        ImmutableArray<string> normalizedMatchTerms)
+        ImmutableArray<string> normalizedMatchTerms,
+        ImmutableArray<string> commandIds,
+        ImmutableArray<string> identityAliases)
     {
         Identity = identity ?? throw new ArgumentNullException(nameof(identity));
         Provenance = provenance ?? throw new ArgumentNullException(nameof(provenance));
         MatchTerms = normalizedMatchTerms;
         Payload = payload ?? throw new ArgumentNullException(nameof(payload));
+        CommandIds = commandIds;
+        IdentityAliases = identityAliases;
     }
 
     /// <summary>Gets the stable canonical identity.</summary>
@@ -61,6 +82,12 @@ internal sealed class AppCatalogItem
     /// <summary>Gets the sorted source aliases and metadata retained across deduplication.</summary>
     public ImmutableArray<string> MatchTerms { get; }
 
+    /// <summary>Gets the persisted command IDs of all contributing representations.</summary>
+    public ImmutableArray<string> CommandIds { get; }
+
+    /// <summary>Gets contributing catalog identities retained for existing visibility preferences.</summary>
+    public ImmutableArray<string> IdentityAliases { get; }
+
     /// <summary>Gets the exactly-one immutable application payload.</summary>
     public IAppCatalogPayload Payload { get; }
 
@@ -69,7 +96,27 @@ internal sealed class AppCatalogItem
     {
         var app = Payload.ToAppItem();
         app.MatchTerms = MatchTerms;
+        app.CommandIds = CommandIds;
         return app;
+    }
+
+    /// <summary>
+    /// Returns this item under a canonical identity.
+    /// </summary>
+    /// <param name="identity">The identity shared by equivalent representations.</param>
+    /// <returns>This instance when the identity already matches; otherwise, an immutable reidentified copy.</returns>
+    internal AppCatalogItem WithIdentity(string identity)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identity);
+        return string.Equals(Identity, identity, StringComparison.OrdinalIgnoreCase)
+            ? this
+            : new AppCatalogItem(
+                identity,
+                Provenance,
+                Payload,
+                MatchTerms,
+                CommandIds,
+                NormalizeIdentityAliases(identity, IdentityAliases));
     }
 
     /// <summary>Merges overlapping representations while preserving a deterministic preferred payload.</summary>
@@ -93,7 +140,9 @@ internal sealed class AppCatalogItem
             preferred.Identity,
             Provenance.Merge(other.Provenance),
             preferred.Payload,
-            MergeMatchTerms(MatchTerms, other.MatchTerms));
+            MergeMatchTerms(MatchTerms, other.MatchTerms),
+            CommandIds.Union(other.CommandIds, StringComparer.Ordinal).Order(StringComparer.Ordinal).ToImmutableArray(),
+            NormalizeIdentityAliases(Identity, IdentityAliases.Concat(other.IdentityAliases)));
     }
 
     /// <summary>Determines whether two items would write equivalent catalog-cache content.</summary>
@@ -104,6 +153,8 @@ internal sealed class AppCatalogItem
         return string.Equals(Identity, other.Identity, StringComparison.OrdinalIgnoreCase)
             && Provenance.HasSamePersistedContent(other.Provenance)
             && HasSameMatchTerms(MatchTerms, other.MatchTerms)
+            && CommandIds.SequenceEqual(other.CommandIds, StringComparer.Ordinal)
+            && IdentityAliases.SequenceEqual(other.IdentityAliases, StringComparer.OrdinalIgnoreCase)
             && Payload.Equals(other.Payload);
     }
 
@@ -114,6 +165,7 @@ internal sealed class AppCatalogItem
 
         return string.Equals(Identity, other.Identity, StringComparison.OrdinalIgnoreCase)
             && Payload.Equals(other.Payload)
+            && CommandIds.SequenceEqual(other.CommandIds, StringComparer.Ordinal)
             && HasSameMatchTerms(MatchTerms, other.MatchTerms);
     }
 
@@ -134,6 +186,13 @@ internal sealed class AppCatalogItem
 
         return true;
     }
+
+    private static ImmutableArray<string> NormalizeIdentityAliases(string identity, IEnumerable<string> aliases)
+        => aliases.Append(identity)
+            .Where(alias => !string.IsNullOrWhiteSpace(alias))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToImmutableArray();
 
     private static ImmutableArray<string> NormalizeMatchTerms(ImmutableArray<string> matchTerms)
     {

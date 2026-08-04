@@ -62,6 +62,16 @@ public partial class Win32Program
 
     public string Arguments { get; set; } = string.Empty;
 
+    public string WorkingDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets metadata resolved from this program when it is an app execution alias.
+    /// </summary>
+    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+
+    /// <summary>Gets or sets the packaged application identity represented by this program.</summary>
+    internal string PackagedAppUserModelId { get; set; } = string.Empty;
+
     public ApplicationType AppType { get; set; }
 
     // Wrappers for File Operations
@@ -276,8 +286,17 @@ public partial class Win32Program
         try
         {
             var program = CreateWin32Program(path);
-            var shellLinkHelper = new ShellLinkHelper();
-            var target = shellLinkHelper.RetrieveTargetPath(path);
+            program.AppType = ApplicationType.ShortcutApplication;
+            var link = ShellLinkReader.Read(path);
+            if (link is null)
+            {
+                return InvalidProgram;
+            }
+
+            var target = link.TargetPath;
+            program.PackagedAppUserModelId = link.PackagedAppUserModelId;
+            program.ExplicitAppUserModelId = link.ExplicitAppUserModelId;
+            program.WorkingDirectory = link.WorkingDirectory;
 
             if (!string.IsNullOrEmpty(target))
             {
@@ -295,14 +314,14 @@ public partial class Win32Program
                 program.FullPath = Path.GetFullPath(target);
                 program.FullPathLocalized = ShellLocalization.Instance.GetLocalizedPath(target);
 
-                program.Arguments = shellLinkHelper.Arguments;
+                program.Arguments = link.Arguments;
 
                 // A .lnk could be a (Chrome) PWA, set correct AppType
                 program.AppType = program.IsWebApplication()
                     ? ApplicationType.WebApplication
                     : GetAppTypeFromPath(target);
 
-                var description = shellLinkHelper.Description;
+                var description = link.Description;
                 if (!string.IsNullOrEmpty(description))
                 {
                     program.Description = description;
@@ -317,8 +336,8 @@ public partial class Win32Program
                 }
             }
 
-            program.IcoPath = !string.IsNullOrEmpty(shellLinkHelper.IconLocation)
-                ? shellLinkHelper.IconLocation
+            program.IcoPath = !string.IsNullOrEmpty(link.IconLocation)
+                ? link.IconLocation
                 : program.FullPath;
 
             return program;
@@ -536,6 +555,44 @@ public partial class Win32Program
     internal static bool IsExecutablePath(string path)
         => ExecutableApplicationExtensions.Contains(Extension(path));
 
+    /// <summary>Determines whether an application type uses its executable target as catalog identity.</summary>
+    internal static bool UsesExecutableTargetIdentity(ApplicationType appType)
+        => appType is ApplicationType.Win32Application
+            or ApplicationType.RunCommand
+            or ApplicationType.WebApplication;
+
+    /// <summary>Normalizes launch profiles without distinguishing default executable or installer directories.</summary>
+    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
+    {
+        if (string.IsNullOrEmpty(workingDirectory))
+        {
+            return string.Empty;
+        }
+
+        var expandedDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
+        var normalizedDirectory = PathHelpers.NormalizePath(expandedDirectory);
+        var expandedTarget = Environment.ExpandEnvironmentVariables(targetPath);
+        if (Path.IsPathFullyQualified(expandedDirectory) && Path.IsPathFullyQualified(expandedTarget))
+        {
+            try
+            {
+                var targetDirectory = PathHelpers.NormalizePath(Path.GetDirectoryName(expandedTarget)!);
+                if (IsExecutablePath(expandedTarget)
+                    && (string.Equals(normalizedDirectory, targetDirectory, StringComparison.OrdinalIgnoreCase)
+                        || IsSquirrelVersionDirectory(expandedTarget, targetDirectory, normalizedDirectory, explicitAppUserModelId)))
+                {
+                    return string.Empty;
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                // Keep malformed launch profiles distinct.
+            }
+        }
+
+        return normalizedDirectory;
+    }
+
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
@@ -721,39 +778,35 @@ public partial class Win32Program
         }
     }
 
-    private static bool TryGetIcoPathForRunCommandProgram(Win32Program program, out string? icoPath)
+    private static ReparsePoint.AppExecutionAliasInfo? GetAppExecutionAliasInfoForRunCommandProgram(Win32Program program)
     {
-        icoPath = null;
-
         if (program.AppType != ApplicationType.RunCommand)
         {
-            return false;
+            return null;
         }
 
         if (string.IsNullOrEmpty(program.FullPath))
         {
-            return false;
+            return null;
         }
 
         // https://msdn.microsoft.com/library/windows/desktop/ee872121
         try
         {
-            var redirectionPath = ReparsePoint.GetTarget(program.FullPath);
-            if (string.IsNullOrEmpty(redirectionPath))
+            var alias = ReparsePoint.GetAppExecutionAliasInfo(program.FullPath);
+            if (alias is null)
             {
-                return false;
+                return null;
             }
 
-            icoPath = ExpandEnvironmentVariables(redirectionPath);
-            return true;
+            return alias with { TargetPath = ExpandEnvironmentVariables(alias.TargetPath) };
         }
         catch (IOException e)
         {
             Logger.LogError(e.Message);
         }
 
-        icoPath = null;
-        return false;
+        return null;
     }
 
     private static Win32Program GetRunCommandProgramFromPath(string path)
@@ -763,9 +816,12 @@ public partial class Win32Program
         {
             program.AppType = ApplicationType.RunCommand;
 
-            if (TryGetIcoPathForRunCommandProgram(program, out var icoPath))
+            var appExecutionAlias = GetAppExecutionAliasInfoForRunCommandProgram(program);
+            program.AppExecutionAlias = appExecutionAlias;
+            program.PackagedAppUserModelId = appExecutionAlias?.Aumid ?? string.Empty;
+            if (!string.IsNullOrEmpty(appExecutionAlias?.TargetPath))
             {
-                program.IcoPath = icoPath ?? string.Empty;
+                program.IcoPath = appExecutionAlias.TargetPath;
             }
         }
 
@@ -813,7 +869,11 @@ public partial class Win32Program
             return string.Equals(app1.Name, app2.Name, StringComparison.OrdinalIgnoreCase)
                    && string.Equals(app1.ExecutableName, app2.ExecutableName, StringComparison.OrdinalIgnoreCase)
                    && string.Equals(app1.FullPath, app2.FullPath, StringComparison.OrdinalIgnoreCase)
-                   && string.Equals(app1.Arguments, app2.Arguments, StringComparison.Ordinal);
+                   && string.Equals(app1.Arguments, app2.Arguments, StringComparison.Ordinal)
+                   && string.Equals(
+                       GetDistinctWorkingDirectory(app1.AppExecutionAlias?.TargetPath ?? app1.FullPath, app1.WorkingDirectory, app1.ExplicitAppUserModelId),
+                       GetDistinctWorkingDirectory(app2.AppExecutionAlias?.TargetPath ?? app2.FullPath, app2.WorkingDirectory, app2.ExplicitAppUserModelId),
+                       StringComparison.OrdinalIgnoreCase);
         }
 
         public int GetHashCode(Win32Program app)
@@ -823,7 +883,33 @@ public partial class Win32Program
             hash.Add(app.ExecutableName, StringComparer.OrdinalIgnoreCase);
             hash.Add(app.FullPath, StringComparer.OrdinalIgnoreCase);
             hash.Add(app.Arguments, StringComparer.Ordinal);
+            hash.Add(GetDistinctWorkingDirectory(app.AppExecutionAlias?.TargetPath ?? app.FullPath, app.WorkingDirectory, app.ExplicitAppUserModelId), StringComparer.OrdinalIgnoreCase);
             return hash.ToHashCode();
         }
+    }
+
+    /// <summary>Gets or sets the explicit Windows application ID declared by this shortcut.</summary>
+    internal string ExplicitAppUserModelId { get; set; } = string.Empty;
+
+    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
+    {
+        if (string.IsNullOrEmpty(explicitAppUserModelId)
+            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
+        var directoryName = Path.GetFileName(workingDirectory);
+        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
+            || !Version.TryParse(directoryName.AsSpan(4), out _))
+        {
+            return false;
+        }
+
+        // Squirrel's root launcher chooses the installed version and its working directory itself.
+        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
+        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
@@ -119,13 +120,50 @@ public class Win32AppSourceTests
     }
 
     [TestMethod]
-    public async Task LoadAsync_SameTargetWithDifferentNames_CreatesSharedIdentityAndPrefersShortcut()
+    public async Task LoadAsync_AppExecutionAlias_DoesNotReceiveRawExecutablePenalty()
+    {
+        const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\app.exe";
+        var pathSource = new TestProgramSource(
+            "path",
+            40,
+            Win32ProgramSourceProfile.IncludeRawExecutables | Win32ProgramSourceProfile.LoadAsRunCommand,
+            aliasPath);
+        using var source = new Win32AppSource(
+            pathSource,
+            (path, asRunCommand) =>
+            {
+                var program = CreateExecutable("app", path);
+                program.AppType = Win32Program.ApplicationType.RunCommand;
+                program.AppExecutionAlias = new ReparsePoint.AppExecutionAliasInfo
+                {
+                    Aumid = "Contoso.App_123!app",
+                    TargetPath = @"C:\Program Files\WindowsApps\Contoso.App_1.0.0.0_x64__123\app.exe",
+                };
+                return program;
+            },
+            createWatchers: false);
+
+        var items = await source.LoadAsync(CancellationToken.None);
+
+        Assert.AreEqual(1, items.Count);
+        Assert.AreEqual(40, items[0].Provenance.Priority);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadAsync_SameTargetWithDifferentNames_CreatesSharedIdentityAndPrefersShortcut(bool defaultWorkingDirectory)
     {
         const string targetPath = @"C:\Program Files\Microsoft Office\WINWORD.EXE";
         const string shortcutPath = @"C:\Start Menu\Word.lnk";
         using var shortcutSource = new Win32AppSource(
             new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, shortcutPath),
-            (path, asRunCommand) => CreateExecutable("Word", targetPath, shortcutPath),
+            (path, asRunCommand) =>
+            {
+                var program = CreateExecutable("Word", targetPath, shortcutPath);
+                program.WorkingDirectory = defaultWorkingDirectory ? Path.GetDirectoryName(targetPath)! : string.Empty;
+                return program;
+            },
             createWatchers: false);
         using var registrySource = new Win32AppSource(
             new TestProgramSource("registry", 30, Win32ProgramSourceProfile.IncludeRawExecutables, targetPath),
@@ -141,6 +179,16 @@ public class Win32AppSourceTests
         Assert.AreEqual(10, merged.Provenance.Priority);
         Assert.IsTrue(ContainsSourceReference(merged, "start-menu", shortcutPath));
         Assert.IsTrue(ContainsSourceReference(merged, "registry", targetPath));
+        var app = merged.ToAppItem();
+        Assert.AreEqual(shortcutPath, app.ExePath);
+        Assert.AreEqual(targetPath, app.FullExecutablePath);
+        Assert.AreEqual(defaultWorkingDirectory ? Path.GetDirectoryName(targetPath) : string.Empty, ((Win32AppPayload)merged.Payload).WorkingDirectory);
+        CollectionAssert.Contains(merged.CommandIds.ToArray(), new AppCommand(shortcutItems[0].ToAppItem()).Id);
+        CollectionAssert.Contains(merged.CommandIds.ToArray(), new AppCommand(registryItems[0].ToAppItem()).Id);
+        if (defaultWorkingDirectory)
+        {
+            CollectionAssert.Contains(merged.IdentityAliases.ToArray(), $"win32:{targetPath}|args:|cwd:{Path.GetDirectoryName(targetPath)}");
+        }
     }
 
     [TestMethod]
@@ -166,6 +214,42 @@ public class Win32AppSourceTests
         var items = await source.LoadAsync(CancellationToken.None);
 
         Assert.AreEqual(2, items.Count);
+        var first = items.Single(item => item.ToAppItem().Arguments == "/Profile A");
+        var second = items.Single(item => item.ToAppItem().Arguments == "/profile a");
+        Assert.AreNotEqual(first.Identity, second.Identity);
+        var firstApp = first.ToAppItem();
+        var secondApp = second.ToAppItem();
+        Assert.AreEqual(@"C:\Links\First.lnk", firstApp.ExePath);
+        Assert.AreEqual(@"C:\Links\Second.lnk", secondApp.ExePath);
+        Assert.AreEqual(targetPath, firstApp.FullExecutablePath);
+        Assert.AreEqual(targetPath, secondApp.FullExecutablePath);
+        Assert.AreNotEqual(new AppCommand(firstApp).Id, new AppCommand(secondApp).Id);
+    }
+
+    [TestMethod]
+    [DataRow(@"C:\Projects\First", @"C:\Projects\Second", 2)]
+    [DataRow("", @"C:\Projects\First", 2)]
+    [DataRow(@"C:\Projects\First", "c:/projects/first/", 1)]
+    [DataRow("", @"C:\Tools", 1)]
+    [DataRow("c:/TOOLS/", "", 1)]
+    public async Task LoadAsync_WorkingDirectoryParticipatesInShortcutEquivalence(string firstDirectory, string secondDirectory, int expectedCount)
+    {
+        var definition = new TestProgramSource("start-menu", 10, Win32ProgramSourceProfile.None, @"C:\Links\First.lnk", @"C:\Links\Second.lnk");
+        using var source = new Win32AppSource(
+            definition,
+            (path, _) =>
+            {
+                var program = CreateExecutable(Path.GetFileNameWithoutExtension(path), @"C:\Tools\console.exe", path);
+                program.Arguments = "/k";
+                program.WorkingDirectory = path.Contains("First", StringComparison.Ordinal) ? firstDirectory : secondDirectory;
+                return program;
+            },
+            createWatchers: false);
+
+        var items = await source.LoadAsync(CancellationToken.None);
+
+        Assert.AreEqual(expectedCount, items.Count);
+        Assert.AreEqual(2, items.SelectMany(item => item.CommandIds).Distinct(StringComparer.Ordinal).Count());
     }
 
     [TestMethod]

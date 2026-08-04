@@ -20,4 +20,19 @@ internal interface IAppCatalogPayload
 {
     /// <summary>Materializes the consumer-facing application.</summary>
     AppItem ToAppItem();
+
+    /// <summary>Gets the persisted command ID of this source representation.</summary>
+    string GetCommandId();
+
+    /// <summary>
+    /// Gets a stable cross-source identity when this payload can identify its canonical application.
+    /// </summary>
+    /// <returns>The canonical identity hint, or <see langword="null"/> when none is known.</returns>
+    string? GetCanonicalIdentityHint();
+
+    /// <summary>
+    /// Gets the executable target when this payload has no launch-specific arguments or working directory.
+    /// </summary>
+    /// <returns>The target path, or <see langword="null"/> when target association is not safe.</returns>
+    string? GetCanonicalTargetPath();
 }

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
@@ -58,7 +59,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
                     continue;
                 }
 
-                var normalizedPath = NormalizePath(directory);
+                var normalizedPath = PathHelpers.NormalizePath(directory);
                 if (uniquePaths.Add(normalizedPath))
                 {
                     paths.Add(normalizedPath);
@@ -90,7 +91,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
             yield break;
         }
 
-        var normalizedPath = NormalizePath(path);
+        var normalizedPath = PathHelpers.NormalizePath(path);
         if (IsExcludedPath(normalizedPath))
         {
             yield break;
@@ -114,7 +115,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         var emittedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var configuredDirectory in _directories)
         {
-            var sourceRoot = NormalizePath(configuredDirectory);
+            var sourceRoot = PathHelpers.NormalizePath(configuredDirectory);
             if (!Directory.Exists(sourceRoot))
             {
                 continue;
@@ -162,7 +163,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         }
 
         var extension = Path.GetExtension(path).TrimStart('.');
-        var normalizedPath = NormalizePath(path);
+        var normalizedPath = PathHelpers.NormalizePath(path);
         if (IsExcludedPath(normalizedPath))
         {
             return false;
@@ -183,7 +184,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
 
         foreach (var configuredDirectory in _directories)
         {
-            if (!TryGetDirectoryDepth(NormalizePath(configuredDirectory), candidateDirectory, out var depth))
+            if (!TryGetDirectoryDepth(PathHelpers.NormalizePath(configuredDirectory), candidateDirectory, out var depth))
             {
                 continue;
             }
@@ -210,7 +211,7 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
 
         foreach (var configuredDirectory in _directories)
         {
-            if (TryGetDirectoryDepth(NormalizePath(configuredDirectory), parentDirectory, out var depth)
+            if (TryGetDirectoryDepth(PathHelpers.NormalizePath(configuredDirectory), parentDirectory, out var depth)
                 && depth <= MaximumDepth)
             {
                 return true;
@@ -238,7 +239,9 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
     {
         try
         {
-            var relativePath = Path.GetRelativePath(NormalizePath(root), NormalizePath(candidate));
+            var relativePath = Path.GetRelativePath(
+                PathHelpers.NormalizePath(root),
+                PathHelpers.NormalizePath(candidate));
             if (string.Equals(relativePath, ".", StringComparison.Ordinal))
             {
                 depth = 0;
@@ -270,18 +273,6 @@ internal abstract class DirectoryWin32ProgramSource : IWin32ProgramSource
         {
             depth = 0;
             return false;
-        }
-    }
-
-    private static string NormalizePath(string path)
-    {
-        try
-        {
-            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
-        }
-        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
-        {
-            return path;
         }
     }
 

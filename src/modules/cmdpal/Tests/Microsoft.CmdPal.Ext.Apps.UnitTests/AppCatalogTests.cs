@@ -7,10 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -272,6 +274,216 @@ public class AppCatalogTests
         Assert.AreEqual(2, catalog.Items[0].MatchTerms.Count);
         Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Preferred"));
         Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Duplicate"));
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_ConflictingEqualPreferenceRepresentations_LogsAndSkipsConflict()
+    {
+        const string identity = "win32:conflict";
+        const string itemId = @"C:\Apps\app.exe";
+        var firstProgram = TestDataHelper.CreateTestWin32Program("First", itemId);
+        var secondProgram = TestDataHelper.CreateTestWin32Program("Second", itemId);
+        var sourceReference = new AppCatalogSourceReference("same-origin", itemId);
+        var firstItem = new AppCatalogItem(identity, 0, sourceReference, ["First"], Win32AppPayload.From(firstProgram));
+        var secondItem = new AppCatalogItem(identity, 0, sourceReference, ["Second"], Win32AppPayload.From(secondProgram));
+        var logger = new RecordingLogger<AppCatalog>();
+        using var firstSource = new TestAppSource("first", [firstItem]);
+        using var secondSource = new TestAppSource("second", [secondItem]);
+        using var catalog = CreateCatalog([firstSource, secondSource], new TestCache(null), logger: logger);
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(1, catalog.Items.Count);
+        Assert.IsTrue(logger.HasEvent(10));
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_AppExecutionAlias_CoalescesPackagedAndExecutableRepresentations()
+    {
+        const string aumid = "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc!ubuntu";
+        const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\ubuntu.exe";
+        const string targetPath = @"C:\Program Files\WindowsApps\CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc\ubuntu.exe";
+        var aliasProgram = CreateAppExecutionAliasProgram("ubuntu", aliasPath, targetPath, aumid);
+        var targetProgram = TestDataHelper.CreateTestWin32Program("ubuntu.exe", targetPath);
+        var packagedIdentity = AppIdentity.ForPackaged(aumid);
+        var aliasItem = CreateWin32CatalogItem(
+            aliasProgram,
+            identity: $"win32:{aliasPath}|args:",
+            priority: 40,
+            sourceId: "path");
+        var targetItem = CreateWin32CatalogItem(
+            targetProgram,
+            identity: $"win32:{targetPath}|args:",
+            priority: 1030,
+            sourceId: "registry");
+        var packagedItem = new AppCatalogItem(
+            packagedIdentity,
+            priority: 0,
+            new AppCatalogSourceReference("packaged", aumid),
+            ["Ubuntu"],
+            new PackagedAppSnapshot
+            {
+                Name = "Ubuntu",
+                UserModelId = aumid,
+                PackageFullName = "CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc",
+            });
+        using var aliasSource = new TestAppSource("path", [aliasItem]);
+        using var targetSource = new TestAppSource("registry", [targetItem]);
+        using var packagedSource = new TestAppSource("packaged", [packagedItem]);
+        using var catalog = CreateCatalog(
+            [aliasSource, targetSource, packagedSource],
+            new TestCache(null));
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(1, catalog.Items.Count);
+        Assert.AreEqual("Ubuntu", catalog.Items[0].Name);
+        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
+        Assert.IsTrue(catalog.Items[0].IsPackaged);
+        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "ubuntu.exe"));
+        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "Ubuntu"));
+        foreach (var representation in new[] { aliasItem, targetItem, packagedItem })
+        {
+            var id = new AppCommand(representation.ToAppItem()).Id;
+            Assert.IsTrue(catalog.Items[0].CommandIds.Contains(id, StringComparer.Ordinal));
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task RefreshAsync_AppExecutionAliasWithoutPackagedItem_PrefersRunnableAlias(bool defaultWorkingDirectory)
+    {
+        const string aumid = "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc!ubuntu";
+        const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\ubuntu.exe";
+        const string targetPath = @"C:\Program Files\WindowsApps\CanonicalGroupLimited.Ubuntu_1.0.0.0_x64__79rhkp1fndgsc\ubuntu.exe";
+        var aliasProgram = CreateAppExecutionAliasProgram("ubuntu", aliasPath, targetPath, aumid);
+        var targetProgram = TestDataHelper.CreateTestWin32Program("ubuntu.exe", targetPath);
+        if (defaultWorkingDirectory)
+        {
+            aliasProgram.WorkingDirectory = Path.GetDirectoryName(targetPath)!;
+            targetProgram.WorkingDirectory = Path.GetDirectoryName(targetPath)!;
+        }
+
+        var packagedIdentity = AppIdentity.ForPackaged(aumid);
+        var aliasItem = CreateWin32CatalogItem(aliasProgram, "win32:alias", 40, "path");
+        var targetItem = CreateWin32CatalogItem(targetProgram, "win32:target", 1030, "registry");
+        using var aliasSource = new TestAppSource("path", [aliasItem]);
+        using var targetSource = new TestAppSource("registry", [targetItem]);
+        using var catalog = CreateCatalog([aliasSource, targetSource], new TestCache(null));
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(1, catalog.Items.Count);
+        Assert.AreEqual("ubuntu", catalog.Items[0].Name);
+        Assert.AreEqual(aliasPath, catalog.Items[0].ExePath);
+        Assert.AreEqual(targetPath, catalog.Items[0].FullExecutablePath);
+        Assert.AreEqual(aumid, catalog.Items[0].UserModelId);
+        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
+        Assert.IsFalse(catalog.Items[0].IsPackaged);
+
+        var legacyCommand = new AppCommand(new AppItem
+        {
+            Name = aliasProgram.Name,
+            Subtitle = aliasProgram.Description,
+            ExePath = aliasPath,
+        });
+        Assert.AreEqual(legacyCommand.Id, new AppCommand(catalog.Items[0]).Id);
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_PackagedShortcut_CoalescesWithPackagedApplication()
+    {
+        const string aumid = "Microsoft.Microsoft3DViewer_8wekyb3d8bbwe!Microsoft.Microsoft3DViewer";
+        const string shortcutPath = @"C:\Users\test\Desktop\3D Viewer - Shortcut.lnk";
+        var shortcutProgram = TestDataHelper.CreateTestWin32Program("3D Viewer - Shortcut", shortcutPath);
+        shortcutProgram.AppType = Win32Program.ApplicationType.ShortcutApplication;
+        shortcutProgram.PackagedAppUserModelId = aumid;
+        var shortcutItem = CreateWin32CatalogItem(shortcutProgram, "win32:3d-viewer-shortcut", 20, "desktop");
+        var packagedIdentity = AppIdentity.ForPackaged(aumid);
+        var packagedItem = new AppCatalogItem(
+            packagedIdentity,
+            priority: 0,
+            new AppCatalogSourceReference("packaged", aumid),
+            ["3D Viewer"],
+            new PackagedAppSnapshot
+            {
+                Name = "3D Viewer",
+                UserModelId = aumid,
+                PackageFullName = "Microsoft.Microsoft3DViewer_1.0.0.0_x64__8wekyb3d8bbwe",
+            });
+        using var shortcutSource = new TestAppSource("desktop", [shortcutItem]);
+        using var packagedSource = new TestAppSource("packaged", [packagedItem]);
+        using var catalog = CreateCatalog([shortcutSource, packagedSource], new TestCache(null));
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(1, catalog.Items.Count);
+        Assert.AreEqual("3D Viewer", catalog.Items[0].Name);
+        Assert.AreEqual(packagedIdentity, catalog.Items[0].CatalogId);
+        Assert.IsTrue(catalog.Items[0].IsPackaged);
+        Assert.IsTrue(ContainsString(catalog.Items[0].MatchTerms, "3D Viewer - Shortcut"));
+    }
+
+    [TestMethod]
+    [DataRow("--profile work", "", false)]
+    [DataRow("", @"C:\Projects\Work", false)]
+    [DataRow("", @"C:\Projects\Work", true)]
+    public async Task RefreshAsync_TargetWithLaunchSettings_DoesNotCoalesceWithAppExecutionAlias(string arguments, string workingDirectory, bool hasPackagedIdentity)
+    {
+        const string aumid = "Contoso.App_123!app";
+        const string aliasPath = @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\app.exe";
+        const string targetPath = @"C:\Program Files\WindowsApps\Contoso.App_1.0.0.0_x64__123\app.exe";
+        var aliasProgram = CreateAppExecutionAliasProgram("app", aliasPath, targetPath, aumid);
+        var targetProgram = TestDataHelper.CreateTestWin32Program("App profile", targetPath);
+        targetProgram.Arguments = arguments;
+        targetProgram.WorkingDirectory = workingDirectory;
+        targetProgram.PackagedAppUserModelId = hasPackagedIdentity ? aumid : string.Empty;
+        var aliasItem = CreateWin32CatalogItem(aliasProgram, "win32:alias", 40, "path");
+        var targetItem = CreateWin32CatalogItem(targetProgram, "win32:target-with-arguments", 1030, "start-menu");
+        using var aliasSource = new TestAppSource("path", [aliasItem]);
+        using var targetSource = new TestAppSource("start-menu", [targetItem]);
+        using var catalog = CreateCatalog([aliasSource, targetSource], new TestCache(null));
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(2, catalog.Items.Count);
+        Assert.IsTrue(ContainsApp(catalog.Items, "app"));
+        Assert.IsTrue(ContainsApp(catalog.Items, "App profile"));
+    }
+
+    [TestMethod]
+    public async Task RefreshAsync_AmbiguousAliasTarget_DoesNotCoalesceExecutable()
+    {
+        const string targetPath = @"C:\Program Files\WindowsApps\Contoso.Shared\app.exe";
+        var firstAlias = CreateAppExecutionAliasProgram(
+            "First alias",
+            @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\first.exe",
+            targetPath,
+            "Contoso.First_123!app");
+        var secondAlias = CreateAppExecutionAliasProgram(
+            "Second alias",
+            @"C:\Users\test\AppData\Local\Microsoft\WindowsApps\second.exe",
+            targetPath,
+            "Contoso.Second_123!app");
+        var targetProgram = TestDataHelper.CreateTestWin32Program("Shared executable", targetPath);
+        using var firstSource = new TestAppSource(
+            "first-path",
+            [CreateWin32CatalogItem(firstAlias, "win32:first-alias", 40, "first-path")]);
+        using var secondSource = new TestAppSource(
+            "second-path",
+            [CreateWin32CatalogItem(secondAlias, "win32:second-alias", 40, "second-path")]);
+        using var targetSource = new TestAppSource(
+            "registry",
+            [CreateWin32CatalogItem(targetProgram, "win32:target", 1030, "registry")]);
+        using var catalog = CreateCatalog([firstSource, secondSource, targetSource], new TestCache(null));
+
+        await catalog.RefreshAsync();
+
+        Assert.AreEqual(3, catalog.Items.Count);
+        Assert.IsTrue(ContainsApp(catalog.Items, "First alias"));
+        Assert.IsTrue(ContainsApp(catalog.Items, "Second alias"));
+        Assert.IsTrue(ContainsApp(catalog.Items, "Shared executable"));
     }
 
     [TestMethod]
@@ -690,6 +902,35 @@ public class AppCatalogTests
             [name],
             Win32AppPayload.From(program));
     }
+
+    private static Win32Program CreateAppExecutionAliasProgram(
+        string name,
+        string aliasPath,
+        string targetPath,
+        string aumid)
+    {
+        var program = TestDataHelper.CreateTestWin32Program(name, aliasPath);
+        program.AppType = Win32Program.ApplicationType.RunCommand;
+        program.IcoPath = targetPath;
+        program.AppExecutionAlias = new ReparsePoint.AppExecutionAliasInfo
+        {
+            Aumid = aumid,
+            TargetPath = targetPath,
+        };
+        return program;
+    }
+
+    private static AppCatalogItem CreateWin32CatalogItem(
+        Win32Program program,
+        string identity,
+        int priority,
+        string sourceId)
+        => new(
+            identity,
+            priority,
+            new AppCatalogSourceReference(sourceId, program.FullPath),
+            [program.Name],
+            Win32AppPayload.From(program));
 
     private static bool ContainsApp(IReadOnlyList<AppItem> items, string name)
     {
