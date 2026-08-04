@@ -30,6 +30,7 @@
       <definition name="SUPPORTED_POWERTOYS_0_97_0" displayName="$(string.SUPPORTED_POWERTOYS_0_97_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_98_0" displayName="$(string.SUPPORTED_POWERTOYS_0_98_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_99_0" displayName="$(string.SUPPORTED_POWERTOYS_0_99_0)"/>
+      <definition name="SUPPORTED_POWERTOYS_0_100_0" displayName="$(string.SUPPORTED_POWERTOYS_0_100_0)"/>
       <definition name="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1" displayName="$(string.SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1)"/>
     </definitions>
   </supportedOn>
@@ -554,6 +555,16 @@
     <policy name="DisableAutomaticUpdateDownload" class="Both" displayName="$(string.DisableAutomaticUpdateDownload)" explainText="$(string.DisableAutomaticUpdateDownloadDescription)" key="Software\Policies\PowerToys" valueName="AutomaticUpdateDownloadDisabled">
       <parentCategory ref="InstallerUpdates" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_68_0" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
+    </policy>
+    <policy name="DisablePreviewUpdates" class="Both" displayName="$(string.DisablePreviewUpdates)" explainText="$(string.DisablePreviewUpdatesDescription)" key="Software\Policies\PowerToys" valueName="PreviewUpdatesDisabled">
+      <parentCategory ref="InstallerUpdates" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_0_100_0" />
       <enabledValue>
         <decimal value="1" />
       </enabledValue>

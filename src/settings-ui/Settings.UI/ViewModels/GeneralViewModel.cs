@@ -194,6 +194,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _includePrereleaseUpdatesIsGpoDisabled = GPOWrapper.GetDisablePreviewUpdatesValue() == GpoRuleConfigured.Enabled;
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
             _enableDataDiagnosticsIsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
@@ -271,6 +272,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _newUpdatesToastIsGpoDisabled;
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _includePrereleaseUpdatesIsGpoDisabled;
         private bool _includePrereleaseUpdates;
         private bool _showWhatsNewAfterUpdates;
         private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
@@ -596,6 +598,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _newUpdatesToastIsGpoDisabled ||
                     (_isAdmin && _autoDownloadUpdatesIsGpoDisabled) ||
+                    _includePrereleaseUpdatesIsGpoDisabled ||
                     _showWhatsNewAfterUpdatesIsGpoDisabled;
             }
         }
@@ -648,7 +651,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IncludePrereleaseUpdates
         {
-            get => _includePrereleaseUpdates;
+            get => _includePrereleaseUpdates && !_includePrereleaseUpdatesIsGpoDisabled;
 
             set
             {
@@ -664,7 +667,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public bool IsIncludePrereleaseUpdatesCardEnabled
         {
-            get => !_isDevBuild;
+            get => !_isDevBuild && !_includePrereleaseUpdatesIsGpoDisabled;
         }
 
         public bool ShowWhatsNewAfterUpdates

@@ -28,6 +28,18 @@ namespace
     // How many minor versions to suspend the toast notification (example: installed=0.60.0, suspend=2, next notification=0.63.*)
     // Attention: When changing this value please update the ADML file to.
     const int UPDATE_NOTIFICATION_TOAST_SUSPEND_MINOR_VERSION_COUNT = 2;
+
+    // The per-user "include prerelease updates" opt-in, additionally gated by the DisablePreviewUpdates
+    // group policy: when that policy is Enabled, preview (prerelease) updates are forced off regardless
+    // of the user's setting. Stable updates are unaffected.
+    bool effective_include_prerelease_updates()
+    {
+        if (powertoys_gpo::getDisablePreviewUpdatesValue() == powertoys_gpo::gpo_rule_configured_enabled)
+        {
+            return false;
+        }
+        return get_general_settings().includePrereleaseUpdates;
+    }
 }
 using namespace notifications;
 using namespace updating;
@@ -260,7 +272,7 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = std::move(get_github_version_info_async(get_general_settings().includePrereleaseUpdates)).get();
+            const auto new_version_info = std::move(get_github_version_info_async(effective_include_prerelease_updates())).get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
@@ -300,7 +312,7 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = std::move(get_github_version_info_async(get_general_settings().includePrereleaseUpdates)).get();
+        auto new_version_info = std::move(get_github_version_info_async(effective_include_prerelease_updates())).get();
         if (!new_version_info)
         {
             // We couldn't get a new version from github for some reason, log error
