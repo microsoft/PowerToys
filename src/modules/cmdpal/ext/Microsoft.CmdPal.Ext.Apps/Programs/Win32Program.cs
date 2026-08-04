@@ -63,6 +63,16 @@ public partial class Win32Program
 
     public string Arguments { get; set; } = string.Empty;
 
+    public string WorkingDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets metadata resolved from this program when it is an app execution alias.
+    /// </summary>
+    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+
+    /// <summary>Gets or sets the packaged application identity represented by this program.</summary>
+    internal string PackagedAppUserModelId { get; set; } = string.Empty;
+
     public ApplicationType AppType { get; set; }
 
     // Wrappers for File Operations
@@ -546,6 +556,18 @@ public partial class Win32Program
     internal static bool IsExecutablePath(string path)
         => ExecutableApplicationExtensions.Contains(Extension(path));
 
+    /// <summary>Determines whether an application type uses its executable target as catalog identity.</summary>
+    internal static bool UsesExecutableTargetIdentity(ApplicationType appType)
+        => appType is ApplicationType.Win32Application
+            or ApplicationType.RunCommand
+            or ApplicationType.WebApplication;
+
+    /// <summary>Normalizes launch profiles without distinguishing default executable or installer directories.</summary>
+    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
+    {
+        return AppIdentity.GetDistinctWorkingDirectory(targetPath, workingDirectory, explicitAppUserModelId);
+    }
+
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
@@ -841,20 +863,32 @@ public partial class Win32Program
         }
     }
 
-    public string WorkingDirectory { get; set; } = string.Empty;
+    /// <summary>Gets or sets the explicit Windows application ID declared by this shortcut.</summary>
+    internal string ExplicitAppUserModelId { get; set; } = string.Empty;
 
-    public string ExplicitAppUserModelId { get; set; } = string.Empty;
+    private static bool IsSquirrelVersionDirectory(string targetPath, string targetDirectory, string workingDirectory, string? explicitAppUserModelId)
+    {
+        if (string.IsNullOrEmpty(explicitAppUserModelId)
+            || !string.Equals(Path.GetExtension(targetPath), ".exe", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetDirectoryName(workingDirectory), targetDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
-    public string PackagedAppUserModelId { get; set; } = string.Empty;
+        // ponytail: numeric release folders only; extend parsing when prerelease shortcuts need deduplication.
+        var directoryName = Path.GetFileName(workingDirectory);
+        if (!directoryName.StartsWith("app-", StringComparison.OrdinalIgnoreCase)
+            || !Version.TryParse(directoryName.AsSpan(4), out _))
+        {
+            return false;
+        }
 
-    internal ReparsePoint.AppExecutionAliasInfo? AppExecutionAlias { get; set; }
+        // Squirrel's root launcher chooses the installed version and its working directory itself.
+        var expectedId = $"com.squirrel.{Path.GetFileName(targetDirectory).Replace(" ", string.Empty)}.{Path.GetFileNameWithoutExtension(targetPath).Replace(" ", string.Empty)}";
+        return string.Equals(explicitAppUserModelId, expectedId, StringComparison.OrdinalIgnoreCase);
+    }
 
     internal LaunchTarget Target => AppType == ApplicationType.InternetShortcutApplication
         ? LaunchTarget.Url(FullPath)
         : LaunchTarget.FilePath(FullPath);
-
-    internal static string GetDistinctWorkingDirectory(string targetPath, string workingDirectory, string? explicitAppUserModelId = null)
-    {
-        return AppIdentity.GetDistinctWorkingDirectory(targetPath, workingDirectory, explicitAppUserModelId);
-    }
 }

@@ -256,7 +256,7 @@ internal sealed partial class Win32AppSource : IAppSource
         HashSet<string> candidatePathKeys,
         CancellationToken cancellationToken)
     {
-        var normalizedPath = NormalizeTargetPath(dirtyPath);
+        var normalizedPath = PathHelpers.NormalizePath(dirtyPath);
         if (affectedPathKeys.Add(normalizedPath))
         {
             var isFile = File.Exists(normalizedPath);
@@ -370,7 +370,7 @@ internal sealed partial class Win32AppSource : IAppSource
                 var launchIdentity = AppIdentity.ForWin32(LaunchTarget.FilePath(path), program.Arguments, workingDirectory);
                 indexedItems.Add(new AppCatalogItem(
                     identity,
-                    GetRepresentationPriority(path) + _source.Priority,
+                    GetRepresentationPriority(program, path) + _source.Priority,
                     new AppCatalogSourceReference(_source.Id, path),
                     CreateMatchTerms(program, path),
                     Win32AppPayload.From(program),
@@ -398,33 +398,21 @@ internal sealed partial class Win32AppSource : IAppSource
         Win32ProgramSourceProfile option)
         => (profile & option) != 0;
 
-    private static int GetRepresentationPriority(string sourcePath)
-        => Win32Program.IsExecutablePath(sourcePath) ? RawExecutablePriorityOffset : 0;
+    private static int GetRepresentationPriority(Win32Program program, string sourcePath)
+        => Win32Program.IsExecutablePath(sourcePath) && program.AppExecutionAlias is null
+            ? RawExecutablePriorityOffset
+            : 0;
 
-    private static string CreateCatalogIdentity(Win32Program program)
+    private static string CreateCatalogIdentity(Win32Program program, string workingDirectory)
     {
-        var target = IsExecutableBacked(program) && !string.IsNullOrWhiteSpace(program.FullPath)
-            ? NormalizeTargetPath(program.FullPath)
+        var target = Win32Program.UsesExecutableTargetIdentity(program.AppType) && !string.IsNullOrWhiteSpace(program.FullPath)
+            ? PathHelpers.NormalizePath(program.FullPath)
             : program.GetAppIdentifier();
         var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(program.Arguments ?? string.Empty));
-        return $"win32:{target}|args:{encodedArguments}";
-    }
-
-    private static bool IsExecutableBacked(Win32Program program)
-        => program.AppType is Win32Program.ApplicationType.Win32Application
-            or Win32Program.ApplicationType.RunCommand
-            or Win32Program.ApplicationType.WebApplication;
-
-    private static string NormalizeTargetPath(string targetPath)
-    {
-        try
-        {
-            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(targetPath));
-        }
-        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
-        {
-            return targetPath;
-        }
+        var identity = $"win32:{target}|args:{encodedArguments}";
+        return string.IsNullOrEmpty(workingDirectory)
+            ? identity
+            : $"{identity}|cwd:{workingDirectory}";
     }
 
     private static List<string> CreateMatchTerms(Win32Program program, string sourcePath)
@@ -441,6 +429,7 @@ internal sealed partial class Win32AppSource : IAppSource
         AddMatchTerm(terms, uniqueTerms, program.ExecutableNameLocalized);
         AddMatchTerm(terms, uniqueTerms, program.LnkResolvedExecutableName);
         AddMatchTerm(terms, uniqueTerms, program.LnkResolvedExecutableNameLocalized);
+        AddMatchTerm(terms, uniqueTerms, program.ExplicitAppUserModelId);
         AddMatchTerm(terms, uniqueTerms, sourcePath);
         return terms;
     }
@@ -500,7 +489,7 @@ internal sealed partial class Win32AppSource : IAppSource
             }
 
             var expandedPath = Environment.ExpandEnvironmentVariables(configuredPath.Trim());
-            var normalizedPath = NormalizeTargetPath(expandedPath);
+            var normalizedPath = PathHelpers.NormalizePath(expandedPath);
             if (string.IsNullOrWhiteSpace(normalizedPath) || !uniquePaths.Add(normalizedPath))
             {
                 continue;
@@ -525,7 +514,7 @@ internal sealed partial class Win32AppSource : IAppSource
         var watchedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var sourcePath in _source.WatchPaths)
         {
-            var path = NormalizeTargetPath(sourcePath);
+            var path = PathHelpers.NormalizePath(sourcePath);
             if (string.IsNullOrWhiteSpace(path) || !watchedPaths.Add(path))
             {
                 continue;
@@ -723,7 +712,7 @@ internal sealed partial class Win32AppSource : IAppSource
 
         foreach (var sourcePath in _source.WatchPaths)
         {
-            if (string.Equals(NormalizeTargetPath(sourcePath), path, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(PathHelpers.NormalizePath(sourcePath), path, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

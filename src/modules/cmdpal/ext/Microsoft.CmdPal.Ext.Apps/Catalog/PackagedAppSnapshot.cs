@@ -75,6 +75,16 @@ internal sealed record PackagedAppSnapshot : IAppCatalogPayload
         };
     }
 
+    /// <inheritdoc />
+    public string GetCommandId() => AppCommand.GenerateId(Name, Description, string.Empty);
+
+    /// <inheritdoc />
+    string? IAppCatalogPayload.GetCanonicalIdentityHint()
+        => string.IsNullOrWhiteSpace(UserModelId) ? null : AppIdentity.ForPackaged(UserModelId);
+
+    /// <inheritdoc />
+    string? IAppCatalogPayload.GetCanonicalTargetPath() => null;
+
     private List<IContextItem> GetCommands()
     {
         List<IContextItem> commands = [];
@@ -118,7 +128,4 @@ internal sealed record PackagedAppSnapshot : IAppCatalogPayload
 
         return commands;
     }
-
-    /// <inheritdoc />
-    public string GetCommandId() => AppCommand.GenerateId(Name, Description, string.Empty);
 }

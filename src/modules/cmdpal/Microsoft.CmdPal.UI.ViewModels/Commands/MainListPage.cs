@@ -735,7 +735,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
                     if (pinnedCommandIds.Count > 0)
                     {
-                        newApps = allNewApps.Where(li => li.Safe.Command != null && !pinnedCommandIds.Contains(li.Safe.Command.Id));
+                        newApps = allNewApps.Where(li => li.Safe.Command != null
+                            && !pinnedCommandIds.Contains(li.Safe.Command.Id)
+                            && (li.Safe is not AppListItem app || !app.App.CommandIds.Any(pinnedCommandIds.Contains)));
                     }
                     else
                     {
