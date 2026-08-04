@@ -100,7 +100,7 @@ namespace Microsoft.PowerToys.UITest
             ModuleInfo = new Dictionary<PowerToysModule, ModuleInfo>
             {
                 [PowerToysModule.PowerToysSettings] = new ModuleInfo("PowerToys.Settings.exe", "PowerToys Settings", "WinUI3Apps"),
-                [PowerToysModule.FancyZone] = new ModuleInfo("PowerToys.FancyZonesEditor.exe", "FancyZones Layout"),
+                [PowerToysModule.FancyZone] = new ModuleInfo("PowerToys.FancyZonesEditor.exe", "FancyZones Layout", "WinUI3Apps"),
                 [PowerToysModule.Hosts] = new ModuleInfo("PowerToys.Hosts.exe", "Hosts File Editor", "WinUI3Apps"),
                 [PowerToysModule.Runner] = new ModuleInfo("PowerToys.exe", "PowerToys"),
                 [PowerToysModule.Workspaces] = new ModuleInfo("PowerToys.WorkspacesEditor.exe", "Workspaces Editor"),

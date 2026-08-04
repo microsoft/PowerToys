@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using FancyZonesEditor.Helpers;
 using FancyZonesEditor.Models;
 
 namespace FancyZonesEditor
@@ -46,18 +47,18 @@ namespace FancyZonesEditor
         public MainWindowSettingsModel()
         {
             // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
-            var blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank)
+            var blankModel = new CanvasLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Blank"), LayoutType.Blank)
             {
                 TemplateZoneCount = 0,
                 SensitivityRadius = 0,
             };
             TemplateModels.Insert((int)LayoutType.Blank, blankModel);
 
-            var focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
+            var focusModel = new CanvasLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Focus"), LayoutType.Focus);
             focusModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Focus, focusModel);
 
-            var columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
+            var columnsModel = new GridLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Columns"), LayoutType.Columns)
             {
                 Rows = 1,
                 RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
@@ -65,7 +66,7 @@ namespace FancyZonesEditor
             columnsModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Columns, columnsModel);
 
-            var rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
+            var rowsModel = new GridLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Rows"), LayoutType.Rows)
             {
                 Columns = 1,
                 ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
@@ -73,11 +74,11 @@ namespace FancyZonesEditor
             rowsModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Rows, rowsModel);
 
-            var gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
+            var gridModel = new GridLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Grid"), LayoutType.Grid);
             gridModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.Grid, gridModel);
 
-            var priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
+            var priorityGridModel = new GridLayoutModel(ResourceLoaderInstance.GetString("Template_Layout_Priority_Grid"), LayoutType.PriorityGrid);
             priorityGridModel.InitTemplateZones();
             TemplateModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
 

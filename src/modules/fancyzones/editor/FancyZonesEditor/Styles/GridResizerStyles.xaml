@@ -1,0 +1,59 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:FancyZonesEditor">
+
+    <!--
+        Template for the grid resizer pill hosted by GridResizer.
+        The WPF template used ControlTemplate.Triggers; WinUI expresses the same states
+        through the VisualStateManager.
+    -->
+    <Style x:Key="GridResizerThumbStyle" TargetType="Thumb">
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border
+                        x:Name="Body"
+                        Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        CornerRadius="24">
+                        <Grid>
+                            <Rectangle
+                                Width="2"
+                                Height="20"
+                                Margin="5,0,0,0"
+                                Fill="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                            <Rectangle
+                                Width="2"
+                                Height="20"
+                                Margin="-5,0,0,0"
+                                Fill="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                        </Grid>
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Body.Background" Value="{ThemeResource AccentFillColorSecondaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Body.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Body.Background" Value="{ThemeResource AccentFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

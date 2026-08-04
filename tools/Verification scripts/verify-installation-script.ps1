@@ -349,9 +349,7 @@ function Test-CoreFiles {
         'PowerToys.Awake.exe',
         'PowerToys.Awake.dll',
         
-        # FancyZones
-        'PowerToys.FancyZonesEditor.exe',
-        'PowerToys.FancyZonesEditor.dll',
+        # FancyZones (the editor is a WinUI 3 app and lives in WinUI3Apps)
         'PowerToys.FancyZonesEditorCommon.dll',
         'PowerToys.FancyZonesModuleInterface.dll',
         'PowerToys.FancyZones.exe',
@@ -499,6 +497,10 @@ function Test-CoreFiles {
         'PowerToys.RegistryPreviewUILib.dll',
         'PowerToys.RegistryPreview.dll',
         'PowerToys.RegistryPreview.exe',
+
+        # FancyZones - the editor moved from the install root to WinUI3Apps
+        'PowerToys.FancyZonesEditor.exe',
+        'PowerToys.FancyZonesEditor.dll',
 
         # PowerAccent (Quick Accent) - moved from the install root to WinUI3Apps
         'PowerAccent.Core.dll',

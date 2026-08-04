@@ -165,12 +165,11 @@
         </RegistryKey>
         <File Id="Launcher_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.PowerLauncher.resources.dll" />
       </Component>
-      <Component Id="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" Guid="$(var.CompGUIDPrefix)01">
-        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
-          <RegistryValue Type="string" Name="FancyZonesEditor_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />
-        </RegistryKey>
-        <File Id="FancyZonesEditor_$(var.IdSafeLanguage)_File" Source="$(var.BinDir)\$(var.Language)\PowerToys.FancyZonesEditor.resources.dll" />
-      </Component>
+      <!--
+        FancyZones Editor is a WinUI 3 app: it ships its localized strings in
+        PowerToys.FancyZonesEditor.pri rather than in satellite .resources.dll assemblies,
+        so it has no per-language resource component here.
+      -->
       <Component Id="ColorPicker_$(var.IdSafeLanguage)_Component" Directory="Resource$(var.IdSafeLanguage)INSTALLFOLDER" Guid="$(var.CompGUIDPrefix)03">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="ColorPicker_$(var.IdSafeLanguage)_Component" Value="" KeyPath="yes" />

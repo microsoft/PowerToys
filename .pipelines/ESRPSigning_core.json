@@ -57,8 +57,8 @@
             "PowerToys.Awake.exe",
             "PowerToys.Awake.dll",
 
-            "PowerToys.FancyZonesEditor.exe",
-            "PowerToys.FancyZonesEditor.dll",
+            "WinUI3Apps\\PowerToys.FancyZonesEditor.exe",
+            "WinUI3Apps\\PowerToys.FancyZonesEditor.dll",
             "PowerToys.FancyZonesEditorCommon.dll",
             "PowerToys.FancyZonesModuleInterface.dll",
             "PowerToys.FancyZones.exe",

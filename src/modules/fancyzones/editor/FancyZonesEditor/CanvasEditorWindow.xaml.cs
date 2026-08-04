@@ -2,23 +2,44 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows;
-using System.Windows.Input;
-
 using FancyZonesEditor.Models;
 using ManagedCommon;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace FancyZonesEditor
 {
-    public partial class CanvasEditorWindow : EditorWindow
+    public sealed partial class CanvasEditorWindow : EditorWindow
     {
         public CanvasEditorWindow(CanvasLayoutModel layout)
             : base(layout)
         {
             InitializeComponent();
 
-            KeyUp += CanvasEditorWindow_KeyUp;
-            KeyDown += CanvasEditorWindow_KeyDown;
+            // The WPF markup reached the layout through a RelativeSource binding on the
+            // Window; WinUI's Window is not a DependencyObject, so the DataContext is set here.
+            NewZoneButton.DataContext = layout;
+
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(DragBar);
+
+            RootGrid.KeyUp += CanvasEditorWindow_KeyUp;
+            RootGrid.KeyDown += CanvasEditorWindow_KeyDown;
+        }
+
+        private static bool IsCtrlKeyDown()
+        {
+            return InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        }
+
+        private void OnRootLoaded(object sender, RoutedEventArgs e)
+        {
+            SizeToContent();
+            CenterOnOverlayMonitor();
+            NewZoneButton.Focus(FocusState.Programmatic);
         }
 
         private void OnAddZone(object sender, RoutedEventArgs e)
@@ -30,33 +51,27 @@ namespace FancyZonesEditor
             }
         }
 
-        protected new void OnCancel(object sender, RoutedEventArgs e)
+        private new void OnCancel(object sender, RoutedEventArgs e)
         {
             Logger.LogInfo("Cancel changes");
             base.OnCancel(sender, e);
         }
 
-        private void CanvasEditorWindow_KeyUp(object sender, KeyEventArgs e)
+        private void CanvasEditorWindow_KeyUp(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Key.Escape)
+            if (e.Key == VirtualKey.Escape)
             {
                 OnCancel(sender, null);
             }
         }
 
-        private void CanvasEditorWindow_KeyDown(object sender, KeyEventArgs e)
+        private void CanvasEditorWindow_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            if (e.Key == VirtualKey.Tab && IsCtrlKeyDown())
             {
                 e.Handled = true;
                 App.Overlay.FocusEditor();
             }
-        }
-
-        // This is required to fix a WPF rendering bug when using custom chrome
-        private void EditorWindow_ContentRendered(object sender, System.EventArgs e)
-        {
-            InvalidateVisual();
         }
     }
 }

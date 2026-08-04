@@ -4,23 +4,35 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
 
 using FancyZonesEditor.Models;
 using ManagedCommon;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation;
 
 namespace FancyZonesEditor
 {
     public class Overlay
     {
+        private readonly LayoutBackup _layoutBackup = new LayoutBackup();
+
         private MainWindow _mainWindow;
         private LayoutPreview _layoutPreview;
         private UserControl _editorLayout;
         private EditorWindow _editorWindow;
-        private LayoutBackup _layoutBackup = new LayoutBackup();
+        private object _dataContext;
+        private int _currentDesktop;
+
+        public Overlay()
+        {
+            WorkAreas = new List<Rect>();
+            Monitors = new List<Monitor>();
+        }
 
         public List<Monitor> Monitors { get; private set; }
+
+        public List<Rect> WorkAreas { get; private set; }
 
         public Rect WorkArea
         {
@@ -48,7 +60,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public Window CurrentLayoutWindow
+        public LayoutOverlayWindow CurrentLayoutWindow
         {
             get
             {
@@ -61,8 +73,6 @@ namespace FancyZonesEditor
             }
         }
 
-        public List<Rect> WorkAreas { get; private set; }
-
         public object CurrentDataContext
         {
             get
@@ -73,11 +83,9 @@ namespace FancyZonesEditor
             set
             {
                 _dataContext = value;
-                CurrentLayoutWindow.DataContext = value;
+                CurrentLayoutWindow.OverlayDataContext = value;
             }
         }
-
-        private object _dataContext;
 
         public int DesktopsCount
         {
@@ -117,8 +125,6 @@ namespace FancyZonesEditor
             }
         }
 
-        private int _currentDesktop;
-
         public bool SpanZonesAcrossMonitors { get; set; }
 
         public bool MultiMonitorMode
@@ -127,12 +133,6 @@ namespace FancyZonesEditor
             {
                 return DesktopsCount > 1 && !SpanZonesAcrossMonitors;
             }
-        }
-
-        public Overlay()
-        {
-            WorkAreas = new List<Rect>();
-            Monitors = new List<Monitor>();
         }
 
         public void Show()
@@ -165,8 +165,8 @@ namespace FancyZonesEditor
             CurrentDataContext = settings.UpdateSelectedLayoutModel();
 
             var window = CurrentLayoutWindow;
-            window.Content = _layoutPreview;
-            window.DataContext = CurrentDataContext;
+            window.OverlayContent = _layoutPreview;
+            window.OverlayDataContext = CurrentDataContext;
 
             if (_layoutPreview != null)
             {
@@ -175,9 +175,9 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < DesktopsCount; i++)
             {
-                if (!Monitors[i].Window.IsVisible)
+                if (!Monitors[i].Window.Visible)
                 {
-                    Monitors[i].Window.Show();
+                    Monitors[i].Window.Activate();
                 }
             }
         }
@@ -198,11 +198,10 @@ namespace FancyZonesEditor
                 _editorWindow = new CanvasEditorWindow(canvas);
             }
 
-            CurrentLayoutWindow.Content = _editorLayout;
+            CurrentLayoutWindow.OverlayContent = _editorLayout;
 
-            _editorWindow.Owner = Monitors[App.Overlay.CurrentDesktop].Window;
-            _editorWindow.DataContext = model;
-            _editorWindow.Show();
+            _editorWindow.SetOwner(Monitors[CurrentDesktop].Window.Hwnd);
+            _editorWindow.Activate();
         }
 
         public void CloseEditor()
@@ -226,7 +225,7 @@ namespace FancyZonesEditor
 
             mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
-            CurrentLayoutWindow.Content = _layoutPreview;
+            CurrentLayoutWindow.OverlayContent = _layoutPreview;
 
             OpenMainWindow();
         }
@@ -250,10 +249,7 @@ namespace FancyZonesEditor
 
         public void FocusEditorWindow()
         {
-            if (_editorWindow != null)
-            {
-                _editorWindow.Focus();
-            }
+            _editorWindow?.Activate();
         }
 
         public void StartEditing(LayoutModel model)
@@ -304,43 +300,6 @@ namespace FancyZonesEditor
             return Math.Round(coordinate * scaleFactor);
         }
 
-        private void Update()
-        {
-            CloseLayout();
-
-            if (_mainWindow != null)
-            {
-                _mainWindow.Update();
-            }
-
-            ShowLayout();
-        }
-
-        private void CloseLayout()
-        {
-            var window = CurrentLayoutWindow;
-            window.Content = null;
-            window.DataContext = null;
-        }
-
-        private void OpenMainWindow()
-        {
-            if (_mainWindow == null)
-            {
-                _mainWindow = new MainWindow(SpanZonesAcrossMonitors, WorkArea);
-            }
-
-            // reset main window owner to keep it on the top
-            _mainWindow.Owner = CurrentLayoutWindow;
-            _mainWindow.ShowActivated = true;
-            _mainWindow.Topmost = true;
-            _mainWindow.Show();
-
-            // window is set to topmost to make sure it shows on top of PowerToys settings page
-            // we can reset topmost flag now
-            _mainWindow.Topmost = false;
-        }
-
         public void AddMonitor(Monitor monitor)
         {
             bool inserted = false;
@@ -364,6 +323,42 @@ namespace FancyZonesEditor
             {
                 Monitors.Add(monitor);
             }
+        }
+
+        private void Update()
+        {
+            CloseLayout();
+
+            if (_mainWindow != null)
+            {
+                _mainWindow.Update();
+            }
+
+            ShowLayout();
+        }
+
+        private void CloseLayout()
+        {
+            var window = CurrentLayoutWindow;
+            window.OverlayContent = null;
+            window.OverlayDataContext = null;
+        }
+
+        private void OpenMainWindow()
+        {
+            if (_mainWindow == null)
+            {
+                _mainWindow = new MainWindow(SpanZonesAcrossMonitors, WorkArea);
+            }
+
+            // reset main window owner to keep it on the top
+            _mainWindow.SetOwner(CurrentLayoutWindow.Hwnd);
+
+            // window is set to topmost to make sure it shows on top of PowerToys settings page
+            // we can reset topmost flag right after it is shown
+            _mainWindow.IsAlwaysOnTop = true;
+            _mainWindow.Activate();
+            _mainWindow.IsAlwaysOnTop = false;
         }
     }
 }

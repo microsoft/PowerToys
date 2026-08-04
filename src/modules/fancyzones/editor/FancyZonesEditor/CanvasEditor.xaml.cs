@@ -2,23 +2,26 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-
 using FancyZonesEditor.Models;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.Graphics;
+using Windows.System;
+using Windows.UI.Core;
 
 namespace FancyZonesEditor
 {
     /// <summary>
     /// Interaction logic for CanvasEditor.xaml
     /// </summary>
-    public partial class CanvasEditor : UserControl
+    public sealed partial class CanvasEditor : UserControl
     {
         // Non-localizable strings
         private const string PropertyUpdateLayoutID = "UpdateLayout";
 
-        private CanvasLayoutModel _model;
+        private readonly CanvasLayoutModel _model;
 
         public CanvasEditor(CanvasLayoutModel layout)
         {
@@ -29,21 +32,25 @@ namespace FancyZonesEditor
             _model = layout;
         }
 
-        private void CanvasEditor_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        public void FocusZone()
         {
-            if (e.Key == Key.Tab && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            if (Preview.Children.Count > 0 && Preview.Children[0] is CanvasZone canvas)
             {
-                e.Handled = true;
-                App.Overlay.FocusEditorWindow();
+                canvas.FocusZone();
             }
         }
 
-        public void FocusZone()
+        private static bool IsCtrlKeyDown()
         {
-            if (Preview.Children.Count > 0)
+            return InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
+        }
+
+        private void CanvasEditor_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Tab && IsCtrlKeyDown())
             {
-                var canvas = Preview.Children[0] as CanvasZone;
-                canvas.FocusZone();
+                e.Handled = true;
+                App.Overlay.FocusEditorWindow();
             }
         }
 
@@ -98,7 +105,7 @@ namespace FancyZonesEditor
 
             for (int i = 0; i < previewChildrenCount; i++)
             {
-                Int32Rect rect = _model.Zones[i];
+                RectInt32 rect = _model.Zones[i];
                 CanvasZone zone = previewChildren[i] as CanvasZone;
 
                 zone.ZoneIndex = i;
@@ -106,7 +113,7 @@ namespace FancyZonesEditor
                 Canvas.SetTop(zone, rect.Y);
                 zone.Height = rect.Height;
                 zone.Width = rect.Width;
-                zone.LabelID.Content = i + 1;
+                zone.LabelID.Text = (i + 1).ToString(System.Globalization.CultureInfo.CurrentCulture);
             }
         }
     }

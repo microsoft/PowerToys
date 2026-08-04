@@ -4,69 +4,87 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
-using System.Windows.Automation;
-using System.Windows.Automation.Peers;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Interop;
-using Common.UI;
+
 using FancyZoneEditor.Telemetry;
+using FancyZonesEditor.Helpers;
 using FancyZonesEditor.Models;
 using FancyZonesEditor.Utils;
+using FancyZonesEditor.ViewModels;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
-using ModernWpf.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Input;
+using Windows.Foundation;
+using Windows.Graphics;
+using Windows.System;
+using WinRT.Interop;
+using WinUIEx;
 
 namespace FancyZonesEditor
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public sealed partial class MainWindow : WindowEx
     {
+        private const int MinimalForDefaultWrapPanelsHeight = 900;
         private const int DefaultWrapPanelItemSize = 164;
         private const int SmallWrapPanelItemSize = 164;
-        private const int MinimalForDefaultWrapPanelsHeight = 900;
+
+        private static CompositeFormat _editTemplate;
+        private static CompositeFormat _pixelValue;
+        private static CompositeFormat _templateZoneCountValue;
 
         private readonly MainWindowSettingsModel _settings = ((App)Application.Current).MainWindowSettings;
+        private readonly MonitorViewModel _monitorViewModel = new MonitorViewModel();
+        private readonly Rect _workArea;
+        private readonly bool _spanZonesAcrossMonitors;
 
         private ContentDialog _openedDialog;
-        private TextBlock _createLayoutAnnounce;
-
-        private bool haveTriedToGetFocusAlready;
-
-        private static readonly CompositeFormat EditTemplate = System.Text.CompositeFormat.Parse(Properties.Resources.Edit_Template);
-        private static readonly CompositeFormat PixelValue = System.Text.CompositeFormat.Parse(Properties.Resources.Pixel_Value);
-        private static readonly CompositeFormat TemplateZoneCountValue = System.Text.CompositeFormat.Parse(Properties.Resources.Template_Zone_Count_Value);
-
-        public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
+        private bool _haveTriedToGetFocusAlready;
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
-            _createLayoutAnnounce = (TextBlock)FindName("LayoutCreationAnnounce");
-            DataContext = _settings;
 
-            KeyUp += MainWindow_KeyUp;
-            PreviewKeyDown += MainWindow_PreviewKeyDown;
+            _spanZonesAcrossMonitors = spanZonesAcrossMonitors;
+            _workArea = workArea;
 
-            if (spanZonesAcrossMonitors)
-            {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen;
-            }
+            Title = ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title");
+            RootGrid.DataContext = _settings;
+
+            Monitors.ItemsSource = _monitorViewModel.MonitorInfoForViewModel;
+            TemplatesGridView.ItemsSource = MainWindowSettingsModel.TemplateModels;
+            CustomGridView.ItemsSource = MainWindowSettingsModel.CustomModels;
+
+            MainWindowSettingsModel.CustomModels.CollectionChanged += CustomModels_CollectionChanged;
+            UpdateEmptyCustomLayoutsMessage();
+
+            // WinUI cannot x:Bind to a named element from a Window-rooted XAML tree, so the
+            // accessibility labels the WPF markup declared are wired up here instead.
+            AutomationProperties.SetLabeledBy(TemplatesGridView, TemplatesHeaderBlock);
+            AutomationProperties.SetLabeledBy(CustomGridView, CustomHeaderBlock);
+            AutomationProperties.SetLabeledBy(QuickKeySelectionComboBox, QuickKeyTitle);
+            AutomationProperties.SetLabeledBy(LayoutNameText, NameHeaderText);
+
+            RootGrid.KeyUp += MainWindow_KeyUp;
+            RootGrid.KeyDown += MainWindow_KeyDown;
+            RootGrid.Loaded += RootGrid_Loaded;
+
+            Closed += OnClosing;
 
             if (workArea.Height < MinimalForDefaultWrapPanelsHeight || App.Overlay.MultiMonitorMode)
             {
                 WrapPanelItemSize = SmallWrapPanelItemSize;
             }
-
-            MaxWidth = workArea.Width;
-            MaxHeight = workArea.Height;
-            SizeToContent = SizeToContent.WidthAndHeight;
 
             // reinit considering work area rect
             _settings.InitModels();
@@ -74,10 +92,87 @@ namespace FancyZonesEditor
             PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
-        private void BringToFront()
+        public int WrapPanelItemSize { get; set; } = DefaultWrapPanelItemSize;
+
+        // ResourceLoader is not available at class-load time in every host, so
+        // resource-dependent statics are resolved lazily.
+        private static CompositeFormat EditTemplate => _editTemplate ??=
+            CompositeFormat.Parse(ResourceLoaderInstance.GetString("Edit_Template"));
+
+        private static CompositeFormat PixelValue => _pixelValue ??=
+            CompositeFormat.Parse(ResourceLoaderInstance.GetString("Pixel_Value"));
+
+        private static CompositeFormat TemplateZoneCountValue => _templateZoneCountValue ??=
+            CompositeFormat.Parse(ResourceLoaderInstance.GetString("Template_Zone_Count_Value"));
+
+        /// <summary>
+        /// Makes this window an owned window of the layout overlay, so it stays on top of it.
+        /// WinUI 3 has no <c>Window.Owner</c>.
+        /// </summary>
+        /// <param name="ownerHwnd">Handle of the layout overlay window.</param>
+        public void SetOwner(IntPtr ownerHwnd)
+        {
+            NativeMethods.SetWindowOwner(WindowNative.GetWindowHandle(this), ownerHwnd);
+        }
+
+        public void Update()
+        {
+            RootGrid.DataContext = null;
+            RootGrid.DataContext = _settings;
+        }
+
+        private static bool IsCtrlKeyDown()
+        {
+            return Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control)
+                .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+        }
+
+        private void RootGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            SizeToContent();
+            PositionWindow();
+
+            if (!_haveTriedToGetFocusAlready)
+            {
+                BringWindowToFront();
+            }
+        }
+
+        /// <summary>
+        /// WinUI 3 has no <c>SizeToContent</c>; the window is measured and resized to the content,
+        /// clamped to the work area the way the WPF MaxWidth/MaxHeight did.
+        /// </summary>
+        private void SizeToContent()
+        {
+            RootGrid.Measure(new Size(_workArea.Width, _workArea.Height));
+            Size desired = RootGrid.DesiredSize;
+
+            double scale = RootGrid.XamlRoot?.RasterizationScale ?? 1.0;
+            int width = (int)Math.Ceiling(Math.Min(desired.Width, _workArea.Width) * scale);
+            int height = (int)Math.Ceiling(Math.Min(desired.Height, _workArea.Height) * scale);
+
+            AppWindow.ResizeClient(new SizeInt32(Math.Max(width, 1), Math.Max(height, 1)));
+        }
+
+        private void PositionWindow()
+        {
+            IntPtr hwnd = WindowNative.GetWindowHandle(this);
+
+            // Move onto the target monitor first (virtual coordinates, matching how the overlay
+            // is positioned), then center within that monitor's work area.
+            NativeMethods.SetWindowPositionDpiUnaware(hwnd, (int)_workArea.X, (int)_workArea.Y, AppWindow.Size.Width, AppWindow.Size.Height);
+
+            var display = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Nearest);
+            RectInt32 area = display.WorkArea;
+            AppWindow.Move(new PointInt32(
+                area.X + ((area.Width - AppWindow.Size.Width) / 2),
+                area.Y + ((area.Height - AppWindow.Size.Height) / 2)));
+        }
+
+        private void BringWindowToFront()
         {
             // Get the window handle of the FancyZones Editor window
-            IntPtr handle = new WindowInteropHelper(this).Handle;
+            IntPtr handle = WindowNative.GetWindowHandle(this);
 
             // Get the handle of the window currently in the foreground
             IntPtr foregroundWindowHandle = NativeMethods.GetForegroundWindow();
@@ -107,26 +202,33 @@ namespace FancyZonesEditor
             // Bring the FancyZones Editor window to the foreground and activate it
             NativeMethods.SwitchToThisWindow(handle, true);
 
-            haveTriedToGetFocusAlready = true;
+            _haveTriedToGetFocusAlready = true;
         }
 
-        public void Update()
+        private void CustomModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            DataContext = _settings;
+            UpdateEmptyCustomLayoutsMessage();
         }
 
-        private void MainWindow_KeyUp(object sender, KeyEventArgs e)
+        private void UpdateEmptyCustomLayoutsMessage()
         {
-            if (e.Key == Key.Escape)
+            NoCustomLayoutsPanel.Visibility = MainWindowSettingsModel.CustomModelsCount == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void MainWindow_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape)
             {
-                CloseDialog(sender);
+                CloseDialog();
             }
         }
 
         // Prevent closing the dialog with enter
-        private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void MainWindow_KeyDown(object sender, KeyRoutedEventArgs e)
         {
-            if (e.Key == Key.Enter && _openedDialog != null && _openedDialog.IsVisible)
+            if (e.Key == VirtualKey.Enter && _openedDialog != null)
             {
                 if (e.OriginalSource is RadioButton source && source.IsChecked != true)
                 {
@@ -136,12 +238,12 @@ namespace FancyZonesEditor
             }
         }
 
-        private void LayoutItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void LayoutItem_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            CloseDialog(sender);
+            CloseDialog();
         }
 
-        private void CloseDialog(object sender)
+        private void CloseDialog()
         {
             if (_openedDialog != null)
             {
@@ -149,49 +251,7 @@ namespace FancyZonesEditor
             }
             else
             {
-                OnClosing(sender, null);
-            }
-        }
-
-        private void DecrementZones_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settings.SelectedModel.TemplateZoneCount > 1)
-            {
-                _settings.SelectedModel.TemplateZoneCount--;
-            }
-        }
-
-        private void IncrementZones_Click(object sender, RoutedEventArgs e)
-        {
-            if (_settings.SelectedModel.IsZoneAddingAllowed)
-            {
-                _settings.SelectedModel.TemplateZoneCount++;
-            }
-        }
-
-        private void LayoutItem_MouseEnter(object sender, MouseEventArgs e)
-        {
-            // Select(((Grid)sender).DataContext as LayoutModel);
-        }
-
-        private void LayoutItem_Focused(object sender, RoutedEventArgs e)
-        {
-            // Ignore focus on Edit button click
-            if (e.Source is Button)
-            {
-                return;
-            }
-
-            Select(((Border)sender).DataContext as LayoutModel);
-        }
-
-        private void LayoutItem_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return || e.Key == Key.Space)
-            {
-                // When certain layout item (template or custom) is focused through keyboard and user
-                // presses Enter or Space key, layout will be applied.
-                Apply();
+                OnClosing(this, null);
             }
         }
 
@@ -211,7 +271,7 @@ namespace FancyZonesEditor
                 return;
             }
 
-            string defaultNamePrefix = FancyZonesEditor.Properties.Resources.Default_Custom_Layout_Name;
+            string defaultNamePrefix = ResourceLoaderInstance.GetString("Default_Custom_Layout_Name");
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -232,8 +292,16 @@ namespace FancyZonesEditor
 
             GridLayoutRadioButton.IsChecked = true;
             CanvasLayoutRadioButton.IsChecked = false;
-            GridLayoutRadioButton.Focus();
+            GridLayoutRadioButton.Focus(FocusState.Programmatic);
+
+            NewLayoutDialog.XamlRoot = RootGrid.XamlRoot;
             await NewLayoutDialog.ShowAsync();
+        }
+
+        private void LayoutNameText_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Replaces the WPF binding on Text.Length, which WinUI cannot convert to a bool.
+            NewLayoutDialog.IsPrimaryButtonEnabled = LayoutNameText.Text.Length > 0;
         }
 
         private void DuplicateLayout_Click(object sender, RoutedEventArgs e)
@@ -259,7 +327,7 @@ namespace FancyZonesEditor
                 name = name.TrimEnd();
             }
 
-            Announce(name, FancyZonesEditor.Properties.Resources.Layout_Creation_Announce);
+            Announce(name, ResourceLoaderInstance.GetString("Layout_Creation_Announce"));
             int maxCustomIndex = 0;
             foreach (LayoutModel customModel in MainWindowSettingsModel.CustomModels)
             {
@@ -291,10 +359,10 @@ namespace FancyZonesEditor
 
         private void Announce(string name, string message)
         {
-            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened) && _createLayoutAnnounce != null)
+            if (AutomationPeer.ListenerExists(AutomationEvents.MenuOpened) && LayoutCreationAnnounce != null)
             {
-                var peer = UIElementAutomationPeer.FromElement(_createLayoutAnnounce);
-                AutomationProperties.SetName(_createLayoutAnnounce, name + " " + message);
+                var peer = FrameworkElementAutomationPeer.FromElement(LayoutCreationAnnounce);
+                AutomationProperties.SetName(LayoutCreationAnnounce, name + " " + message);
                 peer?.RaiseAutomationEvent(AutomationEvents.MenuOpened);
             }
         }
@@ -310,7 +378,7 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeCustomLayouts();
         }
 
-        private void OnClosing(object sender, EventArgs e)
+        private void OnClosing(object sender, WindowEventArgs e)
         {
             Logger.LogTrace();
 
@@ -320,7 +388,7 @@ namespace FancyZonesEditor
             App.FancyZonesEditorIO.SerializeLayoutTemplates();
             App.FancyZonesEditorIO.SerializeDefaultLayouts();
             App.Overlay.CloseLayoutWindow();
-            App.Current.Shutdown();
+            ((App)Application.Current).Shutdown();
         }
 
         private void DeleteLayout_Click(object sender, RoutedEventArgs e)
@@ -341,13 +409,48 @@ namespace FancyZonesEditor
             }
 
             var dataContext = ((FrameworkElement)sender).DataContext;
-            Select((LayoutModel)dataContext);
+            if (dataContext is not LayoutModel model)
+            {
+                return;
+            }
+
+            Select(model);
 
             App.Overlay.StartEditing(_settings.SelectedModel);
 
-            Keyboard.ClearFocus();
-            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, EditTemplate, ((LayoutModel)dataContext).Name);
+            EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, EditTemplate, model.Name);
+            EditLayoutDialogBody.DataContext = model;
+            UpdateEditLayoutDialogVisibility(model);
+
+            EditLayoutDialog.XamlRoot = RootGrid.XamlRoot;
             await EditLayoutDialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// Applies the visibility rules the WPF markup expressed through the LayoutType-to-Visibility
+        /// converters. WinUI's Setter cannot host a Binding, so the state is pushed here instead.
+        /// </summary>
+        /// <param name="model">The layout being edited.</param>
+        private void UpdateEditLayoutDialogVisibility(LayoutModel model)
+        {
+            Visibility custom = model.IsCustom ? Visibility.Visible : Visibility.Collapsed;
+            Visibility template = model.IsTemplateLayout ? Visibility.Visible : Visibility.Collapsed;
+
+            DuplicateLayoutButton.Visibility = custom;
+            DeleteLayoutButton.Visibility = custom;
+            EditZoneLayoutButton.Visibility = custom;
+            LayoutNamePanel.Visibility = custom;
+            QuickKeyPanel.Visibility = custom;
+
+            CreateFromTemplateLayoutButton.Visibility = template;
+            ZoneCountPanel.Visibility = template;
+
+            SpacingPanel.Visibility = model.SupportsSpacing ? Visibility.Visible : Visibility.Collapsed;
+
+            SetLayoutAsHorizontalDefaultButton.Visibility = model.CanBeSetAsHorizontalDefault ? Visibility.Visible : Visibility.Collapsed;
+            HorizontalDefaultLayoutButton.Visibility = model.IsHorizontalDefault ? Visibility.Visible : Visibility.Collapsed;
+            SetLayoutAsVerticalDefaultButton.Visibility = model.CanBeSetAsVerticalDefault ? Visibility.Visible : Visibility.Collapsed;
+            VerticalDefaultLayoutButton.Visibility = model.IsVerticalDefault ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void EditZones_Click(object sender, RoutedEventArgs e)
@@ -356,26 +459,21 @@ namespace FancyZonesEditor
             var dataContext = ((FrameworkElement)sender).DataContext;
             Select((LayoutModel)dataContext);
             EditLayoutDialog.Hide();
-            Hide();
+            AppWindow.Hide();
             App.Overlay.OpenEditor(_settings.SelectedModel);
         }
 
-        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        private void MonitorScrollViewer_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            ScrollViewer scrollviewer = sender as ScrollViewer;
-            if (e.Delta > 0)
-            {
-                scrollviewer.LineLeft();
-            }
-            else
-            {
-                scrollviewer.LineRight();
-            }
+            // Turn vertical wheel input into horizontal scrolling for the monitor strip.
+            var scrollViewer = sender as ScrollViewer;
+            int delta = e.GetCurrentPoint(scrollViewer).Properties.MouseWheelDelta;
 
+            scrollViewer.ChangeView(scrollViewer.HorizontalOffset - delta, null, null);
             e.Handled = true;
         }
 
-        private void NewLayoutDialog_PrimaryButtonClick(ModernWpf.Controls.ContentDialog sender, ModernWpf.Controls.ContentDialogButtonClickEventArgs args)
+        private void NewLayoutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             Logger.LogTrace();
 
@@ -400,29 +498,10 @@ namespace FancyZonesEditor
 
             selectedLayoutModel.InitTemplateZones();
 
-            try
-            {
-                Hide();
-            }
-            catch
-            {
-                // See https://github.com/microsoft/PowerToys/issues/9396
-                Hide();
-            }
+            AppWindow.Hide();
 
             App.Overlay.CurrentDataContext = selectedLayoutModel;
             App.Overlay.OpenEditor(selectedLayoutModel);
-        }
-
-        // This is required to fix a WPF rendering bug when using custom chrome
-        private void OnContentRendered(object sender, EventArgs e)
-        {
-            if (!haveTriedToGetFocusAlready)
-            {
-                BringToFront();
-            }
-
-            InvalidateVisual();
         }
 
         // EditLayout: Cancel changes
@@ -462,13 +541,14 @@ namespace FancyZonesEditor
 
             var dialog = new ContentDialog()
             {
-                Title = Properties.Resources.Are_You_Sure,
-                Content = Properties.Resources.Are_You_Sure_Description,
-                PrimaryButtonText = Properties.Resources.Delete,
-                SecondaryButtonText = Properties.Resources.Cancel,
+                XamlRoot = RootGrid.XamlRoot,
+                Title = ResourceLoaderInstance.GetString("Are_You_Sure"),
+                Content = ResourceLoaderInstance.GetString("Are_You_Sure_Description"),
+                PrimaryButtonText = ResourceLoaderInstance.GetString("Delete"),
+                SecondaryButtonText = ResourceLoaderInstance.GetString("Cancel"),
             };
 
-            Announce(FancyZonesEditor.Properties.Resources.Delete_Layout_Dialog_Announce, dialog.Content.ToString());
+            Announce(ResourceLoaderInstance.GetString("Delete_Layout_Dialog_Announce"), dialog.Content.ToString());
             var result = await dialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary)
@@ -501,22 +581,13 @@ namespace FancyZonesEditor
 
         private void Dialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
         {
-            Announce(sender.Name, FancyZonesEditor.Properties.Resources.Edit_Layout_Open_Announce);
+            Announce(sender.Name, ResourceLoaderInstance.GetString("Edit_Layout_Open_Announce"));
             _openedDialog = sender;
         }
 
         private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
             _openedDialog = null;
-        }
-
-        private void EditDialogNumberBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            // Making sure that pressing Enter when changing values in a NumberBox will not close the edit dialog.
-            if (e.Key == Key.Enter)
-            {
-                e.Handled = true;
-            }
         }
 
         private void Layout_ItemClick(object sender, ItemClickEventArgs e)
@@ -527,12 +598,40 @@ namespace FancyZonesEditor
 
         private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
         {
-            monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
+            _monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
         }
 
-        private void ComboBox_KeyDown(object sender, KeyEventArgs e)
+        /// <summary>
+        /// Applies the per-container automation metadata and selection state that the WPF
+        /// ItemContainerStyle set with {Binding} inside Setters - unsupported in WinUI 3.
+        /// </summary>
+        private void Layouts_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
-            if (e.Key == Key.Enter || e.Key == Key.Space)
+            if (args.InRecycleQueue || args.Item is not LayoutModel model || args.ItemContainer is not GridViewItem container)
+            {
+                return;
+            }
+
+            AutomationProperties.SetName(container, model.Name ?? string.Empty);
+            AutomationProperties.SetAutomationId(container, model.AutomationId ?? string.Empty);
+            container.IsSelected = model.IsApplied;
+        }
+
+        private void Monitors_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.InRecycleQueue || args.Item is not MonitorInfoModel monitor || args.ItemContainer is not GridViewItem container)
+            {
+                return;
+            }
+
+            AutomationProperties.SetName(container, monitor.AccessibleName ?? string.Empty);
+            AutomationProperties.SetHelpText(container, monitor.AccessibleHelpText ?? string.Empty);
+            container.IsSelected = monitor.Selected;
+        }
+
+        private void ComboBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Enter || e.Key == VirtualKey.Space)
             {
                 e.Handled = true;
                 ComboBox selectedComboBox = sender as ComboBox;
@@ -543,7 +642,7 @@ namespace FancyZonesEditor
             }
         }
 
-        private void TextBox_GotKeyboardFocus(object sender, RoutedEventArgs e)
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb)
             {
@@ -551,87 +650,35 @@ namespace FancyZonesEditor
             }
         }
 
-        private void NumberBox_Loaded(object sender, RoutedEventArgs e)
+        private void SensitivityInput_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            // The TextBox inside a NumberBox doesn't inherit the Automation Properties name, so we have to set it.
-            var numberBox = sender as NumberBox;
-            const string numberBoxTextBoxName = "InputBox"; // Text box template part name given by ModernWPF.
-            numberBox.ApplyTemplate(); // Apply template to be able to change child's property.
-            var numberBoxTextBox = numberBox.Template.FindName(numberBoxTextBoxName, numberBox) as TextBox;
-            numberBoxTextBox.SetValue(AutomationProperties.NameProperty, numberBox.GetValue(AutomationProperties.NameProperty));
+            RaiseSliderNotification(SensitivityInput, "sliderValueChanged", string.Format(CultureInfo.CurrentCulture, PixelValue, SensitivityInput.Value));
         }
 
-        private void SettingsBtn_Click(object sender, RoutedEventArgs e)
+        private void TemplateZoneCount_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.FancyZones);
+            RaiseSliderNotification(TemplateZoneCount, "templateZoneCountValueChanged", string.Format(CultureInfo.CurrentCulture, TemplateZoneCountValue, TemplateZoneCount.Value));
         }
 
-        private void EditLayoutDialogTitle_Loaded(object sender, RoutedEventArgs e)
+        private void Spacing_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            EditLayoutDialogTitle.TextTrimming = TextTrimming.CharacterEllipsis;
-            EditLayoutDialogTitle.TextWrapping = TextWrapping.NoWrap;
+            RaiseSliderNotification(Spacing, "spacingValueChanged", string.Format(CultureInfo.CurrentCulture, PixelValue, Spacing.Value));
         }
 
-        private void SensitivityInput_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void RaiseSliderNotification(UIElement slider, string activityId, string value)
         {
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            if (!AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged) || value == null)
             {
-                SliderAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(SensitivityInput) as SliderAutomationPeer;
-                string activityId = "sliderValueChanged";
-
-                string value = string.Format(CultureInfo.CurrentCulture, PixelValue, SensitivityInput.Value);
-
-                if (peer != null && value != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        value,
-                        activityId);
-                }
+                return;
             }
-        }
 
-        private void TemplateZoneCount_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
+            if (FrameworkElementAutomationPeer.FromElement(slider) is SliderAutomationPeer peer)
             {
-                SliderAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(TemplateZoneCount) as SliderAutomationPeer;
-                string activityId = "templateZoneCountValueChanged";
-
-                string value = string.Format(CultureInfo.CurrentCulture, TemplateZoneCountValue, TemplateZoneCount.Value);
-
-                if (peer != null && value != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        value,
-                        activityId);
-                }
-            }
-        }
-
-        private void Spacing_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            if (AutomationPeer.ListenerExists(AutomationEvents.PropertyChanged))
-            {
-                SliderAutomationPeer peer =
-                    FrameworkElementAutomationPeer.FromElement(Spacing) as SliderAutomationPeer;
-                string activityId = "spacingValueChanged";
-
-                string value = string.Format(CultureInfo.CurrentCulture, PixelValue, Spacing.Value);
-
-                if (peer != null && value != null)
-                {
-                    peer.RaiseNotificationEvent(
-                        AutomationNotificationKind.ActionCompleted,
-                        AutomationNotificationProcessing.ImportantMostRecent,
-                        value,
-                        activityId);
-                }
+                peer.RaiseNotificationEvent(
+                    AutomationNotificationKind.ActionCompleted,
+                    AutomationNotificationProcessing.ImportantMostRecent,
+                    value,
+                    activityId);
             }
         }
 
@@ -641,6 +688,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Vertical);
+                UpdateEditLayoutDialogVisibility(model);
             }
         }
 
@@ -650,6 +698,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Set(model, MonitorConfigurationType.Horizontal);
+                UpdateEditLayoutDialogVisibility(model);
             }
         }
 
@@ -659,6 +708,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Horizontal);
+                UpdateEditLayoutDialogVisibility(model);
             }
         }
 
@@ -668,6 +718,7 @@ namespace FancyZonesEditor
             if (dataContext is LayoutModel model)
             {
                 MainWindowSettingsModel.DefaultLayouts.Reset(MonitorConfigurationType.Vertical);
+                UpdateEditLayoutDialogVisibility(model);
             }
         }
     }

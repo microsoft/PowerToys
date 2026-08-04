@@ -3,18 +3,17 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using FancyZonesEditor.Utils;
 
 namespace FancyZonesEditor.ViewModels
 {
-    public class MonitorViewModel : INotifyPropertyChanged
+    public partial class MonitorViewModel : ObservableObject
     {
         private const int MaxPreviewDisplaySize = 180;
         private const int MinPreviewDisplaySize = 120;
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public delegate void MonitorChangedEvent(MonitorChangedEventArgs args);
 
@@ -22,12 +21,8 @@ namespace FancyZonesEditor.ViewModels
 
         public static double DesktopPreviewMultiplier { get; private set; }
 
-        public RelayCommand<MonitorInfoModel> SelectCommand { get; set; }
-
         public MonitorViewModel()
         {
-            SelectCommand = new RelayCommand<MonitorInfoModel>(SelectCommandExecute, SelectCommandCanExecute);
-
             MonitorInfoForViewModel = new ObservableCollection<MonitorInfoModel>();
             double maxDimension = 0, minDimension = double.MaxValue;
 
@@ -48,18 +43,20 @@ namespace FancyZonesEditor.ViewModels
             DesktopPreviewMultiplier = (minMultiplier + maxMultiplier) / 2.5;
         }
 
-        private void RaisePropertyChanged(string propertyName)
+        /// <summary>
+        /// Selects the monitor the user clicked and makes it the current desktop.
+        /// The generated <c>SelectCommand</c> replaces the hand-written
+        /// <c>RelayCommand&lt;MonitorInfoModel&gt;</c> the WPF editor used.
+        /// </summary>
+        /// <param name="monitorInfo">The clicked monitor, or <see langword="null"/> when the click hit empty space.</param>
+        [RelayCommand]
+        private void Select(MonitorInfoModel monitorInfo)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+            if (monitorInfo == null)
+            {
+                return;
+            }
 
-        private bool SelectCommandCanExecute(MonitorInfoModel monitorInfo)
-        {
-            return true;
-        }
-
-        private void SelectCommandExecute(MonitorInfoModel monitorInfo)
-        {
             MonitorInfoForViewModel[App.Overlay.CurrentDesktop].Selected = false;
             MonitorInfoForViewModel[monitorInfo.Index - 1].Selected = true;
 

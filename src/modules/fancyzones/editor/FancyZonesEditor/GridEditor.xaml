@@ -3,9 +3,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:FancyZonesEditor"
+    xmlns:helpers="using:FancyZonesEditor.Helpers"
+    xmlns:local="using:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -15,17 +15,10 @@
             <Canvas x:Name="AdornerLayer" />
             <Canvas
                 x:Name="MergePanel"
-                MouseUp="MergePanelMouseUp"
+                PointerReleased="MergePanelPointerReleased"
                 Visibility="Collapsed">
-                <Canvas.Effect>
-                    <DropShadowEffect
-                        BlurRadius="6"
-                        Opacity="0.32"
-                        ShadowDepth="2" />
-                </Canvas.Effect>
                 <StackPanel x:Name="MergeButtons" Orientation="Horizontal">
-                    <Border Background="{DynamicResource PrimaryBackgroundBrush}" CornerRadius="4">
-
+                    <Border Background="{ThemeResource PrimaryBackgroundBrush}" CornerRadius="4">
                         <Button
                             Width="134"
                             Height="36"
@@ -36,9 +29,9 @@
                                 <TextBlock
                                     Margin="0,3,8,0"
                                     FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                    Foreground="{ThemeResource PrimaryForegroundBrush}"
                                     Text="&#xE746;" />
-                                <TextBlock Foreground="{DynamicResource PrimaryForegroundBrush}" Text="{x:Static props:Resources.Merge_zones}" />
+                                <TextBlock Foreground="{ThemeResource PrimaryForegroundBrush}" Text="{helpers:StringResource Key=Merge_zones}" />
                             </StackPanel>
                         </Button>
                     </Border>

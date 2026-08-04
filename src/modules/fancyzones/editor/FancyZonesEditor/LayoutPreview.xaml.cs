@@ -4,19 +4,20 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 
 using FancyZonesEditor.Models;
 using ManagedCommon;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
+using Windows.Graphics;
 
 namespace FancyZonesEditor
 {
     /// <summary>
     /// Interaction logic for LayoutPreview.xaml
     /// </summary>
-    public partial class LayoutPreview : UserControl
+    public sealed partial class LayoutPreview : UserControl
     {
         // Non-localizable strings
         private const string PropertyZoneCountID = "ZoneCount";
@@ -25,13 +26,8 @@ namespace FancyZonesEditor
         private const string ObjectDependencyID = "IsActualSize";
 
         public static readonly DependencyProperty IsActualSizeProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(LayoutPreview), new PropertyMetadata(false));
-        private LayoutModel _model;
 
-        public bool IsActualSize
-        {
-            get { return (bool)GetValue(IsActualSizeProperty); }
-            set { SetValue(IsActualSizeProperty, value); }
-        }
+        private LayoutModel _model;
 
         public LayoutPreview()
         {
@@ -39,24 +35,15 @@ namespace FancyZonesEditor
             DataContextChanged += LayoutPreview_DataContextChanged;
         }
 
+        public bool IsActualSize
+        {
+            get { return (bool)GetValue(IsActualSizeProperty); }
+            set { SetValue(IsActualSizeProperty, value); }
+        }
+
         public void UpdatePreview()
         {
             RenderPreview();
-        }
-
-        private void LayoutPreview_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (_model != null)
-            {
-                _model.PropertyChanged -= LayoutModel_PropertyChanged;
-            }
-
-            _model = (LayoutModel)DataContext;
-            if (_model != null)
-            {
-                _model.PropertyChanged += LayoutModel_PropertyChanged;
-                RenderPreview();
-            }
         }
 
         public void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -74,6 +61,27 @@ namespace FancyZonesEditor
             }
         }
 
+        // WinUI has no FrameworkElement.FindResource; the preview styles live in App.Resources.
+        private static Style FindStyle(string key)
+        {
+            return Application.Current.Resources[key] as Style;
+        }
+
+        private void LayoutPreview_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            if (_model != null)
+            {
+                _model.PropertyChanged -= LayoutModel_PropertyChanged;
+            }
+
+            _model = args.NewValue as LayoutModel;
+            if (_model != null)
+            {
+                _model.PropertyChanged += LayoutModel_PropertyChanged;
+                RenderPreview();
+            }
+        }
+
         private void LayoutModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             RenderPreview();
@@ -81,7 +89,7 @@ namespace FancyZonesEditor
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            _model = (LayoutModel)DataContext;
+            _model = DataContext as LayoutModel;
 
             if (_model != null)
             {
@@ -173,7 +181,7 @@ namespace FancyZonesEditor
                         rect.Width = Math.Max(1, right - left);
                         rect.Height = Math.Max(1, bottom - top);
 
-                        rect.Style = (Style)FindResource("GridLayoutActualScalePreviewStyle");
+                        rect.Style = FindStyle("GridLayoutActualScalePreviewStyle");
                         frame.Children.Add(rect);
                     }
                 }
@@ -243,7 +251,7 @@ namespace FancyZonesEditor
 
                         Grid.SetColumnSpan(rect, span);
                         rect.Margin = margin;
-                        rect.Style = (Style)FindResource("GridLayoutSmallScalePreviewStyle");
+                        rect.Style = FindStyle("GridLayoutSmallScalePreviewStyle");
                         Body.Children.Add(rect);
                     }
                 }
@@ -281,7 +289,7 @@ namespace FancyZonesEditor
             };
             viewbox.Child = frame;
 
-            foreach (Int32Rect zone in renderLayout.Zones)
+            foreach (RectInt32 zone in renderLayout.Zones)
             {
                 Border rect = new Border();
                 Canvas.SetTop(rect, zone.Y);
@@ -289,14 +297,7 @@ namespace FancyZonesEditor
                 rect.MinWidth = zone.Width;
                 rect.MinHeight = zone.Height;
 
-                if (IsActualSize)
-                {
-                    rect.Style = (Style)FindResource("CanvasLayoutActualScalePreviewStyle");
-                }
-                else
-                {
-                    rect.Style = (Style)FindResource("CanvasLayoutSmallScalePreviewStyle");
-                }
+                rect.Style = FindStyle(IsActualSize ? "CanvasLayoutActualScalePreviewStyle" : "CanvasLayoutSmallScalePreviewStyle");
 
                 frame.Children.Add(rect);
             }

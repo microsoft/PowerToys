@@ -5,7 +5,8 @@
 using System;
 using System.Globalization;
 using System.Text;
-using System.Windows;
+
+using Windows.Foundation;
 
 namespace FancyZonesEditor.Utils
 {
@@ -61,7 +62,7 @@ namespace FancyZonesEditor.Utils
             sb.AppendFormat(CultureInfo.InvariantCulture, "Virtual desktop: {0}{1}", VirtualDesktopId, Environment.NewLine);
             sb.AppendFormat(CultureInfo.InvariantCulture, "DPI: {0}{1}", Dpi, Environment.NewLine);
 
-            string monitorSize = MonitorSize.ToString(CultureInfo.InvariantCulture);
+            string monitorSize = string.Format(CultureInfo.InvariantCulture, "{0},{1}", MonitorSize.Width, MonitorSize.Height);
             string workArea = string.Format(CultureInfo.InvariantCulture, "({0}, {1}, {2}, {3})", WorkAreaRect.X, WorkAreaRect.Y, WorkAreaRect.Width, WorkAreaRect.Height);
 
             sb.AppendFormat(CultureInfo.InvariantCulture, "Monitor size: {0}{1}", monitorSize, Environment.NewLine);

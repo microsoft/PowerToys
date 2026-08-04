@@ -1,0 +1,22 @@
+﻿<Application
+    x:Class="FancyZonesEditor.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:local="using:FancyZonesEditor">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--  XamlControlsResources must come first: it supplies the default Fluent styles.  -->
+                <controls:XamlControlsResources />
+                <ResourceDictionary Source="ms-appx:///Themes/Brushes.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/GridResizerStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/GridViewStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/LayoutPreviewStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="HeadingTextBlock" TargetType="TextBlock" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

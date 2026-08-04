@@ -3,46 +3,49 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:FancyZonesEditor"
+    xmlns:local="using:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    ui:ControlHelper.CornerRadius="4"
-    Background="{DynamicResource GridZoneBackgroundBrush}"
-    BorderBrush="{DynamicResource SystemControlBackgroundAccentBrush}"
-    BorderThickness="1"
-    Focusable="True"
     IsTabStop="True"
-    Opacity="1"
     mc:Ignorable="d">
 
-    <Grid x:Name="Frame">
-        <Canvas x:Name="Body" />
-        <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Label
-                Name="LabelID"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                Content="ID"
-                DockPanel.Dock="Top"
-                FontSize="68"
-                FontWeight="SemiBold"
-                Foreground="{DynamicResource PrimaryForegroundBrush}" />
-            <TextBlock
+    <!--
+        WinUI's UserControl has no ControlTemplate, so it does not render Background or
+        BorderBrush the way the WPF UserControl did - the chrome lives on this root Border.
+    -->
+    <Border
+        x:Name="ZoneBorder"
+        Background="{ThemeResource GridZoneBackgroundBrush}"
+        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="4">
+        <Grid>
+            <Canvas x:Name="Body" />
+            <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                DockPanel.Dock="Bottom"
-                FontSize="16"
-                FontWeight="SemiBold"
-                Foreground="{DynamicResource SecondaryForegroundBrush}">
-                <Run x:Name="WidthLabel" />
-                <Run Text="×" />
-                <Run x:Name="HeightLabel" />
-            </TextBlock>
-
-        </DockPanel>
-        <!--<TextBlock Margin="2" Text="Shift Key switches direction&#13;Ctrl  Key repeats"/>-->
-    </Grid>
+                Orientation="Vertical">
+                <TextBlock
+                    x:Name="LabelID"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    x:FieldModifier="public"
+                    FontSize="68"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource PrimaryForegroundBrush}"
+                    Text="ID" />
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource SecondaryForegroundBrush}">
+                    <Run x:Name="WidthLabel" />
+                    <Run Text="×" />
+                    <Run x:Name="HeightLabel" />
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+    </Border>
 </UserControl>

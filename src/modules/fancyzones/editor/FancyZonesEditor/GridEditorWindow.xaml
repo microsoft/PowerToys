@@ -3,84 +3,83 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:FancyZonesEditor"
+    xmlns:helpers="using:FancyZonesEditor.Helpers"
+    xmlns:local="using:FancyZonesEditor"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:props="clr-namespace:FancyZonesEditor.Properties"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title=""
     MinWidth="360"
-    ui:TitleBar.IsIconVisible="False"
-    ui:WindowHelper.UseModernWindowStyle="True"
-    AutomationProperties.Name="{x:Static props:Resources.Grid_Layout_Editor}"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
-    BorderThickness="0"
-    Closed="OnClosed"
-    ContentRendered="EditorWindow_ContentRendered"
-    ResizeMode="NoResize"
-    SizeToContent="WidthAndHeight"
-    WindowStartupLocation="CenterOwner"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False"
     mc:Ignorable="d">
-    <Grid>
+
+    <!--  WinUI's Window is not a DependencyObject, so the background and the automation name live on the root Grid.  -->
+    <Grid
+        x:Name="RootGrid"
+        AutomationProperties.Name="{helpers:StringResource Key=Grid_Layout_Editor}"
+        Background="{ThemeResource PrimaryBackgroundBrush}"
+        Loaded="OnRootLoaded">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="36" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
         <Grid
+            x:Name="DragBar"
             Height="36"
-            Margin="0,-36,0,0"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
-            Background="{DynamicResource SecondaryBackgroundBrush}">
-
+            Background="{ThemeResource SecondaryBackgroundBrush}">
             <Border
                 Width="30"
                 Height="3"
-                Margin="0,4,0,0"
                 VerticalAlignment="Center"
-                Background="{DynamicResource TitleBarSecondaryForegroundBrush}"
+                Background="{ThemeResource TextFillColorSecondaryBrush}"
                 CornerRadius="1.5" />
         </Grid>
-        <StackPanel Margin="16">
+
+        <StackPanel Grid.Row="1" Margin="16">
             <StackPanel Margin="0,8,0,0">
-                <TextBlock
-                    Focusable="True"
-                    FontSize="12"
-                    TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.SplitterName}" />
-                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.SplitterDescription}" />
+                <TextBlock FontSize="12" TextWrapping="Wrap">
+                    <Run FontWeight="SemiBold" Text="{helpers:StringResource Key=SplitterName}" />
+                    <Run Foreground="{ThemeResource SecondaryForegroundBrush}" Text="{helpers:StringResource Key=SplitterDescription}" />
                 </TextBlock>
                 <TextBlock
                     Margin="0,8,0,0"
-                    Focusable="True"
                     FontSize="12"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.MergeName}" />
-                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.MergeDescription}" />
+                    <Run FontWeight="SemiBold" Text="{helpers:StringResource Key=MergeName}" />
+                    <Run Foreground="{ThemeResource SecondaryForegroundBrush}" Text="{helpers:StringResource Key=MergeDescription}" />
                 </TextBlock>
                 <TextBlock
                     Margin="0,8,0,0"
-                    Focusable="True"
                     FontSize="12"
                     TextWrapping="Wrap">
-                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.KeyboardControlsName}" />
-                    <Run Foreground="{DynamicResource SecondaryForegroundBrush}" Text="{x:Static props:Resources.KeyboardControlsDescription}" />
+                    <Run FontWeight="SemiBold" Text="{helpers:StringResource Key=KeyboardControlsName}" />
+                    <Run Foreground="{ThemeResource SecondaryForegroundBrush}" Text="{helpers:StringResource Key=KeyboardControlsDescription}" />
                 </TextBlock>
             </StackPanel>
-            <Grid Margin="0,24,0,-36">
+
+            <Grid Margin="0,24,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="8" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button
+                    HorizontalAlignment="Stretch"
+                    Click="OnSave"
+                    Content="{helpers:StringResource Key=Save}"
+                    Style="{StaticResource AccentButtonStyle}"
+                    TabIndex="0" />
+                <Button
                     Grid.Column="2"
                     HorizontalAlignment="Stretch"
                     Click="OnCancel"
-                    Content="{x:Static props:Resources.Cancel}"
+                    Content="{helpers:StringResource Key=Cancel}"
                     Style="{StaticResource DefaultButtonStyle}"
                     TabIndex="1" />
-                <Button
-                    HorizontalAlignment="Stretch"
-                    Click="OnSave"
-                    Content="{x:Static props:Resources.Save}"
-                    Style="{StaticResource AccentButtonStyle}"
-                    TabIndex="0" />
             </Grid>
         </StackPanel>
     </Grid>

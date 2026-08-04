@@ -4,11 +4,15 @@
 
 using System;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Shapes;
+
+using FancyZonesEditor.Helpers;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Shapes;
+using Windows.Foundation;
 
 namespace FancyZonesEditor
 {
@@ -16,42 +20,60 @@ namespace FancyZonesEditor
     /// Once you've "Commit"ted the starter grid, then the Zones within the grid come to life for you to be able to further subdivide them
     /// using splitters
     /// </summary>
-    public partial class GridZone : UserControl
+    public sealed partial class GridZone : UserControl
     {
         // Non-localizable strings
         private const string ObjectDependencyID = "IsSelected";
         private const string GridZoneBackgroundBrushID = "GridZoneBackgroundBrush";
         private const string SecondaryForegroundBrushID = "SecondaryForegroundBrush";
-        private const string AccentColorBrushID = "SystemControlBackgroundAccentBrush";
+        private const string AccentColorBrushID = "AccentFillColorDefaultBrush";
+
         public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(ObjectDependencyID, typeof(bool), typeof(GridZone), new PropertyMetadata(false, OnSelectionChanged));
 
         public event SplitEventHandler Split;
 
-        public event MouseEventHandler MergeDrag;
+        public event PointerEventHandler MergeDrag;
 
-        public event MouseButtonEventHandler MergeComplete;
+        public event PointerEventHandler MergeComplete;
+
+        private static readonly SolidColorBrush TransparentBrush = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
 
         private readonly Rectangle _splitter;
+        private readonly MagneticSnap _snapX;
+        private readonly MagneticSnap _snapY;
+        private readonly Func<Orientation, int, bool> _canSplit;
+        private readonly GridData.Zone _zone;
+
         private bool _switchOrientation;
         private Point _lastPos = new Point(-1, -1);
         private int _snappedPositionX;
         private int _snappedPositionY;
         private Point _mouseDownPos = new Point(-1, -1);
         private bool _inMergeDrag;
-        private MagneticSnap _snapX;
-        private MagneticSnap _snapY;
-        private Func<Orientation, int, bool> _canSplit;
         private bool _hovering;
-        private GridData.Zone _zone;
 
-        private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit, GridData.Zone zone)
         {
-            ((GridZone)d).OnSelectionChanged();
-        }
+            InitializeComponent();
+            OnSelectionChanged();
 
-        private void OnSelectionChanged()
-        {
-            Background = IsSelected ? Application.Current.Resources[AccentColorBrushID] as SolidColorBrush : Application.Current.Resources[GridZoneBackgroundBrushID] as SolidColorBrush;
+            _splitter = new Rectangle
+            {
+                Fill = GetBrush(AccentColorBrushID),
+            };
+            Body.Children.Add(_splitter);
+
+            SplitterThickness = Math.Max(spacing, 1);
+
+            SizeChanged += GridZone_SizeChanged;
+
+            GotFocus += GridZone_GotFocus;
+            LostFocus += GridZone_LostFocus;
+
+            _snapX = snapX;
+            _snapY = snapY;
+            _canSplit = canSplit;
+            _zone = zone;
         }
 
         public bool IsSelected
@@ -60,28 +82,12 @@ namespace FancyZonesEditor
             set { SetValue(IsSelectedProperty, value); }
         }
 
-        public GridZone(int spacing, MagneticSnap snapX, MagneticSnap snapY, Func<Orientation, int, bool> canSplit, GridData.Zone zone)
+        private bool IsVerticalSplit
         {
-            InitializeComponent();
-            OnSelectionChanged();
-            _splitter = new Rectangle
-            {
-                Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush,
-            };
-            Body.Children.Add(_splitter);
-
-            SplitterThickness = Math.Max(spacing, 1);
-
-            SizeChanged += GridZone_SizeChanged;
-
-            GotKeyboardFocus += GridZone_GotKeyboardFocus;
-            LostKeyboardFocus += GridZone_LostKeyboardFocus;
-
-            _snapX = snapX;
-            _snapY = snapY;
-            _canSplit = canSplit;
-            _zone = zone;
+            get => (ActualWidth > ActualHeight) ^ _switchOrientation;
         }
+
+        private int SplitterThickness { get; set; }
 
         public int SnapAtHalfX()
         {
@@ -97,30 +103,6 @@ namespace FancyZonesEditor
             return _snapY.PixelToDataWithSnapping(pixelY, _zone.Top, _zone.Bottom);
         }
 
-        private void GridZone_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            Opacity = 1;
-        }
-
-        private void GridZone_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
-        {
-            Opacity = 0.5;
-        }
-
-        private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // using current culture as this is end user facing
-            WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
-            HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
-            System.Windows.Automation.AutomationProperties.SetName(
-                this,
-#pragma warning disable SA1118 // Parameter should not span multiple lines
-                Properties.Resources.Zone_Name + " " + (_zone.Index + 1).ToString(CultureInfo.CurrentCulture) + ". " +
-                Properties.Resources.Width_Name + ": " + WidthLabel.Text + ", " +
-                Properties.Resources.Height_Name + ": " + HeightLabel.Text);
-#pragma warning restore SA1118 // Parameter should not span multiple lines
-        }
-
         public void UpdateShiftState(bool shiftState)
         {
             _switchOrientation = shiftState;
@@ -131,18 +113,145 @@ namespace FancyZonesEditor
             }
         }
 
-        private bool IsVerticalSplit
+        public void DoSplit(Orientation orientation, int offset)
         {
-            get => (ActualWidth > ActualHeight) ^ _switchOrientation;
+            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
         }
 
-        private int SplitterThickness { get; set; }
+        protected override void OnPointerEntered(PointerRoutedEventArgs e)
+        {
+            _hovering = true;
+            UpdateSplitter();
+            _splitter.Fill = GetBrush(AccentColorBrushID);
+            base.OnPointerEntered(e);
+        }
+
+        protected override void OnPointerExited(PointerRoutedEventArgs e)
+        {
+            _hovering = false;
+            UpdateSplitter();
+            base.OnPointerExited(e);
+        }
+
+        protected override void OnPointerPressed(PointerRoutedEventArgs e)
+        {
+            _mouseDownPos = _lastPos;
+            base.OnPointerPressed(e);
+        }
+
+        protected override void OnPointerMoved(PointerRoutedEventArgs e)
+        {
+            if (_inMergeDrag)
+            {
+                MergeDrag?.Invoke(this, e);
+            }
+            else
+            {
+                _lastPos = e.GetCurrentPoint(Body).Position;
+
+                var editor = Parent as GridEditor;
+                var editorPos = e.GetCurrentPoint(editor).Position;
+                _snappedPositionX = _snapX.PixelToDataWithSnapping(editorPos.X, _zone.Left, _zone.Right);
+                _snappedPositionY = _snapY.PixelToDataWithSnapping(editorPos.Y, _zone.Top, _zone.Bottom);
+
+                if (_mouseDownPos.X == -1)
+                {
+                    UpdateSplitter();
+                }
+                else
+                {
+                    double threshold = SplitterThickness / 2;
+                    if ((Math.Abs(_mouseDownPos.X - _lastPos.X) > threshold) || (Math.Abs(_mouseDownPos.Y - _lastPos.Y) > threshold))
+                    {
+                        // switch to merge (which is handled by parent GridEditor)
+                        _inMergeDrag = true;
+                        CapturePointer(e.Pointer);
+                        MergeDrag?.Invoke(this, e);
+
+                        // WinUI has no Visibility.Hidden - Opacity keeps the layout slot.
+                        _splitter.Opacity = 0;
+                    }
+                }
+            }
+
+            base.OnPointerMoved(e);
+        }
+
+        protected override void OnPointerReleased(PointerRoutedEventArgs e)
+        {
+            if (_inMergeDrag)
+            {
+                ReleasePointerCapture(e.Pointer);
+                MergeComplete?.Invoke(this, e);
+                _inMergeDrag = false;
+                _splitter.Opacity = 1;
+            }
+            else
+            {
+                int thickness = SplitterThickness;
+
+                double delta = IsVerticalSplit ? _mouseDownPos.X - _lastPos.X : _mouseDownPos.Y - _lastPos.Y;
+                if (Math.Abs(delta) <= thickness / 2)
+                {
+                    if (IsVerticalSplit)
+                    {
+                        DoSplit(Orientation.Vertical, _snappedPositionX);
+                    }
+                    else
+                    {
+                        DoSplit(Orientation.Horizontal, _snappedPositionY);
+                    }
+                }
+            }
+
+            _mouseDownPos = new Point(-1, -1);
+            base.OnPointerReleased(e);
+        }
+
+        private static Brush GetBrush(string key)
+        {
+            return Application.Current.Resources[key] as Brush;
+        }
+
+        private static void OnSelectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((GridZone)d).OnSelectionChanged();
+        }
+
+        private void OnSelectionChanged()
+        {
+            ZoneBorder.Background = GetBrush(IsSelected ? AccentColorBrushID : GridZoneBackgroundBrushID);
+        }
+
+        private void GridZone_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Opacity = 1;
+        }
+
+        private void GridZone_GotFocus(object sender, RoutedEventArgs e)
+        {
+            Opacity = 0.5;
+        }
+
+        private void GridZone_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // using current culture as this is end user facing
+            WidthLabel.Text = Math.Round(ActualWidth).ToString(CultureInfo.CurrentCulture);
+            HeightLabel.Text = Math.Round(ActualHeight).ToString(CultureInfo.CurrentCulture);
+            AutomationProperties.SetName(
+                this,
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+                ResourceLoaderInstance.GetString("Zone_Name") + " " + (_zone.Index + 1).ToString(CultureInfo.CurrentCulture) + ". " +
+                ResourceLoaderInstance.GetString("Width_Name") + ": " + WidthLabel.Text + ", " +
+                ResourceLoaderInstance.GetString("Height_Name") + ": " + HeightLabel.Text);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
+        }
 
         private void UpdateSplitter()
         {
             if (!_hovering)
             {
-                _splitter.Fill = Brushes.Transparent;
+                _splitter.Fill = TransparentBrush;
                 return;
             }
 
@@ -175,108 +284,7 @@ namespace FancyZonesEditor
                 enabled = _canSplit(Orientation.Horizontal, _snappedPositionY);
             }
 
-            Brush disabledBrush = Application.Current.Resources[SecondaryForegroundBrushID] as SolidColorBrush;
-            Brush enabledBrush = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
-            _splitter.Fill = enabled ? enabledBrush : disabledBrush;
-        }
-
-        protected override void OnMouseEnter(MouseEventArgs e)
-        {
-            _hovering = true;
-            UpdateSplitter();
-            _splitter.Fill = Application.Current.Resources[AccentColorBrushID] as SolidColorBrush;
-        }
-
-        protected override void OnMouseLeave(MouseEventArgs e)
-        {
-            _hovering = false;
-            UpdateSplitter();
-            base.OnMouseLeave(e);
-        }
-
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            _mouseDownPos = _lastPos;
-            base.OnMouseDown(e);
-        }
-
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            if (_inMergeDrag)
-            {
-                DoMergeDrag(e);
-            }
-            else
-            {
-                _lastPos = e.GetPosition(Body);
-                _snappedPositionX = _snapX.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).X, _zone.Left, _zone.Right);
-                _snappedPositionY = _snapY.PixelToDataWithSnapping(e.GetPosition(Parent as GridEditor).Y, _zone.Top, _zone.Bottom);
-
-                if (_mouseDownPos.X == -1)
-                {
-                    UpdateSplitter();
-                }
-                else
-                {
-                    double threshold = SplitterThickness / 2;
-                    if ((Math.Abs(_mouseDownPos.X - _lastPos.X) > threshold) || (Math.Abs(_mouseDownPos.Y - _lastPos.Y) > threshold))
-                    {
-                        // switch to merge (which is handled by parent GridEditor)
-                        _inMergeDrag = true;
-                        Mouse.Capture(this, CaptureMode.Element);
-                        DoMergeDrag(e);
-                        _splitter.Visibility = Visibility.Hidden;
-                    }
-                }
-            }
-
-            base.OnMouseMove(e);
-        }
-
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            if (_inMergeDrag)
-            {
-                Mouse.Capture(this, CaptureMode.None);
-                DoMergeComplete(e);
-                _inMergeDrag = false;
-                _splitter.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                int thickness = SplitterThickness;
-
-                double delta = IsVerticalSplit ? _mouseDownPos.X - _lastPos.X : _mouseDownPos.Y - _lastPos.Y;
-                if (Math.Abs(delta) <= thickness / 2)
-                {
-                    if (IsVerticalSplit)
-                    {
-                        DoSplit(Orientation.Vertical, _snappedPositionX);
-                    }
-                    else
-                    {
-                        DoSplit(Orientation.Horizontal, _snappedPositionY);
-                    }
-                }
-            }
-
-            _mouseDownPos = new Point(-1, -1);
-            base.OnMouseUp(e);
-        }
-
-        private void DoMergeDrag(MouseEventArgs e)
-        {
-            MergeDrag?.Invoke(this, e);
-        }
-
-        private void DoMergeComplete(MouseButtonEventArgs e)
-        {
-            MergeComplete?.Invoke(this, e);
-        }
-
-        public void DoSplit(Orientation orientation, int offset)
-        {
-            Split?.Invoke(this, new SplitEventArgs(orientation, offset));
+            _splitter.Fill = GetBrush(enabled ? AccentColorBrushID : SecondaryForegroundBrushID);
         }
     }
 }

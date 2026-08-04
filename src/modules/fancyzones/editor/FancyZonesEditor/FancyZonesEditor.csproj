@@ -7,60 +7,84 @@
     <AssemblyTitle>PowerToys.FancyZonesEditor</AssemblyTitle>
     <AssemblyDescription>PowerToys FancyZones Editor</AssemblyDescription>
     <Description>PowerToys FancyZones Editor</Description>
-    
+
     <OutputType>WinExe</OutputType>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>FancyZonesEditor</RootNamespace>
+    <AssemblyName>PowerToys.FancyZonesEditor</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <ProjectGuid>{5CCC8468-DEC8-4D36-99D4-5C891BEBD481}</ProjectGuid>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <ApplicationIcon>images\FancyZonesEditor.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyName>PowerToys.FancyZonesEditor</AssemblyName>
+    <ApplicationIcon>Assets\FancyZonesEditor\FancyZonesEditor.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Custom Main entry point -->
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.FancyZonesEditor.pri</ProjectPriFileName>
   </PropertyGroup>
- 
+
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <None Include="app.manifest" />
+    <Page Remove="FancyZonesEditorXAML\App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="FancyZonesEditorXAML\App.xaml" />
+  </ItemGroup>
+
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.FancyZonesEditor.pri" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <!-- The icon is embedded into the executable through ApplicationIcon; it is not shipped as a loose file. -->
+
+  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
+  <PropertyGroup>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="System.IO.Abstractions" />
+    <PackageReference Include="WinUIEx" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ModernWpfUI" />
-    <PackageReference Include="System.IO.Abstractions" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="images\FancyZonesEditor.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
+    <ProjectReference Include="..\..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
     <ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>
+
+  <!-- Allow the unit test project to access internal types -->
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Update="Properties\Settings.Designer.cs">
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
+    <InternalsVisibleTo Include="FancyZonesEditor.UnitTests" />
   </ItemGroup>
 </Project>

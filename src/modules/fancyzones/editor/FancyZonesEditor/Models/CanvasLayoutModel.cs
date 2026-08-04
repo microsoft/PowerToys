@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Windows;
+
+using Windows.Foundation;
+using Windows.Graphics;
 
 namespace FancyZonesEditor.Models
 {
@@ -28,18 +30,18 @@ namespace FancyZonesEditor.Models
 
         public Rect CanvasRect { get; private set; }
 
-        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<Int32Rect> zones, int width, int height)
+        public CanvasLayoutModel(string uuid, string name, LayoutType type, IList<RectInt32> zones, int width, int height)
             : base(uuid, name, type)
         {
             Zones = zones;
             TemplateZoneCount = Zones.Count;
-            CanvasRect = new Rect(new Size(width, height));
+            CanvasRect = new Rect(0, 0, width, height);
         }
 
         public CanvasLayoutModel(string name, LayoutType type, int width, int height)
         : base(name, type)
         {
-            CanvasRect = new Rect(new Size(width, height));
+            CanvasRect = new Rect(0, 0, width, height);
         }
 
         public CanvasLayoutModel(string name, LayoutType type)
@@ -57,14 +59,14 @@ namespace FancyZonesEditor.Models
         {
             CanvasRect = new Rect(other.CanvasRect.X, other.CanvasRect.Y, other.CanvasRect.Width, other.CanvasRect.Height);
 
-            foreach (Int32Rect zone in other.Zones)
+            foreach (RectInt32 zone in other.Zones)
             {
                 Zones.Add(zone);
             }
         }
 
         // Zones - the list of all zones in this layout, described as independent rectangles
-        public IList<Int32Rect> Zones { get; private set; } = new List<Int32Rect>();
+        public IList<RectInt32> Zones { get; private set; } = new List<RectInt32>();
 
         // RemoveZoneAt
         //  Removes the specified index from the Zones list, and fires a property changed notification for the Zones property
@@ -77,7 +79,7 @@ namespace FancyZonesEditor.Models
 
         // AddZone
         //  Adds the specified Zone to the end of the Zones list, and fires a property changed notification for the Zones property
-        public void AddZone(Int32Rect zone)
+        public void AddZone(RectInt32 zone)
         {
             Zones.Add(zone);
             TemplateZoneCount = Zones.Count;
@@ -98,18 +100,18 @@ namespace FancyZonesEditor.Models
                 return;
             }
 
-            Int32Rect[] zones = new Int32Rect[Zones.Count];
+            RectInt32[] zones = new RectInt32[Zones.Count];
             Zones.CopyTo(zones, 0);
             Zones.Clear();
 
-            foreach (Int32Rect zone in zones)
+            foreach (RectInt32 zone in zones)
             {
                 var x = zone.X * workAreaWidth / CanvasRect.Width;
                 var y = zone.Y * workAreaHeight / CanvasRect.Height;
                 var width = zone.Width * workAreaWidth / CanvasRect.Width;
                 var height = zone.Height * workAreaHeight / CanvasRect.Height;
 
-                Zones.Add(new Int32Rect(x: (int)x, y: (int)y, width: (int)width, height: (int)height));
+                Zones.Add(new RectInt32((int)x, (int)y, (int)width, (int)height));
             }
 
             CanvasRect = new Rect(CanvasRect.X, CanvasRect.Y, workAreaWidth, workAreaHeight);
@@ -137,7 +139,7 @@ namespace FancyZonesEditor.Models
                 topLeft = (int)App.Overlay.ScaleCoordinateWithCurrentMonitorDpi(_topLeft);
             }
 
-            Zones.Add(new Int32Rect(topLeft, topLeft, width, height));
+            Zones.Add(new RectInt32(topLeft, topLeft, width, height));
             _topLeft += OffsetShift;
         }
 
@@ -172,7 +174,7 @@ namespace FancyZonesEditor.Models
         {
             CanvasLayoutModel layout = new CanvasLayoutModel(Name);
 
-            foreach (Int32Rect zone in Zones)
+            foreach (RectInt32 zone in Zones)
             {
                 layout.Zones.Add(zone);
             }
@@ -187,7 +189,7 @@ namespace FancyZonesEditor.Models
             base.RestoreTo(other);
 
             other.Zones.Clear();
-            foreach (Int32Rect zone in Zones)
+            foreach (RectInt32 zone in Zones)
             {
                 other.Zones.Add(zone);
             }

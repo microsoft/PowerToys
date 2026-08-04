@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+using FancyZonesEditor.Helpers;
 using FancyZonesEditorCommon.Data;
 
 namespace FancyZonesEditor.Models
@@ -114,6 +115,34 @@ namespace FancyZonesEditor.Models
             get
             {
                 return Type == LayoutType.Custom;
+            }
+        }
+
+        // The four WPF LayoutType-to-Visibility converters are replaced by these computed
+        // flags: {x:Bind} converts a bool source to Visibility automatically, so no
+        // IValueConverter is needed.
+        public bool IsNotBlankLayout
+        {
+            get
+            {
+                return Type != LayoutType.Blank;
+            }
+        }
+
+        public bool IsTemplateLayout
+        {
+            get
+            {
+                return Type != LayoutType.Custom;
+            }
+        }
+
+        // Canvas layouts have freely positioned zones, so the zone spacing controls do not apply to them.
+        public bool SupportsSpacing
+        {
+            get
+            {
+                return this is not CanvasLayoutModel;
             }
         }
 
@@ -246,13 +275,13 @@ namespace FancyZonesEditor.Models
         {
             get
             {
-                return _quickKey == -1 ? Properties.Resources.Quick_Key_None : _quickKey.ToString(CultureInfo.CurrentCulture);
+                return _quickKey == -1 ? ResourceLoaderInstance.GetString("Quick_Key_None") : _quickKey.ToString(CultureInfo.CurrentCulture);
             }
 
             set
             {
                 var intValue = -1;
-                string none = Properties.Resources.Quick_Key_None;
+                string none = ResourceLoaderInstance.GetString("Quick_Key_None");
 
                 if (value != none && int.TryParse(value, out var parsedInt))
                 {

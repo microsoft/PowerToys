@@ -1,22 +1,42 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Input;
-using System.Windows.Media;
-
+using FancyZonesEditor.Helpers;
 using FancyZonesEditor.Models;
+using Microsoft.UI.Input;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 
 namespace FancyZonesEditor
 {
     /// <summary>
-    /// Interaction logic for GridResizer.xaml
+    /// The draggable pill that sits between two grid zones and resizes them.
+    /// WinUI 3 seals <see cref="Thumb"/>, so this hosts one and forwards its drag events
+    /// instead of deriving from it.
     /// </summary>
-    public partial class GridResizer : Thumb
+    public sealed partial class GridResizer : UserControl
     {
-        private static readonly RotateTransform _rotateTransform = new RotateTransform(90, 24, 24);
+        private Orientation _orientation;
+
+        public GridResizer()
+        {
+            InitializeComponent();
+
+            AutomationProperties.SetName(this, ResourceLoaderInstance.GetString("Resizer_Thumb_Announce"));
+
+            ResizerThumb.DragStarted += (s, e) => DragStarted?.Invoke(this, e);
+            ResizerThumb.DragDelta += (s, e) => DragDelta?.Invoke(this, e);
+            ResizerThumb.DragCompleted += (s, e) => DragCompleted?.Invoke(this, e);
+        }
+
+        public event DragStartedEventHandler DragStarted;
+
+        public event DragDeltaEventHandler DragDelta;
+
+        public event DragCompletedEventHandler DragCompleted;
 
         public int LeftReferenceZone { get; set; }
 
@@ -28,13 +48,6 @@ namespace FancyZonesEditor
 
         public LayoutModel Model { get; set; }
 
-        private Orientation _orientation;
-
-        public GridResizer()
-        {
-            InitializeComponent();
-        }
-
         public Orientation Orientation
         {
             get
@@ -45,17 +58,16 @@ namespace FancyZonesEditor
             set
             {
                 _orientation = value;
-                ApplyTemplate();
-                Border body = (Border)Template.FindName("Body", this);
+
                 if (value == Orientation.Vertical)
                 {
-                    body.RenderTransform = null;
-                    body.Cursor = Cursors.SizeWE;
+                    Body.RenderTransform = null;
+                    ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeWestEast);
                 }
                 else
                 {
-                    body.RenderTransform = _rotateTransform;
-                    body.Cursor = Cursors.SizeNS;
+                    Body.RenderTransform = new RotateTransform { Angle = 90, CenterX = 24, CenterY = 24 };
+                    ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.SizeNorthSouth);
                 }
             }
         }

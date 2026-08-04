@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,14 +6,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using FancyZonesEditor.Helpers;
 
 namespace FancyZonesEditor.Models
 {
     public class LayoutHotkeysModel : INotifyPropertyChanged
     {
+        private static string NoneKey => ResourceLoaderInstance.GetString("Quick_Key_None");
+
         public SortedDictionary<string, string> SelectedKeys { get; } = new SortedDictionary<string, string>()
         {
-            { Properties.Resources.Quick_Key_None, string.Empty },
+            { NoneKey, string.Empty },
             { "0", string.Empty },
             { "1", string.Empty },
             { "2", string.Empty },
@@ -63,7 +66,7 @@ namespace FancyZonesEditor.Models
                 }
             }
 
-            if (key == Properties.Resources.Quick_Key_None)
+            if (key == NoneKey)
             {
                 return true;
             }
@@ -83,7 +86,7 @@ namespace FancyZonesEditor.Models
                 }
             }
 
-            return Properties.Resources.Quick_Key_None;
+            return NoneKey;
         }
 
         public void CleanUp()

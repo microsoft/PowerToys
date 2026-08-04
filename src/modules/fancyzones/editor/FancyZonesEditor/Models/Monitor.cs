@@ -1,18 +1,53 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Media;
 
 using FancyZonesEditor.Utils;
+using Microsoft.UI;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
 
 namespace FancyZonesEditor.Models
 {
     public class Monitor
     {
+        private LayoutSettings _settings;
+        private Rect _virtualWorkArea;
+
+        public Monitor(Rect workArea, Size monitorSize)
+        {
+            Window = new LayoutOverlayWindow();
+            Device = new Device(workArea, monitorSize);
+
+            if (App.DebugMode)
+            {
+                long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+                PropertyInfo[] properties = typeof(Colors).GetProperties();
+                Window.OverlayOpacity = 0.5;
+                Window.OverlayBackground = new SolidColorBrush((Windows.UI.Color)properties[milliseconds % properties.Length].GetValue(null, null));
+            }
+
+            var app = (App)Application.Current;
+            Window.AddKeyHandlers(app.App_KeyDown, app.App_KeyUp);
+
+            // Store for DPI-unaware positioning
+            _virtualWorkArea = workArea;
+
+            // The HWND already exists once the WinUI Window is constructed, so the overlay can be
+            // positioned right away using the same DPI-unaware context as the C++ backend.
+            ApplyWorkAreaPosition();
+        }
+
+        public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
+            : this(workArea, monitorSize)
+        {
+            Device = new Device(monitorName, monitorInstanceId, monitorSerialNumber, virtualDesktop, dpi, workArea, monitorSize);
+        }
+
         public LayoutOverlayWindow Window { get; private set; }
 
         public Device Device { get; set; }
@@ -51,55 +86,18 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        public Monitor(Rect workArea, Size monitorSize)
+        private LayoutSettings DefaultLayoutSettings
         {
-            Window = new LayoutOverlayWindow();
-            Device = new Device(workArea, monitorSize);
-
-            if (App.DebugMode)
+            get
             {
-                long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-                PropertyInfo[] properties = typeof(Brushes).GetProperties();
-                Window.Opacity = 0.5;
-                Window.Background = (Brush)properties[milliseconds % properties.Length].GetValue(null, null);
+                LayoutSettings settings = new LayoutSettings();
+                if (MonitorConfigurationType == MonitorConfigurationType.Vertical)
+                {
+                    settings.Type = LayoutType.Rows;
+                }
+
+                return settings;
             }
-
-            Window.KeyUp += ((App)Application.Current).App_KeyUp;
-            Window.KeyDown += ((App)Application.Current).App_KeyDown;
-
-            // Store for DPI-unaware positioning
-            _virtualWorkArea = workArea;
-
-            // Set initial WPF properties
-            Window.Left = workArea.X;
-            Window.Top = workArea.Y;
-            Window.Width = workArea.Width;
-            Window.Height = workArea.Height;
-
-            // After HWND is created, reposition using DPI-unaware context
-            // This matches the C++ backend which uses a DPI-unaware thread
-            Window.SourceInitialized += OnWindowSourceInitialized;
-        }
-
-        public Monitor(string monitorName, string monitorInstanceId, string monitorSerialNumber, string virtualDesktop, int dpi, Rect workArea, Size monitorSize)
-            : this(workArea, monitorSize)
-        {
-            Device = new Device(monitorName, monitorInstanceId, monitorSerialNumber, virtualDesktop, dpi, workArea, monitorSize);
-        }
-
-        private LayoutSettings _settings;
-        private Rect _virtualWorkArea;
-
-        private void OnWindowSourceInitialized(object sender, EventArgs e)
-        {
-            // Reposition window using DPI-unaware context to match the virtual coordinates
-            // from the FancyZones C++ backend (which uses a DPI-unaware thread)
-            Utils.NativeMethods.SetWindowPositionDpiUnaware(
-                Window,
-                (int)_virtualWorkArea.X,
-                (int)_virtualWorkArea.Y,
-                (int)_virtualWorkArea.Width,
-                (int)_virtualWorkArea.Height);
         }
 
         public void Scale(double scaleFactor)
@@ -107,14 +105,7 @@ namespace FancyZonesEditor.Models
             Device.Scale(scaleFactor);
 
             _virtualWorkArea = Device.WorkAreaRect;
-
-            // Use DPI-unaware positioning
-            Utils.NativeMethods.SetWindowPositionDpiUnaware(
-                Window,
-                (int)_virtualWorkArea.X,
-                (int)_virtualWorkArea.Y,
-                (int)_virtualWorkArea.Width,
-                (int)_virtualWorkArea.Height);
+            ApplyWorkAreaPosition();
         }
 
         public void SetLayoutSettings(LayoutModel model)
@@ -146,18 +137,16 @@ namespace FancyZonesEditor.Models
             }
         }
 
-        private LayoutSettings DefaultLayoutSettings
+        private void ApplyWorkAreaPosition()
         {
-            get
-            {
-                LayoutSettings settings = new LayoutSettings();
-                if (MonitorConfigurationType == MonitorConfigurationType.Vertical)
-                {
-                    settings.Type = LayoutType.Rows;
-                }
-
-                return settings;
-            }
+            // Reposition window using DPI-unaware context to match the virtual coordinates
+            // from the FancyZones C++ backend (which uses a DPI-unaware thread)
+            NativeMethods.SetWindowPositionDpiUnaware(
+                Window.Hwnd,
+                (int)_virtualWorkArea.X,
+                (int)_virtualWorkArea.Y,
+                (int)_virtualWorkArea.Width,
+                (int)_virtualWorkArea.Height);
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,12 +8,14 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
-using System.Windows;
 
+using FancyZonesEditor.Helpers;
 using FancyZonesEditor.Models;
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
 using ManagedCommon;
+using Windows.Foundation;
+using Windows.Graphics;
 
 namespace FancyZonesEditor.Utils
 {
@@ -97,7 +99,7 @@ namespace FancyZonesEditor.Utils
                 {
                     if (editorParams.Monitors.Count != 1)
                     {
-                        return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Editor_Parameters_Message);
+                        return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Editor_Parameters_Message"));
                     }
 
                     var nativeData = editorParams.Monitors[0];
@@ -136,7 +138,7 @@ namespace FancyZonesEditor.Utils
                 bool parsingResult = SetAppliedLayouts(appliedLayouts.AppliedLayouts);
                 if (!parsingResult)
                 {
-                    return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Applied_Layouts_Message);
+                    return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Applied_Layouts_Message"));
                 }
             }
             catch (Exception ex)
@@ -164,7 +166,7 @@ namespace FancyZonesEditor.Utils
                 bool layoutHotkeysParsingResult = SetLayoutHotkeys(layoutHotkeys);
                 if (!layoutHotkeysParsingResult)
                 {
-                    return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Hotkeys_Message);
+                    return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Layout_Hotkeys_Message"));
                 }
 
                 return new ParsingResult(true);
@@ -195,7 +197,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Layout_Templates_Message);
+                return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Layout_Templates_Message"));
             }
             catch (Exception ex)
             {
@@ -223,7 +225,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Custom_Layouts_Message);
+                return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Custom_Layouts_Message"));
             }
             catch (Exception ex)
             {
@@ -251,7 +253,7 @@ namespace FancyZonesEditor.Utils
                     return new ParsingResult(true);
                 }
 
-                return new ParsingResult(false, FancyZonesEditor.Properties.Resources.Error_Parsing_Default_Layouts_Message);
+                return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Default_Layouts_Message"));
             }
             catch (Exception ex)
             {
@@ -314,7 +316,7 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize applied layouts error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+                App.ShowExceptionMessageBox(ResourceLoaderInstance.GetString("Error_Applying_Layout"), ex);
             }
         }
 
@@ -353,7 +355,7 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize layout hotkeys error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+                App.ShowExceptionMessageBox(ResourceLoaderInstance.GetString("Error_Applying_Layout"), ex);
             }
         }
 
@@ -389,7 +391,7 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize layout templates error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+                App.ShowExceptionMessageBox(ResourceLoaderInstance.GetString("Error_Applying_Layout"), ex);
             }
         }
 
@@ -490,7 +492,7 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize custom layouts error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+                App.ShowExceptionMessageBox(ResourceLoaderInstance.GetString("Error_Applying_Layout"), ex);
             }
         }
 
@@ -592,7 +594,7 @@ namespace FancyZonesEditor.Utils
             catch (Exception ex)
             {
                 Logger.LogError("Serialize default layout error", ex);
-                App.ShowExceptionMessageBox(Properties.Resources.Error_Applying_Layout, ex);
+                App.ShowExceptionMessageBox(ResourceLoaderInstance.GetString("Error_Applying_Layout"), ex);
             }
         }
 
@@ -840,7 +842,7 @@ namespace FancyZonesEditor.Utils
             CustomLayouts deserializer = new CustomLayouts();
             var info = deserializer.CanvasFromJsonElement(wrapper.Info.GetRawText());
 
-            var zones = new List<Int32Rect>();
+            var zones = new List<RectInt32>();
             foreach (var zone in info.Zones)
             {
                 if (zone.Width < 0 || zone.Height < 0)
@@ -849,7 +851,7 @@ namespace FancyZonesEditor.Utils
                     return null;
                 }
 
-                zones.Add(new Int32Rect { X = zone.X, Y = zone.Y, Width = zone.Width, Height = zone.Height });
+                zones.Add(new RectInt32 { X = zone.X, Y = zone.Y, Width = zone.Width, Height = zone.Height });
             }
 
             var layout = new CanvasLayoutModel(wrapper.Uuid, wrapper.Name, LayoutType.Custom, zones, Math.Max(info.RefWidth, 0), Math.Max(info.RefHeight, 0));
