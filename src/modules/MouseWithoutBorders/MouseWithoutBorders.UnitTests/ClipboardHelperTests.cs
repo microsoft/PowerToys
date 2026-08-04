@@ -45,4 +45,12 @@ public sealed class ClipboardHelperTests
         // checks handle them safely (treated as "not found").
         Assert.IsFalse(ClipboardHelper.IsRemoteOrUncPath(path));
     }
+
+    [TestMethod]
+    public void IsRemoteOrUncPath_ReturnsTrue_ForMappedNetworkDrive()
+    {
+        Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(
+            @"Z:\shared\file.txt",
+            root => root.Equals(@"Z:\", StringComparison.OrdinalIgnoreCase) ? DriveType.Network : DriveType.Fixed));
+    }
 }

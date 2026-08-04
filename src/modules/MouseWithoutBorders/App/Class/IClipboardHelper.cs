@@ -182,6 +182,11 @@ namespace MouseWithoutBorders
         // forwards local clipboard/drag file paths, so reject anything that is not local.
         internal static bool IsRemoteOrUncPath(string path)
         {
+            return IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType);
+        }
+
+        internal static bool IsRemoteOrUncPath(string path, Func<string, DriveType> getDriveType)
+        {
             if (string.IsNullOrEmpty(path))
             {
                 return false;
@@ -195,7 +200,13 @@ namespace MouseWithoutBorders
             try
             {
                 string fullPath = Path.GetFullPath(path);
-                return StartsWithPathSeparatorPrefix(fullPath);
+                if (StartsWithPathSeparatorPrefix(fullPath))
+                {
+                    return true;
+                }
+
+                string root = Path.GetPathRoot(fullPath);
+                return !string.IsNullOrEmpty(root) && getDriveType(root) == DriveType.Network;
             }
             catch (Exception)
             {
