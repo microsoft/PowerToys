@@ -28,14 +28,33 @@ The page preserves user edits across polls: once the user changes any control or
 1. **At the start of a multi-PR batch**, write a **review-data.json** with one entry per PR (schema below), each at `phase: "queued"`, and launch the dashboard (step 2). Update the file atomically as each PR progresses (see *Live status tracker* above). By the time the fork loop has converged for a PR (Critical Rule 11 — 0 new comments, 0 unresolved Copilot threads), you have filled in its `contextComment` and code suggestions and set its `phase` to `ready`.
 2. Launch the dashboard (it opens the browser and keeps serving):
    ```powershell
-   ./scripts/Show-ReviewDashboard.ps1 -DataPath <path>\review-data.json -Port 8787
+   ./scripts/Show-ReviewDashboard.ps1 -DataPath <path>\review-data.json -Port 8787 [-RepoDir <path-to-repo>]
    ```
-   For an unattended session, launch it detached so it survives the turn; tell the user the URL and note the PID so it can be stopped later.
+   For an unattended session, launch it detached so it survives the turn; tell the user the URL and note the PID so it can be stopped later. Pass `-RepoDir` to enable **launch-on-submit** (see below).
 3. **Tell the user** the URL (`http://localhost:8787`), then **stop and end the turn** — this is the Step 10 mandatory stop. The user reviews at their own pace, sets a disposition per PR, toggles individual suggestions to post/hold (**all suggestions, including low severity, default to post** — the user unchecks any to hold), optionally edits the drafted comment, and can type free-text instructions (e.g. "also ask for a demo", "rebase first then give me build + e2e steps", "hold the low-severity ones"). Each PR's detail pane shows a **Run &amp; verify (already built)** block whose Launch line is the concrete `<worktree>\x64\Debug\PowerToys.exe` (auto-derived from the PR's `worktree`, since Step 7 already built it). Clicking **Submit decisions** writes `review-decisions.json` next to the data file and shows the resume phrase.
-4. The user returns to the Copilot session and types the resume phrase: **`pr-review: actions ready`**.
+4. The user returns to the Copilot session and types the resume phrase: **`pr-review: actions ready`** — or, if launch-on-submit is enabled and left checked, a supervised Copilot session opens automatically (below).
 5. The agent reads `review-decisions.json`, and for each PR **runs the mandatory freshness re-check** (Step 10.4) before doing anything, then executes only the approved actions with the Step 10 posting commands.
 
 > The resume phrase is just a convention so you know to read the decisions file. The user can also simply say "go" / "post them". If `review-decisions.json.submitted` exists and is newer than the data file, the decisions are ready.
+
+## Header at-a-glance badges
+
+Each PR's detail header shows, prominently under the title:
+- **Member** (green) vs **Community** (amber) — derived from `assoc`; `MEMBER`/`OWNER`/`COLLABORATOR` → Member, everything else → Community. `firstTimer:true` (or `assoc: FIRST_TIME_CONTRIBUTOR`) appends "· first-time".
+- **Draft** (gray) vs **Ready for review** (green) — from the `draft` field.
+The sidebar mirrors the draft and first-time markers so you can scan the queue.
+
+## Overall-comment control (inline-only option)
+
+The Action row has a two-button segmented control: **Include overall comment** vs **Skip — inline only**. Some reviewers don't want to leave a summary message, so "Skip" is a single click — it sets `postContext:false` and dims the drafted-comment box. This maps to a COMMENTED/REQUEST_CHANGES review that carries only the inline suggestion comments and no top-level body (for `approve`/`request-changes`, GitHub requires a body, so keep Include for those unless `instructions` say otherwise).
+
+## Launch-on-submit (optional)
+
+When the dashboard is started with `-RepoDir <repo>`, the header shows a **Launch Copilot on submit** checkbox (default on). On Submit, in addition to writing `review-decisions.json`, the server opens a **new terminal** running:
+```powershell
+copilot -C <RepoDir> -i "pr-review: actions ready  (decisions file: <DecisionsPath>)"
+```
+`-i` starts a **supervised interactive** session that auto-executes the resume phrase — it is *not* `-p/--yolo`, so the mandatory freshness re-check and every `gh` post still surface for your approval in that window. Untick the box to fall back to the type-the-phrase banner. The banner is always shown too, so the manual path never disappears.
 
 ## review-data.json schema
 
@@ -53,8 +72,9 @@ The page preserves user edits across polls: once the user changes any control or
       "phase": "ready",                 // live: queued|mirroring|building|reviewing|drafting|ready|held|error
       "loop": 4,                        // live: current fork Copilot review round
       "waitingOn": "",                  // live: what this PR is blocked on right now
-      "assoc": "FIRST_TIME_CONTRIBUTOR",// author_association (drives the community bar)
-      "firstTimer": true,
+      "assoc": "FIRST_TIME_CONTRIBUTOR",// author_association; drives the Member vs Community badge
+      "firstTimer": true,               // adds a "first-time" marker to the Community badge
+      "draft": false,                   // optional; true renders a prominent DRAFT badge (else "Ready for review")
       "forkPr": "fork PR #153",         // optional label
       "forkPrUrl": "https://github.com/<owner>/PowerToys/pull/153",
       "worktree": "C:\\PowerToys-90d8", // the PR's build worktree; dashboard derives the Launch path from it

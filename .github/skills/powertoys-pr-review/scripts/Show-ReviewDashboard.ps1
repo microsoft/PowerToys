@@ -30,6 +30,13 @@
     DataPath.
 .PARAMETER NoBrowser
     Do not auto-open the default browser.
+.PARAMETER RepoDir
+    Optional. When set, the page shows a "Launch a Copilot session to run these now"
+    option; on Submit the server opens a new terminal running
+    `copilot -C <RepoDir> -i "<resume phrase>"` — a supervised interactive session
+    that auto-executes the resume phrase (freshness re-check + posting still require
+    your approval in that window). If omitted, only the manual resume-phrase banner
+    is shown.
 .EXAMPLE
     ./Show-ReviewDashboard.ps1 -DataPath .\review-data.json
 .NOTES
@@ -41,6 +48,7 @@ param(
     [Parameter(Mandatory)] [string] $DataPath,
     [int] $Port = 8787,
     [string] $DecisionsPath,
+    [string] $RepoDir,
     [switch] $NoBrowser
 )
 
@@ -50,6 +58,8 @@ if (-not (Test-Path $DataPath)) { throw "Review data file not found: $DataPath" 
 $DataPath = (Resolve-Path $DataPath).Path
 if (-not $DecisionsPath) { $DecisionsPath = Join-Path (Split-Path -Parent $DataPath) 'review-decisions.json' }
 try { $null = (Get-Content $DataPath -Raw) | ConvertFrom-Json } catch { throw "DataPath is not valid JSON: $($_.Exception.Message)" }
+if ($RepoDir) { if (Test-Path $RepoDir) { $RepoDir = (Resolve-Path $RepoDir).Path } else { Write-Warning "RepoDir not found: $RepoDir (launch-on-submit disabled)"; $RepoDir = '' } }
+$launchEnabled = [bool]$RepoDir
 
 $resumePhrase = 'pr-review: actions ready'
 
@@ -120,9 +130,20 @@ $htmlTemplate = @'
   .statusbar.held { border-color:#1a3a5f; background:#0d1a2a; color:#79c0ff; }
   .badge { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; vertical-align:middle; }
   .b-assoc { background:#1f2937; color:#9ecbff; border:1px solid #274060; }
+  .b-member { background:#132a17; color:#7ee787; border:1px solid #2b5a34; }
+  .b-community { background:#3a2a0b; color:#f0b24b; border:1px solid #6b4d1a; }
+  .b-draft { background:#26262b; color:#c9c9d1; border:1px solid #45454d; text-transform:uppercase; letter-spacing:.5px; }
   .b-first { background:#3b2f0b; color:#f2cc60; border:1px solid #6b551a; }
   .b-status { background:#22303c; color:#7ee787; border:1px solid #2b4a34; }
   .b-disp { background:#2d2233; color:#e2a0ff; border:1px solid #4a2d55; }
+  .pills { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .pills .badge { font-size:11.5px; padding:3px 10px; }
+  .seg { display:inline-flex; border:1px solid #30363d; border-radius:8px; overflow:hidden; }
+  .seg button { background:#0d1117; color:#8b949e; border:0; border-right:1px solid #30363d; padding:6px 12px; font:inherit; font-size:12.5px; cursor:pointer; }
+  .seg button:last-child { border-right:0; }
+  .seg button:hover { background:#161b22; color:#e6edf3; }
+  .seg button.active { background:#1f6feb; color:#fff; font-weight:600; }
+  #ctxwrap { transition:opacity .15s; }
   .sev { text-transform:uppercase; letter-spacing:.4px; }
   .sev-critical { background:#3d1418; color:#ff9a9a; border:1px solid #6e2831; }
   .sev-high     { background:#3a1d12; color:#ffb08a; border:1px solid #6b3a24; }
@@ -172,6 +193,7 @@ $htmlTemplate = @'
   <span id="phase"></span>
   <span class="spacer"></span>
   <span class="counts" id="counts"></span>
+  <label class="chk" id="launchWrap" style="display:none;margin-right:6px"><input type="checkbox" id="launchChk" checked> Launch Copilot on submit</label>
   <button class="primary" id="submitBtn">Submit decisions</button>
 </header>
 <div class="layout">
@@ -179,13 +201,14 @@ $htmlTemplate = @'
   <main id="detail"><div class="empty">Waiting for the first PR…</div></main>
 </div>
 <div id="banner">
-  <strong>Decisions saved.</strong> Return to your Copilot session and type:
+  <span id="bannerNote"><strong>Decisions saved.</strong> Return to your Copilot session and type:</span>
   <code id="resume"></code>
   <span class="muted"> — the agent will re-check each PR for new activity, then post only what you approved.</span>
 </div>
 <script>
 let DATA = /*__REVIEW_DATA__*/;
 const RESUME = "/*__RESUME__*/";
+const LAUNCH_ENABLED = /*__LAUNCH__*/;
 const state = {};
 let current = null;
 
@@ -240,7 +263,7 @@ function renderSidebar(){
     div.innerHTML =
       '<span class="dot '+ph+'"></span>'
       + '<div style="min-width:0">'
-      +   '<div class="n">#'+esc(pr.number)+(pr.firstTimer?' <span class="badge b-first">first</span>':'')+(st.edited?' <span class="chk">✓</span>':'')+'</div>'
+      +   '<div class="n">#'+esc(pr.number)+(pr.draft?' <span class="badge b-draft">draft</span>':'')+(pr.firstTimer?' <span class="badge b-community">first-time</span>':'')+(st.edited?' <span class="chk">✓</span>':'')+'</div>'
       +   '<div class="t">'+esc(pr.title)+'</div>'
       +   '<div class="m">'+esc(pr.author||'')+' · '+nsug+' sug'+(sc?(' · '+sc):'')+'</div>'
       +   (ph==='progress'&&stx?('<div class="wait">'+esc(stx)+'</div>'):'')
@@ -252,8 +275,10 @@ function selectPR(n){ current = n; renderSidebar(); renderDetail(n); document.ge
 function markEdited(n){ state[n].edited = true; renderSidebar(); }
 function renderDetail(n){
   const pr = prByNum(n); if(!pr){ return; } const st = ensureState(pr); const ph = phaseOf(pr);
-  const assoc = pr.assoc ? '<span class="badge b-assoc">'+esc(pr.assoc)+'</span>' : '';
-  const firstB = pr.firstTimer ? '<span class="badge b-first">first-timer</span>' : '';
+  const ai = assocInfo(pr.assoc, pr.firstTimer);
+  const assoc = '<span class="badge '+ai.cls+'">'+esc(ai.label)+'</span>';
+  const draftB = pr.draft ? '<span class="badge b-draft">Draft</span>' : '<span class="badge b-status">Ready for review</span>';
+  const firstB = '';
   const status = pr.status ? '<span class="badge b-status">'+esc(pr.status)+'</span>' : '';
   const disp = pr.disposition ? '<span class="badge b-disp">'+esc(pr.disposition)+'</span>' : '';
   const forkLink = pr.forkPr ? ' · fork '+(pr.forkPrUrl?('<a href="'+esc(pr.forkPrUrl)+'" target="_blank">'+esc(pr.forkPr)+'</a>'):esc(pr.forkPr)) : '';
@@ -299,12 +324,13 @@ function renderDetail(n){
   const opt = v => (st.prAction===v?' selected':'');
   document.getElementById('detail').innerHTML =
     '<div class="title"><a href="'+esc(pr.url)+'" target="_blank">#'+esc(pr.number)+'</a> · '+esc(pr.title)+'</div>'
-    + '<div class="sub">'+esc(pr.author||'')+' '+assoc+' '+firstB+' '+status+' '+disp+forkLink+'</div>'
+    + '<div class="pills">'+assoc+' '+draftB+(pr.assoc?(' <span class="badge b-assoc">'+esc(pr.assoc)+'</span>'):'')+'</div>'
+    + '<div class="sub">'+esc(pr.author||'')+' '+status+' '+disp+forkLink+'</div>'
     + (pr.disposition?('<div class="disp-line">Disposition: '+esc(pr.disposition)+'</div>'):'')
     + (pr.context?('<div class="disp-line">'+esc(pr.context)+'</div>'):'')
     + statusHtml
     + (pr.phase0Note?('<div class="section-title">Context / process (Phase 0)</div><div class="ctx">'+esc(pr.phase0Note)+'</div>'):'')
-    + (pr.contextComment?('<div class="section-title">Drafted comment to author <span class="toggle" id="edtog" onclick="ed()">edit</span></div><div class="ctx" id="ctxbox">'+esc(st.contextComment)+'</div>'):'')
+    + (pr.contextComment?('<div id="ctxwrap"'+(st.postContext?'':' style="opacity:0.4"')+'><div class="section-title">Drafted overall comment to author <span class="toggle" id="edtog" onclick="ed()">edit</span></div><div class="ctx" id="ctxbox">'+esc(st.contextComment)+'</div></div>'):'')
     + ((pr.suggestions&&pr.suggestions.length)?('<div class="section-title">Code suggestions ('+pr.suggestions.length+')<span class="expander" onclick="expandAll('+n+',true)">expand all</span><span class="expander" onclick="expandAll('+n+',false)">collapse all</span></div>'+sugHtml):'<div class="section-title muted">No code suggestions yet</div>')
     + ((exePath||pr.testInstructions)?('<div class="section-title">Run &amp; verify (already built)</div><div class="ctx">'+(exePath?('<strong>Launch:</strong> <span class="file">'+esc(exePath)+'</span>\n\n'):'')+esc(pr.testInstructions||'')+'</div>'):'')
     + '<div class="actionrow"><span class="section-title" style="margin:0">Action</span>'
@@ -316,7 +342,10 @@ function renderDetail(n){
     +     '<option value="close"'+opt('close')+'>Close / redirect (maintainer)</option>'
     +     '<option value="custom"'+opt('custom')+'>Custom (use instructions)</option>'
     +   '</select>'
-    +   '<label class="chk"><input type="checkbox" '+(st.postContext?'checked':'')+' onchange="setCtx('+n+',this.checked)"> include drafted comment</label>'
+    +   '<span class="seg" id="ctxseg" title="Some reviewers prefer inline comments only, with no overall summary message">'
+    +     '<button type="button" class="'+(st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',true)">Include overall comment</button>'
+    +     '<button type="button" class="'+(!st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',false)">Skip \u2014 inline only</button>'
+    +   '</span>'
     + '</div>'
     + '<div class="section-title">Instructions / next steps for the agent (optional)</div>'
     + '<textarea rows="2" placeholder="e.g. also ask for a demo · hold the low-severity ones · rebase first, then give me local build + e2e steps" oninput="setIns('+n+',this.value)">'+esc(st.instructions)+'</textarea>'
@@ -355,6 +384,18 @@ function nav(d){ const arr=(DATA.prs||[]).map(p=>p.number); let i=arr.indexOf(cu
 function setSug(n,id,v){ state[n].sug[id]= v?'post':'hold'; markEdited(n); updateHeader(); }
 function setAction(n,v){ state[n].prAction=v; markEdited(n); }
 function setCtx(n,v){ state[n].postContext=v; markEdited(n); }
+function setCtxBtn(n,v){
+  state[n].postContext=v; markEdited(n);
+  const seg=document.getElementById('ctxseg');
+  if(seg){ const b=seg.querySelectorAll('button'); if(b.length===2){ b[0].classList.toggle('active',v); b[1].classList.toggle('active',!v); } }
+  const wrap=document.getElementById('ctxwrap'); if(wrap) wrap.style.opacity = v?'':'0.4';
+}
+function assocInfo(a, firstTimer){
+  a=(a||'').toUpperCase();
+  if(['MEMBER','OWNER','COLLABORATOR'].includes(a)) return { label:'Member', cls:'b-member' };
+  if(a==='FIRST_TIME_CONTRIBUTOR' || a==='FIRST_TIMER' || firstTimer) return { label:'Community \u00b7 first-time', cls:'b-community' };
+  return { label:'Community', cls:'b-community' };
+}
 function setIns(n,v){ state[n].instructions=v; markEdited(n); }
 function updateHeader(){
   const prs = DATA.prs||[]; let post=0,hold=0; const tally={ready:0,progress:0,held:0,queued:0,error:0};
@@ -387,15 +428,20 @@ async function poll(){
 document.getElementById('submitBtn').onclick = async ()=>{
   const notReady = (DATA.prs||[]).filter(p=>phaseOf(p)==='progress'||phaseOf(p)==='queued').map(p=>'#'+p.number);
   if(notReady.length && !confirm('Still in progress: '+notReady.join(', ')+'\nSubmit decisions for the rest anyway?')) return;
-  const out = { submittedAt:new Date().toISOString(), prs:[] };
+  const launch = LAUNCH_ENABLED && !!(document.getElementById('launchChk') && document.getElementById('launchChk').checked);
+  const out = { submittedAt:new Date().toISOString(), launch:launch, prs:[] };
   (DATA.prs||[]).forEach(pr=>{ const s=state[pr.number]; out.prs.push({ number:pr.number, prAction:s.prAction, postContext:s.postContext, contextComment:s.contextComment, suggestions:s.sug, instructions:s.instructions||'', edited:s.edited }); });
   try {
     const r = await fetch('/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(out,null,2) });
     const j = await r.json();
     document.getElementById('resume').textContent = j.resume || RESUME;
+    const note = document.getElementById('bannerNote');
+    if(j.launched){ note.innerHTML = '<strong>A Copilot session was launched in a new terminal</strong> to run these decisions — watch and approve there. As a fallback you can also type the phrase in any existing session.'; }
+    else { note.innerHTML = '<strong>Decisions saved.</strong> Return to your Copilot session and type the phrase above — the agent re-checks each PR for new activity, then posts only what you approved.'; }
     document.getElementById('banner').classList.add('show');
   } catch(e){ alert('Could not reach the local server: '+e); }
 };
+if(LAUNCH_ENABLED){ const lw=document.getElementById('launchWrap'); if(lw) lw.style.display=''; }
 document.getElementById('genmeta').textContent = DATA.generatedAt ? ('generated '+DATA.generatedAt) : '';
 document.getElementById('resume').textContent = RESUME;
 (DATA.prs||[]).forEach(pr=> ensureState(pr));
@@ -407,7 +453,7 @@ setInterval(poll, 2500);
 </html>
 '@
 
-$html = $htmlTemplate.Replace('/*__REVIEW_DATA__*/', $script:lastGood).Replace('/*__RESUME__*/', $resumePhrase)
+$html = $htmlTemplate.Replace('/*__REVIEW_DATA__*/', $script:lastGood).Replace('/*__RESUME__*/', $resumePhrase).Replace('/*__LAUNCH__*/', $(if($launchEnabled){'true'}else{'false'}))
 
 $listener = [System.Net.HttpListener]::new()
 $listener.Prefixes.Add("http://localhost:$Port/")
@@ -418,6 +464,7 @@ Write-Host "Review dashboard serving at http://localhost:$Port/  (PID $PID)" -Fo
 Write-Host "Live status is read from: $DataPath" -ForegroundColor Cyan
 Write-Host "Decisions will be written to: $DecisionsPath" -ForegroundColor Cyan
 Write-Host "After you Submit in the browser, return to Copilot and type: '$resumePhrase'" -ForegroundColor Yellow
+if ($launchEnabled) { Write-Host "Launch-on-submit ENABLED (repo: $RepoDir) — Submit can open a supervised Copilot session for you." -ForegroundColor Yellow }
 Write-Host "Stop with Ctrl+C (or Stop-Process -Id $PID if detached)." -ForegroundColor DarkGray
 
 if (-not $NoBrowser) { Start-Process "http://localhost:$Port/" | Out-Null }
@@ -450,7 +497,21 @@ while ($listener.IsListening) {
                 $body | Set-Content -Path $DecisionsPath -Encoding UTF8
                 "submitted $(Get-Date -Format o)" | Set-Content -Path "$DecisionsPath.submitted" -Encoding UTF8
                 Write-Host "Decisions received and written to $DecisionsPath" -ForegroundColor Green
-                $resp = @{ ok = $true; resume = $resumePhrase; decisionsPath = $DecisionsPath } | ConvertTo-Json -Compress
+                $launched = $false
+                $wantLaunch = $false
+                try { $wantLaunch = [bool]($body | ConvertFrom-Json).launch } catch { $wantLaunch = $false }
+                if ($wantLaunch -and $launchEnabled) {
+                    try {
+                        $promptText = "$resumePhrase  (decisions file: $DecisionsPath)"
+                        $launchCmd  = "copilot -C '$RepoDir' -i '$promptText'"
+                        Start-Process -FilePath 'pwsh' -ArgumentList '-NoLogo','-NoExit','-Command',$launchCmd | Out-Null
+                        $launched = $true
+                        Write-Host "Launched supervised Copilot session in a new terminal (repo: $RepoDir)" -ForegroundColor Green
+                    } catch {
+                        Write-Host "Launch-on-submit failed: $($_.Exception.Message)" -ForegroundColor Red
+                    }
+                }
+                $resp = @{ ok = $true; resume = $resumePhrase; decisionsPath = $DecisionsPath; launched = $launched } | ConvertTo-Json -Compress
                 $b = [Text.Encoding]::UTF8.GetBytes($resp)
                 $res.ContentType = 'application/json'; $res.OutputStream.Write($b, 0, $b.Length)
             }
