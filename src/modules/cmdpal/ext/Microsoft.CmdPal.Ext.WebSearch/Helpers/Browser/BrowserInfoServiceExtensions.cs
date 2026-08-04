@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using ManagedCommon;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WebSearch.Helpers.Browser;
@@ -28,23 +27,14 @@ internal static class BrowserInfoServiceExtensions
     /// </remarks>
     public static bool Open(this IBrowserInfoService browserInfoService, string url)
     {
-        // If the URL is a valid URI, attempt to open it with the default browser by invoking it through the shell.
-        if (Uri.TryCreate(url, UriKind.Absolute, out _))
-        {
-            try
-            {
-                ShellHelpers.OpenInShell(url);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogDebug($"Failed to launch the URI {url}: {ex}");
-            }
-        }
-
-        // Use legacy method to open the URL if it's not a well-formed URI or if the shell launch fails.
-        // This may handle cases where the URL is a search query or a custom URI scheme.
-        var defaultBrowser = browserInfoService.GetDefaultBrowser();
-        return defaultBrowser != null && ShellHelpers.OpenCommandInShell(defaultBrowser.Path, defaultBrowser.ArgumentsPattern, url);
+        return Open(browserInfoService, url, OpenCommandInShell);
     }
+
+    internal static bool Open(this IBrowserInfoService browserInfoService, string url, Func<string?, string?, string?, bool> openCommand)
+    {
+        var defaultBrowser = browserInfoService.GetDefaultBrowser();
+        return defaultBrowser != null && openCommand(defaultBrowser.Path, defaultBrowser.ArgumentsPattern, url);
+    }
+
+    private static bool OpenCommandInShell(string? path, string? pattern, string? arguments) => ShellHelpers.OpenCommandInShell(path, pattern, arguments);
 }
