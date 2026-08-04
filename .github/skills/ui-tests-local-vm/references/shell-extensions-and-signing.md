@@ -11,6 +11,86 @@ Read this before writing or verifying UI tests for any module with a **shell ext
 (`0x800B0100 TRUST_E_NOSIGNATURE`). A test that passes on your machine (where you self-signed or
 installed a signed build) can therefore fail 100% on CI.
 
+## Preferred fix: sign the MSIX on CI and force-trust it
+
+The workarounds below (driving the classic menu, launching the exe directly) let a test pass on an
+unsigned build, but they *do not exercise the modern Win11 tier-1 context menu* — the surface real
+users see. The faithful fix is to give CI a genuinely **signed** package plus a **test-only trusted
+root**, so registration succeeds and the tests drive the real end-user workflow. This is legitimate
+because the trust anchor is scoped to the test agent and asserts no security — it just makes Windows
+treat the CI-built package as sideload-installable, exactly like a developer self-signing locally.
+
+**Why signing (not Developer Mode) is required.** PowerToys registers each sparse package at
+module-enable time with `PackageManager.AddPackageByUriAsync` (`src/common/utils/package.h`
+`RegisterSparsePackage`) — a *packaged* deployment that demands a signature chaining to a trusted
+root. Developer Mode / register-by-loose-manifest would only help if the product code called
+`AddPackage -Register AppxManifest.xml`, which it does not. So the only route is: **sign the `.msix`
+and trust the signer.**
+
+**Mechanism** (all three steps must happen *before* the module is enabled):
+
+1. Create a self-signed **code-signing** cert whose subject **exactly equals** the manifest
+   `Publisher` — every PowerToys context-menu package and the CmdPal `PowerToysSparse.msix` use
+   `CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`. The private
+   key is generated on the agent and never leaves it; nothing is committed.
+2. **Force-trust** it machine-wide: import the public cert into `LocalMachine\Root` **and**
+   `LocalMachine\TrustedPeople` (a self-signed leaf is its own root, and AppX sideload consults
+   TrustedPeople). The elevated test agent can do this; local non-elevated runs fall back to the
+   `CurrentUser` stores.
+3. `signtool sign /fd SHA256` every sparse `.msix` the product will register.
+
+A ready-to-use, publisher-aware implementation ships with this skill:
+[`.pipelines/signSparsePackages.ps1`](../../../../.pipelines/signSparsePackages.ps1). It reads each
+package's manifest publisher, mints/reuses+trusts a matching cert, and signs only packages that are
+not already validly signed (so real framework packages like VCLibs are left alone). Point it at
+whichever tree hosts the packages:
+
+```powershell
+# buildNow (run-in-place) — sign the packages in the downloaded build tree:
+.\.pipelines\signSparsePackages.ps1 -PackageRoot "$(Pipeline.Workspace)\$(TestArtifactsName)"
+
+# installed (buildNowSlim / official) — sign after install, before the test enables the module:
+.\.pipelines\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps"
+
+# local UI-test VM sideload — sign the deployed runtime:
+.\.pipelines\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys\WinUI3Apps"
+```
+
+**Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` as a
+best-effort step after the download/install steps and before **Run UI Tests** (both roots passed;
+missing ones are skipped). It is wrapped so a signing failure (for example, no `signtool` on the
+agent) logs a warning and the shell-extension tests fall back to their `ModernRegistered()` guard —
+the job never regresses:
+
+```yaml
+  - pwsh: |
+      try {
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot @(
+          "$(Pipeline.Workspace)\$(TestArtifactsName)",
+          "$env:ProgramFiles\PowerToys\WinUI3Apps")
+      } catch {
+        Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+      }
+    displayName: "Sign sparse MSIX packages (test trust)"
+```
+
+**Prerequisite:** the agent needs `signtool.exe` (Windows SDK). Verified end-to-end in a local Win11
+VM — the unsigned package fails `Add-AppxPackage` / `AddPackageByUriAsync` with `0x800B0100`, and
+after `signSparsePackages.ps1` signs it and the cert is force-trusted (`LocalMachine\Root` +
+`TrustedPeople`) the same registration succeeds and the package appears in `Get-AppxPackage`.
+
+**Caveat — CmdPal at install time.** The installer's custom action stages/registers
+`PowerToysSparse.msix` *during* install (`installer/PowerToysSetupCustomActionsVNext/CustomAction.cpp`),
+before any test-time signing step runs. Signing after install still covers every module that
+registers at **enable** time (ImageResizer / PowerRename / FileLocksmith / NewPlus). If CmdPal's own
+packaged registration is the thing under test on an installed build, the package must instead be
+signed at **build** time (self-sign in the build stage and publish the public `.cer` for the test
+stage to trust) — the run-in-place `buildNow` path avoids this because nothing registers until the
+test enables it.
+
+With this in place a test can drive the modern surface directly on CI. `ModernRegistered()` (below)
+becomes a portability guard for *unsigned* environments rather than a reason to avoid the modern menu.
+
 ## Two shell-extension tiers
 
 | Tier | Mechanism | Signing | Unsigned CI PR build |
@@ -18,10 +98,12 @@ installed a signed build) can therefore fail 100% on CI.
 | **Modern** (Win11 tier-1 context menu, `IExplorerCommand`) | sparse **MSIX** package | **required** | ❌ cannot register |
 | **Classic** ("Show more options", Win10 default menu, most preview/thumbnail handlers) | **registry COM** (`HKCU\Software\Classes\...\SystemFileAssociations\<ext>\ShellEx\...`) | none | ✅ works |
 
-**Rule:** drive the **signing-free surface** on CI — the classic COM menu, or launch the module exe
-directly with the files (the PowerRename pattern; the exe often has a CLI/`FilesArgument`). Only
-assert the modern/tier-1 surface when the package is *actually* registered, so it runs on
-signed/official/installed builds only:
+**Rule:** you have two options on an unsigned CI build. **(A, preferred)** sign the modern package
+and force-trust it (see *Preferred fix* above) so the test drives the real Win11 tier-1 menu.
+**(B, fallback)** drive the **signing-free surface** — the classic COM menu, or launch the module exe
+directly with the files (the PowerRename pattern; the exe often has a CLI/`FilesArgument`). If you
+take the fallback, only assert the modern/tier-1 surface when the package is *actually* registered,
+so it runs on signed/official/installed builds only:
 
 ```csharp
 private static bool ModernRegistered() =>

@@ -177,6 +177,23 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
+  # Sign the sparse shell-extension MSIX packages with a machine-trusted TEST certificate so they
+  # register on unsigned PR builds and the UI tests can drive the real modern (Win11 tier-1) context
+  # menu instead of the signing-free fallback. Test-only trust anchor; asserts no security. Both roots
+  # are passed (buildNow run-in-place tree + the installed location); missing ones are skipped.
+  # Best-effort: on failure the shell-extension tests fall back to their ModernRegistered() guard, so
+  # the job never regresses. Verified in a local Win11 VM — unsigned Add-AppxPackage fails 0x800B0100;
+  # after signing + force-trust the same registration succeeds.
+  - pwsh: |
+      try {
+        & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot @(
+          "$(Pipeline.Workspace)\$(TestArtifactsName)",
+          "$env:ProgramFiles\PowerToys\WinUI3Apps")
+      } catch {
+        Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
+      }
+    displayName: "Sign sparse MSIX packages (test trust)"
+
   # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
   # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
   # detached gives it its own hidden console whose stdin blocks, so it stays alive for the run without

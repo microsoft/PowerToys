@@ -21,7 +21,6 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private const string ImageResizerModuleName = "Image Resizer";
     private const string ImageResizerProcessName = "PowerToys.ImageResizer";
     private const string ModernContextMenuClassName = "Microsoft.UI.Content.PopupWindowSiteBridge";
-    private const string ShowMoreOptionsCaption = "Show more options";
     private const int DialogTimeoutMS = 30_000;
     private const int ExplorerTimeoutMS = 30_000;
     private const int ResizeTimeoutMS = 60_000;
@@ -43,7 +42,6 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private static bool originalSizesFileExisted;
     private static string? originalSizesContent;
     private static bool contextMenuExplorerRefreshed;
-    private static bool? modernContextMenuRegistered;
 
     private readonly List<string> temporaryFolders = new();
     private long explorerWindowHandle;
@@ -115,21 +113,13 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             toggle = SetModuleEnabled(toggle, false);
             var explorer = OpenExplorer(folder);
 
-            // The classic (registry-COM) surface is always available; the modern (sparse-MSIX)
-            // surface only registers on signed/official/installed builds.
-            AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: true, expected: false);
-            if (UseModernContextMenu)
-            {
-                AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: false, expected: false);
-            }
+            // Assert the real per-OS surface (modern tier-1 on Windows 11, classic on Windows 10)
+            // with no classic fallback on Windows 11 — CI signs the sparse package so it registers.
+            AssertContextMenuPresence(explorer, new[] { fixture }, expected: false);
 
             toggle = SetModuleEnabled(toggle, true);
             explorer = OpenExplorer(folder);
-            AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: true, expected: true);
-            if (UseModernContextMenu)
-            {
-                AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: false, expected: true);
-            }
+            AssertContextMenuPresence(explorer, new[] { fixture }, expected: true);
         }
         finally
         {
@@ -486,7 +476,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
             selectionFailures = 0;
             explorer = selected;
-            menu = OpenContextMenu(explorer, useClassicMenu: !UseModernContextMenu);
+            menu = OpenContextMenu(explorer);
             if (menu is not null)
             {
                 resizeMenuItem = FindVisibleMenuItem(menu, ContextMenuCaption, timeoutMS: 5_000);
@@ -547,7 +537,6 @@ public sealed class ImageResizerEndToEndTests : UITestBase
     private void AssertContextMenuPresence(
         Session explorer,
         string[] filePaths,
-        bool useClassicMenu,
         bool expected)
     {
         var folder = Path.GetDirectoryName(filePaths[0])!;
@@ -581,7 +570,7 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
             selectionFailures = 0;
             explorer = selected;
-            var menu = OpenContextMenu(explorer, useClassicMenu);
+            var menu = OpenContextMenu(explorer);
             if (menu is null)
             {
                 Thread.Sleep(300);
@@ -606,54 +595,31 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         }
         while (DateTime.UtcNow < deadline);
 
+        var surface = UseModernContextMenu ? "modern" : "classic";
         Assert.IsTrue(
             lastObservation.IsOpen,
-            $"The {(useClassicMenu ? "classic" : "primary")} Explorer context menu did not become ready.");
+            $"The {surface} Explorer context menu did not become ready.");
         Assert.AreEqual(
             expected,
             lastObservation.CommandPresent,
-            $"The {(useClassicMenu ? "classic" : "primary")} Explorer context menu did {(expected ? "not show" : "show")} '{ContextMenuCaption}'.");
+            $"The {surface} Explorer context menu did {(expected ? "not show" : "show")} '{ContextMenuCaption}'.");
     }
 
-    private static Session? OpenContextMenu(Session explorer, bool useClassicMenu)
+    private static Session? OpenContextMenu(Session explorer)
     {
         EnsureExplorerForeground(explorer);
         KeyboardHelper.SendKeys(Key.Esc);
 
-        var firstSurfaceClass = IsWindows11OrNewer() ? ModernContextMenuClassName : ClassicContextMenuClassName;
+        // Windows 11 shows the modern (tier-1) surface directly; Windows 10 the classic one. The
+        // Image Resizer command is registered into whichever the OS shows, so no "Show more options"
+        // step (and no classic fallback on Windows 11) is needed.
+        var surfaceClass = IsWindows11OrNewer() ? ModernContextMenuClassName : ClassicContextMenuClassName;
         if (!WindowControl.TryOpenContextMenuForFocusedControl(new IntPtr(explorer.WindowHandle)))
         {
             return null;
         }
 
-        var menu = WaitForContextMenuSurface(firstSurfaceClass, timeoutMS: 15_000);
-        if (menu is null || !useClassicMenu || !IsWindows11OrNewer())
-        {
-            return menu;
-        }
-
-        var showMoreOptions = FindVisibleMenuItem(menu, ShowMoreOptionsCaption, timeoutMS: 5_000);
-        if (showMoreOptions is null)
-        {
-            KeyboardHelper.SendKeys(Key.Esc);
-            return null;
-        }
-
-        try
-        {
-            showMoreOptions.Invoke(msPostAction: 300);
-        }
-        catch (Exception)
-        {
-            // The transient "Show more options" popup can vanish before it is invoked; return null
-            // so the caller reopens the menu instead of failing.
-            KeyboardHelper.SendKeys(Key.Esc);
-            return null;
-        }
-
-        // The classic surface can take noticeably longer to render than the modern popup on a slow
-        // agent, so allow more time for it to appear.
-        return WaitForContextMenuSurface(ClassicContextMenuClassName, timeoutMS: 25_000);
+        return WaitForContextMenuSurface(surfaceClass, timeoutMS: 15_000);
     }
 
     private static Session? WaitForContextMenuSurface(
@@ -1137,29 +1103,10 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
     private static bool IsWindows11OrNewer() => Environment.OSVersion.Version.Build >= 22_000;
 
-    // The modern (tier-1) context menu is a sparse MSIX package that only registers on signed builds
-    // (official/installed). Unsigned PR/CI builds cannot register it, so the tests drive the classic
-    // (registry-COM) surface there and only assert the modern surface when it is actually present.
-    private static bool UseModernContextMenu => modernContextMenuRegistered ??= DetectModernContextMenuRegistered();
-
-    private static bool DetectModernContextMenuRegistered()
-    {
-        if (!IsWindows11OrNewer())
-        {
-            return false;
-        }
-
-        try
-        {
-            return new Windows.Management.Deployment.PackageManager()
-                .FindPackagesForUser(string.Empty)
-                .Any(package => package.Id.Name.Contains("ImageResizerContextMenu", StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception)
-        {
-            return false;
-        }
-    }
+    // Windows 11 shows the tier-1 (modern, sparse-MSIX) context menu; Windows 10 shows the classic
+    // (registry-COM) menu. CI signs the sparse package so the modern menu registers, so the test
+    // drives the real per-OS surface with no classic fallback on Windows 11.
+    private static bool UseModernContextMenu => IsWindows11OrNewer();
 
     private static bool IsExplorerFileWindow(WindowsFinder.WindowInfo window) =>
         window.ClassName.Equals("CabinetWClass", StringComparison.OrdinalIgnoreCase);
