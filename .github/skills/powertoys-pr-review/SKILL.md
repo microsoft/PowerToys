@@ -1,6 +1,6 @@
 ---
 name: powertoys-pr-review
-description: End-to-end PR review for the microsoft/PowerToys repository, usable by any teammate on any PR. Runs a CONTEXT/PROCESS review (things Copilot code review will not catch: CLA, demo/recording for user-visible changes, author self-validation, provenance, duplicates, scope, CI/spell-check, template) — focused on community-contributor PRs — in parallel with a CODE review (mirror to a personal fork, iterate GitHub Copilot review, fix, build locally). Drafts review actions grounded in real PowerToys review conventions, then stops for explicit approval before anything is posted. Use when asked to review a PR, continue a review, self-check your own PR, or draft suggested-fix comments for a PowerToys pull request.
+description: "End-to-end PR review for the microsoft/PowerToys repository, usable by any teammate on any PR. Runs a CONTEXT/PROCESS review (things Copilot code review will not catch: CLA, demo/recording for user-visible changes, author self-validation, provenance, duplicates, scope, CI/spell-check, template) — focused on community-contributor PRs — in parallel with a CODE review (mirror to a personal fork, iterate GitHub Copilot review, fix, build locally). Drafts review actions grounded in real PowerToys review conventions, then stops for explicit approval before anything is posted. Use when asked to review a PR, continue a review, self-check your own PR, or draft suggested-fix comments for a PowerToys pull request."
 license: Complete terms in LICENSE.txt
 ---
 
