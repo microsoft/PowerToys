@@ -9,8 +9,8 @@ while Windows and installed tools live in the named `/storage` volume.
   requirement does not select the guest OS.
 - Docker Desktop using the WSL2 Linux backend.
 - PowerShell 7, `docker`, and `wsl.exe` on `PATH`.
-- Enough free RAM for the green-first guest (half of host RAM), at least 4 GB of Docker/WSL
-  overhead, and 128 GB of free disk.
+- At least 8 GB RAM for the default guest plus at least 4 GB of Docker/WSL overhead, and 128 GB of
+  free disk.
 - Loopback ports `8006`, `13389`, and `15986` available, or changed in `.env`.
 
 Docker Desktop on Windows requires KVM inside its `docker-desktop` WSL distribution for this
@@ -45,11 +45,11 @@ X:\PowerToysUiTestVm\
 Copy `.env.example` to `.env`, then set a unique administrator password. `.env` is ignored by the
 scaffold and must never be committed or sent through chat.
 
-The default `green-first` resource profile derives half of host RAM and about 60% of physical cores,
-rounded up to an even count (8 host cores becomes 6 guest vCPUs). Run
-`Start-LocalVm.ps1 -PlanOnly` to inspect the result. Ensure `%UserProfile%\.wslconfig` gives WSL2 at
-least 4 GB more than the resolved guest RAM, then run `wsl --shutdown` and restart Docker Desktop
-after changing that ceiling. Use the constrained profile only after the target suite is green.
+The default resource profile gives the guest 4 vCPUs and 8 GB RAM (fixed values, not derived from
+host capacity). Run `Start-LocalVm.ps1 -PlanOnly` to inspect the result. Ensure
+`%UserProfile%\.wslconfig` gives WSL2 at least 4 GB more than the guest RAM, then run `wsl --shutdown`
+and restart Docker Desktop after changing that ceiling. Use the constrained profile (1 vCPU and 4 GB
+RAM) only after the target suite is green.
 
 The default guest is Windows 10 Enterprise LTSC 2021 (`WINDOWS_VERSION=10l`, build 19044/21H2),
 which is newer than Windows 10 20H2. Pin `DOCKUR_IMAGE` to a tested tag or digest for a team baseline.
@@ -117,11 +117,11 @@ destroy the named volume, so resume the same VM instead of recreating it when Se
 progressing.
 
 On a host that is itself a virtual machine, this workflow is deeply nested: host hypervisor ->
-Windows host -> WSL2/Docker Desktop -> KVM/QEMU -> Windows guest. Green-first CPU and RAM remove
-artificial resource scarcity, but Windows Setup image application can still use only a few vCPUs and
-issue low-throughput synchronous writes while expanding `install.wim`. Treat the first ISO install as
-a one-time baseline build. After provisioning and validation, stop and clone/snapshot the named
-volume for future clean runs instead of reinstalling Windows.
+Windows host -> WSL2/Docker Desktop -> KVM/QEMU -> Windows guest. The default profile's 4 vCPUs and
+8 GB RAM remove artificial resource scarcity, but Windows Setup image application can still use only
+a few vCPUs and issue low-throughput synchronous writes while expanding `install.wim`. Treat the
+first ISO install as a one-time baseline build. After provisioning and validation, stop and
+clone/snapshot the named volume for future clean runs instead of reinstalling Windows.
 
 Seeing the Windows desktop does not mean provisioning is complete. A visible command window may run
 `C:\OEM\install.bat`, which configures `PTUser`, HTTPS WinRM, auto-logon, and optional prerequisites.

@@ -80,8 +80,6 @@ $startedUtc = [DateTime]::UtcNow
 $exitCode = 1
 $errorMessage = $null
 $transcriptStarted = $false
-$logicalProcessorCount = [Environment]::ProcessorCount
-$processorAffinityMask = if ($null -eq $request.ProcessorAffinityMask) { [UInt64]3 } else { [UInt64]$request.ProcessorAffinityMask }
 $outputHeartbeatSeconds = if ($null -eq $request.OutputHeartbeatSeconds) { 0 } else { [int]$request.OutputHeartbeatSeconds }
 $reusedStagedPayload = $false
 $heartbeatProcess = $null
@@ -250,31 +248,6 @@ function Get-WebView2RuntimeVersion {
 
 try {
     Write-RunProgress -Stage 'Starting' -Detail 'The guest runner is active.'
-    if ($processorAffinityMask -ne 0) {
-        if ($processorAffinityMask -gt [Int64]::MaxValue) {
-            throw 'ProcessorAffinityMask must not exceed 0x7FFFFFFFFFFFFFFF.'
-        }
-
-        $highestProcessorIndex = 0
-        $remainingMask = $processorAffinityMask
-        while ($remainingMask -gt 1) {
-            $remainingMask = $remainingMask -shr 1
-            $highestProcessorIndex++
-        }
-        if ($highestProcessorIndex -ge $logicalProcessorCount) {
-            throw "ProcessorAffinityMask 0x$($processorAffinityMask.ToString('X')) selects a processor outside the guest's $logicalProcessorCount logical processors."
-        }
-
-        $currentProcess = [Diagnostics.Process]::GetCurrentProcess()
-        try {
-            $currentProcess.ProcessorAffinity = [IntPtr]([Int64]$processorAffinityMask)
-        }
-        finally {
-            $currentProcess.Dispose()
-        }
-        Write-RunProgress -Stage 'Configuring' -Detail "Process-tree affinity 0x$($processorAffinityMask.ToString('X')) on $logicalProcessorCount logical processors"
-    }
-
     $heartbeatProcess = Start-OutputHeartbeat
 
     Stop-RunProcesses
@@ -520,10 +493,8 @@ finally {
         BuildLabel = $request.BuildLabel
         Filter = $request.Filter
         Platform = $request.Platform
-        ProcessorAffinityMask = "0x$($processorAffinityMask.ToString('X'))"
         OutputHeartbeatSeconds = $outputHeartbeatSeconds
         WebView2Version = $webView2Version
-        LogicalProcessorCount = $logicalProcessorCount
         DesktopWidth = 0
         DesktopHeight = 0
         ReusedStagedPayload = $reusedStagedPayload

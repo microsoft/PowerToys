@@ -115,10 +115,10 @@ the media source where possible.
 
 ## Resource sizing
 
-Use the `GreenFirst` profile until the target suite is fully green. It assigns half of host physical
-RAM and approximately 60% of host physical CPU cores, rounding the CPU allocation up to an even
-count. For example, a 64 GB / 8-core host runs a 32 GB / 6-vCPU guest. Establish correctness and
-stable timings with this profile before investigating resource sensitivity.
+Use the default profile until the target suite is fully green. It gives the guest 4 vCPUs and 8 GB
+RAM, assuming a development host with at least 8 GB RAM and 4 cores. Both values are fixed (no
+host-capacity calculation) and can be overridden with `VM_RAM_SIZE` and `VM_CPU_CORES` in `.env`.
+Establish correctness and stable timings with this profile before investigating resource sensitivity.
 
 For a disposable first-time baseline build, dockur supports `DISK_CACHE=writeback`; it automatically
 uses threaded AIO because native AIO requires direct caching. This can improve Setup's synchronous
@@ -127,13 +127,14 @@ not switch cache mode mid-install. Keep the default `none` for durable retained 
 faster installation tradeoff is intentional, then stop and snapshot the completed volume promptly.
 
 Only after the suite is green, rerun with `-ResourceProfile Constrained`. Its defaults are 4 GB RAM
-and 2 vCPUs and can be changed with `VM_CONSTRAINED_RAM_SIZE` and `VM_CONSTRAINED_CPU_CORES` in
-`.env`. Treat failures introduced only by this second phase as resource-pressure findings; do not
-weaken assertions to accommodate them.
+and 1 vCPU and can be changed with `VM_CONSTRAINED_RAM_SIZE` and `VM_CONSTRAINED_CPU_CORES` in
+`.env`. Restricting the VM to a single core is how this workflow reproduces slow-agent and CI-like
+timing pressure. Treat failures introduced only by this second phase as resource-pressure findings;
+do not weaken assertions to accommodate them.
 
 ```pwsh
 # Default correctness pass.
-pwsh .\Start-LocalVm.ps1 -ResourceProfile GreenFirst -WaitForWinRM
+pwsh .\Start-LocalVm.ps1 -ResourceProfile Default -WaitForWinRM
 
 # Post-green pressure iteration.
 pwsh .\Start-LocalVm.ps1 -ResourceProfile Constrained -WaitForWinRM
@@ -142,4 +143,4 @@ pwsh .\Start-LocalVm.ps1 -ResourceProfile Constrained -WaitForWinRM
 Run `Start-LocalVm.ps1 -PlanOnly` to inspect the resolved profile without starting Docker. Docker
 Desktop runs inside WSL2, so its `.wslconfig` memory ceiling must exceed guest RAM by at least 4 GB;
 otherwise QEMU and Docker have no host-side headroom. Changing `.wslconfig` requires `wsl --shutdown`
-and restarting Docker Desktop. CPU affinity in the guest runner is separate from the VM's vCPU count.
+and restarting Docker Desktop. Apply CPU pressure by lowering the VM's vCPU count, not process affinity.

@@ -46,7 +46,6 @@ param(
     [string]$WebView2Installer = 'MicrosoftEdgeWebView2RuntimeInstallerX64.exe',
     [string]$SuiteTimeout = '45m',
     [string[]]$CleanupProcess = @(),
-    [UInt64]$ProcessorAffinityMask = 3,
     [ValidateRange(0, 300)]
     [int]$OutputHeartbeatSeconds = 15,
     [ValidateRange(0, 7680)]
@@ -267,7 +266,6 @@ $request = [ordered]@{
     Filter = $Filter
     Platform = $Platform
     SuiteTimeout = $SuiteTimeout
-    ProcessorAffinityMask = $ProcessorAffinityMask
     OutputHeartbeatSeconds = $OutputHeartbeatSeconds
     DesktopWidth = $DesktopWidth
     DesktopHeight = $DesktopHeight
@@ -501,11 +499,18 @@ Add-Type -AssemblyName System.Windows.Forms
         GuestSessionId = $status.SessionId
         DesktopWidth = $status.DesktopWidth
         DesktopHeight = $status.DesktopHeight
-        ProcessorAffinityMask = $status.ProcessorAffinityMask
         ReusedStagedPayload = $status.ReusedStagedPayload
         RefreshedComponents = $status.RefreshedComponents
         ExportErrors = $status.ExportErrors
         Tests = $trx.Totals
+        Failed = @($trx.Suites | ForEach-Object { $_.Tests } | Where-Object { $_.Outcome -ne 'Passed' } | ForEach-Object {
+            [pscustomobject]@{
+                Name = $_.Name
+                Outcome = $_.Outcome
+                Duration = $_.Duration
+                Error = (($_.ErrorMessage -split "`n") | Select-Object -First 1)
+            }
+        })
         Suites = $trx.Suites
     }
 }

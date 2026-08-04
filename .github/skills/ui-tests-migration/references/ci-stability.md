@@ -211,6 +211,45 @@ a one-time fix; do them all up-front:
 
 ---
 
+## Principle 7 — Trace every action with a timestamp so a hang shows where it stuck
+
+An assertion failure gives you a stack trace; a **hang or CI timeout does not** — the process is
+killed with no exception and the recording only shows a frozen window, so you cannot tell *which* step
+blocked. Emit a **timestamped line before every meaningful UI action**: on CI the **last line before
+the kill** names the stuck step, and the gap between two lines shows *which* step was slow (a classic
+context menu that took 15 s is obvious from the timestamps, with no profiler).
+
+```csharp
+// Last line before a CI timeout = the step that hung; gaps between lines = the slow step.
+private void Step(string message) =>
+    TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
+```
+
+```csharp
+Step($"Opening Explorer at '{folder}'");
+var explorer = OpenExplorer(folder);
+Step("Selecting fixture");
+SelectFiles(explorer, fixture);
+Step("Opening context menu");
+var menu = OpenContextMenu(explorer);          // if this blocks, the trail ends on this line
+Step($"Invoking '{ContextMenuCaption}'");
+```
+
+- **Log *before* the blocking call, not after** — a line printed after the action can never appear for
+  the action that hung.
+- **`TestContext.WriteLine`, not `Console.WriteLine`** — MTP captures it into the TRX
+  `<Output><StdOut>` attributed to the test, so it reaches the CI test log and the failure attachment.
+- **UTC, millisecond precision** — read per-step durations straight from adjacent lines.
+- **Name the target** (file, window, control, awaited signal), not just the verb.
+- **One line per external interaction** (open / select / menu / invoke / wait-for-window), so the trail
+  reads as the workflow, not noise.
+
+This complements Principle 1 (a signal-bearing `Assert.Fail` says *what* was missing) and a rich
+one-shot failure dump (Peek's `GetActivationDiagnostics`: foreground PID/title/elevation, process and
+window inventory): the trail says *where* it stuck, the dump says *why*.
+
+---
+
 ## Composed visuals: HWND, renderer, and pixels are separate
 
 `PrintWindow` can omit WinUI/WebView2/compositor content. Use `Session.ScreenshotVisibleWindow`, which
@@ -236,6 +275,7 @@ likely extra CI iteration.
 - [ ] Window/overlay presence via WindowControl/WindowsFinder (Win32) — never a UIA walk of a live-capture window (mental model / P3 / Pitfall 18)
 - [ ] Every wait polls an authoritative signal to a deadline — no bare Thread.Sleep standing in for "wait until ready" (P1)
 - [ ] Multi-part readiness uses consecutive stable samples and reports the last structured observation (P1)
+- [ ] Every meaningful UI action is preceded by a timestamped TestContext.WriteLine so a hang/timeout shows the stuck step (P7)
 - [ ] Every retry is classified as idempotent, toggle, or destructive; toggle hotkeys stop after any target HWND appears
 - [ ] Exact foreground requirements use `WaitForForeground`; failures record foreground PID/title/elevation
 - [ ] Pipeline helper processes have no visible foreground-capable windows; detached consoles start hidden

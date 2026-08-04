@@ -15,9 +15,8 @@ Use Windows 10 Enterprise LTSC 2021 as the default guest. When requirements incl
 behavior, complete the baseline pass on Windows 10 and run an additional, narrowly filtered pass in
 a separate Windows 11 VM.
 
-Start both guests with the `GreenFirst` resource profile: half of host RAM and approximately 60% of
-physical CPU cores, rounded up to an even count (8 host cores becomes 6 guest vCPUs). Get the target
-suite fully green before lowering resources with the `Constrained` profile.
+Start both guests with the default resource profile: 4 vCPUs and 8 GB RAM. Get the target suite
+fully green before lowering resources with the `Constrained` profile (1 vCPU and 4 GB RAM).
 
 ## When to use this skill
 
@@ -70,7 +69,12 @@ Read only what the task needs:
    .NET 10, WebView2, `msvsmon`, ports, and golden-baseline guidance.
 4. [references/troubleshooting.md](references/troubleshooting.md) - KVM, WinRM, interactive session,
    UNC, scheduled-task, focus, timeout, and export failures.
-5. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
+5. [references/shell-extensions-and-signing.md](references/shell-extensions-and-signing.md) - **read
+   for any shell-extension module** (context menu, preview/thumbnail handler). Why unsigned CI PR
+   builds cannot register a sparse MSIX (0% on CI), classic (registry-COM, signing-free) vs modern
+   (sparse-MSIX) surfaces, Debug vs Release/`NDEBUG` gating, runtime detection, and reproducing CI's
+   classic scenario on a local signed VM.
+6. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
    behavior is being created, migrated, or stabilized.
 
 ## Default agentic cycle
@@ -100,12 +104,14 @@ Create and maintain this task list:
         including `common/`, if the exact file is missing) — for development-cycle gotchas such as
         Release/`NDEBUG` registration gating, signed sparse-MSIX context menus, and Explorer restarts,
         so a module's registration/deployment requirements do not surface as opaque test failures.
+        For shell-extension modules also read references/shell-extensions-and-signing.md.
 - [ ] 2. Scaffold or verify the local VM - references/setup.md
 - [ ] 3. Build product and test projects on the host to exit code 0
 - [ ] 4. Package a lean exchange and verify archive hashes
 - [ ] 5. Run the controller with -PlanOnly and inspect its request/plan
 - [ ] 6. Probe the non-admin interactive desktop before test execution
-- [ ] 7. Run one focused test and parse status.json plus TRX
+- [ ] 7. Run one focused test; read the controller result's `.Failed` array (non-passed tests + first
+        error line) instead of re-parsing TRX, and use `scripts/Invoke-GuestScript.ps1` for guest-state inspection
 - [ ] 8. Diagnose the first controlling failure without weakening assertions
 - [ ] 9. Rebuild and rerun with -ReuseStagedPayload
 - [ ] 10. Widen to the module suite and report pass rate/root-cause groups
@@ -148,8 +154,8 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
 - Build on the host; run PowerToys and tests only in the VM when host execution is prohibited.
 - Use the Windows 10 guest for the default pass. Add a separate Windows 11 pass only for requirements
   that explicitly depend on Windows 11 behavior.
-- Establish a fully green correctness baseline with `GreenFirst` resources before running the same
-  tests under `Constrained` resources.
+- Establish a fully green correctness baseline with the default (4 vCPU / 8 GB) resources before
+  running the same tests under `Constrained` (1 vCPU / 4 GB) resources.
 - Keep VM files and writable exchange folders outside the repository.
 - Bind management, RDP, viewer, and debugger ports to `127.0.0.1` unless remote access is intentional.
 - Use HTTPS WinRM and a DPAPI-protected credential file. Never put credentials in prompts, scripts,

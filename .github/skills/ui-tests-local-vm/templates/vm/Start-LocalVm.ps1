@@ -3,7 +3,7 @@ param(
     [switch]$WaitForWinRM,
     [ValidateRange(1, 720)]
     [int]$TimeoutMinutes = 45,
-    [ValidateSet('GreenFirst', 'Constrained', 'Configured')]
+    [ValidateSet('Default', 'Constrained')]
     [string]$ResourceProfile,
     [switch]$PlanOnly
 )
@@ -26,30 +26,6 @@ if ([string]::IsNullOrWhiteSpace($configuration.VM_ADMIN_PASSWORD) -or
     throw 'Set a unique VM_ADMIN_PASSWORD in .env before starting the VM.'
 }
 
-function Get-GreenFirstResources {
-    $computer = Get-CimInstance Win32_ComputerSystem
-    $processors = @(Get-CimInstance Win32_Processor)
-    $physicalCores = ($processors | Measure-Object NumberOfCores -Sum).Sum
-    if (-not $physicalCores) {
-        $physicalCores = [Environment]::ProcessorCount
-    }
-
-    $memoryGiB = [math]::Max(8, [math]::Round(($computer.TotalPhysicalMemory / 1GB) / 2))
-    $cpuCores = [math]::Ceiling($physicalCores * 0.60)
-    if ($cpuCores % 2 -ne 0 -and $cpuCores -lt $physicalCores) {
-        $cpuCores++
-    }
-
-    $cpuCores = [math]::Max(2, [math]::Min($physicalCores, $cpuCores))
-    return [pscustomobject]@{
-        HostMemoryGiB = [math]::Round($computer.TotalPhysicalMemory / 1GB, 1)
-        HostPhysicalCores = $physicalCores
-        VmRamSize = "${memoryGiB}G"
-        VmCpuCores = $cpuCores
-        MinimumWslMemoryGiB = $memoryGiB + 4
-    }
-}
-
 function ConvertTo-Gibibytes {
     param([Parameter(Mandatory)][string]$Size)
 
@@ -65,40 +41,28 @@ function ConvertTo-Gibibytes {
     return $value
 }
 
-$greenFirstResources = Get-GreenFirstResources
 $effectiveProfile = if ($PSBoundParameters.ContainsKey('ResourceProfile')) {
     $ResourceProfile
 }
 elseif ($configuration.VM_RESOURCE_PROFILE) {
     switch ($configuration.VM_RESOURCE_PROFILE.ToLowerInvariant()) {
-        'green-first' { 'GreenFirst' }
-        'greenfirst' { 'GreenFirst' }
+        'default' { 'Default' }
         'constrained' { 'Constrained' }
-        'configured' { 'Configured' }
-        default { throw 'VM_RESOURCE_PROFILE must be green-first, constrained, or configured.' }
+        default { throw 'VM_RESOURCE_PROFILE must be default or constrained.' }
     }
 }
 else {
-    'GreenFirst'
+    'Default'
 }
 
 switch ($effectiveProfile) {
-    'GreenFirst' {
-        $effectiveRamSize = $greenFirstResources.VmRamSize
-        $effectiveCpuCores = $greenFirstResources.VmCpuCores
+    'Default' {
+        $effectiveRamSize = if ($configuration.VM_RAM_SIZE) { $configuration.VM_RAM_SIZE } else { '8G' }
+        $effectiveCpuCores = if ($configuration.VM_CPU_CORES) { [int]$configuration.VM_CPU_CORES } else { 4 }
     }
     'Constrained' {
-        $effectiveRamSize = if ($configuration.VM_CONSTRAINED_RAM_SIZE) { $configuration.VM_CONSTRAINED_RAM_SIZE } else { '8G' }
-        $effectiveCpuCores = if ($configuration.VM_CONSTRAINED_CPU_CORES) { [int]$configuration.VM_CONSTRAINED_CPU_CORES } else { 4 }
-    }
-    'Configured' {
-        if ([string]::IsNullOrWhiteSpace($configuration.VM_RAM_SIZE) -or
-            [string]::IsNullOrWhiteSpace($configuration.VM_CPU_CORES)) {
-            throw 'Configured profile requires VM_RAM_SIZE and VM_CPU_CORES in .env.'
-        }
-
-        $effectiveRamSize = $configuration.VM_RAM_SIZE
-        $effectiveCpuCores = [int]$configuration.VM_CPU_CORES
+        $effectiveRamSize = if ($configuration.VM_CONSTRAINED_RAM_SIZE) { $configuration.VM_CONSTRAINED_RAM_SIZE } else { '4G' }
+        $effectiveCpuCores = if ($configuration.VM_CONSTRAINED_CPU_CORES) { [int]$configuration.VM_CONSTRAINED_CPU_CORES } else { 1 }
     }
 }
 
@@ -107,8 +71,6 @@ $env:VM_CPU_CORES = $effectiveCpuCores.ToString([Globalization.CultureInfo]::Inv
 $minimumWslMemoryGiB = [math]::Ceiling((ConvertTo-Gibibytes $effectiveRamSize) + 4)
 $resourcePlan = [pscustomobject]@{
     ResourceProfile = $effectiveProfile
-    HostMemoryGiB = $greenFirstResources.HostMemoryGiB
-    HostPhysicalCores = $greenFirstResources.HostPhysicalCores
     VmRamSize = $effectiveRamSize
     VmCpuCores = $effectiveCpuCores
     MinimumWslMemoryGiB = $minimumWslMemoryGiB

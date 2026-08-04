@@ -87,8 +87,9 @@ Check:
 
 ## 4. Run one focused test
 
-Use the default `GreenFirst` VM resource profile while creating and stabilizing tests. Do not begin
-on the constrained profile: first prove the test and product behavior with sufficient CPU and RAM.
+Use the default VM resource profile (4 vCPUs and 8 GB RAM) while creating and stabilizing tests. Do
+not begin on the constrained profile: first prove the test and product behavior with sufficient CPU
+and RAM.
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
@@ -98,7 +99,6 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -Filter 'Name=<focused-test>' `
   -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `
-  -ProcessorAffinityMask 0x3 `
   -DesktopWidth 1920 -DesktopHeight 1080 `
   -SuiteTimeout 15m -TimeoutMinutes 25
 ```
@@ -188,9 +188,10 @@ Report:
 After reporting the Windows 10 baseline, run any Windows 11-specific subset against its independent
 Windows 11 baseline and report that evidence separately.
 
-Once the complete target suite is green, restart the same VM with `-ResourceProfile Constrained` and
-repeat the focused-to-suite progression. Keep the green-first TRX as the correctness baseline and
-classify failures that appear only under constrained resources separately.
+Once the complete target suite is green, restart the same VM with `-ResourceProfile Constrained`
+(1 vCPU and 4 GB RAM) and repeat the focused-to-suite progression. Keep the default-profile TRX as
+the correctness baseline and classify failures that appear only under constrained resources
+separately.
 
 ## 8. Confirm clean-profile behavior
 

@@ -70,6 +70,44 @@ Shell automation may transiently return a null `FolderItem` while a copied file 
 view. The framework treats that as not-ready and retries; module tests should not enumerate Shell COM
 items themselves.
 
+## Harden menu- and selection-driving steps for slow agents
+
+CI agents are far slower than a local VM and ARM64 timing differs from x64, so races that never appear
+locally - even on a 1-core guest - surface on CI, and you often cannot reproduce them. Reason from the
+failure video/screenshot and make each step self-correcting instead of one-shot.
+
+**Re-establish the selection before every attempt.** A slow agent re-renders the Explorer view
+asynchronously after a module toggles or the shell restarts and drops the selection, so the
+right-click targets an unready view and no menu appears. Re-run `SetSelectionAndWaitForStable` inside
+the retry loop, not once before it, and reopen a fresh window if it keeps failing:
+
+```csharp
+while (DateTime.UtcNow < deadline)
+{
+    if (!TrySelectStable(explorer, filePaths))          // non-throwing SetSelectionAndWaitForStable
+    {
+        if (++failures >= 2) { explorer = OpenExplorer(folder); failures = 0; }  // stale/empty window
+        continue;
+    }
+
+    var menu = OpenContextMenu(explorer);
+    if (menu is not null && HasCommand(menu)) { break; }
+}
+```
+
+**Treat transient popups as retryable.** A menu popup (for example "Show more options") can vanish
+between finding it and invoking it, so a raw `Invoke()` throws. Catch it, return null, and let the
+caller reopen the menu rather than failing the test.
+
+**Verify fixtures actually reached disk.** `Bitmap.Save` can lag on a slow/ARM64 agent; a genuinely
+empty folder is not a slow-to-render view. Assert `File.Exists` (retry the save once) immediately
+after creating a fixture, and prefer committed test assets (Peek's `TestAssets`) over runtime-generated
+images when arch-portability matters.
+
+**Size timeouts for the slow path.** A tier-2 ("Show more options") menu can take ~15s to render under
+CI load; use surface waits of >=25s and retry-loop deadlines of >=90s. On a fast agent these return
+immediately, so there is no happy-path cost.
+
 ## Set view mode and icon size directly
 
 Do not rely on `Ctrl+Shift+1/2/3` for thumbnail tests. Under CI load Explorer can drop the shortcut
@@ -157,6 +195,8 @@ desktop PNG, finalizes the recording, and is idempotent with the base cleanup.
 | Provider log exists, pixels unchanged | Renderer/compositor | Wait for visible output; attach before/after captures |
 | Remote debugger dies during Shell restart | Process-tree teardown | Kill only Explorer, never its descendants |
 | Video ends after Explorer disappears | Cleanup ordering | Capture failure artifacts before closing Explorer |
+| No context menu after a module toggle on a slow agent | Dropped selection / async view render | Re-select before every attempt; widen surface waits; reopen a stale window |
+| Fixture folder is genuinely empty (0 items) | Fixture not flushed to disk | Verify `File.Exists` + retry the save; prefer committed assets |
 
 ## Pre-flight checklist
 
