@@ -16,6 +16,16 @@ while Windows and installed tools live in the named `/storage` volume.
 Docker Desktop on Windows requires KVM inside its `docker-desktop` WSL distribution for this
 workflow. The start script loads `kvm` plus `kvm_intel` or `kvm_amd` before starting QEMU.
 
+> **Future direction — WSL Containers (`wslc`).** This stack depends on Docker Desktop's WSL2 utility
+> VM exposing nested virtualization so QEMU/KVM can boot the Windows guest. WSL Containers can't host
+> nested VMs today — the `wslc` utility VM (`HcsVirtualMachine.cpp`) is built without
+> `Processor.ExposeVirtualizationExtensions`, and no session flag requests it — so it is not yet an
+> alternative to Docker Desktop. [microsoft/WSL#40736](https://github.com/microsoft/WSL/issues/40736)
+> tracks adding a `WslcFeatureFlagsNestedVirtualization` opt-in (draft implementation exists,
+> maintainer-assigned). **If that issue is resolved/closed, evaluate converting this skill to run the
+> guest in a `wslc` container instead of Docker Desktop** — it would keep the same host nested-virt
+> requirement while dropping the Docker Desktop dependency.
+
 Keep the VM outside the repository. To keep all large data on another drive, move Docker Desktop's
 WSL disk image to that drive in Docker Desktop settings before creating the named volume. Do not bind
 mount the Windows system disk to NTFS; use the native Docker volume in the compose template.
