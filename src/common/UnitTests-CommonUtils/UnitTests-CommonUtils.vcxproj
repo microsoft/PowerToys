@@ -73,6 +73,10 @@
     <ClCompile Include="Resources.Tests.cpp" />
     <ClCompile Include="TestStubs.cpp" />
     <ClCompile Include="UnhandledException.Tests.cpp" />
+    <ClCompile Include="TwoWayPipeMessageIPC.Tests.cpp" />
+    <ClCompile Include="..\interop\two_way_pipe_message_ipc.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
