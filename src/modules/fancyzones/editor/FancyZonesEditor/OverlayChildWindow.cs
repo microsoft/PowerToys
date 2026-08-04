@@ -29,6 +29,15 @@ namespace FancyZonesEditor
         protected IntPtr Hwnd { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the window is placed on the primary display
+        /// rather than on the overlay's work area. Mirrors the WPF
+        /// <c>WindowStartupLocation="CenterScreen"</c> the picker used when zones span every
+        /// monitor, where the single overlay covers the whole virtual desktop and centering on it
+        /// would drop the window between the screens.
+        /// </summary>
+        protected bool CenterOnPrimaryDisplay { get; set; }
+
+        /// <summary>
         /// Gets the work area of the monitor the layout overlay currently covers, in physical
         /// pixels. The overlay window is already positioned on that work area from the virtual
         /// coordinates the FancyZones backend supplies, so reading its rect back keeps every
@@ -38,11 +47,10 @@ namespace FancyZonesEditor
         {
             get
             {
-                var overlay = App.Overlay.CurrentLayoutWindow?.AppWindow;
+                var overlay = CenterOnPrimaryDisplay ? null : App.Overlay.CurrentLayoutWindow?.AppWindow;
                 if (overlay == null)
                 {
-                    var display = Microsoft.UI.Windowing.DisplayArea.GetFromWindowId(AppWindow.Id, Microsoft.UI.Windowing.DisplayAreaFallback.Primary);
-                    return display.WorkArea;
+                    return Microsoft.UI.Windowing.DisplayArea.Primary.WorkArea;
                 }
 
                 return new RectInt32(overlay.Position.X, overlay.Position.Y, overlay.Size.Width, overlay.Size.Height);

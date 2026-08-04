@@ -48,10 +48,16 @@ namespace FancyZonesEditor
 
         private ContentDialog _openedDialog;
         private bool _haveTriedToGetFocusAlready;
+        private bool _isLoaded;
 
         public MainWindow(bool spanZonesAcrossMonitors, Rect workArea)
         {
             InitializeComponent();
+
+            // Spanning zones across monitors gives us a single overlay covering the whole virtual
+            // desktop, so the picker is centered on the primary display instead - the WPF markup
+            // switched to WindowStartupLocation="CenterScreen" for the same reason.
+            CenterOnPrimaryDisplay = spanZonesAcrossMonitors;
 
             PrePlaceOnOverlayMonitor();
 
@@ -167,6 +173,7 @@ namespace FancyZonesEditor
 
         private void RootGrid_Loaded(object sender, RoutedEventArgs e)
         {
+            _isLoaded = true;
             SizeToContentAndCenter();
 
             if (!_haveTriedToGetFocusAlready)
@@ -214,6 +221,13 @@ namespace FancyZonesEditor
         private void CustomModels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             UpdateEmptyCustomLayoutsMessage();
+
+            // WPF's SizeToContent stayed active for the window's lifetime; here it is a one-shot
+            // measurement, so adding or removing a custom layout has to re-run it.
+            if (_isLoaded)
+            {
+                SizeToContentAndCenter();
+            }
         }
 
         private void UpdateEmptyCustomLayoutsMessage()

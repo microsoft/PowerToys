@@ -33,6 +33,8 @@ namespace FancyZonesEditor
         private const string ParsingErrorReportTag = "Settings parsing error";
         private const string ParsingErrorDataTag = "Data: ";
 
+        private static readonly System.Threading.SemaphoreSlim DialogGate = new System.Threading.SemaphoreSlim(1, 1);
+
         private static bool _debugMode;
 
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
@@ -106,7 +108,7 @@ namespace FancyZonesEditor
                 fullMessage += ": " + exception.Message;
             }
 
-            ShowMessageDialog(fullMessage, ResourceLoaderInstance.GetString("Error_Exception_Message_Box_Title"));
+            _ = ShowMessageDialogAsync(fullMessage, ResourceLoaderInstance.GetString("Error_Exception_Message_Box_Title"));
         }
 
         public void App_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -162,12 +164,8 @@ namespace FancyZonesEditor
             Overlay.Show();
 
             // The dialogs can only be hosted once an overlay window exists, so parsing errors are
-            // collected during startup and reported here. WPF could show a MessageBox with no
-            // window at all.
-            foreach (string error in parsingErrors)
-            {
-                ShowMessageDialog(error, ResourceLoaderInstance.GetString("Error_Parsing_Data_Title"));
-            }
+            // collected during startup and reported here, one at a time.
+            _ = ReportParsingErrorsAsync(parsingErrors);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -180,29 +178,41 @@ namespace FancyZonesEditor
         }
 
         /// <summary>
-        /// WinUI 3 has no MessageBox; errors surface through a ContentDialog hosted by whichever
-        /// overlay window is currently up. Falls back to the log when no XamlRoot exists yet.
+        /// WinUI 3 has no MessageBox. Errors normally surface through a ContentDialog hosted by
+        /// whichever overlay window is up; before any XAML surface exists we fall back to the
+        /// system message box, which is also what WPF used. Only one ContentDialog may be open at
+        /// a time, so the reports are serialized through a gate.
         /// </summary>
         /// <param name="message">Body of the message.</param>
         /// <param name="title">Title of the dialog.</param>
-        private static async void ShowMessageDialog(string message, string title)
+        /// <returns>A task that completes when the message has been acknowledged.</returns>
+        private static async System.Threading.Tasks.Task ShowMessageDialogAsync(string message, string title)
         {
             var xamlRoot = Overlay?.CurrentLayoutWindow?.Content?.XamlRoot;
             if (xamlRoot == null)
             {
                 Logger.LogError(title + ": " + message);
+                NativeMethods.ShowMessageBox(message, title);
                 return;
             }
 
-            var dialog = new ContentDialog
+            await DialogGate.WaitAsync();
+            try
             {
-                XamlRoot = xamlRoot,
-                Title = title,
-                Content = message,
-                CloseButtonText = ResourceLoaderInstance.GetString("Close"),
-            };
+                var dialog = new ContentDialog
+                {
+                    XamlRoot = xamlRoot,
+                    Title = title,
+                    Content = message,
+                    CloseButtonText = ResourceLoaderInstance.GetString("Close"),
+                };
 
-            await dialog.ShowAsync();
+                await dialog.ShowAsync();
+            }
+            finally
+            {
+                DialogGate.Release();
+            }
         }
 
         [Conditional("DEBUG")]
@@ -222,9 +232,21 @@ namespace FancyZonesEditor
             errors.Add(parseResult.Message);
         }
 
+        private static async System.Threading.Tasks.Task ReportParsingErrorsAsync(List<string> errors)
+        {
+            string title = ResourceLoaderInstance.GetString("Error_Parsing_Data_Title");
+
+            foreach (string error in errors)
+            {
+                await ShowMessageDialogAsync(error, title);
+            }
+        }
+
         private static void ShowReportMessageBox()
         {
-            ShowMessageDialog(
+            // Deliberately a system message box rather than a ContentDialog: an unhandled
+            // exception can arrive on any thread and the XAML surface may already be unusable.
+            NativeMethods.ShowMessageBox(
                 ResourceLoaderInstance.GetString("Crash_Report_Message_Box_Text") + PowerToysIssuesURL,
                 ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title"));
         }
@@ -298,10 +320,7 @@ namespace FancyZonesEditor
         private void OnUnhandledException(object sender, System.UnhandledExceptionEventArgs args)
         {
             Logger.LogError("Unhandled exception", (Exception)args.ExceptionObject);
-
-            // The exception can surface on any thread, and ContentDialog must be built on the UI
-            // thread, so the report is marshalled back.
-            _dispatcherQueue.TryEnqueue(ShowReportMessageBox);
+            ShowReportMessageBox();
         }
     }
 }

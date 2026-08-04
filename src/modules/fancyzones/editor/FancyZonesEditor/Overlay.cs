@@ -140,6 +140,15 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
+            if (DesktopsCount == 0)
+            {
+                // Parsing the editor parameters failed, so there is nothing to draw on. Bail out
+                // rather than dereferencing the missing overlay window; the parsing error is
+                // reported separately.
+                Logger.LogError("No monitors were parsed from the editor parameters");
+                return;
+            }
+
             var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
             if (_layoutPreview != null)
             {

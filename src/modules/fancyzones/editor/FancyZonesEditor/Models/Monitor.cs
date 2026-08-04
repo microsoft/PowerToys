@@ -148,7 +148,20 @@ namespace FancyZonesEditor.Models
         private void ApplyWorkAreaPosition()
         {
             // Reposition window using DPI-unaware context to match the virtual coordinates
-            // from the FancyZones C++ backend (which uses a DPI-unaware thread)
+            // from the FancyZones C++ backend (which uses a DPI-unaware thread).
+            //
+            // The move is done in two hops, the way Common.UI.Controls' FlyoutWindowHelper does:
+            // landing on a monitor whose DPI differs from the one the HWND was created on raises
+            // WM_DPICHANGED, and the default handling then rescales whatever size was just written
+            // by newDpi/oldDpi. Teleporting a 1x1 window first makes that rescale harmless, so the
+            // second hop writes the real rect with the window already at the target DPI.
+            NativeMethods.SetWindowPositionDpiUnaware(
+                Window.Hwnd,
+                (int)_virtualWorkArea.X,
+                (int)_virtualWorkArea.Y,
+                1,
+                1);
+
             NativeMethods.SetWindowPositionDpiUnaware(
                 Window.Hwnd,
                 (int)_virtualWorkArea.X,

@@ -32,6 +32,9 @@ namespace FancyZonesEditor.Utils
         [DllImport("user32.dll")]
         private static extern uint GetDpiForWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "MessageBoxW")]
+        private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+
         // PInvokes used to pull the editor window to the foreground.
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -130,6 +133,23 @@ namespace FancyZonesEditor.Utils
             {
                 SetThreadDpiAwarenessContext(oldContext);
             }
+        }
+
+        /// <summary>
+        /// Shows a blocking system message box. Used where a <c>ContentDialog</c> cannot be:
+        /// before any XAML surface exists, and while reporting an unhandled exception, which can
+        /// reach us on any thread and with the process already on its way down. This is what the
+        /// WPF editor's <c>MessageBox.Show</c> did.
+        /// </summary>
+        /// <param name="text">Body of the message.</param>
+        /// <param name="caption">Title of the message box.</param>
+        public static void ShowMessageBox(string text, string caption)
+        {
+            const uint MB_OK = 0x0;
+            const uint MB_ICONERROR = 0x10;
+            const uint MB_TASKMODAL = 0x2000;
+
+            _ = MessageBox(IntPtr.Zero, text ?? string.Empty, caption ?? string.Empty, MB_OK | MB_ICONERROR | MB_TASKMODAL);
         }
 
         /// <summary>
