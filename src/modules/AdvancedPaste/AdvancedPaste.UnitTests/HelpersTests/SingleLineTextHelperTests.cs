@@ -17,6 +17,7 @@ public sealed class SingleLineTextHelperTests
     [DataRow("First\nSecond", "First Second")]
     [DataRow("First\rSecond", "First Second")]
     [DataRow("First\n\nSecond", "First Second")]
+    [DataRow("First\n  \nSecond", "First Second")]
     [DataRow("  First \r\n\t Second  ", "First Second")]
     [DataRow("Already on one line", "Already on one line")]
     [DataRow("Keep\tinternal\ttabs", "Keep\tinternal\ttabs")]
