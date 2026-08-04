@@ -114,23 +114,21 @@ public sealed class ImageResizerEndToEndTests : UITestBase
         {
             toggle = SetModuleEnabled(toggle, false);
             var explorer = OpenExplorer(folder);
-            explorer = SelectFiles(explorer, fixture);
 
             // The classic (registry-COM) surface is always available; the modern (sparse-MSIX)
             // surface only registers on signed/official/installed builds.
-            AssertContextMenuPresence(explorer, useClassicMenu: true, expected: false);
+            AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: true, expected: false);
             if (UseModernContextMenu)
             {
-                AssertContextMenuPresence(explorer, useClassicMenu: false, expected: false);
+                AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: false, expected: false);
             }
 
             toggle = SetModuleEnabled(toggle, true);
             explorer = OpenExplorer(folder);
-            explorer = SelectFiles(explorer, fixture);
-            AssertContextMenuPresence(explorer, useClassicMenu: true, expected: true);
+            AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: true, expected: true);
             if (UseModernContextMenu)
             {
-                AssertContextMenuPresence(explorer, useClassicMenu: false, expected: true);
+                AssertContextMenuPresence(explorer, new[] { fixture }, useClassicMenu: false, expected: true);
             }
         }
         finally
@@ -532,15 +530,28 @@ public sealed class ImageResizerEndToEndTests : UITestBase
 
     private void AssertContextMenuPresence(
         Session explorer,
+        string[] filePaths,
         bool useClassicMenu,
         bool expected)
     {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(20);
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(45);
         var lastObservation = new ContextMenuObservation(false, false);
 
         do
         {
             KeyboardHelper.SendKeys(Key.Esc);
+
+            // On a slow agent Explorer can re-render its file view asynchronously after the module
+            // toggles, dropping the selection so the right-click never targets the file. Re-establish
+            // a stable selection before each attempt (mirrors the Peek Explorer-activation pattern).
+            var selected = TrySelectFilesStable(explorer, filePaths, timeoutMS: 8_000);
+            if (selected is null)
+            {
+                Thread.Sleep(300);
+                continue;
+            }
+
+            explorer = selected;
             var menu = OpenContextMenu(explorer, useClassicMenu);
             if (menu is null)
             {
@@ -599,7 +610,18 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             return null;
         }
 
-        showMoreOptions.Invoke(msPostAction: 300);
+        try
+        {
+            showMoreOptions.Invoke(msPostAction: 300);
+        }
+        catch (Exception)
+        {
+            // The transient "Show more options" popup can vanish before it is invoked; return null
+            // so the caller reopens the menu instead of failing.
+            KeyboardHelper.SendKeys(Key.Esc);
+            return null;
+        }
+
         return WaitForContextMenuSurface(ClassicContextMenuClassName, timeoutMS: 10_000);
     }
 
@@ -779,6 +801,28 @@ public sealed class ImageResizerEndToEndTests : UITestBase
             $"Expected Explorer HWND: {explorer.WindowHandle}. " +
             $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
         return explorer;
+    }
+
+    // Non-throwing selection used by the context-menu retry loop: re-establishes a stable selection
+    // (handling an Explorer window that was replaced mid-render) and returns the live session, or
+    // null if it could not settle within the timeout so the caller can retry.
+    private static Session? TrySelectFilesStable(Session explorer, string[] filePaths, int timeoutMS)
+    {
+        if (ExplorerShell.SetSelectionAndWaitForStable(
+                new IntPtr(explorer.WindowHandle), filePaths, filePaths[0], timeoutMS, requiredConsecutiveMatches: 4).Succeeded)
+        {
+            return explorer;
+        }
+
+        var replacement = FindReplacementExplorer(explorer, Path.GetDirectoryName(filePaths[0])!);
+        if (replacement is not null &&
+            ExplorerShell.SetSelectionAndWaitForStable(
+                new IntPtr(replacement.WindowHandle), filePaths, filePaths[0], timeoutMS, requiredConsecutiveMatches: 4).Succeeded)
+        {
+            return replacement;
+        }
+
+        return null;
     }
 
     private static Session? FindReplacementExplorer(Session explorer, string folderPath)
