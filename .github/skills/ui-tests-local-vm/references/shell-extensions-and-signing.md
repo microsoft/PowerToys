@@ -33,10 +33,14 @@ and trust the signer.**
    `Publisher` — every PowerToys context-menu package and the CmdPal `PowerToysSparse.msix` use
    `CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US`. The private
    key is generated on the agent and never leaves it; nothing is committed.
-2. **Force-trust** it machine-wide: import the public cert into `LocalMachine\Root` **and**
-   `LocalMachine\TrustedPeople` (a self-signed leaf is its own root, and AppX sideload consults
-   TrustedPeople). The elevated test agent can do this; local non-elevated runs fall back to the
-   `CurrentUser` stores.
+2. **Force-trust** it via the **machine** stores: import the public cert into `LocalMachine\Root`
+   **and** `LocalMachine\TrustedPeople` (a self-signed leaf is its own root, and AppX sideload
+   consults TrustedPeople). These import silently, and the CI test agent is elevated (it installs
+   machine-level), so it can write them. Do **not** import into `CurrentUser\Root` — the user Root
+   store raises a CryptoAPI consent dialog that fails non-interactively (`UI is not allowed in this
+   operation`), even when elevated. `CurrentUser\TrustedPeople` is silent and fine as an extra for
+   per-user deployment; a non-elevated run that cannot write `LocalMachine\Root` cannot establish
+   machine root trust silently.
 3. `signtool sign /fd SHA256` every sparse `.msix` the product will register.
 
 A ready-to-use, publisher-aware implementation ships with this skill:
@@ -49,15 +53,16 @@ whichever tree hosts the packages:
 # buildNow (run-in-place) — sign the packages in the downloaded build tree:
 .\.pipelines\signSparsePackages.ps1 -PackageRoot "$(Pipeline.Workspace)\$(TestArtifactsName)"
 
-# installed (buildNowSlim / official) — sign after install, before the test enables the module:
-.\.pipelines\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps"
+# installed (buildNowSlim / official) — sign after install, before the test enables the module.
+# Machine install lands in %ProgramFiles%\PowerToys; per-user install in %LOCALAPPDATA%\PowerToys:
+.\.pipelines\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps","$env:LOCALAPPDATA\PowerToys\WinUI3Apps"
 
 # local UI-test VM sideload — sign the deployed runtime:
 .\.pipelines\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys\WinUI3Apps"
 ```
 
 **Where it is wired in CI.** This runs in `.pipelines/v2/templates/job-test-project.yml` as a
-best-effort step after the download/install steps and before **Run UI Tests** (both roots passed;
+best-effort step after the download/install steps and before **Run UI Tests** (all roots passed;
 missing ones are skipped). It is wrapped so a signing failure (for example, no `signtool` on the
 agent) logs a warning and the shell-extension tests fall back to their `ModernRegistered()` guard —
 the job never regresses:
@@ -67,14 +72,18 @@ the job never regresses:
       try {
         & "$(build.sourcesdirectory)\.pipelines\signSparsePackages.ps1" -PackageRoot @(
           "$(Pipeline.Workspace)\$(TestArtifactsName)",
-          "$env:ProgramFiles\PowerToys\WinUI3Apps")
+          "$env:ProgramFiles\PowerToys\WinUI3Apps",
+          "$env:LOCALAPPDATA\PowerToys\WinUI3Apps")
       } catch {
         Write-Host "##vso[task.logissue type=warning]Sparse MSIX signing skipped: $($_.Exception.Message)"
       }
     displayName: "Sign sparse MSIX packages (test trust)"
 ```
 
-**Prerequisite:** the agent needs `signtool.exe` (Windows SDK). Verified end-to-end in a local Win11
+**Prerequisite:** `signtool.exe`. The script finds it across PATH, any `Windows Kits` install (all
+versions, plus the App Certification Kit), and a restored SDK BuildTools NuGet package; as a last
+resort it fetches the public `Microsoft.Windows.SDK.BuildTools` package from nuget.org, so an agent
+without the SDK still works given outbound access. Verified end-to-end in a local Win11
 VM — the unsigned package fails `Add-AppxPackage` / `AddPackageByUriAsync` with `0x800B0100`, and
 after `signSparsePackages.ps1` signs it and the cert is force-trusted (`LocalMachine\Root` +
 `TrustedPeople`) the same registration succeeds and the package appears in `Get-AppxPackage`.
