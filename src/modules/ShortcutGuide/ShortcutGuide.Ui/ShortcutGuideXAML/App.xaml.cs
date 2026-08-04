@@ -201,9 +201,10 @@ namespace ShortcutGuide
                             // Use the Win32 key state directly: WPF's
                             // System.Windows.Input.Keyboard is not initialized
                             // on the WinUI UI thread.
-                            const int VK_LWIN = 0x5B;
-                            bool winKeyDown = (NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0;
-
+const int VK_LWIN = 0x5B;
+const int VK_RWIN = 0x5C;
+bool winKeyDown = ((NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0) ||
+                 ((NativeMethods.GetAsyncKeyState(VK_RWIN) & 0x8000) != 0);
                             if (winKeyDown && ShortcutGuideProperties.WindowsKeyAction.Value == (int)ShortcutGuideWindowsKeyAction.Off)
                             {
                                 return;
