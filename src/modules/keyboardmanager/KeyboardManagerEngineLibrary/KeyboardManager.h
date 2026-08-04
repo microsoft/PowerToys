@@ -12,14 +12,6 @@ public:
     // Constructor
     KeyboardManager();
 
-    ~KeyboardManager()
-    {
-        if (editorIsRunningEvent)
-        {
-            CloseHandle(editorIsRunningEvent);
-        }
-    }
-
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
 
@@ -53,13 +45,14 @@ private:
 
     std::atomic_bool loadingSettings = false;
 
-    HANDLE editorIsRunningEvent = nullptr;
-
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     // Load settings from the file.
     void LoadSettings();
+
+    // Returns true while an editor window is open and remapping must stay suspended
+    static bool IsEditorSuspendingRemappings() noexcept;
 
     // Function called by the hook procedure to handle the events. This is the starting point function for remapping
     intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;

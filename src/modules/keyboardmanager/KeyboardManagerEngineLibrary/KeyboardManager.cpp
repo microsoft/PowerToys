@@ -69,7 +69,6 @@ KeyboardManager::KeyboardManager()
             StopLowlevelKeyboardHook();
     };
 
-    editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
     settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
@@ -184,6 +183,27 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
     return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
+bool KeyboardManager::IsEditorSuspendingRemappings() noexcept
+{
+    // The editor signals this event for as long as one of its windows is open, which
+    // suspends every remap. Open the event for each check instead of holding a handle for
+    // the engine's lifetime: a named event only exists while some process holds a handle to
+    // it, so an editor that crashed or was killed before resetting the event takes the whole
+    // object down with it and remapping resumes on its own. Holding a handle here kept the
+    // object alive with its signaled state, which silently disabled Keyboard Manager until
+    // the module was restarted.
+    HANDLE editorIsRunningEvent = OpenEventW(SYNCHRONIZE, FALSE, KeyboardManagerConstants::EditorWindowEventName.c_str());
+    if (editorIsRunningEvent == nullptr)
+    {
+        return false;
+    }
+
+    const bool suspended = WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0;
+    CloseHandle(editorIsRunningEvent);
+
+    return suspended;
+}
+
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
     if (loadingSettings)
@@ -192,7 +212,7 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     }
 
     // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
+    if (IsEditorSuspendingRemappings())
     {
         return 0;
     }
