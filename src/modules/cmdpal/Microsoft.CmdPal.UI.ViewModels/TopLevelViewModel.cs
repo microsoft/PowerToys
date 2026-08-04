@@ -439,10 +439,9 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             fallback.FallbackHandler.UpdateQuery(newQuery);
             var newTitle = Title;
 
-            // Report any title change, not just an empty <-> non-empty flip. The render path
-            // re-scores fallbacks off this signal, so a fallback whose title changes from one
-            // non-empty value to another (e.g. "server01" -> "server02") must still trigger a
-            // refresh or it would keep its stale score and position.
+            // Report any title change, not just an empty <-> non-empty flip: the render path
+            // re-scores fallbacks off this signal, so a change like "server01" -> "server02"
+            // must still trigger a refresh or the fallback keeps its stale score and position.
             return !string.Equals(oldTitle, newTitle, StringComparison.Ordinal);
         }
 
