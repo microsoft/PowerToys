@@ -178,11 +178,14 @@ namespace MouseWithoutBorders
         // The ClipboardHelper IPC endpoint is reachable by any authenticated user on the
         // named pipe. A malicious client could inject a UNC/remote path (e.g. \\attacker\share)
         // that, when probed via File.Exists/Directory.Exists, triggers outbound SMB
-        // authentication and leaks the user's NTLMv2 hash. The legitimate helper only ever
+        // authentication and leaks reusable challenge-response credential material. The legitimate helper only ever
         // forwards local clipboard/drag file paths, so reject anything that is not local.
         internal static bool IsRemoteOrUncPath(string path)
         {
-            return IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType);
+            bool isRemoteOrUnc = true;
+            bool classified = Launch.ImpersonateLoggedOnUserAndDoSomething(
+                () => isRemoteOrUnc = IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType));
+            return !classified || isRemoteOrUnc;
         }
 
         internal static bool IsRemoteOrUncPath(string path, Func<string, DriveType> getDriveType)

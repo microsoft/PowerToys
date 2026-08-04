@@ -8,7 +8,7 @@ namespace MouseWithoutBorders.UnitTests;
 
 // Guards the fix for MSRC 110760 / ICM 31000000569630: the ClipboardHelper IPC
 // endpoint must reject UNC/remote paths so a malicious pipe client cannot coerce
-// outbound SMB authentication (NTLMv2 hash leak) by injecting a path that is then
+// outbound SMB authentication by injecting a path that is then
 // probed via File.Exists/Directory.Exists.
 [TestClass]
 public sealed class ClipboardHelperTests
@@ -22,7 +22,7 @@ public sealed class ClipboardHelperTests
     [DataRow(@"\\.\pipe\evil")]
     public void IsRemoteOrUncPath_ReturnsTrue_ForRemoteOrUncPaths(string path)
     {
-        Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(path), $"Expected '{path}' to be treated as remote/UNC.");
+        Assert.IsTrue(ClassifyPath(path), $"Expected '{path}' to be treated as remote/UNC.");
     }
 
     [DataTestMethod]
@@ -33,7 +33,7 @@ public sealed class ClipboardHelperTests
     [DataRow(@"file.txt")]
     public void IsRemoteOrUncPath_ReturnsFalse_ForLocalPaths(string path)
     {
-        Assert.IsFalse(ClipboardHelper.IsRemoteOrUncPath(path), $"Expected '{path}' to be treated as local.");
+        Assert.IsFalse(ClassifyPath(path), $"Expected '{path}' to be treated as local.");
     }
 
     [DataTestMethod]
@@ -43,7 +43,7 @@ public sealed class ClipboardHelperTests
     {
         // Null/empty are not remote; the downstream File.Exists/Directory.Exists
         // checks handle them safely (treated as "not found").
-        Assert.IsFalse(ClipboardHelper.IsRemoteOrUncPath(path));
+        Assert.IsFalse(ClassifyPath(path));
     }
 
     [TestMethod]
@@ -52,5 +52,10 @@ public sealed class ClipboardHelperTests
         Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(
             @"Z:\shared\file.txt",
             root => root.Equals(@"Z:\", StringComparison.OrdinalIgnoreCase) ? DriveType.Network : DriveType.Fixed));
+    }
+
+    private static bool ClassifyPath(string path)
+    {
+        return ClipboardHelper.IsRemoteOrUncPath(path, _ => DriveType.Fixed);
     }
 }
