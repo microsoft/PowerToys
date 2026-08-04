@@ -70,12 +70,6 @@ namespace WorkspacesLauncherUI.ViewModels
             App.SendIPCMessage("cancel");
         }
 
-        [RelayCommand]
-        private void Dismiss()
-        {
-            // Window close is handled by the view
-        }
-
         public void Dispose()
         {
             if (!_isDisposed)
