@@ -2907,7 +2907,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Gliding cursor</value>
   </data>
   <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
-    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+    <value>Position the cursor and click anywhere on the screen using only a keyboard shortcut</value>
   </data>
   <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
     <value>Initial line speed</value>
