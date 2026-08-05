@@ -50,7 +50,6 @@
 
     <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
     <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
-    <Thickness x:Key="DockItemMargin">2,0,2,0</Thickness>
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
@@ -68,9 +67,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
+                        <!--  Padding, not margin: the gap around the chrome stays inside the item, so it still takes clicks  -->
                         <Grid
                             x:Name="PART_RootGrid"
-                            Padding="{StaticResource DockItemMargin}"
+                            Padding="{TemplateBinding InnerMargin}"
                             Background="Transparent">
                             <!--  Hover/pressed chrome lives on its own layer so it can cross-fade instead of popping in  -->
                             <Border
@@ -265,7 +265,7 @@
                                     <VisualState x:Name="DefaultLayout" />
                                     <VisualState x:Name="Compact">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Padding" Value="0" />
+                                            <!--  PART_RootGrid.Padding is owned by InnerMargin, which drops the edge gap when compact  -->
                                             <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
                                         </VisualState.Setters>
                                     </VisualState>
