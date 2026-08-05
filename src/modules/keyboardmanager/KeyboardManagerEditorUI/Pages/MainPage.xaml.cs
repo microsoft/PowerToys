@@ -415,20 +415,23 @@ namespace KeyboardManagerEditorUI.Pages
         {
             bool isAppSpecific = UnifiedMappingControl.GetIsAppSpecific();
             string appName = UnifiedMappingControl.GetAppName();
-            Remapping? editingRemapping = _isEditMode && _editingItem?.Item is Remapping r ? r : null;
+
+            // Identify the row being edited (any mapping type) so validation can exclude it by identity
+            // instead of a count tolerance — its Id is its key in ShortcutSettingsDictionary.
+            string? editingId = _isEditMode ? (_editingItem?.Item as IToggleableShortcut)?.Id : null;
 
             return actionType switch
             {
                 UnifiedMappingControl.ActionType.KeyOrShortcut => ValidationHelper.ValidateKeyMapping(
-                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                    triggerKeys, UnifiedMappingControl.GetActionKeys(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.Text => ValidationHelper.ValidateTextMapping(
-                    triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetTextContent(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.OpenUrl => ValidationHelper.ValidateUrlMapping(
-                    triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetUrl(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.OpenApp => ValidationHelper.ValidateAppMapping(
-                    triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode),
+                    triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
-                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                    triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingId),
                 _ => ValidationErrorType.NoError,
             };
         }
