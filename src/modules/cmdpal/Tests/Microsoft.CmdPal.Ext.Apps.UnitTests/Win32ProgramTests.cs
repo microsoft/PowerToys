@@ -61,6 +61,34 @@ public class Win32ProgramTests
     }
 
     [TestMethod]
+    public void DeduplicatePrograms_DifferentArguments_KeepsBothPrograms()
+    {
+        var first = TestDataHelper.CreateTestWin32Program("Console", @"C:\Tools\console.exe");
+        first.Arguments = "--profile first";
+
+        var second = TestDataHelper.CreateTestWin32Program("Console", @"C:\Tools\console.exe");
+        second.Arguments = "--profile second";
+
+        var result = Win32Program.DeduplicatePrograms([first, second]);
+
+        Assert.AreEqual(2, result.Count);
+    }
+
+    [TestMethod]
+    public void DeduplicatePrograms_CaseOnlyDifference_RemovesDuplicate()
+    {
+        var first = TestDataHelper.CreateTestWin32Program("Console", @"C:\Tools\console.exe");
+        first.Arguments = "--profile default";
+
+        var second = TestDataHelper.CreateTestWin32Program("CONSOLE", @"c:\tools\CONSOLE.exe");
+        second.Arguments = "--profile default";
+
+        var result = Win32Program.DeduplicatePrograms([first, second]);
+
+        Assert.AreEqual(1, result.Count);
+    }
+
+    [TestMethod]
     public void DeduplicatePrograms_UrlPayloadDiffersByCase_KeepsBothPrograms()
     {
         var first = TestDataHelper.CreateTestWin32Program("Game", "com.epicgames.launcher://apps/Example?action=launch");

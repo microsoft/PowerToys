@@ -2,46 +2,43 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-
 namespace Microsoft.CmdPal.Ext.Apps.Programs;
 
 /// <summary>
-/// Interface for UWP applications to enable testing and mocking
+/// Exposes packaged-application discovery metadata without owning catalog projection.
 /// </summary>
-public interface IUWPApplication : IProgram
+public interface IUWPApplication
 {
-    string AppListEntry { get; set; }
+    /// <summary>Gets the localized application name.</summary>
+    string Name { get; }
 
-    string DisplayName { get; set; }
+    /// <summary>Gets or sets the localized application description.</summary>
+    string Description { get; set; }
 
+    /// <summary>Gets or sets the application user-model ID.</summary>
     string UserModelId { get; set; }
 
-    string BackgroundColor { get; set; }
+    /// <summary>Gets or sets a value indicating whether discovery considers the application enabled.</summary>
+    bool Enabled { get; set; }
 
-    string EntryPoint { get; set; }
-
+    /// <summary>Gets or sets a value indicating whether the application may run elevated.</summary>
     bool CanRunElevated { get; set; }
 
+    /// <summary>Gets or sets the resolved list-logo path.</summary>
     string LogoPath { get; set; }
 
+    /// <summary>Gets or sets the resolution state of the list logo.</summary>
     LogoType LogoType { get; set; }
 
+    /// <summary>Gets or sets the resolved jumbo-logo path.</summary>
     string JumboLogoPath { get; set; }
 
+    /// <summary>Gets or sets the resolution state of the jumbo logo.</summary>
     LogoType JumboLogoType { get; set; }
 
+    /// <summary>Gets or sets the package that owns the application.</summary>
     UWP Package { get; set; }
 
-    string LocationLocalized { get; }
-
-    string GetAppIdentifier();
-
-    List<IContextItem> GetCommands();
-
+    /// <summary>Resolves theme-appropriate list and jumbo logos.</summary>
     void UpdateLogoPath(Utils.Theme theme);
-
-    AppItem ToAppItem();
 }

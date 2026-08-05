@@ -36,14 +36,14 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         TopLevelCommandManager topLevelCommandManager,
         ICmdPalProtocolActivation protocolActivation,
         IAppStateService appStateService,
-        IMonitorService? monitorService = null,
-        AllAppsPage? allAppsPage = null)
+        AllAppsPage allAppsPage,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
         _protocolActivation = protocolActivation;
         _appStateService = appStateService;
-        _allAppsPage = allAppsPage ?? AllAppsCommandProvider.Page;
+        _allAppsPage = allAppsPage;
         _monitorService = monitorService;
     }
 

@@ -11,6 +11,7 @@ using CommunityToolkit.WinUI;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -230,7 +231,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             GetQuickAccessShelfRecentCommandsPlacement(settings),
             settings.QuickAccessShelfPinnedCommandLimit,
             settings.RecentCommandsDisplayLimit,
-            _mainTaskScheduler);
+            _mainTaskScheduler,
+            App.Current.Services.GetRequiredService<AllAppsPage>());
         QuickAccessShelf.PropertyChanged += QuickAccessShelf_PropertyChanged;
         QuickAccessShelf.RebuildCompleted += QuickAccessShelf_RebuildCompleted;
 
