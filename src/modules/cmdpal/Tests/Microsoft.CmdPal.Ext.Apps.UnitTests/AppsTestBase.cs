@@ -28,6 +28,11 @@ public abstract class AppsTestBase
     protected AllAppsPage Page { get; private set; } = null!;
 
     /// <summary>
+    /// Gets the shared application list-item source used by the page and command-provider tests.
+    /// </summary>
+    protected IAppListItemSource AppListItemSource { get; private set; } = null!;
+
+    /// <summary>
     /// Gets the isolated settings instance shared by the test's application services.
     /// </summary>
     protected AllAppsSettings Settings { get; private set; } = null!;
@@ -42,7 +47,8 @@ public abstract class AppsTestBase
         _settingsPath = Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json");
         Settings = new AllAppsSettings(_settingsPath);
         MockCatalog = new MockAppCatalog();
-        Page = new AllAppsPage(MockCatalog, Settings);
+        AppListItemSource = new AppListItemSource(MockCatalog, Settings);
+        Page = new AllAppsPage(AppListItemSource);
 
         await WaitForPageInitializationAsync();
     }
@@ -53,6 +59,8 @@ public abstract class AppsTestBase
     [TestCleanup]
     public virtual void Cleanup()
     {
+        Page?.Dispose();
+        AppListItemSource?.Dispose();
         MockCatalog?.Dispose();
         File.Delete(_settingsPath);
     }
@@ -82,7 +90,7 @@ public abstract class AppsTestBase
     /// <param name="page">The page to observe.</param>
     /// <param name="timeoutMs">The timeout in milliseconds.</param>
     /// <returns>A task representing the asynchronous wait operation.</returns>
-    protected static async Task WaitForPageInitializationAsync(AllAppsPage page, int timeoutMs = 1000)
+    internal static async Task WaitForPageInitializationAsync(AllAppsPage page, int timeoutMs = 1000)
     {
         var stopwatch = Stopwatch.StartNew();
         while (page.IsLoading && stopwatch.ElapsedMilliseconds < timeoutMs)
@@ -93,6 +101,23 @@ public abstract class AppsTestBase
         if (page.IsLoading)
         {
             throw new TimeoutException("The All apps page did not finish loading in time.");
+        }
+    }
+
+    /// <summary>
+    /// Waits for an asynchronous application-list transition with a timeout.
+    /// </summary>
+    protected static async Task WaitForConditionAsync(Func<bool> condition, int timeoutMs = 1000)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        while (!condition() && stopwatch.ElapsedMilliseconds < timeoutMs)
+        {
+            await Task.Delay(10);
+        }
+
+        if (!condition())
+        {
+            throw new TimeoutException("The expected application list state was not reached in time.");
         }
     }
 }

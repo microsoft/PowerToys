@@ -321,7 +321,7 @@ public class AppCatalogCacheTests
                 CancellationToken.None);
             await cache.SaveAsync(
                 new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [updated] },
-                Array.Empty<string>(),
+                [],
                 Context(firstValidation.AddHours(1), ("win32", "key-after-change")),
                 CancellationToken.None);
 

@@ -185,12 +185,14 @@ public partial class App : Application, IDisposable
         var files = new IndexerCommandsProvider();
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
 
-        // Let the service provider construct and own the catalog and its source watchers.
+        // Let the service provider construct and own the page, shared projection, catalog,
+        // and source watchers so they are disposed in reverse dependency order.
         services.AddSingleton<AllAppsSettings>();
         services.AddSingleton<IAppCatalog>(serviceProvider =>
             AppCatalogFactory.CreateDefault(
                 serviceProvider.GetRequiredService<AllAppsSettings>(),
                 serviceProvider.GetRequiredService<MEL.ILoggerFactory>()));
+        services.AddSingleton<IAppListItemSource, AppListItemSource>();
         services.AddSingleton<AllAppsPage>();
         services.AddSingleton<AllAppsCommandProvider>();
         services.AddSingleton<ICommandProvider>(serviceProvider =>

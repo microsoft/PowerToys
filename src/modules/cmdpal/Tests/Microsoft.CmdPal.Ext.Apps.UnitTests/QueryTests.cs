@@ -19,7 +19,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         // Arrange
         var settings = new AllAppsSettings(Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json"));
-        var mockCatalog = new MockAppCatalog();
+        using var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
         mockCatalog.AddWin32Program(win32App);
@@ -31,13 +31,9 @@ public class QueryTests : CommandPaletteUnitTestBase
             mockCatalog.AddUWPApplication(TestDataHelper.CreateTestUWPApplication($"UWP App {i}"));
         }
 
-        var page = new AllAppsPage(mockCatalog, settings);
-        var provider = new AllAppsCommandProvider(page, settings);
-
-        while (page.IsLoading)
-        {
-            await Task.Delay(10);
-        }
+        using var itemSource = new AppListItemSource(mockCatalog, settings);
+        using var page = new AllAppsPage(itemSource);
+        await AppsTestBase.WaitForPageInitializationAsync(page);
 
         // Act
         var allItems = page.GetItems();

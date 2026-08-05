@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Linq;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
@@ -20,47 +20,27 @@ internal sealed class SettingsAppVisibilityStore : IAppVisibilityStore
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        foreach (var hiddenApp in _settings.DisabledProgramSources)
-        {
-            if (string.Equals(hiddenApp.UniqueIdentifier, item.Identity, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return item.IdentityAliases.Any(_settings.IsAppHidden);
     }
 
     public bool SetHidden(AppCatalogItem item, bool hidden)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (hidden)
+        var changed = _settings.SetAppHidden(item.Identity, hidden);
+        if (!hidden)
         {
-            if (IsHidden(item))
+            foreach (var identity in item.IdentityAliases)
             {
-                return false;
-            }
-
-            _settings.DisabledProgramSources.Add(new DisabledProgramSource { UniqueIdentifier = item.Identity });
-            return true;
-        }
-
-        var changed = false;
-        for (var index = _settings.DisabledProgramSources.Count - 1; index >= 0; index--)
-        {
-            if (string.Equals(
-                _settings.DisabledProgramSources[index].UniqueIdentifier,
-                item.Identity,
-                StringComparison.OrdinalIgnoreCase))
-            {
-                _settings.DisabledProgramSources.RemoveAt(index);
-                changed = true;
+                changed |= _settings.SetAppHidden(identity, hidden: false);
             }
         }
 
         return changed;
     }
 
-    public void Persist() => _settings.SaveSettings();
+    public void Persist()
+    {
+        _settings.SaveSettings();
+    }
 }

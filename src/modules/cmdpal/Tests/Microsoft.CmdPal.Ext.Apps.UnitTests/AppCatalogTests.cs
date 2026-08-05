@@ -809,13 +809,14 @@ public class AppCatalogTests
     [TestMethod]
     public void SettingsVisibilityStore_HidesCatalogIdentity()
     {
-        var settings = new AllAppsSettings(
-            Path.Combine(Path.GetTempPath(), $"apps-settings-{Guid.NewGuid():N}.json"));
-        var hidden = new DisabledProgramSource { UniqueIdentifier = "win32:hidden" };
-        settings.DisabledProgramSources.Add(hidden);
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
 
         try
         {
+            File.WriteAllText(
+                settingsPath,
+                "{\"DisabledProgramSources\":[{\"UniqueIdentifier\":\"win32:hidden\"}]}");
+            var settings = new AllAppsSettings(settingsPath);
             var visibility = new SettingsAppVisibilityStore(settings);
             var item = CreateCatalogItem("Hidden", identity: "win32:hidden");
 
@@ -823,7 +824,7 @@ public class AppCatalogTests
         }
         finally
         {
-            settings.DisabledProgramSources.Remove(hidden);
+            File.Delete(settingsPath);
         }
     }
 
@@ -871,6 +872,57 @@ public class AppCatalogTests
 
         Assert.AreEqual(1, catalog.Items.Count);
         Assert.AreEqual("Visible", catalog.Items[0].Name);
+    }
+
+    [TestMethod]
+    public async Task MergedCommandIds_FollowVisibilityAndPresentationChanges()
+    {
+        var settingsPath = Path.Combine(Path.GetTempPath(), $"cmdpal-apps-settings-{Guid.NewGuid():N}.json");
+        try
+        {
+            var program = TestDataHelper.CreateTestWin32Program("Editor", @"C:\Apps\Editor.exe");
+            program.Description = "Editor description";
+            var preferred = CreateWin32CatalogItem(program, "win32:editor", 0, "test");
+            program.Name = "Legacy Editor";
+            program.LnkFilePath = @"C:\Links\Legacy Editor.lnk";
+            var legacy = CreateWin32CatalogItem(program, preferred.Identity, 10, "test");
+            var legacyId = new AppCommand(legacy.ToAppItem()).Id;
+            using var source = new TestAppSource("test", [preferred.MergeProvenance(legacy)]);
+            var settings = new AllAppsSettings(settingsPath);
+            using var catalog = CreateCatalog([source], new TestCache(null), new SettingsAppVisibilityStore(settings));
+            using var list = new AppListItemSource(catalog, settings);
+            using var page = new AllAppsPage(list);
+            using var provider = new AllAppsCommandProvider(page, list, settings);
+            await catalog.InitializeAsync();
+            await WaitForConditionAsync(() => !list.IsLoading);
+
+            var canonical = list.GetSnapshot().VisibleItems.Single();
+            var resolved = provider.GetCommandItem(legacyId);
+            Assert.IsNotNull(resolved);
+            Assert.AreEqual(legacyId, resolved.Command!.Id);
+            Assert.AreEqual(canonical.Title, resolved.Title);
+            Assert.AreEqual("Editor description", resolved.Subtitle);
+            Assert.AreSame(canonical.Icon, resolved.Icon);
+            Assert.IsInstanceOfType<Microsoft.CommandPalette.Extensions.IListItem>(resolved);
+
+            var subtitleChanged = false;
+            resolved.PropChanged += (_, args) => subtitleChanged |= args.PropertyName == nameof(resolved.Subtitle);
+            var form = (SettingsForm)settings.Settings.ToContent().Single();
+            form.SubmitForm("{\"apps.HideAppDescriptions\":\"true\"}", string.Empty);
+            await WaitForConditionAsync(() => subtitleChanged && resolved.Subtitle == string.Empty);
+
+            await catalog.SetAppHiddenAsync(preferred.Identity, hidden: true);
+            Assert.IsNull(provider.GetCommandItem(legacyId));
+            Assert.AreSame(canonical.MoreCommands, resolved.MoreCommands);
+            Assert.AreEqual(Properties.Resources.unhide_app, resolved.MoreCommands.OfType<CommandContextItem>().Last().Command!.Name);
+            await catalog.SetAppHiddenAsync(preferred.Identity, hidden: false);
+            Assert.AreEqual(legacyId, provider.GetCommandItem(legacyId)?.Command?.Id);
+
+        }
+        finally
+        {
+            File.Delete(settingsPath);
+        }
     }
 
     private static AppCatalog CreateCatalog(

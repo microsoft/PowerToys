@@ -1,21 +1,31 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
-using Microsoft.CmdPal.Ext.Apps.Programs;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public class AllAppsSettings : JsonSettingsManager
+public partial class AllAppsSettings : JsonSettingsManager
 {
-    internal const int DefaultSearchResultLimit = 10;
+    private const int DefaultSearchResultLimit = 10;
+    private const string DisabledProgramSourcesPropertyName = "DisabledProgramSources";
+    private const string DisabledProgramUniqueIdentifierPropertyName = "UniqueIdentifier";
 
     // "none" instead of "0": the original default was accidentally "0", so existing
     // users may have "0" stored. Using "none" lets us distinguish intentional "show
@@ -30,6 +40,11 @@ public class AllAppsSettings : JsonSettingsManager
 
     private static readonly string _namespace = "apps";
 
+    private static readonly JsonSerializerOptions _serializerOptions = new()
+    {
+        WriteIndented = true,
+    };
+
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
     private static readonly List<ChoiceSetSetting.Choice> _searchResultLimitChoices =
@@ -41,7 +56,9 @@ public class AllAppsSettings : JsonSettingsManager
         new(Resources.limit_10, "10"),
     ];
 
-    public List<DisabledProgramSource> DisabledProgramSources { get; set; } = [];
+    private readonly Lock _settingsWriterLock = new();
+    private readonly MEL.ILogger<AllAppsSettings> _logger;
+    private FrozenSet<string> _disabledProgramIdentities = FrozenSet<string>.Empty;
 
     public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
 
@@ -64,10 +81,10 @@ public class AllAppsSettings : JsonSettingsManager
     public bool EnableCatalogDiagnostics => _enableCatalogDiagnostics.Value;
 
     /// <summary>Gets user-selected folders whose application shortcuts should be indexed recursively.</summary>
-    public IReadOnlyList<string> CustomShortcutFolders => _customShortcutFolders.Value ?? Array.Empty<string>();
+    public IReadOnlyList<string> CustomShortcutFolders => _customShortcutFolders.Value ?? [];
 
     /// <summary>Gets user-selected folders whose portable executable applications should be indexed.</summary>
-    public IReadOnlyList<string> PortableAppFolders => _portableAppFolders.Value ?? Array.Empty<string>();
+    public IReadOnlyList<string> PortableAppFolders => _portableAppFolders.Value ?? [];
 
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
@@ -104,6 +121,7 @@ public class AllAppsSettings : JsonSettingsManager
         }
     }
 
+    /// <summary>Gets the configured result limit, or the built-in default when no override is set.</summary>
     public int EffectiveSearchResultLimit => SearchResultLimit ?? DefaultSearchResultLimit;
 
     private readonly ToggleSetting _enableStartMenuSource = new(
@@ -176,8 +194,6 @@ public class AllAppsSettings : JsonSettingsManager
         DuplicateItemErrorMessage = Resources.custom_app_folder_duplicate,
     };
 
-    public double MinScoreThreshold { get; set; } = 0.75;
-
     internal const char SuffixSeparator = ';';
 
     internal static string SettingsJsonPath()
@@ -188,14 +204,24 @@ public class AllAppsSettings : JsonSettingsManager
         return Path.Combine(directory, $"{_namespace}.settings.json");
     }
 
-    public AllAppsSettings()
-        : this(SettingsJsonPath())
+    /// <summary>
+    /// Initializes the process settings using the injected application logger.
+    /// </summary>
+    /// <param name="logger">The diagnostic logger; messages sent here do not enter the extension UI log.</param>
+    public AllAppsSettings(MEL.ILogger<AllAppsSettings> logger)
+        : this(SettingsJsonPath(), logger)
     {
     }
 
     internal AllAppsSettings(string filePath)
+        : this(filePath, NullLogger<AllAppsSettings>.Instance)
     {
-        FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+    }
+
+    internal AllAppsSettings(string filePath, MEL.ILogger<AllAppsSettings> logger)
+    {
+        FilePath = filePath;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);
@@ -213,4 +239,186 @@ public class AllAppsSettings : JsonSettingsManager
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();
     }
+
+    public override void LoadSettings()
+    {
+        lock (_settingsWriterLock)
+        {
+            if (string.IsNullOrEmpty(FilePath))
+            {
+                throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(LoadSettings)}");
+            }
+
+            if (!File.Exists(FilePath))
+            {
+                return;
+            }
+
+            try
+            {
+                var content = File.ReadAllText(FilePath);
+                if (JsonNode.Parse(content) is not JsonObject savedSettings)
+                {
+                    LogInvalidSettingsJson(_logger);
+                    return;
+                }
+
+                LoadDisabledProgramSources(savedSettings);
+                Settings.Update(content);
+            }
+            catch (Exception ex)
+            {
+                LogSettingsLoadFailed(_logger, ex);
+            }
+        }
+    }
+
+    public override void SaveSettings()
+    {
+        lock (_settingsWriterLock)
+        {
+            SaveSettingsUnderLock();
+        }
+    }
+
+    /// <summary>Determines whether a canonical application identity is hidden.</summary>
+    internal bool IsAppHidden(string identity) =>
+        Volatile.Read(ref _disabledProgramIdentities).Contains(identity);
+
+    /// <summary>Updates the in-memory visibility preference for a canonical application identity.</summary>
+    internal bool SetAppHidden(string identity, bool hidden)
+    {
+        lock (_settingsWriterLock)
+        {
+            var current = _disabledProgramIdentities;
+            if (current.Contains(identity) == hidden)
+            {
+                return false;
+            }
+
+            var updated = new HashSet<string>(current, StringComparer.OrdinalIgnoreCase);
+            _ = hidden ? updated.Add(identity) : updated.Remove(identity);
+            Volatile.Write(ref _disabledProgramIdentities, updated.ToFrozenSet(StringComparer.OrdinalIgnoreCase));
+            return true;
+        }
+    }
+
+    private void SaveSettingsUnderLock()
+    {
+        string? temporaryPath = null;
+
+        try
+        {
+            if (string.IsNullOrEmpty(FilePath))
+            {
+                throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(SaveSettings)}");
+            }
+
+            if (JsonNode.Parse(Settings.ToJson()) is not JsonObject currentSettings)
+            {
+                LogSettingsSerializationFailed(_logger);
+                return;
+            }
+
+            var previousContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
+            if (JsonNode.Parse(previousContent) is not JsonObject savedSettings)
+            {
+                LogInvalidSettingsJson(_logger);
+                return;
+            }
+
+            foreach (var setting in currentSettings)
+            {
+                savedSettings[setting.Key] = setting.Value?.DeepClone();
+            }
+
+            var hiddenApps = new JsonArray();
+            foreach (var hiddenIdentity in _disabledProgramIdentities.Order(StringComparer.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(hiddenIdentity))
+                {
+                    hiddenApps.Add((JsonNode)new JsonObject
+                    {
+                        [DisabledProgramUniqueIdentifierPropertyName] = hiddenIdentity,
+                    });
+                }
+            }
+
+            savedSettings[DisabledProgramSourcesPropertyName] = hiddenApps;
+
+            var directory = Path.GetDirectoryName(FilePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            temporaryPath = $"{FilePath}.{Guid.NewGuid():N}.tmp";
+            File.WriteAllText(temporaryPath, savedSettings.ToJsonString(_serializerOptions));
+            File.Move(temporaryPath, FilePath, overwrite: true);
+        }
+        catch (Exception ex)
+        {
+            LogSettingsSaveFailed(_logger, ex);
+        }
+        finally
+        {
+            if (temporaryPath is not null)
+            {
+                try
+                {
+                    File.Delete(temporaryPath);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    LogTemporarySettingsFileRemovalFailed(_logger, ex);
+                }
+            }
+        }
+    }
+
+    private void LoadDisabledProgramSources(JsonObject savedSettings)
+    {
+        var hiddenIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (savedSettings[DisabledProgramSourcesPropertyName] is JsonArray hiddenApps)
+        {
+            foreach (var node in hiddenApps)
+            {
+                string? identity = null;
+                if (node is JsonObject hiddenApp
+                    && hiddenApp[DisabledProgramUniqueIdentifierPropertyName] is JsonValue identityValue
+                    && identityValue.TryGetValue<string>(out var persistedIdentity))
+                {
+                    identity = persistedIdentity;
+                }
+                else if (node is JsonValue value && value.TryGetValue<string>(out var legacyIdentity))
+                {
+                    identity = legacyIdentity;
+                }
+
+                if (!string.IsNullOrWhiteSpace(identity))
+                {
+                    hiddenIdentities.Add(identity);
+                }
+            }
+        }
+
+        Volatile.Write(
+            ref _disabledProgramIdentities,
+            hiddenIdentities.ToFrozenSet(StringComparer.OrdinalIgnoreCase));
+    }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to parse the Apps settings file as a JSON object.")]
+    private static partial void LogInvalidSettingsJson(MEL.ILogger logger);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to load Apps settings.")]
+    private static partial void LogSettingsLoadFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "Failed to serialize Apps settings as a JSON object.")]
+    private static partial void LogSettingsSerializationFailed(MEL.ILogger logger);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Error, Message = "Failed to save Apps settings.")]
+    private static partial void LogSettingsSaveFailed(MEL.ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Failed to remove a temporary Apps settings file.")]
+    private static partial void LogTemporarySettingsFileRemovalFailed(MEL.ILogger logger, Exception exception);
 }
