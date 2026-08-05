@@ -50,10 +50,11 @@ internal sealed class PhysicalNetworkInterfaceSnapshotProvider : IPhysicalNetwor
 
                 snapshots.Add(new(
                     row.InterfaceLuid.Value,
+                    row.InterfaceGuid,
                     name,
                     row.InOctets,
                     row.OutOctets,
-                    Math.Max(row.ReceiveLinkSpeed, row.TransmitLinkSpeed)));
+                    GetKnownLinkSpeed(row.ReceiveLinkSpeed, row.TransmitLinkSpeed)));
             }
 
             snapshots.Sort(static (left, right) =>
@@ -69,10 +70,18 @@ internal sealed class PhysicalNetworkInterfaceSnapshotProvider : IPhysicalNetwor
             PInvoke.FreeMibTable(table);
         }
     }
+
+    internal static ulong GetKnownLinkSpeed(ulong receiveLinkSpeed, ulong transmitLinkSpeed)
+    {
+        var knownReceiveLinkSpeed = receiveLinkSpeed == ulong.MaxValue ? 0 : receiveLinkSpeed;
+        var knownTransmitLinkSpeed = transmitLinkSpeed == ulong.MaxValue ? 0 : transmitLinkSpeed;
+        return Math.Max(knownReceiveLinkSpeed, knownTransmitLinkSpeed);
+    }
 }
 
 internal readonly record struct PhysicalNetworkInterfaceSnapshot(
     ulong InterfaceLuid,
+    Guid InterfaceGuid,
     string Name,
     ulong ReceivedBytes,
     ulong SentBytes,

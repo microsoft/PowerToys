@@ -191,6 +191,13 @@
   <data name="Next_Network_Title" xml:space="preserve">
     <value>Next network</value>
   </data>
+  <data name="Set_Default_Network_Title" xml:space="preserve">
+    <value>Set as default</value>
+  </data>
+  <data name="Set_Default_Network_Success" xml:space="preserve">
+    <value>Default network set to {0}</value>
+    <comment>{0} is the network adapter name.</comment>
+  </data>
   <data name="All_Physical_Network_Adapters" xml:space="preserve">
     <value>All physical network adapters</value>
   </data>

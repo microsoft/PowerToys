@@ -972,6 +972,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
+    private bool _defaultNetworkInitialized;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -980,6 +981,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         Commands = [
             new CommandContextItem(new PrevNetworkCommand(this) { Name = Resources.GetResource("Previous_Network_Title") }),
             new CommandContextItem(new NextNetworkCommand(this) { Name = Resources.GetResource("Next_Network_Title") }),
+            new CommandContextItem(new SetDefaultNetworkCommand(this) { Name = Resources.GetResource("Set_Default_Network_Title") }),
             new CommandContextItem(OpenTaskManagerCommand.Instance),
         ];
     }
@@ -994,6 +996,16 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var timer = Stopwatch.StartNew();
 
             var currentData = _dataManager.GetNetworkStats();
+
+            if (!_defaultNetworkInitialized)
+            {
+                var defaultNetworkIndex = currentData.GetNetworkIndex(_settingsManager.DefaultNetworkAdapterId);
+                if (defaultNetworkIndex >= 0)
+                {
+                    _networkIndex = defaultNetworkIndex;
+                    _defaultNetworkInitialized = true;
+                }
+            }
 
             var dataDuration = timer.ElapsedMilliseconds;
 
@@ -1097,14 +1109,30 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     private void HandlePrevNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
+        _defaultNetworkInitialized = true;
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
         UpdateWidget();
+    }
+
+    private ICommandResult HandleSetDefaultNetwork()
+    {
+        _defaultNetworkInitialized = true;
+        var networkStats = _dataManager.GetNetworkStats();
+        var networkName = networkStats.GetNetworkName(_networkIndex);
+        _settingsManager.SetDefaultNetworkAdapterId(networkStats.GetNetworkId(_networkIndex));
+
+        return CommandResult.ShowToast(new ToastArgs
+        {
+            Message = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Set_Default_Network_Success"), networkName),
+            Result = CommandResult.KeepOpen(),
+        });
     }
 
     public void Dispose()
@@ -1149,6 +1177,25 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         {
             _page.HandleNextNetwork();
             return CommandResult.KeepOpen();
+        }
+    }
+
+    private sealed partial class SetDefaultNetworkCommand : InvokableCommand
+    {
+        private readonly SystemNetworkUsageWidgetPage _page;
+
+        public SetDefaultNetworkCommand(SystemNetworkUsageWidgetPage page)
+        {
+            _page = page;
+        }
+
+        public override string Id => "com.microsoft.cmdpal.network_widget.setDefault";
+
+        public override IconInfo Icon => Icons.SetDefaultIcon;
+
+        public override ICommandResult Invoke()
+        {
+            return _page.HandleSetDefaultNetwork();
         }
     }
 }
