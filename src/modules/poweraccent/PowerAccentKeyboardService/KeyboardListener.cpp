@@ -213,30 +213,33 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_rightShiftPressed = true;
         }
 
-        if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
+        const bool isLetterKey = std::find(letters.begin(), letters.end(), letterKey) != cend(letters);
+        if (isLetterKey &&
+            m_toolbarVisible &&
+            m_gestureActivationKey == PowerAccentActivationKey::PressAndHold)
         {
-            if (m_toolbarVisible && m_gestureActivationKey == PowerAccentActivationKey::PressAndHold)
+            if (letterPressed == letterKey)
             {
-                if (letterPressed == letterKey)
-                {
-                    // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down.
-                    // If Quick Accent is active, prevent the owner letter from being processed.
-                    // https://github.com/microsoft/PowerToys/issues/36853
-                    return true;
-                }
-
-                // In press-and-hold, a different typed letter must not be replaced when the
-                // original owner is released. Cancel the owner gesture and pass this key through.
-                if (!m_pressAndHoldCancelled)
-                {
-                    m_pressAndHoldCancelled = true;
-                    m_cancelToolbarCb();
-                }
-
-                // A different letter must not steal or re-arm the active owner-letter gesture.
-                return false;
+                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down.
+                // If Quick Accent is active, prevent the owner letter from being processed.
+                // https://github.com/microsoft/PowerToys/issues/36853
+                return true;
             }
 
+            // Any different physical letter must not be replaced when the original owner is
+            // released, even if that letter has no mapping in the selected language.
+            if (!m_pressAndHoldCancelled)
+            {
+                m_pressAndHoldCancelled = true;
+                m_cancelToolbarCb();
+            }
+
+            return false;
+        }
+
+        // Language eligibility gates starting a new owner gesture, not canceling an active one.
+        if (isLetterKey && m_isLanguageLetterCb(letterKey))
+        {
             if (m_toolbarVisible && letterPressed == letterKey)
             {
                 // Preserve repeat suppression for trigger-key activation modes.
@@ -365,7 +368,12 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         }
 
         const auto releasedLetter = static_cast<LetterKey>(info.vkCode);
-        if (std::find(std::begin(letters), end(letters), releasedLetter) != end(letters) && m_isLanguageLetterCb(releasedLetter))
+        const bool isLetterKey = std::find(std::begin(letters), end(letters), releasedLetter) != end(letters);
+        const bool isActivePressAndHoldOwner =
+            m_toolbarVisible &&
+            m_gestureActivationKey == PowerAccentActivationKey::PressAndHold &&
+            letterPressed == releasedLetter;
+        if (isLetterKey && (isActivePressAndHoldOwner || m_isLanguageLetterCb(releasedLetter)))
         {
             // Only react to the key-up of the letter that owns the toolbar, so releasing a
             // different held letter can't cancel or commit the active picker.
