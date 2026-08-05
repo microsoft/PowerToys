@@ -3,12 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
+using System.Text;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
 internal static class CustomClockDisplay
 {
+    private static readonly CompositeFormat _dockBandTitleFormat = CompositeFormat.Parse(Resources.timedate_dock_band_title_format);
+
+    // Shared prefix so every clock band groups together in the dock band list.
+    internal static string GetDockBandTitle(string clockName) => string.Format(CultureInfo.CurrentCulture, _dockBandTitleFormat, clockName);
+
     internal static TimeZoneInfo? ResolveExplicitTimeZone(CustomClock clock) => clock.TimeZoneId == CustomClock.CurrentTimeZoneId
         ? null
         : TimeZoneInfo.FindSystemTimeZoneById(clock.TimeZoneId);
