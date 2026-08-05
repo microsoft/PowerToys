@@ -39,11 +39,35 @@ namespace FancyZonesEditor
 
         private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
 
+        private Process _runnerProcess;
         private bool _isDisposed;
+        private bool _isShuttingDown;
+        private bool _settingsLoaded;
         private bool _settingsPersisted;
 
         public App()
         {
+            Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
+
+            var languageTag = LanguageHelper.LoadLanguage();
+
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    // The .resw strings are resolved by MRT, which follows the app's primary
+                    // language override rather than the thread's UI culture - the culture alone
+                    // (all the WPF editor needed) would leave the whole editor in the system language.
+                    Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = languageTag;
+                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to apply the editor language: " + ex.Message);
+                }
+            }
+
+            // The language override must be set before XAML resources are initialized.
             InitializeComponent();
 
             // WinUI 3 has no Application.Current.Dispatcher, so the UI DispatcherQueue is
@@ -51,27 +75,6 @@ namespace FancyZonesEditor
             _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
             PowerToysTelemetry.Log.WriteEvent(new FancyZonesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
-
-            var languageTag = LanguageHelper.LoadLanguage();
-
-            if (!string.IsNullOrEmpty(languageTag))
-            {
-                // The .resw strings are resolved by MRT, which follows the app's primary language
-                // override rather than the thread's UI culture - the culture alone (all the WPF
-                // editor needed) would leave the whole editor in the system language.
-                Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = languageTag;
-
-                try
-                {
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(languageTag);
-                }
-                catch (CultureNotFoundException ex)
-                {
-                    Logger.LogError("CultureNotFoundException: " + ex.Message);
-                }
-            }
-
-            Logger.InitializeLogger("\\FancyZones\\Editor\\Logs");
 
             // DebugModeCheck();
             NativeThreadCTS = new CancellationTokenSource();
@@ -98,6 +101,8 @@ namespace FancyZonesEditor
 
         public MainWindowSettingsModel MainWindowSettings { get; }
 
+        internal bool IsShuttingDown => _isShuttingDown;
+
         private CancellationTokenSource NativeThreadCTS { get; set; }
 
         public static void ShowExceptionMessageBox(string message, Exception exception = null)
@@ -106,6 +111,12 @@ namespace FancyZonesEditor
             if (exception != null)
             {
                 fullMessage += ": " + exception.Message;
+            }
+
+            if (Current is App app && app.IsShuttingDown)
+            {
+                NativeMethods.ShowMessageBox(fullMessage, ResourceLoaderInstance.GetString("Error_Exception_Message_Box_Title"));
+                return;
             }
 
             _ = ShowMessageDialogAsync(fullMessage, ResourceLoaderInstance.GetString("Error_Exception_Message_Box_Title"));
@@ -145,21 +156,27 @@ namespace FancyZonesEditor
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredFancyZonesEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                Shutdown();
+                ShutdownWithoutPersisting();
                 return;
             }
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            RunnerHelper.WaitForPowerToysRunner(PowerToysPID, () =>
-            {
-                Logger.LogInfo("Runner exited");
-                _dispatcherQueue.TryEnqueue(Shutdown);
-            });
+            var parsingErrors = new List<string>();
+            ReportParsingError(FancyZonesEditorIO.ParseParams(), parsingErrors);
 
-            var parsingErrors = ParseSettings();
+            StartRunnerExitMonitor();
+
+            ParseSettings(parsingErrors);
+            _settingsLoaded = true;
 
             MainWindowSettings.UpdateSelectedLayoutModel();
+
+            if (Overlay.DesktopsCount == 0)
+            {
+                _ = ReportParsingErrorsAndShutdownAsync(parsingErrors);
+                return;
+            }
 
             Overlay.Show();
 
@@ -173,8 +190,51 @@ namespace FancyZonesEditor
             if (!_isDisposed)
             {
                 _isDisposed = true;
+
+                if (_runnerProcess != null)
+                {
+                    _runnerProcess.Exited -= OnRunnerExited;
+                    _runnerProcess.Dispose();
+                    _runnerProcess = null;
+                }
+
+                Overlay?.Dispose();
+
                 Logger.LogInfo("FancyZones Editor disposed");
             }
+        }
+
+        private void StartRunnerExitMonitor()
+        {
+            if (PowerToysPID <= 0)
+            {
+                return;
+            }
+
+            try
+            {
+                // Acquire the process synchronously so a Runner crash between ParseParams and an
+                // asynchronously scheduled OpenProcess cannot leave the editor orphaned.
+                _runnerProcess = Process.GetProcessById(PowerToysPID);
+                _runnerProcess.Exited += OnRunnerExited;
+                _runnerProcess.EnableRaisingEvents = true;
+
+                if (_runnerProcess.HasExited)
+                {
+                    OnRunnerExited(_runnerProcess, EventArgs.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("PowerToys Runner is no longer available: " + ex.Message);
+                _dispatcherQueue.TryEnqueue(Shutdown);
+            }
+        }
+
+        private void OnRunnerExited(object sender, EventArgs e)
+        {
+            Logger.LogInfo("Runner exited");
+            _dispatcherQueue.TryEnqueue(Shutdown);
         }
 
         /// <summary>
@@ -242,6 +302,12 @@ namespace FancyZonesEditor
             }
         }
 
+        private async System.Threading.Tasks.Task ReportParsingErrorsAndShutdownAsync(List<string> errors)
+        {
+            await ReportParsingErrorsAsync(errors);
+            ShutdownWithoutPersisting();
+        }
+
         private static void ShowReportMessageBox()
         {
             // Deliberately a system message box rather than a ContentDialog: an unhandled
@@ -251,18 +317,13 @@ namespace FancyZonesEditor
                 ResourceLoaderInstance.GetString("Fancy_Zones_Editor_App_Title"));
         }
 
-        private static List<string> ParseSettings()
+        private static void ParseSettings(List<string> errors)
         {
-            var errors = new List<string>();
-
-            ReportParsingError(FancyZonesEditorIO.ParseParams(), errors);
             ReportParsingError(FancyZonesEditorIO.ParseLayoutTemplates(), errors);
             ReportParsingError(FancyZonesEditorIO.ParseCustomLayouts(), errors);
             ReportParsingError(FancyZonesEditorIO.ParseDefaultLayouts(), errors);
             ReportParsingError(FancyZonesEditorIO.ParseLayoutHotkeys(), errors);
             ReportParsingError(FancyZonesEditorIO.ParseAppliedLayouts(), errors);
-
-            return errors;
         }
 
         private void App_WaitExit()
@@ -279,7 +340,7 @@ namespace FancyZonesEditor
         }
 
         /// <summary>
-        /// Writes every FancyZones settings file back to disk and tears the overlays down.
+        /// Writes every FancyZones settings file back to disk.
         /// WPF ran this from <c>MainWindow.Closing</c>, which <c>Application.Shutdown()</c>
         /// reached on its way out; WinUI's <c>Application.Exit()</c> does not close windows the
         /// same way, so every exit path calls this explicitly. It is idempotent because both the
@@ -294,12 +355,16 @@ namespace FancyZonesEditor
 
             _settingsPersisted = true;
 
+            if (!_settingsLoaded)
+            {
+                return;
+            }
+
             FancyZonesEditorIO.SerializeAppliedLayouts();
             FancyZonesEditorIO.SerializeCustomLayouts();
             FancyZonesEditorIO.SerializeLayoutHotkeys();
             FancyZonesEditorIO.SerializeLayoutTemplates();
             FancyZonesEditorIO.SerializeDefaultLayouts();
-            Overlay.CloseLayoutWindow();
         }
 
         /// <summary>
@@ -308,13 +373,38 @@ namespace FancyZonesEditor
         /// </summary>
         public void Shutdown()
         {
-            PersistSettings();
+            Shutdown(persistSettings: true);
+        }
+
+        private void ShutdownWithoutPersisting()
+        {
+            Shutdown(persistSettings: false);
+        }
+
+        private void Shutdown(bool persistSettings)
+        {
+            if (_isShuttingDown)
+            {
+                return;
+            }
+
+            _isShuttingDown = true;
+
+            if (persistSettings)
+            {
+                PersistSettings();
+            }
 
             NativeThreadCTS.Cancel();
             Dispose();
 
             Logger.LogInfo("FancyZones Editor exited");
-            Exit();
+
+            // Application.Exit is not reliable for this multi-window unpackaged WinUI process:
+            // the native teardown can re-enter owned WindowEx/XAML input callbacks and fail-fast.
+            // All application state is already persisted, so let the OS reclaim the remaining
+            // HWND, COM resources, and process-lifetime subscriptions atomically.
+            Environment.Exit(0);
         }
 
         private void OnUnhandledException(object sender, System.UnhandledExceptionEventArgs args)

@@ -447,12 +447,17 @@ namespace Microsoft.PowerToys.UITest
                 keys = keys.Replace("{WIN}", string.Empty); // Remove {WIN} from the string
             }
 
-            System.Windows.Forms.SendKeys.SendWait(keys);
-
-            // Release Windows key
-            if (winKeyDown)
+            try
             {
-                keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                System.Windows.Forms.SendKeys.SendWait(keys);
+            }
+            finally
+            {
+                // Never leave the Windows key pressed when SendKeys fails or the test is canceled.
+                if (winKeyDown)
+                {
+                    keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+                }
             }
         }
 

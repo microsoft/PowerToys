@@ -59,7 +59,7 @@ namespace FancyZonesEditor
             }
         }
 
-        public partial class ClickAutomationEventButtonAutomationPeer : FrameworkElementAutomationPeer, IValueProvider
+        public partial class ClickAutomationEventButtonAutomationPeer : ButtonAutomationPeer, IValueProvider
         {
             public ClickAutomationEventButtonAutomationPeer(ClickAutomationEventButton control)
                 : base(control)

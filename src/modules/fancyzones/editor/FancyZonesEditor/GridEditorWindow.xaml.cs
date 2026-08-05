@@ -30,6 +30,13 @@ namespace FancyZonesEditor
             SizeToContentAndCenter();
         }
 
+        /// <inheritdoc />
+        public override void PrepareForEditing(LayoutModel editingLayout, System.IntPtr ownerHwnd)
+        {
+            base.PrepareForEditing(editingLayout, ownerHwnd);
+            SaveButton.Focus(FocusState.Programmatic);
+        }
+
         private void GridEditorWindow_KeyUp(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == VirtualKey.Escape)

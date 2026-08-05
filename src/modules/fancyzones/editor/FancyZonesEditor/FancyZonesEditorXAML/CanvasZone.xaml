@@ -239,6 +239,7 @@
                 Grid.ColumnSpan="2"
                 CursorShape="SizeNortheastSouthwest">
                 <Thumb
+                    AutomationProperties.AutomationId="NEResize"
                     BorderThickness="0,2,2,0"
                     DragDelta="UniversalDragDelta"
                     DragStarted="NEResize_DragStarted"

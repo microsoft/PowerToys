@@ -14,7 +14,7 @@ using Windows.Foundation;
 
 namespace FancyZonesEditor
 {
-    public class Overlay
+    public class Overlay : IDisposable
     {
         private readonly LayoutBackup _layoutBackup = new LayoutBackup();
 
@@ -22,8 +22,11 @@ namespace FancyZonesEditor
         private LayoutPreview _layoutPreview;
         private UserControl _editorLayout;
         private EditorWindow _editorWindow;
+        private GridEditorWindow _gridEditorWindow;
+        private CanvasEditorWindow _canvasEditorWindow;
         private object _dataContext;
         private int _currentDesktop;
+        private bool _isDisposed;
 
         public Overlay()
         {
@@ -112,6 +115,9 @@ namespace FancyZonesEditor
                         return;
                     }
 
+                    // Detach the shared preview from the old monitor before CurrentLayoutWindow
+                    // starts resolving to the new one. A WinUI element cannot have two parents.
+                    CloseLayout();
                     _currentDesktop = value;
 
                     MainWindowSettingsModel settings = ((App)Application.Current).MainWindowSettings;
@@ -149,13 +155,10 @@ namespace FancyZonesEditor
                 return;
             }
 
-            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
-            if (_layoutPreview != null)
-            {
-                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
-            }
+            SuspendLayoutPreview();
 
-            _layoutPreview = new LayoutPreview
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            _layoutPreview ??= new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
@@ -180,6 +183,7 @@ namespace FancyZonesEditor
 
             if (_layoutPreview != null)
             {
+                _layoutPreview.AttachModel(CurrentDataContext as LayoutModel);
                 _layoutPreview.UpdatePreview();
             }
 
@@ -201,38 +205,44 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            _layoutPreview = null;
+            // Context-menu and new-layout paths enter the zone editor without first opening the
+            // properties dialog. Ensure every editor session has a matching cancellation backup,
+            // while preserving the earlier backup when editing continues from that dialog.
+            if (!_layoutBackup.Matches(model))
+            {
+                _layoutBackup.Backup(model);
+            }
+
+            SuspendLayoutPreview();
+
             if (model is GridLayoutModel grid)
             {
                 _editorLayout = new GridEditor(grid);
-                _editorWindow = new GridEditorWindow(grid);
+                _gridEditorWindow ??= new GridEditorWindow(grid);
+                _editorWindow = _gridEditorWindow;
             }
             else if (model is CanvasLayoutModel canvas)
             {
                 _editorLayout = new CanvasEditor(canvas);
-                _editorWindow = new CanvasEditorWindow(canvas);
+                _canvasEditorWindow ??= new CanvasEditorWindow(canvas);
+                _editorWindow = _canvasEditorWindow;
             }
 
             CurrentLayoutWindow.OverlayContent = _editorLayout;
 
-            _editorWindow.SetOwner(Monitors[CurrentDesktop].Window.Hwnd);
-            _editorWindow.Activate();
+            _editorWindow.PrepareForEditing(model, Monitors[CurrentDesktop].Window.Hwnd);
         }
 
         public void CloseEditor()
         {
             Logger.LogTrace();
 
-            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
-
             _editorLayout = null;
 
-            if (_layoutPreview != null)
-            {
-                mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
-            }
+            SuspendLayoutPreview();
 
-            _layoutPreview = new LayoutPreview
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            _layoutPreview ??= new LayoutPreview
             {
                 IsActualSize = true,
                 Opacity = 1,
@@ -241,8 +251,36 @@ namespace FancyZonesEditor
             mainWindowSettings.PropertyChanged += _layoutPreview.ZoneSettings_PropertyChanged;
 
             CurrentLayoutWindow.OverlayContent = _layoutPreview;
+            _layoutPreview.AttachModel(CurrentDataContext as LayoutModel);
+            _layoutPreview.UpdatePreview();
 
             OpenMainWindow();
+        }
+
+        private void SuspendLayoutPreview()
+        {
+            if (_layoutPreview == null)
+            {
+                return;
+            }
+
+            var mainWindowSettings = ((App)Application.Current).MainWindowSettings;
+            mainWindowSettings.PropertyChanged -= _layoutPreview.ZoneSettings_PropertyChanged;
+            _layoutPreview.DetachModel();
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+            SuspendLayoutPreview();
+            _layoutBackup.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         public void FocusEditor()
@@ -280,14 +318,6 @@ namespace FancyZonesEditor
             }
 
             _layoutBackup.Clear();
-        }
-
-        public void CloseLayoutWindow()
-        {
-            for (int i = 0; i < DesktopsCount; i++)
-            {
-                Monitors[i].Window.Close();
-            }
         }
 
         public double ScaleCoordinateWithCurrentMonitorDpi(double coordinate)
@@ -342,8 +372,6 @@ namespace FancyZonesEditor
 
         private void Update()
         {
-            CloseLayout();
-
             if (_mainWindow != null)
             {
                 _mainWindow.Update();

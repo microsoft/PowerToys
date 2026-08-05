@@ -73,14 +73,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             },
         };
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -169,8 +168,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
@@ -191,7 +188,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
+        [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromContextMenu")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyTemplate_FromContextMenu()
         {

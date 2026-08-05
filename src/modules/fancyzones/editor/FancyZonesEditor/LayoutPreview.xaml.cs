@@ -46,6 +46,21 @@ namespace FancyZonesEditor
             RenderPreview();
         }
 
+        /// <summary>
+        /// Detaches the preview from the layout model before the preview leaves the overlay tree.
+        /// Removing a WinUI element from its parent does not guarantee a DataContext change, so the
+        /// model subscription must be released explicitly.
+        /// </summary>
+        internal void DetachModel()
+        {
+            SetModel(null);
+        }
+
+        internal void AttachModel(LayoutModel model)
+        {
+            SetModel(model);
+        }
+
         public void ZoneSettings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName == PropertyZoneCountID)
@@ -69,17 +84,7 @@ namespace FancyZonesEditor
 
         private void LayoutPreview_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (_model != null)
-            {
-                _model.PropertyChanged -= LayoutModel_PropertyChanged;
-            }
-
-            _model = args.NewValue as LayoutModel;
-            if (_model != null)
-            {
-                _model.PropertyChanged += LayoutModel_PropertyChanged;
-                RenderPreview();
-            }
+            SetModel(args.NewValue as LayoutModel);
         }
 
         private void LayoutModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -89,7 +94,7 @@ namespace FancyZonesEditor
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            _model = DataContext as LayoutModel;
+            SetModel(DataContext as LayoutModel);
 
             if (_model != null)
             {
@@ -99,16 +104,37 @@ namespace FancyZonesEditor
             RenderPreview();
         }
 
-        private void RenderPreview()
+        private void SetModel(LayoutModel model)
         {
-            if (_model == null)
+            if (ReferenceEquals(_model, model))
             {
                 return;
             }
 
+            if (_model != null)
+            {
+                _model.PropertyChanged -= LayoutModel_PropertyChanged;
+            }
+
+            _model = model;
+            if (_model != null)
+            {
+                _model.PropertyChanged += LayoutModel_PropertyChanged;
+            }
+
+            RenderPreview();
+        }
+
+        private void RenderPreview()
+        {
             Body.Children.Clear();
             Body.RowDefinitions.Clear();
             Body.ColumnDefinitions.Clear();
+
+            if (_model == null)
+            {
+                return;
+            }
 
             if (_model is GridLayoutModel gridModel)
             {
@@ -274,7 +300,7 @@ namespace FancyZonesEditor
         {
             var screenWorkArea = App.Overlay.WorkArea;
 
-            var renderLayout = (CanvasLayoutModel)canvas.Clone();
+            using var renderLayout = (CanvasLayoutModel)canvas.Clone();
             renderLayout.ScaleLayout(workAreaWidth: screenWorkArea.Width, workAreaHeight: screenWorkArea.Height);
 
             Viewbox viewbox = new Viewbox

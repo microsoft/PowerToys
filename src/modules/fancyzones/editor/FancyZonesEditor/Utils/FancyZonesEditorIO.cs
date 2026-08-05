@@ -49,6 +49,11 @@ namespace FancyZonesEditor.Utils
                 // Span zones across monitors
                 App.Overlay.SpanZonesAcrossMonitors = editorParams.SpanZonesAcrossMonitors;
 
+                if (editorParams.Monitors.Count == 0)
+                {
+                    return new ParsingResult(false, ResourceLoaderInstance.GetString("Error_Parsing_Editor_Parameters_Message"));
+                }
+
                 if (!App.Overlay.SpanZonesAcrossMonitors)
                 {
                     string targetMonitorId = string.Empty;

@@ -6,9 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
+using FancyZonesEditor.Helpers;
 using FancyZonesEditor.Models;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
@@ -69,6 +72,23 @@ namespace FancyZonesEditor
             Focus(FocusState.Programmatic);
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new CanvasZoneAutomationPeer(this);
+        }
+
+        private sealed partial class CanvasZoneAutomationPeer : FrameworkElementAutomationPeer
+        {
+            public CanvasZoneAutomationPeer(CanvasZone owner)
+                : base(owner)
+            {
+            }
+
+            protected override string GetClassNameCore() => nameof(CanvasZone);
+
+            protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
+        }
+
         private static bool IsKeyDown(VirtualKey key)
         {
             return InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
@@ -83,6 +103,13 @@ namespace FancyZonesEditor
             // using current culture as this is end user facing
             WidthLabel.Text = Width.ToString(CultureInfo.CurrentCulture);
             HeightLabel.Text = Height.ToString(CultureInfo.CurrentCulture);
+            AutomationProperties.SetName(
+                this,
+#pragma warning disable SA1118 // Parameter should not span multiple lines
+                ResourceLoaderInstance.GetString("Zone_Name") + " " + (ZoneIndex + 1).ToString(CultureInfo.CurrentCulture) + ". " +
+                ResourceLoaderInstance.GetString("Width_Name") + ": " + WidthLabel.Text + ", " +
+                ResourceLoaderInstance.GetString("Height_Name") + ": " + HeightLabel.Text);
+#pragma warning restore SA1118 // Parameter should not span multiple lines
         }
 
         // WinUI has no Style.Triggers, so the focused chrome is applied directly.

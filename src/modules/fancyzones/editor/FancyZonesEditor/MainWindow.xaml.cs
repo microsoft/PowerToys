@@ -47,6 +47,7 @@ namespace FancyZonesEditor
         private readonly MonitorViewModel _monitorViewModel = new MonitorViewModel();
 
         private ContentDialog _openedDialog;
+        private LayoutModel _editingDialogModel;
         private bool _haveTriedToGetFocusAlready;
         private bool _isLoaded;
 
@@ -250,6 +251,18 @@ namespace FancyZonesEditor
         // so a handler on the window's root grid never sees these keys.
         private void Dialog_KeyDown(object sender, KeyRoutedEventArgs e)
         {
+            if (e.Key == VirtualKey.Escape && ReferenceEquals(sender, EditLayoutDialog))
+            {
+                if (FinishDialogEditing(restore: true))
+                {
+                    Select(_settings.AppliedModel);
+                }
+
+                EditLayoutDialog.Hide();
+                e.Handled = true;
+                return;
+            }
+
             if (e.Key == VirtualKey.Enter && e.OriginalSource is RadioButton source && source.IsChecked != true)
             {
                 source.IsChecked = true;
@@ -266,6 +279,11 @@ namespace FancyZonesEditor
         {
             if (_openedDialog != null)
             {
+                if (ReferenceEquals(_openedDialog, EditLayoutDialog) && FinishDialogEditing(restore: true))
+                {
+                    Select(_settings.AppliedModel);
+                }
+
                 _openedDialog.Hide();
             }
             else
@@ -329,15 +347,24 @@ namespace FancyZonesEditor
             Logger.LogTrace();
 
             var dataContext = ((FrameworkElement)sender).DataContext;
-            EditLayoutDialog.Hide();
-
             if (dataContext is not LayoutModel model)
             {
                 return;
             }
 
-            // make a copy
+            // Clone the values currently shown in the dialog, then restore the source layout.
+            // "Duplicate" creates a new layout; it must not implicitly commit unsaved source edits.
             model = model.Clone();
+
+            if (FinishDialogEditing(restore: true))
+            {
+                Select(_settings.AppliedModel);
+            }
+
+            if (ReferenceEquals(_openedDialog, EditLayoutDialog))
+            {
+                EditLayoutDialog.Hide();
+            }
 
             string name = model.Name;
             var index = name.LastIndexOf('(');
@@ -402,15 +429,52 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            // Serialization and overlay teardown live in App.Shutdown so that every exit path -
-            // this one, the FZE exit event and the runner exiting - persists pending edits.
-            ((App)Application.Current).Shutdown();
+            var app = (App)Application.Current;
+            if (app.IsShuttingDown)
+            {
+                return;
+            }
+
+            // Let this picker finish closing, but do not tear down the remaining overlay windows
+            // while WinUI is still unwinding the native close callback. Re-entering
+            // Application.Exit here can leave an input or WindowMessageMonitor callback using
+            // XAML objects that have already been destroyed.
+            if (!DispatcherQueue.TryEnqueue(app.Shutdown))
+            {
+                // The queue is already unavailable. Preserve settings synchronously, then let the
+                // OS reclaim the UI rather than re-entering WinUI teardown on this callback stack.
+                app.PersistSettings();
+                Environment.Exit(0);
+            }
+        }
+
+        private bool FinishDialogEditing(bool restore)
+        {
+            LayoutModel model = _editingDialogModel;
+            if (model == null)
+            {
+                return false;
+            }
+
+            _editingDialogModel = null;
+            App.Overlay.EndEditing(restore ? model : null);
+            return true;
         }
 
         private void DeleteLayout_Click(object sender, RoutedEventArgs e)
         {
             Logger.LogTrace();
-            EditLayoutDialog.Hide();
+
+            if (FinishDialogEditing(restore: true))
+            {
+                Select(_settings.AppliedModel);
+            }
+
+            if (ReferenceEquals(_openedDialog, EditLayoutDialog))
+            {
+                EditLayoutDialog.Hide();
+            }
+
             DeleteLayout((FrameworkElement)sender);
         }
 
@@ -433,9 +497,10 @@ namespace FancyZonesEditor
             Select(model);
 
             App.Overlay.StartEditing(_settings.SelectedModel);
+            _editingDialogModel = model;
 
             EditLayoutDialogTitle.Text = string.Format(CultureInfo.CurrentCulture, EditTemplate, model.Name);
-            EditLayoutDialogBody.DataContext = model;
+            EditLayoutDialog.DataContext = model;
             UpdateEditLayoutDialogVisibility(model);
 
             EditLayoutDialog.XamlRoot = RootGrid.XamlRoot;
@@ -473,10 +538,27 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
             var dataContext = ((FrameworkElement)sender).DataContext;
-            Select((LayoutModel)dataContext);
-            EditLayoutDialog.Hide();
+            if (dataContext is not LayoutModel model)
+            {
+                return;
+            }
+
+            Select(model);
+
+            // Transfer the properties-dialog backup into the zone editor. Direct context-menu
+            // entry has no dialog backup, so Overlay.OpenEditor creates one for that path.
+            if (ReferenceEquals(_editingDialogModel, model))
+            {
+                _editingDialogModel = null;
+            }
+
+            if (ReferenceEquals(_openedDialog, EditLayoutDialog))
+            {
+                EditLayoutDialog.Hide();
+            }
+
             ConcealWindow();
-            App.Overlay.OpenEditor(_settings.SelectedModel);
+            App.Overlay.OpenEditor(model);
         }
 
         private void MonitorScrollViewer_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -523,7 +605,7 @@ namespace FancyZonesEditor
         // EditLayout: Cancel changes
         private void EditLayoutDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
-            App.Overlay.EndEditing(_settings.SelectedModel);
+            FinishDialogEditing(restore: true);
             Select(_settings.AppliedModel);
         }
 
@@ -532,7 +614,7 @@ namespace FancyZonesEditor
         {
             Logger.LogTrace();
 
-            App.Overlay.EndEditing(null);
+            FinishDialogEditing(restore: false);
             LayoutModel model = _settings.SelectedModel;
 
             // update current settings
@@ -603,6 +685,11 @@ namespace FancyZonesEditor
 
         private void Dialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
+            if (ReferenceEquals(sender, EditLayoutDialog) && FinishDialogEditing(restore: true))
+            {
+                Select(_settings.AppliedModel);
+            }
+
             _openedDialog = null;
         }
 
@@ -615,6 +702,14 @@ namespace FancyZonesEditor
         private void Monitor_ItemClick(object sender, ItemClickEventArgs e)
         {
             _monitorViewModel.SelectCommand.Execute(e.ClickedItem as MonitorInfoModel);
+        }
+
+        private void Monitor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                _monitorViewModel.SelectCommand.Execute(e.AddedItems[0] as MonitorInfoModel);
+            }
         }
 
         /// <summary>

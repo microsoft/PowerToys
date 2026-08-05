@@ -8,6 +8,7 @@ using System.Globalization;
 using FancyZonesEditor.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -74,6 +75,23 @@ namespace FancyZonesEditor
             _snapY = snapY;
             _canSplit = canSplit;
             _zone = zone;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new GridZoneAutomationPeer(this);
+        }
+
+        private sealed partial class GridZoneAutomationPeer : FrameworkElementAutomationPeer
+        {
+            public GridZoneAutomationPeer(GridZone owner)
+                : base(owner)
+            {
+            }
+
+            protected override string GetClassNameCore() => nameof(GridZone);
+
+            protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Custom;
         }
 
         public bool IsSelected

@@ -15,8 +15,10 @@ namespace FancyZonesEditor.Models
 {
     // Base LayoutModel
     //  Manages common properties and base persistence
-    public abstract class LayoutModel : INotifyPropertyChanged
+    public abstract class LayoutModel : INotifyPropertyChanged, IDisposable
     {
+        private bool _isDisposed;
+
         protected LayoutModel()
         {
             _guid = Guid.NewGuid();
@@ -392,6 +394,8 @@ namespace FancyZonesEditor.Models
             {
                 customModels.RemoveAt(i);
             }
+
+            Dispose();
         }
 
         public void RestoreTo(LayoutModel layout)
@@ -409,6 +413,13 @@ namespace FancyZonesEditor.Models
             {
                 if (customModels[i].Uuid == model.Uuid)
                 {
+                    if (!ReferenceEquals(customModels[i], model))
+                    {
+                        customModels[i].Dispose();
+                        MainWindowSettingsModel.LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
+                        MainWindowSettingsModel.LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
+                    }
+
                     customModels[i] = model;
                     updated = true;
                 }
@@ -417,6 +428,8 @@ namespace FancyZonesEditor.Models
             if (!updated)
             {
                 customModels.Add(model);
+                MainWindowSettingsModel.LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
+                MainWindowSettingsModel.LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
             }
         }
 
@@ -437,14 +450,18 @@ namespace FancyZonesEditor.Models
 
         public void LayoutHotkeys_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
+            string key = MainWindowSettingsModel.LayoutHotkeys.Key(Uuid);
+            int quickKey = int.TryParse(key, NumberStyles.Integer, CultureInfo.CurrentCulture, out int parsedKey) ? parsedKey : -1;
+            if (_quickKey != quickKey)
             {
-                if (pair.Value == Uuid)
-                {
-                    QuickKey = pair.Key.ToString();
-                    break;
-                }
+                // This callback mirrors the global mapping into the view model. Do not use the
+                // public setter here: it writes back to the mapping and can clear a key that was
+                // just reassigned to another layout.
+                _quickKey = quickKey;
+                FirePropertyChanged(nameof(QuickKey));
             }
+
+            FirePropertyChanged(nameof(QuickKeysAvailable));
         }
 
         public void DefaultLayouts_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -453,6 +470,22 @@ namespace FancyZonesEditor.Models
             FirePropertyChanged(nameof(IsVerticalDefault));
             FirePropertyChanged(nameof(CanBeSetAsHorizontalDefault));
             FirePropertyChanged(nameof(CanBeSetAsVerticalDefault));
+        }
+
+        /// <summary>
+        /// Releases subscriptions held by the static settings models.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+            MainWindowSettingsModel.DefaultLayouts.PropertyChanged -= DefaultLayouts_PropertyChanged;
+            MainWindowSettingsModel.LayoutHotkeys.PropertyChanged -= LayoutHotkeys_PropertyChanged;
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -57,6 +57,7 @@ namespace FancyZonesEditor.Utils
 
         private const int GWL_EX_STYLE = -20;
         private const int GWLP_HWNDPARENT = -8;
+        private const int WS_EX_TRANSPARENT = 0x00000020;
         private const int WS_EX_APPWINDOW = 0x00040000;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
         private const uint SWP_NOSIZE = 0x0001;
@@ -209,6 +210,11 @@ namespace FancyZonesEditor.Utils
 
             if (cloaked)
             {
+                // Cloaking removes the window from composition, but not from hit testing. The
+                // concealed picker overlaps the full-screen zone editor, so leave mouse input to
+                // the editor while the picker stays shown for XAML rendering.
+                SetWindowClickThrough(hwnd, true);
+
                 // Bring the HWND back so XAML keeps painting it; it stays invisible because
                 // it is still cloaked. If cloaking failed, leave it plainly hidden instead.
                 ShowWindow(hwnd, SW_SHOWNA);
@@ -227,7 +233,25 @@ namespace FancyZonesEditor.Utils
             }
 
             int cloak = 0;
-            _ = DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, ref cloak, sizeof(int));
+            if (DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, ref cloak, sizeof(int)) == 0)
+            {
+                // The picker is interactive again once it is visible. If uncloaking fails, keep
+                // the invisible HWND click-through so it cannot become an input blocker.
+                SetWindowClickThrough(hwnd, false);
+            }
+        }
+
+        private static void SetWindowClickThrough(IntPtr hwnd, bool enabled)
+        {
+            nint exStyle = GetWindowLongPtr(hwnd, GWL_EX_STYLE);
+            nint updatedStyle = enabled
+                ? exStyle | WS_EX_TRANSPARENT
+                : exStyle & ~(nint)WS_EX_TRANSPARENT;
+
+            if (updatedStyle != exStyle)
+            {
+                _ = SetWindowLongPtr(hwnd, GWL_EX_STYLE, updatedStyle);
+            }
         }
     }
 }

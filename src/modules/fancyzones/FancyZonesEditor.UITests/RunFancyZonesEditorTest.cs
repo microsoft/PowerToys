@@ -22,8 +22,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
 
@@ -31,7 +30,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<EditorParameters.NativeMonitorDataWrapper>
                 {
@@ -163,8 +162,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod]
@@ -197,7 +194,8 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void OpenEditLayoutDialog_ByContextMenu_CustomLayout() // verify the edit layout dialog is opened
         {
             string layoutName = "Custom layout";
-            Session.Find<Button>(layoutName).Click(true);
+            var customLayoutCard = FancyZonesEditorHelper.FindVisibleLayout(Session, layoutName, isCustomLayout: true);
+            customLayoutCard.Click(true);
             var menu = Session.Find<Element>(By.ClassName(ClassName.ContextMenu));
             menu.Find<Element>(FancyZonesEditorHelper.ElementName.Edit).Click();
 
@@ -213,7 +211,7 @@ namespace Microsoft.FancyZonesEditor.UITests
         }
 
         [TestMethod]
-        public void ClickMonitor()
+        public void SelectMonitorWithKeyboard()
         {
             Assert.IsNotNull(Session.Find<Element>("Monitor 1"));
             Assert.IsNotNull(Session.Find<Element>("Monitor 2"));
@@ -222,9 +220,9 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.IsTrue(Session.Find<Element>("Monitor 1").Selected);
             Assert.IsFalse(Session.Find<Element>("Monitor 2").Selected);
 
-            Session.Find<Element>("Monitor 2").Click();
+            Session.Find<Element>("Monitor 2").SendKeys(OpenQA.Selenium.Keys.Space);
 
-            // verify that the monitor 2 is selected after click
+            // verify that monitor 2 is selected after keyboard activation
             Assert.IsFalse(Session.Find<Element>("Monitor 1").Selected);
             Assert.IsTrue(Session.Find<Element>("Monitor 2").Selected);
         }

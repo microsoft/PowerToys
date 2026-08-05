@@ -35,7 +35,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -89,7 +89,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -165,7 +165,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = true,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -203,7 +203,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -330,7 +330,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -415,7 +415,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -494,7 +494,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -564,7 +564,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -665,7 +665,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -736,7 +736,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {

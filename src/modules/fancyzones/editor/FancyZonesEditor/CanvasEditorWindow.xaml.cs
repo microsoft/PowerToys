@@ -43,6 +43,20 @@ namespace FancyZonesEditor
             NewZoneButton.Focus(FocusState.Programmatic);
         }
 
+        /// <inheritdoc />
+        public override void PrepareForEditing(LayoutModel editingLayout, System.IntPtr ownerHwnd)
+        {
+            NewZoneButton.DataContext = editingLayout;
+            base.PrepareForEditing(editingLayout, ownerHwnd);
+            NewZoneButton.Focus(FocusState.Programmatic);
+        }
+
+        /// <inheritdoc />
+        protected override void OnEditingFinished()
+        {
+            NewZoneButton.DataContext = null;
+        }
+
         private void OnAddZone(object sender, RoutedEventArgs e)
         {
             Logger.LogInfo("Add zone");

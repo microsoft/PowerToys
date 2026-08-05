@@ -547,15 +547,25 @@ void FancyZones::ToggleEditor() noexcept
 
     if (m_terminateEditorEvent)
     {
-        SetEvent(m_terminateEditorEvent.get());
+        if (!SetEvent(m_terminateEditorEvent.get()))
+        {
+            Logger::error(L"Failed to signal the FancyZones editor exit event. {}", get_last_error_or_default(GetLastError()));
+        }
+
         return;
     }
 
     m_terminateEditorEvent.reset(CreateEvent(nullptr, true, false, nullptr));
+    if (!m_terminateEditorEvent)
+    {
+        Logger::error(L"Failed to create the FancyZones editor exit event. {}", get_last_error_or_default(GetLastError()));
+        return;
+    }
 
     if (!EditorParameters::Save(m_workAreaConfiguration, m_dpiUnawareThread))
     {
         Logger::error(L"Failed to save editor startup parameters");
+        m_terminateEditorEvent.reset();
         return;
     }
 
@@ -564,7 +574,21 @@ void FancyZones::ToggleEditor() noexcept
     sei.lpFile = NonLocalizable::FZEditorExecutablePath;
     sei.lpParameters = L"";
     sei.nShow = SW_SHOWDEFAULT;
-    ShellExecuteEx(&sei);
+
+    if (!ShellExecuteEx(&sei) || !sei.hProcess)
+    {
+        const auto error = GetLastError();
+        if (sei.hProcess)
+        {
+            CloseHandle(sei.hProcess);
+        }
+
+        Logger::error(L"Failed to launch the FancyZones editor. {}", get_last_error_or_default(error));
+        Trace::FancyZones::EditorLaunched(0);
+        m_terminateEditorEvent.reset();
+        return;
+    }
+
     Trace::FancyZones::EditorLaunched(1);
 
     // Launch the editor on a background thread
@@ -687,7 +711,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_EDITOR)
         {
             // Clean up the event either way
-            m_terminateEditorEvent.release();
+            m_terminateEditorEvent.reset();
         }
         else if (message == WM_PRIV_MOVESIZESTART)
         {

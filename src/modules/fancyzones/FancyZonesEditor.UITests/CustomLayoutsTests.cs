@@ -101,8 +101,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             },
         };
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             CustomLayouts customLayouts = new CustomLayouts();
@@ -111,7 +110,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -205,8 +204,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod]
@@ -251,15 +248,37 @@ namespace Microsoft.FancyZonesEditor.UITests
             var oldName = Layouts.CustomLayouts[0].Name;
 
             // rename the layout
-            Session.Find<Element>(oldName).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, oldName, ElementName.Edit);
             var input = Session.Find<TextBox>(PowerToys.UITest.By.ClassName(ClassName.TextBox));
             Assert.IsNotNull(input);
             input.SetText(newName, true);
 
             // verify new name
             Session.Find<Button>(ElementName.Cancel).Click();
-            Assert.IsTrue(Session.FindAll<Element>(oldName).Count == 0);
-            Assert.IsTrue(Session.FindAll<Element>(newName).Count != 0);
+            Assert.IsTrue(Session.FindAll<Element>(oldName).Count != 0);
+            Assert.IsTrue(Session.FindAll<Element>(newName).Count == 0);
+
+            var customLayouts = new CustomLayouts();
+            var actualData = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(customLayouts.Serialize(Layouts), customLayouts.Serialize(actualData));
+        }
+
+        [TestMethod("FancyZonesEditor.Regression.RenameEscapeCancel")]
+        public void Rename_Escape_Cancel()
+        {
+            string newName = "New layout name";
+            var oldName = Layouts.CustomLayouts[0].Name;
+
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, oldName, ElementName.Edit);
+            Session.Find<TextBox>(PowerToys.UITest.By.ClassName(ClassName.TextBox)).SetText(newName, true);
+            Session.SendKeySequence(Key.Esc);
+
+            Assert.IsNotNull(FancyZonesEditorHelper.FindVisibleLayout(Session, oldName, isCustomLayout: true));
+            Assert.IsTrue(Session.FindAll<Element>(newName).Count == 0);
+
+            var customLayouts = new CustomLayouts();
+            var actualData = customLayouts.Read(customLayouts.File);
+            Assert.AreEqual(customLayouts.Serialize(Layouts), customLayouts.Serialize(actualData));
         }
 
         [TestMethod]

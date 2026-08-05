@@ -149,6 +149,10 @@ namespace FancyZonesEditor
                 foreach (LayoutModel model in _customModels)
                 {
                     LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
+                    if (!value.Contains(model))
+                    {
+                        model.Dispose();
+                    }
                 }
 
                 _customModels.Clear();

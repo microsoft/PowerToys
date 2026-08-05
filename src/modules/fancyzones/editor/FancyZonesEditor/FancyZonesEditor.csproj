@@ -28,6 +28,8 @@
     <ProjectPriFileName>PowerToys.FancyZonesEditor.pri</ProjectPriFileName>
   </PropertyGroup>
 
+  <!-- Keep every XAML asset under the app-specific directory so its compiled .xbf files do not
+       collide with other unpackaged WinUI apps in the shared WinUI3Apps output directory. -->
   <ItemGroup>
     <Page Remove="FancyZonesEditorXAML\App.xaml" />
   </ItemGroup>
@@ -54,7 +56,6 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="System.IO.Abstractions" />
@@ -79,7 +80,6 @@
     <ProjectReference Include="..\..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\..\..\..\common\Common.UI\Common.UI.csproj" />
     <ProjectReference Include="..\..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
   </ItemGroup>

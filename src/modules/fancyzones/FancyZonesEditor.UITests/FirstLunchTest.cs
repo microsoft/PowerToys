@@ -28,14 +28,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -138,7 +137,6 @@ namespace Microsoft.FancyZonesEditor.UITests
             FancyZonesEditorHelper.Files.LayoutTemplatesIOHelper.WriteData(layoutTemplates.Serialize(templateLayoutsListWrapper));
 
             // verify editor opens without errors
-            this.RestartScopeExe();
         }
 
         [TestMethod]

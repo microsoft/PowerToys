@@ -103,7 +103,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public static class ClassName
         {
-            public const string ContextMenu = "ContextMenu";
+            public const string ContextMenu = "MenuFlyout";
             public const string TextBox = "TextBox";
             public const string Popup = "Popup";
 
@@ -116,8 +116,42 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
 
         public static void ClickContextMenuItem(Session session, string layoutName, string menuItem)
         {
-            session.Find<Element>(layoutName).Click(true);
+            bool isCustomLayout = menuItem != ElementName.CreateCustomLayout;
+            FindVisibleLayout(session, layoutName, isCustomLayout).Click(true);
             session.Find<Element>(By.ClassName(ClassName.ContextMenu)).Find<Element>(menuItem).Click();
+        }
+
+        public static Element FindVisibleLayout(Session session, string layoutName, bool isCustomLayout)
+        {
+            var scrollViewer = session.Find<Element>(By.AccessibilityId("LayoutsScrollViewer"));
+            scrollViewer.SendKeys(isCustomLayout ? OpenQA.Selenium.Keys.End : OpenQA.Selenium.Keys.Home);
+            return session.Find<Element>(layoutName);
+        }
+
+        public static Element FindPopupContaining(Session session, string itemName)
+        {
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+                var popups = session.FindAll<Element>(By.ClassName(ClassName.Popup), timeoutMS: 500);
+                for (int index = popups.Count - 1; index >= 0; index--)
+                {
+                    try
+                    {
+                        if (popups[index].Displayed && popups[index].FindAll<Element>(itemName, timeoutMS: 100).Count > 0)
+                        {
+                            return popups[index];
+                        }
+                    }
+                    catch (OpenQA.Selenium.WebDriverException)
+                    {
+                    }
+                }
+
+                System.Threading.Thread.Sleep(100);
+            }
+
+            Assert.Fail($"A visible popup containing '{itemName}' was not found.");
+            return null!;
         }
 
         public static Custom? GetZone(Session session, int zoneNumber, string zoneClassName)
@@ -185,7 +219,7 @@ namespace Microsoft.FancyZonesEditor.UnitTests.Utils
             EditorParameters editorParameters = new EditorParameters();
             EditorParameters.ParamsWrapper parameters = new EditorParameters.ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<EditorParameters.NativeMonitorDataWrapper>
                 {

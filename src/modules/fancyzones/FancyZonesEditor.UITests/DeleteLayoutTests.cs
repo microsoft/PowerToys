@@ -115,7 +115,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private static readonly ParamsWrapper Parameters = new ParamsWrapper
         {
-            ProcessId = 1,
+            ProcessId = 0,
             SpanZonesAcrossMonitors = false,
             Monitors = new List<NativeMonitorDataWrapper>
             {
@@ -138,8 +138,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             },
         };
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
@@ -207,12 +206,31 @@ namespace Microsoft.FancyZonesEditor.UITests
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             AppliedLayouts.AppliedLayoutsListWrapper appliedLayoutsWrapper = new AppliedLayouts.AppliedLayoutsListWrapper
             {
-                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>
+                {
+                    new AppliedLayouts.AppliedLayoutWrapper
+                    {
+                        Device = new AppliedLayouts.AppliedLayoutWrapper.DeviceIdWrapper
+                        {
+                            Monitor = "monitor-1",
+                            MonitorInstance = "instance-id-1",
+                            SerialNumber = "serial-number-1",
+                            MonitorNumber = 1,
+                            VirtualDesktop = "{FF34D993-73F3-4B8C-AA03-73730A01D6A8}",
+                        },
+                        AppliedLayout = new AppliedLayouts.AppliedLayoutWrapper.LayoutWrapper
+                        {
+                            Uuid = CustomLayouts.CustomLayouts[0].Uuid,
+                            Type = LayoutType.Custom.TypeToString(),
+                            ZoneCount = 4,
+                            ShowSpacing = false,
+                            Spacing = 26,
+                            SensitivityRadius = 30,
+                        },
+                    },
+                },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
-            Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Click();
         }
 
         [TestMethod("FancyZonesEditor.Basic.DeleteNotAppliedLayout")]
@@ -220,8 +238,10 @@ namespace Microsoft.FancyZonesEditor.UITests
         public void DeleteNotAppliedLayout()
         {
             var deletedLayout = CustomLayouts.CustomLayouts[1].Name;
-            Session.Find<Element>(deletedLayout).Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
-            Session.Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
+            FancyZonesEditorHelper.FindVisibleLayout(Session, deletedLayout, isCustomLayout: true)
+                .Find<Button>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.EditLayoutButton))
+                .Click();
+            Session.Find<Element>(PowerToys.UITest.By.AccessibilityId(AccessibilityId.DeleteLayoutButton)).Click();
             Session.SendKeySequence(Key.Tab, Key.Enter);
 
             // verify the layout is removed

@@ -77,14 +77,13 @@ namespace Microsoft.FancyZonesEditor.UITests
         {
         }
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -188,8 +187,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper> { },
             };
             FancyZonesEditorHelper.Files.LayoutHotkeysIOHelper.WriteData(layoutHotkeys.Serialize(layoutHotkeysWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod("FancyZonesEditor.Basic.ZoneNumber_Cancel")]

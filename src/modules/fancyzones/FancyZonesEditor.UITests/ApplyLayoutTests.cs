@@ -24,7 +24,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
         private static readonly EditorParameters.ParamsWrapper Parameters = new EditorParameters.ParamsWrapper
         {
-            ProcessId = 1,
+            ProcessId = 0,
             SpanZonesAcrossMonitors = false,
             Monitors = new List<EditorParameters.NativeMonitorDataWrapper>
             {
@@ -131,8 +131,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             },
         };
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
@@ -191,8 +190,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod]

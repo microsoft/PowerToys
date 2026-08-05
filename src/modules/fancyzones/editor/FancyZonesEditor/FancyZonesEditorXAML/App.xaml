@@ -9,11 +9,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <!--  XamlControlsResources must come first: it supplies the default Fluent styles.  -->
                 <controls:XamlControlsResources />
-                <ResourceDictionary Source="ms-appx:///Themes/Brushes.xaml" />
-                <ResourceDictionary Source="ms-appx:///Styles/ButtonStyles.xaml" />
-                <ResourceDictionary Source="ms-appx:///Styles/GridResizerStyles.xaml" />
-                <ResourceDictionary Source="ms-appx:///Styles/GridViewStyles.xaml" />
-                <ResourceDictionary Source="ms-appx:///Styles/LayoutPreviewStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///FancyZonesEditorXAML/Themes/Brushes.xaml" />
+                <ResourceDictionary Source="ms-appx:///FancyZonesEditorXAML/Styles/ButtonStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///FancyZonesEditorXAML/Styles/GridResizerStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///FancyZonesEditorXAML/Styles/GridViewStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///FancyZonesEditorXAML/Styles/LayoutPreviewStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <Style x:Key="HeadingTextBlock" TargetType="TextBlock" />

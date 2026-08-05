@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -64,8 +65,19 @@ namespace Microsoft.PowerToys.UITest
         [TestInitialize]
         public void TestInit()
         {
-            KeyboardHelper.SendKeys(Key.Win, Key.M);
+            try
+            {
+                KeyboardHelper.SendKeys(Key.Win, Key.M);
+            }
+            catch (Win32Exception ex)
+            {
+                // SendInput can be unavailable on a disconnected/transitioning RDP desktop.
+                // Minimizing other windows is only test hygiene, so do not block app startup.
+                Console.WriteLine($"Unable to minimize other windows: {ex.Message}");
+            }
+
             CloseOtherApplications();
+            PrepareTest();
             if (IsInPipeline)
             {
                 string baseDirectory = this.TestContext.TestResultsDirectory ?? string.Empty;
@@ -103,6 +115,21 @@ namespace Microsoft.PowerToys.UITest
 
             this.sessionHelper = new SessionHelper(scope, commandLineArgs).Init();
             this.Session = new Session(this.sessionHelper.GetRoot(), this.sessionHelper.GetDriver(), scope, size);
+            OnSessionReady();
+        }
+
+        /// <summary>
+        /// Lets a test class prepare files and other launch prerequisites before the application starts.
+        /// </summary>
+        protected virtual void PrepareTest()
+        {
+        }
+
+        /// <summary>
+        /// Lets a test class interact with the application after the automation session is ready.
+        /// </summary>
+        protected virtual void OnSessionReady()
+        {
         }
 
         /// <summary>
@@ -146,8 +173,8 @@ namespace Microsoft.PowerToys.UITest
                 Dispose();
             }
 
-            this.Session.Cleanup();
-            this.sessionHelper!.Cleanup();
+            this.Session?.Cleanup();
+            this.sessionHelper?.Cleanup();
         }
 
         public void Dispose()

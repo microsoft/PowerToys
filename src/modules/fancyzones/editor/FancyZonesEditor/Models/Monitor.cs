@@ -169,6 +169,11 @@ namespace FancyZonesEditor.Models
                 (int)_virtualWorkArea.Width,
                 (int)_virtualWorkArea.Height);
 
+            // A cross-monitor DPI transition can reset the border and corner attributes even when
+            // the final rect is already correct, so restore the transparent full-bleed chrome after
+            // every placement rather than only when the AppWindow later reports geometry drift.
+            Window.ReapplyChrome();
+
             // Remember the physical rect that placement produced so drift can be detected.
             _expectedRect = new RectInt32(
                 Window.AppWindow.Position.X,

@@ -78,14 +78,6 @@ namespace FancyZonesEditor
             }
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            Size returnSize = base.ArrangeOverride(finalSize);
-            SetupUI();
-
-            return returnSize;
-        }
-
         private static bool IsCtrlKeyDown()
         {
             return InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);

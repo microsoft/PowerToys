@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium.Windows;
 
 [assembly: InternalsVisibleTo("Element")]
@@ -20,40 +21,55 @@ namespace Microsoft.PowerToys.UITest
         public static ReadOnlyCollection<T>? FindAll<T, TW>(Func<IReadOnlyCollection<TW>> findElementsFunc, WindowsDriver<WindowsElement>? driver, int timeoutMS)
             where T : Element, new()
         {
-            var items = FindElementsWithRetry(findElementsFunc, timeoutMS);
-            var res = items.Select(item =>
-            {
-                var element = item as WindowsElement;
-                return NewElement<T>(element, driver, timeoutMS);
-            }).Where(item => item.IsMatchingTarget()).ToList();
-
-            return new ReadOnlyCollection<T>(res);
-        }
-
-        private static ReadOnlyCollection<TW> FindElementsWithRetry<TW>(Func<IReadOnlyCollection<TW>> findElementsFunc, int timeoutMS)
-        {
             var timeout = TimeSpan.FromMilliseconds(timeoutMS);
-            var retryIntervalMS = TimeSpan.FromMilliseconds(500);
+            var retryInterval = TimeSpan.FromMilliseconds(500);
             DateTime startTime = DateTime.Now;
 
             while (DateTime.Now - startTime < timeout)
             {
+                IReadOnlyCollection<TW> items;
                 try
                 {
-                    var items = findElementsFunc();
-                    if (items.Count > 0)
-                    {
-                        return new ReadOnlyCollection<TW>((IList<TW>)items);
-                    }
-
-                    Task.Delay(retryIntervalMS).Wait();
+                    items = findElementsFunc();
                 }
                 catch (Exception)
                 {
+                    Task.Delay(retryInterval).Wait();
+                    continue;
                 }
+
+                var result = new List<T>();
+                foreach (TW item in items)
+                {
+                    try
+                    {
+                        T element = NewElement<T>(item as WindowsElement, driver, timeoutMS);
+                        if (element.IsMatchingTarget())
+                        {
+                            result.Add(element);
+                        }
+                    }
+                    catch (WebDriverException ex) when (IsStaleElement(ex))
+                    {
+                    }
+                }
+
+                if (result.Count > 0)
+                {
+                    return new ReadOnlyCollection<T>(result);
+                }
+
+                Task.Delay(retryInterval).Wait();
             }
 
-            return new ReadOnlyCollection<TW>(new List<TW>());
+            return new ReadOnlyCollection<T>(new List<T>());
+        }
+
+        private static bool IsStaleElement(WebDriverException exception)
+        {
+            return exception is StaleElementReferenceException ||
+                   exception.Message.Contains("no longer attached to the DOM", StringComparison.OrdinalIgnoreCase) ||
+                   exception.Message.Contains("stale element", StringComparison.OrdinalIgnoreCase);
         }
 
         public static T NewElement<T>(WindowsElement? element, WindowsDriver<WindowsElement>? driver, int timeoutMS)

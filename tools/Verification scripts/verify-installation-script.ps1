@@ -509,6 +509,11 @@ function Test-CoreFiles {
         'PowerToys.PowerAccent.exe',
         'PowerToys.PowerAccentKeyboardService.dll'
     )
+
+    # Non-binary WinUI assets that are required at runtime.
+    $winUI3RequiredFiles = @(
+        'PowerToys.FancyZonesEditor.pri'
+    )
     
     # Tools signed files (in Tools subdirectory)
     $toolsSignedFiles = @(
@@ -570,6 +575,14 @@ function Test-CoreFiles {
         $exists = Test-Path $filePath
         $status = if ($exists) { 'Pass' } else { 'Warning' }
         Add-CheckResult -Category "Signed Files" -CheckName "WinUI3Apps\$file ($Scope)" -Status $status -Message "WinUI3 signed file: $filePath"
+    }
+
+    # Check required WinUI3 runtime assets.
+    Write-StatusMessage "Checking required WinUI3Apps assets..." -Level Info
+    foreach ($file in $winUI3RequiredFiles) {
+        $filePath = Join-Path $InstallPath "WinUI3Apps\$file"
+        $exists = Test-Path $filePath
+        Add-CheckResult -Category "Runtime Assets" -CheckName "WinUI3Apps\$file ($Scope)" -Status $(if ($exists) { 'Pass' } else { 'Fail' }) -Message "Required WinUI3 asset: $filePath"
     }
     
     # Check Tools signed files

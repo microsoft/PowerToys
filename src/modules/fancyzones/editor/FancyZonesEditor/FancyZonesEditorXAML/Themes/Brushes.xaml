@@ -1,6 +1,6 @@
 ﻿<!--
     FancyZones Editor palette.
-    
+
     The WPF editor shipped six separate ResourceDictionaries (Light, Dark and four
     high-contrast variants) that ControlzEx swapped at runtime. WinUI 3 resolves this
     natively: ThemeDictionaries are selected by the framework, and the single

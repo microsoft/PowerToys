@@ -15,6 +15,7 @@
     <!--  WinUI's Window is not a DependencyObject: DataContext, Resources and automation properties all live on this root Grid.  -->
     <Grid
         x:Name="RootGrid"
+        AutomationProperties.AutomationId="MainWindow1"
         AutomationProperties.Name="{helpers:StringResource Key=Fancy_Zones_Main_Editor}"
         Background="{ThemeResource PrimaryBackgroundBrush}">
         <Grid.Resources>
@@ -36,11 +37,13 @@
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
+                            AutomationProperties.AutomationId="ResolutionText"
                             FontSize="12"
                             Text="{x:Bind Dimensions}"
                             TextTrimming="CharacterEllipsis" />
                         <TextBlock
                             HorizontalAlignment="Center"
+                            AutomationProperties.AutomationId="ScalingText"
                             FontSize="12"
                             Text="{x:Bind Scaling}"
                             TextTrimming="CharacterEllipsis" />
@@ -127,6 +130,7 @@
                         Padding="0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
+                        AutomationProperties.AutomationId="EditLayoutButton"
                         AutomationProperties.HelpText="{helpers:StringResource Key=Edit}"
                         AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                         Click="EditLayout_Click"
@@ -166,6 +170,7 @@
                         ItemClick="Monitor_ItemClick"
                         ItemContainerStyle="{StaticResource MonitorItemContainerStyle}"
                         ItemTemplate="{StaticResource MonitorItemTemplate}"
+                        SelectionChanged="Monitor_SelectionChanged"
                         SelectionMode="Single"
                         TabIndex="0" />
                 </Grid>
@@ -178,7 +183,9 @@
         -->
 
         <Grid Grid.Row="1" Background="{ThemeResource PrimaryBackgroundBrush}">
-            <ScrollViewer>
+            <ScrollViewer
+                x:Name="LayoutsScrollViewer"
+                AutomationProperties.AutomationId="LayoutsScrollViewer">
                 <Grid Margin="16,16,16,32">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -293,25 +300,22 @@
                 <Thickness x:Key="ContentDialogCommandSpaceMargin">0,24,24,0</Thickness>
             </ContentDialog.Resources>
             <ContentDialog.Title>
-                <TextBlock
-                    x:Name="EditLayoutDialogTitle"
-                    MaxWidth="320"
-                    Margin="0,0,96,0"
-                    AutomationProperties.HeadingLevel="Level1"
-                    Style="{StaticResource HeadingTextBlock}"
-                    TextTrimming="CharacterEllipsis"
-                    TextWrapping="NoWrap" />
-            </ContentDialog.Title>
+                <Grid Width="320">
+                    <TextBlock
+                        x:Name="EditLayoutDialogTitle"
+                        Margin="0,0,96,0"
+                        AutomationProperties.HeadingLevel="Level1"
+                        Style="{StaticResource HeadingTextBlock}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="NoWrap" />
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <Grid x:Name="EditLayoutDialogBody" Margin="4,4,24,32">
                     <StackPanel
-                        Margin="0,-37,0,0"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
+                        VerticalAlignment="Center"
                         Orientation="Horizontal">
                         <Button
                             x:Name="DuplicateLayoutButton"
+                            AutomationProperties.AutomationId="duplicateLayoutButton"
                             AutomationProperties.Name="{helpers:StringResource Key=Duplicate}"
                             Click="DuplicateLayout_Click"
                             Style="{StaticResource IconOnlyButtonStyle}"
@@ -328,6 +332,7 @@
 
                         <Button
                             x:Name="CreateFromTemplateLayoutButton"
+                            AutomationProperties.AutomationId="createFromTemplateLayoutButton"
                             AutomationProperties.Name="{helpers:StringResource Key=Create_Custom_From_Template}"
                             Click="DuplicateLayout_Click"
                             Style="{StaticResource IconOnlyButtonStyle}"
@@ -341,6 +346,7 @@
 
                         <Button
                             x:Name="DeleteLayoutButton"
+                            AutomationProperties.AutomationId="deleteLayoutButton"
                             AutomationProperties.Name="{helpers:StringResource Key=Delete}"
                             Click="DeleteLayout_Click"
                             Style="{StaticResource IconOnlyButtonStyle}"
@@ -353,7 +359,11 @@
                                 Text="&#xE74D;" />
                         </Button>
                     </StackPanel>
+                </Grid>
+            </ContentDialog.Title>
 
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="EditLayoutDialogBody" Margin="4,4,24,32">
                     <StackPanel>
                         <StackPanel
                             x:Name="LayoutNamePanel"
@@ -410,6 +420,7 @@
                                     x:Name="QuickKeySelectionComboBox"
                                     Width="286"
                                     Margin="12,0,0,0"
+                                    AutomationProperties.AutomationId="quickKeySelectionComboBox"
                                     AutomationProperties.HelpText="{helpers:StringResource Key=QuickKey_Description}"
                                     AutomationProperties.Name="{helpers:StringResource Key=QuickKey_Title}"
                                     ItemsSource="{Binding QuickKeysAvailable}"
@@ -432,6 +443,7 @@
                                 Padding="0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="editZoneLayoutButton"
                                 AutomationProperties.Name="{helpers:StringResource Key=Edit_zones}"
                                 Click="EditZones_Click"
                                 Content="&#xE70F;"
@@ -545,6 +557,7 @@
                                     x:Name="SpaceAroundSetting"
                                     Margin="12,0,0,0"
                                     VerticalAlignment="Center"
+                                    AutomationProperties.AutomationId="spaceAroundSetting"
                                     AutomationProperties.Name="{helpers:StringResource Key=Show_Space_Zones}"
                                     IsOn="{Binding ShowSpacing, Mode=TwoWay}"
                                     OffContent=""

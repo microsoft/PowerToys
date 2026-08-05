@@ -101,14 +101,13 @@ namespace Microsoft.FancyZonesEditor.UITests
             },
         };
 
-        [TestInitialize]
-        public void TestInitialize()
+        protected override void PrepareTest()
         {
             FancyZonesEditorHelper.Files.Restore();
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -205,8 +204,6 @@ namespace Microsoft.FancyZonesEditor.UITests
                 AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper> { },
             };
             FancyZonesEditorHelper.Files.AppliedLayoutsIOHelper.WriteData(appliedLayouts.Serialize(appliedLayoutsWrapper));
-
-            this.RestartScopeExe();
         }
 
         [TestMethod("FancyZonesEditor.Basic.OpenEditMode")]
@@ -566,7 +563,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             EditorParameters editorParameters = new EditorParameters();
             ParamsWrapper parameters = new ParamsWrapper
             {
-                ProcessId = 1,
+                ProcessId = 0,
                 SpanZonesAcrossMonitors = false,
                 Monitors = new List<NativeMonitorDataWrapper>
                 {
@@ -658,6 +655,58 @@ namespace Microsoft.FancyZonesEditor.UITests
             {
                 Assert.IsTrue(actual.CellChildMap[i].SequenceEqual(expected.CellChildMap[i]));
             }
+        }
+
+        [TestMethod("FancyZonesEditor.Regression.GridSaveThenCanvasCancel")]
+        [TestCategory("FancyZones Editor #7")]
+        public void GridSaveThenCanvasCancelDoesNotReuseBackup()
+        {
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
+
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, grid.Name, ElementName.EditZones);
+            FancyZonesEditorHelper.GetZone(Session, 1, ClassName.GridZone)?.Click();
+            Session.Find<Button>(ElementName.Save).Click();
+
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, ElementName.EditZones);
+            Session.Find<Button>(By.AccessibilityId(AccessibilityId.NewZoneButton)).Click();
+            Session.Find<Button>(ElementName.Cancel).Click();
+
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            var originalGrid = customLayouts.GridFromJsonElement(grid.Info.GetRawText());
+            var savedGrid = customLayouts.GridFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == grid.Uuid).Info.GetRawText());
+            var originalCanvas = customLayouts.CanvasFromJsonElement(canvas.Info.GetRawText());
+            var canceledCanvas = customLayouts.CanvasFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == canvas.Uuid).Info.GetRawText());
+
+            Assert.AreEqual(originalGrid.Columns + 1, savedGrid.Columns);
+            Assert.AreEqual(originalCanvas.Zones.Count, canceledCanvas.Zones.Count);
+        }
+
+        [TestMethod("FancyZonesEditor.Regression.CanvasSaveThenGridCancel")]
+        [TestCategory("FancyZones Editor #7")]
+        public void CanvasSaveThenGridCancelDoesNotReuseBackup()
+        {
+            var grid = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Grid.TypeToString());
+            var canvas = Layouts.CustomLayouts.Find(x => x.Type == CustomLayout.Canvas.TypeToString());
+
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, canvas.Name, ElementName.EditZones);
+            Session.Find<Button>(By.AccessibilityId(AccessibilityId.NewZoneButton)).Click();
+            Session.Find<Button>(ElementName.Save).Click();
+
+            FancyZonesEditorHelper.ClickContextMenuItem(Session, grid.Name, ElementName.EditZones);
+            FancyZonesEditorHelper.GetZone(Session, 1, ClassName.GridZone)?.Click();
+            Session.Find<Button>(ElementName.Cancel).Click();
+
+            var customLayouts = new CustomLayouts();
+            var data = customLayouts.Read(customLayouts.File);
+            var originalCanvas = customLayouts.CanvasFromJsonElement(canvas.Info.GetRawText());
+            var savedCanvas = customLayouts.CanvasFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == canvas.Uuid).Info.GetRawText());
+            var originalGrid = customLayouts.GridFromJsonElement(grid.Info.GetRawText());
+            var canceledGrid = customLayouts.GridFromJsonElement(data.CustomLayouts.Find(x => x.Uuid == grid.Uuid).Info.GetRawText());
+
+            Assert.AreEqual(originalCanvas.Zones.Count + 1, savedCanvas.Zones.Count);
+            Assert.AreEqual(originalGrid.Columns, canceledGrid.Columns);
         }
     }
 }
