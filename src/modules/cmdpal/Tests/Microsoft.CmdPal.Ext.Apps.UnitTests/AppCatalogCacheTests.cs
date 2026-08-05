@@ -274,6 +274,45 @@ public class AppCatalogCacheTests
     }
 
     [TestMethod]
+    public async Task SaveAsync_IncrementalChangeDoesNotRenewSourceValidation()
+    {
+        var cachePath = TemporaryCachePath();
+        try
+        {
+            var firstValidation = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
+            var original = Item("win32:one", TestDataHelper.CreateTestWin32Program("Original"), "start-menu");
+            var updated = Item("win32:one", TestDataHelper.CreateTestWin32Program("Updated"), "start-menu");
+            var cache = new AppCatalogCache(cachePath);
+
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [original] },
+                ["win32"],
+                Context(firstValidation, ("win32", "key-before-change")),
+                CancellationToken.None);
+            await cache.SaveAsync(
+                new Dictionary<string, IReadOnlyList<AppCatalogItem>> { ["win32"] = [updated] },
+                Array.Empty<string>(),
+                Context(firstValidation.AddHours(1), ("win32", "key-after-change")),
+                CancellationToken.None);
+
+            var current = await cache.LoadAsync(
+                Context(firstValidation.AddHours(35), ("win32", "key-after-change")),
+                CancellationToken.None);
+            var expired = await cache.LoadAsync(
+                Context(firstValidation.AddHours(36).AddMinutes(30), ("win32", "key-after-change")),
+                CancellationToken.None);
+
+            Assert.IsNotNull(current);
+            Assert.AreEqual("Updated", (current.Sources[0].Items[0].Payload as Win32AppPayload)?.Name);
+            Assert.IsNull(expired);
+        }
+        finally
+        {
+            File.Delete(cachePath);
+        }
+    }
+
+    [TestMethod]
     public void IsCompatible_RejectsLanguageAndSchemaChanges()
     {
         var cache = new AppCatalogCacheFile { Language = "en-US" };

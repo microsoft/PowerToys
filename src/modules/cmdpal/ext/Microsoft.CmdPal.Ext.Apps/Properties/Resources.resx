@@ -163,6 +163,15 @@
   <data name="copy_path" xml:space="preserve">
     <value>Copy path</value>
   </data>
+  <data name="custom_app_folder_duplicate" xml:space="preserve">
+    <value>Each folder can be added only once.</value>
+  </data>
+  <data name="custom_shortcut_folders" xml:space="preserve">
+    <value>Additional shortcut folders</value>
+  </data>
+  <data name="custom_shortcut_folders_description" xml:space="preserve">
+    <value>Search these folders and their subfolders for application shortcuts.</value>
+  </data>
   <data name="run_as_administrator" xml:space="preserve">
     <value>Run as administrator</value>
   </data>
@@ -174,6 +183,12 @@
   </data>
   <data name="enable_desktop_source" xml:space="preserve">
     <value>Include apps found on the desktop</value>
+  </data>
+  <data name="enable_catalog_diagnostics" xml:space="preserve">
+    <value>Enable app catalog diagnostics</value>
+  </data>
+  <data name="enable_catalog_diagnostics_description" xml:space="preserve">
+    <value>Write detailed application indexing and file watcher activity to the Command Palette log.</value>
   </data>
   <data name="enable_registry_source" xml:space="preserve">
     <value>Include apps registered in the Windows Registry</value>
@@ -191,6 +206,12 @@
   </data>
   <data name="pin_app" xml:space="preserve">
     <value>Pin</value>
+  </data>
+  <data name="portable_app_folders" xml:space="preserve">
+    <value>Portable app folders</value>
+  </data>
+  <data name="portable_app_folders_description" xml:space="preserve">
+    <value>Index executable applications in these folders and their immediate subfolders.</value>
   </data>
   <data name="unpin_app" xml:space="preserve">
     <value>Unpin</value>

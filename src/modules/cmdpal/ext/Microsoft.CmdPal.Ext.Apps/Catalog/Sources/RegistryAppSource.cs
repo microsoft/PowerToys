@@ -23,11 +23,9 @@ internal sealed class RegistryAppSource : IWin32ProgramSource
 
     public bool IsEnabled => _settings.EnableRegistrySource;
 
-    public bool IncludeNonApps => true;
+    public Win32ProgramSourceProfile Profile => Win32ProgramSourceProfile.IncludeRawExecutables;
 
-    public bool AsRunCommand => false;
-
-    public string CacheKey => $"{IsEnabled}|{string.Join(';', _settings.ProgramSuffixes)}";
+    public string CacheKey => $"{IsEnabled}|{Profile}|{string.Join(';', _settings.ProgramSuffixes)}";
 
     public string ConfigurationKey => CacheKey;
 

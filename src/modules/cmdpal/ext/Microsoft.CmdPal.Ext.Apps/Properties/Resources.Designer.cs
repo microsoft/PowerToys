@@ -86,7 +86,52 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("copy_path", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Each folder can be added only once..
+        /// </summary>
+        internal static string custom_app_folder_duplicate {
+            get {
+                return ResourceManager.GetString("custom_app_folder_duplicate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Additional shortcut folders.
+        /// </summary>
+        internal static string custom_shortcut_folders {
+            get {
+                return ResourceManager.GetString("custom_shortcut_folders", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Search these folders and their subfolders for application shortcuts..
+        /// </summary>
+        internal static string custom_shortcut_folders_description {
+            get {
+                return ResourceManager.GetString("custom_shortcut_folders_description", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Enable app catalog diagnostics.
+        /// </summary>
+        internal static string enable_catalog_diagnostics {
+            get {
+                return ResourceManager.GetString("enable_catalog_diagnostics", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Write detailed application indexing and file watcher activity to the Command Palette log..
+        /// </summary>
+        internal static string enable_catalog_diagnostics_description {
+            get {
+                return ResourceManager.GetString("enable_catalog_diagnostics_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Include apps found on the desktop.
         /// </summary>
@@ -320,7 +365,25 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("pin_app", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Portable app folders.
+        /// </summary>
+        internal static string portable_app_folders {
+            get {
+                return ResourceManager.GetString("portable_app_folders", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Index executable applications in these folders and their immediate subfolders..
+        /// </summary>
+        internal static string portable_app_folders_description {
+            get {
+                return ResourceManager.GetString("portable_app_folders_description", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
