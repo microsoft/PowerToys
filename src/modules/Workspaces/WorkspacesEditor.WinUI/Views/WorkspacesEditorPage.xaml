@@ -70,7 +70,7 @@
                         Tag="{x:Bind}" />
                     <tkcontrols:SettingsExpander.Items>
 
-                        <tkcontrols:SettingsCard ContentAlignment="Left">
+                        <tkcontrols:SettingsCard x:Uid="LaunchAsAdminCard" ContentAlignment="Left">
                             <CheckBox
                                 x:Uid="LaunchAsAdminLabel"
                                 MinWidth="12"
@@ -80,6 +80,7 @@
                         <tkcontrols:SettingsCard x:Uid="CliArgsTextBox">
 
                             <TextBox
+                                x:Uid="CliArgsInput"
                                 MinWidth="200"
                                 Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"
@@ -89,7 +90,10 @@
                         </tkcontrols:SettingsCard>
 
                         <tkcontrols:SettingsCard x:Uid="WindowPositionComboBox">
-                            <ComboBox VerticalAlignment="Center" SelectedIndex="{x:Bind PositionComboboxIndex, Mode=TwoWay}">
+                            <ComboBox
+                                x:Uid="WindowPositionInput"
+                                VerticalAlignment="Center"
+                                SelectedIndex="{x:Bind PositionComboboxIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="CustomItem" />
                                 <ComboBoxItem x:Uid="MaximizedItem" />
                                 <ComboBoxItem x:Uid="MinimizedItem" />

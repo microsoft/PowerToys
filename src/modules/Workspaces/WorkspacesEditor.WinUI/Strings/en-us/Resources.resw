@@ -348,8 +348,17 @@
   <data name="CliArgsTextBox.Header" xml:space="preserve">
     <value>CLI arguments</value>
   </data>
+  <data name="CliArgsInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>CLI arguments</value>
+  </data>
   <data name="WindowPositionComboBox.Header" xml:space="preserve">
     <value>Window position</value>
+  </data>
+  <data name="WindowPositionInput.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Window position</value>
+  </data>
+  <data name="LaunchAsAdminCard.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Launch as admin</value>
   </data>
   <data name="LeftTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Left</value>
