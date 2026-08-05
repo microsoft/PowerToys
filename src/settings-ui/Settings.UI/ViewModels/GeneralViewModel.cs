@@ -421,6 +421,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _showThemeAdaptiveSysTrayIcon = value;
                     GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon = value;
+                    ThemeAdaptiveTrayIconFanOut.ApplyToModules(value, SendConfigMSG);
+                    ApplyZoomItThemeAdaptiveTrayIconViaInterop();
                     NotifyPropertyChanged();
                 }
             }
@@ -1163,6 +1165,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (reDoBackupDryRun && DoBackupAndRestoreDryRun != null)
             {
                 DoBackupAndRestoreDryRun(500);
+            }
+        }
+
+        private static void ApplyZoomItThemeAdaptiveTrayIconViaInterop()
+        {
+            try
+            {
+                var path = ThemeAdaptiveTrayIconFanOut.TryGetPatchedZoomItSettingsPath();
+                if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                {
+                    return;
+                }
+
+                global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(File.ReadAllText(path));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to apply ZoomIt theme-adaptive tray icon via interop.", ex);
             }
         }
 
