@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
-using System.Linq;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -59,21 +57,7 @@ namespace WorkspacesEditor.Views
 
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
-            if (this.DataContext is Project projectToSave)
-            {
-                projectToSave.CloseExpanders();
-
-                if (_mainViewModel.Workspaces.Any(x => x.Id == projectToSave.Id))
-                {
-                    _mainViewModel.SaveProject(projectToSave);
-                }
-                else
-                {
-                    _mainViewModel.AddNewProject(projectToSave);
-                }
-
-                _mainViewModel.SwitchToMainView();
-            }
+            _mainViewModel.SaveOrAddProject(EditedProject);
         }
 
         private void DeleteButtonClicked(object sender, RoutedEventArgs e)
@@ -104,15 +88,7 @@ namespace WorkspacesEditor.Views
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                // The edited project is a copy, so remove the matching workspace from the list by Id.
-                var existing = _mainViewModel.Workspaces.FirstOrDefault(x => x.Id == project.Id);
-                if (existing != null)
-                {
-                    _mainViewModel.DeleteProject(existing);
-                }
-
-                TempProjectData.DeleteTempFile();
-                _mainViewModel.SwitchToMainView();
+                _mainViewModel.DeleteProjectById(project.Id);
             }
         }
 
@@ -153,14 +129,7 @@ namespace WorkspacesEditor.Views
         {
             if (sender is TextBox textBox && textBox.DataContext is Application app)
             {
-                if (!int.TryParse(textBox.Text, out int newPos))
-                {
-                    newPos = 0;
-                }
-
-                app.Position = new Application.WindowPosition() { X = newPos, Y = app.Position.Y, Width = app.Position.Width, Height = app.Position.Height };
-                app.Parent.IsPositionChangedManually = true;
-                app.Parent.InitializePreview();
+                app.UpdatePositionX(textBox.Text);
             }
         }
 
@@ -168,14 +137,7 @@ namespace WorkspacesEditor.Views
         {
             if (sender is TextBox textBox && textBox.DataContext is Application app)
             {
-                if (!int.TryParse(textBox.Text, out int newPos))
-                {
-                    newPos = 0;
-                }
-
-                app.Position = new Application.WindowPosition() { X = app.Position.X, Y = newPos, Width = app.Position.Width, Height = app.Position.Height };
-                app.Parent.IsPositionChangedManually = true;
-                app.Parent.InitializePreview();
+                app.UpdatePositionY(textBox.Text);
             }
         }
 
@@ -183,14 +145,7 @@ namespace WorkspacesEditor.Views
         {
             if (sender is TextBox textBox && textBox.DataContext is Application app)
             {
-                if (!int.TryParse(textBox.Text, out int newPos))
-                {
-                    newPos = 0;
-                }
-
-                app.Position = new Application.WindowPosition() { X = app.Position.X, Y = app.Position.Y, Width = newPos, Height = app.Position.Height };
-                app.Parent.IsPositionChangedManually = true;
-                app.Parent.InitializePreview();
+                app.UpdatePositionWidth(textBox.Text);
             }
         }
 
@@ -198,14 +153,7 @@ namespace WorkspacesEditor.Views
         {
             if (sender is TextBox textBox && textBox.DataContext is Application app)
             {
-                if (!int.TryParse(textBox.Text, out int newPos))
-                {
-                    newPos = 0;
-                }
-
-                app.Position = new Application.WindowPosition() { X = app.Position.X, Y = app.Position.Y, Width = app.Position.Width, Height = newPos };
-                app.Parent.IsPositionChangedManually = true;
-                app.Parent.InitializePreview();
+                app.UpdatePositionHeight(textBox.Text);
             }
         }
 

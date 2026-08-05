@@ -299,6 +299,39 @@ namespace WorkspacesEditor.ViewModels
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
         }
 
+        public void SaveOrAddProject(Project projectToSave)
+        {
+            if (projectToSave == null)
+            {
+                return;
+            }
+
+            projectToSave.CloseExpanders();
+
+            if (Workspaces.Any(x => x.Id == projectToSave.Id))
+            {
+                SaveProject(projectToSave);
+            }
+            else
+            {
+                AddNewProject(projectToSave);
+            }
+
+            SwitchToMainView();
+        }
+
+        public void DeleteProjectById(string projectId)
+        {
+            var existing = Workspaces.FirstOrDefault(x => x.Id == projectId);
+            if (existing != null)
+            {
+                DeleteProject(existing);
+            }
+
+            TempProjectData.DeleteTempFile();
+            SwitchToMainView();
+        }
+
         public void SwitchToMainView()
         {
             StrongReferenceMessenger.Default.Send(new GoBackMessage());

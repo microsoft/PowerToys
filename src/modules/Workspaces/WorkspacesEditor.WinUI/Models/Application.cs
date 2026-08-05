@@ -283,6 +283,59 @@ namespace WorkspacesEditor.Models
             OnPropertyChanged(nameof(IsAppMainParamVisible));
         }
 
+        internal void UpdatePositionX(string text)
+        {
+            if (!int.TryParse(text, out int value))
+            {
+                value = 0;
+            }
+
+            Position = new WindowPosition { X = value, Y = Position.Y, Width = Position.Width, Height = Position.Height };
+            MarkPositionChanged();
+        }
+
+        internal void UpdatePositionY(string text)
+        {
+            if (!int.TryParse(text, out int value))
+            {
+                value = 0;
+            }
+
+            Position = new WindowPosition { X = Position.X, Y = value, Width = Position.Width, Height = Position.Height };
+            MarkPositionChanged();
+        }
+
+        internal void UpdatePositionWidth(string text)
+        {
+            if (!int.TryParse(text, out int value))
+            {
+                value = 0;
+            }
+
+            Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = value, Height = Position.Height };
+            MarkPositionChanged();
+        }
+
+        internal void UpdatePositionHeight(string text)
+        {
+            if (!int.TryParse(text, out int value))
+            {
+                value = 0;
+            }
+
+            Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = Position.Width, Height = value };
+            MarkPositionChanged();
+        }
+
+        private void MarkPositionChanged()
+        {
+            if (Parent != null)
+            {
+                Parent.IsPositionChangedManually = true;
+                Parent.InitializePreview();
+            }
+        }
+
         public string Version { get; set; }
 
         public new void Dispose()
