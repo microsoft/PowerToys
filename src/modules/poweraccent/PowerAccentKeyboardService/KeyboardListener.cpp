@@ -214,6 +214,15 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                     return true;
                 }
 
+                // In press-and-hold, a different typed letter must not be replaced when the
+                // original owner is released. Cancel the owner gesture and pass this key through.
+                if (m_settings.activationKey == PowerAccentActivationKey::PressAndHold &&
+                    !m_pressAndHoldCancelled)
+                {
+                    m_pressAndHoldCancelled = true;
+                    m_cancelToolbarCb();
+                }
+
                 // A different letter must not steal or re-arm the active owner-letter gesture.
                 return false;
             }

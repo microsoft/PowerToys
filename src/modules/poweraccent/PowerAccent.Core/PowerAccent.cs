@@ -112,14 +112,9 @@ public partial class PowerAccent : IDisposable
         // press can't fire for a newer one (or after the toolbar was hidden).
         int generation = _displayState.Begin();
 
-        // Trigger modes navigate the instant the toolbar is summoned, so the character data must
-        // be ready synchronously. Press-and-hold can't navigate until the popup is actually shown,
-        // so defer the (relatively expensive) character/description build to the delayed render and
-        // keep quick taps off the keystroke hot path.
-        if (!isPressAndHold)
-        {
-            PrepareCharacters(letterKey);
-        }
+        // Character data must be ready before the native listener accepts navigation. This also
+        // keeps an in-progress gesture coherent if the configured hold duration changes.
+        PrepareCharacters(letterKey);
 
         int displayDelay = isPressAndHold ? _settingService.HoldDuration : _settingService.InputTime;
 
@@ -128,11 +123,6 @@ public partial class PowerAccent : IDisposable
         {
             if (_displayState.ShouldShow(generation))
             {
-                if (isPressAndHold)
-                {
-                    PrepareCharacters(letterKey);
-                }
-
                 OnChangeDisplay?.Invoke(true, _characters);
             }
         },
@@ -284,8 +274,7 @@ public partial class PowerAccent : IDisposable
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
     {
-        // Press-and-hold builds its character set lazily when the popup renders; ignore any
-        // navigation that races ahead of it (there is nothing to select yet).
+        // Ignore navigation after cancellation or reset, when there is nothing to select.
         if (_characters.Length == 0)
         {
             return;
