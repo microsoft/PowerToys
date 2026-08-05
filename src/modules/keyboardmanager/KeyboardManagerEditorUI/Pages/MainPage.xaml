@@ -181,8 +181,9 @@
                         Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleButton
                             x:Name="SelectionModeToggle"
-                            x:Uid="SelectModeToggle"
-                            Click="SelectionModeToggle_Click" />
+                            Click="SelectionModeToggle_Click"
+                            Content="{x:Bind SelectModeLabel, Mode=OneWay}"
+                            ToolTipService.ToolTip="{x:Bind SelectModeTooltip, Mode=OneWay}" />
                         <Button
                             x:Name="DeleteSelectedBtn"
                             Click="DeleteSelectedBtn_Click"

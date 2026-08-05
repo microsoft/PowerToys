@@ -544,12 +544,19 @@
   <data name="FilterClearBtn.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Clear all search and filter selections</value>
   </data>
-  <data name="SelectModeToggle.Content" xml:space="preserve">
+  <data name="SelectModeToggle_Select" xml:space="preserve">
     <value>Select</value>
     <comment>Toggle button that turns on multi-select mode so several remappings can be deleted at once</comment>
   </data>
-  <data name="SelectModeToggle.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="SelectModeToggle_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Same toggle button while multi-select mode is on; pressing it leaves selection mode</comment>
+  </data>
+  <data name="SelectModeToggle_SelectTooltip" xml:space="preserve">
     <value>Select multiple remappings to delete them together</value>
+  </data>
+  <data name="SelectModeToggle_CancelTooltip" xml:space="preserve">
+    <value>Exit selection mode</value>
   </data>
   <data name="FilterApp_AllApps" xml:space="preserve">
     <value>All apps</value>

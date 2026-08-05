@@ -148,6 +148,8 @@ namespace KeyboardManagerEditorUI.Pages
                     RaisePropertyChanged(nameof(IsSelectionMode));
                     RaisePropertyChanged(nameof(IsNotSelectionMode));
                     RaisePropertyChanged(nameof(ListSelectionMode));
+                    RaisePropertyChanged(nameof(SelectModeLabel));
+                    RaisePropertyChanged(nameof(SelectModeTooltip));
                 }
             }
         }
@@ -155,6 +157,12 @@ namespace KeyboardManagerEditorUI.Pages
         public bool IsNotSelectionMode => !_isSelectionMode;
 
         public ListViewSelectionMode ListSelectionMode => _isSelectionMode ? ListViewSelectionMode.Multiple : ListViewSelectionMode.None;
+
+        // Label/tooltip for the selection-mode toggle. While in selection mode the toggle itself is
+        // the way out ("Cancel"), so the affordance to leave is always visible.
+        public string SelectModeLabel => ResourceHelper.GetString(_isSelectionMode ? "SelectModeToggle_Cancel" : "SelectModeToggle_Select");
+
+        public string SelectModeTooltip => ResourceHelper.GetString(_isSelectionMode ? "SelectModeToggle_CancelTooltip" : "SelectModeToggle_SelectTooltip");
 
         // Number of rows selected across all sections while in selection mode.
         public int SelectedCount
@@ -1452,23 +1460,38 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void SelectionModeToggle_Click(object sender, RoutedEventArgs e)
         {
-            IsSelectionMode = SelectionModeToggle.IsChecked == true;
+            bool entering = SelectionModeToggle.IsChecked == true;
 
-            if (!IsSelectionMode)
+            // When leaving selection mode, clear the selection while the lists are still in Multiple
+            // mode. ListView.SelectedItems is only valid for Multiple, so it must be touched before
+            // ListSelectionMode flips to None below (otherwise it throws and takes the panel down).
+            if (!entering)
             {
                 ClearAllSelections();
             }
+
+            IsSelectionMode = entering;
 
             UpdateSelectedCount();
         }
 
         private void ClearAllSelections()
         {
-            RemappingsListView.SelectedItems.Clear();
-            DisabledListView.SelectedItems.Clear();
-            TextListView.SelectedItems.Clear();
-            ProgramsListView.SelectedItems.Clear();
-            UrlsListView.SelectedItems.Clear();
+            ClearSelectionIfMultiple(RemappingsListView);
+            ClearSelectionIfMultiple(DisabledListView);
+            ClearSelectionIfMultiple(TextListView);
+            ClearSelectionIfMultiple(ProgramsListView);
+            ClearSelectionIfMultiple(UrlsListView);
+        }
+
+        // ListView.SelectedItems is only valid while SelectionMode is Multiple; touching it in any
+        // other mode throws. Guard so selection housekeeping is safe whatever the current mode is.
+        private static void ClearSelectionIfMultiple(ListViewBase list)
+        {
+            if (list.SelectionMode == ListViewSelectionMode.Multiple)
+            {
+                list.SelectedItems.Clear();
+            }
         }
 
         private void MappingList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1479,12 +1502,16 @@ namespace KeyboardManagerEditorUI.Pages
         private void UpdateSelectedCount()
         {
             SelectedCount =
-                RemappingsListView.SelectedItems.Count +
-                DisabledListView.SelectedItems.Count +
-                TextListView.SelectedItems.Count +
-                ProgramsListView.SelectedItems.Count +
-                UrlsListView.SelectedItems.Count;
+                SelectedCountIfMultiple(RemappingsListView) +
+                SelectedCountIfMultiple(DisabledListView) +
+                SelectedCountIfMultiple(TextListView) +
+                SelectedCountIfMultiple(ProgramsListView) +
+                SelectedCountIfMultiple(UrlsListView);
         }
+
+        // Mirrors ClearSelectionIfMultiple: SelectedItems.Count also throws outside Multiple mode.
+        private static int SelectedCountIfMultiple(ListViewBase list)
+            => list.SelectionMode == ListViewSelectionMode.Multiple ? list.SelectedItems.Count : 0;
 
         private async void DeleteSelectedBtn_Click(object sender, RoutedEventArgs e)
         {
