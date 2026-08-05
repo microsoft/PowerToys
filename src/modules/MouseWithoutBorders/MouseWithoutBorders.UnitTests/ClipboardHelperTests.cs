@@ -93,10 +93,10 @@ public sealed class ClipboardHelperTests
             using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
 
+            Assert.IsFalse(TryOpenForWrite(path));
             using FileStream stream = new(lease.PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.Read);
             using StreamReader reader = new(stream);
             Assert.AreEqual("content", reader.ReadToEnd());
-            Assert.IsFalse(TryOpenForWrite(path));
             Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
         }
         finally

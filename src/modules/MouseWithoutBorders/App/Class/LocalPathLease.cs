@@ -16,7 +16,8 @@ namespace MouseWithoutBorders;
 internal sealed class LocalPathLease : IDisposable
 {
     private const uint FileShareRead = 0x00000001;
-    private const uint FileShareWrite = 0x00000002;
+    private const uint GenericRead = 0x80000000;
+    private const uint FileReadAttributes = 0x00000080;
     private const uint OpenExisting = 3;
     private const uint FileFlagBackupSemantics = 0x02000000;
     private const uint FileFlagOpenReparsePoint = 0x00200000;
@@ -105,7 +106,7 @@ internal sealed class LocalPathLease : IDisposable
             }
 
             string currentPath = deviceRoot + Path.DirectorySeparatorChar;
-            if (!TryOpenComponent(currentPath, handles, out FileAttributes attributes, out _)
+            if (!TryOpenComponent(currentPath, FileReadAttributes, handles, out FileAttributes attributes, out _)
                 || (attributes & FileAttributes.ReparsePoint) != 0)
             {
                 return null;
@@ -120,13 +121,14 @@ internal sealed class LocalPathLease : IDisposable
             for (int index = 0; index < components.Length; index++)
             {
                 currentPath = Path.Combine(currentPath, components[index]);
-                if (!TryOpenComponent(currentPath, handles, out attributes, out long componentLength)
+                bool isLast = index == components.Length - 1;
+                uint desiredAccess = isLast ? GenericRead : FileReadAttributes;
+                if (!TryOpenComponent(currentPath, desiredAccess, handles, out attributes, out long componentLength)
                     || (attributes & FileAttributes.ReparsePoint) != 0)
                 {
                     return null;
                 }
 
-                bool isLast = index == components.Length - 1;
                 if (!isLast && (attributes & FileAttributes.Directory) == 0)
                 {
                     return null;
@@ -209,6 +211,7 @@ internal sealed class LocalPathLease : IDisposable
 
     private static bool TryOpenComponent(
         string path,
+        uint desiredAccess,
         List<SafeFileHandle> handles,
         out FileAttributes attributes,
         out long length)
@@ -218,8 +221,8 @@ internal sealed class LocalPathLease : IDisposable
 
         SafeFileHandle handle = CreateFile(
             path,
-            0,
-            FileShareRead | FileShareWrite,
+            desiredAccess,
+            FileShareRead,
             IntPtr.Zero,
             OpenExisting,
             FileFlagBackupSemantics | FileFlagOpenReparsePoint,
