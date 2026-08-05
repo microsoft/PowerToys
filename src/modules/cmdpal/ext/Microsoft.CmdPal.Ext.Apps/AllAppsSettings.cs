@@ -7,14 +7,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
-public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
+public class AllAppsSettings : JsonSettingsManager
 {
     internal const int DefaultSearchResultLimit = 10;
 
@@ -42,8 +41,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         new(Resources.limit_10, "10"),
     ];
 
-    public List<ProgramSource> ProgramSources { get; set; } = [];
-
     public List<DisabledProgramSource> DisabledProgramSources { get; set; } = [];
 
     public List<string> ProgramSuffixes { get; set; } = ["bat", "appref-ms", "exe", "lnk", "url"];
@@ -63,6 +60,14 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     public bool IncludeNonAppsInStartMenu => _includeNonAppsInStartMenu.Value;
 
     public bool HideAppDescriptions => _hideAppDescriptions.Value;
+
+    public bool EnableCatalogDiagnostics => _enableCatalogDiagnostics.Value;
+
+    /// <summary>Gets user-selected folders whose application shortcuts should be indexed recursively.</summary>
+    public IReadOnlyList<string> CustomShortcutFolders => _customShortcutFolders.Value ?? Array.Empty<string>();
+
+    /// <summary>Gets user-selected folders whose portable executable applications should be indexed.</summary>
+    public IReadOnlyList<string> PortableAppFolders => _portableAppFolders.Value ?? Array.Empty<string>();
 
     private readonly ChoiceSetSetting _searchResultLimitSource = new(
         Namespaced(nameof(SearchResultLimit)),
@@ -143,6 +148,34 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Resources.hide_app_descriptions_description,
         false);
 
+    private readonly ToggleSetting _enableCatalogDiagnostics = new(
+        Namespaced(nameof(EnableCatalogDiagnostics)),
+        Resources.enable_catalog_diagnostics,
+        Resources.enable_catalog_diagnostics_description,
+        false);
+
+    private readonly FilePathListSetting _customShortcutFolders = new(
+        Namespaced(nameof(CustomShortcutFolders)),
+        Resources.custom_shortcut_folders,
+        Resources.custom_shortcut_folders_description,
+        [],
+        FilePathListItemType.Folders)
+    {
+        PreventDuplicates = true,
+        DuplicateItemErrorMessage = Resources.custom_app_folder_duplicate,
+    };
+
+    private readonly FilePathListSetting _portableAppFolders = new(
+        Namespaced(nameof(PortableAppFolders)),
+        Resources.portable_app_folders,
+        Resources.portable_app_folders_description,
+        [],
+        FilePathListItemType.Folders)
+    {
+        PreventDuplicates = true,
+        DuplicateItemErrorMessage = Resources.custom_app_folder_duplicate,
+    };
+
     public double MinScoreThreshold { get; set; } = 0.75;
 
     internal const char SuffixSeparator = ';';
@@ -170,8 +203,11 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Settings.Add(_includeNonAppsOnDesktop);
         Settings.Add(_enableRegistrySource);
         Settings.Add(_enablePathEnvironmentVariableSource);
+        Settings.Add(_customShortcutFolders);
+        Settings.Add(_portableAppFolders);
         Settings.Add(_searchResultLimitSource);
         Settings.Add(_hideAppDescriptions);
+        Settings.Add(_enableCatalogDiagnostics);
 
         LoadSettings();
 

@@ -6,8 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
+using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
@@ -16,28 +17,33 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 /// </summary>
 internal sealed partial class SettingsAppSourceProvider : IAppSourceProvider
 {
+    public event EventHandler? Changed;
+
     private readonly Lock _stateLock = new();
     private readonly AllAppsSettings _settings;
     private readonly IAppSource _packagedSource;
-    private readonly ILogger<Win32AppSource> _win32Logger;
+    private readonly MEL.ILogger<Win32AppSource> _win32Logger;
     private Dictionary<string, Win32AppSource> _win32Sources = new(StringComparer.Ordinal);
     private IReadOnlyList<IAppSource> _sources = [];
     private bool _disposed;
 
+    /// <summary>Initializes a new instance of the <see cref="SettingsAppSourceProvider"/> class. Creates and reuses discovery sources according to Apps preferences and observes later settings changes.</summary>
     public SettingsAppSourceProvider(
         AllAppsSettings settings,
         IAppSource packagedSource,
-        ILogger<Win32AppSource>? win32Logger = null)
+        MEL.ILogger<Win32AppSource>? win32Logger = null)
     {
-        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
-        _packagedSource = packagedSource ?? throw new ArgumentNullException(nameof(packagedSource));
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(packagedSource);
+
+        _settings = settings;
+        _packagedSource = packagedSource;
         _win32Logger = win32Logger ?? NullLogger<Win32AppSource>.Instance;
         RebuildSources(raiseChanged: false);
         _settings.Settings.SettingsChanged += OnSettingsChanged;
     }
 
-    public event EventHandler? Changed;
-
+    /// <inheritdoc />
     public IReadOnlyList<IAppSource> GetSources()
     {
         lock (_stateLock)
@@ -47,7 +53,10 @@ internal sealed partial class SettingsAppSourceProvider : IAppSourceProvider
         }
     }
 
-    private void OnSettingsChanged(object sender, Settings args) => RebuildSources(raiseChanged: true);
+    private void OnSettingsChanged(object sender, Settings args)
+    {
+        RebuildSources(raiseChanged: true);
+    }
 
     private void RebuildSources(bool raiseChanged)
     {
@@ -80,7 +89,10 @@ internal sealed partial class SettingsAppSourceProvider : IAppSourceProvider
                 }
                 else
                 {
-                    source = new Win32AppSource(configuredSource, _win32Logger);
+                    source = new Win32AppSource(
+                        configuredSource,
+                        () => _settings.EnableCatalogDiagnostics,
+                        _win32Logger);
                     changed = true;
                 }
 
@@ -103,6 +115,7 @@ internal sealed partial class SettingsAppSourceProvider : IAppSourceProvider
         }
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         lock (_stateLock)

@@ -17,6 +17,8 @@ namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
 public sealed partial class AppCatalog : IAppCatalog
 {
+    private const int MaxIncrementalPathChangesPerSource = 256;
+
     private static readonly TimeSpan DefaultInvalidationDelay = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan CachedSourceReconciliationDelay = TimeSpan.FromSeconds(30);
 
@@ -1124,9 +1126,20 @@ public sealed partial class AppCatalog : IAppCatalog
 
         private void AddOrReplacePathChange(AppSourcePathChange change)
         {
+            if (RequiresFullRefresh)
+            {
+                return;
+            }
+
             if (_pathChangeIndexes.TryGetValue(change.Path, out var index))
             {
                 _pathChanges[index] = change;
+                return;
+            }
+
+            if (_pathChanges.Count >= MaxIncrementalPathChangesPerSource)
+            {
+                RequireFullRefresh();
                 return;
             }
 

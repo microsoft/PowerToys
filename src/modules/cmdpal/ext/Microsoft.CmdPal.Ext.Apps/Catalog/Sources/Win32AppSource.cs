@@ -6,12 +6,16 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
+using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
+using MEL = Microsoft.Extensions.Logging;
 
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
@@ -22,19 +26,38 @@ internal sealed partial class Win32AppSource : IAppSource
 {
     private const string CatalogSourcePrefix = "win32:";
     private const int IndexingMaxDegreeOfParallelism = 2;
+    private const int IncrementalRefreshPathLimit = 256;
+    private const int RawExecutablePriorityOffset = 1000;
+    private const int PortableAppMaximumDepth = 1;
+
+    private static readonly IReadOnlyList<string> PortableAppSuffixes = ["exe"];
+    private static readonly TimeSpan InitialWatcherRecoveryDelay = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan MaximumWatcherRecoveryDelay = TimeSpan.FromMinutes(5);
 
     private readonly IWin32ProgramSource _source;
     private readonly string _configurationKey;
     private readonly Func<string, bool, Win32Program> _programLoader;
-    private readonly ILogger<Win32AppSource> _logger;
+    private readonly Func<bool> _diagnosticsEnabled;
+    private readonly Func<TimeSpan, CancellationToken, Task> _recoveryDelayAsync;
+    private readonly MEL.ILogger<Win32AppSource> _logger;
     private readonly bool _createWatchers;
     private readonly Lock _watchersLock = new();
-    private readonly List<FileSystemWatcher> _watchers = [];
+    private readonly Dictionary<string, FileSystemWatcher> _watchers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, WatcherRecoveryState> _watcherRecoveries = new(StringComparer.OrdinalIgnoreCase);
+    private readonly CancellationTokenSource _disposeCancellation = new();
     private Task? _initializationTask;
+    private long _nextWatcherRecoveryGeneration;
     private InterlockedBoolean _disposed;
 
-    internal Win32AppSource(IWin32ProgramSource source, ILogger<Win32AppSource>? logger = null)
-        : this(source, Win32Program.LoadFromPath, createWatchers: true, logger)
+    private sealed record AffectedPath(string Path, bool IncludeDescendants);
+
+    private sealed record WatcherRecoveryState(int Attempt, long Generation, bool IncludeSubdirectories);
+
+    internal Win32AppSource(
+        IWin32ProgramSource source,
+        Func<bool>? diagnosticsEnabled = null,
+        MEL.ILogger<Win32AppSource>? logger = null)
+        : this(source, Win32Program.LoadFromPath, createWatchers: true, diagnosticsEnabled, logger: logger)
     {
     }
 
@@ -42,12 +65,16 @@ internal sealed partial class Win32AppSource : IAppSource
         IWin32ProgramSource source,
         Func<string, bool, Win32Program> programLoader,
         bool createWatchers,
-        ILogger<Win32AppSource>? logger = null)
+        Func<bool>? diagnosticsEnabled = null,
+        Func<TimeSpan, CancellationToken, Task>? recoveryDelayAsync = null,
+        MEL.ILogger<Win32AppSource>? logger = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _configurationKey = source.ConfigurationKey;
         _programLoader = programLoader ?? throw new ArgumentNullException(nameof(programLoader));
         _createWatchers = createWatchers;
+        _diagnosticsEnabled = diagnosticsEnabled ?? (() => false);
+        _recoveryDelayAsync = recoveryDelayAsync ?? Task.Delay;
         _logger = logger ?? NullLogger<Win32AppSource>.Instance;
     }
 
@@ -90,12 +117,229 @@ internal sealed partial class Win32AppSource : IAppSource
         foreach (var path in _source.GetPaths())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!string.IsNullOrWhiteSpace(path) && uniquePaths.Add(path))
+            if (string.IsNullOrWhiteSpace(path)
+                || (!HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeRawExecutables)
+                    && Win32Program.IsExecutablePath(path)))
+            {
+                continue;
+            }
+
+            if (uniquePaths.Add(path))
             {
                 paths.Add(path);
             }
         }
 
+        var items = IndexPaths(paths, cancellationToken);
+        LogDiagnostic($"Full refresh indexed {paths.Count} candidate path(s) into {items.Count} item(s).");
+        return items;
+    }
+
+    public Task<IReadOnlyList<AppCatalogItem>> ApplyChangesAsync(
+        IReadOnlyList<AppCatalogItem> currentItems,
+        IReadOnlyList<AppSourcePathChange> changes,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(currentItems);
+        ArgumentNullException.ThrowIfNull(changes);
+
+        return Task.Run<IReadOnlyList<AppCatalogItem>>(
+            () => ApplyChanges(currentItems, changes, cancellationToken),
+            cancellationToken);
+    }
+
+    private IReadOnlyList<AppCatalogItem> ApplyChanges(
+        IReadOnlyList<AppCatalogItem> currentItems,
+        IReadOnlyList<AppSourcePathChange> changes,
+        CancellationToken cancellationToken)
+    {
+        if (changes.Count == 0)
+        {
+            return currentItems;
+        }
+
+        if (changes.Count > IncrementalRefreshPathLimit)
+        {
+            return PromoteDirtyPathsToFullRefresh(
+                $"received {changes.Count} dirty paths",
+                cancellationToken);
+        }
+
+        var affectedPaths = new List<AffectedPath>();
+        var affectedPathKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var candidatePaths = new List<string>();
+        var candidatePathKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var change in changes)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!string.IsNullOrWhiteSpace(change.OldPath)
+                && !TryCollectDirtyPath(
+                    change.OldPath,
+                    affectedPaths,
+                    affectedPathKeys,
+                    candidatePaths,
+                    candidatePathKeys,
+                    cancellationToken))
+            {
+                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", cancellationToken);
+            }
+
+            if (!TryCollectDirtyPath(
+                change.Path,
+                affectedPaths,
+                affectedPathKeys,
+                candidatePaths,
+                candidatePathKeys,
+                cancellationToken))
+            {
+                return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", cancellationToken);
+            }
+        }
+
+        var affectedIdentities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in currentItems)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!IsAffected(item.Provenance.References, affectedPaths))
+            {
+                continue;
+            }
+
+            affectedIdentities.Add(item.Identity);
+            foreach (var reference in item.Provenance.References)
+            {
+                if (!string.Equals(reference.SourceId, _source.Id, StringComparison.Ordinal)
+                    || MatchesAnyAffectedPath(reference.ItemId, affectedPaths))
+                {
+                    continue;
+                }
+
+                if (!TryAddCandidatePath(candidatePaths, candidatePathKeys, reference.ItemId))
+                {
+                    return PromoteDirtyPathsToFullRefresh("candidate collection exceeded its limit", cancellationToken);
+                }
+            }
+        }
+
+        if (affectedIdentities.Count == 0 && candidatePaths.Count == 0)
+        {
+            return currentItems;
+        }
+
+        var updatedItems = new Dictionary<string, AppCatalogItem>(StringComparer.OrdinalIgnoreCase);
+        foreach (var item in currentItems)
+        {
+            if (!affectedIdentities.Contains(item.Identity))
+            {
+                updatedItems[item.Identity] = item;
+            }
+        }
+
+        foreach (var item in IndexPaths(candidatePaths, cancellationToken))
+        {
+            updatedItems[item.Identity] = updatedItems.TryGetValue(item.Identity, out var existing)
+                ? existing.MergeProvenance(item)
+                : item;
+        }
+
+        LogDiagnostic(
+            $"Incremental refresh reconciled {affectedPaths.Count} dirty path(s), affected "
+            + $"{affectedIdentities.Count} existing identity/identities, and indexed {candidatePaths.Count} path(s).");
+        return new List<AppCatalogItem>(updatedItems.Values);
+    }
+
+    private bool TryCollectDirtyPath(
+        string dirtyPath,
+        List<AffectedPath> affectedPaths,
+        HashSet<string> affectedPathKeys,
+        List<string> candidatePaths,
+        HashSet<string> candidatePathKeys,
+        CancellationToken cancellationToken)
+    {
+        var normalizedPath = NormalizeTargetPath(dirtyPath);
+        if (affectedPathKeys.Add(normalizedPath))
+        {
+            var isFile = File.Exists(normalizedPath);
+            var isDirectory = Directory.Exists(normalizedPath);
+            affectedPaths.Add(new AffectedPath(normalizedPath, isDirectory || (!isFile && !isDirectory)));
+        }
+
+        foreach (var currentPath in _source.GetPathsForChange(normalizedPath))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!TryAddCandidatePath(candidatePaths, candidatePathKeys, currentPath))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryAddCandidatePath(
+        List<string> candidatePaths,
+        HashSet<string> candidatePathKeys,
+        string candidatePath)
+    {
+        if (string.IsNullOrWhiteSpace(candidatePath)
+            || (!HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeRawExecutables)
+                && Win32Program.IsExecutablePath(candidatePath))
+            || !candidatePathKeys.Add(candidatePath))
+        {
+            return true;
+        }
+
+        if (candidatePaths.Count >= IncrementalRefreshPathLimit)
+        {
+            return false;
+        }
+
+        candidatePaths.Add(candidatePath);
+        return true;
+    }
+
+    private IReadOnlyList<AppCatalogItem> PromoteDirtyPathsToFullRefresh(
+        string reason,
+        CancellationToken cancellationToken)
+    {
+        LogDiagnostic($"Promoting incremental reconciliation to a full source refresh because it {reason}.");
+        return Load(cancellationToken);
+    }
+
+    private static bool IsAffected(
+        IReadOnlyList<AppCatalogSourceReference> sourceReferences,
+        IReadOnlyList<AffectedPath> affectedPaths)
+    {
+        foreach (var reference in sourceReferences)
+        {
+            if (MatchesAnyAffectedPath(reference.ItemId, affectedPaths))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool MatchesAnyAffectedPath(string candidatePath, IReadOnlyList<AffectedPath> affectedPaths)
+    {
+        foreach (var affectedPath in affectedPaths)
+        {
+            if (string.Equals(candidatePath, affectedPath.Path, StringComparison.OrdinalIgnoreCase)
+                || (affectedPath.IncludeDescendants
+                    && PathHelpers.IsPathInsideDirectory(candidatePath, affectedPath.Path)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private IReadOnlyList<AppCatalogItem> IndexPaths(
+        IReadOnlyList<string> paths,
+        CancellationToken cancellationToken)
+    {
         var indexedItems = new ConcurrentBag<AppCatalogItem>();
         Parallel.ForEach(
             paths,
@@ -106,22 +350,24 @@ internal sealed partial class Win32AppSource : IAppSource
             },
             path =>
             {
-                var program = _programLoader(path, _source.AsRunCommand);
+                var program = _programLoader(
+                    path,
+                    HasProfileOption(_source.Profile, Win32ProgramSourceProfile.LoadAsRunCommand));
                 if (!program.Valid)
                 {
                     return;
                 }
 
                 var isNonApp = program.AppType is Win32Program.ApplicationType.GenericFile or Win32Program.ApplicationType.Folder;
-                if (isNonApp && !_source.IncludeNonApps)
+                if (isNonApp && !HasProfileOption(_source.Profile, Win32ProgramSourceProfile.IncludeNonApplications))
                 {
                     return;
                 }
 
-                var identity = $"win32:{program.GetAppIdentifier()}|{program.Arguments}";
+                var identity = CreateCatalogIdentity(program);
                 indexedItems.Add(new AppCatalogItem(
                     identity,
-                    _source.Priority,
+                    GetRepresentationPriority(path) + _source.Priority,
                     new AppCatalogSourceReference(_source.Id, path),
                     CreateMatchTerms(program, path),
                     Win32AppPayload.From(program)));
@@ -141,6 +387,40 @@ internal sealed partial class Win32AppSource : IAppSource
         }
 
         return new List<AppCatalogItem>(itemsByIdentity.Values);
+    }
+
+    private static bool HasProfileOption(
+        Win32ProgramSourceProfile profile,
+        Win32ProgramSourceProfile option)
+        => (profile & option) != 0;
+
+    private static int GetRepresentationPriority(string sourcePath)
+        => Win32Program.IsExecutablePath(sourcePath) ? RawExecutablePriorityOffset : 0;
+
+    private static string CreateCatalogIdentity(Win32Program program)
+    {
+        var target = IsExecutableBacked(program) && !string.IsNullOrWhiteSpace(program.FullPath)
+            ? NormalizeTargetPath(program.FullPath)
+            : program.GetAppIdentifier();
+        var encodedArguments = Convert.ToHexString(Encoding.UTF8.GetBytes(program.Arguments ?? string.Empty));
+        return $"win32:{target}|args:{encodedArguments}";
+    }
+
+    private static bool IsExecutableBacked(Win32Program program)
+        => program.AppType is Win32Program.ApplicationType.Win32Application
+            or Win32Program.ApplicationType.RunCommand
+            or Win32Program.ApplicationType.WebApplication;
+
+    private static string NormalizeTargetPath(string targetPath)
+    {
+        try
+        {
+            return Path.TrimEndingDirectorySeparator(Path.GetFullPath(targetPath));
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return targetPath;
+        }
     }
 
     private static List<string> CreateMatchTerms(Win32Program program, string sourcePath)
@@ -181,58 +461,303 @@ internal sealed partial class Win32AppSource : IAppSource
             new PathEnvironmentAppSource(settings),
         ];
 
-        foreach (var source in settings.ProgramSources)
-        {
-            sources.Add(new CustomDirectoryAppSource(source, settings.ProgramSuffixes));
-        }
+        AddCustomSources(
+            sources,
+            settings.CustomShortcutFolders,
+            "custom-shortcut",
+            settings.ProgramSuffixes,
+            Win32ProgramSourceProfile.IncludeNonApplications | Win32ProgramSourceProfile.RecurseSubdirectories,
+            int.MaxValue);
+        AddCustomSources(
+            sources,
+            settings.PortableAppFolders,
+            "portable",
+            PortableAppSuffixes,
+            Win32ProgramSourceProfile.IncludeRawExecutables | Win32ProgramSourceProfile.RecurseSubdirectories,
+            PortableAppMaximumDepth);
 
         return sources;
     }
 
-    private void InitializeWatchers()
+    private static void AddCustomSources(
+        List<IWin32ProgramSource> sources,
+        IReadOnlyList<string> configuredPaths,
+        string idPrefix,
+        IReadOnlyList<string> suffixes,
+        Win32ProgramSourceProfile profile,
+        int maximumDepth)
     {
-        lock (_watchersLock)
+        var uniquePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var configuredPath in configuredPaths)
         {
-            if (_disposed.Value || !_source.IsEnabled)
+            if (string.IsNullOrWhiteSpace(configuredPath))
             {
-                return;
+                continue;
             }
 
-            var watchedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var path in _source.WatchPaths)
+            var expandedPath = Environment.ExpandEnvironmentVariables(configuredPath.Trim());
+            var normalizedPath = NormalizeTargetPath(expandedPath);
+            if (string.IsNullOrWhiteSpace(normalizedPath) || !uniquePaths.Add(normalizedPath))
             {
-                if (!watchedPaths.Add(path))
-                {
-                    continue;
-                }
+                continue;
+            }
 
-                try
+            sources.Add(new CustomDirectoryAppSource(
+                idPrefix,
+                normalizedPath,
+                suffixes,
+                profile,
+                maximumDepth));
+        }
+    }
+
+    private void InitializeWatchers()
+    {
+        if (_disposed.Value || !_source.IsEnabled)
+        {
+            return;
+        }
+
+        var watchedPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var sourcePath in _source.WatchPaths)
+        {
+            var path = NormalizeTargetPath(sourcePath);
+            if (string.IsNullOrWhiteSpace(path) || !watchedPaths.Add(path))
+            {
+                continue;
+            }
+
+            TryCreateWatcher(
+                path,
+                _source.MaximumDepth > 0,
+                previousAttempt: 0);
+        }
+    }
+
+    private bool TryCreateWatcher(string path, bool recurse, int previousAttempt)
+    {
+        FileSystemWatcher? watcher = null;
+        try
+        {
+            watcher = new FileSystemWatcher(path)
+            {
+                IncludeSubdirectories = recurse,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
+            };
+            watcher.Created += OnFileSystemChanged;
+            watcher.Deleted += OnFileSystemChanged;
+            watcher.Changed += OnFileSystemChanged;
+            watcher.Renamed += OnFileSystemRenamed;
+            watcher.Error += OnFileSystemWatcherError;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            watcher?.Dispose();
+            if (previousAttempt == 0 && Directory.Exists(path))
+            {
+                LogWatcherSetupFailed(_logger, path, ex);
+            }
+
+            LogDiagnostic($"Watcher creation failed for '{path}' (attempt {previousAttempt + 1}): {ex.Message}");
+            lock (_watchersLock)
+            {
+                ScheduleWatcherRecoveryUnderLock(path, recurse, previousAttempt + 1);
+            }
+
+            return false;
+        }
+
+        var registered = false;
+        lock (_watchersLock)
+        {
+            if (!_disposed.Value
+                && !_watchers.ContainsKey(path)
+                && !_watcherRecoveries.ContainsKey(path))
+            {
+                _watchers.Add(path, watcher);
+                registered = true;
+            }
+        }
+
+        if (!registered)
+        {
+            DisposeWatcher(watcher);
+            return false;
+        }
+
+        try
+        {
+            watcher.EnableRaisingEvents = true;
+        }
+        catch (Exception ex) when (ex is IOException
+            or UnauthorizedAccessException
+            or ArgumentException
+            or InvalidOperationException
+            or ObjectDisposedException)
+        {
+            var removed = false;
+            lock (_watchersLock)
+            {
+                if (_watchers.TryGetValue(path, out var registeredWatcher)
+                    && ReferenceEquals(registeredWatcher, watcher))
                 {
-                    var watcher = new FileSystemWatcher(path)
-                    {
-                        IncludeSubdirectories = true,
-                        NotifyFilter = NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.LastWrite,
-                    };
-                    watcher.Created += OnFileSystemChanged;
-                    watcher.Deleted += OnFileSystemChanged;
-                    watcher.Changed += OnFileSystemChanged;
-                    watcher.Renamed += OnFileSystemRenamed;
-                    watcher.Error += OnFileSystemWatcherError;
-                    watcher.EnableRaisingEvents = true;
-                    _watchers.Add(watcher);
+                    _watchers.Remove(path);
+                    removed = true;
+                    ScheduleWatcherRecoveryUnderLock(path, recurse, previousAttempt + 1);
                 }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+            }
+
+            DisposeWatcher(watcher);
+            if (removed)
+            {
+                if (previousAttempt == 0 && Directory.Exists(path))
                 {
                     LogWatcherSetupFailed(_logger, path, ex);
                 }
+
+                LogDiagnostic($"Watcher creation failed for '{path}' (attempt {previousAttempt + 1}): {ex.Message}");
+            }
+
+            return false;
+        }
+
+        lock (_watchersLock)
+        {
+            registered = _watchers.TryGetValue(path, out var registeredWatcher)
+                && ReferenceEquals(registeredWatcher, watcher);
+        }
+
+        if (registered)
+        {
+            LogDiagnostic($"Watcher armed for '{path}'.");
+        }
+
+        return registered;
+    }
+
+    private void ScheduleWatcherRecoveryUnderLock(string path, bool recurse, int attempt)
+    {
+        if (_disposed.Value || _watchers.ContainsKey(path) || _watcherRecoveries.ContainsKey(path))
+        {
+            return;
+        }
+
+        var state = new WatcherRecoveryState(
+            attempt,
+            ++_nextWatcherRecoveryGeneration,
+            recurse);
+        _watcherRecoveries[path] = state;
+        var delay = GetWatcherRecoveryDelay(attempt);
+        LogDiagnostic($"Watcher for '{path}' will be re-armed in {delay.TotalSeconds:0} seconds (attempt {attempt}).");
+        _ = RecoverWatcherAsync(path, state, delay);
+    }
+
+    private async Task RecoverWatcherAsync(string path, WatcherRecoveryState scheduledState, TimeSpan delay)
+    {
+        // Recovery can be injected with an already-completed delay in tests. Always yield so
+        // watcher construction cannot run reentrantly under the lock that scheduled recovery.
+        await Task.Yield();
+
+        try
+        {
+            await _recoveryDelayAsync(delay, _disposeCancellation.Token).ConfigureAwait(false);
+            var recovered = false;
+            var shouldRecover = false;
+            lock (_watchersLock)
+            {
+                if (_disposed.Value
+                    || !_watcherRecoveries.TryGetValue(path, out var currentState)
+                    || currentState.Generation != scheduledState.Generation)
+                {
+                    return;
+                }
+
+                _watcherRecoveries.Remove(path);
+                shouldRecover = true;
+            }
+
+            if (shouldRecover && IsDesiredWatcherPath(path, out var recurse))
+            {
+                recovered = TryCreateWatcher(path, recurse, scheduledState.Attempt);
+            }
+
+            if (recovered)
+            {
+                LogDiagnostic($"Watcher for '{path}' was re-armed; reconciling its blind interval.");
+                RaiseInvalidated(AppSourceInvalidatedEventArgs.FullRefresh);
+            }
+        }
+        catch (OperationCanceledException) when (_disposeCancellation.IsCancellationRequested)
+        {
+        }
+        catch (ObjectDisposedException) when (_disposed.Value)
+        {
+        }
+        catch (Exception ex)
+        {
+            LogWatcherRecoveryFailed(_logger, path, ex);
+            if (IsDesiredWatcherPath(path, out var recurse))
+            {
+                lock (_watchersLock)
+                {
+                    ScheduleWatcherRecoveryUnderLock(
+                        path,
+                        recurse,
+                        scheduledState.Attempt + 1);
+                }
+            }
+        }
+    }
+
+    private bool IsDesiredWatcherPath(string path, out bool recurse)
+    {
+        recurse = _source.MaximumDepth > 0;
+        if (!_source.IsEnabled)
+        {
+            return false;
+        }
+
+        foreach (var sourcePath in _source.WatchPaths)
+        {
+            if (string.Equals(NormalizeTargetPath(sourcePath), path, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Returns the capped backoff used for a one-based watcher recovery attempt.</summary>
+    internal static TimeSpan GetWatcherRecoveryDelay(int attempt)
+    {
+        var exponent = Math.Clamp(Math.Max(attempt, 1) - 1, 0, 10);
+        var delayTicks = InitialWatcherRecoveryDelay.Ticks * (1L << exponent);
+        return TimeSpan.FromTicks(Math.Min(delayTicks, MaximumWatcherRecoveryDelay.Ticks));
+    }
+
+    /// <summary>Gets a snapshot of paths with an active watcher, for diagnostics and tests.</summary>
+    internal IReadOnlyList<string> WatchedPaths
+    {
+        get
+        {
+            lock (_watchersLock)
+            {
+                return new List<string>(_watchers.Keys);
             }
         }
     }
 
     private void OnFileSystemChanged(object sender, FileSystemEventArgs args)
     {
+        if (args.ChangeType == WatcherChangeTypes.Changed && Directory.Exists(args.FullPath))
+        {
+            return;
+        }
+
         if (_source.IsRelevantPath(args.FullPath))
         {
+            LogDiagnostic($"Watcher reported {args.ChangeType} for '{args.FullPath}'.");
             RaiseInvalidated(
                 AppSourceInvalidatedEventArgs.ForPath(
                     new AppSourcePathChange(args.ChangeType, args.FullPath)));
@@ -243,6 +768,7 @@ internal sealed partial class Win32AppSource : IAppSource
     {
         if (_source.IsRelevantPath(args.FullPath) || _source.IsRelevantPath(args.OldFullPath))
         {
+            LogDiagnostic($"Watcher reported Renamed from '{args.OldFullPath}' to '{args.FullPath}'.");
             RaiseInvalidated(
                 AppSourceInvalidatedEventArgs.ForPath(
                     new AppSourcePathChange(WatcherChangeTypes.Renamed, args.FullPath, args.OldFullPath)));
@@ -251,15 +777,61 @@ internal sealed partial class Win32AppSource : IAppSource
 
     private void OnFileSystemWatcherError(object sender, ErrorEventArgs args)
     {
-        LogWatcherFailed(_logger, args.GetException());
-        RaiseInvalidated(AppSourceInvalidatedEventArgs.FullRefresh);
+        string? failedPath = null;
+        FileSystemWatcher? failedWatcher = null;
+        if (sender is FileSystemWatcher watcher)
+        {
+            lock (_watchersLock)
+            {
+                foreach (var registeredWatcher in _watchers)
+                {
+                    if (ReferenceEquals(watcher, registeredWatcher.Value))
+                    {
+                        failedPath = registeredWatcher.Key;
+                        break;
+                    }
+                }
+
+                if (failedPath is not null)
+                {
+                    var recurse = watcher.IncludeSubdirectories;
+                    _watchers.Remove(failedPath);
+                    failedWatcher = watcher;
+                    ScheduleWatcherRecoveryUnderLock(failedPath, recurse, attempt: 1);
+                }
+            }
+        }
+
+        if (failedWatcher is not null)
+        {
+            DisposeWatcher(failedWatcher);
+        }
+
+        if (failedPath is not null)
+        {
+            LogWatcherFailed(_logger, failedPath, args.GetException());
+            LogDiagnostic($"Watcher for '{failedPath}' failed; requesting a source reconciliation.");
+            RaiseInvalidated(AppSourceInvalidatedEventArgs.FullRefresh);
+        }
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to watch application source directory '{Path}'.")]
-    private static partial void LogWatcherSetupFailed(ILogger logger, string path, Exception exception);
+    private void DisposeWatcher(FileSystemWatcher watcher)
+    {
+        try
+        {
+            watcher.EnableRaisingEvents = false;
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+        {
+        }
 
-    [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "An application source watcher reported an error.")]
-    private static partial void LogWatcherFailed(ILogger logger, Exception exception);
+        watcher.Created -= OnFileSystemChanged;
+        watcher.Deleted -= OnFileSystemChanged;
+        watcher.Changed -= OnFileSystemChanged;
+        watcher.Renamed -= OnFileSystemRenamed;
+        watcher.Error -= OnFileSystemWatcherError;
+        watcher.Dispose();
+    }
 
     private void RaiseInvalidated(AppSourceInvalidatedEventArgs args)
     {
@@ -269,6 +841,26 @@ internal sealed partial class Win32AppSource : IAppSource
         }
     }
 
+    private void LogDiagnostic(string message)
+    {
+        if (_diagnosticsEnabled())
+        {
+            LogDiagnosticMessage(_logger, Id, message);
+        }
+    }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to watch application source directory '{Path}'.")]
+    private static partial void LogWatcherSetupFailed(MEL.ILogger logger, string path, Exception exception);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to recover the application source watcher for '{Path}'.")]
+    private static partial void LogWatcherRecoveryFailed(MEL.ILogger logger, string path, Exception exception);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "The application source watcher for '{Path}' reported an error.")]
+    private static partial void LogWatcherFailed(MEL.ILogger logger, string path, Exception exception);
+
+    [LoggerMessage(EventId = 4, Level = LogLevel.Information, Message = "[AppCatalog diagnostics] [{SourceId}] {Message}")]
+    private static partial void LogDiagnosticMessage(MEL.ILogger logger, string sourceId, string message);
+
     public void Dispose()
     {
         if (!_disposed.Set())
@@ -276,21 +868,21 @@ internal sealed partial class Win32AppSource : IAppSource
             return;
         }
 
+        _disposeCancellation.Cancel();
+        List<FileSystemWatcher> watchers;
         lock (_watchersLock)
         {
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = false;
-                watcher.Created -= OnFileSystemChanged;
-                watcher.Deleted -= OnFileSystemChanged;
-                watcher.Changed -= OnFileSystemChanged;
-                watcher.Renamed -= OnFileSystemRenamed;
-                watcher.Error -= OnFileSystemWatcherError;
-                watcher.Dispose();
-            }
-
+            watchers = new List<FileSystemWatcher>(_watchers.Values);
             _watchers.Clear();
+            _watcherRecoveries.Clear();
             Invalidated = null;
         }
+
+        foreach (var watcher in watchers)
+        {
+            DisposeWatcher(watcher);
+        }
+
+        _disposeCancellation.Dispose();
     }
 }
