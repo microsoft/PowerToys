@@ -1382,7 +1382,8 @@ opera.exe</value>
     <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
-    <value>File Explorer</value>
+    <value>File Explorer Add-ons</value>
+    <comment>Product name: Settings page title for File Explorer Add-ons. Keep this translation consistent with Shell_PowerPreview.Content.</comment>
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
     <value>Image Resizer</value>
