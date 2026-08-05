@@ -10,6 +10,17 @@ internal sealed class DesktopAppSource : DirectoryWin32ProgramSource
 {
     private readonly AllAppsSettings _settings;
 
+    public override string Id => "desktop";
+
+    public override int Priority => 20;
+
+    public override bool IsEnabled => _settings.EnableDesktopSource;
+
+    public override Win32ProgramSourceProfile Profile
+        => Win32ProgramSourceProfile.RecurseSubdirectories
+            | (_settings.IncludeNonAppsOnDesktop ? Win32ProgramSourceProfile.IncludeNonApplications : 0);
+
+    /// <summary>Initializes a new instance of the <see cref="DesktopAppSource"/> class. Creates discovery over the current user and shared Desktop folders.</summary>
     public DesktopAppSource(AllAppsSettings settings)
         : base(
             [
@@ -20,12 +31,4 @@ internal sealed class DesktopAppSource : DirectoryWin32ProgramSource
     {
         _settings = settings;
     }
-
-    public override string Id => "desktop";
-
-    public override int Priority => 20;
-
-    public override bool IsEnabled => _settings.EnableDesktopSource;
-
-    public override bool IncludeNonApps => _settings.IncludeNonAppsOnDesktop;
 }

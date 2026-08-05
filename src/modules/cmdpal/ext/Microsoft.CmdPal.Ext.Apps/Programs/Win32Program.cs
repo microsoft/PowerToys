@@ -446,23 +446,26 @@ public partial class Win32Program
             : null;
     }
 
-    private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
+    private static IEnumerable<string> ProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(maximumDepth);
+
         if (!Directory.Exists(directory))
         {
             return [];
         }
 
         var files = new List<string>();
-        var folderQueue = new Queue<string>();
-        folderQueue.Enqueue(directory);
+        var folderQueue = new Queue<(string Path, int Depth)>();
+        folderQueue.Enqueue((directory, 0));
 
         // Keep track of already visited directories to avoid cycles.
         var alreadyVisited = new HashSet<string>();
 
         do
         {
-            var currentDirectory = folderQueue.Dequeue();
+            var current = folderQueue.Dequeue();
+            var currentDirectory = current.Path;
 
             if (alreadyVisited.Contains(currentDirectory))
             {
@@ -496,8 +499,7 @@ public partial class Win32Program
 
             try
             {
-                // If the search is set to be non-recursive, then do not enqueue the child directories.
-                if (!recursiveSearch)
+                if (current.Depth >= maximumDepth)
                 {
                     continue;
                 }
@@ -510,7 +512,7 @@ public partial class Win32Program
                     RecurseSubdirectories = false,
                 }))
                 {
-                    folderQueue.Enqueue(childDirectory);
+                    folderQueue.Enqueue((childDirectory, current.Depth + 1));
                 }
             }
             catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException)
@@ -527,8 +529,8 @@ public partial class Win32Program
         return files;
     }
 
-    internal static IEnumerable<string> EnumerateProgramPaths(string directory, IList<string> suffixes, bool recursiveSearch = true)
-        => ProgramPaths(directory, suffixes, recursiveSearch);
+    internal static IEnumerable<string> EnumerateProgramPaths(string directory, IList<string> suffixes, int maximumDepth = int.MaxValue)
+        => ProgramPaths(directory, suffixes, maximumDepth);
 
     private static string Extension(string path)
     {
@@ -540,6 +542,10 @@ public partial class Win32Program
             : string.Empty;
     }
 
+    /// <summary>Determines whether a source path directly names a supported executable type.</summary>
+    internal static bool IsExecutablePath(string path)
+        => ExecutableApplicationExtensions.Contains(Extension(path));
+
     // Function to obtain the list of applications, the locations of which have been added to the env variable PATH
     private static List<string> PathEnvironmentProgramPaths(IList<string> suffixes)
     {
@@ -547,8 +553,6 @@ public partial class Win32Program
         var pathEnvVariable = Environment.GetEnvironmentVariable("PATH");
         var searchPaths = pathEnvVariable?.Split(Path.PathSeparator);
         var toFilterAllPaths = new List<string>();
-        var isRecursiveSearch = true;
-
         if (searchPaths is not null)
         {
             foreach (var path in searchPaths)
@@ -557,7 +561,7 @@ public partial class Win32Program
                 {
                     // to expand any environment variables present in the path
                     var directory = Environment.ExpandEnvironmentVariables(path);
-                    var paths = ProgramPaths(directory, suffixes, !isRecursiveSearch);
+                    var paths = ProgramPaths(directory, suffixes, maximumDepth: 0);
                     toFilterAllPaths.AddRange(paths);
                 }
             }

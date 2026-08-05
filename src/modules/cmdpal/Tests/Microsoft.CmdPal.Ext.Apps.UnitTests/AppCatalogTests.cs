@@ -528,6 +528,36 @@ public class AppCatalogTests
     }
 
     [TestMethod]
+    public async Task SourceInvalidationFlood_DistinctPathsPromoteOnlyThatSourceToFullRefresh()
+    {
+        using var sourceA = new TestAppSource("a", [CreateCatalogItem("Initial A")]);
+        using var sourceB = new TestAppSource("b", [CreateCatalogItem("Initial B")]);
+        using var catalog = CreateCatalog([sourceA, sourceB], new TestCache(null));
+        await catalog.RefreshAsync();
+        var fullRefreshCompletion = new TaskCompletionSource<IReadOnlyList<AppCatalogItem>>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        sourceA.DeferNextLoad(fullRefreshCompletion.Task);
+
+        var runningFullRefresh = catalog.RefreshAsync();
+        await WaitForConditionAsync(() => sourceA.LoadCount == 2);
+        for (var index = 0; index <= 256; index++)
+        {
+            sourceA.Invalidate(
+                AppSourceInvalidatedEventArgs.ForPath(
+                    new AppSourcePathChange(WatcherChangeTypes.Changed, $@"C:\Apps\Changed-{index}.lnk")));
+        }
+
+        sourceA.SetItems([CreateCatalogItem("After flood")]);
+        fullRefreshCompletion.SetResult([CreateCatalogItem("First full")]);
+        await runningFullRefresh;
+
+        Assert.AreEqual(3, sourceA.LoadCount);
+        Assert.AreEqual(0, sourceA.IncrementalLoadCount);
+        Assert.AreEqual(2, sourceB.LoadCount);
+        Assert.IsTrue(ContainsApp(catalog.Items, "After flood"));
+    }
+
+    [TestMethod]
     public async Task SetAppHidden_MovesExistingItemWithoutRebuildingCatalog()
     {
         using var source = new TestAppSource("test", [CreateCatalogItem("Notepad", identity: "win32:notepad")]);

@@ -136,9 +136,7 @@ internal sealed partial class AppCatalogCache : IAppCatalogCache
             var items = sourceSnapshots[sourceId];
             var validatedAtUtc = context.NowUtc;
             if (previousById.TryGetValue(sourceId, out var previous)
-                && string.Equals(previous.SourceKey, sourceKey, StringComparison.Ordinal)
-                && !fullyReconciledSources.Contains(sourceId)
-                && HasSameItems(previous.Items, items))
+                && !fullyReconciledSources.Contains(sourceId))
             {
                 validatedAtUtc = previous.ValidatedAtUtc;
             }

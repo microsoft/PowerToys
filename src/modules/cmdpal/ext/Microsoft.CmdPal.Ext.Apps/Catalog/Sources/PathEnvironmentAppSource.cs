@@ -23,13 +23,12 @@ internal sealed class PathEnvironmentAppSource : IWin32ProgramSource
 
     public bool IsEnabled => _settings.EnablePathEnvironmentVariableSource;
 
-    public bool IncludeNonApps => true;
+    public Win32ProgramSourceProfile Profile
+        => Win32ProgramSourceProfile.IncludeRawExecutables | Win32ProgramSourceProfile.LoadAsRunCommand;
 
-    public bool AsRunCommand => true;
+    public string CacheKey => $"{IsEnabled}|{Profile}|{Environment.GetEnvironmentVariable("PATH")}|{string.Join(';', _settings.RunCommandSuffixes)}";
 
-    public string CacheKey => $"{IsEnabled}|{Environment.GetEnvironmentVariable("PATH")}|{string.Join(';', _settings.RunCommandSuffixes)}";
-
-    public string ConfigurationKey => $"{IsEnabled}|{string.Join(';', _settings.RunCommandSuffixes)}";
+    public string ConfigurationKey => $"{IsEnabled}|{Profile}|{string.Join(';', _settings.RunCommandSuffixes)}";
 
     public IReadOnlyList<string> WatchPaths => [];
 

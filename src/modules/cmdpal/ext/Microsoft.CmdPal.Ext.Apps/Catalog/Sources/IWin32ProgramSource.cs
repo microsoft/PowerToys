@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.CmdPal.Ext.Apps.Catalog.Sources;
 
 /// <summary>
-/// Describes one Win32 discovery origin that contributes paths and source policy to the combined Win32 catalog source.
+/// Describes one independently refreshable Win32 discovery origin and its path interpretation policy.
 /// </summary>
 internal interface IWin32ProgramSource
 {
@@ -20,11 +20,14 @@ internal interface IWin32ProgramSource
     /// <summary>Gets a value indicating whether this origin participates in discovery.</summary>
     bool IsEnabled { get; }
 
-    /// <summary>Gets a value indicating whether generic files and folders from this origin are eligible.</summary>
-    bool IncludeNonApps { get; }
+    /// <summary>Gets the scan and interpretation policy for paths contributed by this origin.</summary>
+    Win32ProgramSourceProfile Profile { get; }
 
-    /// <summary>Gets a value indicating whether discovered executables are represented as direct run commands.</summary>
-    bool AsRunCommand { get; }
+    /// <summary>
+    /// Gets the greatest directory depth scanned below each watch root. Zero scans only the root;
+    /// <see cref="int.MaxValue"/> scans every descendant allowed by the source profile.
+    /// </summary>
+    int MaximumDepth => (Profile & Win32ProgramSourceProfile.RecurseSubdirectories) != 0 ? int.MaxValue : 0;
 
     /// <summary>Gets inexpensive state used to validate this origin's cached contribution.</summary>
     string CacheKey { get; }
@@ -37,6 +40,16 @@ internal interface IWin32ProgramSource
 
     /// <summary>Enumerates candidate paths from this origin.</summary>
     IEnumerable<string> GetPaths();
+
+    /// <summary>
+    /// Enumerates candidates that currently exist at or below a dirty path, constrained by this
+    /// origin's configured roots, suffixes, and maximum depth.
+    /// </summary>
+    /// <remarks>
+    /// The observed watcher event is intentionally not supplied. Implementations must probe current
+    /// state so duplicate, reordered, or superseded notifications converge on the same result.
+    /// </remarks>
+    IEnumerable<string> GetPathsForChange(string path) => [];
 
     /// <summary>Determines whether a watcher path can affect this origin's candidate set.</summary>
     bool IsRelevantPath(string path);
