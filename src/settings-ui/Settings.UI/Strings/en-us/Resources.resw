@@ -2378,15 +2378,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
   </data>
-  <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
-    <value>Fills</value>
-  </data>
-  <data name="ImageResizer_Fit_Fit_ThirdPersonSingular" xml:space="preserve">
-    <value>Fits within</value>
-  </data>
-  <data name="ImageResizer_Fit_Stretch_ThirdPersonSingular" xml:space="preserve">
-    <value>Stretches to</value>
-  </data>
   <data name="ImageResizer_Unit_Centimeter" xml:space="preserve">
     <value>Centimeters</value>
   </data>
