@@ -370,18 +370,20 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
             if (!isEnabled)
             {
+                List<TopLevelViewModel> commandsToRemove;
                 lock (TopLevelCommands)
                 {
-                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
+                    commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
                     foreach (var command in commandsToRemove)
                     {
                         TopLevelCommands.Remove(command);
                     }
                 }
 
+                List<TopLevelViewModel> dockBandsToRemove;
                 lock (_dockBandsLock)
                 {
-                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
+                    dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
                     foreach (var band in dockBandsToRemove)
                     {
                         DockBands.Remove(band);
@@ -395,6 +397,19 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     {
                         PinnedCommands.Remove(command);
                     }
+                }
+
+                // Re-enabling the provider reloads its commands, which builds
+                // brand new view-models, so the ones we just dropped are never
+                // coming back and can release their extension event handlers.
+                foreach (var command in commandsToRemove)
+                {
+                    command.Cleanup();
+                }
+
+                foreach (var band in dockBandsToRemove)
+                {
+                    band.Cleanup();
                 }
             }
             else
