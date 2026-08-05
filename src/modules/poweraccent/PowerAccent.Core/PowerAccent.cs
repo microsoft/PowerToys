@@ -23,8 +23,7 @@ public partial class PowerAccent : IDisposable
     private readonly LetterKey[] _letterKeysShowingDescription = new LetterKey[] { LetterKey.VK_O };
     private const double ScreenMinPadding = 150;
 
-    private bool _visible;
-    private int _showGeneration;
+    private readonly DelayedDisplayState _displayState = new();
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
@@ -78,6 +77,11 @@ public partial class PowerAccent : IDisposable
             });
         }));
 
+        _keyboardListener.SetCancelToolbarEvent(new PowerToys.PowerAccentKeyboardService.CancelToolbar(() =>
+        {
+            _runOnUiThread(CancelToolbar);
+        }));
+
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
             _runOnUiThread(() =>
@@ -102,13 +106,11 @@ public partial class PowerAccent : IDisposable
 
     private void ShowToolbar(LetterKey letterKey)
     {
-        _visible = true;
-
         bool isPressAndHold = _settingService.ActivationKey == PowerAccentActivationKey.PressAndHold;
 
         // Each summon gets a generation id so a delayed render queued by an earlier
         // press can't fire for a newer one (or after the toolbar was hidden).
-        int generation = ++_showGeneration;
+        int generation = _displayState.Begin();
 
         // Trigger modes navigate the instant the toolbar is summoned, so the character data must
         // be ready synchronously. Press-and-hold can't navigate until the popup is actually shown,
@@ -124,7 +126,7 @@ public partial class PowerAccent : IDisposable
         Task.Delay(displayDelay).ContinueWith(
         t =>
         {
-            if (_visible && generation == _showGeneration)
+            if (_displayState.ShouldShow(generation))
             {
                 if (isPressAndHold)
                 {
@@ -135,6 +137,14 @@ public partial class PowerAccent : IDisposable
             }
         },
         TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void CancelToolbar()
+    {
+        _displayState.Cancel();
+        _characters = Array.Empty<string>();
+        _selectedIndex = -1;
+        OnChangeDisplay?.Invoke(false, null);
     }
 
     private void PrepareCharacters(LetterKey letterKey)
@@ -269,8 +279,7 @@ public partial class PowerAccent : IDisposable
         _keyboardListener.ForceReset();
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
-        _visible = false;
-        _showGeneration++;
+        _displayState.Cancel();
     }
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
@@ -289,7 +298,7 @@ public partial class PowerAccent : IDisposable
         bool isHardwareShiftPressed = WindowsFunctions.IsShiftState() && !_initialShiftState;
         shiftPressed = shiftPressed || isHardwareShiftPressed;
 
-        if (_visible && _selectedIndex == -1)
+        if (_displayState.IsVisible && _selectedIndex == -1)
         {
             if (triggerKey == TriggerKey.Space)
             {

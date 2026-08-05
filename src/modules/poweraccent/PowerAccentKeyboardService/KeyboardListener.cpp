@@ -13,7 +13,7 @@
 namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 {
     KeyboardListener::KeyboardListener() :
-        m_toolbarVisible(false), m_triggeredWithSpace(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false)
+        m_toolbarVisible(false), m_triggeredWithSpace(false), m_triggeredWithLeftArrow(false), m_triggeredWithRightArrow(false), m_leftShiftPressed(false), m_rightShiftPressed(false), m_pressAndHoldCancelled(false)
     {
         s_instance = this;
         LoggerHelpers::init_logger(L"PowerAccent", L"PowerAccentKeyboardService", "PowerAccent");
@@ -60,12 +60,20 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         m_triggeredWithRightArrow = false;
         m_leftShiftPressed = false;
         m_rightShiftPressed = false;
+        m_pressAndHoldCancelled = false;
     }
 
     void KeyboardListener::SetShowToolbarEvent(ShowToolbar showToolbarEvent)
     {
         m_showToolbarCb = [trigger = std::move(showToolbarEvent)](LetterKey key) {
             trigger(key);
+        };
+    }
+
+    void KeyboardListener::SetCancelToolbarEvent(CancelToolbar cancelToolbarEvent)
+    {
+        m_cancelToolbarCb = [trigger = std::move(cancelToolbarEvent)]() {
+            trigger();
         };
     }
 
@@ -196,16 +204,23 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         if (std::find(letters.begin(), letters.end(), letterKey) != cend(letters) && m_isLanguageLetterCb(letterKey))
         {
-            if (m_toolbarVisible && letterPressed == letterKey)
+            if (m_toolbarVisible)
             {
-                // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down
-                // If Quick Accent is visible, prevent the letter key from being processed
-                // https://github.com/microsoft/PowerToys/issues/36853
-                return true;
+                if (letterPressed == letterKey)
+                {
+                    // On-screen keyboard continuously sends WM_KEYDOWN when a key is held down.
+                    // If Quick Accent is active, prevent the owner letter from being processed.
+                    // https://github.com/microsoft/PowerToys/issues/36853
+                    return true;
+                }
+
+                // A different letter must not steal or re-arm the active owner-letter gesture.
+                return false;
             }
 
             m_stopwatch.reset();
             letterPressed = letterKey;
+            m_pressAndHoldCancelled = false;
         }
 
         // Press-and-hold activation: the held letter itself opens the toolbar after the hold
@@ -259,10 +274,24 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_showToolbarCb(letterPressed);
         }
 
+        // A legacy trigger pressed while a hold is still pending cancels this owner-letter
+        // gesture. Let the trigger pass through and require a fresh letter press to re-arm.
+        if (m_settings.activationKey == PowerAccentActivationKey::PressAndHold &&
+            m_toolbarVisible &&
+            !m_pressAndHoldCancelled &&
+            triggerPressed &&
+            m_stopwatch.elapsed() < m_settings.holdDuration)
+        {
+            m_pressAndHoldCancelled = true;
+            m_cancelToolbarCb();
+            return false;
+        }
+
         // In press-and-hold the popup only appears once the hold duration elapses, so Space/arrow
         // must pass through until then; treat the picker as interactive only once it is shown.
         const bool pickerInteractive =
             m_toolbarVisible &&
+            !m_pressAndHoldCancelled &&
             (m_settings.activationKey != PowerAccentActivationKey::PressAndHold ||
              m_stopwatch.elapsed() >= m_settings.holdDuration);
 
@@ -313,6 +342,13 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             }
 
             letterPressed = LetterKey::None;
+
+            if (m_pressAndHoldCancelled)
+            {
+                m_toolbarVisible = false;
+                m_pressAndHoldCancelled = false;
+                return false;
+            }
 
             if (m_toolbarVisible)
             {

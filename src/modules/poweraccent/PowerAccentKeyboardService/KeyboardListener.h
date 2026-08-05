@@ -34,6 +34,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void KeyboardListener::InitHook();
         void KeyboardListener::UnInitHook();
         void SetShowToolbarEvent(ShowToolbar showToolbarEvent);
+        void SetCancelToolbarEvent(CancelToolbar cancelToolbarEvent);
         void SetHideToolbarEvent(HideToolbar hideToolbarEvent);
         void SetNextCharEvent(NextChar NextCharEvent);
         void SetIsLanguageLetterDelegate(IsLanguageLetter IsLanguageLetterDelegate);
@@ -60,6 +61,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         bool m_toolbarVisible;
         PowerAccentSettings m_settings;
         std::function<void(LetterKey)> m_showToolbarCb;
+        std::function<void()> m_cancelToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
@@ -69,6 +71,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         spdlog::stopwatch m_stopwatch;
         bool m_leftShiftPressed;
         bool m_rightShiftPressed;
+        bool m_pressAndHoldCancelled;
 
         std::mutex m_mutex_excluded_apps;
         std::pair<HWND, bool> m_prevForegroundAppExcl{ NULL, false };
