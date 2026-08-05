@@ -207,7 +207,7 @@
 		</Page>
 	</ItemGroup>
 
-	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+	<Target Name="BuildXamlIndexBeforeSettings" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' != 'true' and '$(Configuration)' != 'Debug'">
 		<Message Importance="high" Text="[Settings] Building XamlIndexBuilder prior to compile. Views='$(MSBuildProjectDirectory)\SettingsXAML\Views' Out='$(GeneratedJsonFile)'" />
 		<MSBuild Projects="..\Settings.UI.XamlIndexBuilder\Settings.UI.XamlIndexBuilder.csproj" Targets="Build" Properties="Configuration=$(Configuration);Platform=Any CPU;TargetFramework=$(CoreTargetFramework);XamlViewsDir=$(MSBuildProjectDirectory)\SettingsXAML\Views;GeneratedJsonFile=$(GeneratedJsonFile)" />
 	</Target>

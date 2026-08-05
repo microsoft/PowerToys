@@ -33,7 +33,7 @@
 		<XamlRootDir Condition="'$(XamlViewsDir)' != ''">$([System.IO.Path]::GetDirectoryName('$(XamlViewsDir)'))</XamlRootDir>
 		<GeneratedJsonFile Condition="'$(GeneratedJsonFile)' == ''">$(MSBuildProjectDirectory)\..\Settings.UI\Assets\Settings\search.index.json</GeneratedJsonFile>
 	</PropertyGroup>
-	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build">
+	<Target Name="GenerateSearchIndexSelf" AfterTargets="Build" Condition="'$(Configuration)' != 'Debug'">
 		<RemoveDir Directories="$(MSBuildProjectDirectory)\obj\ARM64;$(MSBuildProjectDirectory)\obj\x64;$(MSBuildProjectDirectory)\bin" />
 		<MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(GeneratedJsonFile)'))" />
 		<Message Importance="high" Text="[XamlIndexBuilder] Generating search index. Root='$(XamlRootDir)'; Out='$(GeneratedJsonFile)'; Tool='$(TargetPath)'; DotNet='$(DotNetExe)'." />
