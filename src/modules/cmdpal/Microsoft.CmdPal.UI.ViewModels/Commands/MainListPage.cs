@@ -47,8 +47,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
-    private readonly InProcObject<IListPage> _allAppsPage;
-    private readonly AllAppsCommandProvider _allAppsCommandProvider;
+    private readonly IAppListItemSource _appListItemSource;
     private readonly ScoringFunction<InProcObject<IListItem>> _scoringFunction;
     private readonly ScoringFunction<InProcObject<IListItem>> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
@@ -89,12 +88,15 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+    private bool _appItemsChangedWhileLoading;
+    private IReadOnlyList<AppListItem> _lastVisibleAppItems;
+    private int _lastAppResultLimit;
 
     // Last per-provider settings we reacted to, so a settings reload can tell whether any
     // provider's search weight actually changed and only then re-rank the active query.
     private ImmutableDictionary<string, ProviderSettings>? _lastProviderSettingsSnapshot;
 
-    private int AppResultLimit => _allAppsCommandProvider.TopLevelResultLimit;
+    private int AppResultLimit => _appListItemSource.TopLevelResultLimit;
 
     // Longest query to filter fuzzy app matches on. This prevents weak app matches on short queries.
     private const int ShortQueryAppFilterMaxLength = 2;
@@ -103,6 +105,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private const RankTier ShortQueryAppFilterMinTier = RankTier.AcronymWordBoundary;
 
     private InterlockedBoolean _fullRefreshRequested;
+    private InterlockedBoolean _forceSearchReapply;
     private InterlockedBoolean _refreshRunning;
     private InterlockedBoolean _refreshRequested;
 
@@ -118,8 +121,7 @@ public sealed partial class MainListPage : DynamicListPage,
         IFuzzyMatcherProvider fuzzyMatcherProvider,
         ISettingsService settingsService,
         IAppStateService appStateService,
-        AllAppsPage allAppsPage,
-        AllAppsCommandProvider allAppsCommandProvider)
+        IAppListItemSource appListItemSource)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -130,11 +132,12 @@ public sealed partial class MainListPage : DynamicListPage,
         _aliasManager = aliasManager;
         _appStateService = appStateService;
         _recentCommands = _appStateService.State.RecentCommands;
-        _allAppsPage = new(allAppsPage ?? throw new ArgumentNullException(nameof(allAppsPage)));
-        _allAppsCommandProvider = allAppsCommandProvider ?? throw new ArgumentNullException(nameof(allAppsCommandProvider));
+        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
+        _lastVisibleAppItems = _appListItemSource.GetSnapshot().VisibleItems;
+        _lastAppResultLimit = AppResultLimit;
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
-        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, GetAppHistory(_appStateService.State.RecentCommands, TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage)), _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight, appSnapshot: TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage));
+        _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, GetAppHistory(_appStateService.State.RecentCommands, _appListItemSource.GetSnapshot()), _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight, appSnapshot: _appListItemSource.GetSnapshot());
         _fallbackScoringFunction = (in _, item) => ScoreFallbackItem(item, _settingsService.Settings.FallbackRanks);
 
         _tlcManager.PropertyChanged += TlcManager_PropertyChanged;
@@ -178,9 +181,9 @@ public sealed partial class MainListPage : DynamicListPage,
         _fallbackUpdateManager = new FallbackUpdateManager(() => RequestRefresh(fullRefresh: false));
         _appStateService.StateChanged += AppStateService_StateChanged;
 
-        // The all apps page will kick off a BG thread to start loading apps.
+        // The app list item source will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
-        _allAppsPage.Safe.PropChanged += AllApps_PropChanged;
+        _appListItemSource.Changed += AppListItemSource_Changed;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -189,7 +192,7 @@ public sealed partial class MainListPage : DynamicListPage,
         HotReloadSettings(_settingsService.Settings);
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
 
-        IsLoading = true;
+        IsLoading = ActuallyLoading();
     }
 
     private void TlcManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -200,16 +203,40 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
-    private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
+    private void AppListItemSource_Changed(object? sender, EventArgs e)
     {
-        if (e.PropertyName == nameof(AllAppsPage.IsLoading))
+        var visibleAppItems = _appListItemSource.GetSnapshot().VisibleItems;
+        var appsChanged = !ReferenceEquals(_lastVisibleAppItems, visibleAppItems);
+        var resultLimit = AppResultLimit;
+        var resultLimitChanged = _lastAppResultLimit != resultLimit;
+        _lastAppResultLimit = resultLimit;
+        _lastVisibleAppItems = visibleAppItems;
+        _appItemsChangedWhileLoading |= appsChanged;
+        IsLoading = ActuallyLoading();
+        var shouldReapplyApps = !_appListItemSource.IsLoading && _appItemsChangedWhileLoading;
+        if (appsChanged || shouldReapplyApps)
         {
-            IsLoading = ActuallyLoading();
-            if (!_allAppsPage.Safe.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
+            InvalidateDefaultView();
+            if (!_appListItemSource.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)
             {
-                InvalidateDefaultView();
                 RequestRefresh(fullRefresh: false);
             }
+        }
+
+        if (!_appListItemSource.IsLoading)
+        {
+            _appItemsChangedWhileLoading = false;
+        }
+
+        if (shouldReapplyApps
+            && _includeApps
+            && !string.IsNullOrWhiteSpace(SearchText))
+        {
+            ReapplySearchInBackground(force: true);
+        }
+        else if (resultLimitChanged && _includeApps && !string.IsNullOrWhiteSpace(SearchText))
+        {
+            RequestRefresh(fullRefresh: false);
         }
     }
 
@@ -258,8 +285,13 @@ public sealed partial class MainListPage : DynamicListPage,
         _refreshThrottledDebouncedAction.Invoke(interval);
     }
 
-    private void ReapplySearchInBackground()
+    private void ReapplySearchInBackground(bool force = false)
     {
+        if (force)
+        {
+            _forceSearchReapply.Set();
+        }
+
         _refreshRequested.Set();
         if (!_refreshRunning.Set())
         {
@@ -276,16 +308,17 @@ public sealed partial class MainListPage : DynamicListPage,
             do
             {
                 _refreshRequested.Clear();
+                var force = _forceSearchReapply.Clear();
                 lock (_tlcManager.TopLevelCommands)
                 {
-                    if (_filteredItemsIncludesApps == _includeApps)
+                    if (!force && _filteredItemsIncludesApps == _includeApps)
                     {
                         break;
                     }
                 }
 
                 var currentSearchText = SearchText;
-                UpdateSearchTextCore(currentSearchText, currentSearchText, isUserInput: false);
+                UpdateSearchTextCore(currentSearchText, currentSearchText, isUserInput: false, forceReset: force);
             }
             while (_refreshRequested.Value);
         }
@@ -525,7 +558,7 @@ public sealed partial class MainListPage : DynamicListPage,
             pinnedSettings,
             recentCommandIds,
             allCommands,
-            _allAppsPage,
+            _appListItemSource.GetSnapshot(),
             includeApps: _includeApps,
             recentCommandLimit: _recentCommandsDisplayLimit,
             recentCommandsFirst: _recentCommandsOnHome == RecentCommandsPlacement.BeforePinned);
@@ -568,7 +601,7 @@ public sealed partial class MainListPage : DynamicListPage,
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
     }
 
-    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
+    private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput, bool forceReset = false)
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -684,7 +717,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // A query that doesn't extend the old one, or a change in app inclusion, means we
             // can't re-use the previous results and have to rebuild from the full catalog. On an
             // extend we re-score only the previously matched subset.
-            var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
+            var reset = forceReset || !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
             var prevFilteredItems = reset ? null : _filteredItems;
@@ -725,11 +758,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (includeAppsSnapshot)
                 {
-                    var allNewApps = _allAppsPage.Safe.GetItems().Cast<AppListItem>()
+                    var allNewApps = _appListItemSource.GetSnapshot().VisibleItems
                         .Select(item => new InProcObject<IListItem>(item)).ToList();
 
                     // We need to remove pinned apps from allNewApps so they don't show twice.
-                    var lookup = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage);
+                    var lookup = _appListItemSource.GetSnapshot();
                     var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId)
                         .Select(id => lookup.GetApp(id)?.Command?.Id ?? id).ToHashSet(StringComparer.Ordinal);
 
@@ -771,7 +804,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // Snapshot every scoring input once, up front: the live fields can be swapped mid-pass when
         // a selection calls WithHistoryItem on another thread, which would mix two frecency
         // snapshots into one pass or race a parallel thread against an unwarmed history index.
-        var appSnapshot = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage);
+        var appSnapshot = _appListItemSource.GetSnapshot();
         var recent = GetAppHistory(_appStateService.State.RecentCommands, appSnapshot);
         recent.PrewarmIndex();
         var matcher = _fuzzyMatcherProvider.Current;
@@ -899,7 +932,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool ActuallyLoading()
     {
-        return _allAppsPage.Safe.IsLoading || _tlcManager.IsLoading;
+        return _appListItemSource.IsLoading || _tlcManager.IsLoading;
     }
 
     // Almost verbatim ListHelpers.ScoreListItem. Fallbacks tier by the same title match as any
@@ -1033,7 +1066,7 @@ public sealed partial class MainListPage : DynamicListPage,
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
         if (topLevelOrAppItem.Safe is AppListItem || topLevelOrAppItem.Safe is TopLevelViewModel { CommandProviderId: AllAppsCommandProvider.WellKnownId })
         {
-            id = TopLevelCommandResolver.GetAppsSnapshot(_allAppsPage).GetApp(id)?.Command?.Id ?? id;
+            id = _appListItemSource.GetSnapshot().GetApp(id)?.Command?.Id ?? id;
         }
 
         _appStateService.UpdateState(state => state with
@@ -1181,7 +1214,7 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PinnedCommandsChanged -= PinnedCommands_Changed;
         _appStateService.StateChanged -= AppStateService_StateChanged;
 
-        _allAppsPage.Safe.PropChanged -= AllApps_PropChanged;
+        _appListItemSource.Changed -= AppListItemSource_Changed;
 
         if (_settingsService is not null)
         {

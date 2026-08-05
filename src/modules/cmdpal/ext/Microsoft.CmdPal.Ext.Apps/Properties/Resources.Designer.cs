@@ -176,6 +176,42 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("file", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to All apps.
+        /// </summary>
+        internal static string filter_all_apps {
+            get {
+                return ResourceManager.GetString("filter_all_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        internal static string filter_hidden_apps {
+            get {
+                return ResourceManager.GetString("filter_hidden_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Packaged.
+        /// </summary>
+        internal static string filter_packaged_apps {
+            get {
+                return ResourceManager.GetString("filter_packaged_apps", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Win32.
+        /// </summary>
+        internal static string filter_win32_apps {
+            get {
+                return ResourceManager.GetString("filter_win32_apps", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Folder.
@@ -183,6 +219,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string folder {
             get {
                 return ResourceManager.GetString("folder", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide app.
+        /// </summary>
+        internal static string hide_app {
+            get {
+                return ResourceManager.GetString("hide_app", resourceCulture);
             }
         }
         
@@ -320,6 +365,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
                 return ResourceManager.GetString("limit_none", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No apps found.
+        /// </summary>
+        internal static string no_apps_found {
+            get {
+                return ResourceManager.GetString("no_apps_found", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Open containing folder.
@@ -385,6 +439,33 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Refresh app list.
+        /// </summary>
+        internal static string refresh_app_list {
+            get {
+                return ResourceManager.GetString("refresh_app_list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Refreshing app list....
+        /// </summary>
+        internal static string refreshing_app_list {
+            get {
+                return ResourceManager.GetString("refreshing_app_list", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to refreshing....
+        /// </summary>
+        internal static string refreshing_page_title_suffix {
+            get {
+                return ResourceManager.GetString("refreshing_page_title_suffix", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Run as administrator.
         /// </summary>
         internal static string run_as_administrator {
@@ -429,6 +510,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Unhide app.
+        /// </summary>
+        internal static string unhide_app {
+            get {
+                return ResourceManager.GetString("unhide_app", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Uninstall.
         /// </summary>

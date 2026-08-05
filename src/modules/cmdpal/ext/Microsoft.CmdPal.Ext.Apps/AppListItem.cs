@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -68,6 +69,8 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
 
     public AppItem App => _app;
 
+    internal IReadOnlyList<string> SearchTerms { get; }
+
     public AppListItem(AppItem app, bool useThumbnails)
     {
         var appCommand = new AppCommand(app);
@@ -75,6 +78,18 @@ public sealed partial class AppListItem : ListItem, IPrecomputedListItem
         _app = app;
         Title = app.Name;
         Subtitle = app.Subtitle;
+        SearchTerms = new[]
+        {
+            app.ExePath,
+            app.FullExecutablePath ?? string.Empty,
+            app.DirPath,
+            app.UserModelId,
+            app.PackageFamilyName ?? string.Empty,
+        }
+        .Concat(app.MatchTerms)
+        .Where(term => !string.IsNullOrWhiteSpace(term))
+        .Except([app.Name, app.Subtitle], StringComparer.OrdinalIgnoreCase)
+        .ToArray();
         Icon = appCommand.Icon = CreateIcon(app, useThumbnails);
 
         MoreCommands = _app.Commands?.ToArray() ?? [];
