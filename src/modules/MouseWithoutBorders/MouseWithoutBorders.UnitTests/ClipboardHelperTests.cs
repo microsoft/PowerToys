@@ -30,7 +30,10 @@ public sealed class ClipboardHelperTests
     public void LocalPathLease_OpensExistingLocalFile()
     {
         string directory = Directory.CreateTempSubdirectory().FullName;
-        string path = Path.Combine(directory, "file.txt");
+        string sourceDirectory = Path.Combine(directory, "source");
+        string movedDirectory = Path.Combine(directory, "moved");
+        Directory.CreateDirectory(sourceDirectory);
+        string path = Path.Combine(sourceDirectory, "file.txt");
         File.WriteAllText(path, "content");
 
         try
@@ -71,6 +74,30 @@ public sealed class ClipboardHelperTests
         finally
         {
             lease?.Dispose();
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [TestMethod]
+    public void LocalPathLease_AllowsFileReadWhilePreventingReplacement()
+    {
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string sourceDirectory = Path.Combine(directory, "source");
+        string movedDirectory = Path.Combine(directory, "moved");
+        Directory.CreateDirectory(sourceDirectory);
+        string path = Path.Combine(sourceDirectory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        try
+        {
+            using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+
+            Assert.AreEqual("content", File.ReadAllText(lease.PhysicalPath));
+            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+        }
+        finally
+        {
             Directory.Delete(directory, true);
         }
     }

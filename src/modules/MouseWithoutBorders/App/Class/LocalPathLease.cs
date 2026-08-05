@@ -15,6 +15,8 @@ namespace MouseWithoutBorders;
 
 internal sealed class LocalPathLease : IDisposable
 {
+    private const uint FileShareRead = 0x00000001;
+    private const uint FileShareWrite = 0x00000002;
     private const uint OpenExisting = 3;
     private const uint FileFlagBackupSemantics = 0x02000000;
     private const uint FileFlagOpenReparsePoint = 0x00200000;
@@ -217,7 +219,7 @@ internal sealed class LocalPathLease : IDisposable
         SafeFileHandle handle = CreateFile(
             path,
             0,
-            0,
+            FileShareRead | FileShareWrite,
             IntPtr.Zero,
             OpenExisting,
             FileFlagBackupSemantics | FileFlagOpenReparsePoint,
