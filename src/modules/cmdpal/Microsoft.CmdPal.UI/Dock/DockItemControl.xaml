@@ -155,7 +155,7 @@
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualStateGroup.Transitions>
                                         <!--  Ease the icon back to full size when the press ends  -->
-                                        <VisualTransition From="Pressed" GeneratedDuration="0:0:0.15" />
+                                        <VisualTransition GeneratedDuration="0:0:0.15" From="Pressed" />
                                     </VisualStateGroup.Transitions>
                                     <!--  Every state sets HoverLayer explicitly; relying on the VSM to revert the setter leaves the chrome stuck on  -->
                                     <VisualState x:Name="Normal">
