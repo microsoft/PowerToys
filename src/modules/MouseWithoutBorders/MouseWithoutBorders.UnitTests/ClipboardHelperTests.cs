@@ -6,67 +6,85 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
-// Guards the fix for MSRC 110760 / ICM 31000000569630: the ClipboardHelper IPC
-// endpoint must reject UNC/remote paths so a malicious pipe client cannot coerce
-// outbound SMB authentication by injecting a path that is then
-// probed via File.Exists/Directory.Exists.
 [TestClass]
 public sealed class ClipboardHelperTests
 {
-    [DataTestMethod]
-    [DataRow(@"\\attacker\share\file.txt")]
-    [DataRow(@"\\10.0.0.1\share")]
-    [DataRow(@"\\server")]
-    [DataRow(@"//attacker/share/file.txt")]
-    [DataRow(@"\\?\UNC\server\share\file.txt")]
-    [DataRow(@"\\.\pipe\evil")]
-    public void IsRemoteOrUncPath_ReturnsTrue_ForRemoteOrUncPaths(string path)
+    [TestMethod]
+    public void LocalPathLease_RejectsRemotePath()
     {
-        Assert.IsTrue(ClassifyPath(path), $"Expected '{path}' to be treated as remote/UNC.");
-    }
+        using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(@"\\attacker\share\file.txt");
 
-    [DataTestMethod]
-    [DataRow(@"C:\Users\test\file.txt")]
-    [DataRow(@"C:\temp")]
-    [DataRow(@"C:/Users/test/file.txt")]
-    [DataRow(@"relative\file.txt")]
-    [DataRow(@"file.txt")]
-    public void IsRemoteOrUncPath_ReturnsFalse_ForLocalPaths(string path)
-    {
-        Assert.IsFalse(ClassifyPath(path), $"Expected '{path}' to be treated as local.");
-    }
-
-    [DataTestMethod]
-    [DataRow(null)]
-    [DataRow("")]
-    public void IsRemoteOrUncPath_ReturnsFalse_ForNullOrEmpty(string path)
-    {
-        // Null/empty are not remote; the downstream File.Exists/Directory.Exists
-        // checks handle them safely (treated as "not found").
-        Assert.IsFalse(ClassifyPath(path));
+        Assert.IsNull(lease);
     }
 
     [TestMethod]
-    public void IsRemoteOrUncPath_ReturnsTrue_ForMappedNetworkDrive()
+    public void LocalPathLease_RejectsMissingPath()
     {
-        Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(
-            @"Z:\shared\file.txt",
-            root => root.Equals(@"Z:\", StringComparison.OrdinalIgnoreCase) ? DriveType.Network : DriveType.Fixed));
+        string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "missing.txt");
+        using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
+
+        Assert.IsNull(lease);
     }
 
     [TestMethod]
-    public void IsRemoteOrUncPath_ReturnsTrue_WhenLocalPathTraversesReparsePoint()
+    public void LocalPathLease_OpensExistingLocalFile()
     {
-        Assert.IsTrue(ClipboardHelper.IsRemoteOrUncPath(
-            @"C:\Users\Public\link\file.txt",
-            _ => DriveType.Fixed,
-            path => path.Equals(@"C:\Users\Public\link", StringComparison.OrdinalIgnoreCase)
-                ? FileAttributes.Directory | FileAttributes.ReparsePoint
-                : FileAttributes.Directory));
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        try
+        {
+            using LocalPathLease lease = LocalPathLease.TryCreateForCurrentUser(path);
+
+            Assert.IsNotNull(lease);
+            Assert.IsFalse(lease.IsDirectory);
+            Assert.AreEqual(new FileInfo(path).Length, lease.Length);
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
     }
 
-    private static bool ClassifyPath(string path)
+    [TestMethod]
+    public void LocalPathLease_PreventsPathReplacementUntilLastReferenceIsReleased()
     {
-        return ClipboardHelper.IsRemoteOrUncPath(path, _ => DriveType.Fixed);
+        string directory = Directory.CreateTempSubdirectory().FullName;
+        string sourceDirectory = Path.Combine(directory, "source");
+        string movedDirectory = Path.Combine(directory, "moved");
+        Directory.CreateDirectory(sourceDirectory);
+        string path = Path.Combine(sourceDirectory, "file.txt");
+        File.WriteAllText(path, "content");
+
+        LocalPathLease? lease = null;
+        try
+        {
+            lease = LocalPathLease.TryCreateForCurrentUser(path);
+            Assert.IsNotNull(lease);
+            Assert.IsFalse(TryMoveDirectory(sourceDirectory, movedDirectory));
+
+            lease.Dispose();
+            lease = null;
+            Directory.Move(sourceDirectory, movedDirectory);
+        }
+        finally
+        {
+            lease?.Dispose();
+            Directory.Delete(directory, true);
+        }
+    }
+
+    private static bool TryMoveDirectory(string sourceDirectory, string destinationDirectory)
+    {
+        try
+        {
+            Directory.Move(sourceDirectory, destinationDirectory);
+            return true;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
     }
 }

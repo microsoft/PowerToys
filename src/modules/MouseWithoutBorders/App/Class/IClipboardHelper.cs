@@ -155,114 +155,12 @@ namespace MouseWithoutBorders
 
         public void SendDragFile(string fileName)
         {
-            if (IsRemoteOrUncPath(fileName))
-            {
-                Logger.Log("SendDragFile: Rejected non-local path received over IPC: " + fileName);
-                return;
-            }
-
             DragDrop.DragDropStep05Ex(fileName);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
         {
-            if (isFilePath && data.IsString && IsRemoteOrUncPath(data.GetString()))
-            {
-                Logger.Log("SendClipboardData: Rejected non-local file path received over IPC: " + data.GetString());
-                return;
-            }
-
             _ = Clipboard.CheckClipboardEx(data, isFilePath);
-        }
-
-        // The ClipboardHelper IPC endpoint is reachable by any authenticated user on the
-        // named pipe. A malicious client could inject a UNC/remote path (e.g. \\attacker\share)
-        // that, when probed via File.Exists/Directory.Exists, triggers outbound SMB
-        // authentication and leaks reusable challenge-response credential material. The legitimate helper only ever
-        // forwards local clipboard/drag file paths, so reject anything that is not local.
-        internal static bool IsRemoteOrUncPath(string path)
-        {
-            bool isRemoteOrUnc = true;
-            bool classified = Launch.ImpersonateLoggedOnUserAndDoSomething(
-                () => isRemoteOrUnc = IsRemoteOrUncPath(path, root => new DriveInfo(root).DriveType, File.GetAttributes));
-            return !classified || isRemoteOrUnc;
-        }
-
-        internal static bool IsRemoteOrUncPath(string path, Func<string, DriveType> getDriveType)
-        {
-            return IsRemoteOrUncPath(path, getDriveType, _ => FileAttributes.Normal);
-        }
-
-        internal static bool IsRemoteOrUncPath(
-            string path,
-            Func<string, DriveType> getDriveType,
-            Func<string, FileAttributes> getAttributes)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return false;
-            }
-
-            if (StartsWithPathSeparatorPrefix(path))
-            {
-                return true;
-            }
-
-            try
-            {
-                string fullPath = Path.GetFullPath(path);
-                if (StartsWithPathSeparatorPrefix(fullPath))
-                {
-                    return true;
-                }
-
-                string root = Path.GetPathRoot(fullPath);
-                if (string.IsNullOrEmpty(root) || getDriveType(root) == DriveType.Network)
-                {
-                    return true;
-                }
-
-                string currentPath = root;
-                foreach (string component in fullPath[root.Length..].Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
-                {
-                    if (string.IsNullOrEmpty(component))
-                    {
-                        continue;
-                    }
-
-                    currentPath = Path.Combine(currentPath, component);
-                    try
-                    {
-                        if ((getAttributes(currentPath) & FileAttributes.ReparsePoint) != 0)
-                        {
-                            return true;
-                        }
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        break;
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        break;
-                    }
-                }
-
-                return false;
-            }
-            catch (Exception)
-            {
-                // Malformed paths cannot be trusted; treat them as remote/invalid and reject.
-                return true;
-            }
-        }
-
-        private static bool StartsWithPathSeparatorPrefix(string path)
-        {
-            // Catches UNC (\\server\share, //server/share) and device-namespace paths
-            // (\\?\UNC\..., \\.\...) that can be coerced into remote authentication.
-            return path.StartsWith(@"\\", StringComparison.Ordinal)
-                || path.StartsWith("//", StringComparison.Ordinal);
         }
     }
 #endif

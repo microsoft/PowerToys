@@ -189,31 +189,27 @@ internal static class DragDrop
 
         if (!IsDropping)
         {
-            _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+            if (LocalPathLease.TryCreate(dragFileName, out LocalPathLease lease))
             {
-                if (!string.IsNullOrEmpty(dragFileName) && (File.Exists(dragFileName) || Directory.Exists(dragFileName)))
+                Clipboard.SetLastDragDropFile(dragFileName, lease);
+                /*
+                 * possibleDropMachineID is used as desID sent in DragDropStep06();
+                 * */
+                if (MachineStuff.dropMachineID == ID.NONE)
                 {
-                    Clipboard.LastDragDropFile = dragFileName;
-                    /*
-                     * possibleDropMachineID is used as desID sent in DragDropStep06();
-                     * */
-                    if (MachineStuff.dropMachineID == ID.NONE)
-                    {
-                        MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
-                    }
-
-                    DragDropStep06();
-                    Logger.LogDebug("DragDropStep05: File dragging: " + dragFileName);
-                    _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
-                }
-                else
-                {
-                    Logger.LogDebug("DragDropStep05: File not found: [" + dragFileName + "]");
-                    _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
+                    MachineStuff.dropMachineID = MachineStuff.newDesMachineID;
                 }
 
+                DragDropStep06();
+                Logger.LogDebug("DragDropStep05: File dragging: " + dragFileName);
+                _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)1, (IntPtr)0);
                 Logger.LogDebug("DragDropStep05: WM_HIDE_DDHelper sent");
-            });
+            }
+            else
+            {
+                Logger.Log("DragDropStep05: Rejected non-local or unstable path: [" + dragFileName + "]");
+                _ = NativeMethods.PostMessage(Common.MainForm.Handle, NativeMethods.WM_HIDE_DD_HELPER, (IntPtr)0, (IntPtr)0);
+            }
         }
         else
         {

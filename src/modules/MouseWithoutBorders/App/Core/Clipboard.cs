@@ -45,9 +45,11 @@ internal static class Clipboard
     private const int TEXT_HEADER_SIZE = 12;
     private const int DATA_SIZE = 48;
     private const string TEXT_TYPE_SEP = "{4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}";
+    private static readonly object LastDragDropFileLock = new();
     private static long lastClipboardEventTime;
     private static string lastMachineWithClipboardData;
     private static string lastDragDropFile;
+    private static LocalPathLease lastDragDropFileLease;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
     internal static long clipboardCopiedTime;
 #pragma warning restore SA1307
@@ -56,8 +58,39 @@ internal static class Clipboard
 
     internal static string LastDragDropFile
     {
-        get => Clipboard.lastDragDropFile;
-        set => Clipboard.lastDragDropFile = value;
+        get
+        {
+            lock (LastDragDropFileLock)
+            {
+                return Clipboard.lastDragDropFile;
+            }
+        }
+
+        set => SetLastDragDropFile(value, null);
+    }
+
+    internal static void SetLastDragDropFile(string path, LocalPathLease lease)
+    {
+        LocalPathLease previousLease;
+
+        lock (LastDragDropFileLock)
+        {
+            previousLease = lastDragDropFileLease;
+            lastDragDropFile = path;
+            lastDragDropFileLease = lease;
+        }
+
+        previousLease?.Dispose();
+    }
+
+    internal static bool TryAcquireLastDragDropFile(out string path, out LocalPathLease lease)
+    {
+        lock (LastDragDropFileLock)
+        {
+            path = lastDragDropFile;
+            lease = lastDragDropFileLease?.Acquire();
+            return path != null;
+        }
     }
 
     internal static string LastMachineWithClipboardData
@@ -149,41 +182,35 @@ internal static class Clipboard
                     }
 
                     string filePath = stringData;
-
-                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                    if (!LocalPathLease.TryCreate(filePath, out LocalPathLease lease))
                     {
-                        if (File.Exists(filePath) || Directory.Exists(filePath))
+                        Logger.Log("CheckClipboardEx: Rejected non-local or unstable path: " + filePath);
+                    }
+                    else if (!lease.IsDirectory && lease.Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
+                    {
+                        Logger.LogDebug("Clipboard contains: " + filePath);
+                        SetLastDragDropFile(filePath, lease);
+                        Common.SendClipboardBeat();
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, Common.ICON_BIG_CLIPBOARD, -1 });
+                    }
+                    else
+                    {
+                        if (lease.IsDirectory)
                         {
-                            if (File.Exists(filePath) && new FileInfo(filePath).Length <= MAX_CLIPBOARD_FILE_SIZE_CAN_BE_SENT)
-                            {
-                                Logger.LogDebug("Clipboard contains: " + filePath);
-                                LastDragDropFile = filePath;
-                                Common.SendClipboardBeat();
-                                Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, Common.ICON_BIG_CLIPBOARD, -1 });
-                            }
-                            else
-                            {
-                                if (Directory.Exists(filePath))
-                                {
-                                    Logger.LogDebug("Clipboard contains a directory: " + filePath);
-                                    LastDragDropFile = filePath;
-                                    Common.SendClipboardBeat();
-                                }
-                                else
-                                {
-                                    LastDragDropFile = filePath + " - File too big (greater than 100MB), please drag and drop the file instead!";
-                                    Common.SendClipboardBeat();
-                                    Logger.Log("Clipboard: File too big: " + filePath);
-                                }
-
-                                Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
-                            }
+                            Logger.LogDebug("Clipboard contains a directory: " + filePath);
+                            SetLastDragDropFile(filePath, lease);
+                            Common.SendClipboardBeat();
                         }
                         else
                         {
-                            Logger.Log("CheckClipboardEx: File not found: " + filePath);
+                            lease.Dispose();
+                            LastDragDropFile = filePath + " - File too big (greater than 100MB), please drag and drop the file instead!";
+                            Common.SendClipboardBeat();
+                            Logger.Log("Clipboard: File too big: " + filePath);
                         }
-                    });
+
+                        Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_ERROR, -1, Common.ICON_ERROR, -1 });
+                    }
                 }
                 else
                 {
