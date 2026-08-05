@@ -82,6 +82,11 @@
                                                 Text="{x:Bind Fit, Mode=OneWay, Converter={StaticResource ImageResizerFitToStringConverter}}" />
                                             <TextBlock
                                                 Margin="0,0,4,0"
+                                                AutomationProperties.AccessibilityView="Raw"
+                                                Style="{ThemeResource SecondaryTextStyle}"
+                                                Text="-" />
+                                            <TextBlock
+                                                Margin="0,0,4,0"
                                                 FontWeight="SemiBold"
                                                 Style="{ThemeResource SecondaryTextStyle}"
                                                 Text="{x:Bind Width, Mode=OneWay, Converter={StaticResource ImageResizerDoubleToAutoConverter}, ConverterParameter=Auto}" />
