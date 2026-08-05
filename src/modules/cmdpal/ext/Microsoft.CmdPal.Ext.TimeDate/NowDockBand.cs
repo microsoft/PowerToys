@@ -22,6 +22,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private CompiledClockFormat _subtitleFormat;
     private CompiledClockFormat? _copyFormat;
     private CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
+    private bool _disposed;
 
     internal CopyTextCommand CopyTitleCommand => _copyTitleCommand;
 
@@ -45,8 +46,23 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
         UpdateCopyCommandNames(settings);
         UpdateMoreCommands(settings);
         UpdateText();
+    }
+
+    // Ticking is gated on CmdPal actually rendering the band; see OnLoadDockBandItem.
+    // A render can arrive after the provider tore the band down, and subscribing to
+    // a disposed clock service would throw back across the extension boundary.
+    internal void StartUpdating()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        UpdateText();
         _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, RequiresSecondUpdates);
     }
+
+    internal void StopUpdating() => _clockUpdateService.Unsubscribe(this);
 
     internal void UpdateSettings(IDockClockSettings settings)
     {
@@ -130,6 +146,7 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
+        _disposed = true;
         _clockUpdateService.Unsubscribe(this);
     }
 }

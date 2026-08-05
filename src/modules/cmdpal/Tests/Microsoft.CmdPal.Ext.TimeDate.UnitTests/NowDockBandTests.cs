@@ -6,6 +6,8 @@ using System;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
+using Microsoft.CmdPal.Ext.TimeDate.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -205,6 +207,61 @@ public class NowDockBandTests
         Assert.AreEqual(_band.Subtitle, _band.CopySubtitleCommand.Text);
         Assert.IsNotNull(_band.CopyCustomFormatCommand);
         Assert.AreEqual("W1", _band.CopyCustomFormatCommand.GetCurrentText());
+    }
+
+    [TestMethod]
+    public void ClockTicks_ReachTheBandOnlyBetweenStartAndStopUpdating()
+    {
+        var now = FixedTime;
+        _band = CreateBand(titleFormat: "T", clock: () => now);
+
+        Assert.AreEqual("2:05:32 PM", _band.Title, "Precondition: the title is set at construction");
+
+        // Bands are constructed for every clock, pinned or not, so an unrendered
+        // band must stay off the shared clock cadence.
+        now = FixedTime.AddSeconds(5);
+        _clockUpdateService.DispatchTick(now);
+        Assert.AreEqual("2:05:32 PM", _band.Title, "An unrendered band should ignore clock ticks");
+
+        _band.StartUpdating();
+        Assert.AreEqual("2:05:37 PM", _band.Title, "StartUpdating should refresh the stale title immediately");
+
+        now = FixedTime.AddSeconds(9);
+        _clockUpdateService.DispatchTick(now);
+        Assert.AreEqual("2:05:41 PM", _band.Title, "A rendered band should follow clock ticks");
+
+        _band.StopUpdating();
+        now = FixedTime.AddSeconds(20);
+        _clockUpdateService.DispatchTick(now);
+        Assert.AreEqual("2:05:41 PM", _band.Title, "A band should stop ticking once it is no longer rendered");
+    }
+
+    [TestMethod]
+    public void OnLoadDockBandItem_RenderingTheBandDrivesItsSubscription()
+    {
+        var now = FixedTime;
+        _band = CreateBand(titleFormat: "T", clock: () => now);
+        var bandItem = new OnLoadDockBandItem([_band], "test.band", "Test band", _band.StartUpdating, _band.StopUpdating);
+        var page = (IListPage)bandItem.Command!;
+
+        static void Handler(object sender, IItemsChangedEventArgs args)
+        {
+        }
+
+        // CmdPal signals that a band is on screen purely by attaching and
+        // detaching an items-changed handler on the band's page.
+        now = FixedTime.AddSeconds(5);
+        page.ItemsChanged += Handler;
+        Assert.AreEqual("2:05:37 PM", _band.Title, "Rendering the band should start its updates");
+
+        now = FixedTime.AddSeconds(9);
+        _clockUpdateService.DispatchTick(now);
+        Assert.AreEqual("2:05:41 PM", _band.Title, "A rendered band should follow clock ticks");
+
+        page.ItemsChanged -= Handler;
+        now = FixedTime.AddSeconds(20);
+        _clockUpdateService.DispatchTick(now);
+        Assert.AreEqual("2:05:41 PM", _band.Title, "Dropping the band should stop its updates");
     }
 
     private NowDockBand CreateBand(string titleFormat = "t", string copyFormat = "", Func<DateTime>? clock = null)

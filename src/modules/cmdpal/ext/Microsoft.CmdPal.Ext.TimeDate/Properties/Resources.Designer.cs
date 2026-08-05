@@ -160,15 +160,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clock.
-        /// </summary>
-        public static string Microsoft_plugin_timedate_dock_band_title {
-            get {
-                return ResourceManager.GetString("Microsoft_plugin_timedate_dock_band_title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Era.
         /// </summary>
         public static string Microsoft_plugin_timedate_Era {
@@ -1227,6 +1218,15 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
         public static string timedate_custom_clocks_search {
             get {
                 return ResourceManager.GetString("timedate_custom_clocks_search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clock - {0}.
+        /// </summary>
+        public static string timedate_dock_band_title_format {
+            get {
+                return ResourceManager.GetString("timedate_dock_band_title_format", resourceCulture);
             }
         }
         

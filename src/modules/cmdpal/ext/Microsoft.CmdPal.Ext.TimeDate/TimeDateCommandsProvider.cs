@@ -25,13 +25,14 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private readonly TimeDateExtensionPage _timeDateExtensionPage;
     private readonly FallbackTimeDateItem _fallbackTimeDateItem;
 
-    private readonly WrappedDockItem _bandItem;
+    private readonly OnLoadDockBandItem _bandItem;
+    private readonly WrappedDockItem _allClocksBandItem;
     private readonly WrappedDockItem _notificationCenterBandItem;
 
     // Keep a reference to the band so we can dispose it when the provider is disposed.
     private readonly Lock _customClockBandsLock = new();
     private readonly List<CustomClockDockBand> _customClockBands = [];
-    private WrappedDockItem[] _customClockBandItems = [];
+    private ICommandItem[] _customClockBandItems = [];
 
     private NowDockBand? _nowDockBand;
     private bool _disposed;
@@ -73,13 +74,22 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         _settingsManager.DockClockFormatsChanged += DockClockFormatsChanged;
         _settingsManager.Settings.SettingsChanged += SettingsChanged;
 
-        _bandItem = new WrappedDockItem(
+        _bandItem = new OnLoadDockBandItem(
             [_nowDockBand],
             CustomClockIds.LocalDockBand,
-            Resources.Microsoft_plugin_timedate_dock_band_title)
+            CustomClockDisplay.GetDockBandTitle(Resources.timedate_custom_clock_local),
+            _nowDockBand.StartUpdating,
+            _nowDockBand.StopUpdating)
         {
             Icon = Icons.TimeDateExtIcon,
         };
+
+        // Offered under the same ID as the top-level command, so pinning that
+        // command resolves to this band instead of a generic wrapper around it.
+        _allClocksBandItem = new WrappedDockItem(
+            [new ListItem(_timeDateExtensionPage.CustomClockListPage) { Title = Resources.timedate_all_clocks, Icon = Icons.TimeIcon }],
+            CustomClockListPage.PageId,
+            CustomClockDisplay.GetDockBandTitle(Resources.timedate_all_clocks));
 
         RebuildCustomClockBands();
         _customClockManager.ClocksChanged += CustomClockManager_ClocksChanged;
@@ -108,20 +118,15 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     {
         lock (_customClockBandsLock)
         {
-            return [_bandItem, _notificationCenterBandItem, .. _customClockBandItems];
+            return [_bandItem, _allClocksBandItem, _notificationCenterBandItem, .. _customClockBandItems];
         }
     }
 
+    // Only returns page-shaped items: this also backs pinning to the top level,
+    // so a dock-shaped band must never be returned from here. Bands are declared
+    // by GetDockBands instead.
     public override ICommandItem? GetCommandItem(string id)
     {
-        if (id == CustomClockListPage.PageId)
-        {
-            return new WrappedDockItem(
-                [new ListItem(_timeDateExtensionPage.CustomClockListPage) { Title = Resources.timedate_all_clocks, Icon = Icons.TimeIcon }],
-                CustomClockListPage.PageId,
-                Resources.timedate_all_clocks);
-        }
-
         if (id == CustomClockIds.LocalDetailPage && _nowDockBand is not null)
         {
             return CreateClockDetailItem(new CustomClock
@@ -172,11 +177,19 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
             }
 
             _customClockBands.Clear();
-            var dockItems = new List<WrappedDockItem>();
+            var dockItems = new List<ICommandItem>();
             foreach (var clock in _customClockManager.Clocks)
             {
                 var clockBand = new CustomClockDockBand(clock, _customClockManager, _settingsManager, _clockUpdateService);
-                var wrappedBand = new WrappedDockItem([clockBand], CustomClockIds.GetDockBand(clock.Id), CustomClockDisplay.GetName(clock)) { Icon = Icons.TimeDateExtIcon };
+                var wrappedBand = new OnLoadDockBandItem(
+                    [clockBand],
+                    CustomClockIds.GetDockBand(clock.Id),
+                    CustomClockDisplay.GetDockBandTitle(CustomClockDisplay.GetName(clock)),
+                    clockBand.StartUpdating,
+                    clockBand.StopUpdating)
+                {
+                    Icon = Icons.TimeDateExtIcon,
+                };
                 _customClockBands.Add(clockBand);
                 dockItems.Add(wrappedBand);
             }

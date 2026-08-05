@@ -118,8 +118,36 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             var bands = provider.GetDockBands();
 
-            Assert.IsTrue(bands.Length > 1, "Expected notification center band to be present");
-            Assert.IsNull(bands[1].Icon, "Notification center band should not set a dock icon");
+            var notificationCenterBand = bands.Single(band => band.Command?.Id == "com.microsoft.cmdpal.timedate.notificationCenterBand");
+            Assert.IsNull(notificationCenterBand.Icon, "Notification center band should not set a dock icon");
+        }
+
+        [TestMethod]
+        public void GetDockBands_OffersAllClocksBandUnderTopLevelCommandId()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            // The band shares the top-level command's ID so that pinning that
+            // command resolves to this band rather than a generic wrapper.
+            Assert.AreEqual(
+                1,
+                bands.Count(band => band.Command?.Id == CustomClockListPage.PageId),
+                "Expected exactly one all-clocks band offered under the top-level command ID");
+            Assert.IsTrue(
+                provider.TopLevelCommands().Any(command => command.Command?.Id == CustomClockListPage.PageId),
+                "The all-clocks band must share the top-level command's ID");
+        }
+
+        [TestMethod]
+        public void GetCommandItem_DoesNotReturnDockBandsForTopLevelPinning()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            // GetCommandItem also backs pinning to the top level, so it must
+            // never hand back a dock band wrapper.
+            Assert.IsNull(provider.GetCommandItem(CustomClockListPage.PageId), "The all-clocks band belongs to GetDockBands, not GetCommandItem");
         }
 
         [TestMethod]

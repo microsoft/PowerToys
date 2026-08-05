@@ -50,10 +50,12 @@ internal sealed partial class ClockUpdateService : IDisposable
     {
         lock (_lock)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-            if (!_clients.TryGetValue(client, out var registration))
+            // Bands unsubscribe whenever CmdPal stops rendering them, so a cadence
+            // change can legitimately arrive while a client is away. Subscribe takes
+            // the cadence it finds at the time, so there is nothing to reconcile here.
+            if (_disposed || !_clients.TryGetValue(client, out var registration))
             {
-                throw new InvalidOperationException("The clock client must be subscribed before its update cadence can change.");
+                return;
             }
 
             if (registration.RequiresSecondUpdates == requiresSeconds)

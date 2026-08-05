@@ -22,6 +22,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
     private readonly CopyTextCommand _copyTitleCommand;
     private readonly CopyTextCommand _copySubtitleCommand;
     private readonly CopyCurrentClockFormatCommand? _copyCustomFormatCommand;
+    private bool _disposed;
 
     internal Guid ClockId => _clockDefinition.Id;
 
@@ -52,7 +53,6 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         _copyCustomFormatCommand = _copyFormat is null
             ? null
             : new CopyCurrentClockFormatCommand(CustomClockFormatOptions.GetCopyCommandName(settings, clockDefinition.CopyFormat), GetCustomCopyText);
-        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
         MoreCommands =
         [
             new CommandContextItem(_copyTitleCommand),
@@ -62,6 +62,22 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
         ];
         UpdateText();
     }
+
+    // Ticking is gated on CmdPal actually rendering the band; see OnLoadDockBandItem.
+    // A rebuild can replace this band while CmdPal is still initializing a view model
+    // over the previous generation, so a render can arrive after disposal.
+    internal void StartUpdating()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        UpdateText();
+        _clockUpdateService.Subscribe(this, ClockUpdateService_Tick, _titleFormat.RequiresSecondUpdates || _subtitleFormat.RequiresSecondUpdates);
+    }
+
+    internal void StopUpdating() => _clockUpdateService.Unsubscribe(this);
 
     private void ClockUpdateService_Tick(object? sender, EventArgs e) => UpdateText();
 
@@ -95,6 +111,7 @@ internal sealed partial class CustomClockDockBand : ListItem, IDisposable
 
     public void Dispose()
     {
+        _disposed = true;
         _clockUpdateService.Unsubscribe(this);
     }
 }
