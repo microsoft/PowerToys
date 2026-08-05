@@ -12,6 +12,7 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
@@ -43,6 +44,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+
+using MEL = Microsoft.Extensions.Logging;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -179,10 +182,19 @@ public partial class App : Application, IDisposable
         var providerLoadGuard = new ProviderLoadGuard(configDirectory);
 
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
-        var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
         files.SuppressFallbackWhen(ShellCommandsProvider.SuppressFileFallbackIf);
-        services.AddSingleton<ICommandProvider>(allApps);
+
+        // Let the service provider construct and own the catalog and its source watchers.
+        services.AddSingleton<AllAppsSettings>();
+        services.AddSingleton<IAppCatalog>(serviceProvider =>
+            AppCatalogFactory.CreateDefault(
+                serviceProvider.GetRequiredService<AllAppsSettings>(),
+                serviceProvider.GetRequiredService<MEL.ILoggerFactory>()));
+        services.AddSingleton<AllAppsPage>();
+        services.AddSingleton<AllAppsCommandProvider>();
+        services.AddSingleton<ICommandProvider>(serviceProvider =>
+            serviceProvider.GetRequiredService<AllAppsCommandProvider>());
 
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
@@ -208,10 +220,14 @@ public partial class App : Application, IDisposable
                     {
                         Duration = TimeSpan.FromSeconds(4),
                     });
-                winget.SetAllLookup(
-                    query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
-                    query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
-                services.AddSingleton<ICommandProvider>(winget);
+                services.AddSingleton<ICommandProvider>(serviceProvider =>
+                {
+                    var allApps = serviceProvider.GetRequiredService<AllAppsCommandProvider>();
+                    winget.SetAllLookup(
+                        query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                        query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
+                    return winget;
+                });
             }
             catch (Exception ex)
             {

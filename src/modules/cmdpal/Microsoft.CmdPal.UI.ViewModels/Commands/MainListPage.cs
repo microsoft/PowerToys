@@ -46,7 +46,8 @@ public sealed partial class MainListPage : DynamicListPage,
     private readonly AliasManager _aliasManager;
     private readonly ISettingsService _settingsService;
     private readonly IAppStateService _appStateService;
-    private readonly IListPage _allAppsPage;
+    private readonly AllAppsPage _allAppsPage;
+    private readonly AllAppsCommandProvider _allAppsCommandProvider;
     private readonly ScoringFunction<IListItem> _scoringFunction;
     private readonly ScoringFunction<IListItem> _fallbackScoringFunction;
     private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
@@ -92,7 +93,7 @@ public sealed partial class MainListPage : DynamicListPage,
     // provider's search weight actually changed and only then re-rank the active query.
     private ImmutableDictionary<string, ProviderSettings>? _lastProviderSettingsSnapshot;
 
-    private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
+    private int AppResultLimit => _allAppsCommandProvider.TopLevelResultLimit;
 
     // Longest query to filter fuzzy app matches on. This prevents weak app matches on short queries.
     private const int ShortQueryAppFilterMaxLength = 2;
@@ -115,26 +116,9 @@ public sealed partial class MainListPage : DynamicListPage,
         AliasManager aliasManager,
         IFuzzyMatcherProvider fuzzyMatcherProvider,
         ISettingsService settingsService,
-        IAppStateService appStateService)
-        : this(
-            topLevelCommandManager,
-            aliasManager,
-            fuzzyMatcherProvider,
-            settingsService,
-            appStateService,
-            AllAppsCommandProvider.Page)
-    {
-    }
-
-    // Temp constructor for unit tests so they can avoid AllAppsCommandProvider.Page dependency
-    // TODO: Replace with a proper abstraction during AllApps refactor.
-    internal MainListPage(
-        TopLevelCommandManager topLevelCommandManager,
-        AliasManager aliasManager,
-        IFuzzyMatcherProvider fuzzyMatcherProvider,
-        ISettingsService settingsService,
         IAppStateService appStateService,
-        IListPage allAppsPage)
+        AllAppsPage allAppsPage,
+        AllAppsCommandProvider allAppsCommandProvider)
     {
         Id = "com.microsoft.cmdpal.home";
         Title = Resources.builtin_home_name;
@@ -144,8 +128,9 @@ public sealed partial class MainListPage : DynamicListPage,
         _settingsService = settingsService;
         _aliasManager = aliasManager;
         _appStateService = appStateService;
-        _allAppsPage = allAppsPage;
         _recentCommands = _appStateService.State.RecentCommands;
+        _allAppsPage = allAppsPage ?? throw new ArgumentNullException(nameof(allAppsPage));
+        _allAppsCommandProvider = allAppsCommandProvider ?? throw new ArgumentNullException(nameof(allAppsCommandProvider));
         _tlcManager = topLevelCommandManager;
         _fuzzyMatcherProvider = fuzzyMatcherProvider;
         _scoringFunction = (in query, item) => ScoreTopLevelItem(in query, item, _appStateService.State.RecentCommands, _fuzzyMatcherProvider.Current, ResolveProviderSearchWeight);
@@ -216,7 +201,7 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(IListPage.IsLoading))
+        if (e.PropertyName == nameof(AllAppsPage.IsLoading))
         {
             IsLoading = ActuallyLoading();
             if (!_allAppsPage.IsLoading && _recentCommandsOnHome != RecentCommandsPlacement.Hidden)

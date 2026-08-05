@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.Ext.Apps;
 
 public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
 {
+    internal const int DefaultSearchResultLimit = 10;
+
     // "none" instead of "0": the original default was accidentally "0", so existing
     // users may have "0" stored. Using "none" lets us distinguish intentional "show
     // no results" from the old accidental default (which is now treated as "use default").
@@ -25,7 +27,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     private static readonly string DefaultLimitItemTitle = string.Format(
         CultureInfo.CurrentCulture,
         DefaultLimitItemTitleFormat.Format,
-        AllAppsCommandProvider.DefaultResultLimit);
+        DefaultSearchResultLimit);
 
     private static readonly string _namespace = "apps";
 
@@ -39,12 +41,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         new(Resources.limit_5, "5"),
         new(Resources.limit_10, "10"),
     ];
-
-#pragma warning disable SA1401 // Fields should be private
-    internal static AllAppsSettings Instance = new();
-#pragma warning restore SA1401 // Fields should be private
-
-    public DateTime LastIndexTime { get; set; }
 
     public List<ProgramSource> ProgramSources { get; set; } = [];
 
@@ -102,6 +98,8 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
             return result;
         }
     }
+
+    public int EffectiveSearchResultLimit => SearchResultLimit ?? DefaultSearchResultLimit;
 
     private readonly ToggleSetting _enableStartMenuSource = new(
         Namespaced(nameof(EnableStartMenuSource)),

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Apps.Catalog;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -18,126 +19,131 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public sealed partial class AllAppsPage : ListPage
 {
     private readonly Lock _listLock = new();
-    private readonly IAppCache _appCache;
+    private readonly IAppCatalog _appCatalog;
+    private readonly AllAppsSettings _settings;
 
-    private volatile AppListSnapshot _snapshot = AppListSnapshot.Empty;
+    private AppListItem[] _allAppListItems = [];
+    private bool _rebuildRequested;
+    private Task? _rebuildTask;
 
-    public AllAppsPage()
-        : this(AppCache.Instance.Value)
+    public AllAppsPage(IAppCatalog appCatalog, AllAppsSettings settings)
     {
-    }
-
-    public AllAppsPage(IAppCache appCache)
-    {
-        _appCache = appCache ?? throw new ArgumentNullException(nameof(appCache));
+        _appCatalog = appCatalog ?? throw new ArgumentNullException(nameof(appCatalog));
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         this.Name = Resources.all_apps;
         this.Icon = Icons.AllAppsIcon;
         this.ShowDetails = true;
         this.IsLoading = true;
         this.PlaceholderText = Resources.search_installed_apps_placeholder;
 
-        Task.Run(() =>
-        {
-            lock (_listLock)
-            {
-                BuildListItems();
-            }
-        });
+        _appCatalog.Changed += OnCatalogChanged;
+        _ = InitializePageAsync();
     }
 
     public override IListItem[] GetItems()
     {
-        // Build or update the list if needed
-        BuildListItems();
-
-        return _snapshot.Items;
-    }
-
-    /// <summary>
-    /// Looks up an item in the most recently published app catalog without waiting for a reload.
-    /// </summary>
-    public bool TryGetCurrentItem(string commandId, out AppListItem? item)
-    {
-        if (string.IsNullOrEmpty(commandId))
+        lock (_listLock)
         {
-            item = null;
-            return false;
+            return _allAppListItems;
         }
-
-        return _snapshot.ItemsByCommandId.TryGetValue(commandId, out item);
     }
 
     private void BuildListItems()
     {
-        if (_snapshot.Items.Length == 0 || _appCache.ShouldReload())
+        lock (_listLock)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            _allAppListItems = GetPrograms();
+
+            stopwatch.Stop();
+            Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
+        }
+    }
+
+    private async Task InitializePageAsync()
+    {
+        try
+        {
+            await _appCatalog.InitializeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to initialize the application index", ex);
+        }
+
+        QueueListRebuild();
+    }
+
+    private void OnCatalogChanged(object? sender, AppCatalogChangedEventArgs e)
+    {
+        QueueListRebuild();
+    }
+
+    private void QueueListRebuild()
+    {
+        lock (_listLock)
+        {
+            _rebuildRequested = true;
+            this.IsLoading = true;
+
+            if (_rebuildTask is null)
+            {
+                _rebuildTask = Task.Run(RebuildUntilCurrent);
+            }
+        }
+
+        RaiseItemsChanged();
+    }
+
+    private void RebuildUntilCurrent()
+    {
+        while (true)
         {
             lock (_listLock)
             {
-                this.IsLoading = true;
+                _rebuildRequested = false;
+            }
 
-                Stopwatch stopwatch = new();
-                stopwatch.Start();
+            try
+            {
+                BuildListItems();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to rebuild the application list", ex);
+            }
 
-                var items = GetPrograms();
-                var itemsByCommandId = new Dictionary<string, AppListItem>(items.Length, StringComparer.Ordinal);
-                foreach (var item in items)
+            lock (_listLock)
+            {
+                if (_rebuildRequested)
                 {
-                    var commandId = item.Command?.Id;
-                    if (!string.IsNullOrEmpty(commandId))
-                    {
-                        itemsByCommandId.TryAdd(commandId, item);
-                    }
+                    continue;
                 }
 
-                _snapshot = new AppListSnapshot(items, itemsByCommandId);
-
+                _rebuildTask = null;
                 this.IsLoading = false;
-
-                _appCache.ResetReloadFlag();
-
-                stopwatch.Stop();
-                Logger.LogTrace($"{nameof(AllAppsPage)}.{nameof(BuildListItems)} took: {stopwatch.ElapsedMilliseconds} ms");
             }
+
+            RaiseItemsChanged();
+            return;
         }
     }
 
     private AppListItem[] GetPrograms()
     {
         var items = new List<AppListItem>();
+        var hideAppDescriptions = _settings.HideAppDescriptions;
 
-        foreach (var uwpApp in _appCache.UWPs)
+        foreach (var app in _appCatalog.Items)
         {
-            if (uwpApp.Enabled)
-            {
-                items.Add(new AppListItem(uwpApp.ToAppItem(), true));
-            }
-        }
-
-        foreach (var win32App in _appCache.Win32s)
-        {
-            if (win32App.Enabled && win32App.Valid)
-            {
-                items.Add(new AppListItem(win32App.ToAppItem(), true));
-            }
+            var item = new AppListItem(app, useThumbnails: true);
+            item.Subtitle = hideAppDescriptions ? string.Empty : item.App.Subtitle;
+            items.Add(item);
         }
 
         items.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.Ordinal));
 
-        if (AllAppsSettings.Instance.HideAppDescriptions)
-        {
-            foreach (var item in items)
-            {
-                item.Subtitle = string.Empty;
-            }
-        }
-
         return [.. items];
-    }
-
-    private sealed record AppListSnapshot(
-        AppListItem[] Items,
-        IReadOnlyDictionary<string, AppListItem> ItemsByCommandId)
-    {
-        public static AppListSnapshot Empty { get; } = new([], new Dictionary<string, AppListItem>(StringComparer.Ordinal));
     }
 }

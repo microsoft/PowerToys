@@ -7,13 +7,8 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Xml;
 using ManagedCommon;
-using Microsoft.CmdPal.Ext.Apps.Commands;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
-using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Storage.Packaging.Appx;
 using PackageVersion = Microsoft.CmdPal.Ext.Apps.Programs.UWP.PackageVersion;
@@ -32,8 +27,6 @@ public class UWPApplication : IUWPApplication
 
     public string AppListEntry { get; set; } = string.Empty;
 
-    public string UniqueIdentifier { get; set; }
-
     public string DisplayName { get; set; }
 
     public string Description { get; set; }
@@ -45,11 +38,6 @@ public class UWPApplication : IUWPApplication
     public string EntryPoint { get; set; }
 
     public string Name => DisplayName;
-
-    public string Location => Package.Location;
-
-    // Localized path based on windows display language
-    public string LocationLocalized => Package.LocationLocalized;
 
     public bool Enabled { get; set; }
 
@@ -69,82 +57,12 @@ public class UWPApplication : IUWPApplication
 
     private string _jumboLogoUri;
 
-    // Function to set the subtitle based on the Type of application
-    public static string Type()
-    {
-        return Resources.packaged_application;
-    }
-
-    public string GetAppIdentifier()
-    {
-        // Use UserModelId for UWP apps as it's unique
-        return UserModelId;
-    }
-
-    public List<IContextItem> GetCommands()
-    {
-        List<IContextItem> commands = [];
-
-        if (CanRunElevated)
-        {
-            commands.Add(
-                new CommandContextItem(
-                    new RunAsAdminCommand(UniqueIdentifier, string.Empty, true))
-                {
-                    RequestedShortcut = KeyChords.RunAsAdministrator,
-                });
-
-            // We don't add context menu to 'run as different user', because UWP applications normally installed per user and not for all users.
-        }
-
-        commands.Add(
-            new CommandContextItem(
-                new CopyPathCommand(Location))
-            {
-                RequestedShortcut = KeyChords.CopyFilePath,
-            });
-
-        commands.Add(
-            new CommandContextItem(
-                new OpenFileCommand(Location)
-                {
-                    Icon = new("\uE838"),
-                    Name = Resources.open_location,
-                })
-            {
-                RequestedShortcut = KeyChords.OpenFileLocation,
-            });
-
-        commands.Add(
-        new CommandContextItem(
-            new OpenInConsoleCommand(Package.Location))
-        {
-            RequestedShortcut = KeyChords.OpenInConsole,
-        });
-
-        if (!Package.IsNonRemovable)
-        {
-            commands.Add(
-                new CommandContextItem(
-                    new UninstallApplicationConfirmation(DisplayName, Package.FullName))
-                {
-                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
-                    IsCritical = true,
-                });
-        }
-
-        return commands;
-    }
-
     internal unsafe UWPApplication(IAppxManifestApplication* manifestApp, UWP package)
     {
         ArgumentNullException.ThrowIfNull(manifestApp);
 
         var hr = manifestApp->GetAppUserModelId(out var tmpUserModelIdPtr);
         UserModelId = ComFreeHelper.GetStringAndFree(hr, tmpUserModelIdPtr);
-
-        manifestApp->GetAppUserModelId(out var tmpUniqueIdentifierPtr);
-        UniqueIdentifier = ComFreeHelper.GetStringAndFree(hr, tmpUniqueIdentifierPtr);
 
         manifestApp->GetStringValue("DisplayName", out var tmpDisplayNamePtr);
         DisplayName = ComFreeHelper.GetStringAndFree(hr, tmpDisplayNamePtr);
@@ -354,28 +272,6 @@ public class UWPApplication : IUWPApplication
                 JumboLogoType = jumboLogoAlt.LogoType;
             }
         }
-    }
-
-    public AppItem ToAppItem()
-    {
-        var app = this;
-        var iconPath = app.LogoType != LogoType.Error ? app.LogoPath : string.Empty;
-        var jumboIconPath = app.JumboLogoType != LogoType.Error ? app.JumboLogoPath : string.Empty;
-        var item = new AppItem
-        {
-            Name = app.Name,
-            Subtitle = app.Description,
-            Type = UWPApplication.Type(),
-            IcoPath = iconPath,
-            JumboIconPath = jumboIconPath,
-            DirPath = app.Location,
-            UserModelId = app.UserModelId,
-            IsPackaged = true,
-            Commands = app.GetCommands(),
-            AppIdentifier = app.GetAppIdentifier(),
-            PackageFamilyName = app.Package.FamilyName,
-        };
-        return item;
     }
 
     public override string ToString()
