@@ -8,16 +8,24 @@ using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using MEL = Microsoft.Extensions.Logging;
+
 namespace Microsoft.CmdPal.Ext.Apps.Catalog;
 
 public static class AppCatalogFactory
 {
+    /// <summary>Creates the default catalog using the supplied settings instance.</summary>
     public static IAppCatalog CreateDefault(AllAppsSettings settings) =>
         CreateDefault(settings, NullLoggerFactory.Instance);
 
+    /// <summary>
+    /// Creates the default catalog using the supplied settings and MEL logger factory.
+    /// </summary>
+    /// <param name="settings">Settings that define catalog sources, filtering, and diagnostics.</param>
+    /// <param name="loggerFactory">Factory used to create category-specific diagnostic loggers.</param>
     public static IAppCatalog CreateDefault(
         AllAppsSettings settings,
-        ILoggerFactory loggerFactory)
+        MEL.ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(loggerFactory);

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
@@ -18,12 +19,18 @@ public partial class AllAppsCommandProvider : CommandProvider
     public const string WellKnownId = "AllApps";
 
     private readonly AllAppsPage _page;
+    private readonly IAppListItemSource _appListItemSource;
     private readonly AllAppsSettings _settings;
     private readonly CommandItem _listItem;
+    private IReadOnlyList<AppListItem> _visibleItems;
 
-    public AllAppsCommandProvider(AllAppsPage page, AllAppsSettings settings)
+    public AllAppsCommandProvider(
+        AllAppsPage page,
+        IAppListItemSource appListItemSource,
+        AllAppsSettings settings)
     {
         _page = page ?? throw new ArgumentNullException(nameof(page));
+        _appListItemSource = appListItemSource ?? throw new ArgumentNullException(nameof(appListItemSource));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
@@ -32,13 +39,36 @@ public partial class AllAppsCommandProvider : CommandProvider
 
         _listItem = new(_page)
         {
-            MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
+            MoreCommands =
+            [
+                .. _page.MoreCommands,
+                new CommandContextItem(_settings.Settings.SettingsPage),
+            ],
         };
+        _visibleItems = _appListItemSource.GetSnapshot().VisibleItems;
+        _appListItemSource.Changed += OnAppListChanged;
     }
 
-    public int TopLevelResultLimit => _settings.EffectiveSearchResultLimit;
+    public int TopLevelResultLimit => _appListItemSource.TopLevelResultLimit;
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];
+
+    private void OnAppListChanged(object? sender, EventArgs args)
+    {
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
+        var previous = Interlocked.Exchange(ref _visibleItems, items);
+        if (!items.SequenceEqual(previous))
+        {
+            RaiseItemsChanged();
+        }
+    }
+
+    public override void Dispose()
+    {
+        _appListItemSource.Changed -= OnAppListChanged;
+        base.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
     {
@@ -47,7 +77,7 @@ public partial class AllAppsCommandProvider : CommandProvider
             return null;
         }
 
-        var items = _page.GetItems();
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
         List<ICommandItem> matches = [];
 
         foreach (var item in items)
@@ -78,7 +108,7 @@ public partial class AllAppsCommandProvider : CommandProvider
             return null;
         }
 
-        var items = _page.GetItems();
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
         List<ICommandItem> matches = [];
 
         foreach (var item in items)
@@ -106,10 +136,10 @@ public partial class AllAppsCommandProvider : CommandProvider
 
     public override ICommandItem? GetCommandItem(string id)
     {
-        var items = _page.GetItems();
+        var items = _appListItemSource.GetSnapshot().VisibleItems;
         foreach (var item in items)
         {
-            if (item.Command.Id == id)
+            if (item.Command?.Id == id)
             {
                 return item;
             }

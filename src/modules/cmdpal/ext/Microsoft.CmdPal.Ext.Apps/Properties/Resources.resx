@@ -196,6 +196,18 @@
   <data name="enable_path_environment_variable_source" xml:space="preserve">
     <value>Include apps anywhere on the %PATH%</value>
   </data>
+  <data name="filter_all_apps" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="filter_win32_apps" xml:space="preserve">
+    <value>Win32</value>
+  </data>
+  <data name="filter_packaged_apps" xml:space="preserve">
+    <value>Packaged</value>
+  </data>
+  <data name="filter_hidden_apps" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
   <data name="use_thumbnails_setting_label" xml:space="preserve">
     <value>Use thumbnails for apps</value>
     <comment>when enabled, we'll display thumbnails from the windows shell for programs</comment>
@@ -259,6 +271,19 @@
     <value>Default ({0})</value>
     <comment>default option; {0} = number of items</comment>
   </data>
+  <data name="refreshing_app_list" xml:space="preserve">
+    <value>Refreshing app list...</value>
+  </data>
+  <data name="refreshing_page_title_suffix" xml:space="preserve">
+    <value>refreshing...</value>
+    <comment>Suffix appended to the All Apps page title while its app list is refreshing.</comment>
+  </data>
+  <data name="refresh_app_list" xml:space="preserve">
+    <value>Refresh app list</value>
+  </data>
+  <data name="no_apps_found" xml:space="preserve">
+    <value>No apps found</value>
+  </data>
   <data name="include_non_apps_on_desktop" xml:space="preserve">
     <value>Also include non-app shortcuts from the desktop</value>
   </data>
@@ -268,7 +293,13 @@
   <data name="hide_app_descriptions" xml:space="preserve">
     <value>Hide app description in search results</value>
   </data>
+  <data name="hide_app" xml:space="preserve">
+    <value>Hide app</value>
+  </data>
   <data name="hide_app_descriptions_description" xml:space="preserve">
     <value>Hide description text next to app results for a cleaner look</value>
+  </data>
+  <data name="unhide_app" xml:space="preserve">
+    <value>Unhide app</value>
   </data>
 </root>
