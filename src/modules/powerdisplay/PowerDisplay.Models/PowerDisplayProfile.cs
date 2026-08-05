@@ -16,6 +16,9 @@ namespace PowerDisplay.Models
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
         [JsonPropertyName("monitorSettings")]
         public List<ProfileMonitorSetting> MonitorSettings { get; set; }
 
@@ -56,5 +59,12 @@ namespace PowerDisplay.Models
         {
             LastModified = DateTime.UtcNow;
         }
+
+        /// <summary>
+        /// Gets a human-readable label that disambiguates duplicate names, e.g. "Gaming (#4)".
+        /// Not serialized; UI display only.
+        /// </summary>
+        [JsonIgnore]
+        public string DisplayName => ProfileDisplayNameFormatter.Format(Name, Id);
     }
 }

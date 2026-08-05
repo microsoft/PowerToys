@@ -110,6 +110,56 @@ Add `Microsoft.Windows.ImplementationLibrary` NuGet for `wil::resume_foreground`
 
 ## Window Management
 
+### Prefer `WindowEx` over bare `Window`
+
+> **For top-level windows in WinUI 3 modules, default to `WinUIEx.WindowEx` or an existing PowerToys base derived from it, not bare `Window`.** Use `Microsoft.PowerToys.Common.UI.Controls.Window.TransparentWindow` when its transient-overlay behavior applies. Most rows in the table below say "No — use `AppWindow`…", which pushes windowing logic into code-behind. `WindowEx` restores many of these as **XAML properties**, so you declare windowing in XAML instead of hand-writing `AppWindow`/`OverlappedPresenter` code. Only drop to the raw `AppWindow`/presenter calls shown later for behavior `WindowEx` does not expose.
+
+PowerToys centrally manages the WinUIEx version. Reference the package without specifying one:
+
+```xml
+<PackageReference Include="WinUIEx" />
+```
+
+Declare a regular top-level window as `WindowEx` and set properties inline:
+
+```xml
+<winuiex:WindowEx
+    x:Class="MyApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="480"
+    MinHeight="320"
+    IsMaximizable="False"
+    IsResizable="False"
+    IsTitleBarVisible="False">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid>
+        <!-- content -->
+    </Grid>
+</winuiex:WindowEx>
+```
+
+These WPF `Window` members become XAML properties on `WindowEx` (no code-behind):
+
+| WPF `Window` | `WindowEx` (XAML unless noted) |
+|--------------|-------------------------------|
+| `MinWidth` / `MinHeight` | `MinWidth` / `MinHeight` |
+| `Width` / `Height` | `Width` / `Height` |
+| `ResizeMode="NoResize"` | `IsResizable="False"` |
+| `WindowStyle` min/max buttons | `IsMaximizable` / `IsMinimizable` |
+| `WindowState` | `WindowState` (`Normal`/`Minimized`/`Maximized`) |
+| `Topmost` | `IsAlwaysOnTop` |
+| `ShowInTaskbar` | `IsShownInSwitchers` (Alt-Tab visibility) |
+| custom / hidden title bar | `IsTitleBarVisible` |
+| backdrop | `<Window.SystemBackdrop><MicaBackdrop/></Window.SystemBackdrop>` |
+| `WindowStartupLocation="CenterScreen"` | `CenterOnScreen()` (method) |
+| persist size/position across sessions | `PersistenceId` (string) |
+
+Regular-window examples in the repo: `src/modules/imageresizer/ui/ImageResizerXAML/MainWindow.xaml`, `src/modules/powerdisplay/PowerDisplay/PowerDisplayXAML/MainWindow.xaml`, `src/modules/peek/Peek.UI/PeekXAML/MainWindow.xaml`, `src/modules/AdvancedPaste/AdvancedPaste/AdvancedPasteXAML/MainWindow.xaml`, `src/modules/MeasureTool/MeasureToolUI/MeasureToolXAML/MainWindow.xaml`. For a derived-base overlay example, see `src/modules/poweraccent/PowerAccent.UI/PowerAccentXAML/MainWindow.xaml`.
+
 ### WPF Window vs WinUI 3 Window
 
 | Feature | WPF `Window` | WinUI 3 `Window` |
