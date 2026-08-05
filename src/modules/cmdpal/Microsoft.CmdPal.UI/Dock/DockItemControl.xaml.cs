@@ -115,9 +115,9 @@ public sealed partial class DockItemControl : Control
     private const double HorizontalChromeSeparation = 2;
     private const double VerticalChromeSeparation = 1;
 
-    // Mirrors the inset DockControl keeps on the dock's inner side.
-    private const double HorizontalDockEdgeGap = 2;
-    private const double VerticalDockEdgeGap = 4;
+    // Mirrors the margin DockControl keeps on the dock's inner side (its Padding there
+    // is on a UserControl, which never renders it).
+    private const double DockEdgeGap = 2;
 
     private FrameworkElement? _iconPresenter;
     private FrameworkElement? _backPlate;
@@ -434,7 +434,7 @@ public sealed partial class DockItemControl : Control
         var vertical = side is DockSide.Left or DockSide.Right;
 
         // Compact trades the gap for height.
-        var edgeGap = IsCompact ? 0 : vertical ? VerticalDockEdgeGap : HorizontalDockEdgeGap;
+        var edgeGap = IsCompact ? 0 : DockEdgeGap;
 
         InnerMargin = vertical
             ? new Thickness(
