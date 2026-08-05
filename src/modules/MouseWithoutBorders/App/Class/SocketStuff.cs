@@ -1696,14 +1696,24 @@ namespace MouseWithoutBorders.Class
                             {
                                 headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
                             }
-                            else if (!Launch.ImpersonateLoggedOnUserAndDoSomething(
-                                () => leasedFileStream = new FileStream(
-                                    pathLease.PhysicalPath,
-                                    FileMode.Open,
-                                    FileAccess.Read,
-                                    FileShare.Read,
-                                    Common.NETWORK_STREAM_BUF_SIZE,
-                                    FileOptions.SequentialScan)))
+                            else if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                            {
+                                try
+                                {
+                                    leasedFileStream = new FileStream(
+                                        pathLease.PhysicalPath,
+                                        FileMode.Open,
+                                        FileAccess.Read,
+                                        FileShare.Read,
+                                        Common.NETWORK_STREAM_BUF_SIZE,
+                                        FileOptions.SequentialScan);
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Log(e);
+                                }
+                            })
+                                || leasedFileStream == null)
                             {
                                 s?.Close();
                                 return;
