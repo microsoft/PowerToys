@@ -511,8 +511,8 @@ opera.exe</value>
     <comment>Product name: Navigation view item name for Shortcut Guide</comment>
   </data>
   <data name="Shell_PowerPreview.Content" xml:space="preserve">
-    <value>File Explorer Add-ons</value>
-    <comment>Product name: Navigation view item name for File Explorer.  Please use File Explorer as in the context of File Explorer in Windows</comment>
+    <value>File Explorer</value>
+    <comment>Navigation view item name for File Explorer. Keep this translation consistent with FileExplorerPreview.ModuleTitle and use the localized Windows product name.</comment>
   </data>
   <data name="Shell_FancyZones.Content" xml:space="preserve">
     <value>FancyZones</value>
