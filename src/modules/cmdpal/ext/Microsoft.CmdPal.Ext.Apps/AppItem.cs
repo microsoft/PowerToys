@@ -7,8 +7,14 @@ using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Apps;
 
+/// <summary>
+/// Contains the catalog's consumer-facing launch, display, search, command, and deferred-icon metadata.
+/// </summary>
 public sealed class AppItem
 {
+    /// <summary>Gets or sets the stable canonical catalog identity.</summary>
+    public string CatalogId { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
 
     public string Subtitle { get; set; } = string.Empty;
@@ -34,6 +40,11 @@ public sealed class AppItem
     public string? FullExecutablePath { get; set; }
 
     public string? JumboIconPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets source aliases and other retained metadata that may participate in search and catalog policy.
+    /// </summary>
+    public IReadOnlyList<string> MatchTerms { get; set; } = [];
 
     public AppItem()
     {

@@ -158,8 +158,13 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
     }
 
     public AllAppsSettings()
+        : this(SettingsJsonPath())
     {
-        FilePath = SettingsJsonPath();
+    }
+
+    internal AllAppsSettings(string filePath)
+    {
+        FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
 
         Settings.Add(_enableStartMenuSource);
         Settings.Add(_includeNonAppsInStartMenu);

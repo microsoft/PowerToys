@@ -29,6 +29,10 @@ public interface IUWPApplication : IProgram
 
     LogoType LogoType { get; set; }
 
+    string JumboLogoPath { get; set; }
+
+    LogoType JumboLogoType { get; set; }
+
     UWP Package { get; set; }
 
     string LocationLocalized { get; }
