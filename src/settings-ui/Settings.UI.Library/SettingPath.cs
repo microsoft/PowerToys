@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -28,19 +28,24 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
         }
 
+        private string GetModuleFolderPath(string powertoy = "") =>
+            string.IsNullOrWhiteSpace(powertoy)
+                ? _path.Combine(Helper.LocalApplicationDataFolder(), "Microsoft", "PowerToys")
+                : _path.Combine(Helper.LocalApplicationDataFolder(), "Microsoft", "PowerToys", powertoy);
+
         public bool SettingsFolderExists(string powertoy)
         {
-            return _directory.Exists(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            return _directory.Exists(GetModuleFolderPath(powertoy));
         }
 
         public void CreateSettingsFolder(string powertoy)
         {
-            _directory.CreateDirectory(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _directory.CreateDirectory(GetModuleFolderPath(powertoy));
         }
 
         public void DeleteSettings(string powertoy = "")
         {
-            _directory.Delete(System.IO.Path.Combine(Helper.LocalApplicationDataFolder(), $"Microsoft\\PowerToys\\{powertoy}"));
+            _directory.Delete(GetModuleFolderPath(powertoy));
         }
 
         /// <summary>
@@ -49,16 +54,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <returns>string path.</returns>
         public string GetSettingsPath(string powertoy, string fileName = DefaultFileName)
         {
-            if (string.IsNullOrWhiteSpace(powertoy))
-            {
-                return _path.Combine(
-                    Helper.LocalApplicationDataFolder(),
-                    $"Microsoft\\PowerToys\\{fileName}");
-            }
-
-            return _path.Combine(
-                Helper.LocalApplicationDataFolder(),
-                $"Microsoft\\PowerToys\\{powertoy}\\{fileName}");
+            return _path.Combine(GetModuleFolderPath(powertoy), fileName);
         }
     }
 }

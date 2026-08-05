@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -17,6 +17,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
     {
         public static readonly IFileSystem FileSystem = new FileSystem();
 
+        /// <summary>
+        /// Gets or sets a custom LocalAppData path. This mutable static property allows services like MouseWithoutBorders to override the AppData folder path dynamically at runtime.
+        /// </summary>
         public static string UserLocalAppDataPath { get; set; } = string.Empty;
 
         public static bool AllowRunnerToForeground()
@@ -96,6 +99,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             return watcher;
         }
 
+        /// <summary>
+        /// Gets the local application data folder path. This is intentionally a method rather than a cached field because the path can change during process runtime (e.g., MouseWithoutBorders service overriding UserLocalAppDataPath).
+        /// </summary>
         public static string LocalApplicationDataFolder()
         {
             WindowsIdentity currentUser = WindowsIdentity.GetCurrent();

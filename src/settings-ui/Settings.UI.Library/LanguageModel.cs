@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,9 +11,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class LanguageModel
     {
-        public const string SettingsFilePath = "\\Microsoft\\PowerToys\\";
-        public const string SettingsFile = "language.json";
-
         public string Tag { get; set; }
 
         public string ResourceID { get; set; }
@@ -23,8 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static string LoadSetting()
         {
             FileSystem fileSystem = new FileSystem();
-            var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var file = localAppDataDir + SettingsFilePath + SettingsFile;
+            var file = SettingsUtils.Default.GetSettingsFilePath(string.Empty, "language.json");
 
             if (fileSystem.File.Exists(file))
             {
