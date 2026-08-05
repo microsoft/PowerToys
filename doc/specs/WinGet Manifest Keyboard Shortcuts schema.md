@@ -235,6 +235,8 @@ By convention these tokens are written as double-quoted strings in the YAML (for
 |`<Arrow>`| Corresponds to either the left, right, up or down arrow key |
 |`<ArrowLR>`| Corresponds to either the left or right arrow key |
 |`<ArrowUD>`| Corresponds to either the up or down arrow key |
+|`<LessThan>`| Corresponds to the `<` key |
+|`<GreaterThan>`| Corresponds to the `>` key |
 |`<Underlined letter>`| Corresponds to any letter that is _underlined_ in the UI |
 
 </details>

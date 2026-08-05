@@ -157,8 +157,6 @@ public sealed partial class DockWindow : WindowEx,
 
         InitializeComponent();
         Root.Children.Add(_dock);
-        ExtendsContentIntoTitleBar = true;
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
         _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {

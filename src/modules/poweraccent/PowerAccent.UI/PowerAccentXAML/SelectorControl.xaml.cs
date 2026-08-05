@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation;
 
 namespace PowerAccent.UI;
 
@@ -31,6 +32,28 @@ public sealed partial class SelectorControl : UserControl
     internal double HorizontalSurfaceOverheadDip =>
         Surface.Margin.Left + Surface.Margin.Right +
         Surface.BorderThickness.Left + Surface.BorderThickness.Right;
+
+    /// <summary>
+    /// Measures the accent list against an unbounded width and returns the width its items actually
+    /// need, in DIP - 0 when it cannot be measured yet.
+    /// </summary>
+    /// <remarks>
+    /// The cell is a <c>MinWidth</c> of 48, not a fixed 48: a glyph wider than that (₹, ‰, ﷼, a CJK
+    /// fallback) grows its cell, so the bar has to be measured rather than derived from the item
+    /// count. The measurement is taken explicitly instead of read from the last layout pass because
+    /// the bar is rebuilt on every summon while the window is still hidden, so no pass has run for
+    /// the new items; measuring against an infinite width also yields the true content width rather
+    /// than whatever the ScrollViewer inside the ListView's own template would have clipped it to.
+    /// A caller that measures before the surface has been templated and laid out may get less than
+    /// the items need, so <c>MainWindow</c> measures again after its first layout pass.
+    /// </remarks>
+    internal double MeasureContentWidthDip()
+    {
+        CharactersList.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+        double width = CharactersList.DesiredSize.Width;
+        return double.IsFinite(width) ? width : 0;
+    }
 
     // Wire the inner TransientSurface to the hosting window's Show/Hide so it animates in/out.
     // TransientSurface.SubscribeTo explicitly supports being "placed within" the window content.

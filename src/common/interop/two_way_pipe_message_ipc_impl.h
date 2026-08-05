@@ -13,6 +13,7 @@ public:
     void send(std::wstring msg);
     TwoWayPipeMessageIPCImpl(std::wstring _input_pipe_name, std::wstring _output_pipe_name, callback_function p_func);
     void start(HANDLE _restricted_pipe_token);
+    void start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& _caller_policy);
     void end();
 
 private:
@@ -29,6 +30,8 @@ private:
     HANDLE current_connect_pipe_handle = NULL;
     bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
+    interop_auth::CallerPolicy caller_policy;
+    interop_auth::VerificationCache caller_cache;
 
     void send_pipe_message(std::wstring message);
     void consume_output_queue_thread();
