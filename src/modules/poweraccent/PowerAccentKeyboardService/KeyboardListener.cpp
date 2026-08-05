@@ -369,11 +369,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         const auto releasedLetter = static_cast<LetterKey>(info.vkCode);
         const bool isLetterKey = std::find(std::begin(letters), end(letters), releasedLetter) != end(letters);
-        const bool isActivePressAndHoldOwner =
-            m_toolbarVisible &&
-            m_gestureActivationKey == PowerAccentActivationKey::PressAndHold &&
-            letterPressed == releasedLetter;
-        if (isLetterKey && (isActivePressAndHoldOwner || m_isLanguageLetterCb(releasedLetter)))
+        const bool isActiveOwner = letterPressed == releasedLetter;
+        if (isLetterKey && (isActiveOwner || m_isLanguageLetterCb(releasedLetter)))
         {
             // Only react to the key-up of the letter that owns the toolbar, so releasing a
             // different held letter can't cancel or commit the active picker.
