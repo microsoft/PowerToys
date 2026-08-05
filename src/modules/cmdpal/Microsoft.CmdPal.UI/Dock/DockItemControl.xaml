@@ -65,6 +65,19 @@
                             x:Name="PART_RootGrid"
                             Padding="{StaticResource DockItemMargin}"
                             Background="Transparent">
+                            <!--  Hover/pressed chrome lives on its own layer so it can cross-fade instead of popping in  -->
+                            <Border
+                                x:Name="HoverLayer"
+                                Background="{ThemeResource DockItemBackgroundPointerOver}"
+                                BorderBrush="{ThemeResource DockItemBorderBrushPointerOver}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                IsHitTestVisible="False"
+                                Opacity="0">
+                                <Border.OpacityTransition>
+                                    <ScalarTransition Duration="0:0:0.15" />
+                                </Border.OpacityTransition>
+                            </Border>
                             <Grid
                                 x:Name="PART_BackPlate"
                                 MinWidth="32"
@@ -88,7 +101,13 @@
                                     <ContentPresenter
                                         x:Name="IconPresenter"
                                         VerticalAlignment="Center"
-                                        Content="{TemplateBinding Icon}" />
+                                        Content="{TemplateBinding Icon}"
+                                        RenderTransformOrigin="0.5,0.5">
+                                        <!--  Render transform: the icon shrinks in place, the item keeps its measured size  -->
+                                        <ContentPresenter.RenderTransform>
+                                            <ScaleTransform x:Name="IconScaleTransform" />
+                                        </ContentPresenter.RenderTransform>
+                                    </ContentPresenter>
 
                                     <!--  Text (Title + Subtitle)  -->
                                     <StackPanel
@@ -127,21 +146,52 @@
                             </Grid>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
-                                    <VisualState x:Name="Normal" />
+                                    <VisualStateGroup.Transitions>
+                                        <!--  Ease the icon back to full size when the press ends  -->
+                                        <VisualTransition From="Pressed" GeneratedDuration="0:0:0.15" />
+                                    </VisualStateGroup.Transitions>
+                                    <!--  Every state sets HoverLayer explicitly; relying on the VSM to revert the setter leaves the chrome stuck on  -->
+                                    <VisualState x:Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Target="HoverLayer.Opacity" Value="0" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
+                                            <Setter Target="HoverLayer.Opacity" Value="1" />
+                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <!--  42:34 - the icon shrinks to ~0.81 of its size, everything else stays put  -->
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="IconScaleTransform"
+                                                Storyboard.TargetProperty="ScaleX"
+                                                To="0.81"
+                                                Duration="0:0:0.09">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="IconScaleTransform"
+                                                Storyboard.TargetProperty="ScaleY"
+                                                To="0.81"
+                                                Duration="0:0:0.09">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <CubicEase EasingMode="EaseOut" />
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
                                         <VisualState.Setters>
-                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
+                                            <Setter Target="HoverLayer.Opacity" Value="1" />
+                                            <Setter Target="HoverLayer.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
+                                            <Setter Target="HoverLayer.Opacity" Value="0" />
                                             <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />

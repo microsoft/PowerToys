@@ -399,6 +399,24 @@ public sealed partial class DockItemControl : Control
         }
     }
 
+    protected override void OnPointerReleased(PointerRoutedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        // The pointer is still over us on release, so hand back to PointerOver;
+        // PointerExited takes it to Normal from there.
+        if (IsEnabled)
+        {
+            VisualStateManager.GoToState(this, "PointerOver", true);
+        }
+    }
+
+    protected override void OnPointerCanceled(PointerRoutedEventArgs e)
+    {
+        base.OnPointerCanceled(e);
+        VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
+    }
+
     private void OnIsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         VisualStateManager.GoToState(this, IsEnabled ? "Normal" : "Disabled", true);
