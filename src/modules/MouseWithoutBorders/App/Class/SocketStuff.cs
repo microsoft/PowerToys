@@ -1686,50 +1686,69 @@ namespace MouseWithoutBorders.Class
                 using (pathLease)
                 {
                     string fileName = null;
-
-                    if (pathLease != null)
-                    {
-                        if (pathLease.IsDirectory)
-                        {
-                            headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
-                        }
-                        else
-                        {
-                            fileName = pathLease.PhysicalPath;
-                            headerString = $"{pathLease.Length}*{lastDragDropFile}";
-                        }
-                    }
-                    else
-                    {
-                        if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
-                        {
-                            if (!File.Exists(lastDragDropFile))
-                            {
-                                headerString = Directory.Exists(lastDragDropFile)
-                                    ? $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!"
-                                    : lastDragDropFile.Contains("- File too big")
-                                        ? $"{0}*{lastDragDropFile}"
-                                        : $"{0}*{lastDragDropFile} not found!";
-                            }
-                            else
-                            {
-                                fileName = lastDragDropFile;
-                                headerString = $"{new FileInfo(fileName).Length}*{fileName}";
-                            }
-                        }))
-                        {
-                            s?.Close();
-                            return;
-                        }
-                    }
-
-                    Common.GetBytesU(headerString).CopyTo(header, 0);
+                    FileStream leasedFileStream = null;
 
                     try
                     {
+                        if (pathLease != null)
+                        {
+                            if (pathLease.IsDirectory)
+                            {
+                                headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                            }
+                            else if (!Launch.ImpersonateLoggedOnUserAndDoSomething(
+                                () => leasedFileStream = new FileStream(
+                                    pathLease.PhysicalPath,
+                                    FileMode.Open,
+                                    FileAccess.Read,
+                                    FileShare.Read,
+                                    Common.NETWORK_STREAM_BUF_SIZE,
+                                    FileOptions.SequentialScan)))
+                            {
+                                s?.Close();
+                                return;
+                            }
+                            else
+                            {
+                                headerString = $"{leasedFileStream.Length}*{lastDragDropFile}";
+                            }
+                        }
+                        else
+                        {
+                            if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                            {
+                                if (!File.Exists(lastDragDropFile))
+                                {
+                                    headerString = Directory.Exists(lastDragDropFile)
+                                        ? $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!"
+                                        : lastDragDropFile.Contains("- File too big")
+                                            ? $"{0}*{lastDragDropFile}"
+                                            : $"{0}*{lastDragDropFile} not found!";
+                                }
+                                else
+                                {
+                                    fileName = lastDragDropFile;
+                                    headerString = $"{new FileInfo(fileName).Length}*{fileName}";
+                                }
+                            }))
+                            {
+                                s?.Close();
+                                return;
+                            }
+                        }
+
+                        Common.GetBytesU(headerString).CopyTo(header, 0);
+
                         ecStream.Write(header, 0, header.Length);
 
-                        if (!string.IsNullOrEmpty(fileName))
+                        if (leasedFileStream != null)
+                        {
+                            if (SendFileEx(s, ecStream, leasedFileStream, lastDragDropFile))
+                            {
+                                s.Close(CLOSE_TIMEOUT);
+                            }
+                        }
+                        else if (!string.IsNullOrEmpty(fileName))
                         {
                             if (SendFile(s, ecStream, fileName))
                             {
@@ -1755,6 +1774,10 @@ namespace MouseWithoutBorders.Class
                     {
                         string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the socket is disposed by a machine switch for ex..";
                         Logger.Log(log);
+                    }
+                    finally
+                    {
+                        leasedFileStream?.Dispose();
                     }
                 }
             }
@@ -1832,50 +1855,62 @@ namespace MouseWithoutBorders.Class
         {
             try
             {
-                using (FileStream f = File.OpenRead(fileName))
+                using FileStream fileStream = File.OpenRead(fileName);
+                return SendFileEx(s, ecStream, fileStream, fileName);
+            }
+            catch (Exception e)
+            {
+                return HandleSendFileException(s, e);
+            }
+        }
+
+        private static bool SendFileEx(Socket s, Stream ecStream, Stream fileStream, string fileName)
+        {
+            try
+            {
+                byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
+                int rv, sentCount = 0;
+
+                do
                 {
-                    byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
-                    int rv, sentCount = 0;
-
-                    do
+                    if ((rv = fileStream.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
                     {
-                        if ((rv = f.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
-                        {
-                            ecStream.Write(buf, 0, rv);
-                            sentCount += rv;
-                        }
-                    }
-                    while (rv > 0);
-
-                    if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
-                    {
-                        Array.Clear(buf, 0, buf.Length);
                         ecStream.Write(buf, 0, rv);
+                        sentCount += rv;
                     }
+                }
+                while (rv > 0);
 
-                    ecStream.Flush();
-
-                    Logger.LogDebug("File sent: " + fileName);
+                if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
+                {
+                    Array.Clear(buf, 0, buf.Length);
+                    ecStream.Write(buf, 0, rv);
                 }
 
+                ecStream.Flush();
+                Logger.LogDebug("File sent: " + fileName);
                 return true;
             }
             catch (Exception e)
             {
-                if (e is IOException)
-                {
-                    string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                    Logger.Log(log);
-                }
-                else
-                {
-                    Logger.Log(e);
-                }
+                return HandleSendFileException(s, e);
+            }
+        }
 
-                Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
-                s.Close();
+        private static bool HandleSendFileException(Socket s, Exception e)
+        {
+            if (e is IOException)
+            {
+                string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                Logger.Log(log);
+            }
+            else
+            {
+                Logger.Log(e);
             }
 
+            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+            s.Close();
             return false;
         }
 
