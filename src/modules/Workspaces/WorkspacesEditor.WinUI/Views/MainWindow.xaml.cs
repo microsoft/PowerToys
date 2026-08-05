@@ -172,7 +172,7 @@ namespace WorkspacesEditor
             var token = _cancellationToken.Token;
             new Thread(() =>
             {
-                var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToys.Interop.Constants.WorkspacesHotkeyEvent());
+                using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToys.Interop.Constants.WorkspacesHotkeyEvent());
                 while (true)
                 {
                     if (WaitHandle.WaitAny(new WaitHandle[] { token.WaitHandle, eventHandle }) == 1)
