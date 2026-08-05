@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtAliasProtoController", "C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtAliasProtoSelfTest", "Tests\PtAliasProtoSelfTest.vcxproj", "{0356FFFB-F4F9-44ED-ACEC-B94913E3CF4B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PtAliasProtoSessionBroker", "SessionBroker\PtAliasProtoSessionBroker.vcxproj", "{9E1A56C6-F21B-468A-BC89-E35B7E0D1D94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -38,5 +40,9 @@ Global
 		{0356FFFB-F4F9-44ED-ACEC-B94913E3CF4B}.Debug|x64.Build.0 = Debug|x64
 		{0356FFFB-F4F9-44ED-ACEC-B94913E3CF4B}.Release|x64.ActiveCfg = Release|x64
 		{0356FFFB-F4F9-44ED-ACEC-B94913E3CF4B}.Release|x64.Build.0 = Release|x64
+		{9E1A56C6-F21B-468A-BC89-E35B7E0D1D94}.Debug|x64.ActiveCfg = Debug|x64
+		{9E1A56C6-F21B-468A-BC89-E35B7E0D1D94}.Debug|x64.Build.0 = Debug|x64
+		{9E1A56C6-F21B-468A-BC89-E35B7E0D1D94}.Release|x64.ActiveCfg = Release|x64
+		{9E1A56C6-F21B-468A-BC89-E35B7E0D1D94}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 EndGlobal

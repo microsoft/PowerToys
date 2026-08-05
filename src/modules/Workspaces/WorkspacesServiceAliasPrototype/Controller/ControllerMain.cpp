@@ -970,8 +970,9 @@ namespace
             {
                 throw ptap::win32_error("Evidence identity verification", ERROR_INVALID_DATA);
             }
-            std::wcout << L"evidence package="
-                       << evidencePackage
+            std::wcout << L"evidence pid=" << evidence.processId
+                       << L" session=" << evidence.sessionId
+                       << L" package=" << evidencePackage
                        << L" family="
                        << evidenceFamily
                        << L" user=" << evidenceUser

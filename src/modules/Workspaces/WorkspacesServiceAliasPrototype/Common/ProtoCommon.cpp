@@ -738,7 +738,7 @@ namespace ptap
     EvidenceRecord read_evidence(const std::filesystem::path& path)
     {
         const auto evidence = read_fixed_file<EvidenceRecord>(path);
-        if (evidence.magic != StateMagic || evidence.formatVersion != 1)
+        if (evidence.magic != StateMagic || evidence.formatVersion != 2)
         {
             throw win32_error("Evidence format", ERROR_INVALID_DATA);
         }

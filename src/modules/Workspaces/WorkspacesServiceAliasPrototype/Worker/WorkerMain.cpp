@@ -31,9 +31,12 @@ int wmain()
         const auto stateArgument = ptap::argument_value(args, L"--config");
         const auto readyEventName = ptap::argument_value(args, L"--ready-event");
         const auto stopEventName = ptap::argument_value(args, L"--stop-event");
+        const auto readyHandleArgument = ptap::argument_value(args, L"--ready-handle");
+        const auto stopHandleArgument = ptap::argument_value(args, L"--stop-handle");
+        const bool handleMode =
+            !readyHandleArgument.empty() && !stopHandleArgument.empty();
         if (stateArgument.empty() ||
-            readyEventName.empty() ||
-            stopEventName.empty() ||
+            (!handleMode && (readyEventName.empty() || stopEventName.empty())) ||
             stateArgument.size() >= 1024 ||
             readyEventName.size() >= 192 ||
             stopEventName.size() >= 192)
@@ -52,11 +55,18 @@ int wmain()
         {
             return ERROR_ACCESS_DENIED;
         }
-        const std::wstring readyPrefix = L"PtAliasProtoReady_" + names.suffix + L"_";
-        const std::wstring stopPrefix = L"PtAliasProtoStop_" + names.suffix + L"_";
-        if (!readyEventName.starts_with(readyPrefix) || !stopEventName.starts_with(stopPrefix))
+        if (!handleMode)
         {
-            return ERROR_INVALID_NAME;
+            const std::wstring readyPrefix = L"PtAliasProtoReady_" + names.suffix + L"_";
+            const std::wstring stopPrefix = L"PtAliasProtoStop_" + names.suffix + L"_";
+            const auto validEventName = [](std::wstring_view value, const std::wstring& prefix) {
+                return value.starts_with(prefix) || value.starts_with(L"Global\\" + prefix);
+            };
+            if (!validEventName(readyEventName, readyPrefix) ||
+                !validEventName(stopEventName, stopPrefix))
+            {
+                return ERROR_INVALID_NAME;
+            }
         }
 
         std::wstring fullName;
@@ -90,6 +100,12 @@ int wmain()
         ptap::EvidenceRecord evidence;
         evidence.launchCount = ptap::increment_launch_count(names.storeDirectory);
         evidence.processId = GetCurrentProcessId();
+        DWORD sessionId = 0;
+        if (!ProcessIdToSessionId(evidence.processId, &sessionId))
+        {
+            return GetLastError();
+        }
+        evidence.sessionId = sessionId;
         evidence.hasExpectedServiceSid = hasServiceSid ? 1u : 0u;
         ptap::copy_bounded(evidence.packageFullName, ARRAYSIZE(evidence.packageFullName), fullName);
         ptap::copy_bounded(evidence.packageFamilyName, ARRAYSIZE(evidence.packageFamilyName), identity.familyName);
@@ -107,11 +123,45 @@ int wmain()
                 std::to_wstring(identity.version.revision) +
                 L", family=" + identity.familyName +
                 L", user=" + accountSid +
+                L", session=" + std::to_wstring(evidence.sessionId) +
                 L", serviceSidPresent=" + (hasServiceSid ? L"true" : L"false") +
                 L", launchCount=" + std::to_wstring(evidence.launchCount));
 
-        ptap::unique_handle ready(OpenEventW(EVENT_MODIFY_STATE, FALSE, readyEventName.c_str()));
-        ptap::unique_handle stop(OpenEventW(SYNCHRONIZE, FALSE, stopEventName.c_str()));
+        ptap::unique_handle ready;
+        ptap::unique_handle stop;
+        if (handleMode)
+        {
+            wchar_t* readyEnd = nullptr;
+            wchar_t* stopEnd = nullptr;
+            const unsigned long long readyValue =
+                _wcstoui64(readyHandleArgument.c_str(), &readyEnd, 10);
+            const unsigned long long stopValue =
+                _wcstoui64(stopHandleArgument.c_str(), &stopEnd, 10);
+            if (!readyEnd ||
+                *readyEnd != L'\0' ||
+                !stopEnd ||
+                *stopEnd != L'\0' ||
+                readyValue == 0 ||
+                stopValue == 0)
+            {
+                return ERROR_INVALID_HANDLE;
+            }
+            ready.reset(
+                reinterpret_cast<HANDLE>(static_cast<uintptr_t>(readyValue)));
+            stop.reset(
+                reinterpret_cast<HANDLE>(static_cast<uintptr_t>(stopValue)));
+            DWORD flags = 0;
+            if (!GetHandleInformation(ready.get(), &flags) ||
+                !GetHandleInformation(stop.get(), &flags))
+            {
+                return GetLastError();
+            }
+        }
+        else
+        {
+            ready.reset(OpenEventW(EVENT_MODIFY_STATE, FALSE, readyEventName.c_str()));
+            stop.reset(OpenEventW(SYNCHRONIZE, FALSE, stopEventName.c_str()));
+        }
         if (!ready || !stop)
         {
             return GetLastError();

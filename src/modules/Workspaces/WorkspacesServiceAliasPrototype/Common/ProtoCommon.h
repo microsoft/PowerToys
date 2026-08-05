@@ -157,9 +157,10 @@ namespace ptap
     struct EvidenceRecord
     {
         uint32_t magic{ StateMagic };
-        uint32_t formatVersion{ 1 };
+        uint32_t formatVersion{ 2 };
         uint64_t launchCount{};
         uint32_t processId{};
+        uint32_t sessionId{};
         uint32_t hasExpectedServiceSid{};
         wchar_t packageFullName[256]{};
         wchar_t packageFamilyName[128]{};
