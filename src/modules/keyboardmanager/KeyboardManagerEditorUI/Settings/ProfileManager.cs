@@ -41,6 +41,10 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static string SettingsJsonPath => Path.Combine(_settingsDirectory, "settings.json");
 
+        /// <summary>Folder holding the profile configs + settings.json — exposed so the editor can
+        /// watch settings.json for engine-driven active-profile changes (auto-switch / cycle hotkey).</summary>
+        public static string SettingsDirectory => _settingsDirectory;
+
         private static string ConfigPath(string profile) => Path.Combine(_settingsDirectory, profile + ".json");
 
         /// <summary>

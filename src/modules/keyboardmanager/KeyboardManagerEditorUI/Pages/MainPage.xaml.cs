@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -35,6 +36,8 @@ namespace KeyboardManagerEditorUI.Pages
         private const string VkDisabledString = "256";
 
         private DispatcherTimer? _serviceCheckTimer;
+        private FileSystemWatcher? _settingsWatcher;
+        private DispatcherTimer? _activeProfileDebounce;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
@@ -128,6 +131,7 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 LoadAllMappings();
                 LoadProfiles();
+                StartActiveProfileWatcher();
             }
             else
             {
@@ -185,10 +189,11 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void UpdateDeleteProfileButtonState()
         {
-            DeleteProfileBtn.IsEnabled = !string.Equals(
-                ProfileManager.GetActiveProfile(),
-                "default",
-                StringComparison.OrdinalIgnoreCase);
+            // Track the profile shown in the picker, not the live active profile: auto-switch can
+            // change the active profile in the background, and Delete acts on the selected one.
+            DeleteProfileBtn.IsEnabled =
+                ProfileSelector.SelectedItem is string selected &&
+                !string.Equals(selected, "default", StringComparison.OrdinalIgnoreCase);
         }
 
         private void ProfileSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -202,6 +207,8 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 return;
             }
+
+            UpdateDeleteProfileButtonState();
 
             if (string.Equals(profile, ProfileManager.GetActiveProfile(), StringComparison.OrdinalIgnoreCase))
             {
@@ -239,6 +246,90 @@ namespace KeyboardManagerEditorUI.Pages
             LoadAllMappings();
         }
 
+        // The engine rewrites settings.json's activeConfiguration when it auto-switches profiles (or
+        // the cycle hotkey fires). Watch that file so the editor's profile picker + mapping view
+        // follow the engine instead of showing a stale profile.
+        private void StartActiveProfileWatcher()
+        {
+            try
+            {
+                string dir = ProfileManager.SettingsDirectory;
+                if (!Directory.Exists(dir))
+                {
+                    return;
+                }
+
+                _activeProfileDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                _activeProfileDebounce.Tick += (s, e) =>
+                {
+                    _activeProfileDebounce!.Stop();
+                    RefreshActiveProfileFromDisk();
+                };
+
+                _settingsWatcher = new FileSystemWatcher(dir, "settings.json")
+                {
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
+                    EnableRaisingEvents = true,
+                };
+                _settingsWatcher.Changed += OnSettingsFileChanged;
+                _settingsWatcher.Created += OnSettingsFileChanged;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning("Failed to start active-profile watcher: " + ex.Message);
+            }
+        }
+
+        // Raised on a thread-pool thread, often several times per write; hop to the UI thread and
+        // debounce so the reload happens at most once per settle.
+        private void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                _activeProfileDebounce?.Stop();
+                _activeProfileDebounce?.Start();
+            });
+        }
+
+        // If the on-disk active profile differs from what the picker shows (engine auto-switched
+        // under us), move the picker and reload the mapping view to match. Guarded with
+        // _suppressProfileSelection so it can't loop with the editor's own profile switches.
+        private void RefreshActiveProfileFromDisk()
+        {
+            if (_mappingService == null || _disposed)
+            {
+                return;
+            }
+
+            string active = ProfileManager.GetActiveProfile();
+            if (ProfileSelector.SelectedItem is string current &&
+                string.Equals(current, active, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _suppressProfileSelection = true;
+            try
+            {
+                IReadOnlyList<string> profiles = ProfileManager.GetProfiles();
+                if (ProfileSelector.ItemsSource is not IReadOnlyList<string> shown || !shown.SequenceEqual(profiles))
+                {
+                    ProfileSelector.ItemsSource = profiles;
+                }
+
+                ProfileSelector.SelectedItem = profiles.Contains(active)
+                    ? active
+                    : (profiles.Count > 0 ? profiles[0] : null);
+                UpdateDeleteProfileButtonState();
+            }
+            finally
+            {
+                _suppressProfileSelection = false;
+            }
+
+            RebuildForActiveProfile();
+        }
+
         private async void NewProfileBtn_Click(object sender, RoutedEventArgs e)
         {
             NewProfileNameBox.Text = string.Empty;
@@ -270,20 +361,28 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void DeleteProfileBtn_Click(object sender, RoutedEventArgs e)
         {
-            string active = ProfileManager.GetActiveProfile();
-            if (string.Equals(active, "default", StringComparison.OrdinalIgnoreCase))
+            // Delete exactly what the user has selected in the picker — NOT ProfileManager
+            // .GetActiveProfile(). Auto-switch can change the active profile in the background while
+            // this editor is open, so the live active profile may differ from the one shown here;
+            // using it deleted an unintended profile. Name the target in the prompt so any remaining
+            // mismatch is visible before the user confirms.
+            if (ProfileSelector.SelectedItem is not string selected ||
+                string.Equals(selected, "default", StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
+
+            DeleteProfileDialogName.Text = selected;
 
             if (await DeleteProfileDialog.ShowAsync() != ContentDialogResult.Primary)
             {
                 return;
             }
 
-            if (ProfileManager.DeleteProfile(active))
+            if (ProfileManager.DeleteProfile(selected))
             {
-                // DeleteProfile falls back to the default profile; rebuild against it.
+                // DeleteProfile only falls back to "default" when the deleted profile was the active
+                // one; rebuild against whatever is active now and refresh the picker.
                 RebuildForActiveProfile();
                 LoadProfiles();
             }
@@ -1290,6 +1389,17 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 _serviceCheckTimer?.Stop();
                 _serviceCheckTimer = null;
+                _activeProfileDebounce?.Stop();
+                _activeProfileDebounce = null;
+                if (_settingsWatcher != null)
+                {
+                    _settingsWatcher.EnableRaisingEvents = false;
+                    _settingsWatcher.Changed -= OnSettingsFileChanged;
+                    _settingsWatcher.Created -= OnSettingsFileChanged;
+                    _settingsWatcher.Dispose();
+                    _settingsWatcher = null;
+                }
+
                 _mappingService?.Dispose();
                 _mappingService = null;
             }

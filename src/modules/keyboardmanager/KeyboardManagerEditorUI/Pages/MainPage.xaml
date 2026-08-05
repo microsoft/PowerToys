@@ -692,7 +692,13 @@
                     x:Name="DeleteProfileDialog"
                     x:Uid="DeleteProfileDialog"
                     DefaultButton="Close">
-                    <TextBlock x:Uid="DeleteProfileDialogContent" TextWrapping="Wrap" />
+                    <StackPanel Spacing="6">
+                        <TextBlock x:Uid="DeleteProfileDialogContent" TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="DeleteProfileDialogName"
+                            FontWeight="SemiBold"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
                 </ContentDialog>
 
                 <!--  Dialog for per-keyboard auto-switch settings  -->

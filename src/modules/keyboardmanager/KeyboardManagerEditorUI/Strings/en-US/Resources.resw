@@ -541,7 +541,7 @@
     <value>Cancel</value>
   </data>
   <data name="DeleteProfileDialogContent.Text" xml:space="preserve">
-    <value>This permanently deletes the selected profile and all of its mappings. This cannot be undone.</value>
+    <value>This profile and all of its mappings will be permanently deleted. This cannot be undone:</value>
   </data>
   <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">
     <value>Auto-switch</value>
