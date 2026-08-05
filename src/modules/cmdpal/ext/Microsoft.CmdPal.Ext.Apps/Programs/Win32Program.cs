@@ -228,7 +228,7 @@ public partial class Win32Program : IProgram
             && !IsShortcutTarget(this))
         {
             commands.Add(new CommandContextItem(
-                new UninstallApplicationConfirmation(this))
+                new UninstallApplicationConfirmation(Name))
             {
                 RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
                 IsCritical = true,

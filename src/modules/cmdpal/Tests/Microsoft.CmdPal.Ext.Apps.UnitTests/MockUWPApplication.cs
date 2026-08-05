@@ -70,6 +70,10 @@ public class MockUWPApplication : IUWPApplication
     /// </summary>
     public LogoType LogoType { get; set; } = LogoType.Colored;
 
+    public string JumboLogoPath { get; set; } = string.Empty;
+
+    public LogoType JumboLogoType { get; set; } = LogoType.Colored;
+
     /// <summary>
     /// Gets or sets the UWP package.
     /// </summary>
