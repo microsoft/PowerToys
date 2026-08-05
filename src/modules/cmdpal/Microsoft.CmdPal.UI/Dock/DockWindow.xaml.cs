@@ -1351,13 +1351,12 @@ public sealed partial class DockWindow : WindowEx,
             HandleDeactivationForAutoHide();
         }
 
-        // Intercept WM_SYSCOMMAND to prevent minimize and maximize
+        // Prevent close, minimize, and maximize system commands.
         else if (msg == PInvoke.WM_SYSCOMMAND)
         {
             var command = (int)(wParam.Value & 0xFFF0);
-            if (command == PInvoke.SC_MINIMIZE || command == PInvoke.SC_MAXIMIZE)
+            if (command == PInvoke.SC_CLOSE || command == PInvoke.SC_MINIMIZE || command == PInvoke.SC_MAXIMIZE)
             {
-                // Block minimize and maximize commands
                 return new LRESULT(0);
             }
         }

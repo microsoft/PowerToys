@@ -1700,6 +1700,23 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_NCACTIVATE when _hwndFrameVisible != true:
                 return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, new LPARAM(-1));
 
+            case PInvoke.WM_SYSCOMMAND:
+                {
+                    var command = (int)(wParam.Value & 0xFFF0);
+                    if (command == PInvoke.SC_CLOSE)
+                    {
+                        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                        if (settings.AllowAltF4)
+                        {
+                            WeakReferenceMessenger.Default.Send<QuitMessage>();
+                        }
+
+                        return (LRESULT)IntPtr.Zero;
+                    }
+
+                    break;
+                }
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
