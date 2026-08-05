@@ -10,26 +10,19 @@ namespace WorkspacesEditor
 {
     internal static class ResourceLoaderInstance
     {
-        private static ResourceLoader _resourceLoader;
-
-        internal static ResourceLoader ResourceLoader
+        private static readonly Lazy<ResourceLoader> _lazy = new(() =>
         {
-            get
+            try
             {
-                if (_resourceLoader == null)
-                {
-                    try
-                    {
-                        _resourceLoader = new ResourceLoader("PowerToys.WorkspacesEditor.pri");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError("Failed to load ResourceLoader: " + ex.Message);
-                    }
-                }
-
-                return _resourceLoader;
+                return new ResourceLoader("PowerToys.WorkspacesEditor.pri");
             }
-        }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to load ResourceLoader: " + ex.Message);
+                return null;
+            }
+        });
+
+        internal static ResourceLoader ResourceLoader => _lazy.Value;
     }
 }
