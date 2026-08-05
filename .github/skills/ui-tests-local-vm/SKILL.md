@@ -151,6 +151,8 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
 
 ## Non-negotiable rules
 
+- Run this workflow only on an x64 host. Windows on ARM hosts cannot expose KVM to WSL2, so report
+  `BLOCKED` there instead of working around it. See [references/setup.md](references/setup.md).
 - Build on the host; run PowerToys and tests only in the VM when host execution is prohibited.
 - Use the Windows 10 guest for the default pass. Add a separate Windows 11 pass only for requirements
   that explicitly depend on Windows 11 behavior.

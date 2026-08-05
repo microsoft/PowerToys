@@ -97,6 +97,22 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Could not select the Docker Desktop Linux context.'
 }
 
+$architectureOutput = & wsl.exe -d docker-desktop -u root -- uname -m 2>&1
+$wslArchitecture = ($architectureOutput | Where-Object { $_ -match '^\S+$' } | Select-Object -Last 1)
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($wslArchitecture)) {
+    throw 'Could not determine the docker-desktop WSL2 architecture.'
+}
+$wslArchitecture = $wslArchitecture.Trim()
+
+$dockurImage = if ($configuration.DOCKUR_IMAGE) { $configuration.DOCKUR_IMAGE } else { 'docker.io/dockurr/windows:latest' }
+$imageIsArm = $dockurImage -match 'windows-arm'
+if ($wslArchitecture -eq 'aarch64' -and -not $imageIsArm) {
+    throw "DOCKUR_IMAGE '$dockurImage' hosts x64 guests, but the Docker engine is aarch64. Set DOCKUR_IMAGE=docker.io/dockurr/windows-arm:latest in .env, and note that an ARM64 guest also needs ARM64 product/test payloads."
+}
+if ($wslArchitecture -ne 'aarch64' -and $imageIsArm) {
+    throw "DOCKUR_IMAGE '$dockurImage' hosts ARM64 guests, but the Docker engine is $wslArchitecture. Set DOCKUR_IMAGE=docker.io/dockurr/windows:latest in .env."
+}
+
 $wslMemoryOutput = & wsl.exe -d docker-desktop -u root -- cat /proc/meminfo 2>&1
 $wslMemoryLine = $wslMemoryOutput | Where-Object { $_ -match '^MemTotal:\s+\d+\s+kB$' } | Select-Object -First 1
 if ($LASTEXITCODE -ne 0 -or $wslMemoryLine -notmatch '^MemTotal:\s+(?<KiB>\d+)\s+kB$') {
@@ -109,11 +125,26 @@ if ($wslMemoryGiB -lt $minimumWslMemoryGiB) {
     throw "Docker Desktop WSL2 exposes $wslMemoryGiB GiB, but the $effectiveProfile profile requires at least $minimumWslMemoryGiB GiB for a $effectiveRamSize guest. Increase [wsl2] memory in %UserProfile%\.wslconfig, run 'wsl --shutdown', and restart Docker Desktop."
 }
 
-$kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm && (modprobe kvm_intel 2>/dev/null || modprobe kvm_amd 2>/dev/null)' 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw 'Failed to load KVM modules in the docker-desktop WSL distribution.'
+if ($wslArchitecture -eq 'aarch64') {
+    # arm64 KVM is built into the WSL kernel, so there is no kvm_intel/kvm_amd module to load.
+    $kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm 2>/dev/null; exit 0' 2>&1
+}
+else {
+    $kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm && (modprobe kvm_intel 2>/dev/null || modprobe kvm_amd 2>/dev/null)' 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Failed to load KVM modules in the docker-desktop WSL distribution.'
+    }
 }
 Write-Verbose ($kvmOutput | Out-String)
+
+& wsl.exe -d docker-desktop -u root -- test -e /dev/kvm 2>&1 | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    if ($wslArchitecture -eq 'aarch64') {
+        throw 'BLOCKED: /dev/kvm does not exist in the docker-desktop WSL2 distribution on this ARM64 host. Hyper-V does not expose EL2 to its child VMs on ARM64, so the WSL2 kernel reports "kvm: HYP mode not available" and no container can be given hardware acceleration. Use an x64 host for this skill; see references/setup.md, "Host architecture".'
+    }
+
+    throw 'BLOCKED: /dev/kvm does not exist in the docker-desktop WSL2 distribution. See references/troubleshooting.md, "KVM and nested virtualization".'
+}
 
 $composeOutput = & docker compose --env-file $environmentFile -f $composeFile up -d 2>&1
 if ($LASTEXITCODE -ne 0) {

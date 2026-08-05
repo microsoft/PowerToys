@@ -5,7 +5,7 @@ while Windows and installed tools live in the named `/storage` volume.
 
 ## Host requirements
 
-- Host: Windows 11 with hardware virtualization and nested virtualization enabled. This host
+- Host: **x64** Windows 11 with hardware virtualization and nested virtualization enabled. This host
   requirement does not select the guest OS.
 - Docker Desktop using the WSL2 Linux backend.
 - PowerShell 7, `docker`, and `wsl.exe` on `PATH`.
@@ -14,7 +14,36 @@ while Windows and installed tools live in the named `/storage` volume.
 - Loopback ports `8006`, `13389`, and `15986` available, or changed in `.env`.
 
 Docker Desktop on Windows requires KVM inside its `docker-desktop` WSL distribution for this
-workflow. The start script loads `kvm` plus `kvm_intel` or `kvm_amd` before starting QEMU.
+workflow. On x64 the start script loads `kvm` plus `kvm_intel` or `kvm_amd` before starting QEMU.
+
+### Host architecture
+
+This skill requires an x64 host. **Windows on ARM (WoA) hosts are `BLOCKED`**: Hyper-V does not
+expose EL2 to its child VMs on ARM64, so the WSL2 utility VM cannot run KVM at all. Verified on a
+Snapdragon X2 Elite / Windows 11 build 28000 host with `nestedVirtualization=true` already set:
+
+```pwsh
+wsl.exe -d docker-desktop -u root -- uname -m                       # aarch64
+wsl.exe -d docker-desktop -u root -- sh -lc 'ls -l /dev/kvm'        # No such file or directory
+wsl.exe -d docker-desktop -u root -- sh -lc 'dmesg | grep -i kvm'   # kvm [1]: HYP mode not available
+docker run --rm --device=/dev/kvm alpine sh -c 'ls /dev/kvm'        # error gathering device information
+```
+
+The WSL2 aarch64 kernel is built with `CONFIG_KVM=y`, so the failure is the missing hypervisor
+privilege level, not a missing module — nothing in `.wslconfig`, Docker Desktop, or the container
+changes it. `dockurr/windows-arm` refuses to start for the same reason
+(`ERROR: Please bind '/dev/kvm' as a volume ...`). `Start-LocalVm.ps1` detects this and fails fast.
+
+On a WoA machine, use one of these instead:
+
+- Run this skill from an x64 host (physical box, or a cloud VM whose provider allows nesting).
+- Run the guest directly in host Hyper-V on the WoA machine (no nesting involved) and drive it with
+  the same WinRM/exchange contract from [agentic-loop.md](agentic-loop.md); VM lifecycle scripting in
+  this skill's templates does not cover that host.
+
+If ARM64 nested virtualization ever ships, an ARM64 guest also needs ARM64 product, test, and tool
+payloads plus `DOCKUR_IMAGE=docker.io/dockurr/windows-arm:latest`; the templates' `-win-x64`
+prerequisites and `x64Win10`/`x64Win11` platform names assume an x64 guest.
 
 > **Future direction — WSL Containers (`wslc`).** This stack depends on Docker Desktop's WSL2 utility
 > VM exposing nested virtualization so QEMU/KVM can boot the Windows guest. WSL Containers can't host

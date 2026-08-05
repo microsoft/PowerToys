@@ -4,6 +4,7 @@ Classify the first failed boundary before changing test code.
 
 | Symptom | Boundary | Action |
 |---|---|---|
+| `/dev/kvm` missing and `uname -m` reports `aarch64` | ARM64 host (WoA) | Not fixable. Hyper-V does not expose EL2 on ARM64, so WSL2 logs `kvm: HYP mode not available` and KVM never initializes. Report `BLOCKED` and move to an x64 host; see setup.md, "Host architecture". |
 | `/dev/kvm` missing or QEMU uses software emulation | Docker Desktop WSL/KVM | See **KVM and nested virtualization** below. Distinguish unloaded modules (`vmx` > 0 → `modprobe kvm_intel`/`kvm_amd`, or run the start script) from nested virt not exposed (`vmx` == 0 → check `.wslconfig` + `wsl --shutdown`, then revert the offending OS/security update). |
 | Container exits during installation | Storage/media/resources | Inspect `docker logs`, free disk/RAM, and OEM log. Use the named native Docker volume rather than an NTFS bind for `/storage`. |
 | Windows Setup remains at the same percentage for hours, the guest disk mtime/allocation is static, and the guest IP is unreachable | Stalled clean installation | Confirm the screen, `docker stats`, `/storage/data.img`, and guest neighbor state. Restart only the container once; the named volume is preserved and unattended Setup can resume. Do not delete the volume while Setup is visibly progressing or disk writes continue. |
@@ -36,7 +37,12 @@ Classify the first failed boundary before changing test code.
 The dockur container maps `/dev/kvm`; without it it never starts, failing with
 `error gathering device information while adding custom device "/dev/kvm": no such file or directory`
 (and any premature `docker compose up` leaves the container `Exited (255)`). Two very different causes
-share this symptom — separate them first, in the `docker-desktop` distribution:
+share this symptom — separate them first, in the `docker-desktop` distribution.
+
+Check the architecture before anything else, because the checks below are x64-only. If
+`wsl.exe -d docker-desktop -u root -- uname -m` reports `aarch64`, the host is Windows on ARM and this
+workflow is permanently `BLOCKED` there (setup.md, "Host architecture") — `vmx` and
+`kvm_intel`/`kvm_amd` do not exist on that kernel:
 
 ```pwsh
 # Is VMX exposed to the WSL2 utility VM? 0 = nested virt NOT exposed; >0 = exposed.
