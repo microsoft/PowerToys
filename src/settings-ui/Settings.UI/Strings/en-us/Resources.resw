@@ -2719,7 +2719,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
     <value>Press Left Control twice</value>
-    <comment>Left control is the physical key on the keyboard. In Traditional Chinese, keep the key label as "Ctrl" instead of translating it as "控制鍵".</comment>
+    <comment>Left control is the physical key on the keyboard. In Chinese, keep the key label as "Ctrl" instead of translating it as "控制键" (Simplified) or "控制鍵" (Traditional).</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShakeMouse.Content" xml:space="preserve">
     <value>Shake mouse</value>
@@ -4364,7 +4364,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
     <value>Press Right Control twice</value>
-    <comment>Right control is the physical key on the keyboard. In Traditional Chinese, keep the key label as "Ctrl" instead of translating it as "控制鍵".</comment>
+    <comment>Right control is the physical key on the keyboard. In Chinese, keep the key label as "Ctrl" instead of translating it as "控制键" (Simplified) or "控制鍵" (Traditional).</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut used to turn this mode on or off</value>
