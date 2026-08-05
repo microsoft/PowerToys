@@ -51,8 +51,15 @@ namespace WorkspacesEditor.Views
                 Bindings.Update();
 
                 // Set focus to the name field so Narrator announces the page context
-                this.Loaded += (s, args) => EditNameTextBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+                this.Loaded -= OnLoaded;
+                this.Loaded += OnLoaded;
             }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            this.Loaded -= OnLoaded;
+            EditNameTextBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }
 
         private void SaveButtonClicked(object sender, RoutedEventArgs e)

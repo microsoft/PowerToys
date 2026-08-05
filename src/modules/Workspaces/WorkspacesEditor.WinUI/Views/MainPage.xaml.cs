@@ -29,14 +29,25 @@ namespace WorkspacesEditor.Views
                 this.DataContext = vm;
                 Bindings.Update();
 
-                vm.PropertyChanged += (s, args) =>
-                {
-                    if (args.PropertyName == nameof(vm.IsWorkspacesViewEmpty) && vm.IsWorkspacesViewEmpty)
-                    {
-                        var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(EmptyStateText);
-                        peer?.RaiseAutomationEvent(Microsoft.UI.Xaml.Automation.Peers.AutomationEvents.LiveRegionChanged);
-                    }
-                };
+                vm.PropertyChanged += ViewModel_PropertyChanged;
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            if (ViewModel != null)
+            {
+                ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(MainViewModel.IsWorkspacesViewEmpty) && ViewModel.IsWorkspacesViewEmpty)
+            {
+                var peer = Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer.CreatePeerForElement(EmptyStateText);
+                peer?.RaiseAutomationEvent(Microsoft.UI.Xaml.Automation.Peers.AutomationEvents.LiveRegionChanged);
             }
         }
 
