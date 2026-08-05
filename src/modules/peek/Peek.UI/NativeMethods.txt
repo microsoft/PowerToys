@@ -21,3 +21,6 @@ SetWindowPos
 GetWindowPlacement
 SetWindowPlacement
 GetGUIThreadInfo
+AttachConsole
+CreateFile
+SetStdHandle
