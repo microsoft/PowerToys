@@ -6,19 +6,21 @@ namespace PowerAccent.Core;
 
 internal sealed class DelayedDisplayState
 {
+    public readonly record struct PendingDisplay(int Generation, int Delay);
+
     private int _generation;
 
     public bool IsVisible { get; private set; }
 
-    public int Begin()
+    public PendingDisplay Begin(int displayDelay)
     {
         IsVisible = true;
-        return ++_generation;
+        return new PendingDisplay(++_generation, displayDelay);
     }
 
-    public bool ShouldShow(int generation)
+    public bool ShouldShow(PendingDisplay pendingDisplay)
     {
-        return IsVisible && generation == _generation;
+        return IsVisible && pendingDisplay.Generation == _generation;
     }
 
     public void Cancel()

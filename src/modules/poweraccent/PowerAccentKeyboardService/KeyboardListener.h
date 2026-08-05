@@ -39,6 +39,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void SetNextCharEvent(NextChar NextCharEvent);
         void SetIsLanguageLetterDelegate(IsLanguageLetter IsLanguageLetterDelegate);
 
+        void UpdateActivationSettings(int32_t activationKey, int32_t inputTime, int32_t holdDuration);
         void UpdateActivationKey(int32_t activationKey);
         void UpdateDoNotActivateOnGameMode(bool doNotActivateOnGameMode);
         void UpdateInputTime(int32_t inputTime);
@@ -60,7 +61,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         HHOOK s_llKeyboardHook = nullptr;
         bool m_toolbarVisible;
         PowerAccentSettings m_settings;
-        std::function<void(LetterKey)> m_showToolbarCb;
+        std::function<void(LetterKey, int32_t)> m_showToolbarCb;
         std::function<void()> m_cancelToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey, bool)> m_nextCharCb;
@@ -72,8 +73,12 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         bool m_leftShiftPressed;
         bool m_rightShiftPressed;
         bool m_pressAndHoldCancelled;
+        PowerAccentActivationKey m_gestureActivationKey{ PowerAccentActivationKey::Both };
+        std::chrono::milliseconds m_gestureInputTime{ 300 };
+        std::chrono::milliseconds m_gestureHoldDuration{ 500 };
 
         std::mutex m_mutex_excluded_apps;
+        std::mutex m_mutex_activation_settings;
         std::pair<HWND, bool> m_prevForegroundAppExcl{ NULL, false };
 
         static inline const std::vector<LetterKey> letters = { LetterKey::VK_0,

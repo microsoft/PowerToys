@@ -11,8 +11,6 @@ using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
 
-using PowerAccentActivationKey = Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentActivationKey;
-
 namespace PowerAccent.Core;
 
 public partial class PowerAccent : IDisposable
@@ -69,11 +67,11 @@ public partial class PowerAccent : IDisposable
 
     private void SetEvents()
     {
-        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
+        _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey, int displayDelay) =>
         {
             _runOnUiThread(() =>
             {
-                ShowToolbar(letterKey);
+                ShowToolbar(letterKey, displayDelay);
             });
         }));
 
@@ -104,24 +102,20 @@ public partial class PowerAccent : IDisposable
         }));
     }
 
-    private void ShowToolbar(LetterKey letterKey)
+    private void ShowToolbar(LetterKey letterKey, int displayDelay)
     {
-        bool isPressAndHold = _settingService.ActivationKey == PowerAccentActivationKey.PressAndHold;
-
         // Each summon gets a generation id so a delayed render queued by an earlier
         // press can't fire for a newer one (or after the toolbar was hidden).
-        int generation = _displayState.Begin();
+        var pendingDisplay = _displayState.Begin(displayDelay);
 
         // Character data must be ready before the native listener accepts navigation. This also
         // keeps an in-progress gesture coherent if the configured hold duration changes.
         PrepareCharacters(letterKey);
 
-        int displayDelay = isPressAndHold ? _settingService.HoldDuration : _settingService.InputTime;
-
-        Task.Delay(displayDelay).ContinueWith(
+        Task.Delay(pendingDisplay.Delay).ContinueWith(
         t =>
         {
-            if (_displayState.ShouldShow(generation))
+            if (_displayState.ShouldShow(pendingDisplay))
             {
                 OnChangeDisplay?.Invoke(true, _characters);
             }

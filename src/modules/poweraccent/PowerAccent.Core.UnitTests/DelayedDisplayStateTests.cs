@@ -14,11 +14,11 @@ public sealed class DelayedDisplayStateTests
     public void Cancel_InvalidatesPendingDisplay()
     {
         var state = new DelayedDisplayState();
-        int generation = state.Begin();
+        var pendingDisplay = state.Begin(displayDelay: 500);
 
         state.Cancel();
 
-        Assert.IsFalse(state.ShouldShow(generation));
+        Assert.IsFalse(state.ShouldShow(pendingDisplay));
         Assert.IsFalse(state.IsVisible);
     }
 
@@ -26,13 +26,23 @@ public sealed class DelayedDisplayStateTests
     public void Begin_AfterCancellation_RearmsDisplay()
     {
         var state = new DelayedDisplayState();
-        int cancelledGeneration = state.Begin();
+        var cancelledDisplay = state.Begin(displayDelay: 500);
         state.Cancel();
 
-        int rearmedGeneration = state.Begin();
+        var rearmedDisplay = state.Begin(displayDelay: 1000);
 
-        Assert.IsFalse(state.ShouldShow(cancelledGeneration));
-        Assert.IsTrue(state.ShouldShow(rearmedGeneration));
+        Assert.IsFalse(state.ShouldShow(cancelledDisplay));
+        Assert.IsTrue(state.ShouldShow(rearmedDisplay));
         Assert.IsTrue(state.IsVisible);
+    }
+
+    [TestMethod]
+    public void Begin_SnapshotsDisplayDelay()
+    {
+        var state = new DelayedDisplayState();
+
+        var pendingDisplay = state.Begin(displayDelay: 500);
+
+        Assert.AreEqual(500, pendingDisplay.Delay);
     }
 }
