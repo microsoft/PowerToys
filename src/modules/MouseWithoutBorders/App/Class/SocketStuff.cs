@@ -1727,13 +1727,15 @@ namespace MouseWithoutBorders.Class
                         {
                             if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                             {
-                                if (!File.Exists(lastDragDropFile))
+                                if (lastDragDropFile.Contains("- File too big"))
+                                {
+                                    headerString = $"{0}*{lastDragDropFile}";
+                                }
+                                else if (!File.Exists(lastDragDropFile))
                                 {
                                     headerString = Directory.Exists(lastDragDropFile)
                                         ? $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!"
-                                        : lastDragDropFile.Contains("- File too big")
-                                            ? $"{0}*{lastDragDropFile}"
-                                            : $"{0}*{lastDragDropFile} not found!";
+                                        : $"{0}*{lastDragDropFile} not found!";
                                 }
                                 else
                                 {
