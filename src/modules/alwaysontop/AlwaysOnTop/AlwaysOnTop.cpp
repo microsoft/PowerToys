@@ -251,14 +251,16 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         return;
     }
 
-    Sound::Type soundType = Sound::Type::Off;
-    bool stateChanged = false;
     bool topmost = IsTopmost(window);
     if (topmost)
     {
         if (UnpinTopmostWindow(window))
         {
-            stateChanged = true;
+            if (AlwaysOnTopSettings::settings()->enableSound)
+            {
+                m_sound.Play(Sound::Type::Off);
+            }
+
             auto iter = m_topmostWindows.find(window);
             if (iter != m_topmostWindows.end())
             {
@@ -276,17 +278,15 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
-            stateChanged = true;
-            soundType = Sound::Type::On;
+            if (AlwaysOnTopSettings::settings()->enableSound)
+            {
+                m_sound.Play(Sound::Type::On);
+            }
+
             AssignBorder(window);
             
             Trace::AlwaysOnTop::PinWindow();
         }
-    }
-
-    if (stateChanged && AlwaysOnTopSettings::settings()->enableSound)
-    {
-        m_sound.Play(soundType);    
     }
 
     UpdateSystemMenuItem(window);
