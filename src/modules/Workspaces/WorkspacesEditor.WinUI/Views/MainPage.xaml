@@ -32,8 +32,7 @@
                 x:Uid="CreateWorkspaceBtn"
                 HorizontalAlignment="Left"
                 Click="NewProjectButton_Click"
-                Style="{ThemeResource AccentButtonStyle}"
-                TabIndex="0">
+                Style="{ThemeResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                         Margin="0,4,0,0"
@@ -52,8 +51,7 @@
                 x:Uid="SortByButton"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Style="{StaticResource SubtleButtonStyle}"
-                TabIndex="1">
+                Style="{StaticResource SubtleButtonStyle}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="SortByButtonToolTip" />
                 </ToolTipService.ToolTip>
