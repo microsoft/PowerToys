@@ -16,22 +16,18 @@ public static class TestDataHelper
     /// </summary>
     /// <param name="name">The name of the application.</param>
     /// <param name="fullPath">The full path to the application executable.</param>
-    /// <param name="enabled">A value indicating whether the application is enabled.</param>
     /// <param name="valid">A value indicating whether the application is valid.</param>
     /// <returns>A new Win32Program instance with the specified parameters.</returns>
     public static Win32Program CreateTestWin32Program(
         string name = "Test App",
         string fullPath = "C:\\TestApp\\app.exe",
-        bool enabled = true,
         bool valid = true)
     {
         return new Win32Program
         {
             Name = name,
             FullPath = fullPath,
-            Enabled = enabled,
             Valid = valid,
-            UniqueIdentifier = $"win32_{name}",
             Description = $"Test description for {name}",
             ExecutableName = "app.exe",
             ParentDirectory = "C:\\TestApp",
@@ -56,7 +52,6 @@ public static class TestDataHelper
             DisplayName = displayName,
             UserModelId = userModelId,
             Enabled = enabled,
-            UniqueIdentifier = $"uwp_{userModelId}",
             Description = $"Test UWP description for {displayName}",
             AppListEntry = "default",
             BackgroundColor = "#000000",

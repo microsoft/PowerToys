@@ -15,29 +15,50 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 public class AllAppsPageTests : AppsTestBase
 {
     [TestMethod]
-    public void AllAppsPage_Constructor_ThrowsOnNullAppCache()
+    public void AllAppsPage_Constructor_ThrowsOnNullAppCatalog()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!));
+        Assert.ThrowsException<ArgumentNullException>(() => new AllAppsPage(null!, Settings));
     }
 
     [TestMethod]
-    public void AllAppsPage_WithMockCache_InitializesSuccessfully()
+    public void AllAppsPage_WithMockCatalog_InitializesSuccessfully()
     {
         // Arrange
-        var mockCache = new MockAppCache();
+        var mockCatalog = new MockAppCatalog();
 
         // Act
-        var page = new AllAppsPage(mockCache);
+        var page = new AllAppsPage(mockCatalog, Settings);
 
         // Assert
         Assert.IsNotNull(page);
         Assert.IsNotNull(page.Name);
         Assert.IsNotNull(page.Icon);
+        Assert.AreEqual(1, mockCatalog.InitializeCallCount);
     }
 
     [TestMethod]
-    public async Task AllAppsPage_GetItems_ReturnsEmptyWithEmptyCache()
+    public async Task AllAppsPage_Constructor_DoesNotWaitForCatalogInitialization()
+    {
+        // Arrange
+        var initialization = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var mockCatalog = new MockAppCatalog();
+        mockCatalog.DeferInitialization(initialization.Task);
+
+        // Act
+        var page = new AllAppsPage(mockCatalog, Settings);
+
+        // Assert
+        Assert.IsTrue(page.IsLoading);
+        Assert.AreEqual(0, page.GetItems().Length);
+
+        initialization.SetResult(true);
+        await WaitForPageInitializationAsync(page);
+        Assert.IsFalse(page.IsLoading);
+    }
+
+    [TestMethod]
+    public async Task AllAppsPage_GetItems_ReturnsEmptyWithEmptyCatalog()
     {
         // Act - Wait for initialization to complete
         await WaitForPageInitializationAsync();
@@ -49,20 +70,19 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
-    public async Task AllAppsPage_GetItems_ReturnsAppsFromCacheAsync()
+    public async Task AllAppsPage_GetItems_ReturnsAppsFromCatalogAsync()
     {
         // Arrange
-        var mockCache = new MockAppCache();
+        var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
         var uwpApp = TestDataHelper.CreateTestUWPApplication("Calculator");
 
-        mockCache.AddWin32Program(win32App);
-        mockCache.AddUWPApplication(uwpApp);
+        mockCatalog.AddWin32Program(win32App);
+        mockCatalog.AddUWPApplication(uwpApp);
 
-        var page = new AllAppsPage(mockCache);
+        var page = new AllAppsPage(mockCatalog, Settings);
 
-        // Wait a bit for initialization to complete
-        await Task.Delay(100);
+        await WaitForPageInitializationAsync(page);
 
         // Act
         var items = page.GetItems();
@@ -96,16 +116,16 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_HidesSubtitlesWhenSettingEnabled()
     {
         // Arrange
-        var mockCache = new MockAppCache();
+        var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
-        mockCache.AddWin32Program(win32App);
+        mockCatalog.AddWin32Program(win32App);
 
         try
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
 
-            var page = new AllAppsPage(mockCache);
-            await Task.Delay(100);
+            var page = new AllAppsPage(mockCatalog, Settings);
+            await WaitForPageInitializationAsync(page);
 
             // Act
             var items = page.GetItems();
@@ -117,7 +137,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
         }
     }
 
@@ -125,16 +145,16 @@ public class AllAppsPageTests : AppsTestBase
     public async Task AllAppsPage_GetItems_ShowsSubtitlesWhenSettingDisabled()
     {
         // Arrange
-        var mockCache = new MockAppCache();
+        var mockCatalog = new MockAppCatalog();
         var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
-        mockCache.AddWin32Program(win32App);
+        mockCatalog.AddWin32Program(win32App);
 
         try
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
 
-            var page = new AllAppsPage(mockCache);
-            await Task.Delay(100);
+            var page = new AllAppsPage(mockCatalog, Settings);
+            await WaitForPageInitializationAsync(page);
 
             // Act
             var items = page.GetItems();
@@ -146,7 +166,7 @@ public class AllAppsPageTests : AppsTestBase
         }
         finally
         {
-            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+            Settings.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
         }
     }
 
@@ -257,5 +277,26 @@ public class AllAppsPageTests : AppsTestBase
         var details = (Details)item.Details!;
         var heroIcon = (IconInfo)details.HeroImage;
         Assert.AreEqual(app.JumboIconPath, heroIcon.Light.Icon);
+    }
+
+    [TestMethod]
+    public async Task AllAppsPage_GetItems_UpdatesWhenCatalogChanges()
+    {
+        // Arrange
+        var mockCatalog = new MockAppCatalog();
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Notepad"));
+        var page = new AllAppsPage(mockCatalog, Settings);
+        await WaitForPageInitializationAsync(page);
+
+        // Act
+        mockCatalog.AddWin32Program(TestDataHelper.CreateTestWin32Program("Paint"));
+        await WaitForPageInitializationAsync(page);
+        var items = page.GetItems();
+
+        // Assert
+        Assert.IsFalse(page.IsLoading);
+        Assert.AreEqual(2, items.Length);
+        Assert.IsTrue(items.Any(item => item.Title == "Notepad"));
+        Assert.IsTrue(items.Any(item => item.Title == "Paint"));
     }
 }

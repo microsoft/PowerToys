@@ -2,11 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Utils;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
 
@@ -19,11 +16,6 @@ public class MockUWPApplication : IUWPApplication
     /// Gets or sets the app list entry.
     /// </summary>
     public string AppListEntry { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets the unique identifier.
-    /// </summary>
-    public string UniqueIdentifier { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the display name.
@@ -70,8 +62,14 @@ public class MockUWPApplication : IUWPApplication
     /// </summary>
     public LogoType LogoType { get; set; } = LogoType.Colored;
 
+    /// <summary>
+    /// Gets or sets the jumbo logo path.
+    /// </summary>
     public string JumboLogoPath { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the jumbo logo type.
+    /// </summary>
     public LogoType JumboLogoType { get; set; } = LogoType.Colored;
 
     /// <summary>
@@ -85,60 +83,11 @@ public class MockUWPApplication : IUWPApplication
     public string Name => DisplayName;
 
     /// <summary>
-    /// Gets the location of the application.
-    /// </summary>
-    public string Location => Package?.Location ?? string.Empty;
-
-    /// <summary>
-    /// Gets the localized location of the application.
-    /// </summary>
-    public string LocationLocalized => Package?.LocationLocalized ?? string.Empty;
-
-    /// <summary>
-    /// Gets the application identifier.
-    /// </summary>
-    /// <returns>The user model ID of the application.</returns>
-    public string GetAppIdentifier()
-    {
-        return UserModelId;
-    }
-
-    /// <summary>
-    /// Gets the commands available for this application.
-    /// </summary>
-    /// <returns>A list of context items.</returns>
-    public List<IContextItem> GetCommands()
-    {
-        return new List<IContextItem>();
-    }
-
-    /// <summary>
     /// Updates the logo path based on the specified theme.
     /// </summary>
     /// <param name="theme">The theme to use for the logo.</param>
     public void UpdateLogoPath(Theme theme)
     {
         // Mock implementation - no-op for testing
-    }
-
-    /// <summary>
-    /// Converts this UWP application to an AppItem.
-    /// </summary>
-    /// <returns>An AppItem representation of this UWP application.</returns>
-    public AppItem ToAppItem()
-    {
-        var iconPath = LogoType != LogoType.Error ? LogoPath : string.Empty;
-        return new AppItem()
-        {
-            Name = Name,
-            Subtitle = Description,
-            Type = "Packaged Application", // Equivalent to UWPApplication.Type()
-            IcoPath = iconPath,
-            DirPath = Location,
-            UserModelId = UserModelId,
-            IsPackaged = true,
-            Commands = GetCommands(),
-            AppIdentifier = GetAppIdentifier(),
-        };
     }
 }

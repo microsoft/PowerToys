@@ -15,33 +15,27 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
-    internal const int DefaultResultLimit = 10;
-
-    public static readonly AllAppsPage Page = new();
 
     private readonly AllAppsPage _page;
+    private readonly AllAppsSettings _settings;
     private readonly CommandItem _listItem;
 
-    public AllAppsCommandProvider()
-        : this(Page)
-    {
-    }
-
-    public AllAppsCommandProvider(AllAppsPage page)
+    public AllAppsCommandProvider(AllAppsPage page, AllAppsSettings settings)
     {
         _page = page ?? throw new ArgumentNullException(nameof(page));
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         Id = WellKnownId;
         DisplayName = Resources.installed_apps;
         Icon = Icons.AllAppsIcon;
-        Settings = AllAppsSettings.Instance.Settings;
+        Settings = _settings.Settings;
 
         _listItem = new(_page)
         {
-            MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
+            MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
         };
     }
 
-    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
+    public int TopLevelResultLimit => _settings.EffectiveSearchResultLimit;
 
     public override ICommandItem[] TopLevelCommands() => [_listItem];
 
@@ -107,58 +101,6 @@ public partial class AllAppsCommandProvider : CommandProvider
         }
 
         return requireSingleMatch && matches.Count == 1 ? matches[0] : null;
-    }
-
-    public ICommandItem? LookupAppByDisplayName(string displayName)
-    {
-        var items = _page.GetItems();
-
-        var nameMatches = new List<ICommandItem>();
-        ICommandItem? bestAppMatch = null;
-        var bestLength = -1;
-
-        foreach (var item in items)
-        {
-            if (item.Title is null)
-            {
-                continue;
-            }
-
-            // We're going to do this search in two directions:
-            // First, is this name a substring of any app...
-            if (item.Title.Contains(displayName))
-            {
-                nameMatches.Add(item);
-            }
-
-            // ... Then, does any app have this name as a substring ...
-            // Only get one of these - "Terminal Preview" contains both "Terminal" and "Terminal Preview", so just take the best one
-            if (displayName.Contains(item.Title))
-            {
-                if (item.Title.Length > bestLength)
-                {
-                    bestLength = item.Title.Length;
-                    bestAppMatch = item;
-                }
-            }
-        }
-
-        // ... Now, combine those two
-        List<ICommandItem> both = bestAppMatch is null ? nameMatches : [.. nameMatches, bestAppMatch];
-
-        if (both.Count == 1)
-        {
-            return both[0];
-        }
-        else if (nameMatches.Count == 1 && bestAppMatch is not null)
-        {
-            if (nameMatches[0] == bestAppMatch)
-            {
-                return nameMatches[0];
-            }
-        }
-
-        return null;
     }
 
     public override ICommandItem? GetCommandItem(string id)

@@ -3,8 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -16,7 +14,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
     public void ProviderHasDisplayName()
     {
         // Setup
-        var provider = new AllAppsCommandProvider();
+        var provider = new AllAppsCommandProvider(Page, Settings);
 
         // Assert
         Assert.IsNotNull(provider.DisplayName);
@@ -27,7 +25,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
     public void ProviderHasIcon()
     {
         // Setup
-        var provider = new AllAppsCommandProvider();
+        var provider = new AllAppsCommandProvider(Page, Settings);
 
         // Assert
         Assert.IsNotNull(provider.Icon);
@@ -37,7 +35,7 @@ public class AllAppsCommandProviderTests : AppsTestBase
     public void TopLevelCommandsNotEmpty()
     {
         // Setup
-        var provider = new AllAppsCommandProvider();
+        var provider = new AllAppsCommandProvider(Page, Settings);
 
         // Act
         var commands = provider.TopLevelCommands();
@@ -48,66 +46,10 @@ public class AllAppsCommandProviderTests : AppsTestBase
     }
 
     [TestMethod]
-    public void LookupAppWithEmptyNameReturnsNotNull()
-    {
-        // Setup
-        var mockApp = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
-        MockCache.AddWin32Program(mockApp);
-        var page = new AllAppsPage(MockCache);
-
-        var provider = new AllAppsCommandProvider(page);
-
-        // Act
-        var result = provider.LookupAppByDisplayName(string.Empty);
-
-        // Assert
-        Assert.IsNotNull(result);
-    }
-
-    [TestMethod]
-    public async Task ProviderWithMockData_LookupApp_ReturnsCorrectApp()
-    {
-        // Arrange
-        var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        MockCache.AddWin32Program(testApp);
-
-        var provider = new AllAppsCommandProvider(Page);
-
-        // Wait for initialization to complete
-        await WaitForPageInitializationAsync();
-
-        // Act
-        var result = provider.LookupAppByDisplayName("TestApp");
-
-        // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual("TestApp", result.Title);
-    }
-
-    [TestMethod]
-    public async Task ProviderWithMockData_LookupApp_ReturnsNullForNonExistentApp()
-    {
-        // Arrange
-        var testApp = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        MockCache.AddWin32Program(testApp);
-
-        var provider = new AllAppsCommandProvider(Page);
-
-        // Wait for initialization to complete
-        await WaitForPageInitializationAsync();
-
-        // Act
-        var result = provider.LookupAppByDisplayName("NonExistentApp");
-
-        // Assert
-        Assert.IsNull(result);
-    }
-
-    [TestMethod]
     public void ProviderWithMockData_TopLevelCommands_IncludesListItem()
     {
         // Arrange
-        var provider = new AllAppsCommandProvider(Page);
+        var provider = new AllAppsCommandProvider(Page, Settings);
 
         // Act
         var commands = provider.TopLevelCommands();
