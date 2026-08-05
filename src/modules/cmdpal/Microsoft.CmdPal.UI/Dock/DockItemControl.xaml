@@ -13,8 +13,8 @@
             <!--  Same shape as the system's ControlElevationBorderBrush: a lit top edge over a flatter body  -->
             <LinearGradientBrush x:Key="DockItemBorderBrushPointerOver" MappingMode="Absolute" StartPoint="0,0" EndPoint="0,3">
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#18FFFFFF" />
-                    <GradientStop Offset="1.0" Color="#12FFFFFF" />
+                    <GradientStop Offset="0.33" Color="#19FFFFFF" />
+                    <GradientStop Offset="1.0" Color="#0FFFFFFF" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
             <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
@@ -31,8 +31,8 @@
                     <ScaleTransform CenterY="0.5" ScaleY="-1" />
                 </LinearGradientBrush.RelativeTransform>
                 <LinearGradientBrush.GradientStops>
-                    <GradientStop Offset="0.33" Color="#29000000" />
-                    <GradientStop Offset="1.0" Color="#0F000000" />
+                    <GradientStop Offset="0.33" Color="#17000000" />
+                    <GradientStop Offset="1.0" Color="#08000000" />
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
             <!--  Pressed drops the elevation and goes flat, the way system buttons do  -->
