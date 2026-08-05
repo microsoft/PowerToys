@@ -59,9 +59,16 @@
                         SelectionMode="None">
                         <ListView.ItemTemplate>
                             <DataTemplate x:Name="SingleLineDataTemplate" x:DataType="models:ImageSize">
-                                <tkcontrols:SettingsCard Header="{x:Bind Name, Mode=OneWay}">
+                                <tkcontrols:SettingsCard
+                                    AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
+                                    AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
+                                    Click="EditSize_Click"
+                                    Header="{x:Bind Name, Mode=OneWay}"
+                                    IsActionIconVisible="False"
+                                    IsClickEnabled="True">
                                     <tkcontrols:SettingsCard.Resources>
                                         <x:Double x:Key="SettingsCardLeftIndention">42</x:Double>
+                                        <x:Double x:Key="SettingsCardActionButtonWidth">0</x:Double>
                                     </tkcontrols:SettingsCard.Resources>
                                     <tkcontrols:SettingsCard.Description>
                                         <StackPanel
@@ -98,89 +105,27 @@
                                                 Text="{x:Bind Unit, Mode=OneWay, Converter={StaticResource ImageResizerUnitToStringConverter}, ConverterParameter=ToLower}" />
                                         </StackPanel>
                                     </tkcontrols:SettingsCard.Description>
-                                    <StackPanel
-                                        Grid.Column="2"
+                                    <Button
+                                        x:Uid="More_Options_Button"
+                                        Width="40"
+                                        Height="36"
                                         HorizontalAlignment="Right"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                        <Button
-                                            x:Uid="ImageResizer_EditButton"
-                                            Width="40"
-                                            Height="36"
-                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
-                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Edit'}"
-                                            Content="&#xE70F;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
-                                            <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="EditTooltip" />
-                                            </ToolTipService.ToolTip>
-                                            <Button.Flyout>
-                                                <Flyout x:Uid="ImageResizer_EditSize" ShouldConstrainToRootBounds="False">
-                                                    <StackPanel Spacing="16">
-                                                        <TextBox
-                                                            x:Uid="ImageResizer_Name"
-                                                            Width="240"
-                                                            HorizontalAlignment="Left"
-                                                            Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-
-                                                        <ComboBox
-                                                            x:Uid="ImageResizer_Fit"
-                                                            Width="240"
-                                                            HorizontalAlignment="Left"
-                                                            SelectedIndex="{x:Bind Fit, Mode=TwoWay, Converter={StaticResource ImageResizerFitToIntConverter}}">
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
-                                                        </ComboBox>
-
-                                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                                            <controls:ImageResizerDimensionsNumberBox
-                                                                x:Uid="ImageResizer_Width"
-                                                                Width="116"
-                                                                Minimum="0"
-                                                                SpinButtonPlacementMode="Compact"
-                                                                Value="{x:Bind Width, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
-
-                                                            <controls:ImageResizerDimensionsNumberBox
-                                                                x:Uid="ImageResizer_Height"
-                                                                Width="116"
-                                                                Minimum="0"
-                                                                SpinButtonPlacementMode="Compact"
-                                                                Visibility="{x:Bind IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                Value="{x:Bind Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
-                                                        </StackPanel>
-
-                                                        <ComboBox
-                                                            x:Uid="ImageResizer_Size"
-                                                            Width="240"
-                                                            SelectedIndex="{Binding Unit, Mode=TwoWay, Converter={StaticResource ImageResizerUnitToIntConverter}}">
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
-                                                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
-                                                        </ComboBox>
-                                                    </StackPanel>
-                                                </Flyout>
-                                            </Button.Flyout>
-                                        </Button>
-
-                                        <Button
-                                            x:Uid="ImageResizer_RemoveButton"
-                                            Width="40"
-                                            Height="36"
-                                            AutomationProperties.FullDescription="{x:Bind AccessibleTextHelper, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
-                                            AutomationProperties.Name="{x:Bind Name, Mode=OneWay, Converter={StaticResource ImageResizerSizeToAccessibleTextConverter}, ConverterParameter='Remove'}"
-                                            Click="DeleteCustomSize"
-                                            CommandParameter="{Binding Id}"
-                                            Content="&#xE74D;"
-                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                            Style="{StaticResource SubtleButtonStyle}">
-                                            <ToolTipService.ToolTip>
-                                                <TextBlock x:Uid="RemoveTooltip" />
-                                            </ToolTipService.ToolTip>
-                                        </Button>
-                                    </StackPanel>
+                                        Content="&#xE712;"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Style="{StaticResource SubtleButtonStyle}">
+                                        <Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem
+                                                    x:Uid="RemoveItem"
+                                                    Click="DeleteCustomSize"
+                                                    CommandParameter="{x:Bind}"
+                                                    Icon="{ui:FontIcon Glyph=&#xE74D;}" />
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                        <ToolTipService.ToolTip>
+                                            <TextBlock x:Uid="More_Options_ButtonTooltip" />
+                                        </ToolTipService.ToolTip>
+                                    </Button>
                                 </tkcontrols:SettingsCard>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -283,6 +228,60 @@
                         </ComboBox>
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
+
+                <ContentDialog
+                    x:Name="EditSizeDialog"
+                    x:Uid="ImageResizer_EditSizeDialog"
+                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+                    <StackPanel Width="400" Spacing="16">
+                        <TextBox
+                            x:Uid="ImageResizer_Name"
+                            HorizontalAlignment="Stretch"
+                            Text="{x:Bind EditingSize.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <ComboBox
+                            x:Uid="ImageResizer_Fit"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="{x:Bind EditingSize.Fit, Mode=TwoWay, Converter={StaticResource ImageResizerFitToIntConverter}}">
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fill" />
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Fit" />
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Fit_Stretch" />
+                        </ComboBox>
+
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <controls:ImageResizerDimensionsNumberBox
+                                Grid.Column="0"
+                                HorizontalAlignment="Stretch"
+                                Header="{x:Bind GetDimensionHeader(EditingSize.IsHeightUsed), Mode=OneWay}"
+                                Minimum="0"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind EditingSize.Width, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
+
+                            <controls:ImageResizerDimensionsNumberBox
+                                x:Uid="ImageResizer_Height"
+                                Grid.Column="1"
+                                HorizontalAlignment="Stretch"
+                                Minimum="0"
+                                SpinButtonPlacementMode="Compact"
+                                Visibility="{x:Bind EditingSize.IsHeightUsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Value="{x:Bind EditingSize.Height, Mode=TwoWay, Converter={StaticResource ImageResizerNumberBoxValueConverter}}" />
+                        </Grid>
+
+                        <ComboBox
+                            x:Uid="ImageResizer_Size"
+                            HorizontalAlignment="Stretch"
+                            SelectedIndex="{x:Bind EditingSize.Unit, Mode=TwoWay, Converter={StaticResource ImageResizerUnitToIntConverter}}">
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_CM" />
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Inches" />
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Percent" />
+                            <ComboBoxItem x:Uid="ImageResizer_Sizes_Units_Pixels" />
+                        </ComboBox>
+                    </StackPanel>
+                </ContentDialog>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
