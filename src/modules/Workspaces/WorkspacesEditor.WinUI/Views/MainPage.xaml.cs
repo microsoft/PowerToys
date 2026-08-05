@@ -30,7 +30,16 @@ namespace WorkspacesEditor.Views
                 Bindings.Update();
 
                 vm.PropertyChanged += ViewModel_PropertyChanged;
+
+                this.Loaded -= OnLoaded;
+                this.Loaded += OnLoaded;
             }
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            this.Loaded -= OnLoaded;
+            NewProjectButton.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
