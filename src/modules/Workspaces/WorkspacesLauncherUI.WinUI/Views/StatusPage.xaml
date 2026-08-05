@@ -63,9 +63,7 @@
                                             IsActive="True" />
                                     </tkcontrols:Case>
                                     <tkcontrols:Case Value="False">
-                                        <tkcontrols:SwitchPresenter
-                                            TargetType="x:Int32"
-                                            Value="{x:Bind LaunchStateInt, Mode=OneWay}">
+                                        <tkcontrols:SwitchPresenter TargetType="x:Int32" Value="{x:Bind LaunchStateInt, Mode=OneWay}">
                                             <tkcontrols:Case IsDefault="True" Value="3">
                                                 <FontIcon
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
