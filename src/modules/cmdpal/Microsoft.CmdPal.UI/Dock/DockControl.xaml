@@ -340,7 +340,7 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <!--  No margin against the screen edge; DockItemControl insets its own chrome there instead  -->
+                        <!--  Screen-edge side has no margin; the item insets its own chrome there  -->
                         <Setter Target="ContentGrid.Margin" Value="4,0,4,2" />
                     </VisualState.Setters>
                 </VisualState>

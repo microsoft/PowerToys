@@ -111,19 +111,19 @@ public sealed partial class DockItemControl : Control
     private const string IconPresenterName = "IconPresenter";
     private const string BackPlateName = "PART_BackPlate";
 
-    // Gap between the item's bounds and its chrome on the sides that don't touch a
-    // dock edge. Applied as padding, so the gap still takes clicks.
-    private static readonly Thickness ChromeGap = new(2, 0, 2, 0);
+    // Gap between neighbouring items, on the axis the dock stacks them.
+    private const double HorizontalChromeSeparation = 2;
+    private const double VerticalChromeSeparation = 1;
 
-    // On the screen-edge side DockControl drops its own inset so items can reach the
-    // edge; the item puts that much back inside its own bounds. These mirror the
-    // margin (+ padding, for vertical docks) DockControl keeps on the opposite side.
+    // Mirrors the inset DockControl keeps on the dock's inner side.
     private const double HorizontalDockEdgeGap = 2;
     private const double VerticalDockEdgeGap = 4;
 
     private FrameworkElement? _iconPresenter;
     private FrameworkElement? _backPlate;
-    private double _backPlateMinWidth;
+
+    // Width floor in a horizontal dock, height floor in a vertical one.
+    private double _backPlateMinSize;
     private DockControl? _parentDock;
     private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
@@ -160,7 +160,7 @@ public sealed partial class DockItemControl : Control
         UpdateTextVisibilityState();
         UpdateSubtitleVisibilityState();
         UpdateContentSpacingState();
-        UpdateSquareChrome();
+        UpdateChromeSize();
     }
 
     private void UpdateTextVisibilityState()
@@ -201,35 +201,37 @@ public sealed partial class DockItemControl : Control
 
         UpdateIconVisibilityState();
         UpdateContentSpacingState();
-        UpdateSquareChrome();
+        UpdateChromeSize();
     }
 
-    /// <summary>
-    /// Keeps icon-only items square by driving the chrome's width from the height the
-    /// dock hands us. MinWidth rather than Width, so an oversized icon can still grow
-    /// the item instead of being clipped.
-    /// </summary>
-    private void UpdateSquareChrome()
+    // Squares icon-only items against the height a horizontal dock hands us; a vertical
+    // dock stretches items to its width instead, so there the chrome just needs a floor.
+    private void UpdateChromeSize()
     {
         if (_backPlate is null)
         {
             return;
         }
 
-        // Only horizontal docks have an authoritative height to square against - in a
-        // vertical dock items stretch to the dock's full width instead. Before the first
-        // layout pass there's no height yet, so the template's floor stands.
-        var horizontal = _parentDock?.DockSide is not (DockSide.Left or DockSide.Right);
-        var square = IsIconOnly && horizontal && _backPlate.ActualHeight > 0;
-        var minWidth = square ? _backPlate.ActualHeight : _backPlateMinWidth;
+        var vertical = _parentDock?.DockSide is DockSide.Left or DockSide.Right;
+
+        // Before the first layout pass there's no height to square against yet.
+        var square = !vertical && IsIconOnly && _backPlate.ActualHeight > 0;
+        var minWidth = square ? _backPlate.ActualHeight : _backPlateMinSize;
+        var minHeight = vertical ? _backPlateMinSize : 0;
 
         if (Math.Abs(_backPlate.MinWidth - minWidth) > 0.5)
         {
             _backPlate.MinWidth = minWidth;
         }
+
+        if (Math.Abs(_backPlate.MinHeight - minHeight) > 0.5)
+        {
+            _backPlate.MinHeight = minHeight;
+        }
     }
 
-    private void BackPlate_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateSquareChrome();
+    private void BackPlate_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateChromeSize();
 
     private void UpdateIconVisibilityState()
     {
@@ -333,7 +335,7 @@ public sealed partial class DockItemControl : Control
         if (_backPlate is not null)
         {
             // Remember the template's floor so non-square items can be put back.
-            _backPlateMinWidth = _backPlate.MinWidth;
+            _backPlateMinSize = _backPlate.MinWidth;
             _backPlate.SizeChanged += BackPlate_SizeChanged;
         }
 
@@ -407,7 +409,7 @@ public sealed partial class DockItemControl : Control
         {
             UpdateInnerMargin();
             UpdateAlignment();
-            UpdateSquareChrome();
+            UpdateChromeSize();
         }
     }
 
@@ -424,25 +426,27 @@ public sealed partial class DockItemControl : Control
         IsCompact = dock.DockSize == DockSize.Compact;
     }
 
-    /// <summary>
-    /// Insets the chrome from the item's bounds. The bounds stay transparent and
-    /// hit-testable, so the button still reaches the screen edge (Fitts's law) even
-    /// though it no longer looks flush against it.
-    /// </summary>
+    // Insets the chrome from the item's bounds, which stay hit-testable so the button
+    // still reaches the screen edge (Fitts's law) without looking flush against it.
     private void UpdateInnerMargin()
     {
         var side = _parentDock?.DockSide ?? DockSide.Top;
+        var vertical = side is DockSide.Left or DockSide.Right;
 
-        // Compact trades the gap for height - the dock zeroes its own margins there too.
-        var edgeGap = IsCompact
-            ? 0
-            : side is DockSide.Left or DockSide.Right ? VerticalDockEdgeGap : HorizontalDockEdgeGap;
+        // Compact trades the gap for height.
+        var edgeGap = IsCompact ? 0 : vertical ? VerticalDockEdgeGap : HorizontalDockEdgeGap;
 
-        InnerMargin = new Thickness(
-            ChromeGap.Left + (side == DockSide.Left ? edgeGap : 0),
-            ChromeGap.Top + (side == DockSide.Top ? edgeGap : 0),
-            ChromeGap.Right + (side == DockSide.Right ? edgeGap : 0),
-            ChromeGap.Bottom + (side == DockSide.Bottom ? edgeGap : 0));
+        InnerMargin = vertical
+            ? new Thickness(
+                side == DockSide.Left ? edgeGap : 0,
+                VerticalChromeSeparation,
+                side == DockSide.Right ? edgeGap : 0,
+                VerticalChromeSeparation)
+            : new Thickness(
+                HorizontalChromeSeparation,
+                side == DockSide.Top ? edgeGap : 0,
+                HorizontalChromeSeparation,
+                side == DockSide.Bottom ? edgeGap : 0);
     }
 
     private void Control_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -468,8 +472,7 @@ public sealed partial class DockItemControl : Control
     {
         base.OnPointerReleased(e);
 
-        // The pointer is still over us on release, so hand back to PointerOver;
-        // PointerExited takes it to Normal from there.
+        // Still over us on release; PointerExited takes it to Normal from there.
         if (IsEnabled)
         {
             VisualStateManager.GoToState(this, "PointerOver", true);
