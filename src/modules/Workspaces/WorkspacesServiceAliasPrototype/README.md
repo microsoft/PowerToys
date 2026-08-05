@@ -67,7 +67,7 @@ No password or logon token is required for the second owner. The controller crea
 | Credential repair | `repair` | new random password is applied to account and SCM, service/worker return healthy |
 | Reboot | `Reboot-Before.ps1`, `Reboot-After.ps1` | manual reboot only; exact v2 identity and worker recover |
 | Uninstall | `uninstall` | service, account, alias leaf, launcher directory, and per-owner store are removed; profile deletion is retried for 30 seconds and is explicitly reported as reboot-pending if AppX still holds the hive |
-| Multi-owner | `two-owner` / manual matrix | **Design blocker found:** only one account can actively launch this packaged application in service session 0. A second installation receives `CreateProcess(alias)=5`, rolls back its account/service/store transaction, and succeeds only after the first packaged worker stops. This occurs for both same-version and mixed-version registrations. |
+| Multi-owner | `two-owner` / manual matrix | **Design blocker found:** only one account can actively launch this packaged application in service session 0. A second installation receives `CreateProcess=5`, rolls back its account/service/store transaction, and succeeds only after the first packaged worker stops. The failure remains with `uap10:SupportsMultipleInstances="true"` and when bypassing the alias to launch the installed packaged EXE directly, so it is not an SCM `ImagePath`, alias-leaf, or default single-instance-manifest restriction. |
 
 ## Security assumptions
 
@@ -102,7 +102,7 @@ The elevated scripts and binaries are a development harness, not a production tr
 
 The single-owner lifecycle is viable: service-account registration, alias launch, package-token verification, v1-to-v2 update, tamper recovery, password rotation, 1069 recovery, protected-store writes, and SCM restart all work.
 
-The original per-PowerToys-user architecture is **NO-GO in this form**. Multiple per-user services all run in session 0, and Windows permits only one active packaged application instance for this package application identity across those service accounts. Registering another account/version succeeds, but its alias activation fails with access denied while another account's worker is active. Stopping the first worker immediately allows the second account to launch. Productization therefore requires a different topology, such as a single machine-wide packaged worker/broker with explicit per-user isolation, or an activation model that does not share one packaged application identity in session 0.
+The original per-PowerToys-user architecture is **NO-GO in this form**. Multiple per-user services all run in session 0, and Windows permits only one active packaged process for this package application identity across those service-account tokens. Registering another account/version succeeds, but process creation fails with access denied while another account's worker is active. This remains true after opting the manifest into multiple instances and when launching the installed package EXE directly instead of using the execution alias. Stopping the first worker immediately allows the second account to launch. The observed boundary is therefore the packaged process/AppModel identity in session 0, not SCM service creation or the alias file itself. Productization requires a different topology, such as a single machine-wide packaged worker/broker with explicit per-user isolation, or an activation model that does not share one packaged application identity in session 0.
 
 ## Validation record
 
@@ -119,5 +119,6 @@ Validated on Windows 11 25H2 build 26200:
 - PASS: service stop/start recovered the registered v2 worker; reboot checkpoint scripts are ready, but this shared machine was not rebooted.
 - PASS with OS-deferred cleanup: service, account, rights, packages, launcher, and store were removed. AppX kept service-account profile hives loaded; native `DeleteProfileW` reported them as reboot-pending.
 - FAIL / design blocker: two local-account services could not run the packaged worker concurrently, for either mixed versions or the same version.
+- FAIL remained after `uap10:SupportsMultipleInstances="true"` and after replacing alias launch with direct package-install-path launch; both still returned error 5 for the second account.
 
 The certificate is development-only and not timestamped. `-TrustMachine` adds only its public certificate to LocalMachine TrustedPeople; remove it after testing if required by local policy. Direct SCM `ImagePath` to the alias is deliberately not implemented because that path already fails with 1920. Elevated lifecycle execution is intentionally not auto-UAC-launched.
