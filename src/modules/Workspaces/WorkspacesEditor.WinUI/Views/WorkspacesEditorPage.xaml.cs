@@ -69,7 +69,7 @@ namespace WorkspacesEditor.Views
 
         private void DeleteButtonClicked(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is Application app)
+            if (sender is FrameworkElement element && element.Tag is Application app)
             {
                 app.SwitchDeletion();
             }

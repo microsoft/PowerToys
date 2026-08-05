@@ -26,6 +26,7 @@ namespace WorkspacesEditor
         public const int MinWindowHeight = 680;
 
         private readonly CancellationTokenSource _cancellationToken = new();
+        private System.ComponentModel.PropertyChangedEventHandler _vmPropertyChangedHandler;
 
         public MainWindow()
         {
@@ -107,7 +108,7 @@ namespace WorkspacesEditor
             });
 
             // Bind loading ring to ViewModel.IsLoading
-            vm.PropertyChanged += (s, e) =>
+            _vmPropertyChangedHandler = (s, e) =>
             {
                 if (e.PropertyName == nameof(vm.IsLoading))
                 {
@@ -117,6 +118,7 @@ namespace WorkspacesEditor
                         : Microsoft.UI.Xaml.Visibility.Collapsed;
                 }
             };
+            vm.PropertyChanged += _vmPropertyChangedHandler;
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);
@@ -197,6 +199,13 @@ namespace WorkspacesEditor
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
+            StrongReferenceMessenger.Default.UnregisterAll(this);
+
+            if (_vmPropertyChangedHandler != null && App.MainViewModel != null)
+            {
+                App.MainViewModel.PropertyChanged -= _vmPropertyChangedHandler;
+            }
+
             _cancellationToken.Cancel();
             _cancellationToken.Dispose();
             (Microsoft.UI.Xaml.Application.Current as IDisposable)?.Dispose();

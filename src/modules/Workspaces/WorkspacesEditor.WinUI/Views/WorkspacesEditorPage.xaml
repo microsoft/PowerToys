@@ -66,7 +66,8 @@
                         AutomationProperties.Name="{x:Bind DeleteButtonAccessibleName, Mode=OneWay}"
                         Click="DeleteButtonClicked"
                         Content="{x:Bind DeleteButtonContent, Mode=OneWay}"
-                        IsEnabled="True" />
+                        IsEnabled="True"
+                        Tag="{x:Bind}" />
                     <tkcontrols:SettingsExpander.Items>
 
                         <tkcontrols:SettingsCard ContentAlignment="Left">
