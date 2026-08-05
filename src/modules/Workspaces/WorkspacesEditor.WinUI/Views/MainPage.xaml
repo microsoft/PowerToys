@@ -33,7 +33,7 @@
                 HorizontalAlignment="Left"
                 Click="NewProjectButton_Click"
                 Style="{ThemeResource AccentButtonStyle}"
-                TabIndex="3">
+                TabIndex="0">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock
                         Margin="0,4,0,0"
@@ -52,7 +52,8 @@
                 x:Uid="SortByButton"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                Style="{StaticResource SubtleButtonStyle}">
+                Style="{StaticResource SubtleButtonStyle}"
+                TabIndex="1">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="SortByButtonToolTip" />
                 </ToolTipService.ToolTip>
