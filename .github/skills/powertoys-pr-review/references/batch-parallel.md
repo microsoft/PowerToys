@@ -2,7 +2,7 @@
 
 When asked to review multiple PRs (e.g. "review PRs 123, 456, 789"), **review them concurrently, not one after another.** Each PR spends most of its wall-clock time *waiting* — Copilot review polling (up to ~10 min per round), local builds, rebase/push — so serializing a batch wastes almost all of that time. Overlap the waits.
 
-Sequential (one PR fully converged before the next) is only the **fallback** when background sub-agents aren't available in the environment.
+Do not fall back to one-PR-at-a-time execution merely because background sub-agents are unavailable. Use the pipelined single-agent mode below so multiple PRs still have review requests and waits concurrently in flight.
 
 ## Concurrency model: one background sub-agent per PR
 
@@ -40,6 +40,6 @@ Some steps touch shared resources and must not race:
 - **Before presenting, run the stranded-loop self-audit for every PR** ([scripts/Get-UnresolvedCopilotThreads.ps1](../scripts/Get-UnresolvedCopilotThreads.ps1) — expect 0 each). Any non-zero means that PR's loop isn't done; resume it before Step 10. Parallelism must not become an excuse to present a stranded PR.
 - Present all PRs together at the single Step 10 approval gate (the dashboard is the natural surface for this — it already renders one row per PR). Posting still happens only after explicit approval and the mandatory per-PR freshness re-check (Critical Rule 1).
 
-## If sub-agents aren't available (sequential fallback)
+## If sub-agents aren't available (pipelined parallel fallback)
 
-If the environment can't spawn background sub-agents, still **pipeline the waits** in the single agent instead of fully serializing: for *all* PRs, do mirror → rebase → push → **request Copilot review** up front so every PR's ~10-min review clock runs at once; then cycle through processing whichever review returns first (fix → push → re-request), building one PR at a time. This recovers most of the parallel speedup without sub-agents. As a last resort, drive each PR to convergence before the next, or set a `manage_schedule` monitor per PR to keep loops progressing across turns.
+If the environment can't spawn background sub-agents, still **pipeline the waits** in the single agent instead of fully serializing: for *all* PRs, do mirror → rebase → push → **request Copilot review** up front so every PR's ~10-min review clock runs at once; then cycle through processing whichever review returns first (fix → push → re-request), building one PR at a time. Use a `manage_schedule` monitor per PR when loops must continue across turns. At no point should an independent PR wait for another PR to converge before its own mirror/review request begins.
