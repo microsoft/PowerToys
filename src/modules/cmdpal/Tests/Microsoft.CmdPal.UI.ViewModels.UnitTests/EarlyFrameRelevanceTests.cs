@@ -17,22 +17,10 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// GUARDRAIL for the Phase 7c early-frame relevance change. Phase 7c stops the "completely wrong
-/// when I start typing" flash by withholding, on the render path, the large low-confidence fuzzy
-/// app tail for ultra-short (1-2 char) queries. The change is confined to the transient early
-/// frame: it slices the already-scored, already-sorted app array and never re-scores or reorders,
-/// so the settled order of a discriminating (3+ char) query is byte-identical to before.
-///
-/// These tests lock two things:
-///  1. The confirmed mechanism (Mechanism A): a 1-char query drops a huge fraction of the catalog
-///     into the single Fuzzy tier, where within-tier order is decided almost entirely by frecency,
-///     so the most-frecent app floats to rank 1 on a weak, mid-word subsequence match.
-///  2. The fix: for an ultra-short query the gate withholds that Fuzzy tail (keeping only the
-///     letter-relevant word-boundary/prefix/exact matches), while for a 3+ char query the scored
-///     apps are passed through unchanged (same array reference).
-///
-/// Everything here is deterministic (index-driven catalog, injected frecency, no wall-clock
-/// ordering dependence), so it is CI-safe and never flakes.
+/// Guardrail for the early-frame relevance change, which stops the "completely wrong when I start
+/// typing" flash by withholding the weak fuzzy app tail on short queries. These lock the mechanism
+/// (a 1-char query drops most of the catalog into one Fuzzy tier where frecency decides the order)
+/// and the fix (short queries keep only the confident head, longer queries pass through untouched).
 /// </summary>
 [TestClass]
 public sealed partial class EarlyFrameRelevanceTests
@@ -103,9 +91,8 @@ public sealed partial class EarlyFrameRelevanceTests
         return history;
     }
 
-    // Apps that match the query "x" ONLY as a mid-word subsequence: no title starts with "x" and no
-    // word inside a title starts with "x", so every match classifies at the Fuzzy tier. This is the
-    // pathological ultra-short-query shape - a big weak-match set with no confident matches at all.
+    // Apps that match "x" only as a mid-word subsequence, so every match lands at the Fuzzy tier.
+    // This is the pathological shape: a big weak-match set with no confident matches at all.
     private static CatalogItem[] BuildFuzzyOnlyCatalogForX() =>
     [
         new CatalogItem("Galaxy Store", "Shop for apps", "app.galaxy"),
@@ -115,9 +102,8 @@ public sealed partial class EarlyFrameRelevanceTests
         new CatalogItem("Voxel Editor", "Edit voxel art", "app.voxel"),
     ];
 
-    // Apps for the query "c" spanning multiple tiers: some titles start with "c" (Prefix), some have
-    // a non-leading word starting with "c" (word boundary), and some only contain "c" mid-word
-    // (Fuzzy). Used to prove the gate keeps the confident head and drops only the fuzzy tail.
+    // Apps spanning multiple tiers for "c": some titles start with it, some have a non-leading word
+    // that does, and some only contain it mid-word.
     private static CatalogItem[] BuildMixedCatalogForC() =>
     [
         new CatalogItem("Calculator", "Perform calculations", "app.calc"),
@@ -130,10 +116,8 @@ public sealed partial class EarlyFrameRelevanceTests
     ];
 
     /// <summary>
-    /// Investigation evidence, locked as a test: for a 1-char query whose only matches are mid-word
-    /// subsequences, EVERY result classifies at the Fuzzy tier - so whatever sits at rank 1 is a
-    /// weak match, and seeding frecency on one such app floats it to the top of that weak tier. This
-    /// is Mechanism A that Phase 7c targets.
+    /// The mechanism, locked as a test: when a 1-char query only matches mid-word, every result is
+    /// Fuzzy, so seeding frecency on any one of them floats it straight to rank 1.
     /// </summary>
     [TestMethod]
     public void ShortQuery_FrecencyFloatsWeakFuzzyMatchToTop()
@@ -166,10 +150,9 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// The fix: for an ultra-short (1-char) query the gate withholds the ENTIRE Fuzzy tail, so the
-    /// frecency-floated weak match can no longer be surfaced at rank 1 while the user is still
-    /// typing. Here every match is Fuzzy, so the gated app set is empty (commands/fallbacks, added
-    /// by the result factory, still render).
+    /// The fix: a 1-char query withholds the whole Fuzzy tail, so the frecency-floated weak match
+    /// can't reach rank 1 while you're still typing. Every match here is Fuzzy, so the gated app
+    /// set comes back empty and only commands and fallbacks render.
     /// </summary>
     [TestMethod]
     public void ShortQuery_Gate_WithholdsEntireFuzzyTail()
@@ -190,8 +173,8 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// The gate keeps the confident head (word-boundary / prefix / exact matches) and drops only the
-    /// Fuzzy tail for an ultra-short query. Verified against a mixed catalog for "c".
+    /// The gate keeps the confident head and drops only the Fuzzy tail, checked against a mixed
+    /// catalog for "c".
     /// </summary>
     [TestMethod]
     public void ShortQuery_Gate_KeepsConfidentTiers_DropsFuzzyTail()
@@ -218,7 +201,7 @@ public sealed partial class EarlyFrameRelevanceTests
                 $"Gated item '{s.Item.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
         }
 
-        // The gated head is a contiguous prefix of the scored array, in the exact same order.
+        // The gated head is a contiguous prefix of the scored array, in the same order.
         for (var i = 0; i < gated.Count; i++)
         {
             Assert.AreSame(scored[i].Item, gated[i].Item, $"Gated item at index {i} must be the same instance and position as the scored array.");
@@ -226,9 +209,8 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// INVARIANT: for a discriminating (3+ char) query the gate is a no-op - it returns the exact
-    /// same array instance, so the settled order of a meaningful query is byte-identical to the
-    /// pre-7c behavior and the Phase 7b equivalence guarantee is untouched.
+    /// For a 3+ char query the gate is a no-op and hands back the same array instance, so a
+    /// meaningful query's settled order is exactly what it was before.
     /// </summary>
     [TestMethod]
     public void DiscriminatingQuery_Gate_ReturnsInputUnchanged()
@@ -246,8 +228,8 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// The gate fires for query lengths 1 and 2 (ultra-short) but not for length 3+. Confirmed
-    /// against the fuzzy-only catalog, where firing empties the set and not-firing passes it through.
+    /// The gate fires for lengths 1 and 2 but not 3, checked against the fuzzy-only catalog where
+    /// firing empties the set and not firing passes it through.
     /// </summary>
     [TestMethod]
     public void Gate_LengthBoundary_FiresForOneAndTwo_NotThree()
@@ -263,8 +245,8 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// The gate never touches an empty or null app set, and treats a zero-length query (the default
-    /// view, no search) as a pass-through.
+    /// The gate leaves an empty or null app set alone, and treats a zero-length query (the default
+    /// view) as a pass-through.
     /// </summary>
     [TestMethod]
     public void Gate_NullEmptyAndZeroLength_AreNoOps()
@@ -280,9 +262,8 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// Unit-level check of the prefix-length helper: because the scored array is sorted descending
-    /// by packed score and the tier occupies the high bits, all entries at or above a tier form a
-    /// contiguous prefix, and the helper returns that prefix length.
+    /// The prefix-length helper returns the run of entries at or above a tier, which works because
+    /// the array is sorted descending by packed score and the tier sits in the high bits.
     /// </summary>
     [TestMethod]
     public void HighConfidenceAppPrefixLength_CountsLeadingHighTierEntries()
@@ -309,11 +290,9 @@ public sealed partial class EarlyFrameRelevanceTests
     }
 
     /// <summary>
-    /// FIX #2 guardrail: the gate decision is driven entirely by the length it is handed - the query
-    /// length PUBLISHED atomically with the app array - not by any later value. Feeding the published
-    /// short length (2) withholds the fuzzy tail even though a longer length would pass it through,
-    /// which is exactly why MainListPage gates on the published _filteredAppsQueryLength rather than
-    /// the live SearchText the UI thread may already have advanced past on a 2-to-3 char transition.
+    /// The gate decides on the length it's handed, the one published with the array, not on
+    /// anything read later. That's why MainListPage gates on _filteredAppsQueryLength instead of
+    /// the live SearchText.
     /// </summary>
     [TestMethod]
     public void Gate_DecidesOnSuppliedPublishedLength_NotLiveText()
@@ -323,20 +302,19 @@ public sealed partial class EarlyFrameRelevanceTests
 
         var scored = new[] { Fuzzy(30), Fuzzy(20), Fuzzy(10) };
 
-        // Published length 2 (the query that produced this array is still ultra-short): withhold.
+        // The query that produced this array is still short, so withhold.
         var gatedByPublished = MainListPage.ApplyShortQueryAppGate(scored, queryLength: 2);
         Assert.IsNotNull(gatedByPublished);
         Assert.AreEqual(0, gatedByPublished!.Count, "Gating on the published short length (2) must withhold the fuzzy tail.");
 
-        // The SAME array gated on a longer length passes through, so gating on a stale/live longer
-        // length would wrongly expose the tail. That is the regression Fix #2 prevents.
+        // The same array with a longer length passes through, which is the regression a stale
+        // length would cause.
         Assert.AreSame(scored, MainListPage.ApplyShortQueryAppGate(scored, queryLength: 5), "A longer length would pass the tail through, proving the supplied length is what decides.");
     }
 
     /// <summary>
-    /// FIX #3 guardrail: the settled-search telemetry count reflects the GATED visible apps for an
-    /// ultra-short query, not the full ungated app array. For a discriminating query it is the full
-    /// (capped) count. This keeps the reported result count consistent with what the user is shown.
+    /// Telemetry counts the gated visible apps on a short query and the full capped set on a longer
+    /// one, so the reported count matches what you're actually looking at.
     /// </summary>
     [TestMethod]
     public void GatedVisibleAppCount_ShortQuery_CountsOnlyGatedApps()
@@ -351,26 +329,25 @@ public sealed partial class EarlyFrameRelevanceTests
 
         const int NoCap = 1000;
 
-        // Ultra-short published length: only the confident head is counted.
+        // Short published length: only the confident head is counted.
         Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 1, appResultLimit: NoCap));
         Assert.AreEqual(confident, MainListPage.GatedVisibleAppCount(scored, queryLength: 2, appResultLimit: NoCap));
 
-        // Discriminating published length: the full set (capped) is counted.
+        // Longer published length: the full set (capped) is counted.
         Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 3, appResultLimit: NoCap));
         Assert.AreEqual(full, MainListPage.GatedVisibleAppCount(scored, queryLength: 0, appResultLimit: NoCap), "A zero-length (default view) count is ungated.");
     }
 
     /// <summary>
-    /// FIX #3: the gated visible count is still capped by the app result limit, a fuzzy-only
-    /// ultra-short query reports zero visible apps (its whole tail is withheld), and null/empty
-    /// inputs report zero.
+    /// The gated count still respects the app result limit, reports zero when a short query's whole
+    /// tail is withheld, and reports zero for null or empty input.
     /// </summary>
     [TestMethod]
     public void GatedVisibleAppCount_RespectsCap_AndZeroForWithheldOrEmpty()
     {
         var matcher = CreateMatcher();
 
-        // Fuzzy-only ultra-short query: nothing confident, so the gated count is zero.
+        // Nothing confident here, so the gated count is zero.
         var fuzzyOnly = Score(BuildFuzzyOnlyCatalogForX(), "x", new RecentCommandsManager(), matcher);
         Assert.IsTrue(fuzzyOnly.Length > 0, "Precondition: 'x' matches fuzzily.");
         Assert.AreEqual(0, MainListPage.GatedVisibleAppCount(fuzzyOnly, queryLength: 1, appResultLimit: 1000));
