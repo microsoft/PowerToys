@@ -133,6 +133,102 @@ concurrent atomic writes; prompt stop cancellation; restart persistence;
 protected DACL/direct-write and TestArtifacts child-creation checks; and
 non-destructive cleanup preflight.
 
+## What 13/13 PASS means
+
+`13/13` means thirteen named end-to-end integration cases passed in one
+`Harness.ps1 -Action All` run. It does **not** mean thirteen Windows versions,
+thirteen machines, fuzz coverage, or compatibility with thirteen released
+PowerToys binaries.
+
+`-Action All` performs the following real machine operations:
+
+1. Builds all four executables as `Release|x64`.
+2. Copies them into a protected ProgramData directory.
+3. Creates and starts one real SCM service under
+   `NT SERVICE\PTSettingsBrokerPrototype`.
+4. Creates two real standard local accounts with random passwords.
+5. Starts client processes under those two account credentials with their
+   profiles loaded.
+6. Executes each case below. A case is PASS only if every explicit assertion
+   succeeds; any failed assertion makes the harness return nonzero.
+7. In `finally`, removes only resources tracked as created by this invocation.
+
+| # | Case | Operation and PASS condition | What it establishes |
+|---:|---|---|---|
+| 1 | Both users ping one singleton | Both accounts Ping; each client verifies the pipe server PID equals the one RUNNING SCM service PID | Both users reached the same genuine singleton, not a squatted pipe |
+| 2 | User A roundtrip | A Put/Get target 1 and receives byte-identical data | Basic authenticated storage works |
+| 3 | Per-user isolation | B initially gets NotFound, writes its own value, and A's value remains unchanged | Store partition key comes from the caller token SID |
+| 4 | Executable-to-target confinement | Cross-module target requests, unknown client, and an allowed basename copied into a user-writable non-Bin directory are rejected | Caller binding and trusted-path checks prevent namespace selection and basename spoofing |
+| 5 | Protocol window | 1.0 and 1.1 Ping succeed; 1.0 gets no capabilities; 1.1 gets the expected bits; 1.2 receives UnsupportedMinor | Explicit protocol negotiation works without inferring compatibility from product version |
+| 6 | Malformed/oversized frame | Bad magic receives BadRequest; declared payload over 1 MiB receives PayloadTooLarge | Invalid framing and memory-amplification input are rejected before dispatch/allocation |
+| 7 | Pipe-instance denial | A standard user calls CreateNamedPipe for the fixed name and receives ERROR_ACCESS_DENIED | Client data rights do not accidentally include FILE_CREATE_PIPE_INSTANCE |
+| 8 | Slow response readers | A stores 900 KB; two A clients delay response reads and retain A's two quota slots; B Ping stays under 3 seconds; third A fails quickly | Slow readers cannot release quota early and consume every global worker |
+| 9 | Concurrent atomic writes | Two 256 KiB patterned payloads write concurrently; final SHA-256 exactly equals one complete input | Readers never observe a mixed/truncated whole-file result; semantics are last-writer-wins |
+| 10 | Stalled request and stop | Two A clients send only a partial header; Stop-Service completes under 3 seconds (observed about 8 ms) | Pending overlapped reads observe stop, cancel, and do not trap SCM in STOP_PENDING |
+| 11 | Restart persistence | After the stop/start cycle, A and B still read their own expected blobs | SID-partitioned data is persistent, not process-memory state |
+| 12 | Identity and DACLs | Service account/SID type and protected ACLs match expectations; ordinary user cannot write Store or create file/directory/junction children under TestArtifacts | Sole-writer ACL and reparse-safe cleanup precondition hold |
+| 13 | Cleanup preflight | Exact root/sentinel, invocation ID, protected state, service StartName/binPath, and recorded account SIDs validate; no resource is deleted by preflight | Cleanup refuses unowned or changed resources before destructive work |
+
+Case 13 validates the non-destructive ownership gate. The actual deletion occurs
+after the matrix in `All`'s `finally`; the completed run additionally verified
+that the service, both accounts, and the exact ProgramData prototype root were
+absent afterward.
+
+### Protocol compatibility: major, minor, and capabilities
+
+The PowerToys product version is not the wire contract. An arithmetic rule such
+as "accept callers within N releases" cannot tell whether two binaries encode
+the same request semantics, and it can accidentally keep a known-vulnerable
+caller inside the allowed window.
+
+The prototype separates three decisions:
+
+- **Major** identifies a breaking wire/semantic contract. A service speaking
+  major 1 does not guess how to process major 2.
+- **Minor** identifies explicitly supported backward-compatible additions.
+  This service advertises a concrete supported range, 0 through 1.
+- **Capabilities** are response bits for optional behavior. A client only uses
+  a feature when the server reports the corresponding bit.
+
+For the prototype:
+
+```text
+request 1.0 -> accepted, capabilities = 0
+request 1.1 -> accepted, capabilities = multi-target | per-user-quota
+request 1.2 -> UnsupportedMinor
+```
+
+The harness changes the protocol fields emitted by the prototype client. It
+validates the negotiation implementation; it is not a substitute for later
+testing with actual independently built old/new product binaries. Production
+still needs a separate signed-binary identity check, minimum-secure-build
+policy, and anti-rollback policy.
+
+### Why quota, bounded I/O, and response ACK are all needed
+
+The broker has eight fixed workers. Without additional controls, one local user
+could occupy all eight and deny settings access to every other signed-in user.
+
+- **Per-SID quota:** after obtaining the real token SID, the server allows at
+  most two active connections for that SID. One user can therefore consume two
+  workers, not all eight. The quota is keyed by the token SID, not a request
+  field.
+- **Bounded I/O:** every pipe read/write has one five-second deadline. It uses
+  overlapped I/O and waits on both completion and the service stop event.
+  Timeout/stop calls `CancelIoEx`; cancellation itself has a one-second bound.
+  The client uses bounded overlapped I/O too, so a fake or hung server cannot
+  block it indefinitely.
+- **Response ACK:** after reading the complete response, the client sends
+  `0xA5`. The server holds the SID quota until that ACK arrives or times out.
+  Therefore a client that sends a valid request but refuses to consume a large
+  response remains charged to its SID. This also avoids an unbounded
+  `FlushFileBuffers` wait on a named pipe.
+
+These controls bound the tested slow-request and slow-response cases. They do
+not prove immunity to every local DoS strategy: many distinct local SIDs,
+expensive future authentication work, CPU exhaustion, handle pressure, or
+implementation bugs still require a broader product threat model.
+
 ## Security properties validated by this prototype
 
 - Machine-wide singleton and intentionally machine-wide service blast radius.
