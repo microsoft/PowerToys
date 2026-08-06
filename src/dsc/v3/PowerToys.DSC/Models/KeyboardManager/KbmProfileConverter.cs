@@ -63,6 +63,10 @@ public static class KbmProfileConverter
             {
                 errors.Add($"{context}.from: 'Disable' cannot be remapped");
             }
+            else if (from.Keys[0] is 16 or 17 or 18 or KbmKeyNames.VkWinBoth)
+            {
+                errors.Add($"{context}.from: generic modifiers must use a left or right variant");
+            }
             else if (!seenKeys.Add(from.Keys[0]))
             {
                 errors.Add($"{context}.from: key '{KbmKeyNames.GetName(from.Keys[0])}' is remapped more than once");
@@ -187,7 +191,6 @@ public static class KbmProfileConverter
             var app = NormalizeTargetApp(entry.TargetApp);
             var stored = app != null ? new AppSpecificKeysDataModel { TargetApp = app } : new KeysDataModel();
             stored.OriginalKeys = from.ToVkString();
-            stored.SecondKeyOfChord = from.SecondKeyOfChord;
             stored.ExactMatch = entry.ExactMatch ?? false;
 
             var isText = false;
@@ -216,7 +219,12 @@ public static class KbmProfileConverter
             }
             else
             {
-                stored.NewRemapKeys = ParseTargetOrThrow(entry.To!).ToVkString();
+                var target = ParseTargetOrThrow(entry.To!);
+                stored.NewRemapKeys = target.ToVkString();
+                if (!target.IsSingleKey)
+                {
+                    stored.OperationType = OperationTypeRemapShortcut;
+                }
             }
 
             var section = isText ? profile.RemapShortcutsToText : profile.RemapShortcuts;
@@ -400,10 +408,19 @@ public static class KbmProfileConverter
             from = new KbmShortcutParser.ParsedKeys(from.Keys, from.Keys[^1]);
         }
 
+        // Preserve the engine's exact process scope. It lower-cases stored app
+        // names but does not trim them, so exporting a whitespace-padded name
+        // as a trimmed name would activate the remap for a different process.
+        if (app != null && app != app.Trim())
+        {
+            warnings?.Add($"Skipping app-specific shortcut remap entry '{stored.OriginalKeys}' with surrounding whitespace in its target application");
+            return null;
+        }
+
         return new KbmShortcutRemapEntry
         {
             From = KbmShortcutParser.Format(KbmShortcutParser.Canonicalize(from)),
-            TargetApp = NormalizeTargetApp(app),
+            TargetApp = app?.ToLowerInvariant(),
             ExactMatch = stored.ExactMatch == true ? true : null,
         };
     }
