@@ -8,11 +8,10 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Core;
 
-using SystemThread = System.Threading.Thread;
-
 namespace MouseWithoutBorders.UnitTests.Core;
 
 [TestClass]
+[DoNotParallelize]
 public sealed class ReceivedDestinationFileTests
 {
     [TestMethod]
@@ -84,28 +83,88 @@ public sealed class ReceivedDestinationFileTests
     }
 
     [TestMethod]
-    public void SecondReceiveIsRejectedWhenFirstDoesNotFinishWithinWaitTimeout()
+    public async Task SequentialClipboardReceivesAreAcceptedAfterPriorTransferCompletes()
+    {
+        using var firstTransferCompleted = new ManualResetEventSlim();
+        using var allowFirstWorkerToFinish = new ManualResetEventSlim();
+        var firstReceive = Task.Run(() =>
+        {
+            var accepted = Clipboard.ExecuteClipboardReceive(() => { }, waitMilliseconds: 1000);
+            firstTransferCompleted.Set();
+            allowFirstWorkerToFinish.Wait();
+            return accepted;
+        });
+
+        Assert.IsTrue(firstTransferCompleted.Wait(millisecondsTimeout: 1000));
+
+        try
+        {
+            var secondReceiveAccepted = await Task.Run(() => Clipboard.ExecuteClipboardReceive(
+                () => { },
+                waitMilliseconds: 1000));
+
+            Assert.IsTrue(secondReceiveAccepted);
+        }
+        finally
+        {
+            allowFirstWorkerToFinish.Set();
+            Assert.IsTrue(await firstReceive);
+        }
+    }
+
+    [TestMethod]
+    public async Task OverlappingClipboardReceiveIsRejectedWithoutRunningSecondCallback()
     {
         using var firstReceiveStarted = new ManualResetEventSlim();
         using var allowFirstReceiveToFinish = new ManualResetEventSlim();
-        var firstReceiveThread = new SystemThread(() =>
-        {
-            firstReceiveStarted.Set();
-            allowFirstReceiveToFinish.Wait();
-        });
+        var firstReceive = Task.Run(
+            () => Clipboard.ExecuteClipboardReceive(
+                () =>
+                {
+                    firstReceiveStarted.Set();
+                    allowFirstReceiveToFinish.Wait();
+                },
+                waitMilliseconds: 1000));
 
-        firstReceiveThread.Start();
         Assert.IsTrue(firstReceiveStarted.Wait(millisecondsTimeout: 1000));
 
         try
         {
-            Assert.IsFalse(Clipboard.CanStartClipboardReceive(firstReceiveThread, SystemThread.CurrentThread, waitMilliseconds: 1));
+            var secondCallbackRan = false;
+            var secondReceiveAccepted = await Task.Run(() => Clipboard.ExecuteClipboardReceive(
+                () => secondCallbackRan = true,
+                waitMilliseconds: 1));
+
+            Assert.IsFalse(secondReceiveAccepted);
+            Assert.IsFalse(secondCallbackRan);
         }
         finally
         {
             allowFirstReceiveToFinish.Set();
-            Assert.IsTrue(firstReceiveThread.Join(millisecondsTimeout: 1000));
+            Assert.IsTrue(await firstReceive);
         }
+    }
+
+    [TestMethod]
+    public void ClipboardReceiveGateIsReleasedAfterCallbackException()
+    {
+        _ = Assert.ThrowsException<InvalidOperationException>(() => Clipboard.ExecuteClipboardReceive(
+            () => throw new InvalidOperationException(),
+            waitMilliseconds: 1000));
+
+        Assert.IsTrue(Clipboard.ExecuteClipboardReceive(() => { }, waitMilliseconds: 1000));
+    }
+
+    [TestMethod]
+    public void ClipboardReceiveGateIsReleasedAfterCallbackReturnsEarly()
+    {
+        static void ReturnEarly()
+        {
+            return;
+        }
+
+        Assert.IsTrue(Clipboard.ExecuteClipboardReceive(ReturnEarly, waitMilliseconds: 1000));
+        Assert.IsTrue(Clipboard.ExecuteClipboardReceive(() => { }, waitMilliseconds: 1000));
     }
 
     [TestMethod]

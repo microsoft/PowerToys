@@ -372,8 +372,7 @@ internal static class Clipboard
         }
     }
 
-    private static readonly Lock ClipboardThreadOldLock = new();
-    private static System.Threading.Thread clipboardThreadOld;
+    private static readonly SemaphoreSlim ClipboardReceiveGate = new(initialCount: 1, maxCount: 1);
 
     internal static void GetRemoteClipboard(string postAction)
     {
@@ -487,18 +486,17 @@ internal static class Clipboard
 
     internal static void ReceiveAndProcessClipboardData(string remoteMachine, Socket s, Stream enStream, Stream deStream, string postAct)
     {
-        lock (ClipboardThreadOldLock)
+        if (!ExecuteClipboardReceive(
+                () => ReceiveAndProcessClipboardDataCore(remoteMachine, s, enStream, deStream, postAct),
+                waitMilliseconds: 3000))
         {
-            if (!CanStartClipboardReceive(clipboardThreadOld, Thread.CurrentThread, 3000))
-            {
-                Logger.Log("Rejecting clipboard transfer because the previous transfer is still active.");
-                s.Close();
-                return;
-            }
-
-            clipboardThreadOld = Thread.CurrentThread;
+            Logger.Log("Rejecting clipboard transfer because the previous transfer is still active.");
+            s.Close();
         }
+    }
 
+    private static void ReceiveAndProcessClipboardDataCore(string remoteMachine, Socket s, Stream enStream, Stream deStream, string postAct)
+    {
         ReceivedDestinationFile destinationFile = null;
         Stream m = null;
 
@@ -924,14 +922,22 @@ internal static class Clipboard
         s.Close();
     }
 
-    internal static bool CanStartClipboardReceive(System.Threading.Thread previousReceiveThread, System.Threading.Thread currentReceiveThread, int waitMilliseconds)
+    internal static bool ExecuteClipboardReceive(Action receiveAction, int waitMilliseconds)
     {
-        return previousReceiveThread == null ||
-            previousReceiveThread.ThreadState == System.Threading.ThreadState.AbortRequested ||
-            previousReceiveThread.ThreadState == System.Threading.ThreadState.Aborted ||
-            !previousReceiveThread.IsAlive ||
-            previousReceiveThread.ManagedThreadId == currentReceiveThread.ManagedThreadId ||
-            previousReceiveThread.Join(waitMilliseconds);
+        if (!ClipboardReceiveGate.Wait(waitMilliseconds))
+        {
+            return false;
+        }
+
+        try
+        {
+            receiveAction();
+            return true;
+        }
+        finally
+        {
+            ClipboardReceiveGate.Release();
+        }
     }
 
     internal static bool HasExpectedReceivedDataLength(Stream destination, long expectedLength)
