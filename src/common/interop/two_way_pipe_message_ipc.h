@@ -11,6 +11,7 @@ namespace two_way_pipe_message_ipc_test
     void SetBeforeReplacementListenerEvents(HANDLE reached_event, HANDLE allow_creation_event);
     void SetAfterReplacementListenerEvents(HANDLE reached_event, HANDLE allow_continue_event);
     void FailHandlerThreadStartAfter(int successful_starts);
+    void SetOutputWritePendingEvent(HANDLE event);
     void ResetFaultInjection();
 }
 #endif

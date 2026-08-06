@@ -50,6 +50,7 @@ namespace
     std::atomic<HANDLE> after_replacement_listener_event{ nullptr };
     std::atomic<HANDLE> allow_after_replacement_listener_event{ nullptr };
     std::atomic_int handler_thread_start_failure_after{ -1 };
+    std::atomic<HANDLE> output_write_pending_event{ nullptr };
 
     void inject_thread_start_failure()
     {
@@ -123,6 +124,11 @@ namespace two_way_pipe_message_ipc_test
         handler_thread_start_failure_after.store(successful_starts);
     }
 
+    void SetOutputWritePendingEvent(HANDLE event)
+    {
+        output_write_pending_event.store(event);
+    }
+
     void ResetFaultInjection()
     {
         thread_start_failure_after.store(-1);
@@ -134,6 +140,7 @@ namespace two_way_pipe_message_ipc_test
         after_replacement_listener_event.store(nullptr);
         allow_after_replacement_listener_event.store(nullptr);
         handler_thread_start_failure_after.store(-1);
+        output_write_pending_event.store(nullptr);
     }
 }
 #else
@@ -306,6 +313,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
         input_queue_thread.join();
     }
     output_queue.interrupt();
+    cancel_active_output_io();
     if (output_queue_thread.joinable())
     {
         output_queue_thread.join();
@@ -330,31 +338,38 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
     }
 }
 
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::cancel_active_output_io()
+{
+    std::scoped_lock lock(output_pipe_mutex);
+    if (active_output_pipe_handle != INVALID_HANDLE_VALUE)
+    {
+        CancelIoEx(active_output_pipe_handle, nullptr);
+    }
+}
+
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
 {
     // Adapted from https://learn.microsoft.com/windows/win32/ipc/named-pipe-client
-    HANDLE output_pipe_handle = INVALID_HANDLE_VALUE;
     const wchar_t* message_send = message.c_str();
-    BOOL fSuccess = FALSE;
-    DWORD cbToWrite, cbWritten, dwMode;
     const wchar_t* lpszPipename = output_pipe_name.c_str();
+    OwnedPipeHandle output_pipe;
 
     // Try to open a named pipe; wait for it, if necessary.
 
     while (!closed.load())
     {
-        output_pipe_handle = CreateFile(
+        output_pipe.reset(CreateFile(
             lpszPipename, // pipe name
             PipeClientAccess,
             0, // no sharing
             NULL, // default security attributes
             OPEN_EXISTING, // opens existing pipe
-            0, // default attributes
-            NULL); // no template file
+            FILE_FLAG_OVERLAPPED,
+            NULL)); // no template file
 
         // Break if the pipe handle is valid.
 
-        if (output_pipe_handle != INVALID_HANDLE_VALUE)
+        if (output_pipe.valid())
             break;
 
         // Exit if an error other than ERROR_PIPE_BUSY occurs.
@@ -377,38 +392,78 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
             return;
         }
     }
-    if (closed.load() || output_pipe_handle == INVALID_HANDLE_VALUE)
+    if (closed.load() || !output_pipe.valid())
     {
         return;
     }
 
-    dwMode = PIPE_READMODE_MESSAGE;
-    fSuccess = SetNamedPipeHandleState(
-        output_pipe_handle, // pipe handle
+    const HANDLE output_pipe_handle = output_pipe.get();
+    const auto clear_active_output_pipe = [&]() {
+        std::scoped_lock lock(output_pipe_mutex);
+        if (active_output_pipe_handle == output_pipe_handle)
+        {
+            active_output_pipe_handle = INVALID_HANDLE_VALUE;
+        }
+    };
+
+    DWORD dwMode = PIPE_READMODE_MESSAGE;
+    if (!SetNamedPipeHandleState(
+        output_pipe_handle,
         &dwMode, // new pipe mode
         NULL, // don't set maximum bytes
-        NULL); // don't set maximum time
-    if (!fSuccess)
+        NULL)) // don't set maximum time
+    {
+        clear_active_output_pipe();
+        return;
+    }
+
+    HANDLE write_complete_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    if (!write_complete_event)
     {
         return;
     }
 
-    // Send a message to the pipe server.
-
-    cbToWrite = (lstrlen(message_send)) * sizeof(WCHAR); // no need to send final '\0'. Pipe is in message mode.
-
-    fSuccess = WriteFile(
-        output_pipe_handle, // pipe handle
-        message_send, // message
-        cbToWrite, // message length
-        &cbWritten, // bytes written
-        NULL); // not overlapped
-    if (!fSuccess)
+    OVERLAPPED write_overlapped{};
+    write_overlapped.hEvent = write_complete_event;
+    DWORD bytes_written = 0;
+    const DWORD bytes_to_write = (lstrlen(message_send)) * sizeof(WCHAR);
+    BOOL write_succeeded = FALSE;
     {
-        return;
+        // Begin the overlapped write while holding the same mutex end() uses for
+        // cancellation. This closes the check-to-write race where shutdown could
+        // otherwise cancel before the write was issued.
+        std::scoped_lock lock(output_pipe_mutex);
+        if (closed.load())
+        {
+            CloseHandle(write_complete_event);
+            return;
+        }
+        active_output_pipe_handle = output_pipe_handle;
+        write_succeeded = WriteFile(output_pipe_handle,
+                                    message_send,
+                                    bytes_to_write,
+                                    &bytes_written,
+                                    &write_overlapped);
     }
-    CloseHandle(output_pipe_handle);
-    return;
+    if (!write_succeeded)
+    {
+        if (GetLastError() != ERROR_IO_PENDING)
+        {
+            CloseHandle(write_complete_event);
+            clear_active_output_pipe();
+            return;
+        }
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+        if (const HANDLE pending_event = output_write_pending_event.load())
+        {
+            SetEvent(pending_event);
+        }
+#endif
+        GetOverlappedResult(output_pipe_handle, &write_overlapped, &bytes_written, TRUE);
+    }
+
+    CloseHandle(write_complete_event);
+    clear_active_output_pipe();
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread()

@@ -129,11 +129,13 @@ private:
     std::condition_variable lifecycle_stopped;
     LifecycleState lifecycle_state = LifecycleState::NotStarted;
     std::mutex pipe_connect_handle_mutex; // For manipulating the current_connect_pipe
+    std::mutex output_pipe_mutex;
     std::mutex connection_handlers_mutex;
     std::vector<std::shared_ptr<ConnectionHandler>> connection_handlers;
     std::wstring outgoing_message; // Store the updated json settings.
 
     HANDLE current_connect_pipe_handle = NULL;
+    HANDLE active_output_pipe_handle = INVALID_HANDLE_VALUE;
     HANDLE pipe_security_token = nullptr;
     std::atomic_bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
@@ -147,6 +149,7 @@ private:
     bool create_pipe_security_attributes(HANDLE token, PipeSecurityAttributes& security_attributes);
     void start_threads(HANDLE token);
     void stop_started_threads();
+    void cancel_active_output_io();
     HANDLE create_medium_integrity_token();
     void handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler);
     void finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler);

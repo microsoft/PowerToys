@@ -400,6 +400,56 @@ namespace UnitTestsCommonUtils
             }
         };
 
+        struct NonReadingPipePeer
+        {
+            std::wstring name = UniquePipeName();
+            HANDLE server = INVALID_HANDLE_VALUE;
+            HANDLE connected = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            std::thread accept_thread;
+
+            ~NonReadingPipePeer()
+            {
+                if (server != INVALID_HANDLE_VALUE)
+                {
+                    DisconnectNamedPipe(server);
+                    CloseHandle(server);
+                }
+                if (accept_thread.joinable())
+                {
+                    accept_thread.join();
+                }
+                if (connected)
+                {
+                    CloseHandle(connected);
+                }
+            }
+
+            bool Start()
+            {
+                server = CreateNamedPipeW(name.c_str(),
+                                          PIPE_ACCESS_DUPLEX,
+                                          PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                          1,
+                                          1,
+                                          1,
+                                          0,
+                                          nullptr);
+                if (server == INVALID_HANDLE_VALUE)
+                {
+                    return false;
+                }
+
+                accept_thread = std::thread([this]() {
+                    const BOOL accepted = ConnectNamedPipe(server, nullptr) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+                    if (accepted)
+                    {
+                        SetEvent(connected);
+                    }
+                });
+                return true;
+            }
+        };
+
         struct BlockedRejectedConnection
         {
             HANDLE client = INVALID_HANDLE_VALUE;
@@ -1057,6 +1107,45 @@ namespace UnitTestsCommonUtils
             CloseHandle(wait_entered);
             Assert::IsTrue(elapsed.count() < 1'000,
                            L"end waited too long for an unavailable output pipe");
+        }
+
+        TEST_METHOD(DestructorCancelsPendingOutputWrite)
+        {
+            FaultInjectionReset reset;
+            NonReadingPipePeer peer;
+            Assert::IsTrue(peer.Start(), L"failed to create the non-reading output peer");
+
+            HANDLE write_pending = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE destructor_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(write_pending);
+            Assert::IsNotNull(destructor_finished);
+            two_way_pipe_message_ipc_test::SetOutputWritePendingEvent(write_pending);
+
+            auto server = std::make_unique<TwoWayPipeMessageIPC>(UniquePipeName(), peer.name, nullptr);
+            server->start(nullptr);
+            server->send(std::wstring(512 * 1024, L'x'));
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(write_pending, 5'000),
+                             L"the output write did not become pending against the non-reading peer");
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(peer.connected, 5'000),
+                             L"the output peer did not accept the connection");
+            peer.accept_thread.join();
+
+            const auto start = std::chrono::steady_clock::now();
+            std::thread destroyer([&]() {
+                server.reset();
+                SetEvent(destructor_finished);
+            });
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(destructor_finished, 1'000),
+                             L"destruction did not cancel the pending output write");
+            const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - start);
+
+            destroyer.join();
+            two_way_pipe_message_ipc_test::SetOutputWritePendingEvent(nullptr);
+            CloseHandle(write_pending);
+            CloseHandle(destructor_finished);
+            Assert::IsTrue(elapsed.count() < 1'000,
+                           L"destruction waited too long for the non-reading output peer");
         }
     };
 }
