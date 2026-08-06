@@ -58,6 +58,13 @@ namespace Awake.Core
         private static readonly CompositeFormat AwakeHour = CompositeFormat.Parse(Resources.AWAKE_HOUR);
         private static readonly CompositeFormat AwakeHours = CompositeFormat.Parse(Resources.AWAKE_HOURS);
         private static readonly BlockingCollection<ExecutionState> _stateQueue;
+
+        // Serializes shared awake-state mutations and _stateQueue writes so that OnSessionSwitch
+        // (raised on the SystemEvents thread) and the timer callbacks cannot interleave with the
+        // Set* / CancelExistingThread compute-and-enqueue sequences. Reentrant (Monitor), so a
+        // caller that already holds it may call into another guarded method.
+        private static readonly Lock StateLock = new();
+
         private static CancellationTokenSource _monitorTokenSource;
         private static IDisposable? _timerSubscription;
 
@@ -66,6 +73,7 @@ namespace Awake.Core
             _monitorTokenSource = new CancellationTokenSource();
             _stateQueue = [];
             ModuleSettings = SettingsUtils.Default;
+            IsScreenLocked = SessionStateDetector.IsWorkstationLocked();
             SystemEvents.SessionSwitch += OnSessionSwitch;
         }
 
@@ -85,7 +93,11 @@ namespace Awake.Core
                         if (!SetAwakeState(state))
                         {
                             Logger.LogError($"Failed to set execution state to {state}. Reverting to passive mode.");
-                            CurrentOperatingMode = AwakeMode.PASSIVE;
+                            lock (StateLock)
+                            {
+                                CurrentOperatingMode = AwakeMode.PASSIVE;
+                            }
+
                             SetModeShellIcon();
                         }
                     }
@@ -154,24 +166,32 @@ namespace Awake.Core
         /// </summary>
         internal static void ReapplyAwakeState()
         {
-            if (CurrentOperatingMode == AwakeMode.PASSIVE)
+            lock (StateLock)
             {
-                // No need to reapply in passive mode
-                return;
-            }
+                if (CurrentOperatingMode == AwakeMode.PASSIVE)
+                {
+                    // No need to reapply in passive mode
+                    return;
+                }
 
-            Logger.LogInfo($"Power event received. Reapplying awake state for mode: {CurrentOperatingMode}");
-            _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+                Logger.LogInfo($"Power event received. Reapplying awake state for mode: {CurrentOperatingMode}");
+                _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+            }
         }
 
         internal static void CancelExistingThread()
         {
             Logger.LogInfo("Canceling existing timer and resetting state...");
 
-            // Reset the thread state.
-            _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
+            // Reset the thread state. Kept under _stateLock so the ES_CONTINUOUS reset cannot
+            // interleave between a concurrent OnSessionSwitch / Set* compute-and-enqueue.
+            lock (StateLock)
+            {
+                _stateQueue.Add(ExecutionState.ES_CONTINUOUS);
+            }
 
-            // Dispose the timer subscription to stop any running timer.
+            // Dispose the timer subscription to stop any running timer. Deliberately kept outside
+            // _stateLock to avoid holding the lock across Dispose (called from timer callbacks).
             _timerSubscription?.Dispose();
             _timerSubscription = null;
 
@@ -250,11 +270,14 @@ namespace Awake.Core
 
             Logger.LogInfo($"Indefinite keep-awake starting, invoked by {callerName}...");
 
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+            lock (StateLock)
+            {
+                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            IsDisplayOn = keepDisplayOn;
-            CurrentOperatingMode = AwakeMode.INDEFINITE;
-            ProcessId = processId;
+                IsDisplayOn = keepDisplayOn;
+                CurrentOperatingMode = AwakeMode.INDEFINITE;
+                ProcessId = processId;
+            }
 
             SetModeShellIcon();
         }
@@ -303,11 +326,15 @@ namespace Awake.Core
             }
 
             Logger.LogInfo($"Starting expirable log for {expireAt}");
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            IsDisplayOn = keepDisplayOn;
-            CurrentOperatingMode = AwakeMode.EXPIRABLE;
-            ExpireAt = expireAt;
+            lock (StateLock)
+            {
+                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+
+                IsDisplayOn = keepDisplayOn;
+                CurrentOperatingMode = AwakeMode.EXPIRABLE;
+                ExpireAt = expireAt;
+            }
 
             SetModeShellIcon();
 
@@ -361,10 +388,13 @@ namespace Awake.Core
 
             Logger.LogInfo($"Timed keep-awake starting...");
 
-            _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
+            lock (StateLock)
+            {
+                _stateQueue.Add(ComputeAwakeState(keepDisplayOn));
 
-            IsDisplayOn = keepDisplayOn;
-            CurrentOperatingMode = AwakeMode.TIMED;
+                IsDisplayOn = keepDisplayOn;
+                CurrentOperatingMode = AwakeMode.TIMED;
+            }
 
             SetModeShellIcon();
 
@@ -521,7 +551,10 @@ namespace Awake.Core
 
             Logger.LogInfo($"Passive keep-awake starting...");
 
-            CurrentOperatingMode = AwakeMode.PASSIVE;
+            lock (StateLock)
+            {
+                CurrentOperatingMode = AwakeMode.PASSIVE;
+            }
 
             SetModeShellIcon();
         }
@@ -543,11 +576,14 @@ namespace Awake.Core
                     // This preserves the existing timer Observable subscription and targetExpiryTime
                     if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
                     {
-                        // Update internal state
-                        IsDisplayOn = currentSettings.Properties.KeepDisplayOn;
+                        lock (StateLock)
+                        {
+                            // Update internal state
+                            IsDisplayOn = currentSettings.Properties.KeepDisplayOn;
 
-                        // Update execution state without canceling timer
-                        _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+                            // Update execution state without canceling timer
+                            _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+                        }
 
                         // Save settings - ProcessSettings will skip reinitialization
                         // since we're already in TIMED mode
@@ -567,16 +603,19 @@ namespace Awake.Core
 
         private static void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
         {
-            if (e.Reason == SessionSwitchReason.SessionLock)
+            lock (StateLock)
             {
-                IsScreenLocked = true;
-            }
-            else if (e.Reason == SessionSwitchReason.SessionUnlock)
-            {
-                IsScreenLocked = false;
-            }
+                if (e.Reason == SessionSwitchReason.SessionLock)
+                {
+                    IsScreenLocked = true;
+                }
+                else if (e.Reason == SessionSwitchReason.SessionUnlock)
+                {
+                    IsScreenLocked = false;
+                }
 
-            ReapplyAwakeState();
+                ReapplyAwakeState();
+            }
         }
 
         public static Process? GetParentProcess()
