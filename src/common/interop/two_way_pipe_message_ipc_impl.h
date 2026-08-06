@@ -1,11 +1,13 @@
 #pragma once
 #include <atomic>
+#include <condition_variable>
+#include <memory>
 #include <Windows.h>
 #include "async_message_queue.h"
 #include <WinSafer.h>
 #include <accctrl.h>
 #include <aclapi.h>
-#include <list>
+#include <vector>
 #include "two_way_pipe_message_ipc.h"
 
 class TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl
@@ -18,6 +20,24 @@ public:
     void end();
 
 private:
+    struct ConnectionHandler
+    {
+        explicit ConnectionHandler(HANDLE pipe) :
+            pipe_handle(pipe)
+        {
+        }
+
+        HANDLE pipe_handle = INVALID_HANDLE_VALUE;
+    };
+
+    enum class LifecycleState
+    {
+        NotStarted,
+        Running,
+        Stopping,
+        Stopped,
+    };
+
     AsyncMessageQueue input_queue;
     AsyncMessageQueue output_queue;
     std::wstring output_pipe_name;
@@ -25,7 +45,13 @@ private:
     std::thread input_queue_thread;
     std::thread output_queue_thread;
     std::thread input_pipe_thread;
+    std::mutex lifecycle_mutex;
+    std::condition_variable lifecycle_stopped;
+    LifecycleState lifecycle_state = LifecycleState::NotStarted;
     std::mutex pipe_connect_handle_mutex; // For manipulating the current_connect_pipe
+    std::mutex connection_handlers_mutex;
+    std::condition_variable connection_handlers_finished;
+    std::vector<std::shared_ptr<ConnectionHandler>> connection_handlers;
     std::wstring outgoing_message; // Store the updated json settings.
 
     HANDLE current_connect_pipe_handle = NULL;
@@ -40,7 +66,9 @@ private:
     VOID FreeLogonSID(PSID* ppsid);
     int change_pipe_security_allow_restricted_token(HANDLE handle, HANDLE token);
     HANDLE create_medium_integrity_token();
-    void handle_pipe_connection(HANDLE input_pipe_handle);
+    void handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler);
+    void finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler);
+    void cancel_and_wait_for_connection_handlers();
     void start_named_pipe_server(HANDLE token);
     void consume_input_queue_thread();
 };

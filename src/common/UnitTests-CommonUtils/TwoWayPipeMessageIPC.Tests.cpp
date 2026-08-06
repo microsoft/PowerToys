@@ -1,7 +1,9 @@
 #include "pch.h"
 
 #include <interop/two_way_pipe_message_ipc.h>
+#include <aclapi.h>
 
+#include <memory>
 #include <thread>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -10,6 +12,15 @@ namespace UnitTestsCommonUtils
 {
     namespace
     {
+        constexpr DWORD PipeClientAccess = FILE_READ_DATA |
+                                           FILE_READ_EA |
+                                           FILE_READ_ATTRIBUTES |
+                                           READ_CONTROL |
+                                           FILE_WRITE_DATA |
+                                           FILE_WRITE_EA |
+                                           FILE_WRITE_ATTRIBUTES |
+                                           SYNCHRONIZE;
+
         std::wstring UniquePipeName()
         {
             static LONG counter = 0;
@@ -17,6 +28,197 @@ namespace UnitTestsCommonUtils
                    std::to_wstring(GetCurrentProcessId()) + L"_" +
                    std::to_wstring(GetTickCount64()) + L"_" +
                    std::to_wstring(InterlockedIncrement(&counter));
+        }
+
+        HANDLE ConnectPipeClient(const std::wstring& pipe_name)
+        {
+            constexpr DWORD timeout_ms = 2'000;
+            const ULONGLONG deadline = GetTickCount64() + timeout_ms;
+            do
+            {
+                HANDLE client = CreateFileW(pipe_name.c_str(),
+                                            PipeClientAccess,
+                                            0,
+                                            nullptr,
+                                            OPEN_EXISTING,
+                                            0,
+                                            nullptr);
+                if (client != INVALID_HANDLE_VALUE)
+                {
+                    return client;
+                }
+
+                const DWORD error = GetLastError();
+                if (error != ERROR_FILE_NOT_FOUND && error != ERROR_PIPE_BUSY)
+                {
+                    return INVALID_HANDLE_VALUE;
+                }
+                WaitNamedPipeW(pipe_name.c_str(), 50);
+            } while (GetTickCount64() < deadline);
+
+            SetLastError(ERROR_SEM_TIMEOUT);
+            return INVALID_HANDLE_VALUE;
+        }
+
+        struct RestrictedClientToken
+        {
+            HANDLE token = nullptr;
+
+            ~RestrictedClientToken()
+            {
+                if (token)
+                {
+                    CloseHandle(token);
+                }
+            }
+
+            bool Create()
+            {
+                HANDLE process_token = nullptr;
+                if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_DUPLICATE, &process_token))
+                {
+                    return false;
+                }
+
+                DWORD user_size = 0;
+                GetTokenInformation(process_token, TokenUser, nullptr, 0, &user_size);
+                std::vector<BYTE> user_buffer(user_size);
+                if (!GetTokenInformation(process_token, TokenUser, user_buffer.data(), user_size, &user_size))
+                {
+                    CloseHandle(process_token);
+                    return false;
+                }
+
+                auto* user = reinterpret_cast<TOKEN_USER*>(user_buffer.data());
+                SID_AND_ATTRIBUTES disabled_sid{ user->User.Sid, 0 };
+                HANDLE restricted_primary_token = nullptr;
+                const BOOL restricted = CreateRestrictedToken(process_token,
+                                                              0,
+                                                              1,
+                                                              &disabled_sid,
+                                                              0,
+                                                              nullptr,
+                                                              0,
+                                                              nullptr,
+                                                              &restricted_primary_token);
+                CloseHandle(process_token);
+                if (!restricted)
+                {
+                    return false;
+                }
+
+                const BOOL duplicated = DuplicateTokenEx(restricted_primary_token,
+                                                         TOKEN_QUERY | TOKEN_IMPERSONATE,
+                                                         nullptr,
+                                                         SecurityImpersonation,
+                                                         TokenImpersonation,
+                                                         &token);
+                CloseHandle(restricted_primary_token);
+                return duplicated == TRUE;
+            }
+        };
+
+        struct ScopedImpersonation
+        {
+            explicit ScopedImpersonation(HANDLE token) :
+                active(ImpersonateLoggedOnUser(token) == TRUE)
+            {
+            }
+
+            ~ScopedImpersonation()
+            {
+                if (active)
+                {
+                    RevertToSelf();
+                }
+            }
+
+            bool active = false;
+        };
+
+        bool LogonSidPipeAceAllowsInstanceCreation(HANDLE pipe,
+                                                   HANDLE token,
+                                                   bool& allows_client_access,
+                                                   DWORD& matching_access_mask,
+                                                   DWORD& error)
+        {
+            allows_client_access = false;
+            matching_access_mask = 0;
+            DWORD groups_size = 0;
+            GetTokenInformation(token, TokenGroups, nullptr, 0, &groups_size);
+            std::vector<BYTE> groups_buffer(groups_size);
+            if (!GetTokenInformation(token, TokenGroups, groups_buffer.data(), groups_size, &groups_size))
+            {
+                error = GetLastError();
+                return false;
+            }
+
+            const auto* groups = reinterpret_cast<const TOKEN_GROUPS*>(groups_buffer.data());
+            PSID logon_sid = nullptr;
+            for (DWORD index = 0; index < groups->GroupCount; ++index)
+            {
+                if ((groups->Groups[index].Attributes & SE_GROUP_LOGON_ID) == SE_GROUP_LOGON_ID)
+                {
+                    logon_sid = groups->Groups[index].Sid;
+                    break;
+                }
+            }
+            if (!logon_sid)
+            {
+                error = ERROR_NOT_FOUND;
+                return false;
+            }
+
+            PSECURITY_DESCRIPTOR security_descriptor = nullptr;
+            PACL dacl = nullptr;
+            const DWORD security_result = GetSecurityInfo(pipe,
+                                                          SE_KERNEL_OBJECT,
+                                                          DACL_SECURITY_INFORMATION,
+                                                          nullptr,
+                                                          nullptr,
+                                                          &dacl,
+                                                          nullptr,
+                                                          &security_descriptor);
+            if (security_result != ERROR_SUCCESS)
+            {
+                error = security_result;
+                return false;
+            }
+
+            bool allows_creation = false;
+            ACL_SIZE_INFORMATION acl_info{};
+            if (!GetAclInformation(dacl, &acl_info, sizeof(acl_info), AclSizeInformation))
+            {
+                error = GetLastError();
+                LocalFree(security_descriptor);
+                return false;
+            }
+
+            for (DWORD index = 0; index < acl_info.AceCount; ++index)
+            {
+                void* ace = nullptr;
+                if (!GetAce(dacl, index, &ace))
+                {
+                    error = GetLastError();
+                    LocalFree(security_descriptor);
+                    return false;
+                }
+
+                auto* allowed_ace = static_cast<ACCESS_ALLOWED_ACE*>(ace);
+                if (allowed_ace->Header.AceType != ACCESS_ALLOWED_ACE_TYPE ||
+                    !EqualSid(logon_sid, reinterpret_cast<PSID>(&allowed_ace->SidStart)))
+                {
+                    continue;
+                }
+
+                const DWORD access_mask = allowed_ace->Mask;
+                matching_access_mask |= access_mask;
+                allows_creation |= (access_mask & (GENERIC_WRITE | FILE_CREATE_PIPE_INSTANCE)) != 0;
+                allows_client_access |= (access_mask & PipeClientAccess) == PipeClientAccess;
+            }
+            LocalFree(security_descriptor);
+            error = ERROR_SUCCESS;
+            return allows_creation;
         }
 
         struct OccupiedPipe
@@ -60,6 +262,52 @@ namespace UnitTestsCommonUtils
                 return connected && client != INVALID_HANDLE_VALUE;
             }
         };
+
+        struct BlockedRejectedConnection
+        {
+            HANDLE client = INVALID_HANDLE_VALUE;
+            HANDLE handler_entered = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE allow_handler_to_finish = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+
+            ~BlockedRejectedConnection()
+            {
+                if (client != INVALID_HANDLE_VALUE)
+                {
+                    CloseHandle(client);
+                }
+                if (handler_entered)
+                {
+                    CloseHandle(handler_entered);
+                }
+                if (allow_handler_to_finish)
+                {
+                    CloseHandle(allow_handler_to_finish);
+                }
+            }
+
+            bool Start(TwoWayPipeMessageIPC& server, const std::wstring& input_pipe_name)
+            {
+                interop_auth::CallerPolicy policy;
+                policy.enabled = true;
+                policy.expectedDirectory = L"Z:\\not-the-test-host";
+                policy.allowedBasenames = { L"not-the-test-host.exe" };
+                policy.requireMicrosoftSignature = false;
+                policy.logReject = [this](const interop_auth::AuthResult&) {
+                    SetEvent(handler_entered);
+                    WaitForSingleObject(allow_handler_to_finish, 10'000);
+                };
+
+                server.start(nullptr, policy);
+                client = ConnectPipeClient(input_pipe_name);
+                return client != INVALID_HANDLE_VALUE &&
+                       WaitForSingleObject(handler_entered, 2'000) == WAIT_OBJECT_0;
+            }
+
+            void AllowHandlerToFinish()
+            {
+                SetEvent(allow_handler_to_finish);
+            }
+        };
     }
 
     TEST_CLASS(TwoWayPipeMessageIPCTests)
@@ -80,6 +328,160 @@ namespace UnitTestsCommonUtils
             server.end();
 
             Assert::IsFalse(available, L"the server must not join an existing pipe name");
+        }
+
+        TEST_METHOD(RestrictedClientCanConnectButCannotCreateAnotherServerInstance)
+        {
+            HANDLE token = nullptr;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) == TRUE,
+                           L"failed to open the current process token");
+
+            RestrictedClientToken restricted_client;
+            Assert::IsTrue(restricted_client.Create(), L"failed to create the restricted same-logon client token");
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), nullptr);
+            server.start(token);
+
+            {
+                ScopedImpersonation impersonation(restricted_client.token);
+                Assert::IsTrue(impersonation.active, L"failed to impersonate the restricted client token");
+
+                HANDLE client = ConnectPipeClient(input_pipe_name);
+                const DWORD connect_error = GetLastError();
+                Assert::IsTrue(client != INVALID_HANDLE_VALUE,
+                               (L"the explicitly-permitted client access must connect; error=" +
+                                std::to_wstring(connect_error))
+                                   .c_str());
+
+                // A later CreateNamedPipe call is authorized by the first instance's DACL. Verify
+                // that the ACE for this same-logon client contains every requested client right
+                // but excludes FILE_CREATE_PIPE_INSTANCE (also included by GENERIC_WRITE).
+                DWORD acl_error = ERROR_SUCCESS;
+                bool acl_allows_client_access = false;
+                DWORD matching_access_mask = 0;
+                bool can_create_later_instance = false;
+                const ULONGLONG acl_deadline = GetTickCount64() + 2'000;
+                do
+                {
+                    can_create_later_instance = LogonSidPipeAceAllowsInstanceCreation(client,
+                                                                                         token,
+                                                                                         acl_allows_client_access,
+                                                                                         matching_access_mask,
+                                                                                         acl_error);
+                    if (acl_error != ERROR_SUCCESS || acl_allows_client_access)
+                    {
+                        break;
+                    }
+                    Sleep(10);
+                } while (GetTickCount64() < acl_deadline);
+                CloseHandle(client);
+
+                Assert::IsTrue(acl_allows_client_access,
+                               (L"the same-logon client ACE must contain the explicit client access rights; mask=" +
+                                std::to_wstring(matching_access_mask))
+                                   .c_str());
+                Assert::IsFalse(can_create_later_instance,
+                               L"a same-logon client must not create a later pipe instance");
+                Assert::AreEqual(static_cast<DWORD>(ERROR_SUCCESS), acl_error);
+            }
+
+            server.end();
+            CloseHandle(token);
+        }
+
+        TEST_METHOD(EndWaitsForActiveConnectionHandler)
+        {
+            const std::wstring input_pipe_name = UniquePipeName();
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), nullptr);
+            BlockedRejectedConnection connection;
+            Assert::IsTrue(connection.Start(server, input_pipe_name),
+                           L"the test connection did not enter its handler");
+
+            HANDLE end_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(end_finished);
+            std::thread shutdown_thread([&]() {
+                server.end();
+                SetEvent(end_finished);
+            });
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(end_finished, 200),
+                             L"end must wait for the active handler before returning");
+            connection.AllowHandlerToFinish();
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(end_finished, 5'000),
+                             L"end did not finish after the active handler completed");
+
+            shutdown_thread.join();
+            CloseHandle(end_finished);
+        }
+
+        TEST_METHOD(DestructorWaitsForActiveConnectionHandler)
+        {
+            const std::wstring input_pipe_name = UniquePipeName();
+            auto server = std::make_unique<TwoWayPipeMessageIPC>(input_pipe_name, UniquePipeName(), nullptr);
+            BlockedRejectedConnection connection;
+            Assert::IsTrue(connection.Start(*server, input_pipe_name),
+                           L"the test connection did not enter its handler");
+
+            HANDLE destructor_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(destructor_finished);
+            std::thread destroyer([&]() {
+                server.reset();
+                SetEvent(destructor_finished);
+            });
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(destructor_finished, 200),
+                             L"destruction must wait for the active handler before freeing IPC state");
+            connection.AllowHandlerToFinish();
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(destructor_finished, 5'000),
+                             L"destruction did not finish after the active handler completed");
+
+            destroyer.join();
+            CloseHandle(destructor_finished);
+        }
+
+        TEST_METHOD(DestructorCancelsBlockedConnectionRead)
+        {
+            const std::wstring input_pipe_name = UniquePipeName();
+            auto server = std::make_unique<TwoWayPipeMessageIPC>(input_pipe_name, UniquePipeName(), nullptr);
+            HANDLE server_token = nullptr;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &server_token) == TRUE);
+            server->start(server_token);
+            CloseHandle(server_token);
+
+            RestrictedClientToken restricted_client;
+            Assert::IsTrue(restricted_client.Create(), L"failed to create the restricted same-logon client token");
+
+            HANDLE client = INVALID_HANDLE_VALUE;
+            {
+                ScopedImpersonation impersonation(restricted_client.token);
+                Assert::IsTrue(impersonation.active, L"failed to impersonate the restricted client token");
+                client = ConnectPipeClient(input_pipe_name);
+            }
+            const DWORD connect_error = GetLastError();
+            Assert::IsTrue(client != INVALID_HANDLE_VALUE,
+                           (L"failed to connect the client that blocks in ReadFile; error=" +
+                            std::to_wstring(connect_error))
+                               .c_str());
+
+            // The next listener is created only after the accepted connection has been registered
+            // for lifetime tracking, so destruction must cancel that handler's blocked read.
+            Assert::IsTrue(WaitNamedPipeW(input_pipe_name.c_str(), 2'000) == TRUE,
+                           L"the server did not create the next listening instance");
+
+            HANDLE destructor_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(destructor_finished);
+            std::thread destroyer([&]() {
+                server.reset();
+                SetEvent(destructor_finished);
+            });
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(destructor_finished, 5'000),
+                             L"destruction did not cancel and join the handler blocked in ReadFile");
+
+            destroyer.join();
+            CloseHandle(destructor_finished);
+            CloseHandle(client);
         }
     };
 }

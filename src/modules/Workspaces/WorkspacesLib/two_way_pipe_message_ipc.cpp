@@ -2,9 +2,18 @@
 
 #include <common/interop/two_way_pipe_message_ipc_impl.h>
 
+#include <algorithm>
 #include <iterator>
 
 constexpr DWORD BUFSIZE = 1024;
+constexpr DWORD PipeClientAccess = FILE_READ_DATA |
+                                   FILE_READ_EA |
+                                   FILE_READ_ATTRIBUTES |
+                                   READ_CONTROL |
+                                   FILE_WRITE_DATA |
+                                   FILE_WRITE_EA |
+                                   FILE_WRITE_ATTRIBUTES |
+                                   SYNCHRONIZE;
 
 TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
@@ -19,6 +28,7 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
 
 TwoWayPipeMessageIPC::~TwoWayPipeMessageIPC()
 {
+    impl->end();
     delete impl;
 }
 
@@ -54,26 +64,70 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send(std::wstring msg)
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token)
 {
+    std::scoped_lock lock(lifecycle_mutex);
+    if (lifecycle_state != LifecycleState::NotStarted)
+    {
+        return;
+    }
+
+    caller_policy = {};
+    closed.store(false);
     output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
     input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
     input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
+    lifecycle_state = LifecycleState::Running;
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
 {
-    closed = true;
-    input_queue.interrupt();
-    input_queue_thread.join();
-    output_queue.interrupt();
-    output_queue_thread.join();
-    pipe_connect_handle_mutex.lock();
-    if (current_connect_pipe_handle != NULL)
     {
-        //Cancels the Pipe currently waiting for a connection.
-        CancelIoEx(current_connect_pipe_handle, NULL);
+        std::unique_lock lock(lifecycle_mutex);
+        if (lifecycle_state == LifecycleState::NotStarted || lifecycle_state == LifecycleState::Stopped)
+        {
+            lifecycle_state = LifecycleState::Stopped;
+            return;
+        }
+        if (lifecycle_state == LifecycleState::Stopping)
+        {
+            lifecycle_stopped.wait(lock, [this] {
+                return lifecycle_state == LifecycleState::Stopped;
+            });
+            return;
+        }
+
+        lifecycle_state = LifecycleState::Stopping;
+        closed.store(true);
     }
-    pipe_connect_handle_mutex.unlock();
-    input_pipe_thread.join();
+
+    input_queue.interrupt();
+    if (input_queue_thread.joinable())
+    {
+        input_queue_thread.join();
+    }
+    output_queue.interrupt();
+    if (output_queue_thread.joinable())
+    {
+        output_queue_thread.join();
+    }
+    {
+        std::scoped_lock lock(pipe_connect_handle_mutex);
+        if (current_connect_pipe_handle != NULL)
+        {
+            // Cancels the pipe currently waiting for a connection.
+            CancelIoEx(current_connect_pipe_handle, NULL);
+        }
+    }
+    if (input_pipe_thread.joinable())
+    {
+        input_pipe_thread.join();
+    }
+    cancel_and_wait_for_connection_handlers();
+
+    {
+        std::scoped_lock lock(lifecycle_mutex);
+        lifecycle_state = LifecycleState::Stopped;
+    }
+    lifecycle_stopped.notify_all();
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
@@ -91,8 +145,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
     {
         output_pipe_handle = CreateFile(
             lpszPipename, // pipe name
-            GENERIC_READ | // read and write access
-                GENERIC_WRITE,
+            PipeClientAccess,
             0, // no sharing
             NULL, // default security attributes
             OPEN_EXISTING, // opens existing pipe
@@ -149,7 +202,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_output_queue_thread()
 {
-    while (!closed)
+    while (!closed.load())
     {
         std::wstring message = output_queue.pop_message();
         if (message.length() == 0)
@@ -273,9 +326,8 @@ int TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::change_pipe_security_allow_r
     }
 
     memset(&ea, 0, sizeof(EXPLICIT_ACCESS));
-    ea.grfAccessPermissions |= GENERIC_READ | FILE_WRITE_ATTRIBUTES;
-    ea.grfAccessPermissions |= GENERIC_WRITE | FILE_READ_ATTRIBUTES;
-    ea.grfAccessPermissions |= SYNCHRONIZE;
+    // Do not grant FILE_CREATE_PIPE_INSTANCE (included by GENERIC_WRITE) to pipe clients.
+    ea.grfAccessPermissions = PipeClientAccess;
     ea.grfAccessMode = SET_ACCESS;
     ea.grfInheritance = NO_INHERITANCE;
     ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
@@ -348,52 +400,95 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
     return restricted_token_handle;
 }
 
-void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(HANDLE input_pipe_handle)
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler)
 {
-    if (!input_pipe_handle)
+    const HANDLE input_pipe_handle = handler->pipe_handle;
+    if (input_pipe_handle == INVALID_HANDLE_VALUE)
     {
+        finish_connection_handler(handler);
         return;
     }
-    constexpr DWORD readBlockBytes = BUFSIZE;
-    std::wstring message;
-    size_t iBlock = 0;
-    message.reserve(BUFSIZE);
-    bool ok;
-    do
-    {
-        constexpr size_t charsPerBlock = readBlockBytes / sizeof(message[0]);
-        message.resize(message.size() + charsPerBlock);
-        DWORD bytesRead = 0;
-        ok = ReadFile(
-            input_pipe_handle,
-            // read the message directly into the string block by block simultaneously resizing it
-            message.data() + iBlock * charsPerBlock,
-            readBlockBytes,
-            &bytesRead,
-            nullptr);
 
-        if (!ok && GetLastError() != ERROR_MORE_DATA)
-        {
-            break;
-        }
-        iBlock++;
-    } while (!ok);
-    // trim the message's buffer
-    const auto nullCharPos = message.find_last_not_of(L'\0');
-    if (nullCharPos != std::wstring::npos)
+    if (!closed.load())
     {
-        message.resize(nullCharPos + 1);
+        constexpr DWORD readBlockBytes = BUFSIZE;
+        std::wstring message;
+        size_t iBlock = 0;
+        message.reserve(BUFSIZE);
+        bool message_read = false;
+        do
+        {
+            constexpr size_t charsPerBlock = readBlockBytes / sizeof(message[0]);
+            message.resize(message.size() + charsPerBlock);
+            DWORD bytesRead = 0;
+            message_read = ReadFile(
+                input_pipe_handle,
+                message.data() + iBlock * charsPerBlock,
+                readBlockBytes,
+                &bytesRead,
+                nullptr);
+
+            if (!message_read && GetLastError() != ERROR_MORE_DATA)
+            {
+                break;
+            }
+            iBlock++;
+        } while (!message_read);
+
+        if (message_read && !closed.load())
+        {
+            const auto nullCharPos = message.find_last_not_of(L'\0');
+            if (nullCharPos != std::wstring::npos)
+            {
+                message.resize(nullCharPos + 1);
+            }
+
+            input_queue.queue_message(std::move(message));
+            FlushFileBuffers(input_pipe_handle);
+        }
+    }
+    finish_connection_handler(handler);
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler)
+{
+    HANDLE pipe_handle = INVALID_HANDLE_VALUE;
+    {
+        std::scoped_lock lock(connection_handlers_mutex);
+        pipe_handle = handler->pipe_handle;
+        handler->pipe_handle = INVALID_HANDLE_VALUE;
+    }
+    if (pipe_handle != INVALID_HANDLE_VALUE)
+    {
+        DisconnectNamedPipe(pipe_handle);
+        CloseHandle(pipe_handle);
     }
 
-    input_queue.queue_message(std::move(message));
+    {
+        std::scoped_lock lock(connection_handlers_mutex);
+        const auto it = std::find(connection_handlers.begin(), connection_handlers.end(), handler);
+        if (it != connection_handlers.end())
+        {
+            connection_handlers.erase(it);
+        }
+    }
+    connection_handlers_finished.notify_all();
+}
 
-    // Flush the pipe to allow the client to read the pipe's contents
-    // before disconnecting. Then disconnect the pipe, and close the
-    // handle to this pipe instance.
-
-    FlushFileBuffers(input_pipe_handle);
-    DisconnectNamedPipe(input_pipe_handle);
-    CloseHandle(input_pipe_handle);
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::cancel_and_wait_for_connection_handlers()
+{
+    std::unique_lock lock(connection_handlers_mutex);
+    for (const auto& handler : connection_handlers)
+    {
+        if (handler->pipe_handle != INVALID_HANDLE_VALUE)
+        {
+            CancelIoEx(handler->pipe_handle, nullptr);
+            DisconnectNamedPipe(handler->pipe_handle);
+        }
+    }
+    connection_handlers_finished.wait(lock, [this] {
+        return connection_handlers.empty();
+    });
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HANDLE token)
@@ -402,17 +497,30 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
     const wchar_t* pipe_name = input_pipe_name.c_str();
     BOOL connected = FALSE;
     HANDLE connect_pipe_handle = INVALID_HANDLE_VALUE;
-    while (!closed)
+    // The first instance claims exclusive ownership of the name; later instances omit this flag.
+    bool first_instance = true;
+    while (!closed.load())
     {
         {
             std::unique_lock lock(pipe_connect_handle_mutex);
+            if (closed.load())
+            {
+                break;
+            }
+
+            DWORD open_mode = PIPE_ACCESS_DUPLEX | WRITE_DAC;
+            if (first_instance)
+            {
+                open_mode |= FILE_FLAG_FIRST_PIPE_INSTANCE;
+            }
+
             connect_pipe_handle = CreateNamedPipe(
                 pipe_name,
-                PIPE_ACCESS_DUPLEX |
-                    WRITE_DAC,
+                open_mode,
                 PIPE_TYPE_MESSAGE |
                     PIPE_READMODE_MESSAGE |
-                    PIPE_WAIT,
+                    PIPE_WAIT |
+                    PIPE_REJECT_REMOTE_CLIENTS,
                 PIPE_UNLIMITED_INSTANCES,
                 BUFSIZE,
                 BUFSIZE,
@@ -423,6 +531,8 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             {
                 return;
             }
+
+            first_instance = false;
 
             if (token != NULL)
             {
@@ -437,7 +547,25 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
         }
         if (connected)
         {
-            std::thread(&TwoWayPipeMessageIPCImpl::handle_pipe_connection, this, connect_pipe_handle).detach();
+            auto handler = std::make_shared<ConnectionHandler>(connect_pipe_handle);
+            bool start_handler = false;
+            {
+                std::scoped_lock lock(connection_handlers_mutex);
+                if (!closed.load())
+                {
+                    connection_handlers.emplace_back(handler);
+                    start_handler = true;
+                }
+            }
+            if (start_handler)
+            {
+                std::thread(&TwoWayPipeMessageIPCImpl::handle_pipe_connection, this, std::move(handler)).detach();
+            }
+            else
+            {
+                DisconnectNamedPipe(connect_pipe_handle);
+                CloseHandle(connect_pipe_handle);
+            }
         }
         else
         {
@@ -449,7 +577,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::consume_input_queue_thread()
 {
-    while (!closed)
+    while (!closed.load())
     {
         outgoing_message = L"";
         std::wstring message = input_queue.pop_message();
