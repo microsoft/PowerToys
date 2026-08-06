@@ -12,8 +12,8 @@
     Launch it at the START of a batch review. The page polls /status every few
     seconds and re-reads the data file, so as the agent updates each PR's phase
     (mirroring -> building -> Copilot review round N -> drafting -> ready/held) the
-    sidebar and header update live and drafted suggestions fill in. When the reviews
-    conclude the user sets a per-PR action + per-suggestion post/hold subset and
+    sidebar and header update live and validated public items fill in. When reviews
+    conclude the user sets a per-PR action and per-item post/hold subset, then
     clicks Submit; decisions are written to a JSON file the launching Copilot
     session resumes from.
 
@@ -53,11 +53,14 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'ReviewPayload.Common.ps1')
 
 if (-not (Test-Path $DataPath)) { throw "Review data file not found: $DataPath" }
 $DataPath = (Resolve-Path $DataPath).Path
 if (-not $DecisionsPath) { $DecisionsPath = Join-Path (Split-Path -Parent $DataPath) 'review-decisions.json' }
-try { $null = (Get-Content $DataPath -Raw) | ConvertFrom-Json } catch { throw "DataPath is not valid JSON: $($_.Exception.Message)" }
+$initialData = Read-JsonFile -Path $DataPath
+$initialErrors = @(Test-ReviewDataDocument -Document $initialData -AllowIncomplete)
+if ($initialErrors.Count -gt 0) { throw ($initialErrors -join [Environment]::NewLine) }
 if ($RepoDir) { if (Test-Path $RepoDir) { $RepoDir = (Resolve-Path $RepoDir).Path } else { Write-Warning "RepoDir not found: $RepoDir (launch-on-submit disabled)"; $RepoDir = '' } }
 $launchEnabled = [bool]$RepoDir
 
@@ -77,6 +80,16 @@ function Read-DataFileTolerant {
     }
     return $script:lastGood
 }
+
+function ConvertTo-ClientDataJson {
+    param([Parameter(Mandatory)][string]$Text)
+
+    $document = $Text | ConvertFrom-Json
+    $document | Add-Member -NotePropertyName '_reviewDataHash' -NotePropertyValue (Get-TextSha256 -Text $Text) -Force
+    return ($document | ConvertTo-Json -Depth 30 -Compress).Replace('</', '<\/')
+}
+
+$initialClientData = ConvertTo-ClientDataJson -Text $script:lastGood
 
 $htmlTemplate = @'
 <!DOCTYPE html>
@@ -219,11 +232,14 @@ function fmtBody(b){
   html = html.replace(/```([\s\S]*?)```/g, (m,code)=>'<pre>'+esc(code.trim())+'</pre>');
   return html;
 }
-function defaultSug(sev){ return 'post'; }
+function payloadOf(pr){ return pr.publicPayload||{contextBody:'',items:[]}; }
+function itemsOf(pr){ return payloadOf(pr).items||[]; }
+function evidenceOf(pr){ return pr.internalEvidence||{}; }
+function defaultItem(){ return 'post'; }
 function prByNum(n){ return (DATA.prs||[]).find(p=>p.number==n); }
 function phaseOf(pr){
   let p = (pr.phase||'').toLowerCase();
-  if(!p){ if(String(pr.status||'').startsWith('held')) p='held'; else if(pr.status==='reviewed-pending-approval') p='ready'; else p='queued'; }
+  if(!p){ p='queued'; }
   if(['ready','held','error','queued'].includes(p)) return p;
   return 'progress';
 }
@@ -236,19 +252,19 @@ function statusText(pr){
 }
 function sevCounts(pr){
   const c={critical:0,high:0,medium:0,low:0};
-  (pr.suggestions||[]).forEach(s=>{ const k=(s.severity||'low').toLowerCase(); if(k in c) c[k]++; });
+  itemsOf(pr).forEach(s=>{ const k=(s.severity||'low').toLowerCase(); if(k in c) c[k]++; });
   const parts=[]; if(c.critical)parts.push(c.critical+'C'); if(c.high)parts.push(c.high+'H'); if(c.medium)parts.push(c.medium+'M'); if(c.low)parts.push(c.low+'L');
   return parts.join(' ');
 }
 function ensureState(pr){
   let st = state[pr.number];
-  if(!st){ st = state[pr.number] = { prAction:'post-subset', postContext:true, contextComment:(pr.contextComment||''), instructions:'', sug:{}, open:{}, reviewed:false, edited:false }; }
+  if(!st){ st = state[pr.number] = { action:'comment', postContext:true, contextBody:(payloadOf(pr).contextBody||''), instructions:'', items:{}, open:{}, reviewed:false, edited:false }; }
   if(!st.open) st.open = {};
-  (pr.suggestions||[]).forEach(s=>{
-    if(!(s.id in st.sug)) st.sug[s.id]= defaultSug((s.severity||'').toLowerCase());
+  itemsOf(pr).forEach(s=>{
+    if(!(s.id in st.items)) st.items[s.id]= defaultItem();
     if(!(s.id in st.open)) st.open[s.id]= ['critical','high'].includes((s.severity||'').toLowerCase());
   });
-  if(!st.edited && (!st.contextComment)) st.contextComment = pr.contextComment||'';
+  if(!st.edited && (!st.contextBody)) st.contextBody = payloadOf(pr).contextBody||'';
   return st;
 }
 function renderSidebar(){
@@ -258,14 +274,14 @@ function renderSidebar(){
     const div = document.createElement('div');
     div.className = 'pritem'+(current==pr.number?' active':'');
     div.onclick = ()=> selectPR(pr.number);
-    const sc = sevCounts(pr); const nsug=(pr.suggestions||[]).length;
+    const sc = sevCounts(pr); const nsug=itemsOf(pr).length;
     const stx = statusText(pr);
     div.innerHTML =
       '<span class="dot '+ph+'"></span>'
       + '<div style="min-width:0">'
       +   '<div class="n">#'+esc(pr.number)+(pr.draft?' <span class="badge b-draft">draft</span>':'')+(pr.firstTimer?' <span class="badge b-community">first-time</span>':'')+(st.edited?' <span class="chk">✓</span>':'')+'</div>'
       +   '<div class="t">'+esc(pr.title)+'</div>'
-      +   '<div class="m">'+esc(pr.author||'')+' · '+nsug+' sug'+(sc?(' · '+sc):'')+'</div>'
+      +   '<div class="m">'+esc(pr.author||'')+' · '+nsug+' item'+(nsug===1?'':'s')+(sc?(' · '+sc):'')+'</div>'
       +   (ph==='progress'&&stx?('<div class="wait">'+esc(stx)+'</div>'):'')
       + '</div>';
     el.appendChild(div);
@@ -275,14 +291,15 @@ function selectPR(n){ current = n; renderSidebar(); renderDetail(n); document.ge
 function markEdited(n){ state[n].edited = true; renderSidebar(); }
 function renderDetail(n){
   const pr = prByNum(n); if(!pr){ return; } const st = ensureState(pr); const ph = phaseOf(pr);
+  const canDecide = ph==='ready';
   const ai = assocInfo(pr.assoc, pr.firstTimer);
   const assoc = '<span class="badge '+ai.cls+'">'+esc(ai.label)+'</span>';
   const draftB = pr.draft ? '<span class="badge b-draft">Draft</span>' : '<span class="badge b-status">Ready for review</span>';
   const firstB = '';
-  const status = pr.status ? '<span class="badge b-status">'+esc(pr.status)+'</span>' : '';
+  const evidence = evidenceOf(pr);
+  const status = evidence.status ? '<span class="badge b-status">'+esc(evidence.status)+'</span>' : '';
   const disp = pr.disposition ? '<span class="badge b-disp">'+esc(pr.disposition)+'</span>' : '';
-  const forkLink = pr.forkPr ? ' · fork '+(pr.forkPrUrl?('<a href="'+esc(pr.forkPrUrl)+'" target="_blank">'+esc(pr.forkPr)+'</a>'):esc(pr.forkPr)) : '';
-  const exePath = pr.exePath ? pr.exePath : (pr.worktree ? (pr.worktree.replace(/[\\/]+$/,'') + '\\x64\\Debug\\PowerToys.exe') : '');
+  const exePath = evidence.exePath ? evidence.exePath : (evidence.worktree ? (evidence.worktree.replace(/[\\/]+$/,'') + '\\x64\\Debug\\PowerToys.exe') : '');
 
   let statusHtml='';
   if(ph==='progress'){ statusHtml = '<div class="statusbar">Review in progress — '+esc(statusText(pr)||'working…')+'</div>'; }
@@ -291,25 +308,20 @@ function renderDetail(n){
   else if(ph==='queued'){ statusHtml = '<div class="statusbar">Queued — not started yet.</div>'; }
 
   let sugHtml='';
-  (pr.suggestions||[]).forEach(s=>{
+  itemsOf(pr).forEach(s=>{
     const sev=(s.severity||'low').toLowerCase();
-    const checked = st.sug[s.id]==='post' ? 'checked' : '';
+    const checked = st.items[s.id]==='post' ? 'checked' : '';
     const isOpen = !!st.open[s.id];
-    const fileTxt = esc(s.file||'')+(s.line?(':'+s.line):'');
+    const fileTxt = esc(s.path||'')+(s.line?(':'+s.line):'');
     const meta = '<div class="sug-meta">'
-      + (s.file?('<span><span class="k">location</span><span class="file">'+fileTxt+'</span></span>'):'')
-      + (s.status?('<span><span class="k">status</span>'+esc(s.status)+'</span>'):'')
-      + (s.verified?('<span><span class="k">verified</span>vs diff</span>'):'')
+      + '<span><span class="k">kind</span>'+esc(s.kind||'')+'</span>'
+      + (s.path?('<span><span class="k">location</span><span class="file">'+fileTxt+'</span></span>'):'')
       + '</div>';
     const links = '<div class="sug-links">'
-      + '<a class="codelink" target="_blank" rel="noopener" data-prurl="'+esc(pr.url||'')+'" data-path="'+esc(s.file||'')+'" data-line="'+esc(s.line||'')+'" href="'+esc((pr.url||'')+(pr.url?'/files':''))+'">View in PR diff \u2197</a>'
-      + (s.codeUrl?('<a target="_blank" rel="noopener" href="'+esc(s.codeUrl)+'">Exact code link \u2197</a>'):'')
-      + (s.threadUrl?('<a target="_blank" rel="noopener" href="'+esc(s.threadUrl)+'">Review thread \u2197</a>'):'')
+      + (s.path?('<a class="codelink" target="_blank" rel="noopener" data-prurl="'+esc(pr.url||'')+'" data-path="'+esc(s.path||'')+'" data-line="'+esc(s.line||'')+'" href="'+esc((pr.url||'')+(pr.url?'/files':''))+'">View in PR diff \u2197</a>'):'')
       + '</div>';
     const bodyInner = meta
-      + '<div class="sug-field"><div class="lbl">Finding</div><div class="val">'+fmtBody(s.body)+'</div></div>'
-      + (s.detail?('<div class="sug-field"><div class="lbl">Why it matters</div><div class="val">'+fmtBody(s.detail)+'</div></div>'):'')
-      + (s.fix?('<div class="sug-field"><div class="lbl">Suggested change</div><div class="val">'+fmtBody(s.fix)+'</div></div>'):'')
+      + '<div class="sug-field"><div class="lbl">Public payload</div><div class="val">'+fmtBody(s.body)+'</div></div>'
       + links;
     sugHtml += '<div class="sug'+(isOpen?' open':'')+'" id="sug-'+esc(s.id)+'">'
       + '<div class="sug-head" onclick="toggleSug('+n+',\''+esc(s.id)+'\')">'
@@ -317,38 +329,39 @@ function renderDetail(n){
       + '<span class="badge sev sev-'+sev+'">'+esc(sev)+'</span>'
       + '<span class="grow">'+esc(s.title)+'</span>'
       + '<span class="file">'+fileTxt+'</span>'
-      + '<label class="chk" onclick="event.stopPropagation()"><input type="checkbox" '+checked+' onchange="setSug('+n+',\''+esc(s.id)+'\',this.checked)"> post</label>'
+      + (canDecide?('<label class="chk" onclick="event.stopPropagation()"><input type="checkbox" '+checked+' onchange="setSug('+n+',\''+esc(s.id)+'\',this.checked)"> post</label>'):'')
       + '</div><div class="sug-body">'+bodyInner+'</div></div>';
   });
 
-  const opt = v => (st.prAction===v?' selected':'');
+  const opt = v => (st.action===v?' selected':'');
+  const decisionControls = canDecide
+    ? '<div class="actionrow"><span class="section-title" style="margin:0">Action</span>'
+      + '<select onchange="setAction('+n+',this.value)">'
+      + '<option value="comment"'+opt('comment')+'>Post checked items as a review</option>'
+      + '<option value="request-changes"'+opt('request-changes')+'>Post as "Request changes" review</option>'
+      + '<option value="hold"'+opt('hold')+'>Hold all — post nothing now</option>'
+      + '<option value="close"'+opt('close')+'>Close / redirect (maintainer)</option>'
+      + '<option value="custom"'+opt('custom')+'>Custom (use instructions)</option>'
+      + '</select>'
+      + '<span class="seg" id="ctxseg" title="Some reviewers prefer inline comments only, with no overall summary message">'
+      + '<button type="button" class="'+(st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',true)">Include overall comment</button>'
+      + '<button type="button" class="'+(!st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',false)">Skip \u2014 inline only</button>'
+      + '</span></div>'
+      + '<div class="section-title">Instructions / next steps for the agent (optional)</div>'
+      + '<textarea rows="2" placeholder="e.g. also ask for a demo · hold the low-severity ones · rebase first, then give me local build + e2e steps" oninput="setIns('+n+',this.value)">'+esc(st.instructions)+'</textarea>'
+    : '<div class="section-title muted">No publishing controls: this PR is '+esc(ph)+'.</div>';
   document.getElementById('detail').innerHTML =
     '<div class="title"><a href="'+esc(pr.url)+'" target="_blank">#'+esc(pr.number)+'</a> · '+esc(pr.title)+'</div>'
     + '<div class="pills">'+assoc+' '+draftB+(pr.assoc?(' <span class="badge b-assoc">'+esc(pr.assoc)+'</span>'):'')+'</div>'
-    + '<div class="sub">'+esc(pr.author||'')+' '+status+' '+disp+forkLink+'</div>'
+    + '<div class="sub">'+esc(pr.author||'')+' '+status+' '+disp+'</div>'
     + (pr.disposition?('<div class="disp-line">Disposition: '+esc(pr.disposition)+'</div>'):'')
     + (pr.context?('<div class="disp-line">'+esc(pr.context)+'</div>'):'')
     + statusHtml
     + (pr.phase0Note?('<div class="section-title">Context / process (Phase 0)</div><div class="ctx">'+esc(pr.phase0Note)+'</div>'):'')
-    + (pr.contextComment?('<div id="ctxwrap"'+(st.postContext?'':' style="opacity:0.4"')+'><div class="section-title">Drafted overall comment to author <span class="toggle" id="edtog" onclick="ed()">edit</span></div><div class="ctx" id="ctxbox">'+esc(st.contextComment)+'</div></div>'):'')
-    + ((pr.suggestions&&pr.suggestions.length)?('<div class="section-title">Code suggestions ('+pr.suggestions.length+')<span class="expander" onclick="expandAll('+n+',true)">expand all</span><span class="expander" onclick="expandAll('+n+',false)">collapse all</span></div>'+sugHtml):'<div class="section-title muted">No code suggestions yet</div>')
+    + (payloadOf(pr).contextBody?('<div id="ctxwrap"'+(st.postContext?'':' style="opacity:0.4"')+'><div class="section-title">Drafted overall comment to author '+(canDecide?'<span class="toggle" id="edtog" onclick="ed()">edit</span>':'')+'</div><div class="ctx" id="ctxbox">'+esc(st.contextBody)+'</div></div>'):'')
+    + (itemsOf(pr).length?('<div class="section-title">Public review items ('+itemsOf(pr).length+')<span class="expander" onclick="expandAll('+n+',true)">expand all</span><span class="expander" onclick="expandAll('+n+',false)">collapse all</span></div>'+sugHtml):'<div class="section-title muted">No public review items</div>')
     + ((exePath||pr.testInstructions)?('<div class="section-title">Run &amp; verify (already built)</div><div class="ctx">'+(exePath?('<strong>Launch:</strong> <span class="file">'+esc(exePath)+'</span>\n\n'):'')+esc(pr.testInstructions||'')+'</div>'):'')
-    + '<div class="actionrow"><span class="section-title" style="margin:0">Action</span>'
-    +   '<select onchange="setAction('+n+',this.value)">'
-    +     '<option value="post-subset"'+opt('post-subset')+'>Post checked suggestions (as comments)</option>'
-    +     '<option value="request-changes"'+opt('request-changes')+'>Post as "Request changes" review</option>'
-    +     '<option value="approve"'+opt('approve')+'>Approve PR</option>'
-    +     '<option value="hold"'+opt('hold')+'>Hold all — post nothing now</option>'
-    +     '<option value="close"'+opt('close')+'>Close / redirect (maintainer)</option>'
-    +     '<option value="custom"'+opt('custom')+'>Custom (use instructions)</option>'
-    +   '</select>'
-    +   '<span class="seg" id="ctxseg" title="Some reviewers prefer inline comments only, with no overall summary message">'
-    +     '<button type="button" class="'+(st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',true)">Include overall comment</button>'
-    +     '<button type="button" class="'+(!st.postContext?'active':'')+'" onclick="setCtxBtn('+n+',false)">Skip \u2014 inline only</button>'
-    +   '</span>'
-    + '</div>'
-    + '<div class="section-title">Instructions / next steps for the agent (optional)</div>'
-    + '<textarea rows="2" placeholder="e.g. also ask for a demo · hold the low-severity ones · rebase first, then give me local build + e2e steps" oninput="setIns('+n+',this.value)">'+esc(st.instructions)+'</textarea>'
+    + decisionControls
     + '<div class="navbtns"><button onclick="nav(-1)">&larr; Prev</button><button onclick="nav(1)">Next &rarr;</button></div>';
   state[n]._sig = JSON.stringify(pr);
   applyCodeLinks();
@@ -363,7 +376,7 @@ function toggleSug(n,id){
 function expandAll(n,open){
   const st=state[n], pr=prByNum(n); if(!st||!pr) return;
   if(!st.open) st.open = {};
-  (pr.suggestions||[]).forEach(s=>{ st.open[s.id]=open; });
+  itemsOf(pr).forEach(s=>{ st.open[s.id]=open; });
   document.querySelectorAll('#detail .sug').forEach(el=> el.classList.toggle('open', open));
 }
 async function sha256hex(str){
@@ -379,10 +392,10 @@ async function applyCodeLinks(){
     try{ const h=await sha256hex(path); a.href = prurl.replace(/\/+$/,'') + '/files#diff-'+h+(line?('R'+line):''); }catch(e){}
   }
 }
-function ed(){ const box=document.getElementById('ctxbox'); const t=document.getElementById('edtog'); const on=box.contentEditable!=='true'; box.contentEditable=on; box.style.outline=on?'1px solid #2ea043':''; t.textContent=on?'done':'edit'; if(on){ box.focus(); } state[current].contextComment=box.innerText; box.oninput=()=>{ state[current].contextComment=box.innerText; markEdited(current); }; }
+function ed(){ const box=document.getElementById('ctxbox'); const t=document.getElementById('edtog'); const on=box.contentEditable!=='true'; box.contentEditable=on; box.style.outline=on?'1px solid #2ea043':''; t.textContent=on?'done':'edit'; if(on){ box.focus(); } state[current].contextBody=box.innerText; box.oninput=()=>{ state[current].contextBody=box.innerText; markEdited(current); }; }
 function nav(d){ const arr=(DATA.prs||[]).map(p=>p.number); let i=arr.indexOf(current)+d; if(i<0)i=0; if(i>=arr.length)i=arr.length-1; selectPR(arr[i]); }
-function setSug(n,id,v){ state[n].sug[id]= v?'post':'hold'; markEdited(n); updateHeader(); }
-function setAction(n,v){ state[n].prAction=v; markEdited(n); }
+function setSug(n,id,v){ state[n].items[id]= v?'post':'hold'; markEdited(n); updateHeader(); }
+function setAction(n,v){ state[n].action=v; markEdited(n); }
 function setCtx(n,v){ state[n].postContext=v; markEdited(n); }
 function setCtxBtn(n,v){
   state[n].postContext=v; markEdited(n);
@@ -399,7 +412,7 @@ function assocInfo(a, firstTimer){
 function setIns(n,v){ state[n].instructions=v; markEdited(n); }
 function updateHeader(){
   const prs = DATA.prs||[]; let post=0,hold=0; const tally={ready:0,progress:0,held:0,queued:0,error:0};
-  prs.forEach(pr=>{ tally[phaseOf(pr)]++; Object.values(state[pr.number]?state[pr.number].sug:{}).forEach(d=> d==='post'?post++:hold++); });
+  prs.forEach(pr=>{ tally[phaseOf(pr)]++; Object.values(state[pr.number]?state[pr.number].items:{}).forEach(d=> d==='post'?post++:hold++); });
   const active = tally.progress+tally.queued;
   const phaseEl = document.getElementById('phase');
   if(active>0){ phaseEl.textContent = '● reviewing — '+tally.ready+' ready · '+tally.progress+' in progress · '+tally.queued+' queued'+(tally.held?(' · '+tally.held+' held'):''); phaseEl.style.color='#e3b341'; }
@@ -412,7 +425,7 @@ async function poll(){
   try{
     const r = await fetch('/status', {cache:'no-store'}); if(!r.ok) return;
     const nd = await r.json(); if(!nd || !nd.prs) return;
-    DATA.generatedAt = nd.generatedAt || DATA.generatedAt; DATA.phase = nd.phase;
+    DATA.generatedAt = nd.generatedAt || DATA.generatedAt; DATA.phase = nd.phase; DATA._reviewDataHash = nd._reviewDataHash;
     DATA.prs = nd.prs;
     (DATA.prs||[]).forEach(pr=> ensureState(pr));
     const first = current==null && DATA.prs.length;
@@ -427,13 +440,14 @@ async function poll(){
 }
 document.getElementById('submitBtn').onclick = async ()=>{
   const notReady = (DATA.prs||[]).filter(p=>phaseOf(p)==='progress'||phaseOf(p)==='queued').map(p=>'#'+p.number);
-  if(notReady.length && !confirm('Still in progress: '+notReady.join(', ')+'\nSubmit decisions for the rest anyway?')) return;
+  if(notReady.length){ alert('Cannot submit while reviews are still in progress: '+notReady.join(', ')); return; }
   const launch = LAUNCH_ENABLED && !!(document.getElementById('launchChk') && document.getElementById('launchChk').checked);
-  const out = { submittedAt:new Date().toISOString(), launch:launch, prs:[] };
-  (DATA.prs||[]).forEach(pr=>{ const s=state[pr.number]; out.prs.push({ number:pr.number, prAction:s.prAction, postContext:s.postContext, contextComment:s.contextComment, suggestions:s.sug, instructions:s.instructions||'', edited:s.edited }); });
+  const out = { schemaVersion:2, reviewDataHash:DATA._reviewDataHash, submittedAt:new Date().toISOString(), launch:launch, prs:[] };
+  (DATA.prs||[]).filter(pr=>phaseOf(pr)==='ready').forEach(pr=>{ const s=state[pr.number]; out.prs.push({ number:pr.number, headSha:pr.headSha, action:s.action, postContext:s.postContext, contextBody:s.contextBody, items:s.items, instructions:s.instructions||'', edited:s.edited }); });
   try {
     const r = await fetch('/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(out,null,2) });
     const j = await r.json();
+    if(!r.ok){ alert('Decisions were not saved:\n'+((j.errors||[j.error||'validation failed']).join('\n'))); return; }
     document.getElementById('resume').textContent = j.resume || RESUME;
     const note = document.getElementById('bannerNote');
     if(j.launched){ note.innerHTML = '<strong>A Copilot session was launched in a new terminal</strong> to run these decisions — watch and approve there. As a fallback you can also type the phrase in any existing session.'; }
@@ -453,7 +467,7 @@ setInterval(poll, 2500);
 </html>
 '@
 
-$html = $htmlTemplate.Replace('/*__REVIEW_DATA__*/', $script:lastGood).Replace('/*__RESUME__*/', $resumePhrase).Replace('/*__LAUNCH__*/', $(if($launchEnabled){'true'}else{'false'}))
+$html = $htmlTemplate.Replace('/*__REVIEW_DATA__*/', $initialClientData).Replace('/*__RESUME__*/', $resumePhrase).Replace('/*__LAUNCH__*/', $(if($launchEnabled){'true'}else{'false'}))
 
 $listener = [System.Net.HttpListener]::new()
 $listener.Prefixes.Add("http://localhost:$Port/")
@@ -482,7 +496,8 @@ while ($listener.IsListening) {
             }
             '/status' {
                 $txt = Read-DataFileTolerant
-                $b = [Text.Encoding]::UTF8.GetBytes($txt)
+                $clientJson = ConvertTo-ClientDataJson -Text $txt
+                $b = [Text.Encoding]::UTF8.GetBytes($clientJson)
                 $res.ContentType = 'application/json; charset=utf-8'
                 $res.Headers.Add('Cache-Control', 'no-store')
                 $res.OutputStream.Write($b, 0, $b.Length)
@@ -494,24 +509,50 @@ while ($listener.IsListening) {
             '/submit' {
                 $reader = [IO.StreamReader]::new($req.InputStream, $req.ContentEncoding)
                 $body = $reader.ReadToEnd(); $reader.Close()
-                $body | Set-Content -Path $DecisionsPath -Encoding UTF8
-                "submitted $(Get-Date -Format o)" | Set-Content -Path "$DecisionsPath.submitted" -Encoding UTF8
-                Write-Host "Decisions received and written to $DecisionsPath" -ForegroundColor Green
-                $launched = $false
-                $wantLaunch = $false
-                try { $wantLaunch = [bool]($body | ConvertFrom-Json).launch } catch { $wantLaunch = $false }
-                if ($wantLaunch -and $launchEnabled) {
-                    try {
-                        $promptText = "$resumePhrase  (decisions file: $DecisionsPath)"
-                        $launchCmd  = "copilot -C '$RepoDir' -i '$promptText'"
-                        Start-Process -FilePath 'pwsh' -ArgumentList '-NoLogo','-NoExit','-Command',$launchCmd | Out-Null
-                        $launched = $true
-                        Write-Host "Launched supervised Copilot session in a new terminal (repo: $RepoDir)" -ForegroundColor Green
-                    } catch {
-                        Write-Host "Launch-on-submit failed: $($_.Exception.Message)" -ForegroundColor Red
+                $validationErrors = [System.Collections.Generic.List[string]]::new()
+                try {
+                    $decisions = $body | ConvertFrom-Json
+                    $latestText = Read-DataFileTolerant
+                    $latestData = $latestText | ConvertFrom-Json
+                    $latestHash = Get-TextSha256 -Text $latestText
+                    foreach ($errorMessage in Test-ReviewDataDocument -Document $latestData -CheckGitHub) {
+                        $validationErrors.Add($errorMessage)
+                    }
+                    foreach ($errorMessage in Test-ReviewDecisionDocument -Decisions $decisions -ReviewData $latestData -ExpectedHash $latestHash) {
+                        $validationErrors.Add($errorMessage)
                     }
                 }
-                $resp = @{ ok = $true; resume = $resumePhrase; decisionsPath = $DecisionsPath; launched = $launched } | ConvertTo-Json -Compress
+                catch {
+                    $validationErrors.Add($_.Exception.Message)
+                }
+
+                if ($validationErrors.Count -gt 0) {
+                    $res.StatusCode = 400
+                    $resp = @{ ok = $false; errors = $validationErrors.ToArray() } | ConvertTo-Json -Compress
+                }
+                else {
+                    $temporaryDecisionsPath = "$DecisionsPath.tmp"
+                    $body | Set-Content -LiteralPath $temporaryDecisionsPath -Encoding utf8
+                    Move-Item -LiteralPath $temporaryDecisionsPath -Destination $DecisionsPath -Force
+                    "submitted $(Get-Date -Format o)" | Set-Content -LiteralPath "$DecisionsPath.submitted" -Encoding utf8
+                    Write-Host "Validated decisions received and written to $DecisionsPath" -ForegroundColor Green
+                    $launched = $false
+                    $wantLaunch = [bool]$decisions.launch
+                    if ($wantLaunch -and $launchEnabled) {
+                        try {
+                            $promptText = "$resumePhrase  (decisions file: $DecisionsPath)"
+                            $launchCmd  = "copilot -C '$RepoDir' -i '$promptText'"
+                            Start-Process -FilePath 'pwsh' -ArgumentList '-NoLogo','-NoExit','-Command',$launchCmd | Out-Null
+                            $launched = $true
+                            Write-Host "Launched supervised Copilot session in a new terminal (repo: $RepoDir)" -ForegroundColor Green
+                        }
+                        catch {
+                            Write-Host "Launch-on-submit failed: $($_.Exception.Message)" -ForegroundColor Red
+                        }
+                    }
+                    $resp = @{ ok = $true; resume = $resumePhrase; decisionsPath = $DecisionsPath; launched = $launched } | ConvertTo-Json -Compress
+                }
+
                 $b = [Text.Encoding]::UTF8.GetBytes($resp)
                 $res.ContentType = 'application/json'; $res.OutputStream.Write($b, 0, $b.Length)
             }

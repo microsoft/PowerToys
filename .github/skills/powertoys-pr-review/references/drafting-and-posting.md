@@ -18,6 +18,7 @@ Quality guidelines:
 - Mention the observable symptom or user-facing impact (e.g., "users would see '1 minutes ago', which is grammatically incorrect").
 - If the fix removes code, explain why it is safe. If it is structural, briefly explain the design choice.
 - Keep a respectful, collaborative tone.
+- Keep public comments self-contained. Never mention a fork repository, fork PR, worktree, internal review loop, or private validation provenance.
 
 ### Format for each suggestion comment
 
@@ -73,7 +74,21 @@ When posting **multiple suggestions on the same file**, applying them one at a t
 3. **When suggestions add/remove lines**, include enough surrounding context (the full syntactic block) so partial application cannot leave orphaned braces or dangling clauses.
 4. **Self-contained test:** mentally apply each suggestion independently on the original code; if any would produce invalid syntax alone, expand it to include the needed context.
 
-Each suggestion must use the exact ` ```suggestion ` format, reference the correct file/line range, be self-contained so the author can click "Commit suggestion", and cross-reference related suggestions in other files. Produce all drafted comments as a summary for the user to review before posting.
+Each suggestion must use the exact ` ```suggestion ` format, reference the correct file/line range, be self-contained so the author can click "Commit suggestion", and cross-reference related suggestions in other files. Classify every public item as:
+
+- **`inline`** — one apply-ready suggestion targeting the current RIGHT-side diff.
+- **`companion`** — readable review-body guidance for architectural, multi-file, or out-of-diff work that cannot honestly use an apply button.
+- **obsolete** — omit it from `publicPayload`; keep any audit note under `internalEvidence`.
+
+Store author-facing text only in `publicPayload`. Store fork links, worktrees, build evidence, internal thread URLs, and convergence notes only in `internalEvidence`. Never concatenate internal evidence into a public body.
+
+Before presenting the dashboard, run:
+
+```powershell
+./scripts/Test-ReviewData.ps1 -DataPath <path>\review-data.json -AllowIncomplete
+```
+
+Before marking a PR `ready`, run with `-CheckGitHub` so every pinned head and inline range is current.
 
 ## Step 10: Wait for approval — MANDATORY STOP
 
@@ -88,9 +103,9 @@ Each suggestion must use the exact ` ```suggestion ` format, reference the corre
    - The worktree path and **end-to-end testing instructions** (Step 7b) so the user can verify.
    - A **multi-suggestion warning** if there are 2+ suggestions on the same file.
 
-   For a **single PR**, presenting this inline as text is fine. For a **multi-PR session** (2+ PRs drafted), prefer the **approval dashboard** — build a `review-data.json` and launch [scripts/Show-ReviewDashboard.ps1](../scripts/Show-ReviewDashboard.ps1); it renders every PR with expandable suggestions and per-PR/per-suggestion post/hold controls, and writes the user's choices to `review-decisions.json`. Full flow and schemas: [approval-dashboard.md](./approval-dashboard.md).
+   For a **single PR**, presenting this inline as text is fine. For a **multi-PR session** (2+ PRs drafted), prefer the **approval dashboard** — build a schema-version-2 `review-data.json` and launch [scripts/Show-ReviewDashboard.ps1](../scripts/Show-ReviewDashboard.ps1). The dashboard validates ready payloads, renders public items, and binds decisions to the exact data hash. Full flow and schemas: [approval-dashboard.md](./approval-dashboard.md).
 2. **Stop. Do not execute any further commands against the original repo.** (When using the dashboard, launch it, tell the user the URL, and end the turn.)
-3. **Wait for the user to explicitly say** "post it", "approve", "go ahead", or "submit" — or, with the dashboard, to submit their decisions and type the resume phrase `pr-review: actions ready`. Then read `review-decisions.json` and act on each PR per its `prAction` + `instructions`.
+3. **Wait for the user to explicitly say** "post it", "go ahead", "submit", or "approve these comments" — or, with the dashboard, to submit their decisions and type the resume phrase `pr-review: actions ready`. Then validate `review-decisions.json` and act on each PR per its `action`, selected `items`, and `instructions`.
    - "Looks good" without an explicit post instruction → ask "Shall I post this review to the original PR now?"
    - If the user asks for changes, revise and present again.
    - "Skip" / "don't post" → post nothing.
@@ -106,21 +121,26 @@ Each suggestion must use the exact ` ```suggestion ` format, reference the corre
    - **New commits (large / overlapping the reviewed areas)** → the reviewed diff is stale. Re-run the loop (Steps 4–7) against the new head — you can still reuse still-valid findings and the previous fork branch for reference — then re-present.
    - **New comments or review threads (no code change)** → check overlap with your drafts; drop or reword to avoid duplicating or contradicting a maintainer/author, and fold in anything that changes the disposition.
    - If anything material changed, tell the user what moved and re-confirm before posting — never silently post stale comments.
-5. **Only after explicit approval AND passing the freshness re-check**, take the approved actions. Use only what the user approved:
+5. **Only after explicit approval AND passing the freshness re-check**, publish through the bundled safe publisher:
    ```powershell
-   # Overall review comment (context asks + summary)
-   gh pr review N --repo microsoft/PowerToys --comment --body "<review body>"
+   ./scripts/Test-ReviewData.ps1 `
+     -DataPath <path>\review-data.json `
+     -DecisionsPath <path>\review-decisions.json `
+     -CheckGitHub
 
-   # Individual inline code suggestions
-   gh api repos/microsoft/PowerToys/pulls/N/comments `
-     -f body="<suggestion comment>" `
-     -f commit_id="<latest commit sha>" `
-     -f path="<file path>" `
-     -F line=<line number> `
-     -f side="RIGHT"
-
-   # (Only if the user explicitly approves) close/redirect — a maintainer action
-   gh pr close N --repo microsoft/PowerToys --comment "<respectful close/redirect message>"
+   ./scripts/Publish-ApprovedReview.ps1 `
+     -DataPath <path>\review-data.json `
+     -DecisionsPath <path>\review-decisions.json
    ```
+
+   The publisher:
+   - rejects stale heads, new activity, invalid diff ranges, placeholders, serialization artifacts, and any public fork/internal reference;
+   - creates a **pending** review containing the approved context, companion notes, and inline suggestions;
+   - reads every rendered body and target back from GitHub;
+   - deletes the pending review on any mismatch;
+   - submits only after exact verification; and
+   - records an idempotency ledger so an interrupted run resumes without duplicate comments.
+
+   `close` and `custom` remain explicit manual maintainer actions. The safe publisher intentionally handles only `comment`, `request-changes`, and `hold`.
 
 **Never auto-post, auto-label, or auto-close on the original PR.** The user may want to edit the review, skip some actions, or decide not to act at all. This decision is always theirs. Closing in particular is a maintainer action — only on explicit instruction.

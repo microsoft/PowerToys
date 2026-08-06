@@ -48,6 +48,15 @@ For each review comment from Copilot:
    ```
    Every comment must be **both** replied to and resolved. If `resolveReviewThread` is unavailable, try `minimizeComment` with `classifier: RESOLVED` using the comment's `node_id`.
 
+### Suppressed-comment policy
+
+Copilot may retain suppressed/internal candidate comments even when the published review has zero inline comments. Suppressed comments do **not** block convergence.
+
+- During rounds 1–5, inspect a suppressed comment only when available and act only if it identifies an important correctness, security, data-loss, crash, or significant user-impact issue.
+- Ignore suppressed style, cleanup, speculative, low-severity, and preference comments. Do not create another review round for them.
+- After round 5, do not inspect, fix, reply to, or use suppressed comments to trigger another round.
+- A review with zero published inline comments is a zero-comment review even if suppressed candidates exist.
+
 ## Step 6: Iterate the loop
 
 **The most critical step. You must actually loop — do not stop after one round unless there are zero new comments.**
@@ -60,14 +69,14 @@ LOOP:
   1. Request Copilot review (Step 4).
   2. Wait for a new review with submitted_at > last_review_timestamp (poll up to 10 min).
   3. Fetch comments created after last_review_timestamp from copilot-pull-request-reviewer[bot].
-  4. If ZERO new comments -> EXIT LOOP -> Step 7.
+  4. If ZERO new published inline comments, and no important round-1-to-5 suppressed issue was accepted -> EXIT LOOP -> Step 7.
   5. For each new comment: assess; if valid+in-scope, fix in the worktree.
   6. If any fixes were made: git add -A; commit; push to the fork branch.
   7. For each comment: reply with the fix (or the reason) AND resolve the thread.
   8. last_review_timestamp = now; round += 1.
   9. Termination:
-       - round > 10 AND no medium/high severity comments remaining -> EXIT LOOP.
-       - round > 20 -> EXIT LOOP (leave a note that manual review may be needed).
+       - After round 5, ignore all suppressed comments.
+       - After round 8, stop automated iteration and mark the PR for manual review if published comments still recur. Do not claim convergence.
        - Otherwise -> GOTO 1.
 END LOOP
 ```
@@ -78,9 +87,10 @@ END LOOP
 - **Track timestamps** — only process comments newer than the last request; do not re-process old ones.
 - **If Copilot repeats a fixed concern**, reply "Already addressed in commit `<sha>`" and resolve; do not re-fix.
 - **Out-of-scope comments** (files this PR did not modify): reply "Not applicable: this file is not modified by this PR" and resolve; do not fix.
+- **Suppressed candidates are advisory only** — apply the policy above and never count them as published inline comments.
 
 **Definition of done (all must hold before leaving Step 6):**
-1. The most recent **freshly-requested** Copilot review returned **zero** new inline comments.
+1. The most recent **freshly-requested** Copilot review returned **zero published inline comments**. Suppressed candidates do not count.
 2. **Zero** unresolved Copilot review threads remain (every thread replied-to and resolved).
 3. The worktree builds (Step 7) — modulo documented environmental failures.
 

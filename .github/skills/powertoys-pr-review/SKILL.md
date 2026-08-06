@@ -54,7 +54,10 @@ If a prerequisite is missing, guide the user through setup ([references/prerequi
 9. **Always sync the fork's main before creating or updating the fork PR** to prevent diff bloat from a stale base (Step 2c).
 10. **Resume, do not restart (Step 0).** Before mirroring, check for a prior interrupted run on PR `N` and pick up from the matching step instead of re-mirroring. Re-mirroring clobbers prior commits and review replies.
 11. **The fork Copilot loop (Steps 4–8) is not optional and is independent of the posting decision.** "Just show me" / "do not post" changes only **Step 10**. You must still drive the fork loop to convergence: fix valid issues, commit, push, reply-and-resolve every Copilot thread, and re-request review until a freshly-requested review returns **zero** new comments and there are **zero** unresolved Copilot threads. Final suggestions come from the *converged* net diff, never raw round-1 output.
-12. **For 2+ independent PRs, review them in parallel — do NOT serialize, even if older instructions say otherwise.** Fan out one background sub-agent per PR (cap 3–5 concurrent) so the long blocking waits (Copilot review polling, local builds) overlap instead of stacking; see [batch-parallel.md](./references/batch-parallel.md). If sub-agents are unavailable, pipeline all PRs in the single agent so multiple review requests and waits remain concurrently in flight. The orchestrator must remain the single source of truth for dashboard status and drafted comments. **Never leave any fork PR stranded at round 1** — every PR must reach the Rule 11 converged state (0 new comments, 0 unresolved threads) before Step 9. A half-finished loop is not "done".
+12. **For 2+ independent PRs, review them in parallel unless the user explicitly requests sequential execution.** Fan out one background worker per PR (cap 3–5 concurrent), with an isolated branch/worktree and independent convergence loop. If sub-agents are unavailable, pipeline all PRs in one agent so their review requests and waits remain concurrently in flight. Sync the base once, serialize local builds, and keep the orchestrator as the single writer of dashboard data. Never leave any PR stranded at round 1. See [batch-parallel.md](./references/batch-parallel.md).
+13. **Never mention a fork repository, fork PR, worktree, internal review loop, or private validation provenance in comments posted to the original PR.** Store that evidence only under `internalEvidence`; public payloads must be self-contained.
+14. **Never post prose summaries as inline code suggestions.** An inline item must contain one non-empty, apply-ready `suggestion` block targeting an exact current RIGHT-side diff range. Use a companion item for architectural, multi-file, or out-of-diff work, and omit obsolete findings.
+15. **Never publish with ad-hoc `gh` commands.** Validate schema-version-2 data with `Test-ReviewData.ps1`, then publish approved decisions with `Publish-ApprovedReview.ps1`. The publisher stages a pending review, reads it back, and submits only after exact verification.
 
 ## Phase 0: Context & Process Review
 
@@ -108,7 +111,10 @@ Auto-detect these at the start of each session with [scripts/Get-ForkConfig.ps1]
 | [Get-PRContext.ps1](./scripts/Get-PRContext.ps1) | Fetch author, association, size, and labels to calibrate Phase 0 |
 | [Request-CopilotReview.ps1](./scripts/Request-CopilotReview.ps1) | Request Copilot as reviewer and poll until the review posts |
 | [Get-UnresolvedCopilotThreads.ps1](./scripts/Get-UnresolvedCopilotThreads.ps1) | Count unresolved Copilot threads (stranded-loop / resume check) |
+| [Get-ReviewResumeState.ps1](./scripts/Get-ReviewResumeState.ps1) | Discover durable branches, review PRs, worktrees, rounds, and unresolved threads across sessions |
 | [Sync-ForkMain.ps1](./scripts/Sync-ForkMain.ps1) | Fast-forward the clone's `main` from upstream and push it to the fork |
+| [Test-ReviewData.ps1](./scripts/Test-ReviewData.ps1) | Validate public payloads, decisions, pinned heads, and current diff ranges |
+| [Publish-ApprovedReview.ps1](./scripts/Publish-ApprovedReview.ps1) | Idempotently stage, verify, and submit approved GitHub reviews |
 | [Show-ReviewDashboard.ps1](./scripts/Show-ReviewDashboard.ps1) | Serve a single-window HTML dashboard for a batch of PRs: live status tracker while reviews run (polls `/status`), then an approval surface capturing per-PR/per-suggestion decisions to a file the agent resumes from |
 
 ## References
@@ -118,6 +124,7 @@ Auto-detect these at the start of each session with [scripts/Get-ForkConfig.ps1]
 - [setup-and-mirror.md](./references/setup-and-mirror.md) — Steps 0–2c: resume, mirror, worktree, rebase, diff validation
 - [copilot-review-loop.md](./references/copilot-review-loop.md) — Steps 4–8: request, fix/push/resolve loop, summarize
 - [build-and-test.md](./references/build-and-test.md) — Steps 3, 7, 7b: local build, module chain, end-to-end tests
+- [migration-and-resume.md](./references/migration-and-resume.md) — move active reviews from older skill versions and resume durable loop state
 - [drafting-and-posting.md](./references/drafting-and-posting.md) — Steps 9–10: suggestion format, freshness re-check, posting
 - [approval-dashboard.md](./references/approval-dashboard.md) — optional interactive UI for approving/holding/editing drafted actions across a multi-PR session
 - [batch-parallel.md](./references/batch-parallel.md) — how to review 2+ PRs concurrently (sub-agent fan-out, build serialization, single-writer status, aggregation)

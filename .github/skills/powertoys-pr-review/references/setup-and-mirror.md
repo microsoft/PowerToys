@@ -6,6 +6,14 @@ The mirroring engine. In **self-check mode** skip Steps 1–2c — you already o
 
 A review may have been interrupted partway through. **Before mirroring, detect whether this skill already ran on PR `N` and pick up from where it stopped** instead of starting over (re-mirroring would clobber commits/replies from the prior run). Skip this step in self-check mode.
 
+Run the bundled read-only discovery first:
+
+```powershell
+./scripts/Get-ReviewResumeState.ps1 -PRNumber N -AsJson
+```
+
+For a batch, pass every number in one call. Discovery is account-independent: it resolves the authenticated teammate's own PowerToys repository and finds durable `pr-iterate/<number>` branches, review PRs, local worktrees, Copilot review timestamps, commits, and unresolved threads. Follow its `resumeAction`; do not re-mirror an existing branch.
+
 **0a. Detect prior artifacts** for PR `N`:
 
 ```powershell
@@ -32,7 +40,11 @@ If a fork PR exists, judge whether the Copilot **review loop** is finished with 
 | **Loop unfinished** | Fork PR has 1+ unresolved Copilot thread, or newest commit post-dates newest Copilot review | Step 5/6 (resume the loop; set `last_review_timestamp` to the newest already-processed review so resolved threads are not re-fixed) |
 | **Loop clean, built** | Zero unresolved Copilot threads and worktree builds | Step 8–9 (summarize + draft the review) |
 
+Across sessions, always rebuild before drafting even when prior loop traces are clean. Build claims and old dashboard payloads are not durable. Preserve code/review traces, then regenerate schema-version-2 `review-data.json` from the current head.
+
 **0c. Re-sync before continuing.** Whenever you resume onto an existing branch/worktree, first bring the fork's `main` and the PR branch up to date (Step 2 sync + Step 2b rebase) so you do not build or review against stale `main`. If a rebase conflicts and you are not confident, stop and ask rather than guessing.
+
+For teammates migrating from an older skill version, follow [migration-and-resume.md](./migration-and-resume.md). Never publish an old decisions file; regenerate and reapprove the validated public payload.
 
 ## Step 1: Mirror the PR
 

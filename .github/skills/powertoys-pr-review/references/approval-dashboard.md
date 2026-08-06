@@ -1,153 +1,185 @@
-# Approval Dashboard (optional presentation surface for Step 10)
+# Approval Dashboard
 
-For a **multi-PR review session**, presenting every drafted comment as plain text is hard to act on. The approval dashboard renders all reviewed PRs as an interactive local web page so the user can, at a glance, approve, hold, edit, or partially post each PR's actions — then walk away and come back to a clear view.
+Use the dashboard for two or more PRs or whenever the user asks for an interactive approval surface. It is both a live batch-status tracker and the mandatory Step 10 approval gate.
 
-It is **optional**. For a single PR, the plain-text presentation in [drafting-and-posting.md](./drafting-and-posting.md) is fine. Use the dashboard when you have drafted actions for **2+ PRs**, or whenever the user asks for the UI.
+The dashboard never posts to GitHub. It validates public payloads, records the user's choices, binds them to the exact review-data hash, and hands them to `Publish-ApprovedReview.ps1`.
 
-The dashboard **never calls GitHub**. It only records the human decision. Posting stays with the agent so the Step 10 freshness re-check and exact payloads are preserved.
+## Safety boundaries
 
-## Live status tracker (launch at the *start* of the batch)
+- `publicPayload` is the only author-facing source.
+- `internalEvidence` is display-only and never enters decisions or posting plans.
+- Public text must not mention a fork repository, fork PR, worktree, private thread, convergence loop, or private validation provenance.
+- Inline items require one non-empty apply-ready `suggestion` block and an exact current RIGHT-side diff range.
+- Companion items contain readable review-body guidance for work that cannot use an apply button.
+- The dashboard has no approve action.
+- Submission is blocked while any PR is queued/in progress or validation fails.
 
-Because the page already runs a local server, use it as a **live progress tracker** during the review, not just an approval surface at the end. Launch it as soon as you know the batch of PRs (even before any review has converged), seeding `review-data.json` with one entry per PR at `phase: "queued"`. The page polls **`GET /status`** every ~2.5s, which re-reads `review-data.json` fresh, so as you advance each PR the sidebar dots, per-PR status line, and header summary update on their own — the user can start the run, walk away, and come back to a clear picture of what finished and what's still working.
+## Parallel batch flow
 
-Give each PR three live fields and set a top-level `phase`:
+Follow [batch-parallel.md](./batch-parallel.md): review PRs concurrently in isolated worktrees, have each worker produce a per-PR result, and let one coordinator update `review-data.json` atomically.
 
-| Field | Meaning |
-| --- | --- |
-| `phase` (per PR) | `queued` → `mirroring` → `building` → `reviewing` → `drafting` → `ready` (done, awaiting approval) / `held` / `error`. Anything not in {`ready`,`held`,`queued`,`error`} renders as an amber pulsing "in progress" dot. |
-| `loop` | Current fork Copilot review round (int). Shown as "round N". |
-| `waitingOn` | Short string for what the PR is blocked on right now (e.g. `"Copilot review"`, `"local build"`). |
-| `phase` (top level) | Overall batch phase, shown in the header. Set to `reviewing` while any PR is in progress; anything else once all are `ready`/`held`. |
-
-**You are the single writer of `review-data.json`; the page only reads it.** Write it **atomically** so the poller never sees a half-written file: write `review-data.json.tmp`, then `Move-Item -Force` over the real file. Update it each time a PR changes phase (and bump `loop`/`waitingOn`). When a PR's review converges, flip its `phase` to `ready` and fill in `contextComment` + `suggestions` — they appear in the detail pane immediately.
-
-The page preserves user edits across polls: once the user changes any control or edits the drafted comment for a PR, that PR's detail pane stops auto-re-rendering (an `edited ✓` marker shows in the sidebar), so live updates to *other* PRs never clobber in-progress decisions. **Submit decisions** pulses (and warns on click if any PR is still in progress) once every PR is out of `queued`/in-progress.
-
-## Flow
-
-1. **At the start of a multi-PR batch**, write a **review-data.json** with one entry per PR (schema below), each at `phase: "queued"`, and launch the dashboard (step 2). Update the file atomically as each PR progresses (see *Live status tracker* above). By the time the fork loop has converged for a PR (Critical Rule 11 — 0 new comments, 0 unresolved Copilot threads), you have filled in its `contextComment` and code suggestions and set its `phase` to `ready`.
-2. Launch the dashboard (it opens the browser and keeps serving):
+1. Create schema-version-2 `review-data.json` with every PR in `phase: "queued"`.
+2. Launch:
    ```powershell
-   ./scripts/Show-ReviewDashboard.ps1 -DataPath <path>\review-data.json -Port 8787 [-RepoDir <path-to-repo>]
+   ./scripts/Show-ReviewDashboard.ps1 `
+     -DataPath <path>\review-data.json `
+     -Port 8787 `
+     -RepoDir <path-to-PowerToys>
    ```
-   For an unattended session, launch it detached so it survives the turn; tell the user the URL and note the PID so it can be stopped later. Pass `-RepoDir` to enable **launch-on-submit** (see below).
-3. **Tell the user** the URL (`http://localhost:8787`), then **stop and end the turn** — this is the Step 10 mandatory stop. The user reviews at their own pace, sets a disposition per PR, toggles individual suggestions to post/hold (**all suggestions, including low severity, default to post** — the user unchecks any to hold), optionally edits the drafted comment, and can type free-text instructions (e.g. "also ask for a demo", "rebase first then give me build + e2e steps", "hold the low-severity ones"). Each PR's detail pane shows a **Run &amp; verify (already built)** block whose Launch line is the concrete `<worktree>\x64\Debug\PowerToys.exe` (auto-derived from the PR's `worktree`, since Step 7 already built it). Clicking **Submit decisions** writes `review-decisions.json` next to the data file and shows the resume phrase.
-4. The user returns to the Copilot session and types the resume phrase: **`pr-review: actions ready`** — or, if launch-on-submit is enabled and left checked, a supervised Copilot session opens automatically (below).
-5. The agent reads `review-decisions.json`, and for each PR **runs the mandatory freshness re-check** (Step 10.4) before doing anything, then executes only the approved actions with the Step 10 posting commands.
+3. Update each PR through `queued`, `mirroring`, `building`, `reviewing`, `drafting`, then `ready`, `held`, or `error`.
+4. Before `ready`, pin `headSha`, capture `snapshot`, populate `publicPayload`, and run:
+   ```powershell
+   ./scripts/Test-ReviewData.ps1 -DataPath <path>\review-data.json -AllowIncomplete -CheckGitHub
+   ```
+5. Tell the user the dashboard URL and stop. The user selects public items and submits decisions.
+6. Resume with `pr-review: actions ready`, then run:
+   ```powershell
+   ./scripts/Publish-ApprovedReview.ps1 `
+     -DataPath <path>\review-data.json `
+     -DecisionsPath <path>\review-decisions.json
+   ```
 
-> The resume phrase is just a convention so you know to read the decisions file. The user can also simply say "go" / "post them". If `review-decisions.json.submitted` exists and is newer than the data file, the decisions are ready.
+The page polls `/status` every few seconds. The coordinator is the only writer of `review-data.json`; write a temporary file and atomically replace the real file so the poller never reads partial JSON.
 
-## Header at-a-glance badges
-
-Each PR's detail header shows, prominently under the title:
-- **Member** (green) vs **Community** (amber) — derived from `assoc`; `MEMBER`/`OWNER`/`COLLABORATOR` → Member, everything else → Community. `firstTimer:true` (or `assoc: FIRST_TIME_CONTRIBUTOR`) appends "· first-time".
-- **Draft** (gray) vs **Ready for review** (green) — from the `draft` field.
-The sidebar mirrors the draft and first-time markers so you can scan the queue.
-
-## Overall-comment control (inline-only option)
-
-The Action row has a two-button segmented control: **Include overall comment** vs **Skip — inline only**. Some reviewers don't want to leave a summary message, so "Skip" is a single click — it sets `postContext:false` and dims the drafted-comment box. This maps to a COMMENTED/REQUEST_CHANGES review that carries only the inline suggestion comments and no top-level body (for `approve`/`request-changes`, GitHub requires a body, so keep Include for those unless `instructions` say otherwise).
-
-## Launch-on-submit (optional)
-
-When the dashboard is started with `-RepoDir <repo>`, the header shows a **Launch Copilot on submit** checkbox (default on). On Submit, in addition to writing `review-decisions.json`, the server opens a **new terminal** running:
-```powershell
-copilot -C <RepoDir> -i "pr-review: actions ready  (decisions file: <DecisionsPath>)"
-```
-`-i` starts a **supervised interactive** session that auto-executes the resume phrase — it is *not* `-p/--yolo`, so the mandatory freshness re-check and every `gh` post still surface for your approval in that window. Untick the box to fall back to the type-the-phrase banner. The banner is always shown too, so the manual path never disappears.
-
-## review-data.json schema
+## `review-data.json` schema
 
 ```jsonc
 {
-  "generatedAt": "2026-08-03 15:58",
-  "phase": "reviewing",                 // live: overall batch phase (reviewing until all PRs ready/held)
-  "prs": [
-    {
-      "number": 43741,                 // upstream PR number
-      "repo": "microsoft/PowerToys",
-      "url": "https://github.com/microsoft/PowerToys/pull/43741",
-      "title": "AdvancedPaste: Paste As Keystrokes",
-      "author": "tonur",
-      "phase": "ready",                 // live: queued|mirroring|building|reviewing|drafting|ready|held|error
-      "loop": 4,                        // live: current fork Copilot review round
-      "waitingOn": "",                  // live: what this PR is blocked on right now
-      "assoc": "FIRST_TIME_CONTRIBUTOR",// author_association; drives the Member vs Community badge
-      "firstTimer": true,               // adds a "first-time" marker to the Community badge
-      "draft": false,                   // optional; true renders a prominent DRAFT badge (else "Ready for review")
-      "forkPr": "fork PR #153",         // optional label
-      "forkPrUrl": "https://github.com/<owner>/PowerToys/pull/153",
-      "worktree": "C:\\PowerToys-90d8", // the PR's build worktree; dashboard derives the Launch path from it
-      "status": "reviewed-pending-approval",
-      "disposition": "Request changes", // Phase 0 verdict (0e)
-      "context": "niels9001 asked for a re-review; CI re-triggered.",
-      "phase0Note": "CLA on file. Demo requested. CI green. In-scope. No duplicate.",
-      "contextComment": "Thanks @tonur! ...", // drafted batched asks / summary (editable in UI)
-      "exePath": "",                    // optional; only if the built exe isn't <worktree>\x64\Debug\PowerToys.exe
-      "testInstructions": "Enable Advanced Paste, bind the hotkey, paste multi-line text, confirm keystroke output.", // run-and-verify steps (app already built in Step 7 — don't say "build")
-      "suggestions": [
-        {
-          "id": "s1",                   // stable id used in the decisions file
-          "severity": "critical",       // critical | high | medium | low
-          "title": "Mocks don't implement new members — UnitTests won't compile",
-          "file": "src/.../IntegrationTestUserSettings.cs",
-          "line": 40,                   // 0 if not line-anchored
-          "verified": true,             // spot-verified against the real diff
-          "body": "Explanation ... \n\n```suggestion\n<corrected code>\n```",
-          "status": "Fix pushed · verified on x64 Debug build", // optional; short state/verification note shown in the meta row
-          "detail": "Why it matters ...",   // optional; extra prose rendered under a "Why it matters" heading
-          "fix": "```suggestion\n<corrected code>\n```", // optional; a dedicated "Suggested change" block (use if you keep `body` prose-only)
-          "codeUrl": "https://github.com/owner/repo/blob/<sha>/path#L40", // optional; exact permalink to the code
-          "threadUrl": "https://github.com/owner/repo/pull/49/files#r12345" // optional; existing review thread
-        }
-      ]
-    }
-  ]
-}
-```
-
-`body` uses the same format as [drafting-and-posting.md](./drafting-and-posting.md#format-for-each-suggestion-comment) — prose plus a fenced ` ```suggestion ` block. The dashboard highlights the suggestion fence.
-
-### Code-suggestion pane behavior
-- Each suggestion is a collapsible card. **Expanded state is persistent** — clicking a card's header toggles it open/closed and it *stays* that way across the 2.5s status polls (open state is held per-PR in the page's JS state, not just as a DOM class). Switching PR tabs naturally shows that PR's own open state.
-- **Critical/high** suggestions default to **open**; medium/low default to collapsed. Use **expand all / collapse all** in the section header to flip them in bulk.
-- The card body renders, in order: a **meta row** (`location`, `status`, `verified`), a **Finding** section (`body`), an optional **Why it matters** section (`detail`), an optional **Suggested change** section (`fix`), and a **links row**.
-- The links row always includes a **View in PR diff ↗** link that deep-links to the exact file/line in the PR's *Files changed* tab (anchor computed client-side as `#diff-<sha256(path)>R<line>`; falls back to `/files` if the fragment is stale). `codeUrl` and `threadUrl`, if present, add **Exact code link ↗** and **Review thread ↗**.
-- The detail pane only re-renders on poll when that PR's data actually changed, so scroll position and open cards are preserved while you read.
-
-## review-decisions.json schema (produced by the page)
-
-```jsonc
-{
-  "submittedAt": "2026-08-03T08:10:00Z",
+  "schemaVersion": 2,
+  "repository": "microsoft/PowerToys",
+  "generatedAt": "2026-08-06T08:00:00Z",
+  "phase": "reviewing",
   "prs": [
     {
       "number": 43741,
-      "prAction": "request-changes",   // see table below
-      "postContext": true,             // include the drafted comment
-      "contextComment": "...",         // possibly edited by the user
-      "suggestions": { "s1": "post", "s2": "post", "s5": "hold" },
-      "instructions": "also ask for a demo recording"
+      "url": "https://github.com/microsoft/PowerToys/pull/43741",
+      "title": "AdvancedPaste: Paste As Keystrokes",
+      "author": "tonur",
+      "phase": "ready",
+      "loop": 4,
+      "waitingOn": "",
+      "assoc": "FIRST_TIME_CONTRIBUTOR",
+      "firstTimer": true,
+      "draft": false,
+      "headSha": "0123456789abcdef0123456789abcdef01234567",
+      "snapshot": {
+        "updatedAt": "2026-08-06T07:55:00Z",
+        "issueCommentCount": 5,
+        "reviewCommentCount": 12,
+        "reviewCount": 4
+      },
+      "disposition": "Request changes",
+      "phase0Note": "CLA on file. Demo requested. CI green.",
+      "publicPayload": {
+        "contextBody": "Thanks for the contribution. Please address the correctness issue below.",
+        "items": [
+          {
+            "id": "stable-value",
+            "kind": "inline",
+            "severity": "high",
+            "title": "Preserve the persisted value",
+            "path": "src/.../PasteFormats.cs",
+            "startLine": 40,
+            "line": 40,
+            "side": "RIGHT",
+            "body": "### Preserve the persisted value\n\n**Severity:** `high`\n\nThe new member shifts existing values. Preserve the established assignment so upgrades retain the same meaning.\n\n```suggestion\n    Existing = 1,\n```"
+          },
+          {
+            "id": "cross-file-tests",
+            "kind": "companion",
+            "severity": "medium",
+            "title": "Add cross-file regression coverage",
+            "body": "### Add cross-file regression coverage\n\n**Severity:** `medium`\n\nPlease add regression coverage for the related files outside this PR diff. GitHub cannot offer an apply button because those files are not changed here."
+          }
+        ]
+      },
+      "internalEvidence": {
+        "status": "reviewed-pending-approval",
+        "worktree": "C:\\PowerToys-review-43741",
+        "validationSummary": "Debug build and targeted tests passed",
+        "privateReviewUrl": "internal URL"
+      },
+      "testInstructions": "Enable Advanced Paste, bind the hotkey, and verify multiline input."
     }
   ]
 }
 ```
 
-| `prAction` | The agent does |
+### Public item rules
+
+| `kind` | Requirements | Published as |
+| --- | --- | --- |
+| `inline` | Canonical `body`; exactly one non-empty `suggestion` fence; `path`, `line`, optional `startLine`; `side: RIGHT`; range in one current diff hunk | Inline review comment |
+| `companion` | Canonical readable `body`; no suggestion fence; no path required | Review body section |
+
+Do not use separate `body` and `fix` fields. Do not place status, links, build evidence, or private review provenance in a public item.
+
+The validator rejects:
+
+- placeholders and empty/multiple suggestion blocks;
+- invalid or stale line ranges;
+- stale head SHAs;
+- fork/internal references in public text;
+- PowerShell serialization/interpolation artifacts;
+- missing activity snapshots; and
+- duplicate PR or item IDs.
+
+## `review-decisions.json` schema
+
+The dashboard writes:
+
+```jsonc
+{
+  "schemaVersion": 2,
+  "reviewDataHash": "<sha256 of the exact review-data.json>",
+  "submittedAt": "2026-08-06T08:10:00Z",
+  "launch": true,
+  "prs": [
+    {
+      "number": 43741,
+      "headSha": "0123456789abcdef0123456789abcdef01234567",
+      "action": "request-changes",
+      "postContext": true,
+      "contextBody": "Thanks for the contribution. Please address the correctness issue below.",
+      "items": {
+        "stable-value": "post",
+        "cross-file-tests": "hold"
+      },
+      "instructions": ""
+    }
+  ]
+}
+```
+
+| `action` | Behavior |
 | --- | --- |
-| `post-subset` | Post the `post` suggestions (and the drafted comment if `postContext`) as inline comments + a COMMENTED review. |
-| `request-changes` | Same, but submit the review with event `REQUEST_CHANGES`. |
-| `approve` | Submit an APPROVE review (rare for community PRs — confirm intent). |
-| `hold` | Post nothing for this PR now. |
-| `close` | **Maintainer action** — only if the user explicitly chose it; close/redirect with a respectful message. |
-| `custom` | Follow `instructions` verbatim. |
+| `comment` | Stage selected items as a pending COMMENT review, verify, then submit |
+| `request-changes` | Stage selected items as a pending REQUEST_CHANGES review, verify, then submit |
+| `hold` | Post nothing |
+| `close` | Manual maintainer action; safe publisher refuses it |
+| `custom` | Manual action; safe publisher refuses it |
 
-Always honor `instructions` in addition to `prAction` (e.g. "hold the low-severity ones", "rebase first", "confirm CLA before merge"). If `instructions` asks for build/e2e steps, provide them from the PR's `worktree` and `testInstructions` rather than posting.
+There is no approve action. The skill never approves an upstream PR.
 
-## After reading decisions — still mandatory
+## Submit-time validation
 
-For every PR the user asked to post, run the **Step 10.4 freshness re-check** first (new commits / new threads since the review). If the PR moved, reconcile per that step before posting — the decisions were made against the drafted snapshot, not necessarily the current head.
+`Show-ReviewDashboard.ps1` re-reads the latest data and checks:
 
-## Alternative binding (not default)
+1. every PR is terminal (`ready`, `held`, or `error`);
+2. every ready public payload passes structural validation;
+3. pinned heads and inline ranges still match GitHub;
+4. decisions reference the exact current data hash and head SHA;
+5. every selected ID exists and is `post` or `hold`; and
+6. edited context text contains no forbidden internal references.
 
-Instead of the resume-phrase handoff, each button could POST an instruction that the server turns into a fresh `copilot -p "..."` invocation. This is **not** the default: a fresh headless agent lacks this session's context (drafted payloads, the fork worktree, the freshness logic) and can race with the running review. Prefer the decisions-file handoff, which keeps the human-in-the-loop and all Step 10 safeguards in the original session.
+Invalid decisions are not written.
+
+## Launch on submit
+
+When `-RepoDir` is provided, the page can open a supervised Copilot session with:
+
+```powershell
+copilot -C <RepoDir> -i "pr-review: actions ready (decisions file: <DecisionsPath>)"
+```
+
+This is not unattended posting. The resumed session must still use `Publish-ApprovedReview.ps1`, which re-checks freshness and verifies the pending review before submission.
