@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -27,6 +28,7 @@ public sealed class ProfileFunctionData : BaseFunctionData
     public const string SettingsEventName = "PowerToys_KeyboardManager_Event_Settings";
 
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
+    private readonly Func<bool> _isProcessElevated;
 
     // The stored profile is serialized without null properties to match the
     // shape written by the C++ editor; the engine's JSON reader throws on
@@ -51,8 +53,13 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// </summary>
     public IList<string> Warnings { get; } = [];
 
-    public ProfileFunctionData(string? input = null)
+    public ProfileFunctionData(string? input = null, Func<bool>? isProcessElevated = null)
     {
+        _isProcessElevated = isProcessElevated ?? (() =>
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        });
         Output = new();
         Input = string.IsNullOrEmpty(input) ? new() : JsonSerializer.Deserialize<ProfileResourceObject>(input) ?? new();
     }
