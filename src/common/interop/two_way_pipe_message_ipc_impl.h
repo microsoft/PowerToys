@@ -33,9 +33,33 @@ private:
     enum class LifecycleState
     {
         NotStarted,
+        Starting,
         Running,
         Stopping,
         Stopped,
+    };
+
+    struct PipeSecurityAttributes
+    {
+        SECURITY_DESCRIPTOR security_descriptor{};
+        SECURITY_ATTRIBUTES attributes{};
+        PACL dacl = nullptr;
+        PSID logon_sid = nullptr;
+        BYTE administrators_sid[SECURITY_MAX_SID_SIZE]{};
+        BYTE local_system_sid[SECURITY_MAX_SID_SIZE]{};
+        BYTE server_sid[SECURITY_MAX_SID_SIZE]{};
+
+        ~PipeSecurityAttributes()
+        {
+            if (dacl)
+            {
+                LocalFree(dacl);
+            }
+            if (logon_sid)
+            {
+                HeapFree(GetProcessHeap(), 0, logon_sid);
+            }
+        }
     };
 
     AsyncMessageQueue input_queue;
@@ -64,7 +88,9 @@ private:
     void consume_output_queue_thread();
     BOOL GetLogonSID(HANDLE hToken, PSID* ppsid);
     VOID FreeLogonSID(PSID* ppsid);
-    int change_pipe_security_allow_restricted_token(HANDLE handle, HANDLE token);
+    bool create_pipe_security_attributes(HANDLE token, PipeSecurityAttributes& security_attributes);
+    void start_threads(HANDLE token);
+    void stop_started_threads();
     HANDLE create_medium_integrity_token();
     void handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler);
     void finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler);

@@ -3,16 +3,66 @@
 
 #include <algorithm>
 #include <iterator>
+#include <system_error>
 
 constexpr DWORD BUFSIZE = 1024;
 constexpr DWORD PipeClientAccess = FILE_READ_DATA |
-                                   FILE_READ_EA |
                                    FILE_READ_ATTRIBUTES |
                                    READ_CONTROL |
                                    FILE_WRITE_DATA |
-                                   FILE_WRITE_EA |
                                    FILE_WRITE_ATTRIBUTES |
                                    SYNCHRONIZE;
+constexpr DWORD PipeWaitIntervalMs = 100;
+
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+namespace
+{
+    std::atomic_int thread_start_failure_after{ -1 };
+    std::atomic<HANDLE> wait_named_pipe_entered_event{ nullptr };
+
+    void inject_thread_start_failure()
+    {
+        int remaining = thread_start_failure_after.load();
+        while (remaining >= 0)
+        {
+            if (remaining == 0)
+            {
+                throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again));
+            }
+            if (thread_start_failure_after.compare_exchange_weak(remaining, remaining - 1))
+            {
+                return;
+            }
+        }
+    }
+}
+
+namespace two_way_pipe_message_ipc_test
+{
+    void FailThreadStartAfter(int successful_starts)
+    {
+        thread_start_failure_after.store(successful_starts);
+    }
+
+    void SetWaitNamedPipeEnteredEvent(HANDLE event)
+    {
+        wait_named_pipe_entered_event.store(event);
+    }
+
+    void ResetFaultInjection()
+    {
+        thread_start_failure_after.store(-1);
+        wait_named_pipe_entered_event.store(nullptr);
+    }
+}
+#else
+namespace
+{
+    void inject_thread_start_failure()
+    {
+    }
+}
+#endif
 
 TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
@@ -78,10 +128,20 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
     // path can never inherit a policy from a prior parameterized start on the same instance.
     caller_policy = {};
     closed.store(false);
-    output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
-    input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
-    input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
-    lifecycle_state = LifecycleState::Running;
+    lifecycle_state = LifecycleState::Starting;
+    try
+    {
+        start_threads(_restricted_pipe_token);
+        lifecycle_state = LifecycleState::Running;
+    }
+    catch (...)
+    {
+        closed.store(true);
+        stop_started_threads();
+        lifecycle_state = LifecycleState::Stopped;
+        lifecycle_stopped.notify_all();
+        throw;
+    }
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pipe_token, const interop_auth::CallerPolicy& _caller_policy)
@@ -95,10 +155,20 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
     // Start threads inline (do not chain into the legacy overload, which would clear the policy).
     caller_policy = _caller_policy;
     closed.store(false);
-    output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
-    input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
-    input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, _restricted_pipe_token);
-    lifecycle_state = LifecycleState::Running;
+    lifecycle_state = LifecycleState::Starting;
+    try
+    {
+        start_threads(_restricted_pipe_token);
+        lifecycle_state = LifecycleState::Running;
+    }
+    catch (...)
+    {
+        closed.store(true);
+        stop_started_threads();
+        lifecycle_state = LifecycleState::Stopped;
+        lifecycle_stopped.notify_all();
+        throw;
+    }
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
@@ -122,6 +192,27 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
         closed.store(true);
     }
 
+    stop_started_threads();
+
+    {
+        std::scoped_lock lock(lifecycle_mutex);
+        lifecycle_state = LifecycleState::Stopped;
+    }
+    lifecycle_stopped.notify_all();
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_threads(HANDLE token)
+{
+    inject_thread_start_failure();
+    output_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_output_queue_thread, this);
+    inject_thread_start_failure();
+    input_queue_thread = std::thread(&TwoWayPipeMessageIPCImpl::consume_input_queue_thread, this);
+    inject_thread_start_failure();
+    input_pipe_thread = std::thread(&TwoWayPipeMessageIPCImpl::start_named_pipe_server, this, token);
+}
+
+void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
+{
     input_queue.interrupt();
     if (input_queue_thread.joinable())
     {
@@ -145,18 +236,12 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::end()
         input_pipe_thread.join();
     }
     cancel_and_wait_for_connection_handlers();
-
-    {
-        std::scoped_lock lock(lifecycle_mutex);
-        lifecycle_state = LifecycleState::Stopped;
-    }
-    lifecycle_stopped.notify_all();
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
 {
     // Adapted from https://learn.microsoft.com/windows/win32/ipc/named-pipe-client
-    HANDLE output_pipe_handle;
+    HANDLE output_pipe_handle = INVALID_HANDLE_VALUE;
     const wchar_t* message_send = message.c_str();
     BOOL fSuccess = FALSE;
     DWORD cbToWrite, cbWritten, dwMode;
@@ -164,7 +249,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
 
     // Try to open a named pipe; wait for it, if necessary.
 
-    while (1)
+    while (!closed.load())
     {
         output_pipe_handle = CreateFile(
             lpszPipename, // pipe name
@@ -187,13 +272,24 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
             return;
         }
 
-        // All pipe instances are busy, so wait for 20 seconds.
-
-        if (!WaitNamedPipe(lpszPipename, 20000))
+        // Use short waits so end() can promptly join the output thread instead of waiting for a
+        // long unavailable-pipe timeout.
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+        if (const HANDLE event = wait_named_pipe_entered_event.load())
+        {
+            SetEvent(event);
+        }
+#endif
+        if (!WaitNamedPipe(lpszPipename, PipeWaitIntervalMs) && GetLastError() != ERROR_SEM_TIMEOUT)
         {
             return;
         }
     }
+    if (closed.load() || output_pipe_handle == INVALID_HANDLE_VALUE)
+    {
+        return;
+    }
+
     dwMode = PIPE_READMODE_MESSAGE;
     fSuccess = SetNamedPipeHandleState(
         output_pipe_handle, // pipe handle
@@ -247,6 +343,7 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
     // Verify the parameter passed in is not NULL.
     if (NULL == ppsid)
         goto Cleanup;
+    *ppsid = nullptr;
 
     // Get required buffer size and allocate the TOKEN_GROUPS buffer.
 
@@ -298,12 +395,12 @@ BOOL TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::GetLogonSID(HANDLE hToken, 
             if (!CopySid(dwLength, *ppsid, ptg->Groups[dwIndex].Sid))
             {
                 HeapFree(GetProcessHeap(), 0, static_cast<LPVOID>(*ppsid));
+                *ppsid = nullptr;
                 goto Cleanup;
             }
+            bSuccess = TRUE;
             break;
         }
-
-    bSuccess = TRUE;
 
 Cleanup:
 
@@ -321,72 +418,138 @@ VOID TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::FreeLogonSID(PSID* ppsid)
     HeapFree(GetProcessHeap(), 0, static_cast<LPVOID>(*ppsid));
 }
 
-int TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::change_pipe_security_allow_restricted_token(HANDLE handle, HANDLE token)
+bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_pipe_security_attributes(HANDLE token, PipeSecurityAttributes& security_attributes)
 {
-    PACL old_dacl, new_dacl;
-    PSECURITY_DESCRIPTOR sd;
-    EXPLICIT_ACCESS ea;
-    PSID user_restricted;
-    int error;
+    HANDLE process_token = nullptr;
+    EXPLICIT_ACCESS entries[3]{};
+    bool success = false;
+    DWORD administrators_sid_size = 0;
+    DWORD local_system_sid_size = 0;
+    TOKEN_ELEVATION elevation{};
+    DWORD elevation_size = 0;
+    PSID server_sid = nullptr;
+    TRUSTEE_TYPE server_trustee_type = TRUSTEE_IS_GROUP;
+    auto set_entry = [](EXPLICIT_ACCESS& entry, DWORD access, PSID sid, TRUSTEE_TYPE trustee_type) {
+        entry.grfAccessPermissions = access;
+        entry.grfAccessMode = SET_ACCESS;
+        entry.grfInheritance = NO_INHERITANCE;
+        entry.Trustee.TrusteeForm = TRUSTEE_IS_SID;
+        entry.Trustee.TrusteeType = trustee_type;
+        entry.Trustee.ptstrName = static_cast<LPTSTR>(sid);
+    };
 
-    if (!GetLogonSID(token, &user_restricted))
+    if (!token)
     {
-        error = 5; // No access error.
-        goto Ldone;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &process_token))
+        {
+            return false;
+        }
+        token = process_token;
     }
 
-    if (GetSecurityInfo(handle,
-                        SE_KERNEL_OBJECT,
-                        DACL_SECURITY_INFORMATION,
-                        NULL,
-                        NULL,
-                        &old_dacl,
-                        NULL,
-                        &sd))
+    if (!GetLogonSID(token, &security_attributes.logon_sid))
     {
-        error = GetLastError();
-        goto Lclean_sid;
+        goto Cleanup;
     }
 
-    memset(&ea, 0, sizeof(EXPLICIT_ACCESS));
-    // A pipe client only needs to read/write messages and set its own read mode. In particular,
-    // do not grant FILE_CREATE_PIPE_INSTANCE (the FILE_APPEND_DATA bit included by GENERIC_WRITE):
-    // otherwise another process in this logon session could add a rogue server instance.
-    ea.grfAccessPermissions = PipeClientAccess;
-    ea.grfAccessMode = SET_ACCESS;
-    ea.grfInheritance = NO_INHERITANCE;
-    ea.Trustee.TrusteeForm = TRUSTEE_IS_SID;
-    ea.Trustee.TrusteeType = TRUSTEE_IS_USER;
-    ea.Trustee.ptstrName = static_cast<LPTSTR>(user_restricted);
-
-    if (SetEntriesInAcl(1, &ea, old_dacl, &new_dacl))
+    administrators_sid_size = ARRAYSIZE(security_attributes.administrators_sid);
+    local_system_sid_size = ARRAYSIZE(security_attributes.local_system_sid);
+    if (!CreateWellKnownSid(WinBuiltinAdministratorsSid,
+                            nullptr,
+                            security_attributes.administrators_sid,
+                            &administrators_sid_size) ||
+        !CreateWellKnownSid(WinLocalSystemSid,
+                            nullptr,
+                            security_attributes.local_system_sid,
+                            &local_system_sid_size))
     {
-        error = GetLastError();
-        goto Lclean_sd;
+        goto Cleanup;
     }
 
-    if (SetSecurityInfo(handle,
-                        SE_KERNEL_OBJECT,
-                        DACL_SECURITY_INFORMATION,
-                        NULL,
-                        NULL,
-                        new_dacl,
-                        NULL))
+    if (!GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &elevation_size))
     {
-        error = GetLastError();
-        goto Lclean_dacl;
+        goto Cleanup;
     }
 
-    error = 0;
+    server_sid = security_attributes.administrators_sid;
+    if (!elevation.TokenIsElevated)
+    {
+        // A non-elevated server has no identity distinct from its same-user clients. Retain its
+        // existing multi-instance behavior with an explicit DACL; elevated Runner servers use the
+        // Administrators-owned path below, which is the security boundary this transport needs.
+        DWORD token_user_size = 0;
+        GetTokenInformation(token, TokenUser, nullptr, 0, &token_user_size);
+        auto* token_user = static_cast<TOKEN_USER*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, token_user_size));
+        if (!token_user ||
+            !GetTokenInformation(token, TokenUser, token_user, token_user_size, &token_user_size))
+        {
+            if (token_user)
+            {
+                HeapFree(GetProcessHeap(), 0, token_user);
+            }
+            goto Cleanup;
+        }
 
-Lclean_dacl:
-    LocalFree(static_cast<HLOCAL>(new_dacl));
-Lclean_sd:
-    LocalFree(static_cast<HLOCAL>(sd));
-Lclean_sid:
-    FreeLogonSID(&user_restricted);
-Ldone:
-    return error;
+        const DWORD server_sid_size = GetLengthSid(token_user->User.Sid);
+        const bool copied = server_sid_size <= ARRAYSIZE(security_attributes.server_sid) &&
+                            CopySid(server_sid_size, security_attributes.server_sid, token_user->User.Sid) == TRUE;
+        HeapFree(GetProcessHeap(), 0, token_user);
+        if (!copied)
+        {
+            goto Cleanup;
+        }
+
+        server_sid = security_attributes.server_sid;
+        server_trustee_type = TRUSTEE_IS_USER;
+    }
+
+    // The elevated server identity can change the DACL or create later instances. The
+    // medium-integrity client receives the exact data/attribute rights it needs, never default or
+    // creator-owner rights.
+    set_entry(entries[0],
+              FILE_ALL_ACCESS,
+              server_sid,
+              server_trustee_type);
+    set_entry(entries[1],
+              FILE_ALL_ACCESS,
+              security_attributes.local_system_sid,
+              TRUSTEE_IS_USER);
+    set_entry(entries[2],
+              PipeClientAccess,
+              security_attributes.logon_sid,
+              TRUSTEE_IS_USER);
+
+    if (SetEntriesInAcl(ARRAYSIZE(entries), entries, nullptr, &security_attributes.dacl) != ERROR_SUCCESS)
+    {
+        goto Cleanup;
+    }
+
+    if (!InitializeSecurityDescriptor(&security_attributes.security_descriptor, SECURITY_DESCRIPTOR_REVISION) ||
+        !SetSecurityDescriptorOwner(&security_attributes.security_descriptor,
+                                    server_sid,
+                                    FALSE) ||
+        !SetSecurityDescriptorGroup(&security_attributes.security_descriptor,
+                                    server_sid,
+                                    FALSE) ||
+        !SetSecurityDescriptorDacl(&security_attributes.security_descriptor,
+                                   TRUE,
+                                   security_attributes.dacl,
+                                   FALSE))
+    {
+        goto Cleanup;
+    }
+
+    security_attributes.attributes.nLength = sizeof(security_attributes.attributes);
+    security_attributes.attributes.lpSecurityDescriptor = &security_attributes.security_descriptor;
+    security_attributes.attributes.bInheritHandle = FALSE;
+    success = true;
+
+Cleanup:
+    if (process_token)
+    {
+        CloseHandle(process_token);
+    }
+    return success;
 }
 
 HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_token()
@@ -561,6 +724,12 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
                 open_mode |= FILE_FLAG_FIRST_PIPE_INSTANCE;
             }
 
+            PipeSecurityAttributes security_attributes;
+            if (!create_pipe_security_attributes(token, security_attributes))
+            {
+                return;
+            }
+
             connect_pipe_handle = CreateNamedPipe(
                 pipe_name,
                 open_mode,
@@ -572,7 +741,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
                 BUFSIZE,
                 BUFSIZE,
                 0,
-                NULL);
+                &security_attributes.attributes);
 
             if (connect_pipe_handle == INVALID_HANDLE_VALUE)
             {
@@ -580,11 +749,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             }
 
             first_instance = false;
-
-            if (token != NULL)
-            {
-                change_pipe_security_allow_restricted_token(connect_pipe_handle, token);
-            }
             current_connect_pipe_handle = connect_pipe_handle;
         }
         connected = ConnectNamedPipe(connect_pipe_handle, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);

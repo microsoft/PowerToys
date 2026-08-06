@@ -1,6 +1,16 @@
 #pragma once
 #include <functional>
 #include "pipe_caller_auth.h"
+
+#ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
+namespace two_way_pipe_message_ipc_test
+{
+    void FailThreadStartAfter(int successful_starts);
+    void SetWaitNamedPipeEnteredEvent(HANDLE event);
+    void ResetFaultInjection();
+}
+#endif
+
 class TwoWayPipeMessageIPC
 {
 public:
