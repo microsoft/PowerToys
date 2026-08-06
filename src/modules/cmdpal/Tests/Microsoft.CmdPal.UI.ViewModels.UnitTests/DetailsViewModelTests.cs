@@ -195,6 +195,36 @@ public partial class DetailsViewModelTests
         Assert.AreEqual(0, command.HandlerCount, "an element built before the failure was left subscribed");
     }
 
+    [TestMethod]
+    public void MetadataRebuild_WhenCommandInitializationThrows_ReleasesPartiallyBuiltCommands()
+    {
+        var pageContext = new TestPageContext();
+        var initializedCommand = new HandlerCountingCommand();
+        var failingCommand = new ThrowingOnSubscribeCommand();
+        var details = new Details
+        {
+            Title = "T",
+            Body = "B",
+            Metadata =
+            [
+                new DetailsElement
+                {
+                    Key = "commands",
+                    Data = new DetailsCommands { Commands = [initializedCommand, failingCommand] },
+                },
+            ],
+        };
+
+        var vm = new DetailsViewModel(details, new(pageContext));
+
+        Assert.ThrowsException<InvalidOperationException>(() => vm.InitializeProperties());
+
+        Assert.AreEqual(0, initializedCommand.HandlerCount, "a command initialized before the failure was left subscribed");
+        Assert.AreEqual(0, failingCommand.HandlerCount, "the command whose subscription failed was left subscribed");
+
+        vm.SafeCleanup();
+    }
+
     /// <summary>
     /// Reports whether anything is still subscribed - a view-model that was
     /// dropped without cleanup shows up here as a handler that was never revoked.
@@ -214,6 +244,30 @@ public partial class DetailsViewModelTests
         public string Name => "Counting";
 
         public string Id => "test.counting";
+
+        public IIconInfo Icon => new IconInfo(string.Empty);
+    }
+
+    private sealed partial class ThrowingOnSubscribeCommand : ICommand
+    {
+        private TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add
+            {
+                _propChanged += value;
+                throw new InvalidOperationException("Extension went away while subscribing");
+            }
+
+            remove => _propChanged -= value;
+        }
+
+        public int HandlerCount => _propChanged?.GetInvocationList().Length ?? 0;
+
+        public string Name => "Throwing";
+
+        public string Id => "test.throwing";
 
         public IIconInfo Icon => new IconInfo(string.Empty);
     }

@@ -27,28 +27,55 @@ public partial class DetailsCommandsViewModel(
             return;
         }
 
-        Commands = model
-            .Commands?
-            .Select(c =>
+        var newCommands = new List<CommandViewModel>();
+        var transferred = false;
+
+        try
+        {
+            var commands = model.Commands;
+            if (commands is not null)
             {
-                var vm = new CommandViewModel(c, PageContext);
-                vm.InitializeProperties();
-                return vm;
-            })
-            .ToList() ?? [];
-        UpdateProperty(nameof(HasCommands));
-        UpdateProperty(nameof(Commands));
+                foreach (var command in commands)
+                {
+                    var vm = new CommandViewModel(command, PageContext);
+                    newCommands.Add(vm);
+                    vm.InitializeProperties();
+                }
+            }
+
+            ReplaceCommands(newCommands);
+            transferred = true;
+
+            UpdateProperty(nameof(HasCommands));
+            UpdateProperty(nameof(Commands));
+        }
+        finally
+        {
+            if (!transferred)
+            {
+                foreach (var command in newCommands)
+                {
+                    command.SafeCleanup();
+                }
+            }
+        }
+    }
+
+    private void ReplaceCommands(List<CommandViewModel> commands)
+    {
+        var replacedCommands = Commands;
+        Commands = commands;
+
+        foreach (var command in replacedCommands)
+        {
+            command.SafeCleanup();
+        }
     }
 
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
 
-        foreach (var command in Commands)
-        {
-            command.SafeCleanup();
-        }
-
-        Commands = [];
+        ReplaceCommands([]);
     }
 }
