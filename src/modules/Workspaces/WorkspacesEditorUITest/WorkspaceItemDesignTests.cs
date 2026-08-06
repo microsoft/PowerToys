@@ -73,6 +73,7 @@ public class WorkspaceItemDesignTests : WorkspacesUiAutomationBase
         }
 
         var item = GetFirstWorkspaceItem();
+
         // In the WinUI editor, clicking the card navigates to the editor page.
         // The SettingsCard has IsClickEnabled="True" which makes it a clickable element.
         Assert.IsNotNull(item, "Workspace item card should be clickable for editing");
