@@ -232,10 +232,10 @@
     <value>Enter the text to replace when typed</value>
   </data>
   <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement.</value>
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected.</value>
   </data>
   <data name="TextTriggerBehaviorDescription.Text" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement.</value>
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected.</value>
   </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
@@ -469,7 +469,7 @@
     <value>Replacement text is too long</value>
   </data>
   <data name="Validation_TargetTextTooLong_Message" xml:space="preserve">
-    <value>Replacement text can contain at most 1,024 characters.</value>
+    <value>Replacement text can contain at most 256 characters.</value>
   </data>
   <data name="Validation_TextReplacementLimitReached_Title" xml:space="preserve">
     <value>Text replacement limit reached</value>

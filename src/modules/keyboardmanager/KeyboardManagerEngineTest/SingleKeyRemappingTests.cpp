@@ -11,6 +11,8 @@
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include "TestHelpers.h"
 #include <common/interop/shared_constants.h>
+#include <atomic>
+#include <thread>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -673,6 +675,102 @@ namespace RemappingLogicTests
             Assert::IsTrue(testState.textReplacementContextRefreshEvent.load(std::memory_order_relaxed) == refreshEvent);
         }
 
+        TEST_METHOD (TextReplacementRuntimeConfiguration_ShouldKeepPublishedGenerationsImmutable)
+        {
+            Assert::IsTrue(testState.AddTextReplacement(L"old", L"first"));
+            const auto oldConfiguration = testState.GetTextReplacementRuntimeConfiguration();
+
+            Assert::IsTrue(testState.UpdateTextReplacement(L"old", L"new-trigger", L"second"));
+            const auto newConfiguration = testState.GetTextReplacementRuntimeConfiguration();
+
+            Assert::AreEqual(static_cast<size_t>(1), oldConfiguration->replacements.size());
+            Assert::AreEqual(std::wstring(L"first"), oldConfiguration->replacements.at(L"old"));
+            Assert::AreEqual(static_cast<size_t>(3), oldConfiguration->maxTriggerLength);
+            Assert::AreEqual(static_cast<size_t>(1), newConfiguration->replacements.size());
+            Assert::AreEqual(std::wstring(L"second"), newConfiguration->replacements.at(L"new-trigger"));
+            Assert::AreEqual(static_cast<size_t>(11), newConfiguration->maxTriggerLength);
+        }
+
+        TEST_METHOD (TextReplacementRuntimeConfiguration_ShouldPublishCompleteGenerationsConcurrently)
+        {
+            auto publishGeneration = [this](const std::wstring& trigger, const std::wstring& replacement) {
+                testState.MappingConfiguration::ClearTextReplacements();
+                return testState.MappingConfiguration::AddTextReplacement(trigger, replacement) &&
+                       testState.PublishTextReplacementRuntimeConfiguration();
+            };
+
+            Assert::IsTrue(publishGeneration(L"a", L"generation-a"));
+            std::atomic_bool invalidGenerationObserved = false;
+            std::atomic_bool readerStarted = false;
+            std::atomic_bool generationAObserved = false;
+            std::atomic_bool generationBObserved = false;
+            std::atomic_size_t readCount = 0;
+            std::atomic_bool stopReader = false;
+            std::thread reader([&] {
+                readerStarted.store(true, std::memory_order_release);
+                while (!stopReader.load(std::memory_order_acquire))
+                {
+                    const auto configuration = testState.GetTextReplacementRuntimeConfiguration();
+                    const bool isGenerationA = configuration->maxTriggerLength == 1 &&
+                                               configuration->replacements.size() == 1 &&
+                                               configuration->replacements.contains(L"a") &&
+                                               configuration->replacements.at(L"a") == L"generation-a";
+                    const bool isGenerationB = configuration->maxTriggerLength == 4 &&
+                                               configuration->replacements.size() == 1 &&
+                                               configuration->replacements.contains(L"bbbb") &&
+                                               configuration->replacements.at(L"bbbb") == L"generation-b";
+                    if (!isGenerationA && !isGenerationB)
+                    {
+                        invalidGenerationObserved.store(true, std::memory_order_release);
+                        break;
+                    }
+                    if (isGenerationA)
+                    {
+                        generationAObserved.store(true, std::memory_order_release);
+                    }
+                    if (isGenerationB)
+                    {
+                        generationBObserved.store(true, std::memory_order_release);
+                    }
+                    readCount.fetch_add(1, std::memory_order_relaxed);
+                }
+            });
+
+            while (!readerStarted.load(std::memory_order_acquire))
+            {
+                std::this_thread::yield();
+            }
+
+            while (!generationAObserved.load(std::memory_order_acquire) && !invalidGenerationObserved.load(std::memory_order_acquire))
+            {
+                std::this_thread::yield();
+            }
+            if (!publishGeneration(L"bbbb", L"generation-b"))
+            {
+                invalidGenerationObserved.store(true, std::memory_order_release);
+            }
+            while (!generationBObserved.load(std::memory_order_acquire) && !invalidGenerationObserved.load(std::memory_order_acquire))
+            {
+                std::this_thread::yield();
+            }
+
+            for (size_t iteration = 0; iteration < 1000; ++iteration)
+            {
+                if (!publishGeneration(iteration % 2 == 0 ? L"bbbb" : L"a", iteration % 2 == 0 ? L"generation-b" : L"generation-a"))
+                {
+                    invalidGenerationObserved.store(true, std::memory_order_release);
+                    break;
+                }
+            }
+
+            stopReader.store(true, std::memory_order_release);
+            reader.join();
+            Assert::IsFalse(invalidGenerationObserved.load(std::memory_order_acquire));
+            Assert::IsTrue(readCount.load(std::memory_order_acquire) > 0);
+            Assert::IsTrue(generationAObserved.load(std::memory_order_acquire));
+            Assert::IsTrue(generationBObserved.load(std::memory_order_acquire));
+        }
+
         TEST_METHOD (HandleTextReplacementEvent_ShouldApplyRequestedRuntimeReset)
         {
             testState.AddTextReplacement(L"    ", L"expanded");
@@ -884,7 +982,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
             Assert::IsTrue(mockedInputHandler.GetSendVirtualInputBatchCount() > 1);
             Assert::IsTrue(mockedInputHandler.GetLargestSendVirtualInputBatchSize() <= 32);
-            Assert::AreEqual(static_cast<size_t>(1024), longReplacement.size());
+            Assert::AreEqual(static_cast<size_t>(256), longReplacement.size());
         }
 
         TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressOriginalKey_WhenLaterInputBatchFails)

@@ -2,6 +2,69 @@
 #include "State.h"
 #include <optional>
 
+bool State::PublishTextReplacementRuntimeConfiguration() noexcept
+{
+    try
+    {
+        auto configuration = std::make_shared<TextReplacementRuntimeConfiguration>();
+        configuration->replacements = textReplacements;
+        configuration->maxTriggerLength = maxTextReplacementTriggerLength;
+        textReplacementRuntimeConfiguration.store(std::move(configuration), std::memory_order_release);
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+std::shared_ptr<const TextReplacementRuntimeConfiguration> State::GetTextReplacementRuntimeConfiguration() const noexcept
+{
+    return textReplacementRuntimeConfiguration.load(std::memory_order_acquire);
+}
+
+bool State::HasTextReplacements() const noexcept
+{
+    const auto configuration = GetTextReplacementRuntimeConfiguration();
+    return configuration && !configuration->replacements.empty();
+}
+
+void State::ClearTextReplacements()
+{
+    MappingConfiguration::ClearTextReplacements();
+    PublishTextReplacementRuntimeConfiguration();
+}
+
+bool State::AddTextReplacement(const std::wstring& trigger, const std::wstring& text)
+{
+    const bool added = MappingConfiguration::AddTextReplacement(trigger, text);
+    if (added)
+    {
+        PublishTextReplacementRuntimeConfiguration();
+    }
+    return added;
+}
+
+bool State::DeleteTextReplacement(const std::wstring& trigger)
+{
+    const bool deleted = MappingConfiguration::DeleteTextReplacement(trigger);
+    if (deleted)
+    {
+        PublishTextReplacementRuntimeConfiguration();
+    }
+    return deleted;
+}
+
+bool State::UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText)
+{
+    const bool updated = MappingConfiguration::UpdateTextReplacement(oldTrigger, newTrigger, newText);
+    if (updated)
+    {
+        PublishTextReplacementRuntimeConfiguration();
+    }
+    return updated;
+}
+
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
 std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
 {

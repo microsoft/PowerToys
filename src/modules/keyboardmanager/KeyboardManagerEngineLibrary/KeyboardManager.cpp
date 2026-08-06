@@ -263,7 +263,8 @@ namespace
             return TryGetBoolProperty(element.get(), UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) && textEditPatternAvailable;
         }
 
-        return controlType == UIA_DocumentControlTypeId && IsWritableDocument(element.get());
+        return (controlType == UIA_DocumentControlTypeId || controlType == UIA_TextControlTypeId) &&
+               IsWritableDocument(element.get());
     }
 }
 
@@ -355,6 +356,10 @@ void KeyboardManager::LoadSettings()
 
         // retry once
         state.LoadSettings();
+    }
+    if (!state.PublishTextReplacementRuntimeConfiguration())
+    {
+        Logger::error(L"Failed to publish the Keyboard Manager text replacement runtime configuration. The previous configuration will remain active.");
     }
     try
     {
@@ -672,7 +677,8 @@ void KeyboardManager::StartLowlevelKeyboardHook()
         }
     }
 
-    if (hookHandle && !state.textReplacements.empty() && !mouseHookHandle)
+    const bool hasTextReplacements = state.HasTextReplacements();
+    if (hookHandle && hasTextReplacements && !mouseHookHandle)
     {
         mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(nullptr), 0);
         mouseHookHandleCopy = mouseHookHandle;
@@ -681,14 +687,14 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             Logger::error(L"Failed to install the Keyboard Manager text replacement mouse hook. {}", get_last_error_or_default(GetLastError()));
         }
     }
-    else if (state.textReplacements.empty() && mouseHookHandle)
+    else if (!hasTextReplacements && mouseHookHandle)
     {
         UnhookWindowsHookEx(mouseHookHandle);
         mouseHookHandle = nullptr;
         mouseHookHandleCopy = nullptr;
     }
 
-    if (hookHandle && !state.textReplacements.empty())
+    if (hookHandle && hasTextReplacements)
     {
         StartTextReplacementContextTracking();
     }
@@ -755,7 +761,7 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
-    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.textReplacements.empty());
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && !state.HasTextReplacements());
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept

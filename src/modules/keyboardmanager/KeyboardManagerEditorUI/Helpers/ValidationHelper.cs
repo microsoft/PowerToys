@@ -16,7 +16,7 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         // Keep these limits in sync with KeyboardManagerConstants.h.
         public const int MaxTextReplacementTriggerLength = 256;
-        public const int MaxTextReplacementTargetLength = 1024;
+        public const int MaxTextReplacementTargetLength = 256;
         public const int MaxTextReplacementCount = 1000;
 
         public static readonly Dictionary<ValidationErrorType, (string Title, string Message)> ValidationMessages = new()

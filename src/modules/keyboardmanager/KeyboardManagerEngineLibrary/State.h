@@ -1,6 +1,7 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <atomic>
+#include <memory>
 #include <unordered_set>
 
 enum class TextReplacementContextStatus : uint8_t
@@ -8,6 +9,12 @@ enum class TextReplacementContextStatus : uint8_t
     Pending,
     Editable,
     Blocked,
+};
+
+struct TextReplacementRuntimeConfiguration
+{
+    TextReplacementTable replacements;
+    size_t maxTriggerLength = 0;
 };
 
 class State : public MappingConfiguration
@@ -23,6 +30,21 @@ private:
     std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
 
 public:
+    // Publishes an immutable configuration generation for the hook thread. Settings
+    // loading mutates MappingConfiguration on a worker thread, so the hook must never
+    // read those containers directly while a reload is in progress.
+    bool PublishTextReplacementRuntimeConfiguration() noexcept;
+    std::shared_ptr<const TextReplacementRuntimeConfiguration> GetTextReplacementRuntimeConfiguration() const noexcept;
+    bool HasTextReplacements() const noexcept;
+
+    // Keep direct State mutations used by the engine tests synchronized with the
+    // immutable runtime view. KeyboardManager::LoadSettings publishes once after the
+    // base configuration has finished constructing a complete generation.
+    void ClearTextReplacements();
+    bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text);
+    bool DeleteTextReplacement(const std::wstring& trigger);
+    bool UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText);
+
     // Stores typed characters for text replacement matching.
     std::wstring textReplacementBuffer;
 
@@ -105,4 +127,9 @@ public:
     // injection was previously blocked, indicating that its key-up should be passed
     // through as well.
     bool ConsumeSingleKeyRemapInjectionFailed(const DWORD sourceKey);
+
+private:
+    std::atomic<std::shared_ptr<const TextReplacementRuntimeConfiguration>> textReplacementRuntimeConfiguration{
+        std::make_shared<const TextReplacementRuntimeConfiguration>()
+    };
 };

@@ -106,6 +106,6 @@ namespace KeyboardManagerConstants
     inline const std::wstring NoActivatedApp = L"";
 
     inline constexpr std::size_t MaxTextReplacementTriggerLength = 256;
-    inline constexpr std::size_t MaxTextReplacementTextLength = 1024;
+    inline constexpr std::size_t MaxTextReplacementTextLength = 256;
     inline constexpr std::size_t MaxTextReplacementCount = 1000;
 }

@@ -2382,7 +2382,13 @@ namespace KeyboardEventHandlers
 
     intptr_t HandleTextReplacementEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state)
     {
-        if (GeneratedByKBM(data) || state.textReplacements.empty())
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        const auto runtimeConfiguration = state.GetTextReplacementRuntimeConfiguration();
+        if (!runtimeConfiguration || runtimeConfiguration->replacements.empty())
         {
             return 0;
         }
@@ -2519,10 +2525,10 @@ namespace KeyboardEventHandlers
         }
 
         state.textReplacementBuffer.append(textEvent.text);
-        TrimUtf16Buffer(state.textReplacementBuffer, state.maxTextReplacementTriggerLength);
+        TrimUtf16Buffer(state.textReplacementBuffer, runtimeConfiguration->maxTriggerLength);
 
         const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
-        for (size_t length = (std::min)(textReplacementBufferView.length(), state.maxTextReplacementTriggerLength); length != 0; --length)
+        for (size_t length = (std::min)(textReplacementBufferView.length(), runtimeConfiguration->maxTriggerLength); length != 0; --length)
         {
             const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
             if (!trigger.empty() && IsLowSurrogate(trigger.front()))
@@ -2530,7 +2536,7 @@ namespace KeyboardEventHandlers
                 continue;
             }
 
-            if (const auto replacement = state.textReplacements.find(trigger); replacement != state.textReplacements.end())
+            if (const auto replacement = runtimeConfiguration->replacements.find(trigger); replacement != runtimeConfiguration->replacements.end())
             {
                 const size_t currentTextUsed = (std::min)(trigger.size(), textEvent.text.size());
                 const std::wstring_view preservedCurrentText{ textEvent.text.data(), textEvent.text.size() - currentTextUsed };

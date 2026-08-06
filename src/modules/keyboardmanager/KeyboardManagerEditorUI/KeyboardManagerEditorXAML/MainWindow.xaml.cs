@@ -64,7 +64,14 @@ namespace KeyboardManagerEditorUI
             {
                 this.Activated -= MainWindow_Activated;
                 this.Closed -= MainWindow_Closed;
-                (Application.Current as App)?.StopEditorLifetime();
+                try
+                {
+                    (Application.Current as App)?.StopEditorLifetime();
+                }
+                finally
+                {
+                    Application.Current.Exit();
+                }
             }
         }
     }
