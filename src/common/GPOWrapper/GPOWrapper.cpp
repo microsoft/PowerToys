@@ -180,6 +180,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableAutomaticUpdateDownloadValue());
     }
+    GpoRuleConfigured GPOWrapper::GetDisablePreviewUpdatesValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisablePreviewUpdatesValue());
+    }
     GpoRuleConfigured GPOWrapper::GetDisableShowWhatsNewAfterUpdatesValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getDisableShowWhatsNewAfterUpdatesValue());

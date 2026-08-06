@@ -153,6 +153,9 @@
   <data name="GITHUB_NEW_VERSION_AVAILABLE" xml:space="preserve">
     <value>An update to PowerToys is available.</value>
   </data>
+  <data name="GITHUB_NEW_PREVIEW_VERSION_AVAILABLE" xml:space="preserve">
+    <value>A PowerToys Preview update is available.</value>
+  </data>
   <data name="GITHUB_NEW_VERSION_UPDATE_NOW" xml:space="preserve">
     <value>Update now</value>
   </data>

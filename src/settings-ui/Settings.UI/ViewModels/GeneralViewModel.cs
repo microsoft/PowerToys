@@ -167,6 +167,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _showThemeAdaptiveSysTrayIcon = GeneralSettingsConfig.ShowThemeAdaptiveTrayIcon;
             _showNewUpdatesToastNotification = GeneralSettingsConfig.ShowNewUpdatesToastNotification;
             _autoDownloadUpdates = GeneralSettingsConfig.AutoDownloadUpdates;
+            _includePrereleaseUpdates = GeneralSettingsConfig.IncludePrereleaseUpdates;
             _showWhatsNewAfterUpdates = GeneralSettingsConfig.ShowWhatsNewAfterUpdates;
             _enableExperimentation = GeneralSettingsConfig.EnableExperimentation;
 
@@ -188,10 +189,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+            _isPrereleaseUpdate = UpdatingSettingsConfig.IsPrerelease;
             _updateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
             _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
+            _includePrereleaseUpdatesIsGpoDisabled = GPOWrapper.GetDisablePreviewUpdatesValue() == GpoRuleConfigured.Enabled;
             _experimentationIsGpoDisallowed = GPOWrapper.GetAllowExperimentationValue() == GpoRuleConfigured.Disabled;
             _showWhatsNewAfterUpdatesIsGpoDisabled = GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue() == GpoRuleConfigured.Enabled;
             _enableDataDiagnosticsIsGpoDisallowed = GPOWrapper.GetAllowDataDiagnosticsValue() == GpoRuleConfigured.Disabled;
@@ -269,6 +272,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _newUpdatesToastIsGpoDisabled;
         private bool _autoDownloadUpdates;
         private bool _autoDownloadUpdatesIsGpoDisabled;
+        private bool _includePrereleaseUpdatesIsGpoDisabled;
+        private bool _includePrereleaseUpdates;
         private bool _showWhatsNewAfterUpdates;
         private bool _showWhatsNewAfterUpdatesIsGpoDisabled;
         private bool _enableExperimentation;
@@ -282,6 +287,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private UpdatingSettings.UpdatingState _updatingState = UpdatingSettings.UpdatingState.UpToDate;
         private string _newAvailableVersion = string.Empty;
         private string _newAvailableVersionLink = string.Empty;
+        private bool _isPrereleaseUpdate;
         private string _updateCheckedDate = string.Empty;
 
         private bool _isNewVersionDownloading;
@@ -318,7 +324,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             string installScope = GetCurrentInstallScope() == InstallScope.PerMachine ? "per machine (system)" : "per user";
 
-            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
+            var info = $"OS Version: {GetOSVersion()} \n.NET Version: {GetDotNetVersion()}\n{isElevatedString}\nInstall scope: {installScope}\nVersion channel: {GetPowerToysVersionChannel()}\nSource commit: {GetPowerToysSourceCommit()}\nOperating System Language: {CultureInfo.InstalledUICulture.DisplayName}\nSystem locale: {CultureInfo.InstalledUICulture.Name}";
 
             var gitHubURL = "https://github.com/microsoft/PowerToys/issues/new?template=bug_report.yml&labels=Issue-Bug%2CTriage-Needed" +
                 "&version=" + version + "&additionalInfo=" + System.Web.HttpUtility.UrlEncode(info);
@@ -329,6 +335,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string GetPowerToysVersion()
         {
             return Helper.GetProductVersion().TrimStart('v');
+        }
+
+        private string GetPowerToysVersionChannel()
+        {
+            return global::PowerToys.Interop.CommonManaged.GetProductVersionChannel();
+        }
+
+        private string GetPowerToysSourceCommit()
+        {
+            return global::PowerToys.Interop.CommonManaged.GetProductVersionSourceCommit();
         }
 
         private string GetOSVersion()
@@ -582,6 +598,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return _newUpdatesToastIsGpoDisabled ||
                     (_isAdmin && _autoDownloadUpdatesIsGpoDisabled) ||
+                    _includePrereleaseUpdatesIsGpoDisabled ||
                     _showWhatsNewAfterUpdatesIsGpoDisabled;
             }
         }
@@ -630,6 +647,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsAutoDownloadUpdatesCardEnabled
         {
             get => !_isDevBuild && !_autoDownloadUpdatesIsGpoDisabled;
+        }
+
+        public bool IncludePrereleaseUpdates
+        {
+            get => _includePrereleaseUpdates && !_includePrereleaseUpdatesIsGpoDisabled;
+
+            set
+            {
+                if (_includePrereleaseUpdates != value)
+                {
+                    _includePrereleaseUpdates = value;
+                    GeneralSettingsConfig.IncludePrereleaseUpdates = value;
+                    NotifyPropertyChanged();
+                    CheckForUpdatesClick();
+                }
+            }
+        }
+
+        public bool IsIncludePrereleaseUpdatesCardEnabled
+        {
+            get => !_isDevBuild && !_includePrereleaseUpdatesIsGpoDisabled;
         }
 
         public bool ShowWhatsNewAfterUpdates
@@ -797,6 +835,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 return Helper.GetProductVersion();
             }
         }
+
+        public bool IsCurrentVersionPreview => string.Equals(GetPowerToysVersionChannel(), "preview", StringComparison.OrdinalIgnoreCase);
+
+        public string NewVersionAvailableTitle => GetResourceString(IsPrereleaseUpdate ? "General_PreviewUpdateAvailableTitle" : "General_UpdateAvailableTitle");
+
+        public string NewVersionReadyToInstallTitle => GetResourceString(IsPrereleaseUpdate ? "General_PreviewUpdateReadyToInstallTitle" : "General_UpdateReadyToInstallTitle");
 
         public string UpdateCheckedDate
         {
@@ -1012,6 +1056,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _newAvailableVersionLink = value;
                     NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsPrereleaseUpdate
+        {
+            get
+            {
+                return _isPrereleaseUpdate;
+            }
+
+            private set
+            {
+                if (value != _isPrereleaseUpdate)
+                {
+                    _isPrereleaseUpdate = value;
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(NewVersionAvailableTitle));
+                    NotifyPropertyChanged(nameof(NewVersionReadyToInstallTitle));
                 }
             }
         }
@@ -1391,6 +1454,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysUpdatingState = UpdatingSettingsConfig.State;
                 PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
+                IsPrereleaseUpdate = UpdatingSettingsConfig.IsPrerelease;
                 UpdateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
                 _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
