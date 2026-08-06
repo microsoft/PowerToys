@@ -1,7 +1,10 @@
-# Local UI-test VM setup
+# Local UI-test VM setup (Docker backend)
 
 Use this reference for the one-time dockur/windows baseline. The VM is persistent: Docker runs QEMU,
 while Windows and installed tools live in the named `/storage` volume.
+
+For a guest that runs directly in Hyper-V, with no Docker Desktop, WSL2, or nested virtualization,
+read [setup-hyperv.md](setup-hyperv.md) instead.
 
 ## Host requirements
 
@@ -18,8 +21,8 @@ workflow. On x64 the start script loads `kvm` plus `kvm_intel` or `kvm_amd` befo
 
 ### Host architecture
 
-This skill requires an x64 host. **Windows on ARM (WoA) hosts are `BLOCKED`**: Hyper-V does not
-expose EL2 to its child VMs on ARM64, so the WSL2 utility VM cannot run KVM at all. Verified on a
+This backend requires an x64 host. **Windows on ARM hosts cannot run it at all**: Hyper-V does not
+expose EL2 to its child VMs on ARM64, so the WSL2 utility VM cannot run KVM. Verified on a
 Snapdragon X2 Elite / Windows 11 build 28000 host with `nestedVirtualization=true` already set:
 
 ```pwsh
@@ -34,16 +37,11 @@ privilege level, not a missing module — nothing in `.wslconfig`, Docker Deskto
 changes it. `dockurr/windows-arm` refuses to start for the same reason
 (`ERROR: Please bind '/dev/kvm' as a volume ...`). `Start-LocalVm.ps1` detects this and fails fast.
 
-On a WoA machine, use one of these instead:
-
-- Run this skill from an x64 host (physical box, or a cloud VM whose provider allows nesting).
-- Run the guest directly in host Hyper-V on the WoA machine (no nesting involved) and drive it with
-  the same WinRM/exchange contract from [agentic-loop.md](agentic-loop.md); VM lifecycle scripting in
-  this skill's templates does not cover that host.
-
-If ARM64 nested virtualization ever ships, an ARM64 guest also needs ARM64 product, test, and tool
-payloads plus `DOCKUR_IMAGE=docker.io/dockurr/windows-arm:latest`; the templates' `-win-x64`
-prerequisites and `x64Win10`/`x64Win11` platform names assume an x64 guest.
+On a Windows on ARM machine, use the **Hyper-V backend** in
+[setup-hyperv.md](setup-hyperv.md): the guest runs directly on the host hypervisor, so no nesting is
+involved. Note that it produces an ARM64 guest, which also needs ARM64 product, test, and tool
+payloads; the `-win-x64` prerequisites and `x64Win10`/`x64Win11` platform names in this reference
+assume an x64 guest.
 
 > **Future direction — WSL Containers (`wslc`).** This stack depends on Docker Desktop's WSL2 utility
 > VM exposing nested virtualization so QEMU/KVM can boot the Windows guest. WSL Containers can't host

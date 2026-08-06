@@ -4,7 +4,10 @@ Classify the first failed boundary before changing test code.
 
 | Symptom | Boundary | Action |
 |---|---|---|
-| `/dev/kvm` missing and `uname -m` reports `aarch64` | ARM64 host (WoA) | Not fixable. Hyper-V does not expose EL2 on ARM64, so WSL2 logs `kvm: HYP mode not available` and KVM never initializes. Report `BLOCKED` and move to an x64 host; see setup.md, "Host architecture". |
+| `/dev/kvm` missing and `uname -m` reports `aarch64` | ARM64 host (WoA) | Not fixable for the Docker backend. Hyper-V does not expose EL2 on ARM64, so WSL2 logs `kvm: HYP mode not available` and KVM never initializes. Switch to `-Backend HyperV` (setup-hyperv.md) or move to an x64 host. |
+| `Get-VM`/`New-PSSession -VMName` fails with `You do not have the required permission` | Host Hyper-V access | Rerun from an elevated PowerShell 7 terminal, or add the account to the local `Hyper-V Administrators` group (one-time elevated change, effective after signing out and back in). Creating a guest still needs full elevation because it partitions and mounts disks. |
+| Hyper-V guest boots to Setup instead of the desktop | Answer file was not applied | `New-UiTestVm.ps1` writes `Windows\Panther\unattend.xml` into the prepared disk. Confirm the disk was built by that script, not attached from an unprepared image, and check the guest's `C:\Windows\Panther\setupact.log`. |
+| Hyper-V console shows a second, empty session | Enhanced session mode | Turn enhanced session off in the VMConnect View menu. It opens an RDP session that displaces the console session where the standard user is logged on. |
 | `/dev/kvm` missing or QEMU uses software emulation | Docker Desktop WSL/KVM | See **KVM and nested virtualization** below. Distinguish unloaded modules (`vmx` > 0 → `modprobe kvm_intel`/`kvm_amd`, or run the start script) from nested virt not exposed (`vmx` == 0 → check `.wslconfig` + `wsl --shutdown`, then revert the offending OS/security update). |
 | Container exits during installation | Storage/media/resources | Inspect `docker logs`, free disk/RAM, and OEM log. Use the named native Docker volume rather than an NTFS bind for `/storage`. |
 | Windows Setup remains at the same percentage for hours, the guest disk mtime/allocation is static, and the guest IP is unreachable | Stalled clean installation | Confirm the screen, `docker stats`, `/storage/data.img`, and guest neighbor state. Restart only the container once; the named volume is preserved and unattended Setup can resume. Do not delete the volume while Setup is visibly progressing or disk writes continue. |
@@ -40,9 +43,10 @@ The dockur container maps `/dev/kvm`; without it it never starts, failing with
 share this symptom — separate them first, in the `docker-desktop` distribution.
 
 Check the architecture before anything else, because the checks below are x64-only. If
-`wsl.exe -d docker-desktop -u root -- uname -m` reports `aarch64`, the host is Windows on ARM and this
-workflow is permanently `BLOCKED` there (setup.md, "Host architecture") — `vmx` and
-`kvm_intel`/`kvm_amd` do not exist on that kernel:
+`wsl.exe -d docker-desktop -u root -- uname -m` reports `aarch64`, the host is Windows on ARM: the
+Docker backend can never work there (setup.md, "Host architecture") and the Hyper-V backend
+(setup-hyperv.md) is the supported alternative. `vmx` and `kvm_intel`/`kvm_amd` do not exist on that
+kernel:
 
 ```pwsh
 # Is VMX exposed to the WSL2 utility VM? 0 = nested virt NOT exposed; >0 = exposed.

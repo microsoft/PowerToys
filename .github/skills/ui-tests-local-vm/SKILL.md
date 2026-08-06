@@ -1,6 +1,6 @@
 ---
 name: ui-tests-local-vm
-description: "Set up and run PowerToys UITest.Next suites in persistent local Windows VMs hosted by dockur/windows on Docker Desktop with WSL2/KVM. Defaults to Windows 10 LTSC for baseline coverage and uses a separate Windows 11 VM for explicitly Win11-specific behavior. Use for fast agentic UI-test iteration, reusable interactive desktops, non-admin scenarios, WinRM dispatch, payload refresh, evidence export, VM customization, or clean-baseline validation. Keywords: Windows 10, Windows 11, local VM, dockur, Docker, WSL2, KVM, QEMU, UI tests, UITest.Next, winappcli, WinRM, TRX."
+description: "Set up and run PowerToys UITest.Next suites in persistent local Windows VMs, hosted either by dockur/windows on Docker Desktop with WSL2/KVM or natively by Hyper-V with PowerShell Direct. Defaults to Windows 10 LTSC for baseline coverage and uses a separate Windows 11 VM for explicitly Win11-specific behavior. Use for fast agentic UI-test iteration, reusable interactive desktops, non-admin scenarios, WinRM or PowerShell Direct dispatch, payload refresh, evidence export, VM customization, checkpoint-based clean baselines, hosts without nested virtualization, or Windows on ARM hosts. Keywords: Windows 10, Windows 11, local VM, dockur, Docker, WSL2, KVM, QEMU, Hyper-V, PowerShell Direct, checkpoint, unattend, ISO, ARM64, UI tests, UITest.Next, winappcli, WinRM, TRX."
 license: MIT
 ---
 
@@ -17,6 +17,16 @@ a separate Windows 11 VM.
 
 Start both guests with the default resource profile: 4 vCPUs and 8 GB RAM. Get the target suite
 fully green before lowering resources with the `Constrained` profile (1 vCPU and 4 GB RAM).
+
+## Backends
+
+| Backend | Host requirement | Control channel | Pick it when |
+|---|---|---|---|
+| `Docker` (default) | x64 host, Docker Desktop, WSL2 with nested virtualization | HTTPS WinRM on loopback | The established path; the guest console is an agent-readable noVNC page. |
+| `HyperV` | Hyper-V enabled, **elevated** (or Hyper-V Administrators) host shell | PowerShell Direct over VMBus | Docker Desktop is unavailable, KVM cannot be exposed to WSL2 (every Windows on ARM host), or checkpoint-based clean baselines are wanted. |
+
+Both backends share the guest runner, request/status schema, evidence layout, and verdicts. Select
+one with `-Backend` on the controller; everything after the VM exists is identical.
 
 ## When to use this skill
 
@@ -63,18 +73,21 @@ Read only what the task needs:
 
 1. [references/setup.md](references/setup.md) - Docker Desktop/WSL/KVM prerequisites, VM scaffolding,
    OEM provisioning, credentials, standard-user desktop, and health checks.
-2. [references/agentic-loop.md](references/agentic-loop.md) - payload contract, controller usage,
+2. [references/setup-hyperv.md](references/setup-hyperv.md) - **read instead of setup.md when using
+   the `HyperV` backend**: elevation, media acquisition, unattended image preparation, PowerShell
+   Direct, and checkpoint baselines.
+3. [references/agentic-loop.md](references/agentic-loop.md) - payload contract, controller usage,
    focused-to-suite iteration, evidence, verdicts, and reset strategy.
-3. [references/customization.md](references/customization.md) - persistent image customization,
+4. [references/customization.md](references/customization.md) - persistent image customization,
    .NET 10, WebView2, `msvsmon`, ports, and golden-baseline guidance.
-4. [references/troubleshooting.md](references/troubleshooting.md) - KVM, WinRM, interactive session,
+5. [references/troubleshooting.md](references/troubleshooting.md) - KVM, WinRM, interactive session,
    UNC, scheduled-task, focus, timeout, and export failures.
-5. [references/shell-extensions-and-signing.md](references/shell-extensions-and-signing.md) - **read
+6. [references/shell-extensions-and-signing.md](references/shell-extensions-and-signing.md) - **read
    for any shell-extension module** (context menu, preview/thumbnail handler). Why unsigned CI PR
    builds cannot register a sparse MSIX (0% on CI), classic (registry-COM, signing-free) vs modern
    (sparse-MSIX) surfaces, Debug vs Release/`NDEBUG` gating, runtime detection, and reproducing CI's
    classic scenario on a local signed VM.
-6. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
+7. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
    behavior is being created, migrated, or stabilized.
 
 ## Default agentic cycle
@@ -149,10 +162,30 @@ The controller starts the VM if needed, verifies the interactive standard-user t
 dispatches the shared guest runner through a limited interactive scheduled task, streams progress,
 waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM running by default.
 
+For the Hyper-V backend, scaffold and drive the same loop from an elevated terminal:
+
+```pwsh
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVm.ps1 `
+  -Backend HyperV -DestinationRoot X:\PowerToysUiTestVm-HyperV
+
+pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
+  -Backend HyperV -VmName PowerToysUiTest-Win11 `
+  -VmRoot X:\PowerToysUiTestVm-HyperV `
+  -ExchangeRoot X:\PowerToysUiTestVm-HyperV\shared\PowerToysUiTests\MyModule `
+  -TestExecutable MyModule.UITests.Next.exe `
+  -Filter 'Name=MyModule.FocusedTest' `
+  -ReuseStagedPayload
+```
+
 ## Non-negotiable rules
 
-- Run this workflow only on an x64 host. Windows on ARM hosts cannot expose KVM to WSL2, so report
-  `BLOCKED` there instead of working around it. See [references/setup.md](references/setup.md).
+- Choose the backend by host capability. The `Docker` backend requires an x64 host that can expose
+  KVM to WSL2; on a Windows on ARM host, or any host where `/dev/kvm` cannot exist, use the `HyperV`
+  backend instead of working around the missing device. See
+  [references/setup.md](references/setup.md) and [references/setup-hyperv.md](references/setup-hyperv.md).
+- Run the `HyperV` backend from a shell that can manage Hyper-V: elevated, or an account in the
+  local Hyper-V Administrators group. Creating a guest additionally requires elevation. Report
+  `BLOCKED` rather than substituting a weaker channel.
 - Build on the host; run PowerToys and tests only in the VM when host execution is prohibited.
 - Use the Windows 10 guest for the default pass. Add a separate Windows 11 pass only for requirements
   that explicitly depend on Windows 11 behavior.
@@ -173,7 +206,8 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
   infrastructure failure.
 - Keep the VM after normal runs for iteration. Stop it explicitly when idle; delete its volume only
   for an intentional baseline reset.
-- Final clean-profile claims require a restored known baseline or a recreated VM volume.
+- Final clean-profile claims require a restored known baseline or a recreated VM volume. On the
+  `HyperV` backend, restore the baseline checkpoint with `Reset-LocalVm.ps1 -Restore`.
 
 ## Verdicts
 

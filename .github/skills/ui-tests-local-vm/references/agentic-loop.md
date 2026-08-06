@@ -24,7 +24,10 @@ Exit code 0 is required. Record the build label before packaging.
 
 ## 2. Create a lean exchange
 
-The exchange must be below `<VmRoot>\shared` so the controller can map it to `\\host.lan\Data`:
+On the Docker backend the exchange must be below `<VmRoot>\shared` so the controller can map it to
+`\\host.lan\Data`. On the Hyper-V backend the exchange can be any host folder, but keeping it under
+the scaffold's `shared` folder keeps both backends interchangeable; the controller mirrors it into
+the guest at `C:\PowerToysUiTestExchange\<name>`:
 
 ```text
 <VmRoot>\shared\PowerToysUiTests\<Module>\
@@ -80,7 +83,8 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
 
 Check:
 
-- `ExchangeRoot` in the request is a UNC under `\\host.lan\Data`.
+- `GuestExchangeRoot` in the plan is a UNC under `\\host.lan\Data` (Docker) or a path under
+  `C:\PowerToysUiTestExchange` (Hyper-V), and `Backend` is the one you intended.
 - Test, product, winappcli, and .NET hashes are present.
 - The filter uses `Name=`, `Name~`, `FullyQualifiedName~`, or `TestCategory=`.
 - No password, token, or source path appears in the request.
@@ -198,8 +202,10 @@ separately.
 A retained VM accumulates registry state, caches, thumbnail databases, WebView profiles, Settings,
 and first-run suppressions. Choose one final confirmation based on risk:
 
-- Restore a known stopped-volume snapshot.
-- Create a new named volume and reinstall from the OEM baseline.
+- Restore a known stopped-volume snapshot (Docker) or the baseline checkpoint with
+  `Reset-LocalVm.ps1 -Restore` (Hyper-V).
+- Create a new named volume and reinstall from the OEM baseline (Docker), or rebuild the guest with
+  `New-UiTestVm.ps1 -Force` (Hyper-V).
 
 Do not call a retained run clean merely because the product archive was refreshed.
 

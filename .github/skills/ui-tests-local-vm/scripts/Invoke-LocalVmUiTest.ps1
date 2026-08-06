@@ -4,13 +4,17 @@
 
 <#
 .SYNOPSIS
-Runs PowerToys UITest.Next executables in a persistent dockur/windows VM.
+Runs PowerToys UITest.Next executables in a persistent local Windows VM.
 
 .DESCRIPTION
 Creates a hash-addressed request, starts or reuses the VM, verifies a non-admin interactive desktop,
 dispatches the shared guest runner through Task Scheduler, and returns durable status/TRX evidence.
 Defaults to an x64 Windows 10 guest. Use x64Win11 only with a separate Windows 11 VM for explicitly
 Windows 11-specific checks.
+
+Two backends are supported. `Docker` drives a dockur/windows container over HTTPS WinRM and an SMB
+exchange. `HyperV` drives a Hyper-V virtual machine over PowerShell Direct and mirrors a guest-local
+exchange; it requires an elevated host shell but no nested virtualization.
 
 .EXAMPLE
 pwsh ./Invoke-LocalVmUiTest.ps1 `
@@ -20,6 +24,14 @@ pwsh ./Invoke-LocalVmUiTest.ps1 `
   -Filter 'Name=Peek.Preview.PDF' `
   -BuildLabel (git rev-parse HEAD) `
   -ReuseStagedPayload
+
+.EXAMPLE
+pwsh ./Invoke-LocalVmUiTest.ps1 `
+  -Backend HyperV -VmName PowerToysUiTest-Win11 `
+  -VmRoot X:\PowerToysUiTestVm-HyperV `
+  -ExchangeRoot X:\PowerToysUiTestVm-HyperV\shared\PowerToysUiTests\Peek `
+  -TestExecutable Peek.UITests.Next.exe `
+  -Filter 'Name=Peek.Preview.PDF'
 #>
 
 [CmdletBinding()]
@@ -35,7 +47,14 @@ param(
     [Parameter(Mandatory)]
     [string[]]$TestExecutable,
 
+    [ValidateSet('Docker', 'HyperV')]
+    [string]$Backend = 'Docker',
+    [string]$VmName,
     [string]$Filter,
+    # Flows to the guest as the 'platform' environment variable. The framework uses it for visual
+    # baseline filenames (VisualAssert) and treats any non-empty value as "running in a pipeline",
+    # so it must match the names CI uses or baselines silently fail to resolve.
+    [ValidateSet('x64Win10', 'x64Win11', 'ARM64')]
     [string]$Platform = 'x64Win10',
     [string]$BuildLabel = 'local',
     [string]$TestsArchive = 'ui-tests.zip',
@@ -58,9 +77,10 @@ param(
     [int]$StartupTimeoutMinutes = 45,
     [string]$StandardUser = 'PTUser',
     [string]$GuestShareRoot = '\\host.lan\Data',
+    [string]$GuestExchangeRoot = 'C:\PowerToysUiTestExchange',
     [ValidateRange(1, 65535)]
     [int]$WinRmPort = 15986,
-    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
+    [string]$CredentialPath,
     [string]$GuestRunnerSource = (Join-Path $PSScriptRoot '..\templates\run-ui-tests.ps1'),
     [switch]$InstallWebView2,
     [switch]$ReuseStagedPayload,
@@ -83,27 +103,56 @@ if ($UseHttpWinRM -and $WinRmPort -eq 15986) {
     Write-Warning 'HTTP WinRM was selected with the default HTTPS port. Verify the compose mapping.'
 }
 
+Import-Module (Join-Path $PSScriptRoot 'LocalVmGuest.psm1') -Force
+
+if ($Backend -eq 'HyperV') {
+    if ([string]::IsNullOrWhiteSpace($VmName)) {
+        throw 'The HyperV backend requires -VmName.'
+    }
+    if (-not $PlanOnly -and -not (Test-HyperVAccess)) {
+        throw (Get-HyperVAccessMessage)
+    }
+}
+elseif (-not [string]::IsNullOrWhiteSpace($VmName)) {
+    Write-Warning 'VmName is ignored by the Docker backend.'
+}
+
+$controllerName = if ($Backend -eq 'HyperV') { 'Hyper-V local VM' } else { 'dockur/windows local VM' }
+if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
+    $CredentialPath = if ($Backend -eq 'HyperV') {
+        Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm-HyperV\admin.credential.xml'
+    }
+    else {
+        Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
+    }
+}
 $vmRootPath = [IO.Path]::GetFullPath($VmRoot)
 $sharedRoot = [IO.Path]::GetFullPath((Join-Path $vmRootPath 'shared'))
 $exchangePath = [IO.Path]::GetFullPath($ExchangeRoot)
 $guestRunnerSourcePath = [IO.Path]::GetFullPath($GuestRunnerSource)
-if (-not (Test-Path $sharedRoot -PathType Container)) {
+if ($Backend -eq 'Docker' -and -not (Test-Path $sharedRoot -PathType Container)) {
     throw "VM shared root was not found: $sharedRoot"
 }
 if (-not (Test-Path $guestRunnerSourcePath -PathType Leaf)) {
     throw "Guest runner was not found: $guestRunnerSourcePath"
 }
 
-$relativeExchange = [IO.Path]::GetRelativePath($sharedRoot, $exchangePath)
-if ($relativeExchange -eq '..' -or $relativeExchange.StartsWith("..$([IO.Path]::DirectorySeparatorChar)")) {
-    throw "ExchangeRoot must be inside the VM shared root '$sharedRoot'."
+$contextParameters = @{
+    Backend = $Backend
+    HostExchangeRoot = $exchangePath
 }
-$guestExchangeRoot = if ($relativeExchange -eq '.') {
-    $GuestShareRoot.TrimEnd('\')
+if ($Backend -eq 'Docker') {
+    $contextParameters.HostShareRoot = $sharedRoot
+    $contextParameters.GuestShareRoot = $GuestShareRoot
+    $contextParameters.WinRmPort = $WinRmPort
+    $contextParameters.UseHttpWinRM = $UseHttpWinRM
 }
 else {
-    Join-Path $GuestShareRoot.TrimEnd('\') $relativeExchange
+    $contextParameters.VmName = $VmName
+    $contextParameters.GuestExchangeRoot = $GuestExchangeRoot
 }
+$guestContext = New-LocalVmContext @contextParameters
+$guestExchangeRoot = $guestContext.GuestExchangeRoot
 
 function Get-ExchangeFileHash {
     param([string]$File)
@@ -112,29 +161,6 @@ function Get-ExchangeFileHash {
         return $null
     }
     return (Get-FileHash (Join-Path $exchangePath $File) -Algorithm SHA256).Hash
-}
-
-function Read-SharedJson {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path,
-        [int]$Attempts = 1
-    )
-
-    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        try {
-            $text = Get-Content $Path -Raw
-            if (-not [string]::IsNullOrWhiteSpace($text)) {
-                return $text | ConvertFrom-Json
-            }
-        }
-        catch {
-        }
-        if ($attempt -lt $Attempts) {
-            Start-Sleep -Milliseconds 100
-        }
-    }
-    return $null
 }
 
 function Get-TrxSummary {
@@ -240,14 +266,16 @@ finally {
 }
 
 $runId = 'localvm-{0}-{1}' -f [DateTime]::UtcNow.ToString('yyyyMMdd-HHmmss'), [guid]::NewGuid().ToString('N').Substring(0, 8)
-$hostResultRoot = Join-Path $exchangePath "LocalVmResults\$runId"
-$guestResultRoot = Join-Path $guestExchangeRoot "LocalVmResults\$runId"
+$resultRelative = "LocalVmResults\$runId"
+$hostResultRoot = Join-Path $exchangePath $resultRelative
+$guestResultRoot = Join-Path $guestExchangeRoot $resultRelative
+$requestRelative = Join-Path $resultRelative 'request.json'
+$statusRelative = Join-Path $resultRelative 'status.json'
+$progressRelative = Join-Path $resultRelative 'progress.json'
+$probeScriptRelative = Join-Path $resultRelative 'desktop-probe.ps1'
+$probeRelative = Join-Path $resultRelative 'desktop-probe.json'
 $requestPath = Join-Path $hostResultRoot 'request.json'
 $guestRequestPath = Join-Path $guestResultRoot 'request.json'
-$statusPath = Join-Path $hostResultRoot 'status.json'
-$progressPath = Join-Path $hostResultRoot 'progress.json'
-$probeScriptPath = Join-Path $hostResultRoot 'desktop-probe.ps1'
-$probePath = Join-Path $hostResultRoot 'desktop-probe.json'
 $guestProbeScriptPath = Join-Path $guestResultRoot 'desktop-probe.ps1'
 $guestProbePath = Join-Path $guestResultRoot 'desktop-probe.json'
 $guestRunnerName = 'run-ui-tests.ps1'
@@ -259,7 +287,7 @@ Copy-Item $guestRunnerSourcePath $hostRunnerPath -Force
 
 $request = [ordered]@{
     RunId = $runId
-    Controller = 'dockur/windows local VM'
+    Controller = $controllerName
     ExchangeRoot = $guestExchangeRoot
     BuildLabel = $BuildLabel
     TestExecutables = @($TestExecutable)
@@ -283,18 +311,21 @@ $request = [ordered]@{
     WebView2Installer = if ($InstallWebView2) { $WebView2Installer } else { $null }
     CleanupProcesses = @($CleanupProcess)
 }
-$request | ConvertTo-Json -Depth 8 | Set-Content $requestPath -Encoding utf8
+$requestJson = $request | ConvertTo-Json -Depth 8
+$requestJson | Set-Content $requestPath -Encoding utf8
 
 $plan = [ordered]@{
-    Controller = 'dockur/windows local VM'
+    Controller = $controllerName
+    Backend = $Backend
     RunId = $runId
     VmRoot = $vmRootPath
+    VmName = $guestContext.VmName
     ExchangeRoot = $exchangePath
     GuestExchangeRoot = $guestExchangeRoot
     GuestRunnerSource = $guestRunnerSourcePath
     GuestRequestPath = $guestRequestPath
     StandardUser = $StandardUser
-    WinRM = if ($UseHttpWinRM) { "http://127.0.0.1:$WinRmPort/wsman" } else { "https://127.0.0.1:$WinRmPort/wsman" }
+    ControlChannel = $guestContext.ConnectionUri
     ReuseStagedPayload = [bool]$ReuseStagedPayload
     StopVmAfterRun = [bool]$StopVmAfterRun
     PayloadFingerprint = $payloadFingerprint
@@ -321,6 +352,7 @@ if ($credential -isnot [System.Management.Automation.PSCredential]) {
 }
 
 $session = $null
+$evidenceExported = $false
 $probeTaskName = "PowerToysUiTest-Probe-$runId"
 $testTaskName = "PowerToysUiTest-Run-$runId"
 $controllerResult = $null
@@ -330,33 +362,25 @@ try {
         if (-not (Test-Path $startScript -PathType Leaf)) {
             throw "VM start script was not found: $startScript"
         }
-        $startupOutput = & $startScript -WaitForWinRM -TimeoutMinutes $StartupTimeoutMinutes | Out-String
+        $startupOutput = if ($Backend -eq 'HyperV') {
+            & $startScript -Wait -TimeoutMinutes $StartupTimeoutMinutes | Out-String
+        }
+        else {
+            & $startScript -WaitForWinRM -TimeoutMinutes $StartupTimeoutMinutes | Out-String
+        }
         Write-Verbose $startupOutput
     }
 
-    $scheme = if ($UseHttpWinRM) { 'http' } else { 'https' }
-    $connectionUri = "${scheme}://127.0.0.1:$WinRmPort/wsman"
-    $authentication = if ($UseHttpWinRM) { 'Negotiate' } else { 'Basic' }
-    $sessionOption = if ($UseHttpWinRM) {
-        New-PSSessionOption
+    $session = New-LocalVmSession `
+        -Context $guestContext -Credential $credential -TimeoutMinutes $StartupTimeoutMinutes
+    Initialize-GuestExchange -Context $guestContext -Session $session -StandardUser $StandardUser
+    $stagedFiles = @(Copy-ToGuest `
+        -Context $guestContext -Session $session -FileName (@($guestRunnerName) + $payloadFiles))
+    if ($stagedFiles.Count -gt 0) {
+        Write-Host "Staged into the guest: $($stagedFiles -join ', ')"
     }
-    else {
-        New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
-    }
-    $sessionDeadline = [DateTime]::UtcNow.AddMinutes($StartupTimeoutMinutes)
-    do {
-        try {
-            $session = New-PSSession `
-                -ConnectionUri $connectionUri -Authentication $authentication `
-                -Credential $credential -SessionOption $sessionOption -ErrorAction Stop
-        }
-        catch {
-            if ([DateTime]::UtcNow -ge $sessionDeadline) {
-                throw "Could not establish WinRM at $connectionUri. $($_.Exception.Message)"
-            }
-            Start-Sleep -Seconds 5
-        }
-    } while ($null -eq $session)
+    Write-GuestText `
+        -Context $guestContext -Session $session -RelativePath $requestRelative -Value $requestJson
 
     $controlIdentity = Invoke-Command -Session $session -ScriptBlock {
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -378,7 +402,7 @@ try {
         }
     }
     if (-not $controlIdentity.IsAdministrator) {
-        throw "The WinRM control identity '$($controlIdentity.User)' is not an administrator."
+        throw "The control identity '$($controlIdentity.User)' is not an administrator."
     }
     if ($controlIdentity.WindowsLicenseDescription.Contains('TIMEBASED_EVAL', [StringComparison]::OrdinalIgnoreCase) -and
         ([int]$controlIdentity.WindowsLicenseStatus -eq 5 -or [int]$controlIdentity.WindowsGracePeriodMinutes -le 0)) {
@@ -399,10 +423,11 @@ Add-Type -AssemblyName System.Windows.Forms
     ExplorerCount = @(Get-Process explorer -ErrorAction SilentlyContinue | Where-Object SessionId -eq `$sessionId).Count
     DesktopWidth = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
     DesktopHeight = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Height
-    UncAccessible = Test-Path '$escapedExchangeRoot'
+    ExchangeAccessible = Test-Path '$escapedExchangeRoot'
 } | ConvertTo-Json | Set-Content '$escapedProbePath' -Encoding utf8
 "@
-    $probeScript | Set-Content $probeScriptPath -Encoding utf8
+    Write-GuestText `
+        -Context $guestContext -Session $session -RelativePath $probeScriptRelative -Value $probeScript
     $probeArguments = '-NoLogo -NoProfile -ExecutionPolicy Bypass -File "{0}"' -f $guestProbeScriptPath
     $probeTask = Start-InteractiveTask `
         -Session $session -TaskName $probeTaskName `
@@ -412,7 +437,8 @@ Add-Type -AssemblyName System.Windows.Forms
 
     $probeDeadline = [DateTime]::UtcNow.AddMinutes(2)
     do {
-        $desktopProbe = Read-SharedJson -Path $probePath -Attempts 3
+        $desktopProbe = Read-GuestJson `
+            -Context $guestContext -Session $session -RelativePath $probeRelative -Attempts 3
         if ($null -ne $desktopProbe) {
             break
         }
@@ -437,7 +463,7 @@ Add-Type -AssemblyName System.Windows.Forms
     if ([int]$desktopProbe.SessionId -le 0 -or [int]$desktopProbe.ExplorerCount -le 0) {
         throw "No interactive Explorer desktop is available for '$StandardUser'."
     }
-    if (-not $desktopProbe.UncAccessible) {
+    if (-not $desktopProbe.ExchangeAccessible) {
         throw "The interactive user cannot access '$guestExchangeRoot'."
     }
     if ($DesktopWidth -ne 0 -and
@@ -457,24 +483,29 @@ Add-Type -AssemblyName System.Windows.Forms
     $lastProgress = $null
     $status = $null
     do {
-        if (Test-Path $progressPath -PathType Leaf) {
-            $progress = Read-SharedJson -Path $progressPath -Attempts 3
-            if ($null -ne $progress) {
-                $progressKey = "$($progress.Stage):$($progress.Detail)"
-                if ($progressKey -ne $lastProgress) {
-                    Write-Host "[$($progress.Stage)] $($progress.Detail)"
-                    $lastProgress = $progressKey
-                }
+        $progress = Read-GuestJson `
+            -Context $guestContext -Session $session -RelativePath $progressRelative
+        if ($null -ne $progress) {
+            $progressKey = "$($progress.Stage):$($progress.Detail)"
+            if ($progressKey -ne $lastProgress) {
+                Write-Host "[$($progress.Stage)] $($progress.Detail)"
+                $lastProgress = $progressKey
             }
         }
-        if (Test-Path $statusPath -PathType Leaf) {
-            $candidate = Read-SharedJson -Path $statusPath -Attempts 20
+        $candidate = Read-GuestJson `
+            -Context $guestContext -Session $session -RelativePath $statusRelative
+        if ($null -ne $candidate -and $candidate.RunId -eq $runId) {
+            $status = $candidate
+            break
+        }
+        if ([DateTime]::UtcNow -ge $deadline) {
+            # Absorb a status file that was still being created when the deadline elapsed.
+            $candidate = Read-GuestJson `
+                -Context $guestContext -Session $session -RelativePath $statusRelative -Attempts 20
             if ($null -ne $candidate -and $candidate.RunId -eq $runId) {
                 $status = $candidate
                 break
             }
-        }
-        if ([DateTime]::UtcNow -ge $deadline) {
             $taskInfo = Invoke-Command -Session $session -ScriptBlock {
                 param($Name)
                 $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
@@ -486,9 +517,13 @@ Add-Type -AssemblyName System.Windows.Forms
         Start-Sleep -Seconds 1
     } while ($true)
 
+    Copy-FromGuest -Context $guestContext -Session $session -RelativePath $resultRelative
+    $evidenceExported = $true
+
     $trx = Get-TrxSummary -ResultRoot $hostResultRoot
     $controllerResult = [pscustomobject]@{
-        Controller = 'dockur/windows local VM'
+        Controller = $controllerName
+        Backend = $Backend
         RunId = $runId
         BuildLabel = $status.BuildLabel
         Status = $status.Status
@@ -516,6 +551,25 @@ Add-Type -AssemblyName System.Windows.Forms
 }
 finally {
     if ($null -ne $session) {
+        if ($session.State -eq 'Opened') {
+            if (-not $evidenceExported) {
+                try {
+                    Copy-FromGuest -Context $guestContext -Session $session -RelativePath $resultRelative
+                    $evidenceExported = $true
+                }
+                catch {
+                    Write-Warning "Guest evidence could not be exported: $($_.Exception.Message)"
+                }
+            }
+            if ($evidenceExported) {
+                try {
+                    Remove-GuestItem -Context $guestContext -Session $session -RelativePath $resultRelative
+                }
+                catch {
+                    Write-Warning "The guest run folder could not be removed: $($_.Exception.Message)"
+                }
+            }
+        }
         try {
             if ($session.State -eq 'Opened') {
                 Invoke-Command -Session $session -ScriptBlock {
@@ -527,7 +581,7 @@ finally {
             }
         }
         catch {
-            Write-Warning "Scheduled-task cleanup was skipped because the WinRM session was unavailable: $($_.Exception.Message)"
+            Write-Warning "Scheduled-task cleanup was skipped because the guest session was unavailable: $($_.Exception.Message)"
         }
         finally {
             Remove-PSSession $session -ErrorAction SilentlyContinue

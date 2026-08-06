@@ -33,12 +33,25 @@ Filename patterns to sign. Defaults to *.msix and *.appx.
 .PARAMETER Force
 Re-sign even packages that already carry a valid signature.
 
+.PARAMETER SkipLocalTrust
+Sign without importing the test certificate into this machine's trust stores. Use when signing on a
+build host and registering the package somewhere else (for example packaging a UI-test payload on the
+host and running it in a VM), so the build machine never gains a test trust anchor.
+
+.PARAMETER ExportCertificatePath
+Write the public certificate to this path so the machine that registers the package can trust it.
+
 .EXAMPLE
 .\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys\WinUI3Apps"
 
 .EXAMPLE
 # Local sideloading into a UI-test VM runtime:
 .\signSparsePackages.ps1 -PackageRoot "C:\PowerToysUiTestRun\PowerToys\WinUI3Apps"
+
+.EXAMPLE
+# Sign a payload on the host, trust it only inside the VM that will register it:
+.\signSparsePackages.ps1 -PackageRoot "X:\payload\product\WinUI3Apps" -SkipLocalTrust `
+    -ExportCertificatePath "X:\payload\pt-test-signer.cer"
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -47,7 +60,12 @@ param(
     [Parameter()]
     [string[]]$Include = @('*.msix', '*.appx'),
 
-    [switch]$Force
+    [switch]$Force,
+
+    [switch]$SkipLocalTrust,
+
+    [Parameter()]
+    [string]$ExportCertificatePath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -195,6 +213,21 @@ function Get-TrustedSigningCert {
     # consent dialog that fails non-interactively ("UI is not allowed in this operation"), even elevated.
     $cerPath = Join-Path $env:TEMP ("pt-test-signer-{0}.cer" -f $cert.Thumbprint)
     Export-Certificate -Cert $cert -FilePath $cerPath -Force | Out-Null
+
+    if ($ExportCertificatePath) {
+        $exportParent = Split-Path $ExportCertificatePath -Parent
+        if ($exportParent -and -not (Test-Path $exportParent)) {
+            New-Item $exportParent -ItemType Directory -Force | Out-Null
+        }
+        Copy-Item $cerPath $ExportCertificatePath -Force
+        Write-Host "Exported public certificate to: $ExportCertificatePath"
+    }
+
+    if ($SkipLocalTrust) {
+        Write-Host "Skipping local trust for '$Subject'; trust the exported certificate where the package is registered."
+        $certCache[$Subject] = $cert
+        return $cert
+    }
 
     $rootTrusted = Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\Root' -Optional
     Import-CertTrust -CerPath $cerPath -Thumbprint $cert.Thumbprint -StorePath 'Cert:\LocalMachine\TrustedPeople' -Optional | Out-Null

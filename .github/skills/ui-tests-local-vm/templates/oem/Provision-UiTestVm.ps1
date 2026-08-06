@@ -1,6 +1,22 @@
+<#
+.SYNOPSIS
+Provisions the PowerToys UI-test guest: standard-user desktop, auto-logon, and optional tooling.
+
+.DESCRIPTION
+Shared by both backends. The dockur backend needs the HTTPS WinRM listener because the host reaches
+the guest over a loopback port. The Hyper-V backend reaches the guest over PowerShell Direct, so it
+passes -SkipWinRm and no remote listener or firewall opening is created at all.
+#>
+
+[CmdletBinding()]
+param(
+    [switch]$SkipWinRm,
+    [string]$StandardUser = 'PTUser'
+)
+
 $ErrorActionPreference = 'Stop'
 
-$standardUser = 'PTUser'
+$standardUser = $StandardUser
 $workRoot = 'C:\PowerToysUiTestRun'
 
 function Invoke-OfflineInstaller {
@@ -17,30 +33,32 @@ function Invoke-OfflineInstaller {
     }
 }
 
-Enable-PSRemoting -Force -SkipNetworkProfileCheck
-Set-Service -Name WinRM -StartupType Automatic
-Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
-Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $false
-New-ItemProperty `
-    -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' `
-    -Name LocalAccountTokenFilterPolicy -PropertyType DWord -Value 1 -Force | Out-Null
+if (-not $SkipWinRm) {
+    Enable-PSRemoting -Force -SkipNetworkProfileCheck
+    Set-Service -Name WinRM -StartupType Automatic
+    Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
+    Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $false
+    New-ItemProperty `
+        -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' `
+        -Name LocalAccountTokenFilterPolicy -PropertyType DWord -Value 1 -Force | Out-Null
 
-$httpsListener = Get-ChildItem WSMan:\localhost\Listener |
-    Where-Object { $_.Keys -contains 'Transport=HTTPS' } |
-    Select-Object -First 1
-if ($null -eq $httpsListener) {
-    $certificate = New-SelfSignedCertificate `
-        -DnsName @($env:COMPUTERNAME, 'localhost') `
-        -CertStoreLocation Cert:\LocalMachine\My `
-        -NotAfter ([DateTime]::UtcNow.AddYears(10))
-    New-Item -Path WSMan:\localhost\Listener `
-        -Transport HTTPS -Address * -CertificateThumbPrint $certificate.Thumbprint -Force | Out-Null
-}
-if ($null -eq (Get-NetFirewallRule -Name PowerToysUiTestVm-WinRM-HTTPS -ErrorAction SilentlyContinue)) {
-    New-NetFirewallRule `
-        -Name PowerToysUiTestVm-WinRM-HTTPS `
-        -DisplayName 'PowerToys UI Test VM HTTPS WinRM' `
-        -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 | Out-Null
+    $httpsListener = Get-ChildItem WSMan:\localhost\Listener |
+        Where-Object { $_.Keys -contains 'Transport=HTTPS' } |
+        Select-Object -First 1
+    if ($null -eq $httpsListener) {
+        $certificate = New-SelfSignedCertificate `
+            -DnsName @($env:COMPUTERNAME, 'localhost') `
+            -CertStoreLocation Cert:\LocalMachine\My `
+            -NotAfter ([DateTime]::UtcNow.AddYears(10))
+        New-Item -Path WSMan:\localhost\Listener `
+            -Transport HTTPS -Address * -CertificateThumbPrint $certificate.Thumbprint -Force | Out-Null
+    }
+    if ($null -eq (Get-NetFirewallRule -Name PowerToysUiTestVm-WinRM-HTTPS -ErrorAction SilentlyContinue)) {
+        New-NetFirewallRule `
+            -Name PowerToysUiTestVm-WinRM-HTTPS `
+            -DisplayName 'PowerToys UI Test VM HTTPS WinRM' `
+            -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 | Out-Null
+    }
 }
 
 $passwordBytes = New-Object byte[] 32
@@ -96,12 +114,30 @@ powercfg.exe /change monitor-timeout-ac 0 | Out-Null
 powercfg.exe /change standby-timeout-ac 0 | Out-Null
 powercfg.exe /hibernate off | Out-Null
 
-$dotNetSdk = Get-ChildItem C:\OEM -Filter 'dotnet-sdk-10*-win-x64.exe' -File | Select-Object -First 1
+# Display settings belong to the interactive session, which does not exist yet while provisioning
+# runs, so apply them from a logon task in the standard user's own session instead.
+$resolutionScript = Join-Path $workRoot 'Set-GuestResolution.ps1'
+$resolutionTaskRegistered = $false
+if (Test-Path C:\OEM\Set-GuestResolution.ps1 -PathType Leaf) {
+    Copy-Item C:\OEM\Set-GuestResolution.ps1 $resolutionScript -Force
+    $resolutionAction = New-ScheduledTaskAction -Execute 'powershell.exe' `
+        -Argument "-NoLogo -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$resolutionScript`""
+    $resolutionTrigger = New-ScheduledTaskTrigger -AtLogOn -User "$env:COMPUTERNAME\$standardUser"
+    $resolutionPrincipal = New-ScheduledTaskPrincipal `
+        -UserId "$env:COMPUTERNAME\$standardUser" -LogonType Interactive -RunLevel Limited
+    $resolutionSettings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 2)
+    Register-ScheduledTask -TaskName 'PowerToysUiTest-Resolution' -Force -InputObject (New-ScheduledTask `
+        -Action $resolutionAction -Trigger $resolutionTrigger `
+        -Principal $resolutionPrincipal -Settings $resolutionSettings) | Out-Null
+    $resolutionTaskRegistered = $true
+}
+
+$dotNetSdk = Get-ChildItem C:\OEM -Filter 'dotnet-sdk-10*-win-*.exe' -File | Select-Object -First 1
 if ($null -ne $dotNetSdk) {
     Invoke-OfflineInstaller -Path $dotNetSdk.FullName -Arguments @('/install', '/quiet', '/norestart')
 }
 else {
-    $desktopRuntime = Get-ChildItem C:\OEM -Filter 'windowsdesktop-runtime-10*-win-x64.exe' -File | Select-Object -First 1
+    $desktopRuntime = Get-ChildItem C:\OEM -Filter 'windowsdesktop-runtime-10*-win-*.exe' -File | Select-Object -First 1
     if ($null -ne $desktopRuntime) {
         Invoke-OfflineInstaller -Path $desktopRuntime.FullName -Arguments @('/install', '/quiet', '/norestart')
     }
@@ -127,7 +163,8 @@ $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction Silently
     StandardUser = $standardUser
     StandardUserIsAdministrator = $false
     WorkRoot = $workRoot
-    HttpsWinRM = 5986
+    HttpsWinRM = if ($SkipWinRm) { $null } else { 5986 }
+    ResolutionTaskRegistered = $resolutionTaskRegistered
     DotNetSdkInstaller = if ($null -ne $dotNetSdk) { $dotNetSdk.Name } else { $null }
     WebView2Installer = if ($null -ne $webView2Installer) { $webView2Installer.Name } else { $null }
     WindowsLicenseDescription = [string]$windowsLicense.Description
