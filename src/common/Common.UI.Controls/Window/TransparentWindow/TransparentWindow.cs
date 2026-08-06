@@ -257,7 +257,13 @@ public partial class TransparentWindow : WinUIEx.WindowEx
                 // Also cover callers that entered Show from another thread.
                 EnsureCloakedBeforeShow();
                 EnsureInputHooks();
-                _ = ShowWindow(_hwnd, SwShowNa);
+
+                // Cloaked mode is made SW_SHOWNA-visible only after cloaking succeeds.
+                if (!_cloakWhenHidden)
+                {
+                    _ = ShowWindow(_hwnd, SwShowNa);
+                }
+
                 Showing?.Invoke(this, new ShowingEventArgs(transition));
             });
     }
@@ -298,8 +304,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// <para>Enabling it also warms the window up: the XAML tree is built, templated and
     /// painted right away rather than on the first summon.</para>
     /// <para>Call this once, from the consumer's constructor after its content has been
-    /// set. Cloaking is a DWM feature; if DWM refuses, the window falls back to an
-    /// ordinary hide.</para>
+    /// set. Cloaking is a DWM feature; if DWM refuses, the window remains hidden and the
+    /// next <see cref="Show()"/> retries.</para>
     /// </remarks>
     protected void EnableCloakedHide()
     {
@@ -373,13 +379,16 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private void CloakAndKeepShown()
     {
-        // Cloak first: everything below leaves the window shown, so it must already be
-        // invisible by the time it is. If DWM refuses, fall back to a real hide rather
-        // than leaving a visible window behind - a stale first frame is a glitch, a
-        // dismissed overlay that stays on screen is a broken feature.
+        if (_cloaked)
+        {
+            return;
+        }
+
+        // Hide first so a DWM failure cannot leave an uncloaked overlay on screen. The next Show
+        // retries cloaking; only a successfully cloaked HWND is made SW_SHOWNA-visible again.
+        _ = ShowWindow(_hwnd, SwHide);
         if (!SetCloak(true))
         {
-            AppWindow.Hide();
             return;
         }
 
@@ -390,11 +399,9 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         // invisible window cannot swallow input meant for the app underneath it.
         ApplyExStyleBit(WsExTransparent, true);
 
-        // Hide, then show again without activation. SW_HIDE is what hands the foreground
-        // back to whatever window should own it (only the OS can pick the right one); the
-        // SW_SHOWNA that follows leaves this window "shown", which is what keeps XAML
-        // painting it, while the cloak keeps it off screen.
-        _ = ShowWindow(_hwnd, SwHide);
+        // SW_HIDE above hands the foreground back to whatever window should own it (only the OS
+        // can pick the right one). Now that cloaking succeeded, SW_SHOWNA leaves this window
+        // "shown", which keeps XAML painting it, while the cloak keeps it off screen.
         _ = ShowWindow(_hwnd, SwShowNa);
     }
 
