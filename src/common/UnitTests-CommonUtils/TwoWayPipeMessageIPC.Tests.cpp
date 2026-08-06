@@ -558,6 +558,127 @@ namespace UnitTestsCommonUtils
             server.end();
         }
 
+        TEST_METHOD(RejectedClientRapidCloseNeverReleasesPipeName)
+        {
+            HANDLE token = nullptr;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) == TRUE);
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), nullptr);
+            interop_auth::CallerPolicy reject_policy;
+            reject_policy.enabled = true;
+            reject_policy.expectedDirectory = L"Z:\\not-the-test-host";
+            reject_policy.allowedBasenames = { L"not-the-test-host.exe" };
+            reject_policy.requireMicrosoftSignature = false;
+            server.start(token, reject_policy);
+            CloseHandle(token);
+
+            NormalSameUserClientToken normal_client;
+            Assert::IsTrue(normal_client.Create(), L"failed to create the normal same-user client token");
+            {
+                ScopedImpersonation impersonation(normal_client.token);
+                Assert::IsTrue(impersonation.active, L"failed to impersonate the normal same-user client token");
+
+                HANDLE client = ConnectPipeClient(input_pipe_name);
+                Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the rejected client could not connect");
+                CloseHandle(client);
+
+                for (int attempt = 0; attempt < 100; ++attempt)
+                {
+                    SetLastError(ERROR_SUCCESS);
+                    HANDLE rogue_server = CreateNamedPipeW(input_pipe_name.c_str(),
+                                                           PIPE_ACCESS_DUPLEX,
+                                                           PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                                           PIPE_UNLIMITED_INSTANCES,
+                                                           4096,
+                                                           4096,
+                                                           0,
+                                                           nullptr);
+                    const DWORD create_error = GetLastError();
+                    if (rogue_server != INVALID_HANDLE_VALUE)
+                    {
+                        CloseHandle(rogue_server);
+                    }
+
+                    Assert::IsTrue(rogue_server == INVALID_HANDLE_VALUE,
+                                   L"the pipe name was released while a rejected client closed");
+                    Assert::AreEqual(static_cast<DWORD>(ERROR_ACCESS_DENIED), create_error);
+                    Sleep(1);
+                }
+            }
+
+            server.end();
+        }
+
+        TEST_METHOD(ReplacementListenerIsReservedBeforeRejectedHandlerStarts)
+        {
+            FaultInjectionReset reset;
+            HANDLE before_replacement = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE allow_replacement = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE handler_rejected = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(before_replacement);
+            Assert::IsNotNull(allow_replacement);
+            Assert::IsNotNull(handler_rejected);
+            two_way_pipe_message_ipc_test::SetBeforeReplacementListenerEvents(before_replacement, allow_replacement);
+
+            HANDLE token = nullptr;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) == TRUE);
+            const std::wstring input_pipe_name = UniquePipeName();
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), nullptr);
+            interop_auth::CallerPolicy reject_policy;
+            reject_policy.enabled = true;
+            reject_policy.expectedDirectory = L"Z:\\not-the-test-host";
+            reject_policy.allowedBasenames = { L"not-the-test-host.exe" };
+            reject_policy.requireMicrosoftSignature = false;
+            reject_policy.logReject = [handler_rejected](const interop_auth::AuthResult&) {
+                SetEvent(handler_rejected);
+            };
+            server.start(token, reject_policy);
+            CloseHandle(token);
+
+            NormalSameUserClientToken normal_client;
+            Assert::IsTrue(normal_client.Create(), L"failed to create the normal same-user client token");
+            {
+                ScopedImpersonation impersonation(normal_client.token);
+                Assert::IsTrue(impersonation.active, L"failed to impersonate the normal same-user client token");
+                HANDLE client = ConnectPipeClient(input_pipe_name);
+                Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the rejected client could not connect");
+                CloseHandle(client);
+
+                Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(before_replacement, 2'000),
+                                 L"the server did not begin reserving a replacement listener");
+                Assert::AreEqual(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(handler_rejected, 0),
+                                 L"the rejected handler started before its replacement listener was reserved");
+
+                SetLastError(ERROR_SUCCESS);
+                HANDLE rogue_server = CreateNamedPipeW(input_pipe_name.c_str(),
+                                                       PIPE_ACCESS_DUPLEX,
+                                                       PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                                       PIPE_UNLIMITED_INSTANCES,
+                                                       4096,
+                                                       4096,
+                                                       0,
+                                                       nullptr);
+                const DWORD create_error = GetLastError();
+                if (rogue_server != INVALID_HANDLE_VALUE)
+                {
+                    CloseHandle(rogue_server);
+                }
+                Assert::IsTrue(rogue_server == INVALID_HANDLE_VALUE,
+                               L"the pipe name was released before the replacement listener existed");
+                Assert::AreEqual(static_cast<DWORD>(ERROR_ACCESS_DENIED), create_error);
+            }
+
+            SetEvent(allow_replacement);
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_rejected, 2'000),
+                             L"the rejected handler did not run after the replacement was created");
+            server.end();
+            two_way_pipe_message_ipc_test::SetBeforeReplacementListenerEvents(nullptr, nullptr);
+            CloseHandle(before_replacement);
+            CloseHandle(allow_replacement);
+            CloseHandle(handler_rejected);
+        }
+
         TEST_METHOD(StartFailureAfterFirstThreadCleansUp)
         {
             FaultInjectionReset reset;
@@ -648,6 +769,57 @@ namespace UnitTestsCommonUtils
 
             destroyer.join();
             CloseHandle(destructor_finished);
+        }
+
+        TEST_METHOD(DestructorJoinsHandlerAfterCompletion)
+        {
+            FaultInjectionReset reset;
+            HANDLE handler_completed = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE allow_handler_return = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE destructor_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE handler_rejected = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(handler_completed);
+            Assert::IsNotNull(allow_handler_return);
+            Assert::IsNotNull(destructor_finished);
+            Assert::IsNotNull(handler_rejected);
+            two_way_pipe_message_ipc_test::SetHandlerCompletionEvents(handler_completed, allow_handler_return);
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            auto server = std::make_unique<TwoWayPipeMessageIPC>(input_pipe_name, UniquePipeName(), nullptr);
+            interop_auth::CallerPolicy reject_policy;
+            reject_policy.enabled = true;
+            reject_policy.expectedDirectory = L"Z:\\not-the-test-host";
+            reject_policy.allowedBasenames = { L"not-the-test-host.exe" };
+            reject_policy.requireMicrosoftSignature = false;
+            reject_policy.logReject = [handler_rejected](const interop_auth::AuthResult&) {
+                SetEvent(handler_rejected);
+            };
+            server->start(nullptr, reject_policy);
+
+            HANDLE client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the rejected client could not connect");
+            CloseHandle(client);
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_rejected, 2'000),
+                             L"the handler did not reject the test client");
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_completed, 2'000),
+                             L"the handler did not reach its completion point");
+
+            std::thread destroyer([&]() {
+                server.reset();
+                SetEvent(destructor_finished);
+            });
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(destructor_finished, 200),
+                             L"destruction returned before the completed handler thread was joined");
+            SetEvent(allow_handler_return);
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(destructor_finished, 5'000));
+
+            destroyer.join();
+            two_way_pipe_message_ipc_test::SetHandlerCompletionEvents(nullptr, nullptr);
+            CloseHandle(handler_completed);
+            CloseHandle(allow_handler_return);
+            CloseHandle(destructor_finished);
+            CloseHandle(handler_rejected);
         }
 
         TEST_METHOD(DestructorCancelsBlockedConnectionRead)

@@ -28,6 +28,8 @@ private:
         }
 
         HANDLE pipe_handle = INVALID_HANDLE_VALUE;
+        std::thread thread;
+        bool completed = false;
     };
 
     enum class LifecycleState
@@ -74,7 +76,6 @@ private:
     LifecycleState lifecycle_state = LifecycleState::NotStarted;
     std::mutex pipe_connect_handle_mutex; // For manipulating the current_connect_pipe
     std::mutex connection_handlers_mutex;
-    std::condition_variable connection_handlers_finished;
     std::vector<std::shared_ptr<ConnectionHandler>> connection_handlers;
     std::wstring outgoing_message; // Store the updated json settings.
 
@@ -94,6 +95,8 @@ private:
     HANDLE create_medium_integrity_token();
     void handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler);
     void finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler);
+    bool start_connection_handler(HANDLE pipe_handle);
+    void reap_finished_connection_handlers();
     void cancel_and_wait_for_connection_handlers();
     void start_named_pipe_server(HANDLE token);
     void consume_input_queue_thread();

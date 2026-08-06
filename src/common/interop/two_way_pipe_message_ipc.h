@@ -7,6 +7,8 @@ namespace two_way_pipe_message_ipc_test
 {
     void FailThreadStartAfter(int successful_starts);
     void SetWaitNamedPipeEnteredEvent(HANDLE event);
+    void SetHandlerCompletionEvents(HANDLE completed_event, HANDLE allow_return_event);
+    void SetBeforeReplacementListenerEvents(HANDLE reached_event, HANDLE allow_creation_event);
     void ResetFaultInjection();
 }
 #endif
