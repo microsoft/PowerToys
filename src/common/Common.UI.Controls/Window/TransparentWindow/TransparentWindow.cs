@@ -62,12 +62,14 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     private const int DwmwcpDoNotRound = 1;
     private const int DwmncrpDisabled = 2;
 
+    private const int GwlpHwndParent = -8;
     private const int GwlExStyle = -20;
     private const int WsExDlgModalFrame = 0x00000001;
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExWindowEdge = 0x00000100;
     private const int WsExClientEdge = 0x00000200;
+    private const int WsExAppWindow = 0x00040000;
 
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoMove = 0x0002;
@@ -80,6 +82,7 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private readonly nint _hwnd;
 
+    private Microsoft.UI.Xaml.Window? _hiddenOwnerWindow;
     private bool _inputHooked;
     private bool _seenActivated;
     private bool _cloakWhenHidden;
@@ -234,11 +237,25 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private void RaiseShow(Transition? transition)
     {
+        // A new show can interrupt a deferred hide. In that case HideCore never runs, so the
+        // previous Reveal left the HWND uncloaked. Cloak synchronously before the caller returns to
+        // the dispatcher; otherwise content rebuilt for this summon can render at the old bounds.
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            // CloakAndKeepShown uses SW_HIDE, which can raise Deactivated. Reset this first so an
+            // internal show transition is not mistaken for a user-initiated focus loss.
+            _seenActivated = false;
+            EnsureCloakedBeforeShow();
+        }
+
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,
             () =>
             {
                 _seenActivated = false;
+
+                // Also cover callers that entered Show from another thread.
+                EnsureCloakedBeforeShow();
                 EnsureInputHooks();
                 _ = ShowWindow(_hwnd, SwShowNa);
                 Showing?.Invoke(this, new ShowingEventArgs(transition));
@@ -286,6 +303,10 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// </remarks>
     protected void EnableCloakedHide()
     {
+        // Unlike a hidden HWND, a cloaked HWND remains WS_VISIBLE. Give it a hidden owner before
+        // the first SW_SHOWNA so Explorer reliably keeps it out of the taskbar on every virtual-
+        // desktop taskbar configuration; WS_EX_TOOLWINDOW alone is not sufficient there.
+        EnsureHiddenOwner();
         _cloakWhenHidden = true;
         HideCore();
     }
@@ -302,11 +323,14 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             return;
         }
 
-        // Clear the state first and ignore the result: an uncloak that fails leaves an
-        // invisible window either way, and keeping the flag set would wedge it there for
-        // good by making every later Reveal a no-op.
+        // Keep the state and click-through style when DWM refuses to uncloak. A later Reveal can
+        // then retry instead of returning early while the HWND is still invisible.
+        if (!SetCloak(false))
+        {
+            return;
+        }
+
         _cloaked = false;
-        _ = SetCloak(false);
 
         // Restore hit-testing: the window is on screen again, so it must behave like any
         // other window (see CloakAndKeepShown for why it is click-through while cloaked).
@@ -322,6 +346,29 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         }
 
         AppWindow.Hide();
+    }
+
+    private void EnsureCloakedBeforeShow()
+    {
+        if (_cloakWhenHidden && !_cloaked)
+        {
+            CloakAndKeepShown();
+        }
+    }
+
+    private void EnsureHiddenOwner()
+    {
+        if (_hiddenOwnerWindow is not null || _hwnd == 0)
+        {
+            return;
+        }
+
+        _hiddenOwnerWindow = new Microsoft.UI.Xaml.Window();
+        nint hiddenOwnerHwnd = WinRT.Interop.WindowNative.GetWindowHandle(_hiddenOwnerWindow);
+        _ = SetWindowLongPtr(_hwnd, GwlpHwndParent, hiddenOwnerHwnd);
+
+        // WS_EX_APPWINDOW overrides normal owner-based taskbar suppression.
+        ApplyExStyleBit(WsExAppWindow, false);
     }
 
     private void CloakAndKeepShown()
