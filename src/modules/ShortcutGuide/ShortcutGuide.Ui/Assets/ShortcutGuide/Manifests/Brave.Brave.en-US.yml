@@ -26,8 +26,8 @@ Shortcuts:
       - Name: New private window with Tor
         Shortcut:
         - Win: false
-          Ctrl: true
-          Shift: false
+          Ctrl: false
+          Shift: true
           Alt: true
           Keys:
             - N
