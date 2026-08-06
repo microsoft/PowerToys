@@ -97,10 +97,12 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
                         IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
                         _ => null,
                     };
+
                     if (vm is not null)
                     {
-                        vm.InitializeProperties();
+                        // Track first, so we can clean up if we fail to transfer all elements
                         newMetadata.Add(vm);
+                        vm.InitializeProperties();
                     }
                 }
             }
