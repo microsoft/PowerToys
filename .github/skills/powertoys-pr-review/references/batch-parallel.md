@@ -12,7 +12,7 @@ The orchestrator (this session) fans out **one background sub-agent per PR** and
 orchestrator:
   1. Parse the PR list. Run Phase-0 author-type + prerequisites ONCE up front.
   2. Sync the fork's main from upstream ONCE (do NOT let each child race on this — see Shared state).
-  3. Seed review-data.json with one entry per PR at phase:"queued" and launch the dashboard (live tracker).
+  3. Run `Get-ReviewResumeState.ps1` for the full batch, reuse every durable trace it finds, then seed schema-version-2 review-data.json with one entry per PR at phase:"queued" and launch the dashboard.
   4. Fan out background sub-agents, capped at MAX_CONCURRENT (3–5). As each finishes, launch the next queued PR.
   5. Poll children; as each reports a phase change, update review-data.json (orchestrator is the SINGLE writer).
   6. When a child converges, record its contextComment + suggestions and set phase:"ready".
@@ -22,6 +22,8 @@ orchestrator:
 - **Cap concurrency at 3–5.** More invites GitHub rate limits (review requests, API calls) and thrashes the machine. Launch the next PR only as a slot frees.
 - **Each PR is independent on disk**: its own fork branch `pr-iterate/N` and its own worktree `C:\PowerToys-<hash>`. Git operations across PRs don't collide, so parallelism is safe.
 - Use the CLI's background sub-agents (Task tool, `mode: background`) — one per PR. Give each the complete context it needs (PR number, fork config, resume-check instruction, the Rule 11 definition of done). Sub-agents are stateless; don't assume shared memory.
+- Persist each worker's round, head SHA, latest review time, build result, and unresolved-thread count so a replacement session can resume it.
+- Apply the suppressed-comment policy from [copilot-review-loop.md](./copilot-review-loop.md): important findings only in rounds 1–5, ignore all suppressed findings after round 5, and never treat them as an independent convergence blocker.
 
 ## Serialize the local builds
 
@@ -33,6 +35,7 @@ Some steps touch shared resources and must not race:
 
 - **Fork `main` sync** (Step 2 / 2c): the orchestrator fast-forwards and pushes the fork's `main` once, up front, before any child mirrors. If every child pushes `main` concurrently you get non-fast-forward rejects and diff bloat. Children rebase their own branch onto the already-synced `origin/main`.
 - **`review-data.json`**: the orchestrator is the **single writer** (Rule from [approval-dashboard.md](./approval-dashboard.md)). Children do **not** write it directly — they report status back to the orchestrator (via their turn output / background-agent messages), and the orchestrator writes atomically (`.tmp` then `Move-Item -Force`). This keeps the dashboard poller from ever seeing a half-written or conflicting file.
+- **Upstream publishing**: workers never post directly. The coordinator validates the complete batch with `Test-ReviewData.ps1 -CheckGitHub`, waits for explicit approval, and uses `Publish-ApprovedReview.ps1`.
 
 ## Aggregation and the approval gate
 
