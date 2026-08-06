@@ -2,6 +2,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <memory>
+#include <utility>
 #include <Windows.h>
 #include "async_message_queue.h"
 #include <WinSafer.h>
@@ -20,14 +21,67 @@ public:
     void end();
 
 private:
+    struct OwnedPipeHandle
+    {
+        OwnedPipeHandle() = default;
+        explicit OwnedPipeHandle(HANDLE handle) :
+            handle(handle)
+        {
+        }
+        ~OwnedPipeHandle()
+        {
+            reset();
+        }
+
+        OwnedPipeHandle(const OwnedPipeHandle&) = delete;
+        OwnedPipeHandle& operator=(const OwnedPipeHandle&) = delete;
+
+        OwnedPipeHandle(OwnedPipeHandle&& other) noexcept :
+            handle(other.release())
+        {
+        }
+        OwnedPipeHandle& operator=(OwnedPipeHandle&& other) noexcept
+        {
+            if (this != &other)
+            {
+                reset(other.release());
+            }
+            return *this;
+        }
+
+        [[nodiscard]] HANDLE get() const
+        {
+            return handle;
+        }
+        [[nodiscard]] bool valid() const
+        {
+            return handle != INVALID_HANDLE_VALUE;
+        }
+        HANDLE release()
+        {
+            return std::exchange(handle, INVALID_HANDLE_VALUE);
+        }
+        void reset(HANDLE new_handle = INVALID_HANDLE_VALUE)
+        {
+            if (handle != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(handle);
+            }
+            handle = new_handle;
+        }
+
+    private:
+        HANDLE handle = INVALID_HANDLE_VALUE;
+    };
+
     struct ConnectionHandler
     {
-        explicit ConnectionHandler(HANDLE pipe) :
-            pipe_handle(pipe)
+        explicit ConnectionHandler(OwnedPipeHandle&& pipe) :
+            pipe_handle(std::move(pipe))
         {
         }
 
-        HANDLE pipe_handle = INVALID_HANDLE_VALUE;
+        OwnedPipeHandle pipe_handle;
         std::thread thread;
         bool completed = false;
     };
@@ -80,6 +134,7 @@ private:
     std::wstring outgoing_message; // Store the updated json settings.
 
     HANDLE current_connect_pipe_handle = NULL;
+    HANDLE pipe_security_token = nullptr;
     std::atomic_bool closed = false;
     TwoWayPipeMessageIPC::callback_function dispatch_inc_message_function;
     interop_auth::CallerPolicy caller_policy;
@@ -95,7 +150,7 @@ private:
     HANDLE create_medium_integrity_token();
     void handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler);
     void finish_connection_handler(const std::shared_ptr<ConnectionHandler>& handler);
-    bool start_connection_handler(HANDLE pipe_handle);
+    bool start_connection_handler(OwnedPipeHandle&& pipe_handle);
     void reap_finished_connection_handlers();
     void cancel_and_wait_for_connection_handlers();
     void start_named_pipe_server(HANDLE token);

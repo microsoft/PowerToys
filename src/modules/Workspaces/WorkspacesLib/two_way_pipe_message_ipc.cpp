@@ -15,6 +15,30 @@ constexpr DWORD PipeClientAccess = FILE_READ_DATA |
                                    SYNCHRONIZE;
 constexpr DWORD PipeWaitIntervalMs = 100;
 
+namespace
+{
+HANDLE duplicate_pipe_security_token(HANDLE token)
+{
+    if (!token)
+    {
+        return nullptr;
+    }
+
+    HANDLE duplicate = nullptr;
+    if (!DuplicateHandle(GetCurrentProcess(),
+                         token,
+                         GetCurrentProcess(),
+                         &duplicate,
+                         0,
+                         FALSE,
+                         DUPLICATE_SAME_ACCESS))
+    {
+        throw std::system_error(GetLastError(), std::system_category());
+    }
+    return duplicate;
+}
+}
+
 #ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
 namespace
 {
@@ -121,11 +145,12 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start(HANDLE _restricted_pi
     }
 
     caller_policy = {};
+    pipe_security_token = duplicate_pipe_security_token(_restricted_pipe_token);
     closed.store(false);
     lifecycle_state = LifecycleState::Starting;
     try
     {
-        start_threads(_restricted_pipe_token);
+        start_threads(pipe_security_token);
         lifecycle_state = LifecycleState::Running;
     }
     catch (...)
@@ -203,6 +228,11 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::stop_started_threads()
         input_pipe_thread.join();
     }
     cancel_and_wait_for_connection_handlers();
+    if (pipe_security_token)
+    {
+        CloseHandle(pipe_security_token);
+        pipe_security_token = nullptr;
+    }
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstring message)
@@ -546,7 +576,7 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler)
 {
-    const HANDLE input_pipe_handle = handler->pipe_handle;
+    const HANDLE input_pipe_handle = handler->pipe_handle.get();
     if (input_pipe_handle == INVALID_HANDLE_VALUE)
     {
         finish_connection_handler(handler);
@@ -599,13 +629,12 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::finish_connection_handler(c
     HANDLE pipe_handle = INVALID_HANDLE_VALUE;
     {
         std::scoped_lock lock(connection_handlers_mutex);
-        pipe_handle = handler->pipe_handle;
-        handler->pipe_handle = INVALID_HANDLE_VALUE;
-    }
-    if (pipe_handle != INVALID_HANDLE_VALUE)
-    {
-        DisconnectNamedPipe(pipe_handle);
-        CloseHandle(pipe_handle);
+        pipe_handle = handler->pipe_handle.get();
+        if (pipe_handle != INVALID_HANDLE_VALUE)
+        {
+            DisconnectNamedPipe(pipe_handle);
+        }
+        handler->pipe_handle.reset();
     }
 
     {
@@ -614,9 +643,9 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::finish_connection_handler(c
     }
 }
 
-bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_connection_handler(HANDLE pipe_handle)
+bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_connection_handler(OwnedPipeHandle&& pipe_handle)
 {
-    auto handler = std::make_shared<ConnectionHandler>(pipe_handle);
+    auto handler = std::make_shared<ConnectionHandler>(std::move(pipe_handle));
     {
         std::scoped_lock lock(connection_handlers_mutex);
         connection_handlers.emplace_back(handler);
@@ -670,10 +699,10 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::cancel_and_wait_for_connect
         std::scoped_lock lock(connection_handlers_mutex);
         for (const auto& handler : connection_handlers)
         {
-            if (handler->pipe_handle != INVALID_HANDLE_VALUE)
+            if (handler->pipe_handle.valid())
             {
-                CancelIoEx(handler->pipe_handle, nullptr);
-                DisconnectNamedPipe(handler->pipe_handle);
+                CancelIoEx(handler->pipe_handle.get(), nullptr);
+                DisconnectNamedPipe(handler->pipe_handle.get());
             }
         }
         handlers.swap(connection_handlers);
@@ -720,8 +749,8 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             &security_attributes.attributes);
     };
 
-    HANDLE listener = create_listener(true);
-    if (listener == INVALID_HANDLE_VALUE)
+    OwnedPipeHandle listener{ create_listener(true) };
+    if (!listener.valid())
     {
         return;
     }
@@ -734,9 +763,9 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             {
                 break;
             }
-            current_connect_pipe_handle = listener;
+            current_connect_pipe_handle = listener.get();
         }
-        const BOOL connected = ConnectNamedPipe(listener, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+        const BOOL connected = ConnectNamedPipe(listener.get(), NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
         {
             std::unique_lock lock(pipe_connect_handle_mutex);
             current_connect_pipe_handle = NULL;
@@ -748,15 +777,15 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             {
                 break;
             }
-            DisconnectNamedPipe(listener);
+            DisconnectNamedPipe(listener.get());
             continue;
         }
 
-        HANDLE replacement = INVALID_HANDLE_VALUE;
-        while (!closed.load() && replacement == INVALID_HANDLE_VALUE)
+        OwnedPipeHandle replacement;
+        while (!closed.load() && !replacement.valid())
         {
-            replacement = create_listener(false);
-            if (replacement == INVALID_HANDLE_VALUE && !closed.load())
+            replacement.reset(create_listener(false));
+            if (!replacement.valid() && !closed.load())
             {
                 Sleep(10);
             }
@@ -767,17 +796,15 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::start_named_pipe_server(HAN
             break;
         }
 
-        if (!start_connection_handler(listener))
-        {
-            DisconnectNamedPipe(listener);
-            CloseHandle(listener);
-        }
-        listener = replacement;
+        start_connection_handler(std::move(listener));
+        listener = std::move(replacement);
         reap_finished_connection_handlers();
     }
 
-    DisconnectNamedPipe(listener);
-    CloseHandle(listener);
+    if (listener.valid())
+    {
+        DisconnectNamedPipe(listener.get());
+    }
     reap_finished_connection_handlers();
 }
 

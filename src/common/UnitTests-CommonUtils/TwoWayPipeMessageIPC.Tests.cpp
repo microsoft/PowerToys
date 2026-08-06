@@ -29,6 +29,47 @@ namespace UnitTestsCommonUtils
                    std::to_wstring(InterlockedIncrement(&counter));
         }
 
+        std::wstring CurrentExePath()
+        {
+            wchar_t path[MAX_PATH * 2]{};
+            GetModuleFileNameW(nullptr, path, ARRAYSIZE(path));
+            return path;
+        }
+
+        std::wstring DirectoryOf(const std::wstring& path)
+        {
+            const auto separator = path.find_last_of(L"\\/");
+            return separator == std::wstring::npos ? path : path.substr(0, separator);
+        }
+
+        std::wstring BaseNameOf(const std::wstring& path)
+        {
+            const auto separator = path.find_last_of(L"\\/");
+            return separator == std::wstring::npos ? path : path.substr(separator + 1);
+        }
+
+        interop_auth::CallerPolicy SelfCallerPolicy()
+        {
+            const std::wstring executable = CurrentExePath();
+            interop_auth::CallerPolicy policy;
+            policy.enabled = true;
+            policy.expectedDirectory = DirectoryOf(executable);
+            policy.allowedBasenames = { BaseNameOf(executable) };
+            policy.requireMicrosoftSignature = false;
+            return policy;
+        }
+
+        bool WriteTestMessage(HANDLE pipe)
+        {
+            constexpr wchar_t message[] = L"test";
+            DWORD bytes_written = 0;
+            return WriteFile(pipe,
+                             message,
+                             (ARRAYSIZE(message) - 1) * sizeof(wchar_t),
+                             &bytes_written,
+                             nullptr) == TRUE;
+        }
+
         HANDLE ConnectPipeClient(const std::wstring& pipe_name)
         {
             constexpr DWORD timeout_ms = 2'000;
@@ -215,8 +256,12 @@ namespace UnitTestsCommonUtils
             bool active = false;
         };
 
+        std::mutex fault_injection_test_mutex;
+
         struct FaultInjectionReset
         {
+            std::unique_lock<std::mutex> lock{ fault_injection_test_mutex };
+
             FaultInjectionReset()
             {
                 two_way_pipe_message_ipc_test::ResetFaultInjection();
@@ -643,7 +688,6 @@ namespace UnitTestsCommonUtils
                 Assert::IsTrue(impersonation.active, L"failed to impersonate the normal same-user client token");
                 HANDLE client = ConnectPipeClient(input_pipe_name);
                 Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the rejected client could not connect");
-                CloseHandle(client);
 
                 Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(before_replacement, 2'000),
                                  L"the server did not begin reserving a replacement listener");
@@ -667,6 +711,7 @@ namespace UnitTestsCommonUtils
                 Assert::IsTrue(rogue_server == INVALID_HANDLE_VALUE,
                                L"the pipe name was released before the replacement listener existed");
                 Assert::AreEqual(static_cast<DWORD>(ERROR_ACCESS_DENIED), create_error);
+                CloseHandle(client);
             }
 
             SetEvent(allow_replacement);
@@ -677,6 +722,127 @@ namespace UnitTestsCommonUtils
             CloseHandle(before_replacement);
             CloseHandle(allow_replacement);
             CloseHandle(handler_rejected);
+        }
+
+        TEST_METHOD(OwnedSecurityTokenSupportsReplacementAfterCallerClosesIt)
+        {
+            HANDLE caller_token = nullptr;
+            Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &caller_token) == TRUE);
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            HANDLE first_client_dispatched = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE two_clients_dispatched = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(first_client_dispatched);
+            Assert::IsNotNull(two_clients_dispatched);
+            std::atomic<int> dispatch_count = 0;
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), [&](const std::wstring&) {
+                const int count = ++dispatch_count;
+                if (count == 1)
+                {
+                    SetEvent(first_client_dispatched);
+                }
+                else if (count == 2)
+                {
+                    SetEvent(two_clients_dispatched);
+                }
+            });
+            server.start(caller_token, SelfCallerPolicy());
+            CloseHandle(caller_token);
+
+            HANDLE first_client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(first_client != INVALID_HANDLE_VALUE, L"the first client could not connect");
+            Assert::IsTrue(WriteTestMessage(first_client), L"the first client could not write");
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(first_client_dispatched, 2'000),
+                             L"the first client was not authenticated and dispatched");
+            CloseHandle(first_client);
+            HANDLE second_client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(second_client != INVALID_HANDLE_VALUE,
+                           L"the replacement listener did not survive the caller token closing");
+            Assert::IsTrue(WriteTestMessage(second_client), L"the second client could not write");
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(two_clients_dispatched, 2'000),
+                             L"the replacement listener did not authenticate the second client");
+            CloseHandle(second_client);
+            server.end();
+            CloseHandle(first_client_dispatched);
+            CloseHandle(two_clients_dispatched);
+        }
+
+        TEST_METHOD(ShutdownClosesReplacementReservedDuringHandoff)
+        {
+            FaultInjectionReset reset;
+            HANDLE after_replacement = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE allow_handoff = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            HANDLE shutdown_finished = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(after_replacement);
+            Assert::IsNotNull(allow_handoff);
+            Assert::IsNotNull(shutdown_finished);
+            two_way_pipe_message_ipc_test::SetAfterReplacementListenerEvents(after_replacement, allow_handoff);
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), nullptr);
+            server.start(nullptr);
+            HANDLE client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the handoff client could not connect");
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(after_replacement, 2'000),
+                             L"the replacement listener was not created");
+
+            std::thread shutdown_thread([&]() {
+                server.end();
+                SetEvent(shutdown_finished);
+            });
+            Assert::AreEqual(static_cast<DWORD>(WAIT_TIMEOUT), WaitForSingleObject(shutdown_finished, 200),
+                             L"shutdown unexpectedly completed before the handoff race was released");
+            SetEvent(allow_handoff);
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(shutdown_finished, 5'000),
+                             L"shutdown did not close the reserved replacement listener");
+            shutdown_thread.join();
+            CloseHandle(client);
+
+            HANDLE probe = CreateNamedPipeW(input_pipe_name.c_str(),
+                                             PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
+                                             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                             1,
+                                             4096,
+                                             4096,
+                                             0,
+                                             nullptr);
+            Assert::IsTrue(probe != INVALID_HANDLE_VALUE,
+                           L"shutdown leaked a replacement listener reservation");
+            CloseHandle(probe);
+
+            two_way_pipe_message_ipc_test::SetAfterReplacementListenerEvents(nullptr, nullptr);
+            CloseHandle(after_replacement);
+            CloseHandle(allow_handoff);
+            CloseHandle(shutdown_finished);
+        }
+
+        TEST_METHOD(HandlerThreadStartFailureTransfersAndClosesPipeOnce)
+        {
+            FaultInjectionReset reset;
+            two_way_pipe_message_ipc_test::FailHandlerThreadStartAfter(0);
+
+            const std::wstring input_pipe_name = UniquePipeName();
+            HANDLE dispatched = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(dispatched);
+            TwoWayPipeMessageIPC server(input_pipe_name, UniquePipeName(), [dispatched](const std::wstring&) {
+                SetEvent(dispatched);
+            });
+            server.start(nullptr);
+
+            HANDLE first_client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(first_client != INVALID_HANDLE_VALUE, L"the first client could not connect");
+            CloseHandle(first_client);
+            HANDLE second_client = ConnectPipeClient(input_pipe_name);
+            Assert::IsTrue(second_client != INVALID_HANDLE_VALUE,
+                           L"the listener did not remain usable after handler thread creation failed");
+            Assert::IsTrue(WriteTestMessage(second_client), L"the second client could not write");
+
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(dispatched, 2'000),
+                             L"the replacement listener did not process the second client");
+            CloseHandle(second_client);
+            server.end();
+            CloseHandle(dispatched);
         }
 
         TEST_METHOD(StartFailureAfterFirstThreadCleansUp)
@@ -798,9 +964,9 @@ namespace UnitTestsCommonUtils
 
             HANDLE client = ConnectPipeClient(input_pipe_name);
             Assert::IsTrue(client != INVALID_HANDLE_VALUE, L"the rejected client could not connect");
-            CloseHandle(client);
             Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_rejected, 2'000),
                              L"the handler did not reject the test client");
+            CloseHandle(client);
             Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_completed, 2'000),
                              L"the handler did not reach its completion point");
 
