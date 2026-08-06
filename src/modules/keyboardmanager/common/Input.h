@@ -18,14 +18,9 @@ namespace KeyboardManagerInput
         // modifier stuck). In that rare case we suppress the original and log a warning.
         bool SendVirtualInput(const std::vector<INPUT>& inputs)
         {
-            return SendVirtualInputWithResult(inputs) != VirtualInputResult::None;
-        }
-
-        VirtualInputResult SendVirtualInputWithResult(const std::vector<INPUT>& inputs) override
-        {
             if (inputs.empty())
             {
-                return VirtualInputResult::Complete;
+                return true;
             }
 
             std::vector<INPUT> copy = inputs;
@@ -37,7 +32,7 @@ namespace KeyboardManagerInput
                 Logger::error(
                     L"Failed to send input events. {}",
                     get_last_error_or_default(GetLastError()));
-                return VirtualInputResult::None;
+                return false;
             }
             if (eventCount != copy.size())
             {
@@ -49,9 +44,8 @@ namespace KeyboardManagerInput
                     eventCount,
                     static_cast<UINT>(copy.size()),
                     get_last_error_or_default(GetLastError()));
-                return VirtualInputResult::Partial;
             }
-            return VirtualInputResult::Complete;
+            return true;
         }
 
         // Function to get the state of a particular key

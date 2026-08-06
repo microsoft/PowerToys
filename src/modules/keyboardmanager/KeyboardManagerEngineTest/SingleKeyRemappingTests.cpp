@@ -1000,19 +1000,6 @@ namespace RemappingLogicTests
             Assert::AreEqual(static_cast<size_t>(2), mockedInputHandler.GetSendVirtualInputBatchCount());
         }
 
-        TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressOriginalKey_WhenInputBatchIsPartial)
-        {
-            testState.AddTextReplacement(L" ", L"expanded");
-            PrimeTextReplacementContext();
-            mockedInputHandler.SetSendVirtualInputResult([](const std::vector<INPUT>&) {
-                return KeyboardManagerInput::VirtualInputResult::Partial;
-            });
-
-            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
-            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
-            Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetSendVirtualInputBatchCount());
-        }
-
         TEST_METHOD (HandleTextReplacementEvent_ShouldClearBuffer_WhenBackspaceHasShortcutModifier)
         {
             testState.AddTextReplacement(L"placeholder", L"expanded");

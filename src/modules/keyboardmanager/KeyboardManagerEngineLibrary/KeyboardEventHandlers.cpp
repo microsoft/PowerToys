@@ -425,19 +425,13 @@ namespace
             return TextReplacementInputResult::Completed;
         }
 
-        switch (ii.SendVirtualInputWithResult(inputs))
+        if (!ii.SendVirtualInput(inputs))
         {
-        case KeyboardManagerInput::VirtualInputResult::None:
             return inputStreamMutated ? TextReplacementInputResult::FailedAfterMutation : TextReplacementInputResult::FailedBeforeMutation;
-        case KeyboardManagerInput::VirtualInputResult::Partial:
-            inputStreamMutated = true;
-            return TextReplacementInputResult::FailedAfterMutation;
-        case KeyboardManagerInput::VirtualInputResult::Complete:
-            inputStreamMutated = true;
-            return TextReplacementInputResult::Completed;
         }
 
-        return TextReplacementInputResult::FailedAfterMutation;
+        inputStreamMutated = true;
+        return TextReplacementInputResult::Completed;
     }
 
     TextReplacementInputResult SendTextInputInSmallBatches(KeyboardManagerInput::InputInterface& ii, const std::wstring_view text, bool& inputStreamMutated)

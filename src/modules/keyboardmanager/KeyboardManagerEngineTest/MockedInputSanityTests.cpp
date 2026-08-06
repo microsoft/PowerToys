@@ -79,19 +79,5 @@ namespace RemappingLogicTests
             Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetLargestSendVirtualInputBatchSize());
         }
 
-        TEST_METHOD (MockedInput_ShouldExposePartialVirtualInputResult)
-        {
-            mockedInputHandler.SetSendVirtualInputResult([](const std::vector<INPUT>&) {
-                return KeyboardManagerInput::VirtualInputResult::Partial;
-            });
-            std::vector<INPUT> inputs{
-                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
-                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'B' } },
-            };
-
-            Assert::IsTrue(mockedInputHandler.SendVirtualInputWithResult(inputs) == KeyboardManagerInput::VirtualInputResult::Partial);
-            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
-            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('B'));
-        }
     };
 }

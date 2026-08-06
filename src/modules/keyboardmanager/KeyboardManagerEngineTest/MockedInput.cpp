@@ -12,39 +12,21 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
 bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
 {
-    return SendVirtualInputWithResult(inputs) != VirtualInputResult::None;
-}
-
-VirtualInputResult MockedInput::SendVirtualInputWithResult(const std::vector<INPUT>& inputs)
-{
     sendVirtualInputBatchSizes.push_back(inputs.size());
-
-    VirtualInputResult injectionResult = VirtualInputResult::Complete;
-    if (sendVirtualInputResultOverride)
-    {
-        injectionResult = sendVirtualInputResultOverride(inputs);
-    }
 
     // Simulate an injection failure (e.g. SendInput blocked) when configured.
     if (sendVirtualInputShouldFail != nullptr && sendVirtualInputShouldFail(inputs))
     {
-        injectionResult = VirtualInputResult::None;
-    }
-
-    if (injectionResult == VirtualInputResult::None)
-    {
-        return injectionResult;
+        return false;
     }
 
     if (inputs.empty())
     {
-        return VirtualInputResult::Complete;
+        return true;
     }
 
-    const size_t inputCount = injectionResult == VirtualInputResult::Partial ? (std::max)(size_t{ 1 }, inputs.size() / 2) : inputs.size();
-
     // Iterate over inputs
-    for (size_t inputIndex = 0; inputIndex < inputCount; ++inputIndex)
+    for (size_t inputIndex = 0; inputIndex < inputs.size(); ++inputIndex)
     {
         const INPUT& input = inputs[inputIndex];
         LowlevelKeyboardEvent keyEvent{};
@@ -148,7 +130,7 @@ VirtualInputResult MockedInput::SendVirtualInputWithResult(const std::vector<INP
             }
         }
     }
-    return injectionResult;
+    return true;
 }
 
 // Function to simulate keyboard hook behavior
@@ -206,11 +188,6 @@ void MockedInput::SetSendVirtualInputShouldFail(std::function<bool(const std::ve
 int MockedInput::GetSendVirtualInputCallCount()
 {
     return sendVirtualInputCallCount;
-}
-
-void MockedInput::SetSendVirtualInputResult(std::function<VirtualInputResult(const std::vector<INPUT>&)> resultOverride)
-{
-    sendVirtualInputResultOverride = resultOverride;
 }
 
 // Function to get the number of attempted SendVirtualInput batches

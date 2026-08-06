@@ -26,9 +26,6 @@ namespace KeyboardManagerInput
         // call, that call fails (returns false) to simulate a SendInput failure.
         std::function<bool(const std::vector<INPUT>&)> sendVirtualInputShouldFail;
 
-        // Optional detailed result override used to simulate partial SendInput calls.
-        std::function<VirtualInputResult(const std::vector<INPUT>&)> sendVirtualInputResultOverride;
-
         // Records attempted SendVirtualInput batch sizes, including failed batches.
         std::vector<size_t> sendVirtualInputBatchSizes;
 
@@ -45,7 +42,6 @@ namespace KeyboardManagerInput
 
         // Function to simulate keyboard input
         bool SendVirtualInput(const std::vector<INPUT>& inputs);
-        VirtualInputResult SendVirtualInputWithResult(const std::vector<INPUT>& inputs) override;
 
         // Function to simulate keyboard hook behavior
         intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);
@@ -64,8 +60,6 @@ namespace KeyboardManagerInput
 
         // Function to force SendVirtualInput to fail for calls matching a predicate
         void SetSendVirtualInputShouldFail(std::function<bool(const std::vector<INPUT>&)> condition);
-
-        void SetSendVirtualInputResult(std::function<VirtualInputResult(const std::vector<INPUT>&)> resultOverride);
 
         // Function to get SendVirtualInput call count
         int GetSendVirtualInputCallCount();
