@@ -44,12 +44,12 @@
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="SearchBox"
-                    AutomationProperties.AutomationId="ShortcutGuide_SearchBox"
                     Grid.Column="2"
                     MinWidth="120"
                     MaxWidth="220"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="ShortcutGuide_SearchBox"
                     TextChanged="SearchBox_TextChanged">
                     <AutoSuggestBox.QueryIcon>
                         <SymbolIcon Symbol="Find" />
