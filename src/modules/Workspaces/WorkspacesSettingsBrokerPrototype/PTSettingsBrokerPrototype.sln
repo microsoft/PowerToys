@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "PTSettingsBrokerPrototype.Service", "service\PTSettingsBrokerPrototype.Service.vcxproj", "{739D54A0-42A7-41CE-A91D-3988731C3282}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "PTSettingsBrokerPrototype.WorkspacesClient", "client\PTSettingsBrokerPrototype.WorkspacesClient.vcxproj", "{937512CE-62D7-467F-A977-909538916227}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "PTSettingsBrokerPrototype.KeyboardManagerClient", "client\PTSettingsBrokerPrototype.KeyboardManagerClient.vcxproj", "{E4884BE6-D006-46D4-8594-81D685BF1E20}"
+EndProject
+Project("{BC8A1FFA-BEE3-4634-8014-F334798102B3}") = "PTSettingsBrokerPrototype.UnknownClient", "client\PTSettingsBrokerPrototype.UnknownClient.vcxproj", "{CA8A0AAE-0E41-40ED-94EB-4826547AADEE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{739D54A0-42A7-41CE-A91D-3988731C3282}.Debug|x64.ActiveCfg = Debug|x64
+		{739D54A0-42A7-41CE-A91D-3988731C3282}.Debug|x64.Build.0 = Debug|x64
+		{739D54A0-42A7-41CE-A91D-3988731C3282}.Release|x64.ActiveCfg = Release|x64
+		{739D54A0-42A7-41CE-A91D-3988731C3282}.Release|x64.Build.0 = Release|x64
+		{937512CE-62D7-467F-A977-909538916227}.Debug|x64.ActiveCfg = Debug|x64
+		{937512CE-62D7-467F-A977-909538916227}.Debug|x64.Build.0 = Debug|x64
+		{937512CE-62D7-467F-A977-909538916227}.Release|x64.ActiveCfg = Release|x64
+		{937512CE-62D7-467F-A977-909538916227}.Release|x64.Build.0 = Release|x64
+		{E4884BE6-D006-46D4-8594-81D685BF1E20}.Debug|x64.ActiveCfg = Debug|x64
+		{E4884BE6-D006-46D4-8594-81D685BF1E20}.Debug|x64.Build.0 = Debug|x64
+		{E4884BE6-D006-46D4-8594-81D685BF1E20}.Release|x64.ActiveCfg = Release|x64
+		{E4884BE6-D006-46D4-8594-81D685BF1E20}.Release|x64.Build.0 = Release|x64
+		{CA8A0AAE-0E41-40ED-94EB-4826547AADEE}.Debug|x64.ActiveCfg = Debug|x64
+		{CA8A0AAE-0E41-40ED-94EB-4826547AADEE}.Debug|x64.Build.0 = Debug|x64
+		{CA8A0AAE-0E41-40ED-94EB-4826547AADEE}.Release|x64.ActiveCfg = Release|x64
+		{CA8A0AAE-0E41-40ED-94EB-4826547AADEE}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+EndGlobal
