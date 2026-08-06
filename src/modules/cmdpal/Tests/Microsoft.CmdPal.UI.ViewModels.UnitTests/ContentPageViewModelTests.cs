@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -20,6 +23,128 @@ public partial class ContentPageViewModelTests
     private sealed partial class TestContentPage : ContentPage
     {
         public override IContent[] GetContent() => [];
+    }
+
+    private sealed partial class SwappableContentPage : ContentPage
+    {
+        public IContent[] Content { get; set; } = [];
+
+        public override IContent[] GetContent() => Content;
+
+        public void TriggerItemsChanged() => RaiseItemsChanged(Content.Length);
+    }
+
+    /// <summary>
+    /// Reports whether a view-model is still subscribed to it. Something that
+    /// was dropped without cleanup shows up here as a live handler.
+    /// </summary>
+    private sealed partial class CountingMarkdown(string body) : IMarkdownContent
+    {
+        private TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add => _propChanged += value;
+            remove => _propChanged -= value;
+        }
+
+        public int HandlerCount => _propChanged?.GetInvocationList().Length ?? 0;
+
+        public string Body => body;
+    }
+
+    /// <summary>
+    /// Details that report whether a view-model is still subscribed.
+    /// </summary>
+    private sealed partial class CountingDetails : IDetails, INotifyPropChanged
+    {
+        private TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
+
+        public event TypedEventHandler<object, IPropChangedEventArgs> PropChanged
+        {
+            add => _propChanged += value;
+            remove => _propChanged -= value;
+        }
+
+        public int HandlerCount => _propChanged?.GetInvocationList().Length ?? 0;
+
+        public IIconInfo HeroImage => new IconInfo(string.Empty);
+
+        public string Title => "Counting";
+
+        public string Body => "Counting body";
+
+        public IDetailsElement[] Metadata => [];
+    }
+
+    private static CommandPaletteContentPageViewModel CreateContentViewModel(SwappableContentPage page) =>
+        new(page, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+    [TestMethod]
+    public void ContentUpdate_ReleasesDisplacedContent()
+    {
+        var first = new CountingMarkdown("first");
+        var page = new SwappableContentPage
+        {
+            Id = "content.page",
+            Name = "Content Page",
+            Title = "Content Page",
+            Content = [first],
+        };
+
+        var viewModel = CreateContentViewModel(page);
+        viewModel.InitializeProperties();
+
+        // FetchContent hands the collection update to the page scheduler.
+        SpinWait.SpinUntil(() => first.HandlerCount == 1, TimeSpan.FromSeconds(2));
+        Assert.AreEqual(1, first.HandlerCount, "the initial content should be subscribed");
+
+        page.Content = [new CountingMarkdown("second")];
+        page.TriggerItemsChanged();
+
+        SpinWait.SpinUntil(() => first.HandlerCount == 0, TimeSpan.FromSeconds(2));
+        Assert.AreEqual(0, first.HandlerCount, "content displaced by an update was left subscribed");
+    }
+
+    [TestMethod]
+    public void DetailsUpdate_ReleasesDisplacedDetails()
+    {
+        var first = new CountingDetails();
+        var page = new SwappableContentPage
+        {
+            Id = "content.page",
+            Name = "Content Page",
+            Title = "Content Page",
+            Details = first,
+        };
+
+        var viewModel = CreateContentViewModel(page);
+        viewModel.InitializeProperties();
+
+        Assert.AreEqual(1, first.HandlerCount, "the initial details should be subscribed");
+
+        page.Details = new CountingDetails();
+
+        Assert.AreEqual(0, first.HandlerCount, "details displaced by an update were left subscribed");
+    }
+
+    [TestMethod]
+    public void DetailsUpdate_InitializesTheReplacement()
+    {
+        var page = new SwappableContentPage
+        {
+            Id = "content.page",
+            Name = "Content Page",
+            Title = "Content Page",
+            Details = new Details { Title = "First", Body = "First body" },
+        };
+
+        var viewModel = CreateContentViewModel(page);
+        viewModel.InitializeProperties();
+
+        page.Details = new Details { Title = "Second", Body = "Second body" };
+
+        Assert.AreEqual("Second body", viewModel.Details?.Body, "the replacement details were never initialized");
     }
 
     private static CommandContextItem Command(string name) => new(new NoOpCommand { Name = name });

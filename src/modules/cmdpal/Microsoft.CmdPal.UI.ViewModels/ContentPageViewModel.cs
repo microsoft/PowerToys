@@ -62,6 +62,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     private void FetchContent()
     {
         List<ContentViewModel> newContent = [];
+        var transferred = false;
+
         try
         {
             var newItems = _model.Unsafe!.GetContent();
@@ -71,26 +73,52 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
                 var viewModel = ViewModelFromContent(item, PageContext);
                 if (viewModel is not null)
                 {
-                    viewModel.InitializeProperties();
+                    // Track before initializing, so we can cleanup in finally
                     newContent.Add(viewModel);
+                    viewModel.InitializeProperties();
                 }
             }
+
+            var oneContent = newContent.Count == 1;
+            newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
+
+            transferred = true;
+
+            // Now, back to a UI thread to update the observable collection
+            DoOnUiThread(
+            () =>
+            {
+                ListHelpers.InPlaceUpdateList(Content, newContent, out var removedContent);
+
+                if (removedContent.Count == 0)
+                {
+                    return;
+                }
+
+                _ = Task.Run(() =>
+                {
+                    foreach (var removed in removedContent)
+                    {
+                        removed.SafeCleanup();
+                    }
+                });
+            });
         }
         catch (Exception ex)
         {
             ShowException(ex, _model?.Unsafe?.Name);
             throw;
         }
-
-        var oneContent = newContent.Count == 1;
-        newContent.ForEach(c => c.OnlyControlOnPage = oneContent);
-
-        // Now, back to a UI thread to update the observable collection
-        DoOnUiThread(
-        () =>
+        finally
         {
-            ListHelpers.InPlaceUpdateList(Content, newContent);
-        });
+            if (!transferred)
+            {
+                foreach (var viewModel in newContent)
+                {
+                    viewModel.SafeCleanup();
+                }
+            }
+        }
     }
 
     public virtual ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
@@ -114,11 +142,14 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         var commands = BuildCommandViewModels(model.Commands);
         InitializeCommandViewModels(commands, static contextItem => contextItem.InitializeProperties());
 
+        List<IContextItemViewModel> replacedCommands;
         lock (_commandsLock)
         {
-            ListHelpers.InPlaceUpdateList(Commands, commands);
+            ListHelpers.InPlaceUpdateList(Commands, commands, out replacedCommands);
             RefreshCommandSnapshotsUnsafe();
         }
+
+        CleanupCommandViewModels(replacedCommands);
 
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
@@ -197,9 +228,12 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
                 break;
             case nameof(Details):
+                var existingDetails = Details;
                 var extensionDetails = model.Details;
                 Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details?.InitializeProperties();
                 UpdateDetails();
+                existingDetails?.SafeCleanup();
                 break;
         }
 
