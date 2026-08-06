@@ -954,6 +954,7 @@ livezoom
 LLKH
 llkhf
 LLMHF
+lmb
 LMEM
 LMENU
 lng
@@ -1082,6 +1083,7 @@ minwindef
 Mip
 mkdn
 mlcfg
+mmb
 mmc
 mmcexe
 mmi
@@ -1097,6 +1099,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousebuttonlock
 mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
@@ -1303,6 +1306,7 @@ OPTIMIZEFORINVOKE
 Optronics
 ORPHANEDDIALOGTITLE
 ORSCANS
+osk
 oss
 OSVERSIONINFO
 OSVERSIONINFOEX
@@ -1602,6 +1606,7 @@ RIDEV
 RIGHTBUTTON
 RIGHTSCROLLBAR
 riid
+rmb
 rollups
 rop
 ROUNDSMALL
@@ -1978,6 +1983,7 @@ UIA
 UIDs
 UIEx
 uild
+UIPI
 uitests
 UITo
 ULONGLONG
