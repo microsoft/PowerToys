@@ -13,7 +13,7 @@
 #include <thread>
 #include <future>
 #include <chrono>
-#include <cwctype>
+#include <array>
 
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.Data.Xml.Dom.h>
@@ -109,18 +109,38 @@ namespace
         SetKeyboardStateKey(keyState, rightKey, rightPressed);
     }
 
+    void SetKeyboardStateToggle(BYTE keyState[256], const int key, const bool toggled)
+    {
+        if (toggled)
+        {
+            keyState[key] |= 0x01;
+        }
+        else
+        {
+            keyState[key] &= ~0x01;
+        }
+    }
+
     bool IsModifierPressed(KeyboardManagerInput::InputInterface& ii, const int genericKey, const int leftKey, const int rightKey)
     {
         return ii.GetVirtualKeyState(genericKey) || ii.GetVirtualKeyState(leftKey) || ii.GetVirtualKeyState(rightKey);
     }
 
+    bool IsAltGrPressed(KeyboardManagerInput::InputInterface& ii)
+    {
+        return ii.GetVirtualKeyState(VK_RMENU) &&
+               IsModifierPressed(ii, VK_CONTROL, VK_LCONTROL, VK_RCONTROL) &&
+               !ii.GetVirtualKeyState(VK_LMENU);
+    }
+
     bool IsTextReplacementShortcutModifierPressed(KeyboardManagerInput::InputInterface& ii)
     {
-        return IsModifierPressed(ii, VK_CONTROL, VK_LCONTROL, VK_RCONTROL) ||
-               IsModifierPressed(ii, VK_MENU, VK_LMENU, VK_RMENU) ||
-               ii.GetVirtualKeyState(VK_LWIN) ||
-               ii.GetVirtualKeyState(VK_RWIN) ||
-               ii.GetVirtualKeyState(CommonSharedConstants::VK_WIN_BOTH);
+        const bool winPressed = ii.GetVirtualKeyState(VK_LWIN) ||
+                                ii.GetVirtualKeyState(VK_RWIN) ||
+                                ii.GetVirtualKeyState(CommonSharedConstants::VK_WIN_BOTH);
+        const bool ctrlOrAltPressed = IsModifierPressed(ii, VK_CONTROL, VK_LCONTROL, VK_RCONTROL) ||
+                                      IsModifierPressed(ii, VK_MENU, VK_LMENU, VK_RMENU);
+        return winPressed || (ctrlOrAltPressed && !IsAltGrPressed(ii));
     }
 
     HWND GetTextReplacementWindow()
@@ -154,113 +174,388 @@ namespace
         return processId;
     }
 
-    std::optional<std::wstring> GetTextFromKeyboardEvent(KeyboardManagerInput::InputInterface& ii, const LowlevelKeyboardEvent* data)
+    constexpr bool IsHighSurrogate(const wchar_t value)
     {
+        return value >= 0xD800 && value <= 0xDBFF;
+    }
+
+    constexpr bool IsLowSurrogate(const wchar_t value)
+    {
+        return value >= 0xDC00 && value <= 0xDFFF;
+    }
+
+    constexpr bool IsValidPrintableUtf16(std::wstring_view text)
+    {
+        for (size_t index = 0; index < text.size(); ++index)
+        {
+            const wchar_t value = text[index];
+            if (IsHighSurrogate(value))
+            {
+                if (index + 1 >= text.size() || !IsLowSurrogate(text[index + 1]))
+                {
+                    return false;
+                }
+
+                ++index;
+                continue;
+            }
+
+            if (IsLowSurrogate(value) || value < 0x20 || (value >= 0x7F && value <= 0x9F))
+            {
+                return false;
+            }
+        }
+
+        return !text.empty();
+    }
+
+    constexpr size_t Utf16ScalarCount(std::wstring_view text)
+    {
+        size_t count = 0;
+        for (size_t index = 0; index < text.size(); ++index, ++count)
+        {
+            if (IsHighSurrogate(text[index]) && index + 1 < text.size() && IsLowSurrogate(text[index + 1]))
+            {
+                ++index;
+            }
+        }
+
+        return count;
+    }
+
+    void PopLastUtf16Scalar(std::wstring& text)
+    {
+        if (text.empty())
+        {
+            return;
+        }
+
+        text.pop_back();
+        if (!text.empty() && IsHighSurrogate(text.back()))
+        {
+            text.pop_back();
+        }
+    }
+
+    void TrimUtf16Buffer(std::wstring& text, const size_t maximumLength)
+    {
+        if (text.size() <= maximumLength)
+        {
+            return;
+        }
+
+        size_t eraseCount = text.size() - maximumLength;
+        if (eraseCount < text.size() && IsLowSurrogate(text[eraseCount]))
+        {
+            ++eraseCount;
+        }
+
+        text.erase(0, eraseCount);
+    }
+
+    enum class KeyboardTextEventKind
+    {
+        None,
+        DeadKey,
+        PacketHighSurrogate,
+        Text,
+    };
+
+    struct KeyboardTextEvent
+    {
+        KeyboardTextEventKind kind = KeyboardTextEventKind::None;
+        std::wstring text;
+        std::array<BYTE, 256> keyState{};
+        DWORD vkCode = 0;
+        UINT scanCode = 0;
+        HKL layout = nullptr;
+        DWORD foregroundThreadId = 0;
+        bool packetHighSurrogateAlreadyDelivered = false;
+        bool resetBufferBeforeText = false;
+        bool consumesPendingDeadKey = false;
+    };
+
+    KeyboardTextEvent GetTextFromKeyboardEvent(KeyboardManagerInput::InputInterface& ii, const LowlevelKeyboardEvent* data, State& state)
+    {
+        KeyboardTextEvent event;
         if (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN)
         {
-            return std::nullopt;
+            return event;
         }
 
-        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
-        BYTE keyState[256]{};
-        if (!GetKeyboardState(keyState))
+        event.vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
+        if (event.vkCode == VK_PACKET)
         {
-            return std::nullopt;
+            const wchar_t packetUnit = static_cast<wchar_t>(data->lParam->scanCode & 0xFFFF);
+            if (IsHighSurrogate(packetUnit))
+            {
+                state.textReplacementPendingPacketHighSurrogate = packetUnit;
+                event.kind = KeyboardTextEventKind::PacketHighSurrogate;
+                return event;
+            }
+
+            if (IsLowSurrogate(packetUnit) && IsHighSurrogate(state.textReplacementPendingPacketHighSurrogate))
+            {
+                event.text.push_back(state.textReplacementPendingPacketHighSurrogate);
+                event.text.push_back(packetUnit);
+                state.textReplacementPendingPacketHighSurrogate = L'\0';
+                event.packetHighSurrogateAlreadyDelivered = true;
+                event.kind = KeyboardTextEventKind::Text;
+                return event;
+            }
+
+            if (state.textReplacementPendingPacketHighSurrogate != L'\0' || IsLowSurrogate(packetUnit))
+            {
+                state.textReplacementPendingPacketHighSurrogate = L'\0';
+                event.resetBufferBeforeText = true;
+                return event;
+            }
+
+            event.text.push_back(packetUnit);
+            event.kind = IsValidPrintableUtf16(event.text) ? KeyboardTextEventKind::Text : KeyboardTextEventKind::None;
+            return event;
         }
 
-        SetKeyboardStateModifier(ii, keyState, VK_SHIFT, VK_LSHIFT, VK_RSHIFT);
-        SetKeyboardStateModifier(ii, keyState, VK_CONTROL, VK_LCONTROL, VK_RCONTROL);
-        SetKeyboardStateModifier(ii, keyState, VK_MENU, VK_LMENU, VK_RMENU);
-        keyState[vkCode] |= 0x80;
+        if (state.textReplacementPendingPacketHighSurrogate != L'\0')
+        {
+            state.textReplacementPendingPacketHighSurrogate = L'\0';
+            event.resetBufferBeforeText = true;
+        }
+
         const HWND foregroundWindow = GetForegroundWindow();
-        const DWORD foregroundThread = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
-        const HKL layout = GetKeyboardLayout(foregroundThread);
-        const UINT scanCode = data->lParam->scanCode ? data->lParam->scanCode : MapVirtualKeyExW(vkCode, MAPVK_VK_TO_VSC, layout);
+        event.foregroundThreadId = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
+        event.layout = GetKeyboardLayout(event.foregroundThreadId);
+        event.scanCode = data->lParam->scanCode ? data->lParam->scanCode : MapVirtualKeyExW(event.vkCode, MAPVK_VK_TO_VSC, event.layout);
+
+        if (!GetKeyboardState(event.keyState.data()))
+        {
+            return event;
+        }
+
+        SetKeyboardStateModifier(ii, event.keyState.data(), VK_SHIFT, VK_LSHIFT, VK_RSHIFT);
+        SetKeyboardStateModifier(ii, event.keyState.data(), VK_CONTROL, VK_LCONTROL, VK_RCONTROL);
+        SetKeyboardStateModifier(ii, event.keyState.data(), VK_MENU, VK_LMENU, VK_RMENU);
+        SetKeyboardStateToggle(event.keyState.data(), VK_CAPITAL, state.textReplacementCapsLockOn);
+        SetKeyboardStateToggle(event.keyState.data(), VK_NUMLOCK, state.textReplacementNumLockOn);
+        SetKeyboardStateToggle(event.keyState.data(), VK_SCROLL, state.textReplacementScrollLockOn);
+        event.keyState[event.vkCode] |= 0x80;
+
+        if (state.textReplacementDeadKeyPending &&
+            (state.textReplacementDeadKeyThreadId != event.foregroundThreadId || state.textReplacementDeadKeyLayout != event.layout))
+        {
+            // The kernel dead-key buffer can remain visible across foreground threads.
+            // Do not guess whether it migrated; fail open on the next printable key so
+            // the target consumes any pending composition without a stuck repeat.
+            state.textReplacementDeadKeyMustPassThrough = true;
+        }
+
         wchar_t output[8]{};
         constexpr UINT toUnicodeFlags = 1u << 2; // Do not change keyboard state.
-        const int result = ToUnicodeEx(vkCode, scanCode, keyState, output, static_cast<int>(std::size(output)), toUnicodeFlags, layout);
-        if (result <= 0)
+        const int result = ToUnicodeEx(event.vkCode, event.scanCode, event.keyState.data(), output, static_cast<int>(std::size(output)), toUnicodeFlags, event.layout);
+        if (result < 0)
         {
-            return std::nullopt;
+            state.textReplacementDeadKeyPending = true;
+            state.textReplacementDeadKeyMustPassThrough = false;
+            state.textReplacementDeadKeyThreadId = event.foregroundThreadId;
+            state.textReplacementDeadKeyLayout = event.layout;
+            event.kind = KeyboardTextEventKind::DeadKey;
+            return event;
         }
 
-        std::wstring text(output, output + (std::min)(result, static_cast<int>(std::size(output))));
-        if (std::any_of(text.begin(), text.end(), [](wchar_t ch) { return !iswprint(ch); }))
+        if (result == 0)
         {
-            return std::nullopt;
+            return event;
         }
 
-        return text;
+        event.text.assign(output, output + (std::min)(result, static_cast<int>(std::size(output))));
+        if (!IsValidPrintableUtf16(event.text))
+        {
+            event.text.clear();
+            return event;
+        }
+
+        event.consumesPendingDeadKey = state.textReplacementDeadKeyPending;
+        event.kind = KeyboardTextEventKind::Text;
+        return event;
     }
 
-    void SendBackspaceInput(KeyboardManagerInput::InputInterface& ii, const size_t count)
+    void AppendTextInputEvents(std::vector<INPUT>& inputs, std::wstring_view text)
     {
-        if (count == 0)
+        for (size_t index = 0; index < text.size(); ++index)
+        {
+            wchar_t value = text[index];
+            if (value == L'\r' && index + 1 < text.size() && text[index + 1] == L'\n')
+            {
+                ++index;
+            }
+
+            if (value == L'\r' || value == L'\n')
+            {
+                Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_SHIFT, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_RETURN, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_RETURN, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_SHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                continue;
+            }
+
+            INPUT keyDown{};
+            keyDown.type = INPUT_KEYBOARD;
+            keyDown.ki.dwFlags = KEYEVENTF_UNICODE;
+            keyDown.ki.dwExtraInfo = KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG;
+            keyDown.ki.wScan = value;
+            inputs.push_back(keyDown);
+
+            INPUT keyUp = keyDown;
+            keyUp.ki.dwFlags |= KEYEVENTF_KEYUP;
+            inputs.push_back(keyUp);
+        }
+    }
+
+    enum class TextReplacementInputResult
+    {
+        Completed,
+        FailedBeforeMutation,
+        FailedAfterMutation,
+    };
+
+    TextReplacementInputResult SendInputBatch(KeyboardManagerInput::InputInterface& ii, const std::vector<INPUT>& inputs, bool& inputStreamMutated)
+    {
+        if (inputs.empty())
+        {
+            return TextReplacementInputResult::Completed;
+        }
+
+        switch (ii.SendVirtualInputWithResult(inputs))
+        {
+        case KeyboardManagerInput::VirtualInputResult::None:
+            return inputStreamMutated ? TextReplacementInputResult::FailedAfterMutation : TextReplacementInputResult::FailedBeforeMutation;
+        case KeyboardManagerInput::VirtualInputResult::Partial:
+            inputStreamMutated = true;
+            return TextReplacementInputResult::FailedAfterMutation;
+        case KeyboardManagerInput::VirtualInputResult::Complete:
+            inputStreamMutated = true;
+            return TextReplacementInputResult::Completed;
+        }
+
+        return TextReplacementInputResult::FailedAfterMutation;
+    }
+
+    TextReplacementInputResult SendTextInputInSmallBatches(KeyboardManagerInput::InputInterface& ii, const std::wstring_view text, bool& inputStreamMutated)
+    {
+        constexpr size_t maximumInputsPerBatch = 32;
+        std::vector<INPUT> inputs;
+        inputs.reserve(maximumInputsPerBatch);
+
+        for (size_t index = 0; index < text.size();)
+        {
+            size_t unitCount = 1;
+            if (text[index] == L'\r' && index + 1 < text.size() && text[index + 1] == L'\n')
+            {
+                unitCount = 2;
+            }
+            else if (IsHighSurrogate(text[index]) && index + 1 < text.size() && IsLowSurrogate(text[index + 1]))
+            {
+                unitCount = 2;
+            }
+
+            const size_t inputCount = (text[index] == L'\r' || text[index] == L'\n' || unitCount == 2) ? 4 : 2;
+            if (!inputs.empty() && inputs.size() + inputCount > maximumInputsPerBatch)
+            {
+                const TextReplacementInputResult batchResult = SendInputBatch(ii, inputs, inputStreamMutated);
+                if (batchResult != TextReplacementInputResult::Completed)
+                {
+                    return batchResult;
+                }
+                inputs.clear();
+            }
+
+            AppendTextInputEvents(inputs, text.substr(index, unitCount));
+            index += unitCount;
+        }
+
+        return SendInputBatch(ii, inputs, inputStreamMutated);
+    }
+
+    TextReplacementInputResult SendTextReplacementInput(KeyboardManagerInput::InputInterface& ii, const size_t backspaceCount, std::wstring_view preservedCurrentText, const std::wstring& replacement)
+    {
+        bool inputStreamMutated = false;
+        std::vector<INPUT> modifierInputs;
+        modifierInputs.reserve(2);
+
+        if (ii.GetVirtualKeyState(VK_LSHIFT))
+        {
+            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_LSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+        if (ii.GetVirtualKeyState(VK_RSHIFT))
+        {
+            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_RSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+        TextReplacementInputResult batchResult = SendInputBatch(ii, modifierInputs, inputStreamMutated);
+        if (batchResult != TextReplacementInputResult::Completed)
+        {
+            return batchResult;
+        }
+
+        constexpr size_t backspacesPerBatch = 16;
+        for (size_t firstBackspace = 0; firstBackspace < backspaceCount; firstBackspace += backspacesPerBatch)
+        {
+            const size_t currentBatchCount = (std::min)(backspacesPerBatch, backspaceCount - firstBackspace);
+            std::vector<INPUT> backspaceInputs;
+            backspaceInputs.reserve(currentBatchCount * 2);
+            for (size_t index = 0; index < currentBatchCount; ++index)
+            {
+                Helpers::SetKeyEvent(backspaceInputs, INPUT_KEYBOARD, VK_BACK, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                Helpers::SetKeyEvent(backspaceInputs, INPUT_KEYBOARD, VK_BACK, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+
+            batchResult = SendInputBatch(ii, backspaceInputs, inputStreamMutated);
+            if (batchResult != TextReplacementInputResult::Completed)
+            {
+                return batchResult;
+            }
+        }
+
+        batchResult = SendTextInputInSmallBatches(ii, preservedCurrentText, inputStreamMutated);
+        if (batchResult != TextReplacementInputResult::Completed)
+        {
+            return batchResult;
+        }
+        return SendTextInputInSmallBatches(ii, replacement, inputStreamMutated);
+    }
+
+    void CommitKeyboardTextEvent(const KeyboardTextEvent& event)
+    {
+        if (!event.consumesPendingDeadKey || event.vkCode == VK_PACKET)
         {
             return;
         }
 
-        std::vector<INPUT> inputs;
-        inputs.reserve(count * 2);
-
-        for (size_t i = 0; i < count; ++i)
-        {
-            Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_BACK, 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-            Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, VK_BACK, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-        }
-
-        ii.SendVirtualInput(inputs);
+        wchar_t output[8]{};
+        ToUnicodeEx(event.vkCode, event.scanCode, event.keyState.data(), output, static_cast<int>(std::size(output)), 0, event.layout);
     }
 
-    std::vector<DWORD> GetPressedShiftKeys(KeyboardManagerInput::InputInterface& ii)
+    void ClearDeadKeyTracking(State& state)
     {
-        std::vector<DWORD> pressedShiftKeys;
-        const bool leftShiftPressed = ii.GetVirtualKeyState(VK_LSHIFT);
-        const bool rightShiftPressed = ii.GetVirtualKeyState(VK_RSHIFT);
-
-        if (leftShiftPressed)
-        {
-            pressedShiftKeys.push_back(VK_LSHIFT);
-        }
-
-        if (rightShiftPressed)
-        {
-            pressedShiftKeys.push_back(VK_RSHIFT);
-        }
-
-        if (!leftShiftPressed && !rightShiftPressed && ii.GetVirtualKeyState(VK_SHIFT))
-        {
-            pressedShiftKeys.push_back(VK_SHIFT);
-        }
-
-        return pressedShiftKeys;
+        state.textReplacementDeadKeyPending = false;
+        state.textReplacementDeadKeyMustPassThrough = false;
+        state.textReplacementDeadKeyThreadId = 0;
+        state.textReplacementDeadKeyLayout = nullptr;
     }
 
-    void SendModifierInput(KeyboardManagerInput::InputInterface& ii, const std::vector<DWORD>& modifiers, const DWORD flags)
+    void ClearTextReplacementBuffer(State& state)
     {
-        if (modifiers.empty())
+        state.textReplacementBuffer.clear();
+        state.textReplacementPendingPacketHighSurrogate = L'\0';
+        if (state.textReplacementDeadKeyPending)
         {
-            return;
+            state.textReplacementDeadKeyMustPassThrough = true;
         }
-
-        std::vector<INPUT> inputs;
-        inputs.reserve(modifiers.size());
-
-        for (const DWORD modifier : modifiers)
-        {
-            Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, static_cast<WORD>(modifier), flags, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-        }
-
-        ii.SendVirtualInput(inputs);
     }
 
-    void SendTextReplacementInput(KeyboardManagerInput::InputInterface& ii, const size_t backspaceCount, const std::wstring& replacement)
+    void ClearTextReplacementSequence(State& state)
     {
-        const auto pressedShiftKeys = GetPressedShiftKeys(ii);
-        SendModifierInput(ii, pressedShiftKeys, KEYEVENTF_KEYUP);
-        SendBackspaceInput(ii, backspaceCount);
-        Helpers::SendTextInput(replacement, ii);
-        SendModifierInput(ii, pressedShiftKeys, 0);
+        ClearTextReplacementBuffer(state);
+        ClearDeadKeyTracking(state);
     }
 
 }
@@ -2096,62 +2391,225 @@ namespace KeyboardEventHandlers
         {
             return 0;
         }
+
+        if (state.textReplacementRuntimeResetRequested.exchange(false, std::memory_order_acq_rel))
+        {
+            ResetTextReplacementRuntimeState(state);
+        }
+
+        const uint64_t contextEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
+        if (contextEpoch != state.textReplacementObservedContextEpoch)
+        {
+            ResetTextReplacementRuntimeState(state);
+            state.textReplacementObservedContextEpoch = contextEpoch;
+        }
+
         const HWND foregroundWindow = GetTextReplacementWindow();
         const DWORD foregroundProcessId = GetTextReplacementWindowProcessId(foregroundWindow);
         if (foregroundWindow != state.textReplacementWindow || foregroundProcessId != state.textReplacementProcessId)
         {
-            state.textReplacementBuffer.clear();
+            ClearTextReplacementBuffer(state);
             state.textReplacementProcessId = foregroundProcessId;
             state.textReplacementWindow = foregroundWindow;
         }
 
-        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
-        if (IsTextReplacementShortcutModifierPressed(ii))
+        if (state.textReplacementContextTrackingEnabled.load(std::memory_order_acquire))
         {
-            state.textReplacementBuffer.clear();
-            return 0;
-        }
-
-        if (vkCode == VK_BACK)
-        {
-            if (!state.textReplacementBuffer.empty())
+            const uint64_t authorizationEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
+            const uint64_t classifiedEpoch = state.textReplacementClassifiedContextEpoch.load(std::memory_order_acquire);
+            const TextReplacementContextStatus contextStatus = state.textReplacementContextStatus.load(std::memory_order_acquire);
+            const bool contextMatches = foregroundWindow == state.textReplacementContextWindow.load(std::memory_order_acquire) &&
+                                        foregroundProcessId == state.textReplacementContextProcessId.load(std::memory_order_acquire);
+            if (classifiedEpoch != authorizationEpoch || contextStatus == TextReplacementContextStatus::Pending)
             {
-                state.textReplacementBuffer.pop_back();
+                ClearTextReplacementBuffer(state);
+                if (state.textReplacementContextInfrastructureReady.load(std::memory_order_acquire))
+                {
+                    if (const HANDLE refreshEvent = state.textReplacementContextRefreshEvent.load(std::memory_order_acquire))
+                    {
+                        SetEvent(refreshEvent);
+                    }
+                }
+                return 0;
             }
 
-            return 0;
+            if (contextStatus == TextReplacementContextStatus::Blocked)
+            {
+                ClearTextReplacementBuffer(state);
+                return 0;
+            }
+
+            if (!contextMatches)
+            {
+                ClearTextReplacementBuffer(state);
+                state.InvalidateTextReplacementContext();
+                return 0;
+            }
+
+            if (state.textReplacementContextEpoch.load(std::memory_order_acquire) != authorizationEpoch)
+            {
+                ClearTextReplacementBuffer(state);
+                return 0;
+            }
         }
 
+        const DWORD vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
         if (Helpers::IsModifierKey(vkCode))
         {
             return 0;
         }
 
-        const auto text = GetTextFromKeyboardEvent(ii, data);
-        if (!text)
+        if (vkCode == VK_CAPITAL || vkCode == VK_NUMLOCK || vkCode == VK_SCROLL)
         {
-            state.textReplacementBuffer.clear();
             return 0;
         }
 
-        state.textReplacementBuffer.append(*text);
-        if (state.textReplacementBuffer.length() > state.maxTextReplacementTriggerLength)
+        if (vkCode == VK_BACK && (IsTextReplacementShortcutModifierPressed(ii) || IsAltGrPressed(ii)))
         {
-            state.textReplacementBuffer.erase(0, state.textReplacementBuffer.length() - state.maxTextReplacementTriggerLength);
+            ClearTextReplacementBuffer(state);
+            return 0;
         }
+
+        if (vkCode == VK_BACK)
+        {
+            if (state.textReplacementPendingPacketHighSurrogate != L'\0')
+            {
+                state.textReplacementPendingPacketHighSurrogate = L'\0';
+            }
+            else if (state.textReplacementDeadKeyPending)
+            {
+                ClearDeadKeyTracking(state);
+            }
+            else
+            {
+                PopLastUtf16Scalar(state.textReplacementBuffer);
+            }
+
+            return 0;
+        }
+
+        if (IsTextReplacementShortcutModifierPressed(ii))
+        {
+            ClearTextReplacementBuffer(state);
+            return 0;
+        }
+
+        const auto textEvent = GetTextFromKeyboardEvent(ii, data, state);
+        if (textEvent.kind == KeyboardTextEventKind::DeadKey || textEvent.kind == KeyboardTextEventKind::PacketHighSurrogate)
+        {
+            return 0;
+        }
+
+        if (textEvent.resetBufferBeforeText)
+        {
+            ClearTextReplacementBuffer(state);
+        }
+
+        if (textEvent.kind != KeyboardTextEventKind::Text)
+        {
+            ClearTextReplacementBuffer(state);
+            return 0;
+        }
+
+        if (textEvent.consumesPendingDeadKey && state.textReplacementDeadKeyMustPassThrough)
+        {
+            ClearTextReplacementBuffer(state);
+            ClearDeadKeyTracking(state);
+            return 0;
+        }
+
+        state.textReplacementBuffer.append(textEvent.text);
+        TrimUtf16Buffer(state.textReplacementBuffer, state.maxTextReplacementTriggerLength);
 
         const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
         for (size_t length = (std::min)(textReplacementBufferView.length(), state.maxTextReplacementTriggerLength); length != 0; --length)
         {
             const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
+            if (!trigger.empty() && IsLowSurrogate(trigger.front()))
+            {
+                continue;
+            }
+
             if (const auto replacement = state.textReplacements.find(trigger); replacement != state.textReplacements.end())
             {
-                SendTextReplacementInput(ii, trigger.length() > text->length() ? trigger.length() - text->length() : 0, replacement->second);
-                state.textReplacementBuffer.clear();
+                const size_t currentTextUsed = (std::min)(trigger.size(), textEvent.text.size());
+                const std::wstring_view preservedCurrentText{ textEvent.text.data(), textEvent.text.size() - currentTextUsed };
+                const std::wstring_view previouslyDisplayedTriggerText = trigger.substr(0, trigger.size() - currentTextUsed);
+                size_t backspaceCount = Utf16ScalarCount(previouslyDisplayedTriggerText);
+                if (textEvent.packetHighSurrogateAlreadyDelivered)
+                {
+                    ++backspaceCount;
+                }
+
+                const TextReplacementInputResult inputResult = SendTextReplacementInput(ii, backspaceCount, preservedCurrentText, replacement->second);
+                if (inputResult == TextReplacementInputResult::FailedBeforeMutation)
+                {
+                    ResetTextReplacementRuntimeState(state);
+                    if (textEvent.consumesPendingDeadKey)
+                    {
+                        ClearDeadKeyTracking(state);
+                    }
+                    return 0;
+                }
+
+                CommitKeyboardTextEvent(textEvent);
+                ClearTextReplacementSequence(state);
+                if (inputResult == TextReplacementInputResult::FailedAfterMutation)
+                {
+                    Logger::error(L"Text replacement input failed after modifying the input stream; the original key was suppressed to avoid further corruption.");
+                }
                 return 1;
             }
         }
 
+        if (textEvent.consumesPendingDeadKey)
+        {
+            ClearDeadKeyTracking(state);
+        }
+
         return 0;
+    }
+
+    void ResetTextReplacementRuntimeState(State& state) noexcept
+    {
+        ClearTextReplacementBuffer(state);
+        state.textReplacementProcessId = 0;
+        state.textReplacementWindow = nullptr;
+        state.textReplacementObservedContextEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
+        state.textReplacementRuntimeResetRequested.store(false, std::memory_order_release);
+    }
+
+    void InitializeTextReplacementToggleKeyState(State& state) noexcept
+    {
+        if (state.textReplacementToggleStateInitialized)
+        {
+            return;
+        }
+
+        state.textReplacementCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x1) != 0;
+        state.textReplacementNumLockOn = (GetKeyState(VK_NUMLOCK) & 0x1) != 0;
+        state.textReplacementScrollLockOn = (GetKeyState(VK_SCROLL) & 0x1) != 0;
+        state.textReplacementToggleStateInitialized = true;
+    }
+
+    void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, const bool eventSuppressed, State& state) noexcept
+    {
+        if (eventSuppressed || GeneratedByKBM(data) || (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN))
+        {
+            return;
+        }
+
+        switch (Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode))
+        {
+        case VK_CAPITAL:
+            state.textReplacementCapsLockOn = !state.textReplacementCapsLockOn;
+            break;
+        case VK_NUMLOCK:
+            state.textReplacementNumLockOn = !state.textReplacementNumLockOn;
+            break;
+        case VK_SCROLL:
+            state.textReplacementScrollLockOn = !state.textReplacementScrollLockOn;
+            break;
+        }
     }
 }

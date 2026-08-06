@@ -2,26 +2,22 @@
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include <common/utils/EventWaiter.h>
 #include <keyboardmanager/common/Input.h>
+#include <thread>
 #include "State.h"
 
 class KeyboardManager
 {
 public:
     static const inline DWORD StartHookMessageID = WM_APP + 1;
+    static const inline DWORD RefreshHooksMessageID = WM_APP + 2;
 
     // Constructor
     KeyboardManager();
-
-    ~KeyboardManager()
-    {
-        if (editorIsRunningEvent)
-        {
-            CloseHandle(editorIsRunningEvent);
-        }
-    }
+    ~KeyboardManager();
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
+    void RefreshLowlevelHooks();
 
     bool HasRegisteredRemappings() const;
 
@@ -37,6 +33,10 @@ private:
 
     // Required for Unhook in old versions of Windows
     static HHOOK hookHandleCopy;
+
+    // Low-level mouse hook used to invalidate caret-sensitive text replacement state.
+    static HHOOK mouseHookHandle;
+    static HHOOK mouseHookHandleCopy;
 
     // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     // Only global or static variables can be accessed in a hook procedure CALLBACK
@@ -57,6 +57,21 @@ private:
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static void CALLBACK TextReplacementWinEventProc(HWINEVENTHOOK hook, DWORD event, HWND window, LONG objectId, LONG childId, DWORD eventThread, DWORD eventTime);
+
+    void StartTextReplacementContextTracking();
+    void StopTextReplacementContextTracking() noexcept;
+    void TextReplacementContextThreadProc();
+    bool IsEditorRunning();
+
+    HWINEVENTHOOK textReplacementForegroundHook = nullptr;
+    HWINEVENTHOOK textReplacementFocusHook = nullptr;
+    HWINEVENTHOOK textReplacementDesktopHook = nullptr;
+    HANDLE textReplacementContextStopEvent = nullptr;
+    HANDLE textReplacementContextRefreshEvent = nullptr;
+    std::thread textReplacementContextThread;
+    std::atomic<DWORD> textReplacementContextThreadId = 0;
 
     // Load settings from the file.
     void LoadSettings();

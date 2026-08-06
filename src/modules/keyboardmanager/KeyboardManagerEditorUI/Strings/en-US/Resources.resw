@@ -231,6 +231,12 @@
   <data name="TextTriggerBox.PlaceholderText" xml:space="preserve">
     <value>Enter the text to replace when typed</value>
   </data>
+  <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement.</value>
+  </data>
+  <data name="TextTriggerBehaviorDescription.Text" xml:space="preserve">
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement.</value>
+  </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
   </data>
@@ -427,7 +433,7 @@
     <value>Duplicate remapping</value>
   </data>
   <data name="Validation_DuplicateMapping_Message" xml:space="preserve">
-    <value>This key or shortcut is already remapped.</value>
+    <value>This trigger is already mapped.</value>
   </data>
   <data name="Validation_ConflictingModifier_Title" xml:space="preserve">
     <value>Conflicting modifier</value>
@@ -452,6 +458,36 @@
   </data>
   <data name="Validation_EmptyTriggerText_Message" xml:space="preserve">
     <value>Please enter the text to replace.</value>
+  </data>
+  <data name="Validation_TextTriggerTooLong_Title" xml:space="preserve">
+    <value>Text trigger is too long</value>
+  </data>
+  <data name="Validation_TextTriggerTooLong_Message" xml:space="preserve">
+    <value>Text triggers can contain at most 256 characters.</value>
+  </data>
+  <data name="Validation_TargetTextTooLong_Title" xml:space="preserve">
+    <value>Replacement text is too long</value>
+  </data>
+  <data name="Validation_TargetTextTooLong_Message" xml:space="preserve">
+    <value>Replacement text can contain at most 1,024 characters.</value>
+  </data>
+  <data name="Validation_TextReplacementLimitReached_Title" xml:space="preserve">
+    <value>Text replacement limit reached</value>
+  </data>
+  <data name="Validation_TextReplacementLimitReached_Message" xml:space="preserve">
+    <value>Keyboard Manager supports up to 1,000 text replacement rules. Delete an existing rule before adding another.</value>
+  </data>
+  <data name="Validation_TextTriggerPrefixConflict_Title" xml:space="preserve">
+    <value>Conflicting text trigger</value>
+  </data>
+  <data name="Validation_TextTriggerPrefixConflict_Message" xml:space="preserve">
+    <value>This trigger is a prefix of another text trigger, or another trigger is a prefix of this one. Use distinct triggers so every replacement can be reached.</value>
+  </data>
+  <data name="Validation_InvalidTextReplacementCharacters_Title" xml:space="preserve">
+    <value>Invalid text replacement</value>
+  </data>
+  <data name="Validation_InvalidTextReplacementCharacters_Message" xml:space="preserve">
+    <value>Text replacement triggers and replacement text cannot contain embedded null characters.</value>
   </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>
@@ -494,6 +530,21 @@
   </data>
   <data name="Error_SaveFailed_Message" xml:space="preserve">
     <value>Failed to save the remapping. Please try again.</value>
+  </data>
+  <data name="Error_DeleteFailed_Title" xml:space="preserve">
+    <value>Delete failed</value>
+  </data>
+  <data name="Error_DeleteFailed_Message" xml:space="preserve">
+    <value>The remapping could not be deleted. No changes were applied.</value>
+  </data>
+  <data name="Error_ToggleFailed_Title" xml:space="preserve">
+    <value>Update failed</value>
+  </data>
+  <data name="Error_ToggleFailed_Message" xml:space="preserve">
+    <value>The remapping state could not be updated. No changes were applied.</value>
+  </data>
+  <data name="ErrorDialog_CloseButtonText" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="Error_NotImplemented_Title" xml:space="preserve">
     <value>Not implemented</value>

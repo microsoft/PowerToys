@@ -53,5 +53,45 @@ namespace RemappingLogicTests
             // A key state should be false
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x41), false);
         }
+
+        TEST_METHOD (MockedInput_ShouldPreserveScanCodeAndLowLevelFlags)
+        {
+            DWORD observedScanCode = 0;
+            DWORD observedFlags = 0;
+            WPARAM observedMessage = 0;
+            mockedInputHandler.SetHookProc([&](LowlevelKeyboardEvent* event) {
+                observedScanCode = event->lParam->scanCode;
+                observedFlags = event->lParam->flags;
+                observedMessage = event->wParam;
+                return 0;
+            });
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_PACKET, .wScan = L'x', .dwFlags = KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP } },
+            };
+
+            Assert::IsTrue(mockedInputHandler.SendVirtualInput(inputs));
+            Assert::AreEqual(static_cast<DWORD>(L'x'), observedScanCode);
+            Assert::IsTrue((observedFlags & LLKHF_EXTENDED) != 0);
+            Assert::IsTrue((observedFlags & LLKHF_UP) != 0);
+            Assert::AreEqual(static_cast<WPARAM>(WM_KEYUP), observedMessage);
+            Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetSendVirtualInputBatchCount());
+            Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetLargestSendVirtualInputBatchSize());
+        }
+
+        TEST_METHOD (MockedInput_ShouldExposePartialVirtualInputResult)
+        {
+            mockedInputHandler.SetSendVirtualInputResult([](const std::vector<INPUT>&) {
+                return KeyboardManagerInput::VirtualInputResult::Partial;
+            });
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'B' } },
+            };
+
+            Assert::IsTrue(mockedInputHandler.SendVirtualInputWithResult(inputs) == KeyboardManagerInput::VirtualInputResult::Partial);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState('A'));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState('B'));
+        }
     };
 }

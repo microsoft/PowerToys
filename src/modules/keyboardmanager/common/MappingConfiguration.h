@@ -24,6 +24,11 @@ struct TextReplacementTriggerCompare
 
 using TextReplacementTable = std::map<std::wstring, std::wstring, TextReplacementTriggerCompare>;
 
+namespace RemappingUITests
+{
+    class LoadingAndSavingRemappingTests;
+}
+
 class MappingConfiguration
 {
 public:
@@ -59,6 +64,12 @@ public:
     // Function to add a new typed text replacement
     bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text);
 
+    // Function to delete a typed text replacement
+    bool DeleteTextReplacement(const std::wstring& trigger);
+
+    // Function to atomically update a typed text replacement
+    bool UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText);
+
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
 
@@ -93,9 +104,12 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
 private:
+    friend class RemappingUITests::LoadingAndSavingRemappingTests;
+
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadTextReplacements(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
+    void RecalculateMaxTextReplacementTriggerLength();
 };

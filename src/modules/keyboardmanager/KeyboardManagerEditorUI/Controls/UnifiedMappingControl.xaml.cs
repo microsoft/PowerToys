@@ -36,6 +36,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         private bool _disposed;
         private bool _internalUpdate;
+        private bool _isControlInitialized;
 
         private KeyInputMode _currentInputMode = KeyInputMode.OriginalKeys;
 
@@ -150,6 +151,7 @@ namespace KeyboardManagerEditorUI.Controls
         {
             this.InitializeComponent();
 
+            TextTriggerBox.MaxLength = ValidationHelper.MaxTextReplacementTriggerLength;
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
 
@@ -166,6 +168,9 @@ namespace KeyboardManagerEditorUI.Controls
             };
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
+
+            _isControlInitialized = true;
+            ApplyTriggerTypeSelection();
         }
 
         #endregion
@@ -175,6 +180,8 @@ namespace KeyboardManagerEditorUI.Controls
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             // Set up event handlers for app-specific checkbox
+            AppSpecificCheckBox.Checked -= AppSpecificCheckBox_Changed;
+            AppSpecificCheckBox.Unchecked -= AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
 
@@ -188,6 +195,8 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void UnifiedMappingControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            AppSpecificCheckBox.Checked -= AppSpecificCheckBox_Changed;
+            AppSpecificCheckBox.Unchecked -= AppSpecificCheckBox_Changed;
             Reset();
             CleanupKeyboardHook();
         }
@@ -198,29 +207,47 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void TriggerTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem item)
+            if (!_isControlInitialized)
             {
-                string? tag = item.Tag?.ToString();
-
-                // Cleanup keyboard hook when switching away from key input.
-                if (tag != "KeyOrShortcut")
-                {
-                    CleanupKeyboardHook();
-                    UncheckAllToggleButtons();
-                    AppSpecificCheckBox.IsChecked = false;
-                    AppSpecificCheckBox.IsEnabled = false;
-                    AppNameTextBox.Visibility = Visibility.Collapsed;
-                }
-                else
-                {
-                    UpdateAppSpecificCheckBoxState();
-                }
-
-                if (tag == "Text")
-                {
-                    SetActionType(ActionType.Text);
-                }
+                return;
             }
+
+            ApplyTriggerTypeSelection();
+        }
+
+        private void ApplyTriggerTypeSelection()
+        {
+            if (TriggerTypeComboBox.SelectedItem is not ComboBoxItem item)
+            {
+                return;
+            }
+
+            string? tag = item.Tag?.ToString();
+            bool isTextTrigger = tag == "Text";
+
+            TextContentBox.MaxLength = isTextTrigger ? ValidationHelper.MaxTextReplacementTargetLength : 0;
+
+            // Cleanup keyboard hook when switching away from key input.
+            if (tag != "KeyOrShortcut")
+            {
+                CleanupKeyboardHook();
+                UncheckAllToggleButtons();
+                AppSpecificCheckBox.IsChecked = false;
+                AppSpecificCheckBox.IsEnabled = false;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                UpdateAppSpecificCheckBoxState();
+            }
+
+            ActionTypeComboBox.IsEnabled = !isTextTrigger;
+            if (isTextTrigger)
+            {
+                SetActionType(ActionType.Text);
+            }
+
+            RaiseValidationStateChanged();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -914,6 +941,14 @@ namespace KeyboardManagerEditorUI.Controls
         }
 
         /// <summary>
+        /// Enables or disables changing the trigger type.
+        /// </summary>
+        public void SetTriggerTypeSelectionEnabled(bool isEnabled)
+        {
+            TriggerTypeComboBox.IsEnabled = isEnabled;
+        }
+
+        /// <summary>
         /// Sets the text trigger.
         /// </summary>
         public void SetTriggerText(string text)
@@ -947,6 +982,11 @@ namespace KeyboardManagerEditorUI.Controls
             if (ActionTypeComboBox == null)
             {
                 return;
+            }
+
+            if (CurrentTriggerType == TriggerType.Text)
+            {
+                actionType = ActionType.Text;
             }
 
             string tag = actionType switch
@@ -1140,6 +1180,12 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         private void UpdateInlineValidation()
         {
+            if (CurrentTriggerType == TriggerType.Text && string.IsNullOrEmpty(TextTriggerBox?.Text))
+            {
+                ShowValidationErrorFromType(ValidationErrorType.EmptyTriggerText);
+                return;
+            }
+
             // Only validate the active action type's output field
             switch (CurrentActionType)
             {
@@ -1197,6 +1243,7 @@ namespace KeyboardManagerEditorUI.Controls
             // Reset combo boxes
             if (TriggerTypeComboBox != null)
             {
+                TriggerTypeComboBox.IsEnabled = true;
                 TriggerTypeComboBox.SelectedIndex = 0;
             }
 
@@ -1269,6 +1316,11 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 VisibilityComboBox.SelectedIndex = 0;
             }
+
+            // Programmatic Text changes above raise TextChanged, so clear dirty state last.
+            _textContentDirty = false;
+            _urlPathDirty = false;
+            _programPathDirty = false;
 
             HideValidationMessage();
         }

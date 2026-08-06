@@ -12,15 +12,41 @@ void MockedInput::SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> ho
 // Function to simulate keyboard input - arguments and return value based on SendInput function (https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-sendinput)
 bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
 {
+    return SendVirtualInputWithResult(inputs) != VirtualInputResult::None;
+}
+
+VirtualInputResult MockedInput::SendVirtualInputWithResult(const std::vector<INPUT>& inputs)
+{
+    sendVirtualInputBatchSizes.push_back(inputs.size());
+
+    VirtualInputResult injectionResult = VirtualInputResult::Complete;
+    if (sendVirtualInputResultOverride)
+    {
+        injectionResult = sendVirtualInputResultOverride(inputs);
+    }
+
     // Simulate an injection failure (e.g. SendInput blocked) when configured.
     if (sendVirtualInputShouldFail != nullptr && sendVirtualInputShouldFail(inputs))
     {
-        return false;
+        injectionResult = VirtualInputResult::None;
     }
 
-    // Iterate over inputs
-    for (const INPUT& input : inputs)
+    if (injectionResult == VirtualInputResult::None)
     {
+        return injectionResult;
+    }
+
+    if (inputs.empty())
+    {
+        return VirtualInputResult::Complete;
+    }
+
+    const size_t inputCount = injectionResult == VirtualInputResult::Partial ? (std::max)(size_t{ 1 }, inputs.size() / 2) : inputs.size();
+
+    // Iterate over inputs
+    for (size_t inputIndex = 0; inputIndex < inputCount; ++inputIndex)
+    {
+        const INPUT& input = inputs[inputIndex];
         LowlevelKeyboardEvent keyEvent{};
 
         // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown
@@ -48,8 +74,17 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
+        // Preserve the keyboard metadata consumed by the handlers under test.
         lParam.vkCode = input.ki.wVk;
+        lParam.scanCode = input.ki.wScan;
+        if (input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY)
+        {
+            lParam.flags |= LLKHF_EXTENDED;
+        }
+        if (input.ki.dwFlags & KEYEVENTF_KEYUP)
+        {
+            lParam.flags |= LLKHF_UP;
+        }
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 
@@ -113,7 +148,7 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
             }
         }
     }
-    return true;
+    return injectionResult;
 }
 
 // Function to simulate keyboard hook behavior
@@ -151,6 +186,7 @@ void MockedInput::SetKeyboardState(int key, bool state)
 void MockedInput::ResetKeyboardState()
 {
     std::fill(keyboardState.begin(), keyboardState.end(), false);
+    sendVirtualInputBatchSizes.clear();
 }
 
 // Function to set SendVirtualInput call count condition
@@ -170,6 +206,28 @@ void MockedInput::SetSendVirtualInputShouldFail(std::function<bool(const std::ve
 int MockedInput::GetSendVirtualInputCallCount()
 {
     return sendVirtualInputCallCount;
+}
+
+void MockedInput::SetSendVirtualInputResult(std::function<VirtualInputResult(const std::vector<INPUT>&)> resultOverride)
+{
+    sendVirtualInputResultOverride = resultOverride;
+}
+
+// Function to get the number of attempted SendVirtualInput batches
+size_t MockedInput::GetSendVirtualInputBatchCount() const
+{
+    return sendVirtualInputBatchSizes.size();
+}
+
+// Function to get the largest attempted SendVirtualInput batch size
+size_t MockedInput::GetLargestSendVirtualInputBatchSize() const
+{
+    if (sendVirtualInputBatchSizes.empty())
+    {
+        return 0;
+    }
+
+    return *std::max_element(sendVirtualInputBatchSizes.begin(), sendVirtualInputBatchSizes.end());
 }
 
 // Function to get the foreground process name

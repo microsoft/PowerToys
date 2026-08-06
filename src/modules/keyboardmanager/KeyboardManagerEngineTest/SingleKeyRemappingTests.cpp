@@ -579,10 +579,221 @@ namespace RemappingLogicTests
         KeyboardManagerInput::MockedInput mockedInputHandler;
         State testState;
 
+        intptr_t HandleTextReplacementKey(
+            const DWORD vkCode,
+            const DWORD scanCode = 0,
+            const WPARAM message = WM_KEYDOWN,
+            const DWORD flags = 0,
+            const ULONG_PTR extraInfo = 0)
+        {
+            KBDLLHOOKSTRUCT lParam{};
+            lParam.vkCode = vkCode;
+            lParam.scanCode = scanCode;
+            lParam.flags = flags;
+            lParam.dwExtraInfo = extraInfo;
+
+            LowlevelKeyboardEvent keyEvent{};
+            keyEvent.wParam = message;
+            keyEvent.lParam = &lParam;
+
+            return KeyboardEventHandlers::HandleTextReplacementEvent(mockedInputHandler, &keyEvent, testState);
+        }
+
+        void PrimeTextReplacementContext()
+        {
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SHIFT)));
+        }
+
+        void UpdateTextReplacementToggleKey(const DWORD vkCode, const WPARAM message, const bool eventSuppressed)
+        {
+            KBDLLHOOKSTRUCT lParam{};
+            lParam.vkCode = vkCode;
+            LowlevelKeyboardEvent keyEvent{};
+            keyEvent.wParam = message;
+            keyEvent.lParam = &lParam;
+
+            KeyboardEventHandlers::UpdateTextReplacementToggleKeyState(&keyEvent, eventSuppressed, testState);
+        }
+
     public:
         TEST_METHOD_INITIALIZE(InitializeTestEnv)
         {
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+        }
+
+        TEST_METHOD (ResetTextReplacementRuntimeState_ShouldClearContextBoundStateAndPreserveGlobalState)
+        {
+            const HWND runtimeWindow = reinterpret_cast<HWND>(1);
+            const HKL deadKeyLayout = reinterpret_cast<HKL>(2);
+            const HWND classifiedWindow = reinterpret_cast<HWND>(3);
+            const HANDLE refreshEvent = reinterpret_cast<HANDLE>(4);
+
+            testState.textReplacementBuffer = L"partial";
+            testState.textReplacementProcessId = 42;
+            testState.textReplacementWindow = runtimeWindow;
+            testState.textReplacementPendingPacketHighSurrogate = static_cast<wchar_t>(0xD83D);
+            testState.textReplacementDeadKeyPending = true;
+            testState.textReplacementDeadKeyMustPassThrough = false;
+            testState.textReplacementDeadKeyThreadId = 43;
+            testState.textReplacementDeadKeyLayout = deadKeyLayout;
+            testState.textReplacementCapsLockOn = true;
+            testState.textReplacementNumLockOn = true;
+            testState.textReplacementScrollLockOn = true;
+            testState.textReplacementObservedContextEpoch = 7;
+            testState.textReplacementRuntimeResetRequested.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextEpoch.store(8, std::memory_order_relaxed);
+            testState.textReplacementContextTrackingEnabled.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextInfrastructureReady.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextEditable.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextStatus.store(TextReplacementContextStatus::Editable, std::memory_order_relaxed);
+            testState.textReplacementContextWindow.store(classifiedWindow, std::memory_order_relaxed);
+            testState.textReplacementContextProcessId.store(44, std::memory_order_relaxed);
+            testState.textReplacementContextRefreshEvent.store(refreshEvent, std::memory_order_relaxed);
+
+            KeyboardEventHandlers::ResetTextReplacementRuntimeState(testState);
+
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<DWORD>(0), testState.textReplacementProcessId);
+            Assert::IsTrue(testState.textReplacementWindow == nullptr);
+            Assert::AreEqual(L'\0', testState.textReplacementPendingPacketHighSurrogate);
+            Assert::AreEqual(true, testState.textReplacementDeadKeyPending);
+            Assert::AreEqual(true, testState.textReplacementDeadKeyMustPassThrough);
+            Assert::AreEqual(static_cast<DWORD>(43), testState.textReplacementDeadKeyThreadId);
+            Assert::IsTrue(testState.textReplacementDeadKeyLayout == deadKeyLayout);
+            Assert::AreEqual(static_cast<uint64_t>(8), testState.textReplacementObservedContextEpoch);
+            Assert::AreEqual(false, testState.textReplacementRuntimeResetRequested.load(std::memory_order_relaxed));
+
+            Assert::AreEqual(true, testState.textReplacementCapsLockOn);
+            Assert::AreEqual(true, testState.textReplacementNumLockOn);
+            Assert::AreEqual(true, testState.textReplacementScrollLockOn);
+            Assert::AreEqual(true, testState.textReplacementContextTrackingEnabled.load(std::memory_order_relaxed));
+            Assert::AreEqual(true, testState.textReplacementContextEditable.load(std::memory_order_relaxed));
+            Assert::IsTrue(testState.textReplacementContextWindow.load(std::memory_order_relaxed) == classifiedWindow);
+            Assert::AreEqual(static_cast<DWORD>(44), testState.textReplacementContextProcessId.load(std::memory_order_relaxed));
+            Assert::IsTrue(testState.textReplacementContextRefreshEvent.load(std::memory_order_relaxed) == refreshEvent);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldApplyRequestedRuntimeReset)
+        {
+            testState.AddTextReplacement(L"    ", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            testState.textReplacementPendingPacketHighSurrogate = static_cast<wchar_t>(0xD83D);
+            testState.textReplacementDeadKeyPending = true;
+            testState.RequestTextReplacementRuntimeReset();
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SHIFT)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(L'\0', testState.textReplacementPendingPacketHighSurrogate);
+            Assert::AreEqual(true, testState.textReplacementDeadKeyPending);
+            Assert::AreEqual(true, testState.textReplacementDeadKeyMustPassThrough);
+            Assert::AreEqual(false, testState.textReplacementRuntimeResetRequested.load(std::memory_order_relaxed));
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldFailOpenOnceAfterDeadKeyContextReset)
+        {
+            testState.AddTextReplacement(L" ", L"expanded");
+            PrimeTextReplacementContext();
+
+            const HWND foregroundWindow = GetForegroundWindow();
+            const DWORD foregroundThread = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
+            testState.textReplacementDeadKeyPending = true;
+            testState.textReplacementDeadKeyThreadId = foregroundThread;
+            testState.textReplacementDeadKeyLayout = GetKeyboardLayout(foregroundThread);
+            KeyboardEventHandlers::ResetTextReplacementRuntimeState(testState);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(false, testState.textReplacementDeadKeyPending);
+            Assert::AreEqual(false, testState.textReplacementDeadKeyMustPassThrough);
+            Assert::AreEqual(static_cast<size_t>(0), mockedInputHandler.GetSendVirtualInputBatchCount());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldFailOpenWhenPendingDeadKeyMovesAcrossThreads)
+        {
+            testState.AddTextReplacement(L" ", L"expanded");
+            PrimeTextReplacementContext();
+
+            const HWND foregroundWindow = GetForegroundWindow();
+            const DWORD foregroundThread = foregroundWindow ? GetWindowThreadProcessId(foregroundWindow, nullptr) : 0;
+            testState.textReplacementDeadKeyPending = true;
+            testState.textReplacementDeadKeyThreadId = foregroundThread + 1;
+            testState.textReplacementDeadKeyLayout = GetKeyboardLayout(foregroundThread);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(false, testState.textReplacementDeadKeyPending);
+            Assert::AreEqual(false, testState.textReplacementDeadKeyMustPassThrough);
+            Assert::AreEqual(static_cast<size_t>(0), mockedInputHandler.GetSendVirtualInputBatchCount());
+        }
+
+        TEST_METHOD (UpdateTextReplacementToggleKeyState_ShouldTrackUnsuppressedKeyDownOnly)
+        {
+            UpdateTextReplacementToggleKey(VK_CAPITAL, WM_KEYDOWN, false);
+            Assert::AreEqual(true, testState.textReplacementCapsLockOn);
+
+            UpdateTextReplacementToggleKey(VK_CAPITAL, WM_KEYUP, false);
+            Assert::AreEqual(true, testState.textReplacementCapsLockOn);
+
+            UpdateTextReplacementToggleKey(VK_CAPITAL, WM_KEYDOWN, false);
+            Assert::AreEqual(false, testState.textReplacementCapsLockOn);
+
+            UpdateTextReplacementToggleKey(VK_NUMLOCK, WM_KEYDOWN, true);
+            Assert::AreEqual(false, testState.textReplacementNumLockOn);
+
+            UpdateTextReplacementToggleKey(VK_NUMLOCK, WM_KEYDOWN, false);
+            Assert::AreEqual(true, testState.textReplacementNumLockOn);
+        }
+
+        TEST_METHOD (InitializeTextReplacementToggleKeyState_ShouldPreserveObservedStateUntilHookRestart)
+        {
+            testState.textReplacementToggleStateInitialized = true;
+            testState.textReplacementCapsLockOn = true;
+            testState.textReplacementNumLockOn = true;
+            testState.textReplacementScrollLockOn = true;
+
+            KeyboardEventHandlers::InitializeTextReplacementToggleKeyState(testState);
+
+            Assert::AreEqual(true, testState.textReplacementCapsLockOn);
+            Assert::AreEqual(true, testState.textReplacementNumLockOn);
+            Assert::AreEqual(true, testState.textReplacementScrollLockOn);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldClearBuffer_WhenInputContextIsInvalidated)
+        {
+            testState.AddTextReplacement(L"    ", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            testState.textReplacementContextTrackingEnabled.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextEditable.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextWindow.store(testState.textReplacementWindow, std::memory_order_relaxed);
+            testState.textReplacementContextProcessId.store(testState.textReplacementProcessId, std::memory_order_relaxed);
+            testState.textReplacementObservedContextEpoch = testState.textReplacementContextEpoch.load(std::memory_order_relaxed);
+            testState.textReplacementClassifiedContextEpoch.store(testState.textReplacementObservedContextEpoch, std::memory_order_relaxed);
+
+            testState.InvalidateTextReplacementContext();
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SHIFT)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(false, testState.textReplacementContextEditable.load(std::memory_order_relaxed));
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldRejectStaleEditableClassification)
+        {
+            testState.AddTextReplacement(L" ", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            testState.textReplacementContextTrackingEnabled.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextInfrastructureReady.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextEditable.store(true, std::memory_order_relaxed);
+            testState.textReplacementContextStatus.store(TextReplacementContextStatus::Editable, std::memory_order_relaxed);
+            testState.textReplacementContextWindow.store(testState.textReplacementWindow, std::memory_order_relaxed);
+            testState.textReplacementContextProcessId.store(testState.textReplacementProcessId, std::memory_order_relaxed);
+            testState.textReplacementObservedContextEpoch = 5;
+            testState.textReplacementContextEpoch.store(5, std::memory_order_relaxed);
+            testState.textReplacementClassifiedContextEpoch.store(4, std::memory_order_relaxed);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<size_t>(0), mockedInputHandler.GetSendVirtualInputBatchCount());
         }
 
         TEST_METHOD (HandleTextReplacementEvent_ShouldReplaceSingleCharacterTrigger)
@@ -621,6 +832,201 @@ namespace RemappingLogicTests
 
             Assert::AreEqual(0, static_cast<int>(result));
             Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldReplaceMultiCharacterTriggerAndBackspacePreviousCharacters)
+        {
+            testState.AddTextReplacement(L"  ", L"expanded");
+            PrimeTextReplacementContext();
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* keyEvent) {
+                return keyEvent->lParam->vkCode == VK_BACK;
+            });
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(L" "), testState.textReplacementBuffer);
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldTrimBufferToLongestTriggerLength)
+        {
+            testState.AddTextReplacement(L"    ", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"abcd";
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(L"bcd "), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldPassOriginalKeyThrough_WhenReplacementInjectionFails)
+        {
+            testState.AddTextReplacement(L" ", L"replacement");
+            PrimeTextReplacementContext();
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                return std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return (input.ki.dwFlags & KEYEVENTF_UNICODE) != 0;
+                });
+            });
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetSendVirtualInputBatchCount());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSplitLongReplacementAcrossBoundedInputBatches)
+        {
+            const std::wstring longReplacement(KeyboardManagerConstants::MaxTextReplacementTextLength, L'x');
+            Assert::IsTrue(testState.AddTextReplacement(L" ", longReplacement));
+            PrimeTextReplacementContext();
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::IsTrue(mockedInputHandler.GetSendVirtualInputBatchCount() > 1);
+            Assert::IsTrue(mockedInputHandler.GetLargestSendVirtualInputBatchSize() <= 32);
+            Assert::AreEqual(static_cast<size_t>(1024), longReplacement.size());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressOriginalKey_WhenLaterInputBatchFails)
+        {
+            const std::wstring longReplacement(KeyboardManagerConstants::MaxTextReplacementTextLength, L'x');
+            Assert::IsTrue(testState.AddTextReplacement(L" ", longReplacement));
+            PrimeTextReplacementContext();
+            size_t attemptedBatchCount = 0;
+            mockedInputHandler.SetSendVirtualInputShouldFail([&attemptedBatchCount](const std::vector<INPUT>&) {
+                return ++attemptedBatchCount == 2;
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<size_t>(2), mockedInputHandler.GetSendVirtualInputBatchCount());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldSuppressOriginalKey_WhenInputBatchIsPartial)
+        {
+            testState.AddTextReplacement(L" ", L"expanded");
+            PrimeTextReplacementContext();
+            mockedInputHandler.SetSendVirtualInputResult([](const std::vector<INPUT>&) {
+                return KeyboardManagerInput::VirtualInputResult::Partial;
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(static_cast<size_t>(1), mockedInputHandler.GetSendVirtualInputBatchCount());
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldClearBuffer_WhenBackspaceHasShortcutModifier)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_BACK)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldClearBuffer_WhenAltGrBackspaceIsPressed)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_RMENU, true);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_BACK, 0, WM_SYSKEYDOWN)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldPreserveBuffer_WhenCapsLockIsToggled)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_CAPITAL)));
+            Assert::AreEqual(std::wstring(L"partial"), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldPreserveBuffer_WhenNumLockIsToggled)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_NUMLOCK)));
+            Assert::AreEqual(std::wstring(L"partial"), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldPreserveBuffer_WhenAltGrIsPressed)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_RMENU, true);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_RMENU, 0, WM_SYSKEYDOWN)));
+            Assert::AreEqual(std::wstring(L"partial"), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldCancelPendingDeadKeyBeforeRemovingBufferedText_OnBackspace)
+        {
+            testState.AddTextReplacement(L"placeholder", L"expanded");
+            PrimeTextReplacementContext();
+            testState.textReplacementBuffer = L"partial";
+            testState.textReplacementDeadKeyPending = true;
+            testState.textReplacementDeadKeyThreadId = 42;
+            testState.textReplacementDeadKeyLayout = reinterpret_cast<HKL>(1);
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_BACK)));
+            Assert::AreEqual(std::wstring(L"partial"), testState.textReplacementBuffer);
+            Assert::AreEqual(false, testState.textReplacementDeadKeyPending);
+            Assert::AreEqual(static_cast<DWORD>(0), testState.textReplacementDeadKeyThreadId);
+            Assert::IsTrue(testState.textReplacementDeadKeyLayout == nullptr);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldReleaseShiftWithoutRepressingIt_WhenTriggerMatches)
+        {
+            testState.AddTextReplacement(L" ", L"expanded");
+            PrimeTextReplacementContext();
+            mockedInputHandler.SetKeyboardState(VK_LSHIFT, true);
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* keyEvent) {
+                const DWORD vkCode = keyEvent->lParam->vkCode;
+                const bool isShift = vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT;
+                return isShift && keyEvent->wParam == WM_KEYDOWN;
+            });
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_SPACE)));
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldUseUnicodeCodeUnitFromPacketScanCode)
+        {
+            testState.AddTextReplacement(L"x", L"expanded");
+            PrimeTextReplacementContext();
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_PACKET, L'x')));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+        }
+
+        TEST_METHOD (HandleTextReplacementEvent_ShouldCombinePacketSurrogatePairBeforeMatching)
+        {
+            const std::wstring emoji{ static_cast<wchar_t>(0xD83D), static_cast<wchar_t>(0xDE00) };
+            testState.AddTextReplacement(emoji, L"expanded");
+            PrimeTextReplacementContext();
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* keyEvent) {
+                return keyEvent->lParam->vkCode == VK_BACK;
+            });
+
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_PACKET, 0xD83D)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(0, static_cast<int>(HandleTextReplacementKey(VK_PACKET, 0xD83D, WM_KEYUP, LLKHF_UP)));
+
+            Assert::AreEqual(1, static_cast<int>(HandleTextReplacementKey(VK_PACKET, 0xDE00)));
+            Assert::AreEqual(std::wstring(), testState.textReplacementBuffer);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount());
         }
     };
 }

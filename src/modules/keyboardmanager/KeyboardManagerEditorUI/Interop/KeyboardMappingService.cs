@@ -215,12 +215,27 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool AddTextReplacementMapping(string trigger, string targetText)
         {
-            if (string.IsNullOrEmpty(trigger) || string.IsNullOrEmpty(targetText))
+            if (string.IsNullOrEmpty(trigger) || string.IsNullOrEmpty(targetText) || trigger.Contains('\0') || targetText.Contains('\0'))
             {
                 return false;
             }
 
             return KeyboardManagerInterop.AddTextReplacement(_configHandle, trigger, targetText);
+        }
+
+        public bool UpdateTextReplacementMapping(string originalTrigger, string newTrigger, string targetText)
+        {
+            if (string.IsNullOrEmpty(originalTrigger) ||
+                string.IsNullOrEmpty(newTrigger) ||
+                string.IsNullOrEmpty(targetText) ||
+                originalTrigger.Contains('\0') ||
+                newTrigger.Contains('\0') ||
+                targetText.Contains('\0'))
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.UpdateTextReplacement(_configHandle, originalTrigger, newTrigger, targetText);
         }
 
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut)
@@ -306,7 +321,7 @@ namespace KeyboardManagerEditorUI.Interop
 
         public bool DeleteTextReplacementMapping(string trigger)
         {
-            if (string.IsNullOrEmpty(trigger))
+            if (string.IsNullOrEmpty(trigger) || trigger.Contains('\0'))
             {
                 return false;
             }

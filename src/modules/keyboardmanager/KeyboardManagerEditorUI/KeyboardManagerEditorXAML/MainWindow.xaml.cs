@@ -56,9 +56,16 @@ namespace KeyboardManagerEditorUI
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
         {
-            KeyboardHookHelper.Instance.Dispose();
-            this.Activated -= MainWindow_Activated;
-            this.Closed -= MainWindow_Closed;
+            try
+            {
+                KeyboardHookHelper.Instance.Dispose();
+            }
+            finally
+            {
+                this.Activated -= MainWindow_Activated;
+                this.Closed -= MainWindow_Closed;
+                (Application.Current as App)?.StopEditorLifetime();
+            }
         }
     }
 }
