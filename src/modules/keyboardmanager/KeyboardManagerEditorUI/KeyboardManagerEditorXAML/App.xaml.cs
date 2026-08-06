@@ -6,10 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using KeyboardManagerEditorUI.Helpers;
@@ -39,8 +37,6 @@ namespace KeyboardManagerEditorUI
     {
         private EditorLifetime? _editorLifetime;
         private Process? _parentProcess;
-        private DispatcherQueue? _dispatcherQueue;
-        private int _parentExitShutdownQueued;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -54,26 +50,16 @@ namespace KeyboardManagerEditorUI
             // at all - which is exactly what happened in #49399.
             Logger.InitializeLogger("\\Keyboard Manager\\WinUI3Editor\\Logs");
 
-            try
-            {
-                // The classic and WinUI editors share one instance marker. Only the process that
-                // creates it owns the engine-suspension event and is therefore allowed to reset it.
-                _editorLifetime = EditorLifetime.TryStart();
+            // The classic and WinUI editors share one instance marker. Only the process that
+            // creates it owns the engine-suspension event and is therefore allowed to reset it.
+            _editorLifetime = EditorLifetime.TryStart();
 
-                this.InitializeComponent();
-                UnhandledException += App_UnhandledException;
+            this.InitializeComponent();
+            UnhandledException += App_UnhandledException;
 
-                if (_editorLifetime is not null)
-                {
-                    AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
-                    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-                    SettingsManager.CorrelateServiceAndEditorMappings();
-                }
-            }
-            catch
+            if (_editorLifetime is not null)
             {
-                StopEditorLifetime();
-                throw;
+                SettingsManager.CorrelateServiceAndEditorMappings();
             }
         }
 
@@ -85,49 +71,28 @@ namespace KeyboardManagerEditorUI
         {
             if (_editorLifetime is null)
             {
-                bool activatedExistingEditor = TryActivateExistingEditorWindow();
-                Logger.LogInfo(activatedExistingEditor
-                    ? "Activated the existing Keyboard Manager editor instance"
-                    : "Another Keyboard Manager editor instance is already running; unable to activate its window");
+                Logger.LogInfo("Another Keyboard Manager editor instance is already running");
                 Exit();
                 return;
             }
 
             Logger.LogInfo("keyboard-manager WinUI3 editor is creating its main window");
 
-            try
-            {
-                MainWindow = new MainWindow();
-                _dispatcherQueue = MainWindow.DispatcherQueue;
+            MainWindow = new MainWindow();
 
-                MainWindow.DispatcherQueue.TryEnqueue(() =>
+            MainWindow.DispatcherQueue.TryEnqueue(() =>
+            {
+                MainWindow.Activate();
+                MainWindow.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
                 {
-                    MainWindow.Activate();
-                    MainWindow.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
-                    {
-                        (MainWindow.Content as FrameworkElement)?.UpdateLayout();
-                    });
+                    (MainWindow.Content as FrameworkElement)?.UpdateLayout();
                 });
+            });
 
-                string parentProcessArgument = args.Arguments;
-                if (string.IsNullOrWhiteSpace(parentProcessArgument))
-                {
-                    string[] commandLineArguments = Environment.GetCommandLineArgs();
-                    if (commandLineArguments.Length == 2)
-                    {
-                        parentProcessArgument = commandLineArguments[1];
-                    }
-                }
+            string[] commandLineArguments = Environment.GetCommandLineArgs();
+            MonitorParentProcess(commandLineArguments.Length > 1 ? commandLineArguments[1] : string.Empty);
 
-                MonitorParentProcess(parentProcessArgument);
-
-                Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
-            }
-            catch
-            {
-                StopEditorLifetime();
-                throw;
-            }
+            Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
         }
 
         /// <summary>
@@ -135,53 +100,14 @@ namespace KeyboardManagerEditorUI
         /// </summary>
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
-            try
-            {
-                Logger.LogError("Unhandled exception", e.Exception);
-            }
-            finally
-            {
-                StopEditorLifetime();
-            }
-        }
-
-        private void CurrentDomain_ProcessExit(object? sender, EventArgs e)
-        {
-            StopEditorLifetime();
-        }
-
-        private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
-        {
-            try
-            {
-                if (e.ExceptionObject is Exception exception)
-                {
-                    Logger.LogError("Unhandled application-domain exception", exception);
-                }
-                else
-                {
-                    Logger.LogError($"Unhandled application-domain exception: {e.ExceptionObject}");
-                }
-            }
-            finally
-            {
-                StopEditorLifetime();
-            }
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         internal void StopEditorLifetime()
         {
             DetachParentProcess();
-
             EditorLifetime? editorLifetime = Interlocked.Exchange(ref _editorLifetime, null);
-            if (editorLifetime is null)
-            {
-                return;
-            }
-
-            AppDomain.CurrentDomain.ProcessExit -= CurrentDomain_ProcessExit;
-            AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
-            editorLifetime.Dispose();
+            editorLifetime?.Dispose();
         }
 
         private void MonitorParentProcess(string arguments)
@@ -191,69 +117,41 @@ namespace KeyboardManagerEditorUI
                 return;
             }
 
-            string parentProcessIdArgument = arguments.Trim();
-            if (!int.TryParse(parentProcessIdArgument, NumberStyles.None, CultureInfo.InvariantCulture, out int parentProcessId) || parentProcessId <= 0)
+            if (!int.TryParse(arguments.Trim(), out int parentProcessId) || parentProcessId <= 0)
             {
                 Logger.LogWarning($"Ignoring invalid Keyboard Manager editor parent process argument: {arguments}");
                 return;
             }
 
-            Process? parentProcess = null;
             try
             {
-                parentProcess = Process.GetProcessById(parentProcessId);
-                _parentProcess = parentProcess;
-                parentProcess.Exited += ParentProcess_Exited;
-                parentProcess.EnableRaisingEvents = true;
-
-                if (parentProcess.HasExited)
-                {
-                    RequestParentExitShutdown();
-                }
+                _parentProcess = Process.GetProcessById(parentProcessId);
+                _parentProcess.Exited += ParentProcess_Exited;
+                _parentProcess.EnableRaisingEvents = true;
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
             {
                 DetachParentProcess();
-                parentProcess?.Dispose();
                 Logger.LogInfo($"Keyboard Manager editor parent process {parentProcessId} is unavailable: {ex.Message}");
-                RequestParentExitShutdown();
+                CloseAfterParentExit();
             }
         }
 
         private void ParentProcess_Exited(object? sender, EventArgs e)
         {
-            RequestParentExitShutdown();
+            CloseAfterParentExit();
         }
 
-        private void RequestParentExitShutdown()
+        private void CloseAfterParentExit()
         {
-            if (Interlocked.Exchange(ref _parentExitShutdownQueued, 1) != 0)
-            {
-                return;
-            }
-
-            DispatcherQueue? dispatcherQueue = _dispatcherQueue;
-            if (dispatcherQueue is null || !dispatcherQueue.TryEnqueue(ShutdownAfterParentExit))
-            {
-                Logger.LogWarning("Failed to queue Keyboard Manager editor shutdown after its parent process exited");
-            }
-        }
-
-        private void ShutdownAfterParentExit()
-        {
-            try
+            if (!MainWindow.DispatcherQueue.TryEnqueue(() =>
             {
                 Logger.LogInfo("Keyboard Manager editor parent process exited; closing the editor");
-                MainWindow?.Close();
-            }
-            catch (Exception ex)
+                MainWindow.Close();
+            }))
             {
-                Logger.LogError("Failed to close the Keyboard Manager editor window after its parent process exited", ex);
-            }
-            finally
-            {
-                StopEditorLifetime();
-                Exit();
+                Logger.LogWarning("Failed to queue Keyboard Manager editor shutdown after its parent process exited");
+                Environment.Exit(0);
             }
         }
 
@@ -265,131 +163,54 @@ namespace KeyboardManagerEditorUI
                 return;
             }
 
-            try
-            {
-                parentProcess.Exited -= ParentProcess_Exited;
-            }
-            finally
-            {
-                parentProcess.Dispose();
-            }
-        }
-
-        private static bool TryActivateExistingEditorWindow()
-        {
-            bool activated = false;
-            int currentProcessId = Environment.ProcessId;
-
-            _ = EnumWindows(
-                (window, parameter) =>
-                {
-                    if (!IsWindowVisible(window))
-                    {
-                        return true;
-                    }
-
-                    uint windowThreadId = GetWindowThreadProcessId(window, out uint windowProcessId);
-                    if (windowThreadId == 0 || windowProcessId == 0 || windowProcessId == currentProcessId)
-                    {
-                        return true;
-                    }
-
-                    try
-                    {
-                        using Process process = Process.GetProcessById((int)windowProcessId);
-                        if (!string.Equals(process.ProcessName, "PowerToys.KeyboardManagerEditorUI", StringComparison.OrdinalIgnoreCase) &&
-                            !string.Equals(process.ProcessName, "PowerToys.KeyboardManagerEditor", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return true;
-                        }
-
-                        _ = ShowWindow(window, ShowWindowRestore);
-                        _ = SetForegroundWindow(window);
-                        activated = true;
-                        return false;
-                    }
-                    catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
-                    {
-                        return true;
-                    }
-                },
-                IntPtr.Zero);
-
-            return activated;
+            parentProcess.Exited -= ParentProcess_Exited;
+            parentProcess.Dispose();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;
-
-        private const int ShowWindowRestore = 9;
-
-        private delegate bool EnumWindowsCallback(IntPtr window, IntPtr parameter);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool EnumWindows(EnumWindowsCallback callback, IntPtr parameter);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool IsWindowVisible(IntPtr window);
-
-        [DllImport("user32.dll")]
-        private static extern uint GetWindowThreadProcessId(IntPtr window, out uint processId);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool ShowWindow(IntPtr window, int command);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetForegroundWindow(IntPtr window);
 
         private sealed class EditorLifetime : IDisposable
         {
             private const string InstanceMutexName = @"Local\PowerToys_KBMEditor_InstanceMutex";
             private const string EditorWindowEventName = "PowerToys_KeyboardManager_Event_EditorWindow";
 
-            private Mutex? _instanceMarker;
-            private EventWaitHandle? _editorWindowEvent;
-            private bool _ownsInstanceMarker;
+            private readonly Mutex _instanceMarker;
+            private readonly EventWaitHandle _editorWindowEvent;
 
-            private EditorLifetime(Mutex instanceMarker, EventWaitHandle editorWindowEvent, bool ownsInstanceMarker)
+            private EditorLifetime(Mutex instanceMarker, EventWaitHandle editorWindowEvent)
             {
                 _instanceMarker = instanceMarker;
                 _editorWindowEvent = editorWindowEvent;
-                _ownsInstanceMarker = ownsInstanceMarker;
             }
 
             public static EditorLifetime? TryStart()
             {
-                Mutex? instanceMarker = null;
-                EventWaitHandle? editorWindowEvent = null;
-                bool ownsInstanceMarker = false;
-
+                Mutex instanceMarker;
+                bool createdNew;
                 try
                 {
                     // The editor intentionally owns this mutex. A normal UI-thread shutdown releases
                     // it, while a crash leaves an abandoned mutex that the engine can detect and use
                     // to clear a stale editor-window event.
-                    bool createdNew;
-                    try
-                    {
-                        instanceMarker = new Mutex(true, InstanceMutexName, out createdNew);
-                        ownsInstanceMarker = createdNew;
-                    }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        // An elevated editor can own a marker that this process cannot open. Treat
-                        // that as an existing instance and, critically, do not touch its event.
-                        Logger.LogWarning($"Unable to open the Keyboard Manager editor instance marker: {ex.Message}");
-                        return null;
-                    }
+                    instanceMarker = new Mutex(true, InstanceMutexName, out createdNew);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // An elevated editor can own a marker that this process cannot open. Treat
+                    // that as an existing instance and, critically, do not touch its event.
+                    Logger.LogWarning($"Unable to open the Keyboard Manager editor instance marker: {ex.Message}");
+                    return null;
+                }
 
-                    if (!createdNew)
-                    {
-                        instanceMarker.Dispose();
-                        return null;
-                    }
+                if (!createdNew)
+                {
+                    instanceMarker.Dispose();
+                    return null;
+                }
 
+                EventWaitHandle? editorWindowEvent = null;
+                try
+                {
                     editorWindowEvent = new EventWaitHandle(false, EventResetMode.ManualReset, EditorWindowEventName);
                     if (!editorWindowEvent.Set())
                     {
@@ -397,53 +218,31 @@ namespace KeyboardManagerEditorUI
                     }
 
                     Logger.LogInfo("Signaled the Keyboard Manager editor window event to suspend the engine");
-                    return new EditorLifetime(instanceMarker, editorWindowEvent, ownsInstanceMarker);
+                    return new EditorLifetime(instanceMarker, editorWindowEvent);
                 }
                 catch
                 {
-                    if (editorWindowEvent is not null)
+                    try
                     {
-                        try
-                        {
-                            editorWindowEvent.Reset();
-                        }
-                        finally
-                        {
-                            editorWindowEvent.Dispose();
-                        }
+                        editorWindowEvent?.Reset();
+                    }
+                    finally
+                    {
+                        editorWindowEvent?.Dispose();
+                        instanceMarker.ReleaseMutex();
+                        instanceMarker.Dispose();
                     }
 
-                    if (ownsInstanceMarker && instanceMarker is not null)
-                    {
-                        try
-                        {
-                            instanceMarker.ReleaseMutex();
-                        }
-                        catch (ApplicationException ex)
-                        {
-                            Logger.LogWarning($"Failed to release the Keyboard Manager editor instance mutex: {ex.Message}");
-                        }
-                    }
-
-                    instanceMarker?.Dispose();
                     throw;
                 }
             }
 
             public void Dispose()
             {
-                EventWaitHandle? editorWindowEvent = Interlocked.Exchange(ref _editorWindowEvent, null);
-                Mutex? instanceMarker = Interlocked.Exchange(ref _instanceMarker, null);
-                bool ownsInstanceMarker = _ownsInstanceMarker;
-                _ownsInstanceMarker = false;
-
                 try
                 {
-                    if (editorWindowEvent is not null)
-                    {
-                        editorWindowEvent.Reset();
-                        Logger.LogInfo("Reset the Keyboard Manager editor window event to resume the engine");
-                    }
+                    _editorWindowEvent.Reset();
+                    Logger.LogInfo("Reset the Keyboard Manager editor window event to resume the engine");
                 }
                 catch (Exception ex)
                 {
@@ -451,22 +250,9 @@ namespace KeyboardManagerEditorUI
                 }
                 finally
                 {
-                    editorWindowEvent?.Dispose();
-
-                    if (ownsInstanceMarker && instanceMarker is not null)
-                    {
-                        try
-                        {
-                            instanceMarker.ReleaseMutex();
-                        }
-                        catch (ApplicationException ex)
-                        {
-                            Logger.LogWarning($"Failed to release the Keyboard Manager editor instance mutex: {ex.Message}");
-                        }
-                    }
-
-                    instanceMarker?.Dispose();
-                    GC.SuppressFinalize(this);
+                    _editorWindowEvent.Dispose();
+                    _instanceMarker.ReleaseMutex();
+                    _instanceMarker.Dispose();
                 }
             }
         }

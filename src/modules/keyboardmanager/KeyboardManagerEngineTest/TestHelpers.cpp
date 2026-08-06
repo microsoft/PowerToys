@@ -28,14 +28,10 @@ namespace TestHelpers
         state.textReplacementDeadKeyLayout = nullptr;
         state.textReplacementCapsLockOn = false;
         state.textReplacementNumLockOn = false;
-        state.textReplacementScrollLockOn = false;
         state.textReplacementToggleStateInitialized = false;
         state.textReplacementObservedContextEpoch = 0;
-        state.textReplacementRuntimeResetRequested.store(false, std::memory_order_relaxed);
         state.textReplacementContextEpoch.store(1, std::memory_order_relaxed);
         state.textReplacementContextTrackingEnabled.store(false, std::memory_order_relaxed);
-        state.textReplacementContextInfrastructureReady.store(false, std::memory_order_relaxed);
-        state.textReplacementContextEditable.store(false, std::memory_order_relaxed);
         state.textReplacementContextStatus.store(TextReplacementContextStatus::Pending, std::memory_order_relaxed);
         state.textReplacementContextWindow.store(nullptr, std::memory_order_relaxed);
         state.textReplacementContextProcessId.store(0, std::memory_order_relaxed);

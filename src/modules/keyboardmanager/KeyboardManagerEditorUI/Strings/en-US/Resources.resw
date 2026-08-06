@@ -232,10 +232,10 @@
     <value>Enter the text to replace when typed</value>
   </data>
   <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected. Terminals are not supported because they do not identify password prompts to accessibility tools.</value>
+    <value>Replacements happen immediately. Input from IME, voice typing, handwriting, paste, and terminals is not supported.</value>
   </data>
-  <data name="TextTriggerBehaviorDescription.Text" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected. Terminals are not supported because they do not identify password prompts to accessibility tools.</value>
+  <data name="TextTriggerBox.Description" xml:space="preserve">
+    <value>Replacements happen immediately. Include a trailing space in both fields to require a word boundary.</value>
   </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
@@ -433,7 +433,7 @@
     <value>Duplicate remapping</value>
   </data>
   <data name="Validation_DuplicateMapping_Message" xml:space="preserve">
-    <value>This trigger is already mapped.</value>
+    <value>This input is already mapped.</value>
   </data>
   <data name="Validation_ConflictingModifier_Title" xml:space="preserve">
     <value>Conflicting modifier</value>
@@ -475,19 +475,13 @@
     <value>Text replacement limit reached</value>
   </data>
   <data name="Validation_TextReplacementLimitReached_Message" xml:space="preserve">
-    <value>Keyboard Manager supports up to 1,000 text replacement rules. Delete an existing rule before adding another.</value>
+    <value>Keyboard Manager supports up to 1,000 active text replacement rules.</value>
   </data>
   <data name="Validation_TextTriggerPrefixConflict_Title" xml:space="preserve">
     <value>Conflicting text trigger</value>
   </data>
   <data name="Validation_TextTriggerPrefixConflict_Message" xml:space="preserve">
     <value>This trigger is a prefix of another text trigger, or another trigger is a prefix of this one. Use distinct triggers so every replacement can be reached.</value>
-  </data>
-  <data name="Validation_InvalidTextReplacementCharacters_Title" xml:space="preserve">
-    <value>Invalid text replacement</value>
-  </data>
-  <data name="Validation_InvalidTextReplacementCharacters_Message" xml:space="preserve">
-    <value>Text replacement triggers and replacement text cannot contain embedded null characters.</value>
   </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>
@@ -530,21 +524,6 @@
   </data>
   <data name="Error_SaveFailed_Message" xml:space="preserve">
     <value>Failed to save the remapping. Please try again.</value>
-  </data>
-  <data name="Error_DeleteFailed_Title" xml:space="preserve">
-    <value>Delete failed</value>
-  </data>
-  <data name="Error_DeleteFailed_Message" xml:space="preserve">
-    <value>The remapping could not be deleted. No changes were applied.</value>
-  </data>
-  <data name="Error_ToggleFailed_Title" xml:space="preserve">
-    <value>Update failed</value>
-  </data>
-  <data name="Error_ToggleFailed_Message" xml:space="preserve">
-    <value>The remapping state could not be updated. No changes were applied.</value>
-  </data>
-  <data name="ErrorDialog_CloseButtonText" xml:space="preserve">
-    <value>Close</value>
   </data>
   <data name="Error_NotImplemented_Title" xml:space="preserve">
     <value>Not implemented</value>

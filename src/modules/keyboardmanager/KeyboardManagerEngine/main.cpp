@@ -81,13 +81,13 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
         kbm.StartLowlevelKeyboardHook();
     };
 
-    auto RefreshHooksFunc = [&kbm]() {
-        kbm.RefreshLowlevelHooks();
+    auto ReloadSettingsFunc = [&kbm]() {
+        kbm.ReloadSettings();
     };
 
     run_message_loop({}, {}, {
                                      { KeyboardManager::StartHookMessageID, StartHookFunc },
-                                     { KeyboardManager::RefreshHooksMessageID, RefreshHooksFunc },
+                                     { KeyboardManager::ReloadSettingsMessageID, ReloadSettingsFunc },
                                  });
 
     kbm.StopLowlevelKeyboardHook();
@@ -97,4 +97,3 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
 
     return 0;
 }
-

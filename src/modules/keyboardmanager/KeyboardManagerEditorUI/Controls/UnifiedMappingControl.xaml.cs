@@ -180,8 +180,6 @@ namespace KeyboardManagerEditorUI.Controls
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             // Set up event handlers for app-specific checkbox
-            AppSpecificCheckBox.Checked -= AppSpecificCheckBox_Changed;
-            AppSpecificCheckBox.Unchecked -= AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
 
@@ -984,11 +982,6 @@ namespace KeyboardManagerEditorUI.Controls
                 return;
             }
 
-            if (CurrentTriggerType == TriggerType.Text)
-            {
-                actionType = ActionType.Text;
-            }
-
             string tag = actionType switch
             {
                 ActionType.Text => "Text",
@@ -1180,12 +1173,6 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         private void UpdateInlineValidation()
         {
-            if (CurrentTriggerType == TriggerType.Text && string.IsNullOrEmpty(TextTriggerBox?.Text))
-            {
-                ShowValidationErrorFromType(ValidationErrorType.EmptyTriggerText);
-                return;
-            }
-
             // Only validate the active action type's output field
             switch (CurrentActionType)
             {

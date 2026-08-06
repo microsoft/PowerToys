@@ -12,22 +12,6 @@
 
 namespace
 {
-    enum class TextReplacementValidationError
-    {
-        None,
-        EmptyTrigger,
-        EmptyText,
-        TriggerContainsNull,
-        TextContainsNull,
-        TriggerContainsInvalidUtf16,
-        TextContainsInvalidUtf16,
-        TriggerTooLong,
-        TextTooLong,
-        DuplicateTrigger,
-        PrefixConflict,
-        TooManyReplacements,
-    };
-
     constexpr bool IsPrefixOf(std::wstring_view prefix, std::wstring_view value)
     {
         return prefix.size() <= value.size() && value.compare(0, prefix.size(), prefix) == 0;
@@ -60,57 +44,29 @@ namespace
         return true;
     }
 
-    TextReplacementValidationError ValidateTextReplacement(
+    bool IsValidTextReplacement(
         const TextReplacementTable& replacements,
         std::wstring_view trigger,
         std::wstring_view text,
         std::wstring_view excludedTrigger = {})
     {
-        if (trigger.empty())
+        if (trigger.empty() ||
+            text.empty() ||
+            trigger.find(L'\0') != std::wstring_view::npos ||
+            text.find(L'\0') != std::wstring_view::npos ||
+            !IsWellFormedUtf16(trigger) ||
+            !IsWellFormedUtf16(text) ||
+            trigger.size() > KeyboardManagerConstants::MaxTextReplacementTriggerLength ||
+            text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength)
         {
-            return TextReplacementValidationError::EmptyTrigger;
-        }
-
-        if (text.empty())
-        {
-            return TextReplacementValidationError::EmptyText;
-        }
-
-        if (trigger.find(L'\0') != std::wstring_view::npos)
-        {
-            return TextReplacementValidationError::TriggerContainsNull;
-        }
-
-        if (text.find(L'\0') != std::wstring_view::npos)
-        {
-            return TextReplacementValidationError::TextContainsNull;
-        }
-
-        if (!IsWellFormedUtf16(trigger))
-        {
-            return TextReplacementValidationError::TriggerContainsInvalidUtf16;
-        }
-
-        if (!IsWellFormedUtf16(text))
-        {
-            return TextReplacementValidationError::TextContainsInvalidUtf16;
-        }
-
-        if (trigger.size() > KeyboardManagerConstants::MaxTextReplacementTriggerLength)
-        {
-            return TextReplacementValidationError::TriggerTooLong;
-        }
-
-        if (text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength)
-        {
-            return TextReplacementValidationError::TextTooLong;
+            return false;
         }
 
         const auto excludedReplacement = excludedTrigger.empty() ? replacements.end() : replacements.find(excludedTrigger);
         const auto duplicateReplacement = replacements.find(trigger);
         if (duplicateReplacement != replacements.end() && duplicateReplacement != excludedReplacement)
         {
-            return TextReplacementValidationError::DuplicateTrigger;
+            return false;
         }
 
         for (auto replacement = replacements.begin(); replacement != replacements.end(); ++replacement)
@@ -123,49 +79,14 @@ namespace
             const auto& existingTrigger = replacement->first;
             if (IsPrefixOf(existingTrigger, trigger) || IsPrefixOf(trigger, existingTrigger))
             {
-                return TextReplacementValidationError::PrefixConflict;
+                return false;
             }
         }
 
         const auto replacementCount = replacements.size() - (excludedReplacement == replacements.end() ? 0 : 1);
-        if (replacementCount >= KeyboardManagerConstants::MaxTextReplacementCount)
-        {
-            return TextReplacementValidationError::TooManyReplacements;
-        }
-
-        return TextReplacementValidationError::None;
+        return replacementCount < KeyboardManagerConstants::MaxTextReplacementCount;
     }
 
-    constexpr const wchar_t* GetTextReplacementValidationErrorMessage(TextReplacementValidationError error)
-    {
-        switch (error)
-        {
-        case TextReplacementValidationError::EmptyTrigger:
-            return L"trigger is empty";
-        case TextReplacementValidationError::EmptyText:
-            return L"replacement text is empty";
-        case TextReplacementValidationError::TriggerContainsNull:
-            return L"trigger contains an embedded null character";
-        case TextReplacementValidationError::TextContainsNull:
-            return L"replacement text contains an embedded null character";
-        case TextReplacementValidationError::TriggerContainsInvalidUtf16:
-            return L"trigger contains invalid UTF-16";
-        case TextReplacementValidationError::TextContainsInvalidUtf16:
-            return L"replacement text contains invalid UTF-16";
-        case TextReplacementValidationError::TriggerTooLong:
-            return L"trigger exceeds the maximum length";
-        case TextReplacementValidationError::TextTooLong:
-            return L"replacement text exceeds the maximum length";
-        case TextReplacementValidationError::DuplicateTrigger:
-            return L"trigger is duplicated";
-        case TextReplacementValidationError::PrefixConflict:
-            return L"trigger has a prefix conflict with an existing trigger";
-        case TextReplacementValidationError::TooManyReplacements:
-            return L"maximum replacement count has been reached";
-        default:
-            return L"unknown validation error";
-        }
-    }
 }
 
 // Function to clear the OS Level shortcut remapping table
@@ -256,7 +177,7 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
 
 bool MappingConfiguration::AddTextReplacement(const std::wstring& trigger, const std::wstring& text)
 {
-    if (ValidateTextReplacement(textReplacements, trigger, text) != TextReplacementValidationError::None)
+    if (!IsValidTextReplacement(textReplacements, trigger, text))
     {
         return false;
     }
@@ -281,7 +202,7 @@ bool MappingConfiguration::UpdateTextReplacement(const std::wstring& oldTrigger,
 {
     const auto oldReplacement = textReplacements.find(oldTrigger);
     if (oldReplacement == textReplacements.end() ||
-        ValidateTextReplacement(textReplacements, newTrigger, newText, oldTrigger) != TextReplacementValidationError::None)
+        !IsValidTextReplacement(textReplacements, newTrigger, newText, oldTrigger))
     {
         return false;
     }
@@ -450,13 +371,9 @@ bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData
         auto inProcessTextReplacements = textReplacementsData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
         const auto configuredReplacementCount = static_cast<size_t>(inProcessTextReplacements.Size());
         const auto replacementsToLoad = (std::min)(configuredReplacementCount, KeyboardManagerConstants::MaxTextReplacementCount);
-
-        if (configuredReplacementCount > KeyboardManagerConstants::MaxTextReplacementCount)
+        if (configuredReplacementCount > replacementsToLoad)
         {
-            Logger::error(
-                L"Text replacement configuration contains {} entries; the maximum is {}. Entries after the limit will be ignored.",
-                configuredReplacementCount,
-                KeyboardManagerConstants::MaxTextReplacementCount);
+            Logger::error(L"Text replacement configuration exceeds the {} entry limit. Extra entries will be ignored.", KeyboardManagerConstants::MaxTextReplacementCount);
             result = false;
         }
 
@@ -472,13 +389,7 @@ bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData
 
                 if (!AddTextReplacement(trigger, text))
                 {
-                    const auto validationError = ValidateTextReplacement(textReplacements, trigger, text);
-                    Logger::error(
-                        L"Invalid text replacement at index {}: {} (trigger length: {}, replacement length: {}).",
-                        index,
-                        GetTextReplacementValidationErrorMessage(validationError),
-                        trigger.length(),
-                        text.length());
+                    Logger::error(L"Invalid text replacement at index {}. Try the next replacement.", index);
                     result = false;
                 }
             }

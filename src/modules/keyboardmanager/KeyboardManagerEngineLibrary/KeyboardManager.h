@@ -9,7 +9,7 @@ class KeyboardManager
 {
 public:
     static const inline DWORD StartHookMessageID = WM_APP + 1;
-    static const inline DWORD RefreshHooksMessageID = WM_APP + 2;
+    static const inline DWORD ReloadSettingsMessageID = WM_APP + 2;
 
     // Constructor
     KeyboardManager();
@@ -18,6 +18,7 @@ public:
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
     void RefreshLowlevelHooks();
+    void ReloadSettings();
 
     bool HasRegisteredRemappings() const;
 
@@ -36,7 +37,6 @@ private:
 
     // Low-level mouse hook used to invalidate caret-sensitive text replacement state.
     static HHOOK mouseHookHandle;
-    static HHOOK mouseHookHandleCopy;
 
     // Static pointer to the current KeyboardManager object required for accessing the HandleKeyboardHookEvent function in the hook procedure
     // Only global or static variables can be accessed in a hook procedure CALLBACK
@@ -50,8 +50,6 @@ private:
 
     // Auto reset event for waiting for settings changes. The event is signaled when settings are changed
     EventWaiter settingsEventWaiter;
-
-    std::atomic_bool loadingSettings = false;
 
     HANDLE editorIsRunningEvent = nullptr;
 

@@ -1,7 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <atomic>
-#include <memory>
 #include <unordered_set>
 
 enum class TextReplacementContextStatus : uint8_t
@@ -9,12 +8,6 @@ enum class TextReplacementContextStatus : uint8_t
     Pending,
     Editable,
     Blocked,
-};
-
-struct TextReplacementRuntimeConfiguration
-{
-    TextReplacementTable replacements;
-    size_t maxTriggerLength = 0;
 };
 
 class State : public MappingConfiguration
@@ -30,21 +23,6 @@ private:
     std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
 
 public:
-    // Publishes an immutable configuration generation for the hook thread. Settings
-    // loading mutates MappingConfiguration on a worker thread, so the hook must never
-    // read those containers directly while a reload is in progress.
-    bool PublishTextReplacementRuntimeConfiguration() noexcept;
-    std::shared_ptr<const TextReplacementRuntimeConfiguration> GetTextReplacementRuntimeConfiguration() const noexcept;
-    bool HasTextReplacements() const noexcept;
-
-    // Keep direct State mutations used by the engine tests synchronized with the
-    // immutable runtime view. KeyboardManager::LoadSettings publishes once after the
-    // base configuration has finished constructing a complete generation.
-    void ClearTextReplacements();
-    bool AddTextReplacement(const std::wstring& trigger, const std::wstring& text);
-    bool DeleteTextReplacement(const std::wstring& trigger);
-    bool UpdateTextReplacement(const std::wstring& oldTrigger, const std::wstring& newTrigger, const std::wstring& newText);
-
     // Stores typed characters for text replacement matching.
     std::wstring textReplacementBuffer;
 
@@ -62,34 +40,24 @@ public:
     HKL textReplacementDeadKeyLayout = nullptr;
     bool textReplacementCapsLockOn = false;
     bool textReplacementNumLockOn = false;
-    bool textReplacementScrollLockOn = false;
     bool textReplacementToggleStateInitialized = false;
     uint64_t textReplacementObservedContextEpoch = 0;
 
     // Other threads only request invalidation. The hook thread observes these atomics
     // and performs all std::wstring mutations itself.
-    std::atomic_bool textReplacementRuntimeResetRequested = false;
     std::atomic_uint64_t textReplacementContextEpoch = 1;
 
     // The accessibility classifier publishes a fail-closed snapshot here. Unit tests
     // that invoke the event handler directly leave tracking disabled.
     std::atomic_bool textReplacementContextTrackingEnabled = false;
-    std::atomic_bool textReplacementContextInfrastructureReady = false;
-    std::atomic_bool textReplacementContextEditable = false;
     std::atomic<TextReplacementContextStatus> textReplacementContextStatus = TextReplacementContextStatus::Pending;
     std::atomic<HWND> textReplacementContextWindow = nullptr;
     std::atomic<DWORD> textReplacementContextProcessId = 0;
     std::atomic_uint64_t textReplacementClassifiedContextEpoch = 0;
     std::atomic<HANDLE> textReplacementContextRefreshEvent = nullptr;
 
-    void RequestTextReplacementRuntimeReset() noexcept
-    {
-        textReplacementRuntimeResetRequested.store(true, std::memory_order_release);
-    }
-
     void InvalidateTextReplacementContext() noexcept
     {
-        textReplacementContextEditable.store(false, std::memory_order_release);
         textReplacementContextStatus.store(TextReplacementContextStatus::Pending, std::memory_order_release);
         textReplacementContextEpoch.fetch_add(1, std::memory_order_acq_rel);
 
@@ -127,9 +95,4 @@ public:
     // injection was previously blocked, indicating that its key-up should be passed
     // through as well.
     bool ConsumeSingleKeyRemapInjectionFailed(const DWORD sourceKey);
-
-private:
-    std::atomic<std::shared_ptr<const TextReplacementRuntimeConfiguration>> textReplacementRuntimeConfiguration{
-        std::make_shared<const TextReplacementRuntimeConfiguration>()
-    };
 };

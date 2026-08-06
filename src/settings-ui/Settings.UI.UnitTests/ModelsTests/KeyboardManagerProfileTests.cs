@@ -64,11 +64,20 @@ namespace CommonLibTest
             });
 
             var json = profile.ToJsonString();
+            using var document = JsonDocument.Parse(json);
+            var textReplacements = document.RootElement.GetProperty("textReplacements");
+            var textReplacementProperties = textReplacements.EnumerateObject();
 
-            StringAssert.Contains(json, "\"textReplacements\"");
-            StringAssert.Contains(json, "\"inProcess\"");
-            StringAssert.Contains(json, "\"trigger\":\"sun\"");
-            StringAssert.Contains(json, "\"unicodeText\":\"moon\"");
+            Assert.AreEqual(JsonValueKind.Object, textReplacements.ValueKind);
+            Assert.IsTrue(textReplacementProperties.MoveNext());
+            Assert.AreEqual("inProcess", textReplacementProperties.Current.Name);
+            Assert.IsFalse(textReplacementProperties.MoveNext());
+
+            var inProcess = textReplacements.GetProperty("inProcess");
+            Assert.AreEqual(JsonValueKind.Array, inProcess.ValueKind);
+            Assert.AreEqual(1, inProcess.GetArrayLength());
+            Assert.AreEqual("sun", inProcess[0].GetProperty("trigger").GetString());
+            Assert.AreEqual("moon", inProcess[0].GetProperty("unicodeText").GetString());
         }
     }
 }

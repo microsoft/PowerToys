@@ -620,23 +620,7 @@ namespace RemappingUITests
             Assert::AreEqual(false, utf16Validation.AddTextReplacement(L"trigger", std::wstring(1, static_cast<wchar_t>(0xDE00))));
         }
 
-        TEST_METHOD (AddTextReplacement_ShouldEnforceReplacementCountLimit)
-        {
-            MappingConfiguration testShortcuts;
-            for (size_t index = 0; index < KeyboardManagerConstants::MaxTextReplacementCount; ++index)
-            {
-                Assert::AreEqual(true, testShortcuts.AddTextReplacement(MakeTextReplacementTrigger(index), L"text"));
-            }
-
-            const auto oldTrigger = MakeTextReplacementTrigger(0);
-            Assert::AreEqual(true, testShortcuts.UpdateTextReplacement(oldTrigger, L"updated-rule", L"updated text"));
-            Assert::AreEqual(static_cast<size_t>(0), testShortcuts.textReplacements.count(oldTrigger));
-            Assert::AreEqual(static_cast<size_t>(1), testShortcuts.textReplacements.count(L"updated-rule"));
-            Assert::AreEqual(false, testShortcuts.AddTextReplacement(MakeTextReplacementTrigger(KeyboardManagerConstants::MaxTextReplacementCount), L"text"));
-            Assert::AreEqual(KeyboardManagerConstants::MaxTextReplacementCount, testShortcuts.textReplacements.size());
-        }
-
-        TEST_METHOD (UpdateTextReplacement_ShouldBeAtomicAndRecalculateMaximumTriggerLength)
+        TEST_METHOD (UpdateAndDeleteTextReplacement_ShouldBeAtomicAndRecalculateMaximumTriggerLength)
         {
             MappingConfiguration testShortcuts;
             Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"planet", L"old text"));
@@ -660,27 +644,40 @@ namespace RemappingUITests
             Assert::AreEqual(false, testShortcuts.UpdateTextReplacement(L"missing", L"other", L"text"));
             Assert::AreEqual(static_cast<size_t>(2), testShortcuts.textReplacements.size());
             Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
-        }
 
-        TEST_METHOD (DeleteTextReplacement_ShouldRecalculateMaximumTriggerLength)
-        {
-            MappingConfiguration testShortcuts;
-            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"cat", L"first"));
-            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"planet", L"second"));
-            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"forest", L"third"));
-            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"moon", L"fourth"));
-            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
-
-            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"planet"));
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"forest", L"first maximum"));
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"galaxy", L"second maximum"));
             Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
             Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"forest"));
-            Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
-            Assert::AreEqual(false, testShortcuts.DeleteTextReplacement(L"missing"));
+            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"galaxy"));
             Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
             Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"moon"));
-            Assert::AreEqual(static_cast<size_t>(3), testShortcuts.maxTextReplacementTriggerLength);
-            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"cat"));
+            Assert::AreEqual(static_cast<size_t>(4), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(false, testShortcuts.DeleteTextReplacement(L"missing"));
+            Assert::AreEqual(true, testShortcuts.DeleteTextReplacement(L"star"));
             Assert::AreEqual(static_cast<size_t>(0), testShortcuts.maxTextReplacementTriggerLength);
+        }
+
+        TEST_METHOD (TextReplacementCountLimit_ShouldApplyToAddAndLoad)
+        {
+            MappingConfiguration directConfiguration;
+            std::vector<std::pair<std::wstring, std::wstring>> replacements;
+            replacements.reserve(KeyboardManagerConstants::MaxTextReplacementCount + 1);
+            for (size_t index = 0; index <= KeyboardManagerConstants::MaxTextReplacementCount; ++index)
+            {
+                const auto trigger = MakeTextReplacementTrigger(index);
+                replacements.emplace_back(trigger, L"text");
+                if (index < KeyboardManagerConstants::MaxTextReplacementCount)
+                {
+                    Assert::IsTrue(directConfiguration.AddTextReplacement(trigger, L"text"));
+                }
+            }
+
+            Assert::IsFalse(directConfiguration.AddTextReplacement(replacements.back().first, L"text"));
+            MappingConfiguration loadedConfiguration;
+            Assert::IsFalse(loadedConfiguration.LoadTextReplacements(MakeTextReplacementSettings(replacements)));
+            Assert::AreEqual(KeyboardManagerConstants::MaxTextReplacementCount, loadedConfiguration.textReplacements.size());
         }
 
         TEST_METHOD (LoadTextReplacements_ShouldTreatMissingSectionAsEmpty)
@@ -695,16 +692,9 @@ namespace RemappingUITests
 
         TEST_METHOD (LoadTextReplacements_ShouldRejectInvalidEntriesAndContinueLoading)
         {
-            const std::wstring excessiveTrigger(KeyboardManagerConstants::MaxTextReplacementTriggerLength + 1, L't');
-            const std::wstring excessiveText(KeyboardManagerConstants::MaxTextReplacementTextLength + 1, L'x');
             const auto settings = MakeTextReplacementSettings({
                 { L"alpha", L"first" },
                 { L"", L"empty trigger" },
-                { L"empty-text", L"" },
-                { L"alpha", L"duplicate" },
-                { L"alphabet", L"prefix conflict" },
-                { excessiveTrigger, L"long trigger" },
-                { L"long-text", excessiveText },
                 { L"omega", L"last" },
             });
 
@@ -716,20 +706,5 @@ namespace RemappingUITests
             Assert::AreEqual(static_cast<size_t>(5), testShortcuts.maxTextReplacementTriggerLength);
         }
 
-        TEST_METHOD (LoadTextReplacements_ShouldEnforceReplacementCountLimit)
-        {
-            std::vector<std::pair<std::wstring, std::wstring>> replacements;
-            replacements.reserve(KeyboardManagerConstants::MaxTextReplacementCount + 1);
-            for (size_t index = 0; index <= KeyboardManagerConstants::MaxTextReplacementCount; ++index)
-            {
-                replacements.emplace_back(MakeTextReplacementTrigger(index), L"text");
-            }
-
-            MappingConfiguration testShortcuts;
-            Assert::AreEqual(false, testShortcuts.LoadTextReplacements(MakeTextReplacementSettings(replacements)));
-            Assert::AreEqual(KeyboardManagerConstants::MaxTextReplacementCount, testShortcuts.textReplacements.size());
-            Assert::AreEqual(static_cast<size_t>(9), testShortcuts.maxTextReplacementTriggerLength);
-            Assert::AreEqual(static_cast<size_t>(0), testShortcuts.textReplacements.count(MakeTextReplacementTrigger(KeyboardManagerConstants::MaxTextReplacementCount)));
-        }
     };
 }

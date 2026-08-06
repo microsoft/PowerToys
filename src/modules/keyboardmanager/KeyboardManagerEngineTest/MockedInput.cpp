@@ -26,9 +26,8 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
     }
 
     // Iterate over inputs
-    for (size_t inputIndex = 0; inputIndex < inputs.size(); ++inputIndex)
+    for (const INPUT& input : inputs)
     {
-        const INPUT& input = inputs[inputIndex];
         LowlevelKeyboardEvent keyEvent{};
 
         // Distinguish between key and sys key by checking if the key is either F10 (for syskeydown) or if the key message is sent while Alt is held down. SYSKEY messages are also sent if there is no window in focus, but that has not been mocked since it would require many changes. More details on key messages at https://learn.microsoft.com/windows/win32/inputdev/wm-syskeydown
@@ -56,17 +55,8 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Preserve the keyboard metadata consumed by the handlers under test.
+        // Set only vkCode and dwExtraInfo since other values are unused
         lParam.vkCode = input.ki.wVk;
-        lParam.scanCode = input.ki.wScan;
-        if (input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY)
-        {
-            lParam.flags |= LLKHF_EXTENDED;
-        }
-        if (input.ki.dwFlags & KEYEVENTF_KEYUP)
-        {
-            lParam.flags |= LLKHF_UP;
-        }
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         keyEvent.lParam = &lParam;
 

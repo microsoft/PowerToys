@@ -12,13 +12,13 @@
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include <ctime>
 #include <UIAutomation.h>
+#include <wrl/implements.h>
 
 #include "KeyboardEventHandlers.h"
 #include "trace.h"
 
 HHOOK KeyboardManager::hookHandleCopy;
 HHOOK KeyboardManager::hookHandle;
-HHOOK KeyboardManager::mouseHookHandleCopy;
 HHOOK KeyboardManager::mouseHookHandle;
 KeyboardManager* KeyboardManager::keyboardManagerObjectPtr;
 
@@ -27,44 +27,11 @@ namespace
     DWORD mainThreadId = {};
     constexpr wchar_t editorInstanceMutexName[] = L"Local\\PowerToys_KBMEditor_InstanceMutex";
 
-    class TextReplacementFocusChangedEventHandler final : public IUIAutomationFocusChangedEventHandler
+    class TextReplacementFocusChangedEventHandler final : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IUIAutomationFocusChangedEventHandler>
     {
     public:
         explicit TextReplacementFocusChangedEventHandler(State& state) : state(state)
         {
-        }
-
-        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID interfaceId, void** object) override
-        {
-            if (!object)
-            {
-                return E_POINTER;
-            }
-
-            if (interfaceId == __uuidof(IUnknown) || interfaceId == __uuidof(IUIAutomationFocusChangedEventHandler))
-            {
-                *object = static_cast<IUIAutomationFocusChangedEventHandler*>(this);
-                AddRef();
-                return S_OK;
-            }
-
-            *object = nullptr;
-            return E_NOINTERFACE;
-        }
-
-        ULONG STDMETHODCALLTYPE AddRef() override
-        {
-            return ++referenceCount;
-        }
-
-        ULONG STDMETHODCALLTYPE Release() override
-        {
-            const ULONG remainingReferences = --referenceCount;
-            if (remainingReferences == 0)
-            {
-                delete this;
-            }
-            return remainingReferences;
         }
 
         HRESULT STDMETHODCALLTYPE HandleFocusChangedEvent(IUIAutomationElement*) override
@@ -74,7 +41,6 @@ namespace
         }
 
     private:
-        std::atomic_ulong referenceCount = 1;
         State& state;
     };
 
@@ -291,38 +257,23 @@ KeyboardManager::KeyboardManager()
     state.textReplacementContextRefreshEvent.store(textReplacementContextRefreshEvent, std::memory_order_release);
 
     std::filesystem::path modulePath(PTSettingsHelper::get_module_save_folder_location(moduleName));
-    auto changeSettingsCallback = [this](DWORD err) {
+    auto changeSettingsCallback = [](DWORD err) {
         Logger::trace(L"{} event was signaled", KeyboardManagerConstants::SettingsEventName);
         if (err != ERROR_SUCCESS)
         {
             Logger::error(L"Failed to watch settings changes. {}", get_last_error_or_default(err));
         }
 
-        loadingSettings = true;
-        bool loadedSuccessfully = false;
-        try
+        if (!PostThreadMessageW(mainThreadId, ReloadSettingsMessageID, 0, 0))
         {
-            LoadSettings();
-            loadedSuccessfully = true;
-        }
-        catch (...)
-        {
-            Logger::error("Failed to load settings");
-        }
-
-        loadingSettings = false;
-
-        if (!loadedSuccessfully)
-            return;
-
-        // Hook and context-tracker handles are owned by the main message thread.
-        if (!PostThreadMessageW(mainThreadId, RefreshHooksMessageID, 0, 0))
-        {
-            Logger::error(L"Failed to post the Keyboard Manager hook refresh message. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Failed to post the Keyboard Manager settings reload message. {}", get_last_error_or_default(GetLastError()));
         }
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
+    // PostThreadMessage requires the destination thread to have created its message queue.
+    MSG message{};
+    PeekMessageW(&message, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
     settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
@@ -350,7 +301,7 @@ KeyboardManager::~KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    state.RequestTextReplacementRuntimeReset();
+    KeyboardEventHandlers::ResetTextReplacementRuntimeState(state);
     bool loadedSuccessful = state.LoadSettings();
     if (!loadedSuccessful)
     {
@@ -358,10 +309,6 @@ void KeyboardManager::LoadSettings()
 
         // retry once
         state.LoadSettings();
-    }
-    if (!state.PublishTextReplacementRuntimeConfiguration())
-    {
-        Logger::error(L"Failed to publish the Keyboard Manager text replacement runtime configuration. The previous configuration will remain active.");
     }
     try
     {
@@ -381,6 +328,20 @@ void KeyboardManager::LoadSettings()
 
         }
     }
+}
+
+void KeyboardManager::ReloadSettings()
+{
+    StopLowlevelKeyboardHook();
+    try
+    {
+        LoadSettings();
+    }
+    catch (...)
+    {
+        Logger::error("Failed to load settings");
+    }
+    RefreshLowlevelHooks();
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
@@ -445,9 +406,9 @@ bool KeyboardManager::IsEditorRunning()
 
     if (waitResult == WAIT_OBJECT_0 || waitResult == WAIT_ABANDONED)
     {
+        ResetEvent(editorIsRunningEvent);
         ReleaseMutex(instanceMutex);
         CloseHandle(instanceMutex);
-        ResetEvent(editorIsRunningEvent);
         Logger::warn(L"Cleared a stale Keyboard Manager editor event after its mutex became available.");
         return false;
     }
@@ -471,7 +432,7 @@ LRESULT CALLBACK KeyboardManager::MouseHookProc(const int nCode, const WPARAM wP
         }
     }
 
-    return CallNextHookEx(mouseHookHandleCopy, nCode, wParam, lParam);
+    return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
 
 void CALLBACK KeyboardManager::TextReplacementWinEventProc(HWINEVENTHOOK, DWORD, HWND, LONG, LONG, DWORD, DWORD)
@@ -497,9 +458,7 @@ void KeyboardManager::StartTextReplacementContextTracking()
     }
 
     ResetEvent(textReplacementContextStopEvent);
-    state.textReplacementContextEditable.store(false, std::memory_order_release);
     state.textReplacementContextStatus.store(TextReplacementContextStatus::Pending, std::memory_order_release);
-    state.textReplacementContextInfrastructureReady.store(false, std::memory_order_release);
     state.textReplacementClassifiedContextEpoch.store(0, std::memory_order_release);
 
     constexpr DWORD winEventFlags = WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS;
@@ -522,9 +481,7 @@ void KeyboardManager::StartTextReplacementContextTracking()
 void KeyboardManager::StopTextReplacementContextTracking() noexcept
 {
     state.textReplacementContextTrackingEnabled.store(false, std::memory_order_release);
-    state.textReplacementContextEditable.store(false, std::memory_order_release);
     state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
-    state.textReplacementContextInfrastructureReady.store(false, std::memory_order_release);
     state.textReplacementClassifiedContextEpoch.store(0, std::memory_order_release);
 
     if (textReplacementForegroundHook)
@@ -559,7 +516,6 @@ void KeyboardManager::StopTextReplacementContextTracking() noexcept
         textReplacementContextThread.join();
     }
 
-    textReplacementContextThreadId.store(0, std::memory_order_release);
     if (textReplacementContextStopEvent)
     {
         ResetEvent(textReplacementContextStopEvent);
@@ -573,6 +529,16 @@ void KeyboardManager::StopTextReplacementContextTracking() noexcept
 void KeyboardManager::TextReplacementContextThreadProc()
 {
     textReplacementContextThreadId.store(GetCurrentThreadId(), std::memory_order_release);
+    struct ThreadIdResetGuard
+    {
+        std::atomic<DWORD>& threadId;
+
+        ~ThreadIdResetGuard()
+        {
+            threadId.store(0, std::memory_order_release);
+        }
+    } threadIdResetGuard{ textReplacementContextThreadId };
+
     const HRESULT apartmentResult = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(apartmentResult))
     {
@@ -599,10 +565,9 @@ void KeyboardManager::TextReplacementContextThreadProc()
         }
     }
 
-    winrt::com_ptr<TextReplacementFocusChangedEventHandler> focusChangedHandler;
-    focusChangedHandler.attach(new (std::nothrow) TextReplacementFocusChangedEventHandler(state));
+    auto focusChangedHandler = Microsoft::WRL::Make<TextReplacementFocusChangedEventHandler>(state);
     const bool focusHandlerRegistered = focusChangedHandler && SUCCEEDED(automationResult) &&
-                                        SUCCEEDED(automation->AddFocusChangedEventHandler(nullptr, focusChangedHandler.get()));
+                                        SUCCEEDED(automation->AddFocusChangedEventHandler(nullptr, focusChangedHandler.Get()));
     if (!focusHandlerRegistered)
     {
         Logger::error(L"Failed to register the UI Automation focus handler. Text replacement is blocked for safety.");
@@ -611,7 +576,6 @@ void KeyboardManager::TextReplacementContextThreadProc()
     }
     else
     {
-        state.textReplacementContextInfrastructureReady.store(true, std::memory_order_release);
         state.InvalidateTextReplacementContext();
     }
 
@@ -638,7 +602,6 @@ void KeyboardManager::TextReplacementContextThreadProc()
         {
             state.textReplacementContextWindow.store(focusedWindow, std::memory_order_release);
             state.textReplacementContextProcessId.store(processId, std::memory_order_release);
-            state.textReplacementContextEditable.store(editable, std::memory_order_release);
             state.textReplacementContextStatus.store(editable ? TextReplacementContextStatus::Editable : TextReplacementContextStatus::Blocked, std::memory_order_release);
             // Publish this last. The hook authorizes the snapshot only when it matches
             // the latest invalidation epoch, preventing a stale query from reviving it.
@@ -646,12 +609,11 @@ void KeyboardManager::TextReplacementContextThreadProc()
         }
     }
 
-    state.textReplacementContextInfrastructureReady.store(false, std::memory_order_release);
     if (focusHandlerRegistered)
     {
-        automation->RemoveFocusChangedEventHandler(focusChangedHandler.get());
+        automation->RemoveFocusChangedEventHandler(focusChangedHandler.Get());
     }
-    focusChangedHandler = nullptr;
+    focusChangedHandler.Reset();
     automation = nullptr;
     CoDisableCallCancellation(nullptr);
     CoUninitialize();
@@ -679,11 +641,10 @@ void KeyboardManager::StartLowlevelKeyboardHook()
         }
     }
 
-    const bool hasTextReplacements = state.HasTextReplacements();
+    const bool hasTextReplacements = !state.textReplacements.empty();
     if (hookHandle && hasTextReplacements && !mouseHookHandle)
     {
         mouseHookHandle = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(nullptr), 0);
-        mouseHookHandleCopy = mouseHookHandle;
         if (!mouseHookHandle)
         {
             Logger::error(L"Failed to install the Keyboard Manager text replacement mouse hook. {}", get_last_error_or_default(GetLastError()));
@@ -693,7 +654,6 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     {
         UnhookWindowsHookEx(mouseHookHandle);
         mouseHookHandle = nullptr;
-        mouseHookHandleCopy = nullptr;
     }
 
     if (hookHandle && hasTextReplacements)
@@ -717,7 +677,6 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     {
         UnhookWindowsHookEx(mouseHookHandle);
         mouseHookHandle = nullptr;
-        mouseHookHandleCopy = nullptr;
     }
 
     if (hookHandle)
@@ -742,37 +701,16 @@ void KeyboardManager::RefreshLowlevelHooks()
 
 bool KeyboardManager::HasRegisteredRemappings() const
 {
-    constexpr int MaxAttempts = 5;
-
-    if (loadingSettings)
-    {
-        for (int currentAttempt = 0; currentAttempt < MaxAttempts; ++currentAttempt)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            if (!loadingSettings)
-                break;
-        }
-    }
-
-    // Assume that we have registered remappings to be on the safe side if we couldn't check
-    if (loadingSettings)
-        return true;
-
     return HasRegisteredRemappingsUnchecked();
 }
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
-    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && !state.HasTextReplacements());
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.textReplacements.empty());
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (loadingSettings)
-    {
-        return 0;
-    }
-
     // Suspend remapping if remap key/shortcut window is opened
     if (IsEditorRunning())
     {

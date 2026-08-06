@@ -14,6 +14,7 @@
 #include <future>
 #include <chrono>
 #include <array>
+#include <cwctype>
 
 #include <winrt/Windows.UI.Notifications.h>
 #include <winrt/Windows.Data.Xml.Dom.h>
@@ -278,11 +279,6 @@ namespace
     KeyboardTextEvent GetTextFromKeyboardEvent(KeyboardManagerInput::InputInterface& ii, const LowlevelKeyboardEvent* data, State& state)
     {
         KeyboardTextEvent event;
-        if (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN)
-        {
-            return event;
-        }
-
         event.vkCode = Helpers::ClearKeyNumpadOrigin(data->lParam->vkCode);
         if (event.vkCode == VK_PACKET)
         {
@@ -337,7 +333,6 @@ namespace
         SetKeyboardStateModifier(ii, event.keyState.data(), VK_MENU, VK_LMENU, VK_RMENU);
         SetKeyboardStateToggle(event.keyState.data(), VK_CAPITAL, state.textReplacementCapsLockOn);
         SetKeyboardStateToggle(event.keyState.data(), VK_NUMLOCK, state.textReplacementNumLockOn);
-        SetKeyboardStateToggle(event.keyState.data(), VK_SCROLL, state.textReplacementScrollLockOn);
         event.keyState[event.vkCode] |= 0x80;
 
         if (state.textReplacementDeadKeyPending &&
@@ -418,6 +413,8 @@ namespace
         FailedAfterMutation,
     };
 
+    constexpr size_t maximumTextReplacementInputsPerBatch = 32;
+
     TextReplacementInputResult SendInputBatch(KeyboardManagerInput::InputInterface& ii, const std::vector<INPUT>& inputs, bool& inputStreamMutated)
     {
         if (inputs.empty())
@@ -436,9 +433,8 @@ namespace
 
     TextReplacementInputResult SendTextInputInSmallBatches(KeyboardManagerInput::InputInterface& ii, const std::wstring_view text, bool& inputStreamMutated)
     {
-        constexpr size_t maximumInputsPerBatch = 32;
         std::vector<INPUT> inputs;
-        inputs.reserve(maximumInputsPerBatch);
+        inputs.reserve(maximumTextReplacementInputsPerBatch);
 
         for (size_t index = 0; index < text.size();)
         {
@@ -453,7 +449,7 @@ namespace
             }
 
             const size_t inputCount = (text[index] == L'\r' || text[index] == L'\n' || unitCount == 2) ? 4 : 2;
-            if (!inputs.empty() && inputs.size() + inputCount > maximumInputsPerBatch)
+            if (!inputs.empty() && inputs.size() + inputCount > maximumTextReplacementInputsPerBatch)
             {
                 const TextReplacementInputResult batchResult = SendInputBatch(ii, inputs, inputStreamMutated);
                 if (batchResult != TextReplacementInputResult::Completed)
@@ -490,7 +486,7 @@ namespace
             return batchResult;
         }
 
-        constexpr size_t backspacesPerBatch = 16;
+        constexpr size_t backspacesPerBatch = maximumTextReplacementInputsPerBatch / 2;
         for (size_t firstBackspace = 0; firstBackspace < backspaceCount; firstBackspace += backspacesPerBatch)
         {
             const size_t currentBatchCount = (std::min)(backspacesPerBatch, backspaceCount - firstBackspace);
@@ -2381,8 +2377,7 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        const auto runtimeConfiguration = state.GetTextReplacementRuntimeConfiguration();
-        if (!runtimeConfiguration || runtimeConfiguration->replacements.empty())
+        if (state.textReplacements.empty())
         {
             return 0;
         }
@@ -2392,16 +2387,10 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        if (state.textReplacementRuntimeResetRequested.exchange(false, std::memory_order_acq_rel))
-        {
-            ResetTextReplacementRuntimeState(state);
-        }
-
         const uint64_t contextEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
         if (contextEpoch != state.textReplacementObservedContextEpoch)
         {
             ResetTextReplacementRuntimeState(state);
-            state.textReplacementObservedContextEpoch = contextEpoch;
         }
 
         const HWND foregroundWindow = GetTextReplacementWindow();
@@ -2423,12 +2412,9 @@ namespace KeyboardEventHandlers
             if (classifiedEpoch != authorizationEpoch || contextStatus == TextReplacementContextStatus::Pending)
             {
                 ClearTextReplacementBuffer(state);
-                if (state.textReplacementContextInfrastructureReady.load(std::memory_order_acquire))
+                if (const HANDLE refreshEvent = state.textReplacementContextRefreshEvent.load(std::memory_order_acquire))
                 {
-                    if (const HANDLE refreshEvent = state.textReplacementContextRefreshEvent.load(std::memory_order_acquire))
-                    {
-                        SetEvent(refreshEvent);
-                    }
+                    SetEvent(refreshEvent);
                 }
                 return 0;
             }
@@ -2500,15 +2486,15 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        if (textEvent.resetBufferBeforeText)
-        {
-            ClearTextReplacementBuffer(state);
-        }
-
         if (textEvent.kind != KeyboardTextEventKind::Text)
         {
             ClearTextReplacementBuffer(state);
             return 0;
+        }
+
+        if (textEvent.resetBufferBeforeText)
+        {
+            ClearTextReplacementBuffer(state);
         }
 
         if (textEvent.consumesPendingDeadKey && state.textReplacementDeadKeyMustPassThrough)
@@ -2519,18 +2505,18 @@ namespace KeyboardEventHandlers
         }
 
         state.textReplacementBuffer.append(textEvent.text);
-        TrimUtf16Buffer(state.textReplacementBuffer, runtimeConfiguration->maxTriggerLength);
+        TrimUtf16Buffer(state.textReplacementBuffer, state.maxTextReplacementTriggerLength);
 
         const std::wstring_view textReplacementBufferView{ state.textReplacementBuffer };
-        for (size_t length = (std::min)(textReplacementBufferView.length(), runtimeConfiguration->maxTriggerLength); length != 0; --length)
+        for (size_t length = textReplacementBufferView.length(); length != 0; --length)
         {
             const std::wstring_view trigger = textReplacementBufferView.substr(textReplacementBufferView.length() - length);
-            if (!trigger.empty() && IsLowSurrogate(trigger.front()))
+            if (IsLowSurrogate(trigger.front()))
             {
                 continue;
             }
 
-            if (const auto replacement = runtimeConfiguration->replacements.find(trigger); replacement != runtimeConfiguration->replacements.end())
+            if (const auto replacement = state.textReplacements.find(trigger); replacement != state.textReplacements.end())
             {
                 const size_t currentTextUsed = (std::min)(trigger.size(), textEvent.text.size());
                 const std::wstring_view preservedCurrentText{ textEvent.text.data(), textEvent.text.size() - currentTextUsed };
@@ -2576,7 +2562,6 @@ namespace KeyboardEventHandlers
         state.textReplacementProcessId = 0;
         state.textReplacementWindow = nullptr;
         state.textReplacementObservedContextEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
-        state.textReplacementRuntimeResetRequested.store(false, std::memory_order_release);
     }
 
     void InitializeTextReplacementToggleKeyState(State& state) noexcept
@@ -2588,13 +2573,12 @@ namespace KeyboardEventHandlers
 
         state.textReplacementCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x1) != 0;
         state.textReplacementNumLockOn = (GetKeyState(VK_NUMLOCK) & 0x1) != 0;
-        state.textReplacementScrollLockOn = (GetKeyState(VK_SCROLL) & 0x1) != 0;
         state.textReplacementToggleStateInitialized = true;
     }
 
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, const bool eventSuppressed, State& state) noexcept
     {
-        if (eventSuppressed || GeneratedByKBM(data) || (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN))
+        if (eventSuppressed || (data->wParam != WM_KEYDOWN && data->wParam != WM_SYSKEYDOWN))
         {
             return;
         }
@@ -2606,9 +2590,6 @@ namespace KeyboardEventHandlers
             break;
         case VK_NUMLOCK:
             state.textReplacementNumLockOn = !state.textReplacementNumLockOn;
-            break;
-        case VK_SCROLL:
-            state.textReplacementScrollLockOn = !state.textReplacementScrollLockOn;
             break;
         }
     }

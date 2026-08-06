@@ -27,7 +27,6 @@ namespace KeyboardManagerEditorUI.Helpers
         TargetTextTooLong,
         TextReplacementLimitReached,
         TextTriggerPrefixConflict,
-        InvalidTextReplacementCharacters,
         EmptyUrl,
         EmptyProgramPath,
         OneKeyMapping,

@@ -35,7 +35,6 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.TargetTextTooLong, (ResourceHelper.GetString("Validation_TargetTextTooLong_Title"), ResourceHelper.GetString("Validation_TargetTextTooLong_Message")) },
             { ValidationErrorType.TextReplacementLimitReached, (ResourceHelper.GetString("Validation_TextReplacementLimitReached_Title"), ResourceHelper.GetString("Validation_TextReplacementLimitReached_Message")) },
             { ValidationErrorType.TextTriggerPrefixConflict, (ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Title"), ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Message")) },
-            { ValidationErrorType.InvalidTextReplacementCharacters, (ResourceHelper.GetString("Validation_InvalidTextReplacementCharacters_Title"), ResourceHelper.GetString("Validation_InvalidTextReplacementCharacters_Message")) },
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
@@ -191,11 +190,6 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyTargetText;
             }
 
-            if (triggerText.Contains('\0') || textContent.Contains('\0'))
-            {
-                return ValidationErrorType.InvalidTextReplacementCharacters;
-            }
-
             if (triggerText.Length > MaxTextReplacementTriggerLength)
             {
                 return ValidationErrorType.TextTriggerTooLong;
@@ -213,7 +207,10 @@ namespace KeyboardManagerEditorUI.Helpers
                     !string.IsNullOrEmpty(settings.Shortcut.TriggerText))
                 .ToList();
 
-            if (existingTextReplacements.Count >= MaxTextReplacementCount)
+            bool editingInactiveMapping = !string.IsNullOrEmpty(editingMappingId) &&
+                SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(editingMappingId, out ShortcutSettings? editingSettings) &&
+                !editingSettings.IsActive;
+            if (!editingInactiveMapping && existingTextReplacements.Count(settings => settings.IsActive) >= MaxTextReplacementCount)
             {
                 return ValidationErrorType.TextReplacementLimitReached;
             }
