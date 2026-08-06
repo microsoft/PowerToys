@@ -232,10 +232,10 @@
     <value>Enter the text to replace when typed</value>
   </data>
   <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected.</value>
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected. Terminals are not supported because they do not identify password prompts to accessibility tools.</value>
   </data>
   <data name="TextTriggerBehaviorDescription.Text" xml:space="preserve">
-    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected.</value>
+    <value>Text replacements happen immediately when the trigger is typed. To require a word boundary, include the trailing space in both the trigger and replacement. Text committed through an IME, voice typing, handwriting, or paste is not detected. Terminals are not supported because they do not identify password prompts to accessibility tools.</value>
   </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>

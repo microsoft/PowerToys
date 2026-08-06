@@ -263,8 +263,10 @@ namespace
             return TryGetBoolProperty(element.get(), UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) && textEditPatternAvailable;
         }
 
-        return (controlType == UIA_DocumentControlTypeId || controlType == UIA_TextControlTypeId) &&
-               IsWritableDocument(element.get());
+        // UIA Text controls include terminals, which do not expose whether the active
+        // prompt accepts a password. Keep them blocked so replacements cannot be
+        // injected into hidden terminal input.
+        return controlType == UIA_DocumentControlTypeId && IsWritableDocument(element.get());
     }
 }
 
