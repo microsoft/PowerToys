@@ -60,20 +60,15 @@ public static partial class InternalListHelpers
         }
     }
 
-    // Minimum item count before the parallel path is worth its partitioning/merge overhead.
-    // Below this the serial path wins, so commands (hundreds) and small app sets stay serial.
+    // Minimum item count before the parallel path earns back its partitioning and merge overhead,
+    // which keeps commands and small app sets on the serial path.
     private const int ParallelScoringThreshold = 512;
 
     /// <summary>
-    /// Order-preserving parallel variant of <see cref="FilterListWithScores{T}"/>. Partitions the
-    /// input into contiguous index ranges, scores each range on a separate thread, then
-    /// concatenates the per-partition matched items back in partition order. This produces a
-    /// pre-sort buffer BYTE-IDENTICAL to the serial path (matched items in original enumeration
-    /// order), so the subsequent <see cref="Array.Sort(Array, int, int, IComparer)"/> - which is
-    /// deterministic for a given input - yields the exact same ordered result. The scoring
-    /// function must be pure over each item (each item is scored by exactly one thread, so any
-    /// per-item cached state is never touched concurrently). Falls back to the serial path for
-    /// small inputs where partitioning would not pay off.
+    /// Order-preserving parallel variant of <see cref="FilterListWithScores{T}"/> that scores
+    /// contiguous index ranges on separate threads and concatenates them back in partition order,
+    /// producing a pre-sort buffer identical to the serial path. The scoring function has to be
+    /// pure per item, since each item is scored by exactly one thread.
     /// </summary>
     public static RoScored<T>[] FilterListWithScoresParallel<T>(
         IReadOnlyList<T>? items,
@@ -93,9 +88,8 @@ public static partial class InternalListHelpers
             return FilterListWithScores(items, query, scoreFunction);
         }
 
-        // Copy the by-ref parameters into locals so they can be captured by the parallel body.
-        // FuzzyQuery is an immutable value read concurrently (never mutated), so sharing one copy
-        // across threads is safe.
+        // Copy the by-ref parameters into locals so the parallel body can capture them. FuzzyQuery
+        // is immutable, so one shared copy is safe to read from every thread.
         var q = query;
         var fn = scoreFunction;
         var source = items;
@@ -127,8 +121,8 @@ public static partial class InternalListHelpers
             total += partitionResults[p].Count;
         }
 
-        // Concatenate partitions in order. Contiguous ranges merged in partition order reproduce
-        // the exact original enumeration order of the matched items, matching the serial buffer.
+        // Contiguous ranges merged in partition order reproduce the serial buffer's exact
+        // enumeration order.
         var buffer = GC.AllocateUninitializedArray<RoScored<T>>(total);
         var pos = 0;
         for (var p = 0; p < partitions; p++)

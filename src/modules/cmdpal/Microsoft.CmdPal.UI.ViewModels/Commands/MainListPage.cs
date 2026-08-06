@@ -490,10 +490,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
         var commands = _tlcManager.TopLevelCommands;
 
-        // Materialized inputs captured under the lock so the heavy scoring below can run OFF the
-        // lock. Scoring no longer converts directly into blocked settle/render time, because
-        // GetItems() takes the SAME lock and now only contends with the short snapshot/publish
-        // sections rather than the whole multi-thousand-item scoring pass.
+        // Inputs captured under the lock so the heavy scoring below can run off it. GetItems()
+        // takes the same lock, so it now only contends with the short snapshot and publish sections.
         IReadOnlyList<IListItem> itemsSource;
         IReadOnlyList<IListItem> appsSource;
         IReadOnlyList<IListItem> fallbackSource;
@@ -555,10 +553,9 @@ public sealed partial class MainListPage : DynamicListPage,
 
             includeAppsSnapshot = _includeApps;
 
-            // If the new string doesn't start with the old string we can't re-use previous
-            // results; likewise if the app-inclusion state changed. Either way we rebuild from the
-            // full catalog. On an extend (the new query starts with the old and app state is
-            // unchanged) we re-score only the previously matched subset, not the whole catalog.
+            // A query that doesn't extend the old one, or a change in app inclusion, means we
+            // can't re-use the previous results and have to rebuild from the full catalog. On an
+            // extend we re-score only the previously matched subset.
             var reset = !newSearch.StartsWith(oldSearch, StringComparison.CurrentCultureIgnoreCase)
                 || _filteredItemsIncludesApps != includeAppsSnapshot;
 
@@ -621,10 +618,8 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            // Materialize every source sequence while still under the lock. After this point the
-            // scoring passes never touch the live TopLevelCommands collection or the app provider,
-            // so they are free to run off the lock. globalFallbackSources reuses the specialFallbacks
-            // list already built above, dropping the redundant second commands.Where(...) pass.
+            // Materialize every source while still under the lock, so the scoring passes never
+            // touch the live TopLevelCommands collection or the app provider.
             itemsSource = MaterializeSource(newFilteredItems);
             appsSource = MaterializeSource(newApps);
             fallbackSource = MaterializeSource(newFallbacks);
@@ -636,18 +631,13 @@ public sealed partial class MainListPage : DynamicListPage,
             return;
         }
 
-        // ===== SCORING PHASE (OFF the lock) =====
-        // The dominant apps pass is parallelized; commands and fallbacks stay serial. All of this
-        // now runs without holding the TopLevelCommands lock, so it no longer blocks GetItems()/render.
+        // ===== SCORING PHASE (off the lock) =====
+        // The dominant apps pass is parallelized, commands and fallbacks stay serial, and none of
+        // it holds the TopLevelCommands lock any more, so it no longer blocks GetItems()/render.
         //
-        // Snapshot every input the scoring pass depends on into immutable locals, ONCE, before any
-        // item is scored. The live fields (_appStateService.State.RecentCommands,
-        // _fuzzyMatcherProvider.Current, _settingsService.Settings) can be swapped concurrently - a
-        // selection calls WithHistoryItem on another thread - so re-reading them per item could mix
-        // two frecency snapshots in one pass or, worse, let a parallel thread observe a fresh,
-        // unwarmed history index and race on its lazy dictionary build. Capturing here pins one
-        // consistent context; each captured value equals what the first scored item would have read,
-        // so the settled order is unchanged (ScoringParallelEquivalenceTests is the guardrail).
+        // Snapshot every scoring input once, up front: the live fields can be swapped mid-pass when
+        // a selection calls WithHistoryItem on another thread, which would mix two frecency
+        // snapshots into one pass or race a parallel thread against an unwarmed history index.
         var recent = _appStateService.State.RecentCommands;
         recent.PrewarmIndex();
         var matcher = _fuzzyMatcherProvider.Current;
@@ -656,9 +646,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
         var searchQuery = matcher.PrecomputeQuery(SearchText);
 
-        // Commands resolve their per-provider weight from the captured settings. Every installed app
-        // belongs to the well-known AllApps provider, so its weight is constant across the whole apps
-        // pass - resolve it once here instead of repeating a dictionary lookup for every app.
+        // Every installed app belongs to the well-known AllApps provider, so its weight is constant
+        // for the whole pass and we resolve it once instead of once per app.
         var appsProviderWeight = ResolveProviderSearchWeight(settings, AllAppsCommandProvider.WellKnownId);
         Func<IListItem, ProviderSearchWeight> commandsProviderLookup = item => ResolveProviderSearchWeight(settings, item);
         Func<IListItem, ProviderSearchWeight> appsProviderLookup = _ => appsProviderWeight;
@@ -697,17 +686,14 @@ public sealed partial class MainListPage : DynamicListPage,
         var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
 #endif
 
-        // ===== PUBLISH PHASE (under lock): atomic swap, supersede-safe =====
-        // Keep the critical section to the field swaps only. Scheduling work (telemetry debounce and
-        // the refresh throttle) is done AFTER releasing the lock so we no longer nest
-        // _searchTelemetryLock under the commands lock, nor hold the TopLevelCommands lock across
-        // that bookkeeping. Only the deterministic result count is captured here for the post-lock
-        // telemetry payload.
+        // ===== PUBLISH PHASE (under lock) =====
+        // The critical section is the field swaps only. Telemetry debounce and refresh throttling
+        // happen after the lock so _searchTelemetryLock never nests under the commands lock.
         var deterministicResultCount = 0;
         lock (commands)
         {
-            // A newer keystroke cancels this token before doing its own work, so a stale snapshot's
-            // finished results can never overwrite a newer query's. Skip the swap when superseded.
+            // A newer keystroke cancels this token before doing its own work, so a stale snapshot
+            // can never overwrite a newer query's results.
             if (token.IsCancellationRequested)
             {
                 return;
@@ -726,9 +712,8 @@ public sealed partial class MainListPage : DynamicListPage,
             _globalFallbackSources = globalFallbackSources;
             _globalFallbackQuery = searchQuery;
 
-            // Apps are only re-scored when there is an apps source (either the full catalog with
-            // apps included, or a retained subset on the extend path). When there is none, publish
-            // null so a rebuild clears any stale set - matching the previous ClearResults behavior.
+            // With no apps source, publish null so a rebuild clears any stale set, matching the old
+            // ClearResults behavior.
             _filteredApps = appsSource.Count > 0 ? scoredApps : null;
 
             if (isUserInput)
@@ -743,16 +728,13 @@ public sealed partial class MainListPage : DynamicListPage,
 #endif
         }
 
-        // Reaching here means the swap actually happened (the superseded path returns inside the
-        // lock). Do the telemetry/refresh scheduling now, outside the critical section.
+        // Getting here means the swap happened, since the superseded path returns inside the lock.
         stopwatch.Stop();
 
         if (isUserInput)
         {
-            // Queue a settled-search telemetry event. This measures the deterministic first-paint
-            // results (commands + capped apps) and the latency to produce them, at this boundary -
-            // never inside the per-item scoring loop. The event is debounced so it is emitted only
-            // when the query settles, not on every keystroke, and it carries the query LENGTH only.
+            // Queue a settled-search telemetry event. It's debounced so it only fires once the
+            // query settles, and it carries the query LENGTH only, never the text.
             _searchTelemetry.QueueSearchResults(newSearch.Length, deterministicResultCount, stopwatch.ElapsedMilliseconds);
 
             // Make sure that the throttle delay is consistent from the user's perspective, even if filtering
@@ -771,10 +753,8 @@ public sealed partial class MainListPage : DynamicListPage,
         }
     }
 
-    // Materializes a source sequence into a stable, indexable snapshot so the scoring passes can
-    // run off the TopLevelCommands lock. Sequences that are already an IReadOnlyList (our own
-    // freshly built lists and empty arrays) are used as-is; lazy LINQ over the live collection or
-    // over previous results is copied so later mutation of the source can't affect scoring.
+    // Materializes a source into a stable, indexable snapshot so scoring can run off the lock.
+    // Anything already an IReadOnlyList passes through; lazy LINQ over live data gets copied.
     private static IReadOnlyList<IListItem> MaterializeSource(IEnumerable<IListItem> items)
         => items as IReadOnlyList<IListItem> ?? items.ToArray();
 
@@ -929,9 +909,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
     // Resolves the user-configured per-provider search weight for an item. Top-level commands
     // carry their own provider id; installed apps all belong to the well-known "AllApps"
-    // provider, so app items are weighted by that provider's setting. The static overloads take
-    // an explicit settings snapshot so the hot path can resolve weights against a single captured
-    // SettingsModel instead of re-reading the live settings service per item.
+    // provider, so app items are weighted by that provider's setting. The static overloads take a
+    // settings snapshot so the hot path resolves against one captured SettingsModel.
     private ProviderSearchWeight ResolveProviderSearchWeight(IListItem topLevelOrAppItem)
         => ResolveProviderSearchWeight(_settingsService.Settings, topLevelOrAppItem);
 
