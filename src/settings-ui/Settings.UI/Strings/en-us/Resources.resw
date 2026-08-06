@@ -121,6 +121,66 @@
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
   </data>
+  <data name="Attribution_ColorPicker.Text" xml:space="preserve">
+    <value>Martin Chrzan's Color Picker</value>
+    <comment>Martin Chrzan is a person's name and Color Picker is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ColorPicker_UXConcept.Text" xml:space="preserve">
+    <value>Niels Laute's UX concept</value>
+    <comment>Niels Laute is a person's name and UX is an acronym. Do not localize the name or acronym; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ImageResizer.Text" xml:space="preserve">
+    <value>Brice Lambson's ImageResizer</value>
+    <comment>Brice Lambson is a person's name and ImageResizer is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseUtils_FindMyMouse.Text" xml:space="preserve">
+    <value>Raymond Chen's Find My Mouse</value>
+    <comment>Raymond Chen is a person's name and Find My Mouse is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseUtils_MouseJump.Text" xml:space="preserve">
+    <value>Michael Clayton's Mouse Jump (FancyMouse)</value>
+    <comment>Michael Clayton is a person's name. Mouse Jump and FancyMouse are product names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseWithoutBorders_OriginalContributors.Text" xml:space="preserve">
+    <value>Truong Do (Đỗ Đức Trường) and other original contributors</value>
+    <comment>Truong Do and Đỗ Đức Trường are forms of the same person's name. Do not localize either form; localize "and other original contributors".</comment>
+  </data>
+  <data name="Attribution_NewPlus.Text" xml:space="preserve">
+    <value>Based on Christian Gaardmark's New++ from the Productivity Plus Pack</value>
+    <comment>Christian Gaardmark is a person's name. New++ and Productivity Plus Pack are product names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerAccent.Text" xml:space="preserve">
+    <value>Damien Leroy's PowerAccent</value>
+    <comment>Damien Leroy is a person's name and PowerAccent is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerLauncher_WindowWalker.Text" xml:space="preserve">
+    <value>Beta Tadele's Window Walker</value>
+    <comment>Beta Tadele is a person's name and Window Walker is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerPreview_DeveloperFilePreview.Text" xml:space="preserve">
+    <value>Noraa Junker's work on developer file preview</value>
+    <comment>Noraa Junker is a person's name. Do not localize the name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerPreview_FileFormats.Text" xml:space="preserve">
+    <value>Pedro Lamas's work on G-Code, Binary G-Code, STL, and QOI</value>
+    <comment>Pedro Lamas is a person's name. G-Code, Binary G-Code, STL, and QOI are file format names. Do not localize these names; localize the attribution wording, including "and".</comment>
+  </data>
+  <data name="Attribution_PowerRename.Text" xml:space="preserve">
+    <value>Chris Davis's SmartRenamer</value>
+    <comment>Chris Davis is a person's name and SmartRenamer is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ShortcutGuide.Text" xml:space="preserve">
+    <value>Noraa Junker's work on Shortcut Guide V2</value>
+    <comment>Noraa Junker is a person's name and Shortcut Guide V2 is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_TextExtractor.Text" xml:space="preserve">
+    <value>Based upon Joseph Finney's Text Grab</value>
+    <comment>Joseph Finney is a person's name and Text Grab is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ZoomIt.Text" xml:space="preserve">
+    <value>Sysinternals ZoomIt by Mark Russinovich, Alex Mihaiuc, John Stephens</value>
+    <comment>Sysinternals ZoomIt is a product name. Mark Russinovich, Alex Mihaiuc, and John Stephens are people's names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
@@ -1077,7 +1137,7 @@ opera.exe</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>{Locked}</comment>
+    <comment>Technical term for the full name of the STL file format.</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
