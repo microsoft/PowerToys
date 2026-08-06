@@ -1700,6 +1700,23 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_NCACTIVATE when _hwndFrameVisible != true:
                 return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, new LPARAM(-1));
 
+            case PInvoke.WM_SYSCOMMAND:
+                {
+                    var command = (int)(wParam.Value & 0xFFF0);
+                    if (command == PInvoke.SC_CLOSE)
+                    {
+                        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                        if (settings.AllowAltF4)
+                        {
+                            WeakReferenceMessenger.Default.Send<QuitMessage>();
+                        }
+
+                        return (LRESULT)IntPtr.Zero;
+                    }
+
+                    break;
+                }
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
@@ -1919,11 +1936,10 @@ public sealed partial class MainWindow : WindowEx,
             // In compact mode the card sizes itself to its content and anchors to the top.
             RootElement.SetCardStretch(false);
 
-            // Only the compact + centered configuration needs a screen-fit clamp. There the card
-            // is anchored near the vertical center of the display, so an expanded list could run
-            // off the bottom edge; cap its height so it always fits. In every other case the card
-            // is free to fill the (fixed-size) HWND as before.
-            var cardMaxHeight = expanded && IsCenteringSummon(settings)
+            // The HWND can extend below the current display after moving from a taller monitor.
+            // Always clamp an expanded compact card to the visible work area; the transparent
+            // portion of the HWND may remain off-screen, but the card and its content must not.
+            var cardMaxHeight = expanded
                 ? ComputeExpandedCardMaxHeightDip()
                 : double.PositiveInfinity;
             RootElement.SetCardMaxHeight(cardMaxHeight);
@@ -1937,18 +1953,19 @@ public sealed partial class MainWindow : WindowEx,
         var dpi = (int)this.GetDpiForWindow();
         var scale = dpi / 96.0;
 
-        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-        var workArea = displayArea.WorkArea;
-
         var padding = RootElement.ShadowPadding;
         var cardTopPhysical = AppWindow.Position.Y + (padding.Top * scale);
+
+        // Select the display from the visible card rather than from the HWND. An oversized HWND
+        // can overlap another display (or have its center below the intended display), causing
+        // GetFromWindowId to choose a work area unrelated to the card the user is looking at.
+        var cardCenterXPhysical = AppWindow.Position.X + (AppWindow.Size.Width / 2);
+        var displayArea = DisplayArea.GetFromPoint(
+            new PointInt32(cardCenterXPhysical, (int)Math.Round(cardTopPhysical)),
+            DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
         var availablePhysical = (workArea.Y + workArea.Height) - cardTopPhysical - (padding.Bottom * scale);
 
-        if (availablePhysical <= 0)
-        {
-            return double.PositiveInfinity;
-        }
-
-        return availablePhysical / scale;
+        return Math.Max(0, availablePhysical / scale);
     }
 }

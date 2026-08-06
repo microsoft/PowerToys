@@ -293,11 +293,15 @@ public sealed class SessionHelper
     /// </summary>
     public static bool RestartScope(PowerToysModule scope, TimeSpan timeout)
     {
-        // Exact-name kill (KillScopeProcessesAndWait) rather than the substring-based
-        // WindowControl.TryKillProcess, so a short scope name like "PowerToys" can't take down
-        // unrelated processes whose names merely contain it (e.g. a "PowerToys.*.UITests" test host).
-        // It also already waits for the processes to exit.
-        KillScopeProcessesAndWait(scope);
+        var processName = GetProcessName(scope);
+        WindowControl.TryKillProcess(processName);
+
+        var killDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTime.UtcNow < killDeadline && Process.GetProcessesByName(processName).Length > 0)
+        {
+            Thread.Sleep(150);
+        }
+
         return EnsureRunning(scope, timeout);
     }
 

@@ -34,7 +34,7 @@ namespace Microsoft.ColorPicker.UITests;
 public class ColorPickerEndToEndTests : UITestBase
 {
     public ColorPickerEndToEndTests()
-        : base(PowerToysModule.PowerToysSettings)
+        : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "ColorPicker" })
     {
     }
 

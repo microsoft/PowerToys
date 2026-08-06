@@ -12,10 +12,11 @@ trigger:
 #      - '**.md'
 
 pr:
-  branches:
-    include:
-      - main
-      - stable
+# Used to filter this to main & stable. However, this would bypass CI for stacked PRs.
+#  branches:
+#    include:
+#      - main
+#      - stable
   drafts: false
 #  paths:
 #    exclude:

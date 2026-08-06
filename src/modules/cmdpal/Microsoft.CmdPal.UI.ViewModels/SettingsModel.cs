@@ -46,6 +46,8 @@ public record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
+    public bool AllowAltF4 { get; init; }
+
     public bool CompactMode { get; set; }
 
     // When compact mode is on and the palette is centered on launch, this is the relative
@@ -90,6 +92,8 @@ public record SettingsModel
     }
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public ToastPosition ToastPosition { get; init; } = ToastPosition.UseSystemSettings;
 
     public bool DisableAnimations { get; init; } = true;
 
@@ -456,6 +460,14 @@ public enum MonitorBehavior
     ToFocusedWindow = 2,
     InPlace = 3,
     ToLast = 4,
+}
+
+public enum ToastPosition
+{
+    UseSystemSettings = 0,
+    BottomCenter = 1,
+    TopLeft = 2,
+    TopCenter = 3,
 }
 
 public enum EscapeKeyBehavior

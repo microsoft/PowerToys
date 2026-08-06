@@ -69,6 +69,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool AllowAltF4
+    {
+        get => _settingsService.Settings.AllowAltF4;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { AllowAltF4 = value });
+        }
+    }
+
     public bool ShowAppDetails
     {
         get => _settingsService.Settings.ShowAppDetails;
@@ -122,6 +131,18 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
             _settingsService.UpdateSettings(s => s with { SummonOn = (MonitorBehavior)value });
         }
     }
+
+    public int ToastPositionIndex
+    {
+        get => (int)_settingsService.Settings.ToastPosition;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { ToastPosition = (ToastPosition)value });
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsToastPositionFromSystemSettings)));
+        }
+    }
+
+    public bool IsToastPositionFromSystemSettings => _settingsService.Settings.ToastPosition == ToastPosition.UseSystemSettings;
 
     public bool ShowSystemTrayIcon
     {

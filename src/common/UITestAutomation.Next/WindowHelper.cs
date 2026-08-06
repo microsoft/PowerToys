@@ -83,17 +83,35 @@ public static class WindowHelper
     public static bool IsWindowOpen(string titleContains) =>
         WindowsFinder.ListAll().Any(w => w.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>Resize a window to a preset <see cref="WindowSize"/> (keeps its current position).</summary>
+    /// <summary>
+    /// Resize a window to a preset <see cref="WindowSize"/> and CENTER it on the primary display.
+    /// The preset is first clamped to ~90% of the display, so a fixed size (e.g. Large = 1920x1080)
+    /// can't spill off the edges of an equally-sized (1920x1080) display once positioned at a
+    /// non-origin top-left — the cause of the "shifted right and bottom, partially off-screen"
+    /// Settings window. On a larger display the preset size is used as-is, just centered.
+    /// </summary>
     public static void SetWindowSize(IntPtr hWnd, WindowSize size)
     {
         var (w, h) = Dimensions(size);
-        if (w > 0 && h > 0)
+        if (w <= 0 || h <= 0)
         {
-            SetMainWindowSize(hWnd, w, h);
+            return;
         }
+
+        var (screenW, screenH) = GetDisplaySize();
+
+        // Clamp to ~90% of the screen so there's always a visible margin on every edge.
+        int cw = screenW > 0 ? Math.Min(w, (int)(screenW * 0.9)) : w;
+        int ch = screenH > 0 ? Math.Min(h, (int)(screenH * 0.9)) : h;
+
+        // Center on the primary display (never negative, so the title bar stays reachable).
+        int x = Math.Max(0, (screenW - cw) / 2);
+        int y = Math.Max(0, (screenH - ch) / 2);
+
+        SetWindowPos(hWnd, IntPtr.Zero, x, y, cw, ch, SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
-    /// <summary>Resize a window to explicit width/height (keeps its current position).</summary>
+    /// <summary>Resize a window to explicit width/height, keeping its current position (no move).</summary>
     public static void SetMainWindowSize(IntPtr hWnd, int width, int height) =>
         SetWindowPos(hWnd, IntPtr.Zero, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
