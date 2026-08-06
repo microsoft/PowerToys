@@ -1,4 +1,4 @@
-<local:NavigablePage
+﻿<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.GeneralPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -329,18 +329,10 @@
                         x:Uid="GeneralPage_LowMemoryMode"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8BE;}">
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard
-                                Name="GeneralPageLowMemoryModeAllSupported"
-                                x:Uid="GeneralPage_LowMemoryModeAllSupported">
-                                <StackPanel
-                                    Orientation="Horizontal"
-                                    Spacing="12">
-                                    <Button
-                                        x:Uid="GeneralPage_LowMemoryModeEnableAll"
-                                        Command="{Binding EnableAllLowMemoryModeCommand}" />
-                                    <Button
-                                        x:Uid="GeneralPage_LowMemoryModeDisableAll"
-                                        Command="{Binding DisableAllLowMemoryModeCommand}" />
+                            <tkcontrols:SettingsCard Name="GeneralPageLowMemoryModeAllSupported" x:Uid="GeneralPage_LowMemoryModeAllSupported">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <Button x:Uid="GeneralPage_LowMemoryModeEnableAll" Command="{Binding EnableAllLowMemoryModeCommand}" />
+                                    <Button x:Uid="GeneralPage_LowMemoryModeDisableAll" Command="{Binding DisableAllLowMemoryModeCommand}" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
