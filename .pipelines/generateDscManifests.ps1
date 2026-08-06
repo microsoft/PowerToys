@@ -84,6 +84,11 @@ foreach ($resource in @('settings', 'profile')) {
     if ($LASTEXITCODE -ne 0) {
         throw "PowerToys.DSC.exe exited with code $LASTEXITCODE"
     }
+
+    $resourceFiles = Get-ChildItem -Path $dscOutputDir -Filter "microsoft.powertoys.*.$resource.dsc.resource.json" -ErrorAction Stop
+    if ($resourceFiles.Count -eq 0) {
+        throw "No $resource DSC manifest files were generated in '$dscOutputDir'."
+    }
 }
 
 $generatedFiles = Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.dsc.resource.json' -ErrorAction Stop
