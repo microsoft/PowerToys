@@ -63,6 +63,10 @@ public static class KbmProfileConverter
             {
                 errors.Add($"{context}.from: 'Disable' cannot be remapped");
             }
+            else if (from.Keys[0] is 16 or 17 or 18 or KbmKeyNames.VkWinBoth)
+            {
+                errors.Add($"{context}.from: generic modifiers must use a left or right variant");
+            }
             else if (!seenKeys.Add(from.Keys[0]))
             {
                 errors.Add($"{context}.from: key '{KbmKeyNames.GetName(from.Keys[0])}' is remapped more than once");
