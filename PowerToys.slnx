@@ -542,6 +542,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.HotKeys/MouseJump.HotKeys.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.Models/MouseJump.Models.csproj">
@@ -549,6 +550,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.WinUI3/MouseJump.WinUI3.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
@@ -560,9 +562,11 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.HotKeys.UnitTests/MouseJump.HotKeys.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump.Models.UnitTests/MouseJump.Models.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
