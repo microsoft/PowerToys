@@ -165,13 +165,11 @@
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_ReferenceGuide" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="QuickAccent_ReferenceGuide_Card"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE736;}">
+                    <tkcontrols:SettingsCard x:Uid="QuickAccent_ReferenceGuide_Card" HeaderIcon="{ui:FontIcon Glyph=&#xE736;}">
                         <Button
                             x:Uid="QuickAccent_ReferenceGuide_Button"
-                            Click="ReferenceGuideButton_Click"
-                            MinWidth="{StaticResource SettingActionControlMinWidth}" />
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Click="ReferenceGuideButton_Click" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
