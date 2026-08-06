@@ -262,7 +262,7 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
             0, // no sharing
             NULL, // default security attributes
             OPEN_EXISTING, // opens existing pipe
-            FILE_FLAG_OVERLAPPED,
+            two_way_pipe_message_ipc::ClientOpenFlags,
             NULL)); // no template file
 
         // Break if the pipe handle is valid.

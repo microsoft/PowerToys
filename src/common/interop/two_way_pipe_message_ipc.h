@@ -2,6 +2,12 @@
 #include <functional>
 #include "pipe_caller_auth.h"
 
+namespace two_way_pipe_message_ipc
+{
+    // Outbound clients must never grant a server an impersonation-capable token.
+    inline constexpr DWORD ClientOpenFlags = FILE_FLAG_OVERLAPPED | SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION;
+}
+
 #ifdef TWO_WAY_PIPE_MESSAGE_IPC_TESTS
 namespace two_way_pipe_message_ipc_test
 {

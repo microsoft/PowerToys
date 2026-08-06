@@ -2,6 +2,7 @@
 
 #include <interop/two_way_pipe_message_ipc.h>
 #include <aclapi.h>
+#include "..\..\modules\Workspaces\WorkspacesLib\IPCHelper.h"
 
 #include <memory>
 #include <system_error>
@@ -68,6 +69,38 @@ namespace UnitTestsCommonUtils
                              (ARRAYSIZE(message) - 1) * sizeof(wchar_t),
                              &bytes_written,
                              nullptr) == TRUE;
+        }
+
+        void AssertRogueServerCannotImpersonateClient(HANDLE server)
+        {
+            if (!ImpersonateNamedPipeClient(server))
+            {
+                return;
+            }
+
+            HANDLE token = nullptr;
+            Assert::IsTrue(OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, &token) == TRUE,
+                           L"rogue server impersonated the client but could not inspect its token");
+            SECURITY_IMPERSONATION_LEVEL level{};
+            DWORD level_size = 0;
+            Assert::IsTrue(GetTokenInformation(token, TokenImpersonationLevel, &level, sizeof(level), &level_size) == TRUE);
+            CloseHandle(token);
+            RevertToSelf();
+
+            Assert::AreEqual(static_cast<int>(SecurityIdentification), static_cast<int>(level),
+                             L"the rogue server received an impersonation-capable client token");
+        }
+
+        HANDLE CreateRogueServer(const std::wstring& pipe_name)
+        {
+            return CreateNamedPipeW(pipe_name.c_str(),
+                                    PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
+                                    PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                    1,
+                                    4096,
+                                    4096,
+                                    0,
+                                    nullptr);
         }
 
         HANDLE ConnectPipeClient(const std::wstring& pipe_name)
@@ -515,6 +548,57 @@ namespace UnitTestsCommonUtils
             server.end();
 
             Assert::IsFalse(available, L"the server must not join an existing pipe name");
+        }
+
+        TEST_METHOD(CommonOutboundPipeClientUsesIdentificationQos)
+        {
+            const std::wstring rogue_pipe_name = UniquePipeName();
+            HANDLE rogue_server = CreateRogueServer(rogue_pipe_name);
+            Assert::IsTrue(rogue_server != INVALID_HANDLE_VALUE, L"failed to create the rogue common IPC server");
+
+            TwoWayPipeMessageIPC client(UniquePipeName(), rogue_pipe_name, nullptr);
+            client.start(nullptr);
+            client.send(L"message");
+
+            const BOOL connected = ConnectNamedPipe(rogue_server, nullptr) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+            Assert::IsTrue(connected == TRUE, L"the common IPC client did not connect to the rogue server");
+            AssertRogueServerCannotImpersonateClient(rogue_server);
+
+            wchar_t message[16]{};
+            DWORD bytes_read = 0;
+            ReadFile(rogue_server, message, sizeof(message), &bytes_read, nullptr);
+            client.end();
+            DisconnectNamedPipe(rogue_server);
+            CloseHandle(rogue_server);
+        }
+
+        TEST_METHOD(WorkspacesLauncherArrangerClientUsesIdentificationQos)
+        {
+            const std::wstring& pipe_name = IPCHelperStrings::LauncherArrangerPipeName;
+            HANDLE rogue_server = CreateRogueServer(pipe_name);
+            Assert::IsTrue(rogue_server != INVALID_HANDLE_VALUE,
+                           L"failed to claim the static LauncherArranger pipe name for the rogue server");
+
+            HANDLE client = INVALID_HANDLE_VALUE;
+            std::thread connect_thread([&]() {
+                client = CreateFileW(pipe_name.c_str(),
+                                     PipeClientAccess,
+                                     0,
+                                     nullptr,
+                                     OPEN_EXISTING,
+                                     two_way_pipe_message_ipc::ClientOpenFlags,
+                                     nullptr);
+            });
+            const BOOL connected = ConnectNamedPipe(rogue_server, nullptr) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
+            connect_thread.join();
+
+            Assert::IsTrue(connected == TRUE && client != INVALID_HANDLE_VALUE,
+                           L"the LauncherArranger client could not connect to the rogue server");
+            AssertRogueServerCannotImpersonateClient(rogue_server);
+
+            CloseHandle(client);
+            DisconnectNamedPipe(rogue_server);
+            CloseHandle(rogue_server);
         }
 
         TEST_METHOD(RestrictedClientCanConnectButCannotCreateAnotherServerInstance)
