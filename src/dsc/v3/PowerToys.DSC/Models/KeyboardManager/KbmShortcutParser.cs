@@ -88,18 +88,35 @@ public static class KbmShortcutParser
             return false;
         }
 
-        // Split off an optional chord second key: "Win+O, K"
-        var chordParts = input.Split(ChordSeparator);
-        if (chordParts.Length > 2)
+        // Split off an optional chord second key: "Win+O, K". A comma that is
+        // itself the key after '+' (for example, "Ctrl+,") is not a separator.
+        var chordSeparatorIndex = -1;
+        for (var i = 0; i < input.Length; i++)
         {
-            error = $"Shortcut '{input.Trim()}' has more than one chord separator (',')";
-            return false;
+            if (input[i] != ChordSeparator)
+            {
+                continue;
+            }
+
+            var prefix = input[..i].TrimEnd();
+            if (i == 0 || prefix.EndsWith(KeySeparator))
+            {
+                continue;
+            }
+
+            if (chordSeparatorIndex >= 0)
+            {
+                error = $"Shortcut '{input.Trim()}' has more than one chord separator (',')";
+                return false;
+            }
+
+            chordSeparatorIndex = i;
         }
 
         uint secondKeyOfChord = 0;
-        if (chordParts.Length == 2)
+        if (chordSeparatorIndex >= 0)
         {
-            var chordName = chordParts[1].Trim();
+            var chordName = input[(chordSeparatorIndex + 1)..].Trim();
             if (chordName.Contains(KeySeparator, StringComparison.Ordinal))
             {
                 error = $"Chord key '{chordName}' must be a single key";
@@ -123,7 +140,8 @@ public static class KbmShortcutParser
         var modifiers = new SortedDictionary<KbmKeyNames.ModifierClass, uint>();
         uint actionKey = 0;
         string? actionName = null;
-        foreach (var part in chordParts[0].Split(KeySeparator))
+        var mainPart = chordSeparatorIndex >= 0 ? input[..chordSeparatorIndex] : input;
+        foreach (var part in mainPart.Split(KeySeparator))
         {
             var keyName = part.Trim();
             if (keyName.Length == 0)
