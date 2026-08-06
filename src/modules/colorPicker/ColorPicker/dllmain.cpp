@@ -5,6 +5,7 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/resources.h>
 
@@ -55,7 +56,7 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
@@ -106,16 +107,34 @@ private:
 
     bool is_process_running()
     {
+        if (m_hProcess == nullptr)
+        {
+            return false;
+        }
+
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_process()
+    void launch_process(bool exit_after_close = false)
     {
-        Logger::trace(L"Starting ColorPicker process");
+        if (is_process_running())
+        {
+            return;
+        }
+
+        if (m_hProcess != nullptr)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+        if (exit_after_close)
+        {
+            executable_args.append(L" --exit-after-close");
+        }
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -124,14 +143,12 @@ private:
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
-            Logger::trace("Successfully started the Color Picker process");
+            m_hProcess = sei.hProcess;
         }
         else
         {
             Logger::error(L"ColorPicker failed to start. {}", get_last_error_or_default(GetLastError()));
         }
-
-        m_hProcess = sei.hProcess;
     }
 
     // Load the settings file.
@@ -240,7 +257,13 @@ public:
         Logger::trace("ColorPicker::enable()");
         ResetEvent(send_telemetry_event);
         ResetEvent(m_hInvokeEvent);
-        launch_process();
+        ResetEvent(m_hAppTerminateEvent);
+        PTSettingsHelper::refresh_low_memory_settings_cache();
+        if (!PTSettingsHelper::is_low_memory_mode_enabled(get_key()))
+        {
+            launch_process();
+        }
+
         m_enabled = true;
         Trace::EnableColorPicker(true);
     };
@@ -253,10 +276,17 @@ public:
             ResetEvent(send_telemetry_event);
             ResetEvent(m_hInvokeEvent);
 
-            SetEvent(m_hAppTerminateEvent);
-            WaitForSingleObject(m_hProcess, 1500);
+            if (m_hProcess != nullptr)
+            {
+                SetEvent(m_hAppTerminateEvent);
+                if (WaitForSingleObject(m_hProcess, 1500) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(m_hProcess, 1);
+                }
 
-            TerminateProcess(m_hProcess, 1);
+                CloseHandle(m_hProcess);
+                m_hProcess = nullptr;
+            }
         }
 
         m_enabled = false;
@@ -270,7 +300,7 @@ public:
             Logger::trace(L"ColorPicker hotkey pressed");
             if (!is_process_running())
             {
-                launch_process();
+                launch_process(PTSettingsHelper::is_low_memory_mode_enabled(get_key()));
             }
 
             SetEvent(m_hInvokeEvent);

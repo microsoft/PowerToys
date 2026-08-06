@@ -128,6 +128,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     // Helper and Utility Types
     [JsonSerializable(typeof(HotkeySettings))]
+    [JsonSerializable(typeof(LowMemoryModuleSettings))]
     [JsonSerializable(typeof(ColorFormatModel))]
     [JsonSerializable(typeof(ImageSize))]
     [JsonSerializable(typeof(KeysDataModel))]

@@ -5,6 +5,7 @@
 #include "trace.h"
 #include "Generated Files/resource.h"
 #include <common/logger/logger.h>
+#include <common/SettingsAPI/settings_helpers.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/utils/resources.h>
 
@@ -60,7 +61,7 @@ private:
     //contains the non localized key of the powertoy
     std::wstring app_key;
 
-    HANDLE m_hProcess;
+    HANDLE m_hProcess = nullptr;
 
     // Time to wait for process to close after sending WM_CLOSE signal
     static const int MAX_WAIT_MILLISEC = 10000;
@@ -109,16 +110,39 @@ private:
 
     bool is_process_running()
     {
+        if (m_hProcess == nullptr)
+        {
+            return false;
+        }
+
         return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
-    void launch_process()
+    void launch_process(bool activate_on_startup = false, bool exit_after_close = false)
     {
-        Logger::trace(L"Starting TextExtractor process");
+        if (is_process_running())
+        {
+            return;
+        }
+
+        if (m_hProcess != nullptr)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
+
         unsigned long powertoys_pid = GetCurrentProcessId();
 
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
+        std::wstring executable_args = std::to_wstring(powertoys_pid);
+        if (activate_on_startup)
+        {
+            executable_args.append(L" --activate");
+        }
+
+        if (exit_after_close)
+        {
+            executable_args.append(L" --exit-after-close");
+        }
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -127,14 +151,12 @@ private:
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
-            Logger::trace("Successfully started the TextExtractor process");
+            m_hProcess = sei.hProcess;
         }
         else
         {
             Logger::error(L"TextExtractor failed to start. {}", get_last_error_or_default(GetLastError()));
         }
-
-        m_hProcess = sei.hProcess;
     }
 
     // Load the settings file.
@@ -241,7 +263,14 @@ public:
     {
         Logger::trace("TextExtractor::enable()");
         ResetEvent(m_hInvokeEvent);
-        launch_process();
+        ResetEvent(m_hTerminateEvent);
+        PTSettingsHelper::refresh_low_memory_settings_cache();
+        const bool low_memory_mode = PTSettingsHelper::is_low_memory_mode_enabled(get_key());
+        if (!low_memory_mode)
+        {
+            launch_process();
+        }
+
         m_enabled = true;
         Trace::EnablePowerOCR(true);
     };
@@ -252,9 +281,17 @@ public:
         if (m_enabled)
         {
             ResetEvent(m_hInvokeEvent);
-            SetEvent(m_hTerminateEvent);
-            WaitForSingleObject(m_hProcess, 1500);
-            TerminateProcess(m_hProcess, 1);
+            if (m_hProcess != nullptr)
+            {
+                SetEvent(m_hTerminateEvent);
+                if (WaitForSingleObject(m_hProcess, 1500) == WAIT_TIMEOUT)
+                {
+                    TerminateProcess(m_hProcess, 1);
+                }
+
+                CloseHandle(m_hProcess);
+                m_hProcess = nullptr;
+            }
         }
 
         m_enabled = false;
@@ -268,10 +305,16 @@ public:
             Logger::trace(L"TextExtractor hotkey pressed");
             if (!is_process_running())
             {
-                launch_process();
+                const bool low_memory_mode = PTSettingsHelper::is_low_memory_mode_enabled(get_key());
+                launch_process(true, low_memory_mode);
+                return true;
             }
 
-            SetEvent(m_hInvokeEvent);
+            if (!SetEvent(m_hInvokeEvent))
+            {
+                Logger::error(L"TextExtractor failed to signal invoke event. {}", get_last_error_or_default(GetLastError()));
+            }
+
             return true;
         }
 

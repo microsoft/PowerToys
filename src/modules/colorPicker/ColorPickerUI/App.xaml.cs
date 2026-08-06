@@ -25,6 +25,9 @@ namespace ColorPickerUI
         private static string[] _args;
         private int _powerToysRunnerPid;
         private bool disposedValue;
+        private const string ExitAfterCloseArgument = "--exit-after-close";
+
+        internal bool ExitAfterClose { get; private set; }
 
         private CancellationTokenSource NativeThreadCTS { get; set; }
 
@@ -64,8 +67,8 @@ namespace ColorPickerUI
             if (_args?.Length > 0)
             {
                 _ = int.TryParse(_args[0], out _powerToysRunnerPid);
+                ExitAfterClose = Array.Exists(_args, arg => string.Equals(arg, ExitAfterCloseArgument, StringComparison.OrdinalIgnoreCase));
 
-                Logger.LogInfo($"Color Picker started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
@@ -81,14 +84,29 @@ namespace ColorPickerUI
             base.OnStartup(e);
         }
 
+        internal void RequestShutdown()
+        {
+            NativeThreadCTS?.Cancel();
+            if (Dispatcher.CheckAccess())
+            {
+                Shutdown();
+            }
+            else
+            {
+                Dispatcher.Invoke(Shutdown);
+            }
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
+            NativeThreadCTS?.Cancel();
             if (_instanceMutex != null)
             {
                 _instanceMutex.ReleaseMutex();
             }
 
             CursorManager.RestoreOriginalCursors();
+            Dispose();
             base.OnExit(e);
         }
 
@@ -98,6 +116,8 @@ namespace ColorPickerUI
             {
                 if (disposing)
                 {
+                    NativeThreadCTS?.Cancel();
+                    NativeThreadCTS?.Dispose();
                     _instanceMutex?.Dispose();
                     EtwTrace?.Dispose();
                 }

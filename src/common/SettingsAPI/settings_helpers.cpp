@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "settings_helpers.h"
 
+#include <algorithm>
+#include <mutex>
+
 namespace PTSettingsHelper
 {
     constexpr inline const wchar_t* settings_filename = L"\\settings.json";
@@ -10,6 +13,28 @@ namespace PTSettingsHelper
     constexpr inline const wchar_t* last_version_json_field_name = L"last_version";
     constexpr inline const wchar_t* DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
     constexpr inline const wchar_t* DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
+
+    namespace
+    {
+        std::mutex low_memory_settings_mutex;
+        json::JsonObject low_memory_settings_cache;
+        bool low_memory_settings_cache_initialized = false;
+
+        json::JsonObject get_low_memory_settings_from_general_settings(const json::JsonObject& general_settings)
+        {
+            auto low_memory_settings = json::has(general_settings, low_memory_modules_json_field_name, json::JsonValueType::Object) ?
+                                           general_settings.GetNamedObject(low_memory_modules_json_field_name) :
+                                           create_default_low_memory_module_settings();
+            ensure_low_memory_settings_shape(low_memory_settings);
+            return low_memory_settings;
+        }
+
+        json::JsonObject get_cached_low_memory_settings()
+        {
+            std::lock_guard lock{ low_memory_settings_mutex };
+            return low_memory_settings_cache_initialized ? low_memory_settings_cache : create_default_low_memory_module_settings();
+        }
+    }
 
     std::wstring get_root_save_folder_location()
     {
@@ -97,6 +122,81 @@ namespace PTSettingsHelper
         std::filesystem::path result(PTSettingsHelper::get_root_save_folder_location());
         result = result.append(log_settings_filename);
         return result.wstring();
+    }
+
+    json::JsonObject create_default_low_memory_module_settings()
+    {
+        json::JsonObject obj;
+        ensure_low_memory_settings_shape(obj);
+        return obj;
+    }
+
+    void refresh_low_memory_settings_cache()
+    {
+        try
+        {
+            refresh_low_memory_settings_cache(load_general_settings());
+        }
+        catch (...)
+        {
+            std::lock_guard lock{ low_memory_settings_mutex };
+            if (!low_memory_settings_cache_initialized)
+            {
+                low_memory_settings_cache = create_default_low_memory_module_settings();
+                low_memory_settings_cache_initialized = true;
+            }
+        }
+    }
+
+    void refresh_low_memory_settings_cache(const json::JsonObject& general_settings)
+    {
+        auto low_memory_settings = get_low_memory_settings_from_general_settings(general_settings);
+
+        std::lock_guard lock{ low_memory_settings_mutex };
+        low_memory_settings_cache = low_memory_settings;
+        low_memory_settings_cache_initialized = true;
+    }
+
+    void ensure_low_memory_settings_shape(json::JsonObject& obj)
+    {
+        for (const auto module_key : supported_low_memory_modules)
+        {
+            if (!json::has(obj, module_key, json::JsonValueType::Boolean))
+            {
+                obj.SetNamedValue(module_key, json::value(false));
+            }
+        }
+    }
+
+    bool is_any_low_memory_module_enabled(const json::JsonObject& low_memory_settings)
+    {
+        for (const auto module_key : supported_low_memory_modules)
+        {
+            if (low_memory_settings.GetNamedBoolean(module_key, false))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool is_low_memory_module(std::wstring_view module_key)
+    {
+        return std::find(supported_low_memory_modules.begin(), supported_low_memory_modules.end(), module_key) != supported_low_memory_modules.end();
+    }
+
+    bool is_low_memory_mode_enabled(std::wstring_view powertoy_key, bool default_value)
+    {
+        try
+        {
+            auto low_memory_modules = get_cached_low_memory_settings();
+            return low_memory_modules.GetNamedBoolean(std::wstring{ powertoy_key }, default_value);
+        }
+        catch (...)
+        {
+            return default_value;
+        }
     }
 
     bool get_oobe_opened_state()

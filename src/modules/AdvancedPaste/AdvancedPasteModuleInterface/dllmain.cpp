@@ -975,14 +975,19 @@ public:
         Logger::trace("AdvancedPaste::enable()");
         Trace::AdvancedPaste_Enable(true);
         m_enabled = true;
-        m_process_manager.start();
+        PTSettingsHelper::refresh_low_memory_settings_cache();
+        if (!PTSettingsHelper::is_low_memory_mode_enabled(get_key()))
+        {
+            m_process_manager.start(false);
+        }
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
         // Note: Use start() directly instead of constructor + move assignment to avoid dangling this pointer in the thread.
         m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
-            m_process_manager.start();
+            const bool exit_after_use = PTSettingsHelper::is_low_memory_mode_enabled(get_key());
+            m_process_manager.start(exit_after_use);
             m_process_manager.bring_to_front();
             m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
             Trace::AdvancedPaste_Invoked(L"AdvancedPasteUIEvent");
@@ -1041,8 +1046,6 @@ public:
                 }
             }
 
-            m_process_manager.start();
-
             // hotkeyId in same order as set by get_hotkeys
             if (hotkeyId == 0)
             { // m_paste_as_plain_hotkey
@@ -1057,6 +1060,9 @@ public:
                 Trace::AdvancedPaste_Invoked(L"PastePlainTextDirect");
                 return true;
             }
+
+            const bool exit_after_use = PTSettingsHelper::is_low_memory_mode_enabled(get_key());
+            m_process_manager.start(exit_after_use);
 
             if (hotkeyId == 1)
             { // m_advanced_paste_ui_hotkey
