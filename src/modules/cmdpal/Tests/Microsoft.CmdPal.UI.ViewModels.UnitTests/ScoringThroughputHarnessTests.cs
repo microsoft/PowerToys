@@ -363,13 +363,9 @@ public sealed partial class ScoringThroughputHarnessTests
     }
 
     /// <summary>
-    /// BEFORE/AFTER throughput: times the dominant apps scoring pass on the sequential path
-    /// (before, <see cref="InternalListHelpers.FilterListWithScores{T}"/>) versus the Phase 7b
-    /// parallel path (after, <see cref="InternalListHelpers.FilterListWithScoresParallel{T}"/>) and
-    /// reports the speedup per query. The parallel path pre-warms the frecency index once before
-    /// measuring, mirroring the product. This is report-only; it asserts only that the parallel
-    /// path returns the same match count as the sequential one, never a wall-clock threshold, so it
-    /// stays CI-safe.
+    /// Times the dominant apps pass serial versus parallel and reports the speedup per query.
+    /// Report-only: it asserts the two paths return the same match count, never a wall-clock
+    /// threshold.
     /// </summary>
     [TestMethod]
     public void AppScoring_BeforeAfter_SerialVsParallelThroughput()
@@ -406,7 +402,7 @@ public sealed partial class ScoringThroughputHarnessTests
             TestContext.WriteLine(
                 $"{raw,-8}| {serialMs,17:F3} | {parallelMs,18:F3} | {speedup,6:F2}x | {serialResult.Length,7}");
 
-            // Structural, machine-independent: the parallel path returns the same match count.
+            // The parallel path returns the same match count, on any machine.
             Assert.AreEqual(serialResult.Length, parallelResult.Length, $"Match count must match for query '{raw}'.");
         }
     }

@@ -17,33 +17,23 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// GUARDRAIL for the Phase 7b throughput work. The hot-path scoring pass was moved off the
-/// TopLevelCommands lock and the dominant apps pass was parallelized. The optimization is only
-/// permitted to change HOW FAST and WHERE the settled list is computed - never WHAT it is. This
-/// test locks that invariant in: for a representative synthetic catalog (a few thousand apps plus
-/// hundreds of commands) and several queries - including the 1-char pathological case, the extend
-/// (incremental narrowing) path, and the shrink/retype rebuild path - the parallel scorer
-/// (<see cref="InternalListHelpers.FilterListWithScoresParallel{T}"/>) must produce a result that
-/// is BYTE-IDENTICAL in order and score to the reference sequential scorer
-/// (<see cref="InternalListHelpers.FilterListWithScores{T}"/>).
-///
-/// The comparison is by item reference and packed score at every index, so any reordering - even a
-/// tie-break difference - fails the test. Everything here is deterministic (index-driven catalog,
-/// no RNG, no wall clock, order-preserving partition/merge), so it is CI-safe and never flakes on
-/// thread scheduling.
+/// Guardrail for the throughput work: moving scoring off the TopLevelCommands lock and
+/// parallelizing the apps pass may change how fast and where the settled list is computed, never
+/// what it is. Across a synthetic catalog and several queries (the 1-char pathological case, the
+/// extend chain, and the retype rebuild) the parallel scorer has to match the sequential one item
+/// for item and score for score.
 /// </summary>
 [TestClass]
 public sealed partial class ScoringParallelEquivalenceTests
 {
-    // Large enough that the parallel path is actually taken (well over the internal sequential
-    // threshold) and multiple partitions are exercised, small enough to stay fast in CI.
+    // Big enough that the parallel path is actually taken across multiple partitions, small enough
+    // to stay fast on CI.
     private const int AppCount = 4000;
     private const int CommandCount = 300;
     private const int HistorySeedCount = 250;
 
-    // Queries chosen to exercise distinct scoring shapes: "c" is the pathological 1-char case that
-    // matches a large fraction of the catalog; the "ca"/"cal"/"calc" chain is the extend path; the
-    // acronym/word-boundary and multi-word cases stress the tier classifier.
+    // "c" is the pathological 1-char case, the "ca"/"cal"/"calc" chain is the extend path, and the
+    // acronym and multi-word cases stress the tier classifier.
     private static readonly string[] Queries =
         ["c", "ca", "cal", "calc", "vs", "vsc", "vs code", "term", "set", "e"];
 
@@ -170,8 +160,8 @@ public sealed partial class ScoringParallelEquivalenceTests
                 candidate[i].Score,
                 $"[{context}] score at index {i} must match the sequential reference.");
 
-            // Same item reference at the same index - proves the ORDER is byte-identical, including
-            // tie-breaks, not merely that the same set of scores appears.
+            // Same item reference at the same index, which proves the order matches including
+            // tie-breaks, not just that the same scores turn up.
             Assert.AreSame(
                 reference[i].Item,
                 candidate[i].Item,
@@ -180,9 +170,8 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Full-catalog scoring: for every query the parallel apps pass must produce a result
-    /// byte-identical in order and score to the sequential reference. This is the rebuild/retype
-    /// path (a fresh query scored against the whole catalog).
+    /// The rebuild path: a fresh query scored against the whole catalog, where the parallel apps
+    /// pass has to match the sequential reference exactly.
     /// </summary>
     [TestMethod]
     public void ParallelScoring_FullCatalog_MatchesSequentialForEveryQuery()
@@ -209,9 +198,8 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Extend (incremental narrowing) path: score the whole catalog for the 1-char query, retain
-    /// the matched subset in its produced order, then re-score that subset for the extending query.
-    /// The parallel scorer over the retained subset must still match the sequential reference.
+    /// The extend path: score the whole catalog for a 1-char query, keep the matched subset in the
+    /// order it came back, then re-score that subset for the extending query.
     /// </summary>
     [TestMethod]
     public void ParallelScoring_ExtendPath_MatchesSequentialOverRetainedSubset()
@@ -224,14 +212,14 @@ public sealed partial class ScoringParallelEquivalenceTests
 
         history.PrewarmIndex();
 
-        // ("c" -> "ca" -> "cal" -> "calc") extend chain, each step narrowing the previous result.
+        // Each step narrows the previous result.
         var chain = new[] { "c", "ca", "cal", "calc" };
 
         var retained = source;
         for (var step = 1; step < chain.Length; step++)
         {
-            // The retained subset is exactly what the product feeds the next keystroke: the items
-            // of the previous result, in the previous result's order.
+            // This is exactly what the product feeds the next keystroke: the previous result's
+            // items, in the previous result's order.
             var prevQuery = matcher.PrecomputeQuery(chain[step - 1]);
             var prev = InternalListHelpers.FilterListWithScores(retained, prevQuery, scoringFn);
             retained = prev.Select(s => s.Item).ToArray();
@@ -248,9 +236,8 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Shrink/retype rebuild path: a query that does NOT extend the previous one forces a full
-    /// rebuild against the whole catalog. Verify the parallel scorer matches the sequential
-    /// reference for a sequence of unrelated queries scored fresh each time.
+    /// The retype path: a query that doesn't extend the previous one forces a full rebuild, so
+    /// check a run of unrelated queries scored fresh each time.
     /// </summary>
     [TestMethod]
     public void ParallelScoring_RetypeRebuild_MatchesSequential()
@@ -275,9 +262,8 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Commands (hundreds) stay on the serial path but the helper is still exercised over that
-    /// smaller catalog for completeness: the parallel entry point must fall back to - and match -
-    /// the sequential result even below its parallel threshold.
+    /// Commands (hundreds) stay serial, so the parallel entry point has to fall back below its
+    /// threshold and still match the sequential result.
     /// </summary>
     [TestMethod]
     public void ParallelScoring_Commands_MatchesSequential()
@@ -301,8 +287,8 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Determinism: repeatedly running the parallel scorer over the same catalog and query yields
-    /// the exact same ordered result each time, regardless of thread scheduling.
+    /// Running the parallel scorer over the same catalog and query repeatedly gives the same
+    /// ordered result every time, whatever the thread scheduling does.
     /// </summary>
     [TestMethod]
     public void ParallelScoring_IsDeterministicAcrossRuns()
@@ -326,16 +312,9 @@ public sealed partial class ScoringParallelEquivalenceTests
     }
 
     /// <summary>
-    /// Captured-context equivalence (FIX #1 + #5). The hot path snapshots the frecency manager, the
-    /// fuzzy matcher, the settings and a single evaluation time ONCE per query, then scores every
-    /// item against that immutable context - and, because every installed app resolves to the one
-    /// well-known apps provider, it feeds the apps pass a single constant provider weight instead of
-    /// a per-item lookup. This test proves that captured context produces a result BYTE-IDENTICAL in
-    /// order and score to the previous per-item live-read path: the reference scorer reads the time
-    /// per call (the old default overload) and delivers the weight through a per-item delegate, while
-    /// the candidate scorer threads a single captured <c>now</c> and a constant weight through the
-    /// parallel pass. Identical output confirms the optimization only changed HOW/WHERE the list is
-    /// computed, not WHAT it is.
+    /// The hot path snapshots the frecency manager, matcher, settings and one evaluation time per
+    /// query, and feeds the apps pass a single constant provider weight. This proves that captured
+    /// context lands on the same ordered result as the old per-item live reads.
     /// </summary>
     [TestMethod]
     public void CapturedContext_ConstantWeightAndFixedNow_MatchesPerItemLiveRead()
@@ -347,15 +326,13 @@ public sealed partial class ScoringParallelEquivalenceTests
 
         history.PrewarmIndex();
 
-        // A non-default weight so the value must actually flow through to the packed score; if the
-        // constant path dropped or mis-carried it, the ordered result would diverge from the
-        // per-item reference.
+        // A non-default weight, so the value has to actually flow through to the packed score.
         const ProviderSearchWeight weight = ProviderSearchWeight.Higher;
         Func<IListItem, ProviderSearchWeight> perItemLookup = _ => weight;
         Func<IListItem, ProviderSearchWeight> constantLookup = _ => weight;
 
-        // Captured once, before the loop - exactly as the product captures scoringNow before its
-        // scoring passes. The reference path below omits it, so it reads the current time per call.
+        // Captured once before the loop, exactly as the product captures scoringNow. The reference
+        // path below omits it, so it reads the current time per call.
         var capturedNow = DateTimeOffset.UtcNow;
 
         ScoringFunction<IListItem> liveReadScorer = (in FuzzyQuery query, IListItem item) =>

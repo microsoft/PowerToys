@@ -101,11 +101,8 @@ public record RecentCommandsManager : IRecentCommandsManager
     }
 
     /// <summary>
-    /// Forces the lazy command-id lookup (<see cref="Index"/>) to be built now, on the calling
-    /// thread. The build itself is not thread-safe (it populates a shared dictionary field without
-    /// locking), so callers that are about to score items in parallel MUST call this once,
-    /// single-threaded, before the parallel loop. Once built, <see cref="GetCommandHistoryWeight(string)"/>
-    /// only performs concurrent dictionary reads, which are safe.
+    /// Builds the lazy command-id lookup now, on the calling thread. The build isn't thread-safe,
+    /// so call this once before scoring items in parallel; the reads afterward are safe.
     /// </summary>
     public void PrewarmIndex() => _ = Index;
 
@@ -115,9 +112,8 @@ public record RecentCommandsManager : IRecentCommandsManager
     /// <summary>
     /// Computes the time-decayed frecency weight for a command relative to <paramref name="now"/>.
     /// Recency uses an exponential half-life decay and frequency uses log(uses); the two are
-    /// combined so recency leads while frequency amplifies. The parameterless overload evaluates at
-    /// the current time; this overload lets callers pin a single evaluation time across a batch (and
-    /// tests inject a fixed time).
+    /// combined so recency leads while frequency amplifies. The parameterless overload uses the
+    /// current time; this one lets a batch pin a single snapshot.
     /// </summary>
     public int GetCommandHistoryWeight(string commandId, DateTimeOffset now)
     {
@@ -187,19 +183,16 @@ public interface IRecentCommandsManager
     int GetCommandHistoryWeight(string commandId);
 
     /// <summary>
-    /// Computes the frecency weight for a command relative to an explicit evaluation time. Callers
-    /// that score a whole batch should capture a single <paramref name="now"/> once and pass it for
-    /// every item so the batch is scored against one consistent time snapshot.
+    /// Frecency weight for a command at an explicit evaluation time, so a whole batch can be
+    /// scored against one snapshot instead of a moving clock.
     /// </summary>
     int GetCommandHistoryWeight(string commandId, DateTimeOffset now);
 
     RecentCommandsManager WithHistoryItem(string commandId);
 
     /// <summary>
-    /// Builds any lazily-initialized internal state (e.g. the command-id lookup) on the calling
-    /// thread so that subsequent <see cref="GetCommandHistoryWeight(string)"/> calls are safe to
-    /// issue concurrently. Callers that score items in parallel must invoke this once, single-
-    /// threaded, before the parallel loop.
+    /// Builds any lazy internal state on the calling thread. Call it once before scoring items in
+    /// parallel, since the build itself isn't thread-safe.
     /// </summary>
     void PrewarmIndex();
 }
