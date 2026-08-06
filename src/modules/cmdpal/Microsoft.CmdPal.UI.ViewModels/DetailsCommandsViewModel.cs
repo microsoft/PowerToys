@@ -39,4 +39,16 @@ public partial class DetailsCommandsViewModel(
         UpdateProperty(nameof(HasCommands));
         UpdateProperty(nameof(Commands));
     }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        foreach (var command in Commands)
+        {
+            command.SafeCleanup();
+        }
+
+        Commands = [];
+    }
 }

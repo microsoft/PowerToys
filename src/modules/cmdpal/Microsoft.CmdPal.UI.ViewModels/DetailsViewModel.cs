@@ -25,7 +25,9 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
 
     // Metadata is an array of IDetailsElement,
     //   where IDetailsElement = {IDetailsTags, IDetailsLink, IDetailsSeparator}
-    public List<DetailsElementViewModel> Metadata { get; private set; } = [];
+    public List<DetailsElementViewModel> Metadata => _metadata;
+
+    private List<DetailsElementViewModel> _metadata = [];
 
     public DetailsViewModel(IDetails details, WeakReference<IPageContext> context)
         : base(context)
@@ -78,28 +80,63 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
     private void RebuildMetadata(IDetails model)
     {
         var newMetadata = new List<DetailsElementViewModel>();
-        var meta = model.Metadata;
-        if (meta is not null)
+        var transferred = false;
+
+        try
         {
-            foreach (var element in meta)
+            var meta = model.Metadata;
+            if (meta is not null)
             {
-                DetailsElementViewModel? vm = element.Data switch
+                foreach (var element in meta)
                 {
-                    IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
-                    IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
-                    IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
-                    IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
-                    _ => null,
-                };
-                if (vm is not null)
+                    DetailsElementViewModel? vm = element.Data switch
+                    {
+                        IDetailsSeparator => new DetailsSeparatorViewModel(element, this.PageContext),
+                        IDetailsLink => new DetailsLinkViewModel(element, this.PageContext),
+                        IDetailsCommands => new DetailsCommandsViewModel(element, this.PageContext),
+                        IDetailsTags => new DetailsTagsViewModel(element, this.PageContext),
+                        _ => null,
+                    };
+                    if (vm is not null)
+                    {
+                        vm.InitializeProperties();
+                        newMetadata.Add(vm);
+                    }
+                }
+            }
+
+            ReplaceMetadata(newMetadata);
+            transferred = true;
+        }
+        finally
+        {
+            // When failed half-way through, cleanup up new VMs.
+            if (!transferred)
+            {
+                foreach (var vm in newMetadata)
                 {
-                    vm.InitializeProperties();
-                    newMetadata.Add(vm);
+                    vm.SafeCleanup();
                 }
             }
         }
+    }
 
-        Metadata = newMetadata;
+    /// <summary>
+    /// Replaces <see cref="Metadata"/> with a newly built list, cleaning up the elements being dropped.
+    /// </summary>
+    private void ReplaceMetadata(List<DetailsElementViewModel> metadata)
+    {
+        var replaced = Interlocked.Exchange(ref _metadata, metadata);
+
+        if (ReferenceEquals(replaced, metadata))
+        {
+            return;
+        }
+
+        foreach (var element in replaced)
+        {
+            element.SafeCleanup();
+        }
     }
 
     public override void InitializeProperties()
@@ -155,5 +192,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
             _observableDetails = null;
             _isSubscribed = false;
         }
+
+        ReplaceMetadata([]);
     }
 }
