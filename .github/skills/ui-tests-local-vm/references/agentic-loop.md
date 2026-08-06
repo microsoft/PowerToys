@@ -4,9 +4,9 @@ This loop assumes the test project follows `Microsoft.PowerToys.UITest.Next`, bu
 Microsoft.Testing.Platform executable, and has already passed the `ui-tests-migration` design and
 CI-stability checks.
 
-Use Windows 10 Enterprise LTSC 2021 as the default guest and run the full baseline there. If the
-requirements explicitly include Windows 11 behavior, run only those checks again in a separate
-Windows 11 VM after the Windows 10 pass.
+Run the full suite twice: on a Windows 10 Enterprise LTSC 2021 guest first, then the same unfiltered
+suite on a separate Windows 11 guest. Both must be green. Windows 11 is not a filtered follow-up -
+tests with no Windows 11 content still fail there for shell, compositor, and timing reasons.
 
 ## 1. Build on the host
 
@@ -24,10 +24,9 @@ Exit code 0 is required. Record the build label before packaging.
 
 ## 2. Create a lean exchange
 
-On the Docker backend the exchange must be below `<VmRoot>\shared` so the controller can map it to
-`\\host.lan\Data`. On the Hyper-V backend the exchange can be any host folder, but keeping it under
-the scaffold's `shared` folder keeps both backends interchangeable; the controller mirrors it into
-the guest at `C:\PowerToysUiTestExchange\<name>`:
+The exchange can be any host folder. Keeping it under the scaffold's `shared` folder keeps VM assets
+together and out of the repository; the controller mirrors it into the guest at
+`C:\PowerToysUiTestExchange\<name>`:
 
 ```text
 <VmRoot>\shared\PowerToysUiTests\<Module>\
@@ -73,6 +72,7 @@ Always run the first request with `-PlanOnly`:
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
+  -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\<Module> `
   -TestExecutable <Module>.UITests.Next.exe `
@@ -83,8 +83,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
 
 Check:
 
-- `GuestExchangeRoot` in the plan is a UNC under `\\host.lan\Data` (Docker) or a path under
-  `C:\PowerToysUiTestExchange` (Hyper-V), and `Backend` is the one you intended.
+- `GuestExchangeRoot` in the plan is a path under `C:\PowerToysUiTestExchange`.
 - Test, product, winappcli, and .NET hashes are present.
 - The filter uses `Name=`, `Name~`, `FullyQualifiedName~`, or `TestCategory=`.
 - No password, token, or source path appears in the request.
@@ -97,6 +96,7 @@ and RAM.
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
+  -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\<Module> `
   -TestExecutable <Module>.UITests.Next.exe `
@@ -114,13 +114,13 @@ requires:
 - Session ID is greater than zero.
 - Explorer exists in that session.
 - Display dimensions match the request, unless both are zero.
-- The guest UNC exchange is accessible.
+- The guest exchange folder is accessible.
 
 Failure here is `BLOCKED`, not a test failure.
 
-For an explicitly Windows 11-only check, point the same controller at a separate Windows 11 VM root
-and exchange, use `-Platform x64Win11`, and apply a narrow filter. Do not run the ordinary suite only
-on Windows 11, and do not reuse the Windows 10 volume as the Windows 11 guest.
+Iterate on Windows 10 first; it is the faster loop. Point the same controller at the separate
+Windows 11 VM and exchange with `-Platform x64Win11` for the second pass. Do not reuse the Windows 10
+guest disk as the Windows 11 guest.
 
 ## 5. Parse evidence
 
@@ -144,7 +144,7 @@ The controller prints scalar TRX counters and per-test outcomes. Read both `stat
 
 - Assertion-bearing TRX failures are `FAIL`.
 - Zero selected tests/MTP exit code 8 is `BLOCKED`.
-- Missing desktop, WinRM, share, archive, or status is `BLOCKED`.
+- Missing desktop, control channel, archive, or status is `BLOCKED`.
 - Proven display/profile/compositor differences are `ENVIRONMENT`.
 - An N/M pass rate proves the execution loop ran, even when the task did not ask to stabilize tests.
 
@@ -173,9 +173,9 @@ are not extracted again. WebView2 and other baseline tools remain installed.
 The VM stays running after each run. Use `-SkipStart` when it is already healthy, and
 `-StopVmAfterRun` only when no further iteration is expected.
 
-## 7. Widen to the suite
+## 7. Widen to the suite, on both guests
 
-Use a bounded category filter on the Windows 10 guest:
+Use a bounded category filter, first on the Windows 10 guest:
 
 ```pwsh
 -Filter 'TestCategory=<Module>' -SuiteTimeout 45m -TimeoutMinutes 60
@@ -189,8 +189,10 @@ Report:
 - Guest user/session/display and payload fingerprint.
 - Export errors independently from assertion failures.
 
-After reporting the Windows 10 baseline, run any Windows 11-specific subset against its independent
-Windows 11 baseline and report that evidence separately.
+Then run the **same** filter against the Windows 11 guest with `-Platform x64Win11` and report that
+evidence separately. Narrowing the Windows 11 run to Windows 11-specific tests does not satisfy this
+step. The module is done only when both suites are fully green; a Windows 10 pass with an unrun or
+red Windows 11 suite is an incomplete result, not a success.
 
 Once the complete target suite is green, restart the same VM with `-ResourceProfile Constrained`
 (1 vCPU and 4 GB RAM) and repeat the focused-to-suite progression. Keep the default-profile TRX as
@@ -202,15 +204,14 @@ separately.
 A retained VM accumulates registry state, caches, thumbnail databases, WebView profiles, Settings,
 and first-run suppressions. Choose one final confirmation based on risk:
 
-- Restore a known stopped-volume snapshot (Docker) or the baseline checkpoint with
-  `Reset-LocalVm.ps1 -Restore` (Hyper-V).
-- Create a new named volume and reinstall from the OEM baseline (Docker), or rebuild the guest with
-  `New-UiTestVm.ps1 -Force` (Hyper-V).
+- Restore the baseline checkpoint with `Reset-LocalVm.ps1 -Restore`. A standard checkpoint includes
+  memory, so this returns to the captured logged-on desktop in seconds.
+- Rebuild the guest from media with `New-UiTestVm.ps1 -Force` when the checkpoint itself is suspect.
 
 Do not call a retained run clean merely because the product archive was refreshed.
 
 ## Revision comparison
 
-Hold VM volume, Windows build, display, account, tools, filter, and timeouts constant. Change only the
+Hold the guest, Windows build, display, account, tools, filter, and timeouts constant. Change only the
 intentional test/product archive and record both fingerprints. For a clean-baseline comparison,
-restore the same volume snapshot before each revision.
+restore the same checkpoint before each revision.

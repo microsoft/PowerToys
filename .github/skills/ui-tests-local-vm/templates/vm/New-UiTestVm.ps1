@@ -35,7 +35,7 @@ param(
     [string]$ConfigPath = (Join-Path $PSScriptRoot 'vm.config.psd1'),
     [string]$InstallMedia,
     [string]$ImageName = 'Windows 11 Pro',
-    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm-HyperV\admin.credential.xml'),
+    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
     [string]$OemPath = (Join-Path $PSScriptRoot 'oem'),
     [ValidateRange(5, 720)]
     [int]$TimeoutMinutes = 90,
@@ -80,9 +80,12 @@ function Assert-SupportedVmVolume {
     Refuses to store the guest on a ReFS volume such as a Dev Drive.
 
     .DESCRIPTION
-    A Dev Drive is ReFS and is meant for source trees and build output, not virtual machines. Hosting
-    the VHDX there has been observed to wedge the Hyper-V management service: subsequent management
-    calls, including read-only ones, never return, and recovery needs a vmms restart or a reboot.
+    Keeping the VHDX on a Dev Drive has been observed to wedge the Hyper-V management service:
+    subsequent management calls, including read-only ones, never return, and recovery needs a vmms
+    restart or a reboot. Hyper-V on plain ReFS is supported, so this refusal is deliberately
+    conservative - ReFS is a cheap proxy for "Dev Drive", which cannot be detected without elevation.
+    Use -AllowReFsVolume on a known-good ReFS volume. Only VhdPath and VmPath are checked; the
+    exchange is ordinary file I/O and needs no such restriction.
     #>
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -98,7 +101,7 @@ function Assert-SupportedVmVolume {
         return
     }
 
-    $message = "Guest storage '$Path' is on a $($volume.FileSystemType) volume ($($Matches.Letter):). Use an NTFS volume: ReFS/Dev Drive volumes are intended for source and build artifacts, and hosting a VHDX there can hang the Hyper-V management service."
+    $message = "Guest storage '$Path' is on a $($volume.FileSystemType) volume ($($Matches.Letter):). Prefer NTFS: hosting a VHDX on a Dev Drive has been observed to hang the Hyper-V management service."
     if ($Allow) {
         Write-Warning $message
         return
@@ -338,7 +341,7 @@ if ($PlanOnly) {
     $preview = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password 'preview' -Element 'Password') `
         -SelectedImageName $ImageName `
-        -ProvisionArguments "-SkipWinRm -StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
         -TemplatePath $answerTemplatePath
     $plan.AnswerFileBytes = $preview.Length
     $plan.AnswerFileIsWellFormed = $true
@@ -425,7 +428,7 @@ try {
     $unattend = New-UnattendContent -Configuration $configuration `
         -ObfuscatedPassword (ConvertTo-UnattendPassword -Password $credential.GetNetworkCredential().Password -Element 'Password') `
         -SelectedImageName $selected.ImageName `
-        -ProvisionArguments "-SkipWinRm -StandardUser $($configuration.StandardUser)" `
+        -ProvisionArguments "-StandardUser $($configuration.StandardUser)" `
         -TemplatePath $answerTemplatePath
     Set-Content (Join-Path $stagingRoot 'autounattend.xml') -Value $unattend -Encoding utf8
     $unattend = $null

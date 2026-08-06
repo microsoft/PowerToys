@@ -2,128 +2,100 @@
 
 Classify the first failed boundary before changing test code.
 
+## Host and guest lifecycle
+
 | Symptom | Boundary | Action |
 |---|---|---|
-| `/dev/kvm` missing and `uname -m` reports `aarch64` | ARM64 host (WoA) | Not fixable for the Docker backend. Hyper-V does not expose EL2 on ARM64, so WSL2 logs `kvm: HYP mode not available` and KVM never initializes. Switch to `-Backend HyperV` (setup-hyperv.md) or move to an x64 host. |
-| `Get-VM`/`New-PSSession -VMName` fails with `You do not have the required permission` | Host Hyper-V access | Rerun from an elevated PowerShell 7 terminal, or add the account to the local `Hyper-V Administrators` group (one-time elevated change, effective after signing out and back in). Creating a guest still needs full elevation because it partitions and mounts disks. |
-| Hyper-V guest boots to Setup instead of the desktop | Answer file was not applied | `New-UiTestVm.ps1` writes `Windows\Panther\unattend.xml` into the prepared disk. Confirm the disk was built by that script, not attached from an unprepared image, and check the guest's `C:\Windows\Panther\setupact.log`. |
-| Hyper-V console shows a second, empty session | Enhanced session mode | Turn enhanced session off in the VMConnect View menu. It opens an RDP session that displaces the console session where the standard user is logged on. |
-| `/dev/kvm` missing or QEMU uses software emulation | Docker Desktop WSL/KVM | See **KVM and nested virtualization** below. Distinguish unloaded modules (`vmx` > 0 → `modprobe kvm_intel`/`kvm_amd`, or run the start script) from nested virt not exposed (`vmx` == 0 → check `.wslconfig` + `wsl --shutdown`, then revert the offending OS/security update). |
-| Container exits during installation | Storage/media/resources | Inspect `docker logs`, free disk/RAM, and OEM log. Use the named native Docker volume rather than an NTFS bind for `/storage`. |
-| Windows Setup remains at the same percentage for hours, the guest disk mtime/allocation is static, and the guest IP is unreachable | Stalled clean installation | Confirm the screen, `docker stats`, `/storage/data.img`, and guest neighbor state. Restart only the container once; the named volume is preserved and unattended Setup can resume. Do not delete the volume while Setup is visibly progressing or disk writes continue. |
+| `Get-VM` / `New-PSSession -VMName` fails with `You do not have the required permission` | Host Hyper-V access | Rerun from an elevated PowerShell 7 terminal, or add the account to the local `Hyper-V Administrators` group (one-time elevated change, effective after signing out and back in). Creating a guest still needs full elevation because it partitions and mounts disks. |
+| `Mount-VHD` fails `0x80070522`, or `Initialize-Disk`/`Get-WindowsImage` is denied | Guest creation without elevation | Group membership is not enough for disk and image APIs. Run `New-UiTestVm.ps1` from a genuinely elevated terminal. Report `BLOCKED` instead of looking for a workaround. |
+| Hyper-V operations hang at 0% CPU, `vmms`/`vmwp` never return, and even `Get-VM` blocks | VHDX on a Dev Drive | Move `VhdPath`/`VmPath` to NTFS; the exchange can stay where it is. Observed on one host and fixed by the move - not a property of ReFS, which Hyper-V supports. `New-UiTestVm.ps1` refuses ReFS by default as a proxy for Dev Drive; `-AllowReFsVolume` overrides. Recovery usually needs a `vmms` restart or a host reboot; wrap suspect Hyper-V calls in `Start-Job` + `Wait-Job -Timeout` so a wedged service does not hang the agent. |
+| Guest boots to `0xc000000e` after applying an image on the host | Native-VHD boot entries | Do not `bcdboot` a mounted VHDX from the host: the BCD keeps `vhd=[X:]\...` device references that only resolve in the host's drive view. Create the guest by running Windows Setup inside the VM from an answer-file ISO, which is what `New-UiTestVm.ps1` does. |
+| Guest boots to Setup instead of the desktop | Answer file was not applied | Confirm the disk was built by `New-UiTestVm.ps1` rather than attached from an unprepared image, and read the guest's `C:\Windows\Panther\setupact.log`. |
+| Setup shows a cancel prompt, or stops around 10% | Key injection overshoot | Installation media waits for "Press any key to boot from CD or DVD", so the script types Enter through `Msvm_Keyboard` - but only until the framebuffer brightens, and at most a bounded number of times. Do not send unbounded keystrokes; later Enters land on Setup's Cancel button. |
 | Guest cleanly shuts down about hourly; System event 1074 names `wlms.exe` | Expired Windows evaluation | Check `slmgr.vbs /dlv` or `SoftwareLicensingProduct`. Do not bypass licensing enforcement. Recreate the VM with current evaluation media or a properly licensed Windows image. The controller blocks expired time-based evaluations before test dispatch. |
-| Viewer works but WinRM never opens | OEM/HTTPS listener | Check `C:\OEM\Provision-UiTestVm.log`, `ProvisioningReady.json`, listener on 5986, guest firewall, and compose loopback mapping. |
-| TLS/CN error from `New-PSSession` | Self-signed WinRM certificate | Use the controller's default skip-CA/CN options on loopback. Do not disable TLS or expose the endpoint remotely. |
-| Credential rejected | Control account/DPAPI file | Recreate the credential file manually with the compose administrator name/password. DPAPI files do not roam between host users/machines. |
-| Desktop probe times out | No logged-on standard user | Open the viewer, verify `PTUser` is the active console user, Explorer is running, and the scheduled task uses `Interactive`/`Limited`. Reboot after first OEM provisioning if auto-login has not switched users. |
+| Console shows a second, empty session | Enhanced session mode | Turn enhanced session off in the VMConnect View menu. It opens an RDP session that displaces the console session where the standard user is logged on. |
+| Guest disk grows without bound | Accumulated checkpoints | `Reset-LocalVm.ps1 -List`, then remove obsolete checkpoints. Budget at least twice `DiskSizeGB` plus `MemoryStartupGB` per standard checkpoint. |
+
+## Control channel and desktop
+
+| Symptom | Boundary | Action |
+|---|---|---|
+| `New-PSSession -VMName` fails with a logon error | Control account/DPAPI file | Recreate the credential file with `Get-Credential \| Export-Clixml`, typed directly into the prompt. DPAPI files do not roam between host users or machines. |
+| `New-PSSession -VMName` reports the guest is not ready | Guest still booting, or PowerShell Direct disabled | Read the console with `Get-VmConsoleImage.ps1`. PowerShell Direct needs the guest running and the Hyper-V integration services enabled; it does not need networking. |
+| `Copy-VMFile` fails `The Guest Service Interface is not enabled` | Integration service off | `Enable-VMIntegrationService -VMName <name> -Name 'Guest Service Interface'`. Without it, the controller falls back to the much slower session copy. |
+| A large archive copy stalls near completion | Session-copy fallback on a big file | `Copy-Item -ToSession` stalls on archives approaching a gigabyte. Confirm `Copy-VMFile` is being used; run with `-Verbose` to see why it fell back. |
+| Desktop probe times out | No logged-on standard user | Read the console image, verify `PTUser` is the active console user, Explorer is running, and the scheduled task uses `Interactive`/`Limited`. Reboot after first provisioning if auto-logon has not switched users. |
 | Probe says user is administrator | Wrong account/baseline | Remove the test user from Administrators and log on again. Do not accept `RunLevel=Limited` as proof when UAC is disabled; inspect the token as the probe does. |
-| Probe reports wrong dimensions | Persistent display setting/viewer | Set Windows display resolution and scaling in the VM. Use both desktop parameters as zero only for nonvisual tests where size is irrelevant. |
-| `Z:` disappears after Explorer restart | Session-scoped mapped drive | Use `\\host.lan\Data` in requests and runner actions. The shared guest runner canonicalizes mapped roots when possible. |
-| UNC inaccessible to test user | Dockur share/account | Verify `./shared:/shared`, open `\\host.lan\Data` interactively, and keep the exchange below `<VmRoot>\shared`. |
-| No `status.json` but task ended | Guest runner/finalization | Inspect scheduled-task `LastTaskResult`, guest-local transcript, request path, and share access. A completed UI is not a completion signal. |
-| Interactive `powershell.exe` task stays `Running`, but a local `cmd.exe` probe writes immediately | PTUser PowerShell task host | Stop and unregister only the failed task. Stage and extract payloads through PTAdmin WinRM, then run a guest-local `.cmd` as an `Interactive`/`Limited` PTUser task. Write the exit code and TRX locally and export one evidence archive through PTAdmin. If the cmd task also fails, launch the prepared batch through the viewer. |
-| `status.json` exists but is temporarily empty | SMB creation/write race | Wait for parseable JSON with matching `RunId`; never finish on file existence alone. The controller already does this. |
-| One attachment subtree fails export | Transient SMB tree copy | Inspect `ExportErrors`. The shared runner uses bounded `robocopy` retries for directories and writes status even when an artifact cannot be copied. |
+| Probe reports wrong dimensions | Resolution task did not run | Provisioning registers a logon task that calls `ChangeDisplaySettings` in the interactive session; check `C:\PowerToysUiTestRun\set-resolution.json`. Display settings cannot be applied from the PowerShell Direct session. Use zero for both desktop parameters only for nonvisual tests. |
+
+## Run dispatch and evidence
+
+| Symptom | Boundary | Action |
+|---|---|---|
+| No `status.json` but the task ended | Guest runner/finalization | Inspect scheduled-task `LastTaskResult`, the guest-local transcript, and the request path. A completed UI is not a completion signal. |
+| Interactive `powershell.exe` task stays `Running`, but a local `cmd.exe` probe writes immediately | PTUser PowerShell task host | Stop and unregister only the failed task. Stage and extract payloads through the administrator session, then run a guest-local `.cmd` as an `Interactive`/`Limited` PTUser task. Write the exit code and TRX locally and export one evidence archive afterwards. |
+| `status.json` exists but is temporarily empty | Create/write race | Wait for parseable JSON with matching `RunId`; never finish on file existence alone. The controller already does this. |
+| One attachment subtree fails export | Transient copy failure | Inspect `ExportErrors`. The shared runner uses bounded `robocopy` retries for directories and writes status even when an artifact cannot be copied. |
 | Zero tests/MTP exit 8 | Filter | Qualify the filter with `Name=`, `Name~`, `FullyQualifiedName~`, or `TestCategory=`. Treat as `BLOCKED`. |
+| Reuse reports a missing manifest | First run or cleaned work root | Run once without `-ReuseStagedPayload`, then reuse. A recreated guest necessarily needs a full first stage. |
+| Changed archive is not refreshed | Hash/request mismatch | Compare request SHA-256 values with the actual archives and inspect `RefreshedComponents`. Do not compare only apphost EXE hashes. |
+
+## Test behavior in the VM
+
+| Symptom | Boundary | Action |
+|---|---|---|
 | A legitimate winappcli UIA call is killed after 60 seconds on a resource-limited guest | Per-call process guard | The local-VM runner sets `WINAPP_CLI_INVOKE_TIMEOUT_SECONDS=180`. Increase it only for a measured slow guest call; accepted values are 1-3600 seconds, and command-specific `-t`/`--timeout` plus grace still takes precedence. |
-| Tests run but some fail only in this VM | Profile/display/foreground/environment | Preserve TRX and media, report pass rate and failure groups, and compare guest user/session/display with CI. Do not edit stabilized tests unless asked. |
-| Win11 tier-1 command is absent and the module log reports MSIX registration error `0x800B0100` | Unsigned local context-menu package | Sign the local MSIX with a test certificate whose subject matches the manifest publisher, import only its public certificate into the guest machine `TrustedPeople` and `Root` stores, and verify `Get-AuthenticodeSignature` reports `Valid`. Keep the signed package and certificate out of source control. A successful classic COM registration does not validate the modern menu. |
+| Visual baselines are never found, or the run behaves unexpectedly like CI | `-Platform` value | `-Platform` flows to the guest as `platform`, names baselines (`<Class>_<Test>_<Platform>.png`), and any non-empty value marks the run as pipeline-like. Use only `x64Win10`, `x64Win11`, or `ARM64`. |
+| Win11 tier-1 command is absent and the module log reports MSIX registration error `0x800B0100` | Unsigned local context-menu package | Sign the local MSIX with a test certificate whose subject matches the manifest publisher, import only its public certificate into the guest machine `TrustedPeople` and `Root` stores, and verify `Get-AuthenticodeSignature` reports `Valid`. Sign at packaging time - see [setup.md](setup.md), step 6a. A successful classic COM registration does not validate the modern menu. |
 | Windows Search or another shell surface owns foreground | Persistent desktop state | Dismiss/reset the shell state or restart the VM before rerunning. Classify as environment when the test is already stable in CI. |
-| WebView/Monaco stays loading | WebView2/runtime/profile | Verify baseline WebView2 version or stage the signed installer for the run. Preserve WebView logs and screenshots. |
-| Reuse reports missing manifest | First run or cleaned work root | Run once without `-ReuseStagedPayload`, then reuse. A recreated volume necessarily needs a full first stage. |
-| Changed archive is not refreshed | Hash/request mismatch | Compare request SHA-256 values with actual archives and inspect `RefreshedComponents`. Do not compare only apphost EXE hashes. |
-| Remote debugger cannot connect | Port/firewall/monitor identity | Verify `msvsmon` is running, TCP 4026 is mapped to the chosen host port, guest firewall permits it, and Visual Studio uses `127.0.0.1:<host-port>`. |
-| VM state hides a first-run defect | Retained profile/cache | Restore a known snapshot or create a fresh named volume. |
-
-## KVM and nested virtualization (`/dev/kvm`)
-
-The dockur container maps `/dev/kvm`; without it it never starts, failing with
-`error gathering device information while adding custom device "/dev/kvm": no such file or directory`
-(and any premature `docker compose up` leaves the container `Exited (255)`). Two very different causes
-share this symptom — separate them first, in the `docker-desktop` distribution.
-
-Check the architecture before anything else, because the checks below are x64-only. If
-`wsl.exe -d docker-desktop -u root -- uname -m` reports `aarch64`, the host is Windows on ARM: the
-Docker backend can never work there (setup.md, "Host architecture") and the Hyper-V backend
-(setup-hyperv.md) is the supported alternative. `vmx` and `kvm_intel`/`kvm_amd` do not exist on that
-kernel:
-
-```pwsh
-# Is VMX exposed to the WSL2 utility VM? 0 = nested virt NOT exposed; >0 = exposed.
-wsl.exe -d docker-desktop -u root -- grep -c -w vmx /proc/cpuinfo
-# Can the module load, and does the device exist?
-wsl.exe -d docker-desktop -u root -- modprobe kvm_intel      # or kvm_amd on AMD
-wsl.exe -d docker-desktop -u root -- sh -lc 'ls -l /dev/kvm; lsmod | grep kvm'
-wsl.exe -d docker-desktop -u root -- sh -lc 'dmesg | grep -i kvm | tail'
-```
-
-- **`vmx` > 0 but `/dev/kvm` is missing — the modules just are not loaded (normal after any reboot).**
-  A fresh WSL utility VM starts with no KVM modules, so a container launched too early exits `255`.
-  Load them (`modprobe kvm_intel`/`kvm_amd`) — or simply run `Start-LocalVm.ps1` (or the older start
-  script), which `modprobe`s before `docker compose up` — then start the VM. No host change needed.
-
-- **`vmx` == 0 — nested virtualization is not exposed to WSL2 (host-level).** `modprobe kvm_intel`
-  reports `Not supported` and dmesg shows `kvm: VMX not supported by CPU`. First rule out config:
-  confirm `%UserProfile%\.wslconfig` has `nestedVirtualization=true` under `[wsl2]` (a `processors=`
-  value matching `nproc` proves the section is applied), that WSL is current (`wsl --version`), then
-  `wsl --shutdown` and let Docker Desktop recreate the utility VM. If `vmx` is still 0 after that clean
-  restart, the L1 hypervisor is withholding VT-x from the child VM — usually a **host OS/build change,
-  not your config**:
-  - A feature update or a **forced/managed update** can flip virtualization-based security (VBS/VSM)
-    enforcement so it no longer exposes nested VT-x. Correlate the break with the last boot
-    (`(Get-CimInstance Win32_OperatingSystem).LastBootUpTime`), the update history
-    (`Get-HotFix | Sort-Object InstalledOn -Descending`), and VBS state
-    (`Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard Win32_DeviceGuard |`
-    ` Select-Object VirtualizationBasedSecurityStatus, SecurityServicesRunning`).
-  - **Resolutions, least invasive first:**
-    1. **Reboot** once — an update may be only half-applied.
-    2. **Revert the offending OS update / roll back the build**: `wusa /uninstall /kb:<id>` or
-       Settings → Windows Update → Update history → *Uninstall updates* (or roll back an Insider
-       flight), then reboot and re-check `vmx`. A bare reboot alone will not help if the update
-       re-applies the same enforcement each boot — removing the update is the fix.
-    3. **Managed device:** on an Intune/enterprise-managed machine the VBS policy is locked and cannot
-       be toggled locally — escalate to whoever owns the update/flight to hold or revert it.
-    4. **Use a different host** that exposes nested virtualization (another box, or a cloud VM whose
-       provider allows nesting).
-  - Avoid disabling Credential Guard / Memory Integrity as a first move: it is frequently policy-locked,
-    needs elevation plus a reboot, and in practice the *same* VBS configuration can work again after a
-    later update — so the update, not the security feature per se, is the variable to act on.
+| WebView/Monaco stays loading | WebView2/runtime/profile | Verify the baseline WebView2 version or stage the signed installer for the run. Preserve WebView logs and screenshots. |
+| Remote debugger cannot connect | Firewall/monitor identity | Verify `msvsmon` is running in the guest and that the guest is reachable on the chosen adapter. See [customization.md](customization.md). |
+| Tests run but some fail only in this VM | Profile/display/foreground/environment | Preserve TRX and media, report pass rate and failure groups, and compare guest user/session/display with CI. Do not edit stabilized tests unless asked. |
+| VM state hides a first-run defect | Retained profile/cache | Restore the baseline checkpoint with `Reset-LocalVm.ps1 -Restore`, or rebuild the guest. |
 
 ## Host diagnostics
 
 ```pwsh
-docker context use desktop-linux
-docker compose --env-file <VmRoot>\.env -f <VmRoot>\compose.yml ps --all
-docker logs <container-name> --tail 200
-wsl.exe -d docker-desktop -u root -- sh -lc 'ls -l /dev/kvm; lsmod | grep kvm'
-Test-NetConnection 127.0.0.1 -Port 15986
+Get-VM PowerToysUiTest-Win11 | Format-List Name, State, Status, Uptime, ProcessorCount, MemoryAssigned
+Get-VMIntegrationService -VMName PowerToysUiTest-Win11 | Select-Object Name, Enabled, PrimaryStatusDescription
+Get-VMSnapshot -VMName PowerToysUiTest-Win11 | Select-Object Name, SnapshotType, CreationTime
+(Get-Volume -DriveLetter C).FileSystemType          # NTFS expected for VhdPath/VmPath
+pwsh .github\skills\ui-tests-local-vm\scripts\Get-VmConsoleImage.ps1 `
+  -VmName PowerToysUiTest-Win11 -Path X:\evidence\console.png
+```
+
+If a Hyper-V call may be wedged, bound it rather than blocking the agent:
+
+```pwsh
+$job = Start-Job { Get-VM }
+if (-not (Wait-Job $job -Timeout 30)) { 'BLOCKED: VMMS is not responding' }
 ```
 
 ## Guest control diagnostics
 
-Use the administrator DPAPI credential and HTTPS session from [setup.md](setup.md):
+Use the administrator DPAPI credential over PowerShell Direct:
 
 ```pwsh
-Invoke-Command $session {
-  Get-ChildItem WSMan:\localhost\Listener
-  Get-ScheduledTask -TaskName 'PowerToysUiTest-*' -ErrorAction SilentlyContinue |
-    Select-Object TaskName,State,@{n='User';e={$_.Principal.UserId}},@{n='RunLevel';e={$_.Principal.RunLevel}}
-  query user
-  Get-CimInstance Win32_Process -Filter "Name='explorer.exe'"
-}
+pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-GuestScript.ps1 `
+  -VmName PowerToysUiTest-Win11 `
+  -ScriptBlock {
+      Get-ScheduledTask -TaskName 'PowerToysUiTest-*' -ErrorAction SilentlyContinue |
+        Select-Object TaskName, State, @{n='User';e={$_.Principal.UserId}}, @{n='RunLevel';e={$_.Principal.RunLevel}}
+      query user
+      Get-CimInstance Win32_Process -Filter "Name='explorer.exe'" | Select-Object ProcessId, SessionId
+  }
 ```
 
-Do not launch UI tests directly from the WinRM session: it is not the interactive desktop. Use the
-limited interactive scheduled task created by the controller.
+Do not launch UI tests directly from that session: it is not the interactive desktop. Use the limited
+interactive scheduled task created by the controller.
 
 ## Guest-local evidence before termination
 
-If a run appears hung, use administrator WinRM only to copy diagnostics into the UNC result folder.
+If a run appears hung, use the administrator session only to copy diagnostics into the result folder.
 Do not kill Explorer or the test host until process state, foreground details, and the live transcript
 are preserved. Let the guest runner's `finally` write status whenever possible.
 
 ## Cleanup
 
-The controller unregisters its scheduled tasks. Stop the VM with `Stop-LocalVm.ps1`; do not run
-`docker compose down -v` unless destroying the baseline is intentional. Preserve run folders before
-resetting the volume.
+The controller unregisters its scheduled tasks. Stop the VM with `Stop-LocalVm.ps1`; delete the guest
+disk only when destroying the baseline is intentional. Preserve run folders before resetting.

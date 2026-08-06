@@ -1,208 +1,115 @@
+# Copyright (c) Microsoft Corporation
+# The Microsoft Corporation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+
+<#
+.SYNOPSIS
+Starts the persistent Hyper-V UI-test guest and optionally waits for PowerShell Direct.
+
+.EXAMPLE
+pwsh ./Start-LocalVm.ps1 -Wait -TimeoutMinutes 20
+#>
+
 [CmdletBinding()]
 param(
-    [switch]$WaitForWinRM,
+    [string]$ConfigPath = (Join-Path $PSScriptRoot 'vm.config.psd1'),
+    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'),
+    [switch]$Wait,
     [ValidateRange(1, 720)]
-    [int]$TimeoutMinutes = 45,
+    [int]$TimeoutMinutes = 30,
     [ValidateSet('Default', 'Constrained')]
-    [string]$ResourceProfile,
+    [string]$ResourceProfile = 'Default',
     [switch]$PlanOnly
 )
 
 $ErrorActionPreference = 'Stop'
 
-$composeFile = Join-Path $PSScriptRoot 'compose.yml'
-$environmentFile = Join-Path $PSScriptRoot '.env'
-if (-not (Test-Path $environmentFile -PathType Leaf)) {
-    throw "Create $environmentFile from .env.example first."
+if ($PSVersionTable.PSVersion.Major -lt 7) {
+    throw 'Run this script with PowerShell 7 (pwsh).'
 }
-$configuration = @{}
-Get-Content $environmentFile | ForEach-Object {
-    if ($_ -match '^(?<Name>[A-Za-z_][A-Za-z0-9_]*)=(?<Value>.*)$') {
-        $configuration[$Matches.Name] = $Matches.Value
-    }
+if (-not (Test-Path $ConfigPath -PathType Leaf)) {
+    throw "Configuration was not found: $ConfigPath. Copy vm.config.example.psd1 to vm.config.psd1 first."
 }
-if ([string]::IsNullOrWhiteSpace($configuration.VM_ADMIN_PASSWORD) -or
-    $configuration.VM_ADMIN_PASSWORD -eq 'replace-with-a-unique-password') {
-    throw 'Set a unique VM_ADMIN_PASSWORD in .env before starting the VM.'
-}
+$configuration = Import-PowerShellDataFile $ConfigPath
 
-function ConvertTo-Gibibytes {
-    param([Parameter(Mandatory)][string]$Size)
-
-    if ($Size -notmatch '^(?<Value>\d+(?:\.\d+)?)(?<Unit>[GgMm])$') {
-        throw "RAM size '$Size' must use G or M units."
-    }
-
-    $value = [double]::Parse($Matches.Value, [Globalization.CultureInfo]::InvariantCulture)
-    if ($Matches.Unit -in @('M', 'm')) {
-        return $value / 1024
-    }
-
-    return $value
-}
-
-$effectiveProfile = if ($PSBoundParameters.ContainsKey('ResourceProfile')) {
-    $ResourceProfile
-}
-elseif ($configuration.VM_RESOURCE_PROFILE) {
-    switch ($configuration.VM_RESOURCE_PROFILE.ToLowerInvariant()) {
-        'default' { 'Default' }
-        'constrained' { 'Constrained' }
-        default { throw 'VM_RESOURCE_PROFILE must be default or constrained.' }
-    }
+$memoryGB = if ($ResourceProfile -eq 'Constrained') {
+    if ($configuration.ContainsKey('ConstrainedMemoryStartupGB')) { $configuration.ConstrainedMemoryStartupGB } else { 4 }
 }
 else {
-    'Default'
+    $configuration.MemoryStartupGB
+}
+$processorCount = if ($ResourceProfile -eq 'Constrained') {
+    if ($configuration.ContainsKey('ConstrainedProcessorCount')) { $configuration.ConstrainedProcessorCount } else { 1 }
+}
+else {
+    $configuration.ProcessorCount
 }
 
-switch ($effectiveProfile) {
-    'Default' {
-        $effectiveRamSize = if ($configuration.VM_RAM_SIZE) { $configuration.VM_RAM_SIZE } else { '8G' }
-        $effectiveCpuCores = if ($configuration.VM_CPU_CORES) { [int]$configuration.VM_CPU_CORES } else { 4 }
-    }
-    'Constrained' {
-        $effectiveRamSize = if ($configuration.VM_CONSTRAINED_RAM_SIZE) { $configuration.VM_CONSTRAINED_RAM_SIZE } else { '4G' }
-        $effectiveCpuCores = if ($configuration.VM_CONSTRAINED_CPU_CORES) { [int]$configuration.VM_CONSTRAINED_CPU_CORES } else { 1 }
-    }
-}
-
-$env:VM_RAM_SIZE = $effectiveRamSize
-$env:VM_CPU_CORES = $effectiveCpuCores.ToString([Globalization.CultureInfo]::InvariantCulture)
-$minimumWslMemoryGiB = [math]::Ceiling((ConvertTo-Gibibytes $effectiveRamSize) + 4)
-$resourcePlan = [pscustomobject]@{
-    ResourceProfile = $effectiveProfile
-    VmRamSize = $effectiveRamSize
-    VmCpuCores = $effectiveCpuCores
-    MinimumWslMemoryGiB = $minimumWslMemoryGiB
-}
 if ($PlanOnly) {
-    $resourcePlan | ConvertTo-Json
+    [pscustomobject]@{
+        VmName = $configuration.VmName
+        ResourceProfile = $ResourceProfile
+        MemoryStartupGB = $memoryGB
+        ProcessorCount = $processorCount
+    } | ConvertTo-Json
     return
 }
 
-foreach ($command in @('docker.exe', 'wsl.exe')) {
-    if ($null -eq (Get-Command $command -ErrorAction SilentlyContinue)) {
-        throw "$command was not found."
+try {
+    Import-Module Hyper-V -ErrorAction Stop
+    Get-VMHost -ErrorAction Stop | Out-Null
+}
+catch {
+    throw 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group.'
+}
+
+$vm = Get-VM -Name $configuration.VmName -ErrorAction SilentlyContinue
+if ($null -eq $vm) {
+    throw "Virtual machine '$($configuration.VmName)' does not exist. Create it with New-UiTestVm.ps1."
+}
+
+if ($vm.State -eq 'Off') {
+    Set-VMMemory -VMName $vm.Name -StartupBytes ($memoryGB * 1GB)
+    Set-VMProcessor -VMName $vm.Name -Count $processorCount
+}
+elseif ($vm.MemoryStartup -ne ($memoryGB * 1GB) -or $vm.ProcessorCount -ne $processorCount) {
+    Write-Warning "The guest is $($vm.State); the $ResourceProfile profile will apply after the next stop."
+}
+
+if ($vm.State -ne 'Running') {
+    Start-VM -Name $vm.Name
+}
+
+if ($Wait) {
+    if (-not (Test-Path $CredentialPath -PathType Leaf)) {
+        throw "DPAPI credential file was not found: $CredentialPath"
     }
-}
-
-$dockerDesktopOutput = & docker desktop start 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw 'Docker Desktop failed to start.'
-}
-Write-Verbose ($dockerDesktopOutput | Out-String)
-
-& docker context use desktop-linux | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    throw 'Could not select the Docker Desktop Linux context.'
-}
-
-$architectureOutput = & wsl.exe -d docker-desktop -u root -- uname -m 2>&1
-$wslArchitecture = ($architectureOutput | Where-Object { $_ -match '^\S+$' } | Select-Object -Last 1)
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($wslArchitecture)) {
-    throw 'Could not determine the docker-desktop WSL2 architecture.'
-}
-$wslArchitecture = $wslArchitecture.Trim()
-
-$dockurImage = if ($configuration.DOCKUR_IMAGE) { $configuration.DOCKUR_IMAGE } else { 'docker.io/dockurr/windows:latest' }
-$imageIsArm = $dockurImage -match 'windows-arm'
-if ($wslArchitecture -eq 'aarch64' -and -not $imageIsArm) {
-    throw "DOCKUR_IMAGE '$dockurImage' hosts x64 guests, but the Docker engine is aarch64. Set DOCKUR_IMAGE=docker.io/dockurr/windows-arm:latest in .env, and note that an ARM64 guest also needs ARM64 product/test payloads."
-}
-if ($wslArchitecture -ne 'aarch64' -and $imageIsArm) {
-    throw "DOCKUR_IMAGE '$dockurImage' hosts ARM64 guests, but the Docker engine is $wslArchitecture. Set DOCKUR_IMAGE=docker.io/dockurr/windows:latest in .env."
-}
-
-$wslMemoryOutput = & wsl.exe -d docker-desktop -u root -- cat /proc/meminfo 2>&1
-$wslMemoryLine = $wslMemoryOutput | Where-Object { $_ -match '^MemTotal:\s+\d+\s+kB$' } | Select-Object -First 1
-if ($LASTEXITCODE -ne 0 -or $wslMemoryLine -notmatch '^MemTotal:\s+(?<KiB>\d+)\s+kB$') {
-    throw 'Could not determine the Docker Desktop WSL2 memory ceiling.'
-}
-
-$wslMemoryKiB = [long]$Matches.KiB
-$wslMemoryGiB = [math]::Round($wslMemoryKiB / 1MB, 1)
-if ($wslMemoryGiB -lt $minimumWslMemoryGiB) {
-    throw "Docker Desktop WSL2 exposes $wslMemoryGiB GiB, but the $effectiveProfile profile requires at least $minimumWslMemoryGiB GiB for a $effectiveRamSize guest. Increase [wsl2] memory in %UserProfile%\.wslconfig, run 'wsl --shutdown', and restart Docker Desktop."
-}
-
-if ($wslArchitecture -eq 'aarch64') {
-    # arm64 KVM is built into the WSL kernel, so there is no kvm_intel/kvm_amd module to load.
-    $kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm 2>/dev/null; exit 0' 2>&1
-}
-else {
-    $kvmOutput = & wsl.exe -d docker-desktop -u root -- sh -lc 'modprobe kvm && (modprobe kvm_intel 2>/dev/null || modprobe kvm_amd 2>/dev/null)' 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Failed to load KVM modules in the docker-desktop WSL distribution.'
-    }
-}
-Write-Verbose ($kvmOutput | Out-String)
-
-& wsl.exe -d docker-desktop -u root -- test -e /dev/kvm 2>&1 | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    if ($wslArchitecture -eq 'aarch64') {
-        throw 'BLOCKED: /dev/kvm does not exist in the docker-desktop WSL2 distribution on this ARM64 host. Hyper-V does not expose EL2 to its child VMs on ARM64, so the WSL2 kernel reports "kvm: HYP mode not available" and no container can be given hardware acceleration. Use an x64 host for this skill; see references/setup.md, "Host architecture".'
-    }
-
-    throw 'BLOCKED: /dev/kvm does not exist in the docker-desktop WSL2 distribution. See references/troubleshooting.md, "KVM and nested virtualization".'
-}
-
-$composeOutput = & docker compose --env-file $environmentFile -f $composeFile up -d 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw 'Failed to start the dockur Windows stack.'
-}
-Write-Verbose ($composeOutput | Out-String)
-
-$winRmPort = if ($configuration.VM_WINRM_PORT) { [int]$configuration.VM_WINRM_PORT } else { 15986 }
-$winRmScheme = if ($configuration.VM_WINRM_SCHEME) { $configuration.VM_WINRM_SCHEME } else { 'https' }
-if ($winRmScheme -notin @('http', 'https')) {
-    throw 'VM_WINRM_SCHEME must be http or https.'
-}
-$viewerPort = if ($configuration.VM_VIEWER_PORT) { [int]$configuration.VM_VIEWER_PORT } else { 8006 }
-$rdpPort = if ($configuration.VM_RDP_PORT) { [int]$configuration.VM_RDP_PORT } else { 13389 }
-
-if ($WaitForWinRM) {
+    $credential = Import-Clixml $CredentialPath
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
-    $winRmUri = "${winRmScheme}://127.0.0.1:$winRmPort/wsman"
     do {
         try {
-            $probeParameters = @{
-                Uri = $winRmUri
-                Method = 'Get'
-                SkipHttpErrorCheck = $true
-                TimeoutSec = 3
-            }
-            if ($winRmScheme -eq 'https') {
-                $probeParameters.SkipCertificateCheck = $true
-            }
-            $response = Invoke-WebRequest @probeParameters
-            if ([int]$response.StatusCode -ge 200 -and [int]$response.StatusCode -lt 500) {
-                break
-            }
+            $session = New-PSSession -VMName $vm.Name -Credential $credential -ErrorAction Stop
+            Remove-PSSession $session -ErrorAction SilentlyContinue
+            break
         }
         catch {
+            if ([DateTime]::UtcNow -ge $deadline) {
+                throw "PowerShell Direct did not answer for '$($vm.Name)' within $TimeoutMinutes minute(s). The guest and its disk are preserved; watch the console with vmconnect.exe localhost $($vm.Name)."
+            }
+            Start-Sleep -Seconds 5
         }
-
-        if ([DateTime]::UtcNow -ge $deadline) {
-            throw "WinRM did not become responsive at $winRmUri within $TimeoutMinutes minute(s). The container and named volume remain intact; if Windows Setup is visibly progressing, rerun this command with a longer timeout."
-        }
-        Start-Sleep -Seconds 5
     } while ($true)
 }
 
-$containerName = if ($configuration.VM_CONTAINER_NAME) { $configuration.VM_CONTAINER_NAME } else { 'powertoys-ui-windows' }
-$containerState = & docker inspect $containerName --format '{{.State.Status}}' 2>$null
-if ($LASTEXITCODE -ne 0 -or $containerState -ne 'running') {
-    throw "The dockur container '$containerName' is not running."
-}
-
+$vm = Get-VM -Name $configuration.VmName
 [pscustomobject]@{
-    Container = $containerName
-    State = $containerState
-    ResourceProfile = $effectiveProfile
-    Ram = $effectiveRamSize
-    CpuCores = $effectiveCpuCores
-    WslMemoryGiB = $wslMemoryGiB
-    Viewer = "http://127.0.0.1:$viewerPort/"
-    Rdp = "127.0.0.1:$rdpPort"
-    WinRM = "${winRmScheme}://127.0.0.1:$winRmPort/wsman"
+    VmName = $vm.Name
+    State = [string]$vm.State
+    ResourceProfile = $ResourceProfile
+    MemoryStartupGB = [math]::Round($vm.MemoryStartup / 1GB, 1)
+    ProcessorCount = $vm.ProcessorCount
+    Uptime = [string]$vm.Uptime
+    Checkpoints = @(Get-VMCheckpoint -VMName $vm.Name -ErrorAction SilentlyContinue | ForEach-Object { $_.Name })
+    Console = "vmconnect.exe localhost `"$($vm.Name)`""
+    ControlChannel = "vmbus://$($vm.Name)"
 } | ConvertTo-Json

@@ -4,42 +4,35 @@
 
 <#
 .SYNOPSIS
-Guest transport abstraction for the local UI-test VM.
+Guest transport for the local Hyper-V UI-test VM.
 
 .DESCRIPTION
-Both supported backends expose the same contract to the controller:
+The control channel is PowerShell Direct over VMBus: no listener, no published port, no certificate,
+and no network dependency. Bulk payloads move with Copy-VMFile over the Guest Service Interface,
+measured at ~82 MB/s against ~17 MB/s for the PowerShell Direct session copy - and the session copy
+stalls outright on archives approaching a gigabyte, so it is only a fallback.
 
-  Docker  dockur/windows in Docker Desktop. The control channel is HTTPS WinRM on a loopback port
-          and the exchange is an SMB share, so the host and the guest see the same files.
-  HyperV  A Hyper-V virtual machine. The control channel is PowerShell Direct over VMBus and the
-          exchange is guest-local storage that this module mirrors in both directions.
-
-Callers never branch on the backend: they resolve a context, ask for the guest exchange path, and
-use the Copy/Read/Write functions.
+The exchange is guest-local storage that this module mirrors in both directions, so the host never
+shares a folder with the guest.
 #>
 
 Set-StrictMode -Version 3.0
 
 $script:DefaultGuestExchangeRoot = 'C:\PowerToysUiTestExchange'
 
-function Test-HostElevation {
-    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-    return ([Security.Principal.WindowsPrincipal]$identity).IsInRole(
-        [Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
 function Test-HyperVAccess {
     <#
     .SYNOPSIS
-    Reports whether this shell can actually manage Hyper-V.
+    Reports whether this shell can manage Hyper-V.
 
     .DESCRIPTION
-    Elevation is the usual way to get access, but membership in the local Hyper-V Administrators
-    group also grants it, so probe the capability instead of assuming the token shape.
+    Tests the capability rather than the token shape. Elevation is the usual way to get it, but
+    membership in the local Hyper-V Administrators group survives UAC filtering and is enough for
+    Get-VM, Copy-VMFile, and PowerShell Direct.
     #>
     try {
         Import-Module Hyper-V -ErrorAction Stop
-        Get-VMHost -ErrorAction Stop | Out-Null
+        Get-VM -ErrorAction Stop | Out-Null
         return $true
     }
     catch {
@@ -47,10 +40,8 @@ function Test-HyperVAccess {
     }
 }
 
-$script:HyperVAccessMessage = 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group (a one-time elevated change that takes effect after signing out and back in).'
-
 function Get-HyperVAccessMessage {
-    return $script:HyperVAccessMessage
+    return 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group (a one-time elevated change that takes effect after signing out and back in).'
 }
 
 function New-LocalVmContext {
@@ -64,22 +55,11 @@ function New-LocalVmContext {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('Docker', 'HyperV')]
-        [string]$Backend,
+        [string]$VmName,
 
         [Parameter(Mandatory)]
         [string]$HostExchangeRoot,
 
-        # Docker: loopback port published by compose. Ignored by HyperV.
-        [int]$WinRmPort = 15986,
-        [switch]$UseHttpWinRM,
-        # Docker: guest-visible root of the dockur SMB share.
-        [string]$GuestShareRoot = '\\host.lan\Data',
-        # Docker: host folder bind-mounted as the share, used to compute the guest-relative path.
-        [string]$HostShareRoot,
-
-        # HyperV: virtual machine name and the guest-local exchange root.
-        [string]$VmName,
         [string]$GuestExchangeRoot = $script:DefaultGuestExchangeRoot
     )
 
@@ -88,53 +68,19 @@ function New-LocalVmContext {
         throw "Host exchange root was not found: $hostExchangePath"
     }
 
-    if ($Backend -eq 'Docker') {
-        if ([string]::IsNullOrWhiteSpace($HostShareRoot)) {
-            throw 'HostShareRoot is required for the Docker backend.'
-        }
-        $shareRoot = [IO.Path]::GetFullPath($HostShareRoot)
-        $relative = [IO.Path]::GetRelativePath($shareRoot, $hostExchangePath)
-        if ($relative -eq '..' -or $relative.StartsWith("..$([IO.Path]::DirectorySeparatorChar)")) {
-            throw "ExchangeRoot must be inside the VM shared root '$shareRoot'."
-        }
-        $guestExchange = if ($relative -eq '.') {
-            $GuestShareRoot.TrimEnd('\')
-        }
-        else {
-            Join-Path $GuestShareRoot.TrimEnd('\') $relative
-        }
-
-        $scheme = if ($UseHttpWinRM) { 'http' } else { 'https' }
-        return [pscustomobject]@{
-            Backend = 'Docker'
-            HostExchangeRoot = $hostExchangePath
-            GuestExchangeRoot = $guestExchange
-            SharesFileSystem = $true
-            ConnectionUri = "${scheme}://127.0.0.1:$WinRmPort/wsman"
-            UseHttpWinRM = [bool]$UseHttpWinRM
-            VmName = $null
-        }
-    }
-
-    if ([string]::IsNullOrWhiteSpace($VmName)) {
-        throw 'VmName is required for the HyperV backend.'
-    }
     $exchangeName = Split-Path $hostExchangePath -Leaf
     return [pscustomobject]@{
-        Backend = 'HyperV'
+        VmName = $VmName
         HostExchangeRoot = $hostExchangePath
         GuestExchangeRoot = (Join-Path $GuestExchangeRoot.TrimEnd('\') $exchangeName)
-        SharesFileSystem = $false
-        ConnectionUri = "vmbus://$VmName"
-        UseHttpWinRM = $false
-        VmName = $VmName
+        ControlChannel = "vmbus://$VmName"
     }
 }
 
 function New-LocalVmSession {
     <#
     .SYNOPSIS
-    Opens an administrative PSSession to the guest, retrying until the deadline.
+    Opens an administrative PowerShell Direct session to the guest, retrying until the deadline.
     #>
     [CmdletBinding()]
     param(
@@ -143,39 +89,22 @@ function New-LocalVmSession {
         [ValidateRange(1, 240)][int]$TimeoutMinutes = 45
     )
 
-    if ($Context.Backend -eq 'HyperV' -and -not (Test-HyperVAccess)) {
+    if (-not (Test-HyperVAccess)) {
         throw (Get-HyperVAccessMessage)
     }
 
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
-    $lastError = $null
     do {
         try {
-            if ($Context.Backend -eq 'Docker') {
-                $sessionOption = if ($Context.UseHttpWinRM) {
-                    New-PSSessionOption
-                }
-                else {
-                    New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
-                }
-                $authentication = if ($Context.UseHttpWinRM) { 'Negotiate' } else { 'Basic' }
-                return New-PSSession `
-                    -ConnectionUri $Context.ConnectionUri -Authentication $authentication `
-                    -Credential $Credential -SessionOption $sessionOption -ErrorAction Stop
-            }
-
             return New-PSSession -VMName $Context.VmName -Credential $Credential -ErrorAction Stop
         }
         catch {
-            $lastError = $_
             if ([DateTime]::UtcNow -ge $deadline) {
-                throw "Could not establish a guest session at $($Context.ConnectionUri). $($_.Exception.Message)"
+                throw "Could not establish PowerShell Direct to '$($Context.VmName)'. $($_.Exception.Message)"
             }
             Start-Sleep -Seconds 5
         }
     } while ($true)
-
-    throw $lastError
 }
 
 function Initialize-GuestExchange {
@@ -189,10 +118,6 @@ function Initialize-GuestExchange {
         [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string]$StandardUser
     )
-
-    if ($Context.SharesFileSystem) {
-        return
-    }
 
     Invoke-Command -Session $Session -ScriptBlock {
         param($Path, $User)
@@ -214,7 +139,7 @@ function Initialize-GuestExchange {
 function Copy-ToGuest {
     <#
     .SYNOPSIS
-    Copies exchange files from the host into the guest, skipping files that already match by hash.
+    Copies exchange files into the guest, skipping files that already match by hash.
 
     .OUTPUTS
     The names of the files that were actually transferred.
@@ -222,17 +147,10 @@ function Copy-ToGuest {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string[]]$FileName,
         [switch]$Force
     )
-
-    if ($Context.SharesFileSystem) {
-        return @()
-    }
-    if ($null -eq $Session) {
-        throw 'A guest session is required to copy files for this backend.'
-    }
 
     $guestHashes = @{}
     if (-not $Force) {
@@ -262,8 +180,6 @@ function Copy-ToGuest {
         }
 
         $destination = Join-Path $Context.GuestExchangeRoot $name
-        # Copy-VMFile moves ~80 MB/s over the Guest Service Interface, where Copy-Item -ToSession
-        # manages ~17 MB/s and stalls outright on archives approaching a gigabyte.
         $copied += $name
         try {
             Copy-VMFile -Name $Context.VmName -SourcePath $source -DestinationPath $destination `
@@ -289,21 +205,15 @@ function Copy-FromGuest {
 
     .DESCRIPTION
     Children are copied individually so that host-authored evidence already present in the
-    destination (request, plan, probe script) survives the transfer.
+    destination (request, plan, probe script) survives the transfer. Copy-VMFile is host-to-guest
+    only, so evidence returns over the session - it is small.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string]$RelativePath
     )
-
-    if ($Context.SharesFileSystem) {
-        return
-    }
-    if ($null -eq $Session) {
-        throw 'A guest session is required to copy files for this backend.'
-    }
 
     $source = Join-Path $Context.GuestExchangeRoot $RelativePath
     $destination = Join-Path $Context.HostExchangeRoot $RelativePath
@@ -334,13 +244,9 @@ function Remove-GuestItem {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string]$RelativePath
     )
-
-    if ($Context.SharesFileSystem -or $null -eq $Session) {
-        return
-    }
 
     Invoke-Command -Session $Session -ScriptBlock {
         param($Path)
@@ -356,7 +262,7 @@ function Write-GuestText {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string]$RelativePath,
         [Parameter(Mandatory)][AllowEmptyString()][string]$Value
     )
@@ -364,13 +270,6 @@ function Write-GuestText {
     $hostPath = Join-Path $Context.HostExchangeRoot $RelativePath
     New-Item (Split-Path $hostPath -Parent) -ItemType Directory -Force | Out-Null
     $Value | Set-Content $hostPath -Encoding utf8
-
-    if ($Context.SharesFileSystem) {
-        return
-    }
-    if ($null -eq $Session) {
-        throw 'A guest session is required to write guest files for this backend.'
-    }
 
     Invoke-Command -Session $Session -ScriptBlock {
         param($Path, $Text)
@@ -384,7 +283,7 @@ function Write-GuestText {
 function Read-GuestJson {
     <#
     .SYNOPSIS
-    Reads an exchange-relative JSON file, tolerating the create/write race on both transports.
+    Reads an exchange-relative JSON file, tolerating the create/write race.
 
     .OUTPUTS
     The parsed object, or $null when the file is absent or not yet complete.
@@ -392,31 +291,19 @@ function Read-GuestJson {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)][psobject]$Context,
-        [System.Management.Automation.Runspaces.PSSession]$Session,
+        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
         [Parameter(Mandatory)][string]$RelativePath,
         [ValidateRange(1, 100)][int]$Attempts = 1
     )
 
     for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        $text = $null
         try {
-            if ($Context.SharesFileSystem) {
-                $hostPath = Join-Path $Context.HostExchangeRoot $RelativePath
-                if (Test-Path $hostPath -PathType Leaf) {
-                    $text = Get-Content $hostPath -Raw
+            $text = Invoke-Command -Session $Session -ScriptBlock {
+                param($Path)
+                if (Test-Path $Path -PathType Leaf) {
+                    Get-Content $Path -Raw -ErrorAction SilentlyContinue
                 }
-            }
-            else {
-                if ($null -eq $Session) {
-                    throw 'A guest session is required to read guest files for this backend.'
-                }
-                $text = Invoke-Command -Session $Session -ScriptBlock {
-                    param($Path)
-                    if (Test-Path $Path -PathType Leaf) {
-                        Get-Content $Path -Raw -ErrorAction SilentlyContinue
-                    }
-                } -ArgumentList (Join-Path $Context.GuestExchangeRoot $RelativePath)
-            }
+            } -ArgumentList (Join-Path $Context.GuestExchangeRoot $RelativePath)
 
             if (-not [string]::IsNullOrWhiteSpace($text)) {
                 return $text | ConvertFrom-Json
@@ -433,6 +320,6 @@ function Read-GuestJson {
 }
 
 Export-ModuleMember -Function `
-    Test-HostElevation, Test-HyperVAccess, Get-HyperVAccessMessage, New-LocalVmContext, `
-    New-LocalVmSession, Initialize-GuestExchange, Copy-ToGuest, Copy-FromGuest, Remove-GuestItem, `
-    Write-GuestText, Read-GuestJson
+    Test-HyperVAccess, Get-HyperVAccessMessage, New-LocalVmContext, New-LocalVmSession, `
+    Initialize-GuestExchange, Copy-ToGuest, Copy-FromGuest, Remove-GuestItem, Write-GuestText, `
+    Read-GuestJson

@@ -3,14 +3,12 @@
 Provisions the PowerToys UI-test guest: standard-user desktop, auto-logon, and optional tooling.
 
 .DESCRIPTION
-Shared by both backends. The dockur backend needs the HTTPS WinRM listener because the host reaches
-the guest over a loopback port. The Hyper-V backend reaches the guest over PowerShell Direct, so it
-passes -SkipWinRm and no remote listener or firewall opening is created at all.
+The host reaches this guest over PowerShell Direct, so no remote listener, no firewall opening, and
+no certificate is created. The guest keeps its default inbound posture.
 #>
 
 [CmdletBinding()]
 param(
-    [switch]$SkipWinRm,
     [string]$StandardUser = 'PTUser'
 )
 
@@ -30,34 +28,6 @@ function Invoke-OfflineInstaller {
     $process = Start-Process $Path -ArgumentList $Arguments -Wait -PassThru
     if ($process.ExitCode -notin @(0, 3010)) {
         throw "Installer '$Path' failed with exit code $($process.ExitCode)."
-    }
-}
-
-if (-not $SkipWinRm) {
-    Enable-PSRemoting -Force -SkipNetworkProfileCheck
-    Set-Service -Name WinRM -StartupType Automatic
-    Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
-    Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $false
-    New-ItemProperty `
-        -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' `
-        -Name LocalAccountTokenFilterPolicy -PropertyType DWord -Value 1 -Force | Out-Null
-
-    $httpsListener = Get-ChildItem WSMan:\localhost\Listener |
-        Where-Object { $_.Keys -contains 'Transport=HTTPS' } |
-        Select-Object -First 1
-    if ($null -eq $httpsListener) {
-        $certificate = New-SelfSignedCertificate `
-            -DnsName @($env:COMPUTERNAME, 'localhost') `
-            -CertStoreLocation Cert:\LocalMachine\My `
-            -NotAfter ([DateTime]::UtcNow.AddYears(10))
-        New-Item -Path WSMan:\localhost\Listener `
-            -Transport HTTPS -Address * -CertificateThumbPrint $certificate.Thumbprint -Force | Out-Null
-    }
-    if ($null -eq (Get-NetFirewallRule -Name PowerToysUiTestVm-WinRM-HTTPS -ErrorAction SilentlyContinue)) {
-        New-NetFirewallRule `
-            -Name PowerToysUiTestVm-WinRM-HTTPS `
-            -DisplayName 'PowerToys UI Test VM HTTPS WinRM' `
-            -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5986 | Out-Null
     }
 }
 
@@ -163,7 +133,6 @@ $windowsLicense = Get-CimInstance SoftwareLicensingProduct -ErrorAction Silently
     StandardUser = $standardUser
     StandardUserIsAdministrator = $false
     WorkRoot = $workRoot
-    HttpsWinRM = if ($SkipWinRm) { $null } else { 5986 }
     ResolutionTaskRegistered = $resolutionTaskRegistered
     DotNetSdkInstaller = if ($null -ne $dotNetSdk) { $dotNetSdk.Name } else { $null }
     WebView2Installer = if ($null -ne $webView2Installer) { $webView2Installer.Name } else { $null }

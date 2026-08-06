@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, persistent local-VM validation with dockur/WSL2, resettable clean-baseline runs, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, local VM, dockur, WSL2, migrate, port, flaky, CI stability, Explorer, Shell extension, WebView2."
+description: "Migrate and stabilize PowerToys UI tests from WinAppDriver/Selenium to Microsoft.PowerToys.UITest.Next and winappcli. Use for ports, new UITest projects, flaky CI tests, persistent local-VM validation on Hyper-V, resettable clean-baseline runs, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or cross-window/foreground failures. Covers APIs, scaffolding, test design, diagnostics, agentic execution, and CI hardening. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, local VM, Hyper-V, checkpoint, migrate, port, flaky, CI stability, Explorer, Shell extension, WebView2."
 license: Complete terms in LICENSE.txt
 ---
 
@@ -29,7 +29,7 @@ Use this skill when the task is to:
   checklist item into an automated test.
 - **Validate a new or migrated suite in a local Windows VM** through an unattended
   build/package/deploy/run/TRX/diagnose loop. Use a retained VM for fast iteration and a restored
-  baseline or fresh named volume when clean-profile behavior matters.
+  baseline checkpoint when clean-profile behavior matters.
 
 This skill is the *how*: the framework differences, the API mapping, the project scaffolding, the
 naming rules, the recurring PowerToys test recipes, and the build/validate loop. The *what* (which
@@ -92,7 +92,7 @@ module, which tests) comes from the calling prompt.
   **pre-flight checklist** to apply BEFORE the first CI push so the first run *validates* instead of
   *discovers*. Read this to spend one CI iteration instead of six.
 9. **[ui-tests-local-vm](../ui-tests-local-vm/SKILL.md)** — the live desktop execution loop:
-  scaffold or reuse a persistent dockur/windows VM, run as a true standard user, refresh only
+  scaffold or reuse a persistent Hyper-V VM, run as a true standard user, refresh only
   changed payloads, iterate through durable TRX/evidence, and restore or recreate the baseline for
   clean-profile validation.
 

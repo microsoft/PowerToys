@@ -27,43 +27,13 @@ if ($Detached) {
     return
 }
 
-function Resolve-MappedPath {
-    param(
-        [Parameter(Mandatory)]
-        [string]$Path
-    )
-
-    $pathRoot = [IO.Path]::GetPathRoot($Path)
-    if ($pathRoot -notmatch '^(?<DriveLetter>[A-Za-z]):\\$') {
-        return $Path
-    }
-
-    $driveLetter = $Matches.DriveLetter
-    try {
-        $remotePath = [string](Get-ItemPropertyValue -Path "HKCU:\Network\$driveLetter" -Name RemotePath -ErrorAction Stop)
-    }
-    catch {
-        return $Path
-    }
-    if ([string]::IsNullOrWhiteSpace($remotePath)) {
-        return $Path
-    }
-
-    $relativePath = $Path.Substring($pathRoot.Length).TrimStart('\')
-    if ([string]::IsNullOrWhiteSpace($relativePath)) {
-        return $remotePath.TrimEnd('\')
-    }
-    return Join-Path $remotePath.TrimEnd('\') $relativePath
-}
-
 $request = Get-Content $RequestPath -Raw | ConvertFrom-Json
 $exchangeRoot = if ($request.PSObject.Properties.Name -contains 'ExchangeRoot') {
     [string]$request.ExchangeRoot
 }
 else {
-    'C:\LocalVmExchange'
+    'C:\PowerToysUiTestExchange'
 }
-$exchangeRoot = Resolve-MappedPath -Path $exchangeRoot
 if ([string]::IsNullOrWhiteSpace($exchangeRoot) -or -not [IO.Path]::IsPathRooted($exchangeRoot)) {
     throw 'ExchangeRoot must be an absolute path.'
 }

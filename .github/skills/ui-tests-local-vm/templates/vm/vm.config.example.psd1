@@ -6,9 +6,10 @@
     ComputerName = 'PTUITEST'
 
     # Guest storage. Keep it outside the repository.
-    # This must be an NTFS volume. A ReFS volume, which includes every Dev Drive, is intended for
-    # source trees and build output; hosting a VHDX there can wedge the Hyper-V management service
-    # until vmms is restarted or the host is rebooted. New-UiTestVm.ps1 refuses ReFS by default.
+    # Prefer NTFS. Keeping a VHDX on a Dev Drive has been observed to wedge the Hyper-V management
+    # service until vmms is restarted or the host is rebooted. Hyper-V on plain ReFS is supported, so
+    # New-UiTestVm.ps1 refuses ReFS only as a conservative proxy for Dev Drive; pass
+    # -AllowReFsVolume to override. The scaffold and shared exchange have no such restriction.
     VmPath = 'D:\PowerToysUiTestVm\vm'
     VhdPath = 'D:\PowerToysUiTestVm\vm\PowerToysUiTest.vhdx'
     DiskSizeGB = 128

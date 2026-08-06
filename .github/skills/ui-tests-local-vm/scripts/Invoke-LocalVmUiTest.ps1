@@ -4,34 +4,27 @@
 
 <#
 .SYNOPSIS
-Runs PowerToys UITest.Next executables in a persistent local Windows VM.
+Runs PowerToys UITest.Next executables in a persistent local Hyper-V VM.
 
 .DESCRIPTION
-Creates a hash-addressed request, starts or reuses the VM, verifies a non-admin interactive desktop,
-dispatches the shared guest runner through Task Scheduler, and returns durable status/TRX evidence.
-Defaults to an x64 Windows 10 guest. Use x64Win11 only with a separate Windows 11 VM for explicitly
-Windows 11-specific checks.
+Creates a hash-addressed request, starts or reuses the guest, verifies a non-admin interactive
+desktop, dispatches the shared guest runner through Task Scheduler, and returns durable status/TRX
+evidence.
 
-Two backends are supported. `Docker` drives a dockur/windows container over HTTPS WinRM and an SMB
-exchange. `HyperV` drives a Hyper-V virtual machine over PowerShell Direct and mirrors a guest-local
-exchange; it requires an elevated host shell but no nested virtualization.
+The control channel is PowerShell Direct over VMBus and payloads move with Copy-VMFile, so the guest
+needs no listener, no published port, and no network. Hyper-V access is required: either an elevated
+shell or membership in the local Hyper-V Administrators group.
 
 .EXAMPLE
 pwsh ./Invoke-LocalVmUiTest.ps1 `
+  -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\Peek `
   -TestExecutable Peek.UITests.Next.exe `
   -Filter 'Name=Peek.Preview.PDF' `
+  -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `
   -ReuseStagedPayload
-
-.EXAMPLE
-pwsh ./Invoke-LocalVmUiTest.ps1 `
-  -Backend HyperV -VmName PowerToysUiTest-Win11 `
-  -VmRoot X:\PowerToysUiTestVm-HyperV `
-  -ExchangeRoot X:\PowerToysUiTestVm-HyperV\shared\PowerToysUiTests\Peek `
-  -TestExecutable Peek.UITests.Next.exe `
-  -Filter 'Name=Peek.Preview.PDF'
 #>
 
 [CmdletBinding()]
@@ -47,9 +40,9 @@ param(
     [Parameter(Mandatory)]
     [string[]]$TestExecutable,
 
-    [ValidateSet('Docker', 'HyperV')]
-    [string]$Backend = 'Docker',
+    [Parameter(Mandatory)]
     [string]$VmName,
+
     [string]$Filter,
     # Flows to the guest as the 'platform' environment variable. The framework uses it for visual
     # baseline filenames (VisualAssert) and treats any non-empty value as "running in a pipeline",
@@ -76,18 +69,13 @@ param(
     [ValidateRange(1, 120)]
     [int]$StartupTimeoutMinutes = 45,
     [string]$StandardUser = 'PTUser',
-    [string]$GuestShareRoot = '\\host.lan\Data',
     [string]$GuestExchangeRoot = 'C:\PowerToysUiTestExchange',
-    [ValidateRange(1, 65535)]
-    [int]$WinRmPort = 15986,
     [string]$CredentialPath,
     [string]$GuestRunnerSource = (Join-Path $PSScriptRoot '..\templates\run-ui-tests.ps1'),
     [switch]$InstallWebView2,
     [switch]$ReuseStagedPayload,
     [switch]$SkipStart,
     [switch]$StopVmAfterRun,
-    [Alias('AllowUnencryptedWinRM')]
-    [switch]$UseHttpWinRM,
     [switch]$PlanOnly
 )
 
@@ -99,59 +87,26 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 if (($DesktopWidth -eq 0) -ne ($DesktopHeight -eq 0)) {
     throw 'Set both DesktopWidth and DesktopHeight to 0 to disable display validation.'
 }
-if ($UseHttpWinRM -and $WinRmPort -eq 15986) {
-    Write-Warning 'HTTP WinRM was selected with the default HTTPS port. Verify the compose mapping.'
-}
 
 Import-Module (Join-Path $PSScriptRoot 'LocalVmGuest.psm1') -Force
 
-if ($Backend -eq 'HyperV') {
-    if ([string]::IsNullOrWhiteSpace($VmName)) {
-        throw 'The HyperV backend requires -VmName.'
-    }
-    if (-not $PlanOnly -and -not (Test-HyperVAccess)) {
-        throw (Get-HyperVAccessMessage)
-    }
-}
-elseif (-not [string]::IsNullOrWhiteSpace($VmName)) {
-    Write-Warning 'VmName is ignored by the Docker backend.'
+if (-not $PlanOnly -and -not (Test-HyperVAccess)) {
+    throw (Get-HyperVAccessMessage)
 }
 
-$controllerName = if ($Backend -eq 'HyperV') { 'Hyper-V local VM' } else { 'dockur/windows local VM' }
+$controllerName = 'Hyper-V local VM'
 if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
-    $CredentialPath = if ($Backend -eq 'HyperV') {
-        Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm-HyperV\admin.credential.xml'
-    }
-    else {
-        Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
-    }
+    $CredentialPath = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
 }
 $vmRootPath = [IO.Path]::GetFullPath($VmRoot)
-$sharedRoot = [IO.Path]::GetFullPath((Join-Path $vmRootPath 'shared'))
 $exchangePath = [IO.Path]::GetFullPath($ExchangeRoot)
 $guestRunnerSourcePath = [IO.Path]::GetFullPath($GuestRunnerSource)
-if ($Backend -eq 'Docker' -and -not (Test-Path $sharedRoot -PathType Container)) {
-    throw "VM shared root was not found: $sharedRoot"
-}
 if (-not (Test-Path $guestRunnerSourcePath -PathType Leaf)) {
     throw "Guest runner was not found: $guestRunnerSourcePath"
 }
 
-$contextParameters = @{
-    Backend = $Backend
-    HostExchangeRoot = $exchangePath
-}
-if ($Backend -eq 'Docker') {
-    $contextParameters.HostShareRoot = $sharedRoot
-    $contextParameters.GuestShareRoot = $GuestShareRoot
-    $contextParameters.WinRmPort = $WinRmPort
-    $contextParameters.UseHttpWinRM = $UseHttpWinRM
-}
-else {
-    $contextParameters.VmName = $VmName
-    $contextParameters.GuestExchangeRoot = $GuestExchangeRoot
-}
-$guestContext = New-LocalVmContext @contextParameters
+$guestContext = New-LocalVmContext `
+    -VmName $VmName -HostExchangeRoot $exchangePath -GuestExchangeRoot $GuestExchangeRoot
 $guestExchangeRoot = $guestContext.GuestExchangeRoot
 
 function Get-ExchangeFileHash {
@@ -316,7 +271,6 @@ $requestJson | Set-Content $requestPath -Encoding utf8
 
 $plan = [ordered]@{
     Controller = $controllerName
-    Backend = $Backend
     RunId = $runId
     VmRoot = $vmRootPath
     VmName = $guestContext.VmName
@@ -325,7 +279,7 @@ $plan = [ordered]@{
     GuestRunnerSource = $guestRunnerSourcePath
     GuestRequestPath = $guestRequestPath
     StandardUser = $StandardUser
-    ControlChannel = $guestContext.ConnectionUri
+    ControlChannel = $guestContext.ControlChannel
     ReuseStagedPayload = [bool]$ReuseStagedPayload
     StopVmAfterRun = [bool]$StopVmAfterRun
     PayloadFingerprint = $payloadFingerprint
@@ -362,12 +316,7 @@ try {
         if (-not (Test-Path $startScript -PathType Leaf)) {
             throw "VM start script was not found: $startScript"
         }
-        $startupOutput = if ($Backend -eq 'HyperV') {
-            & $startScript -Wait -TimeoutMinutes $StartupTimeoutMinutes | Out-String
-        }
-        else {
-            & $startScript -WaitForWinRM -TimeoutMinutes $StartupTimeoutMinutes | Out-String
-        }
+        $startupOutput = & $startScript -Wait -TimeoutMinutes $StartupTimeoutMinutes | Out-String
         Write-Verbose $startupOutput
     }
 
@@ -523,7 +472,6 @@ Add-Type -AssemblyName System.Windows.Forms
     $trx = Get-TrxSummary -ResultRoot $hostResultRoot
     $controllerResult = [pscustomobject]@{
         Controller = $controllerName
-        Backend = $Backend
         RunId = $runId
         BuildLabel = $status.BuildLabel
         Status = $status.Status

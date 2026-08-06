@@ -7,8 +7,8 @@
 Saves the Hyper-V guest console as a PNG so it can be read without VMConnect.
 
 .DESCRIPTION
-Unlike the dockur backend, whose noVNC page an agent can screenshot directly, a Hyper-V guest is
-normally only visible through VMConnect. The hypervisor exposes the framebuffer through
+A Hyper-V guest console is normally only visible through VMConnect, which an agent cannot read. The
+hypervisor exposes the framebuffer through
 Msvm_VirtualSystemManagementService.GetVirtualSystemThumbnailImage, which is enough to read boot
 errors, Setup progress, and whether the expected desktop is on screen.
 

@@ -4,38 +4,31 @@
 
 <#
 .SYNOPSIS
-Runs a scriptblock inside the local UI-test guest, handling the credential import and PSSession
-lifecycle. Token-efficient replacement for the repeated
+Runs a scriptblock inside the local UI-test guest over PowerShell Direct, handling the credential
+import and PSSession lifecycle. Token-efficient replacement for the repeated
 Import-Clixml / New-PSSession / Invoke-Command / Remove-PSSession boilerplate when inspecting or
 mutating guest state (package registration, staged runtime files, registry, processes).
 
 .PARAMETER ScriptBlock
 The scriptblock to run in the guest. Its output is returned to the host.
 
-.PARAMETER Backend
-Docker uses loopback WinRM against a dockur container. HyperV uses PowerShell Direct against a
-Hyper-V virtual machine and requires an elevated host shell.
-
-.PARAMETER WinRmPort
-Host loopback WinRM port mapped to the guest (Win11 scaffold default 15987 HTTPS; Win10 15985 HTTP).
-
-.PARAMETER UseHttp
-Use http:// (unencrypted Basic) instead of https:// — the older Win10 manual scheme. The guest's
-WSMan client must already allow Basic/unencrypted (the Win10 controller path configures this).
+.PARAMETER VmName
+Name of the Hyper-V virtual machine. Hyper-V access is required: either an elevated shell or
+membership in the local Hyper-V Administrators group.
 
 .EXAMPLE
-./Invoke-GuestScript.ps1 -WinRmPort 15987 -CredentialPath "$env:LOCALAPPDATA\PowerToysUiTestVm-Win11\admin.credential.xml" -ScriptBlock {
+./Invoke-GuestScript.ps1 -VmName PowerToysUiTest-Win11 -ScriptBlock {
     Get-AppxPackage *ImageResizerContextMenu* | Select-Object -Expand Name
 }
 
 .EXAMPLE
-./Invoke-GuestScript.ps1 -Backend HyperV -VmName PowerToysUiTest-Win11 -CredentialPath $cred -ScriptBlock {
+./Invoke-GuestScript.ps1 -VmName PowerToysUiTest-Win11 -ScriptBlock {
     Get-Process explorer | Select-Object Id, SessionId
 }
 
 .EXAMPLE
 # Neutralize a sparse package to reproduce CI's unsigned/classic scenario.
-./Invoke-GuestScript.ps1 -WinRmPort 15987 -CredentialPath $cred -ScriptBlock {
+./Invoke-GuestScript.ps1 -VmName PowerToysUiTest-Win11 -ScriptBlock {
     Get-AppxPackage -AllUsers *ImageResizerContextMenu* | ForEach-Object { Remove-AppxPackage -Package $_.PackageFullName -AllUsers }
     Rename-Item C:\PowerToysUiTestRun\PowerToys\WinUI3Apps\ImageResizerContextMenuPackage.msix -NewName ImageResizerContextMenuPackage.msix.disabled
 }
@@ -43,12 +36,9 @@ WSMan client must already allow Basic/unencrypted (the Win10 controller path con
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][scriptblock]$ScriptBlock,
+    [Parameter(Mandatory)][string]$VmName,
     [object[]]$ArgumentList = @(),
-    [ValidateSet('Docker', 'HyperV')][string]$Backend = 'Docker',
-    [string]$VmName,
-    [int]$WinRmPort = 15987,
-    [switch]$UseHttp,
-    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm-Win11\admin.credential.xml')
+    [string]$CredentialPath = (Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -57,26 +47,14 @@ if (-not (Test-Path $CredentialPath)) {
 }
 $credential = Import-Clixml $CredentialPath
 
-if ($Backend -eq 'HyperV') {
-    if ([string]::IsNullOrWhiteSpace($VmName)) {
-        throw 'The HyperV backend requires -VmName.'
-    }
-    try {
-        Import-Module Hyper-V -ErrorAction Stop
-        Get-VMHost -ErrorAction Stop | Out-Null
-    }
-    catch {
-        throw 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group.'
-    }
-    $session = New-PSSession -VMName $VmName -Credential $credential
+try {
+    Import-Module Hyper-V -ErrorAction Stop
+    Get-VM -ErrorAction Stop | Out-Null
 }
-elseif ($UseHttp) {
-    $session = New-PSSession -ConnectionUri "http://127.0.0.1:$WinRmPort/wsman" -Authentication Basic -Credential $credential
+catch {
+    throw 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group.'
 }
-else {
-    $sessionOption = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
-    $session = New-PSSession -ConnectionUri "https://127.0.0.1:$WinRmPort/wsman" -Authentication Basic -Credential $credential -SessionOption $sessionOption
-}
+$session = New-PSSession -VMName $VmName -Credential $credential
 
 try {
     Invoke-Command -Session $session -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList

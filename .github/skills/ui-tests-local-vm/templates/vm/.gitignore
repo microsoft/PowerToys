@@ -1,3 +1,5 @@
-.env
+vm.config.psd1
+vm/
 shared/
+*.vhdx
 *.credential.xml
