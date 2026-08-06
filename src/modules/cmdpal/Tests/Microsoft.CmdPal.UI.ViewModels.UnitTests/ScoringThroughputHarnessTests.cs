@@ -18,53 +18,37 @@ using Windows.Foundation;
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 /// <summary>
-/// Deterministic scoring-throughput harness for the main/root page hot path. This is a
-/// MEASURE-FIRST instrument: it builds a representative synthetic catalog (a few thousand
-/// installed apps plus a few hundred top-level commands) and times the same scoring/filter
-/// passes the product runs per keystroke, attributing the cost across buckets:
-///   1. apps-enumeration (materializing the app list + removing pinned)
-///   2. command scoring (<see cref="InternalListHelpers.FilterListWithScores{T}"/> over commands)
-///   3. app scoring (the dominant pass - <see cref="InternalListHelpers.FilterListWithScores{T}"/> over apps)
-///   4. fallback fold-in (<see cref="MainListPage.ScoreDeferredFallbacks"/>)
-/// plus a per-item sub-attribution of a single <see cref="MainListPage.ScoreTopLevelItem"/>
-/// into fuzzy-DP scoring vs tier classification vs frecency.
-///
-/// It exercises the REAL product scorer and filter, never a reimplementation, and mirrors the
-/// per-item target caching that <c>AppListItem</c> uses (via <see cref="FuzzyTargetCache"/>) so
-/// the numbers reflect the live cached path. Timings are reported through
-/// <see cref="TestContext"/> for the log; the assertions only lock in relative/structural facts
-/// (determinism, which pass processes more items, the extension-score delta direction) so the
-/// harness stays CI-safe and never flakes on a wall-clock threshold.
+/// Times the real per-keystroke scoring passes over a synthetic catalog and attributes the cost
+/// across apps-enumeration, command scoring, app scoring (the dominant pass), and fallback
+/// fold-in, plus a per-item split of <see cref="MainListPage.ScoreTopLevelItem"/> into fuzzy DP
+/// vs tier classification vs frecency. Timings go to <see cref="TestContext"/> and the assertions
+/// only lock structural facts, so nothing here flakes on a wall clock.
 /// </summary>
 [TestClass]
 public sealed partial class ScoringThroughputHarnessTests
 {
-    // Catalog sizes chosen to mirror a heavy-but-realistic machine: thousands of apps dominate N,
-    // a few hundred commands, a handful of global fallbacks. Kept deterministic and modest so the
-    // whole harness runs well under a couple of seconds in CI.
+    // Sized to mirror a heavy-but-realistic machine, and small enough that the whole harness runs
+    // in a couple of seconds on CI.
     private const int AppCount = 3000;
     private const int CommandCount = 300;
     private const int GlobalFallbackCount = 5;
     private const int PinnedAppCount = 20;
 
-    // Fraction of apps seeded into history so frecency lookups actually hit for some items and the
-    // per-item frecency cost (dictionary hit + decay math) is represented, not just the miss path.
+    // Seed enough history that frecency lookups actually hit, so we measure the hit path too.
     private const int HistorySeedCount = 200;
 
-    // Warmup runs prime the JIT and the per-item target caches; measured runs are averaged. These
-    // are report-only iteration counts, not correctness knobs.
+    // Report-only counts: warmups prime the JIT and target caches, measured runs get averaged.
     private const int WarmupIterations = 3;
     private const int MeasuredIterations = 10;
 
-    // Representative queries. "c" is the pathological 1-char case that fuzzy-matches almost every
-    // app; the rest narrow a real prefix; "vsc"/"vs code" exercise acronym/word-boundary paths.
+    // "c" is the pathological 1-char case that matches nearly every app, the rest narrow a real
+    // prefix, and "vsc"/"vs code" hit the acronym and word-boundary paths.
     private static readonly string[] Queries = ["c", "ca", "cal", "calc", "vsc", "vs code"];
 
     public TestContext TestContext { get; set; } = null!;
 
-    // A stand-in for an installed app or a top-level command. Implements IPrecomputedListItem with
-    // a FuzzyTargetCache exactly like AppListItem, so repeated scoring reuses cached targets and the
-    // measured cost matches the live cached path rather than recomputing targets each keystroke.
+    // Stand-in for an installed app or a top-level command. It caches fuzzy targets exactly like
+    // AppListItem does, so what we measure is the cached path the product actually runs.
     private sealed partial class CatalogItem : IListItem, IPrecomputedListItem
     {
         private FuzzyTargetCache _titleCache;
@@ -107,8 +91,8 @@ public sealed partial class ScoringThroughputHarnessTests
         public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher) => _subtitleCache.GetOrUpdate(matcher, Subtitle);
     }
 
-    // Deterministic word banks. Composition is index-driven (no RNG, no wall clock) so the catalog,
-    // its match counts, and the resulting order are byte-for-byte reproducible across runs and hosts.
+    // Composition is index-driven, no RNG and no wall clock, so the catalog and its match counts
+    // are reproducible across runs and hosts.
     private static readonly string[] Nouns =
     [
         "Calculator", "Calendar", "Camera", "Canvas", "Command", "Control", "Cloud", "Cast",
@@ -133,9 +117,8 @@ public sealed partial class ScoringThroughputHarnessTests
 
     private static IPrecomputedFuzzyMatcher CreateMatcher() => new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
 
-    // Builds a stable synthetic catalog. Titles cycle through the word banks so there are dense
-    // "confusable" clusters (many Calc*/C* titles) - exactly the shape that makes a 1-char query
-    // match a large fraction of the catalog.
+    // Titles cycle the word banks to build dense confusable clusters, which is the shape that makes
+    // a 1-char query match a big slice of the catalog.
     private static CatalogItem[] BuildCatalog(int count, string idPrefix)
     {
         var items = new CatalogItem[count];
@@ -145,7 +128,7 @@ public sealed partial class ScoringThroughputHarnessTests
             var qualifier = Qualifiers[(i / Nouns.Length) % Qualifiers.Length];
             var title = string.IsNullOrEmpty(qualifier) ? noun : $"{noun} {qualifier}";
 
-            // Append a stable disambiguator only past the first cycle so early titles stay clean/realistic.
+            // Only disambiguate past the first cycle, so early titles stay realistic.
             if (i >= Nouns.Length * Qualifiers.Length)
             {
                 title = $"{title} {i}";
@@ -179,8 +162,8 @@ public sealed partial class ScoringThroughputHarnessTests
         => (in FuzzyQuery query, IListItem item) =>
             MainListPage.ScoreTopLevelItem(query, item, history, matcher, providerWeightLookup);
 
-    // Median-of-averaged timing: warm up, then run the action MeasuredIterations times and return
-    // the average elapsed milliseconds. Report-only - never asserted against an absolute threshold.
+    // Averaged elapsed milliseconds after a warmup, report-only and never asserted against a
+    // threshold.
     private static double TimeAverageMs(Action action)
     {
         for (var i = 0; i < WarmupIterations; i++)
@@ -199,9 +182,9 @@ public sealed partial class ScoringThroughputHarnessTests
     }
 
     /// <summary>
-    /// Attributes a full rebuild-path keystroke (empty -> query, the worst case that scores the
-    /// entire catalog) across the four passes and reports per-query numbers. Asserts only that the
-    /// app pass processes more items than the command pass and that scoring is deterministic.
+    /// Attributes a full rebuild keystroke (empty to query, the worst case that scores the whole
+    /// catalog) across the four passes. Asserts only that the app pass outweighs the command pass
+    /// and that scoring is deterministic.
     /// </summary>
     [TestMethod]
     public void FullKeystroke_AttributesCostAcrossBuckets()
@@ -226,7 +209,7 @@ public sealed partial class ScoringThroughputHarnessTests
 
             var enumMs = TimeAverageMs(() =>
             {
-                // Materialize the app list and strip pinned - mirrors GetItems().Cast().ToList() + Where.
+                // Mirrors the product's GetItems().Cast().ToList() plus the pinned filter.
                 var materialized = apps.ToList();
                 _ = materialized.Where(a => !pinnedIds.Contains(a.Command.Id)).ToList();
             });
@@ -252,11 +235,11 @@ public sealed partial class ScoringThroughputHarnessTests
             TestContext.WriteLine(
                 $"{raw,-8}| {enumMs,10:F3} | {cmdMs,10:F3} | {appMs,10:F3} | {fallbackMs,10:F3} | {total,8:F3} | {cmdScored.Length,10} | {appScored.Length,10}");
 
-            // Structural facts only. The app pass considers strictly more items than the command
-            // pass (thousands vs hundreds), which is why it dominates the keystroke cost.
+            // The app pass weighs thousands of items against the command pass's hundreds, which is
+            // why it dominates the keystroke cost.
             Assert.IsTrue(apps.Length > commands.Length, "Apps must outnumber commands in the catalog.");
 
-            // Determinism: re-scoring the same catalog with the same query yields the same result set.
+            // Re-scoring the same catalog with the same query yields the same result set.
             var appScoredAgain = InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>(), query, scoringFn);
             Assert.AreEqual(appScored.Length, appScoredAgain.Length, $"App scoring must be deterministic for query '{raw}'.");
             for (var i = 0; i < Math.Min(10, appScored.Length); i++)
@@ -267,9 +250,8 @@ public sealed partial class ScoringThroughputHarnessTests
     }
 
     /// <summary>
-    /// Characterizes the "1-char query matches almost everything" driver behind the settle-time
-    /// spike: on the first keystroke the retained app match set is a large fraction of the whole
-    /// catalog, so the next (extending) keystrokes still re-score a large set before it narrows.
+    /// Characterizes why the settle time spikes: a 1-char query retains a large slice of the
+    /// catalog, so the next few keystrokes still re-score a big set before it narrows.
     /// </summary>
     [TestMethod]
     public void OneCharQuery_RetainsLargeMatchSet_DrivesIncrementalCost()
@@ -282,8 +264,8 @@ public sealed partial class ScoringThroughputHarnessTests
         var oneChar = matcher.PrecomputeQuery("c");
         var firstMatches = InternalListHelpers.FilterListWithScores(apps.Cast<IListItem>(), oneChar, scoringFn);
 
-        // The extending keystroke ("c" -> "ca") re-scores only the retained subset, not the whole
-        // catalog - but that subset is still large, which is why the spike persists across frames.
+        // Extending to "ca" re-scores only the retained subset, but that subset is still large,
+        // which is why the spike carries across frames.
         var retained = firstMatches.Select(s => s.Item).ToList();
         var twoChar = matcher.PrecomputeQuery("ca");
         var secondMatches = InternalListHelpers.FilterListWithScores(retained, twoChar, scoringFn);
@@ -291,19 +273,15 @@ public sealed partial class ScoringThroughputHarnessTests
         var firstFraction = (double)firstMatches.Length / apps.Length;
         TestContext.WriteLine($"1-char 'c' matches {firstMatches.Length}/{apps.Length} apps ({firstFraction:P1}); extending to 'ca' re-scores {retained.Count} and keeps {secondMatches.Length}.");
 
-        // Structural: the extending keystroke never re-scores more than the retained set, and the
-        // narrower query can only keep a subset of the wider query's matches.
+        // A narrower query can only keep a subset of the wider query's matches.
         Assert.IsTrue(secondMatches.Length <= retained.Count, "Extending a query cannot add matches beyond the retained set.");
         Assert.IsTrue(firstMatches.Length > 0, "The 1-char query should match a non-trivial set.");
     }
 
     /// <summary>
-    /// Sub-attributes a single <see cref="MainListPage.ScoreTopLevelItem"/> into its components so
-    /// the overhaul-added cost is visible: fuzzy-DP scoring (title + subtitle [+ extension]) vs tier
-    /// classification (<see cref="MainListRanker.ClassifyTier"/> /
-    /// <see cref="MainListRanker.MatchesWordBoundaryOrAcronym"/>) vs frecency lookup. Reports per-item
-    /// nanoseconds and asserts only the direction of the extension-score delta (3 DP scores cost at
-    /// least as much as 2), which is a structural fact independent of the machine.
+    /// Splits a single <see cref="MainListPage.ScoreTopLevelItem"/> into fuzzy DP scoring, tier
+    /// classification, and frecency lookup so the overhaul's added cost is visible. Asserts only
+    /// the direction of the extension-score delta, which holds regardless of the machine.
     /// </summary>
     [TestMethod]
     public void PerItemScore_SubAttribution_DpVsTierVsFrecency()
@@ -313,8 +291,8 @@ public sealed partial class ScoringThroughputHarnessTests
         var history = SeedHistory(apps, HistorySeedCount);
         var scoringFn = BuildScoringFunction(history, matcher);
 
-        // Precompute per-item targets once (matches the cached live path) so the DP-only measurement
-        // isolates matcher.Score, not target construction.
+        // Precompute targets once, like the live cached path, so this measures matcher.Score and
+        // not target construction.
         var titleTargets = apps.Select(a => a.GetTitleTarget(matcher)).ToArray();
         var subtitleTargets = apps.Select(a => a.GetSubtitleTarget(matcher)).ToArray();
         var extensionTargets = apps.Select(a => matcher.PrecomputeTarget($"{a.Title} Extension")).ToArray();
@@ -379,7 +357,7 @@ public sealed partial class ScoringThroughputHarnessTests
             TestContext.WriteLine(
                 $"{raw,-8}| {fullNs,10:F1} | {twoDpNs,6:F1} | {threeDpNs,6:F1} | {extDelta,8:F1} | {classifyNs,12:F1} | {wordBoundaryNs,12:F1} | {frecencyNs,8:F1}");
 
-            // Structural: adding the extension DP score cannot make the DP measurement cheaper.
+            // Adding a third DP score can't make the measurement cheaper.
             Assert.IsTrue(threeDpNs >= twoDpNs * 0.5, "Three DP scores should not be dramatically cheaper than two; extension scoring is real added work.");
         }
     }
