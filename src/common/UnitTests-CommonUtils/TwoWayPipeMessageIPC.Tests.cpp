@@ -954,7 +954,10 @@ namespace UnitTestsCommonUtils
         TEST_METHOD(HandlerThreadStartFailureTransfersAndClosesPipeOnce)
         {
             FaultInjectionReset reset;
+            HANDLE handler_start_attempted = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+            Assert::IsNotNull(handler_start_attempted);
             two_way_pipe_message_ipc_test::FailHandlerThreadStartAfter(0);
+            two_way_pipe_message_ipc_test::SetHandlerThreadStartAttemptEvent(handler_start_attempted);
 
             const std::wstring input_pipe_name = UniquePipeName();
             HANDLE dispatched = CreateEventW(nullptr, TRUE, FALSE, nullptr);
@@ -966,6 +969,8 @@ namespace UnitTestsCommonUtils
 
             HANDLE first_client = ConnectPipeClient(input_pipe_name);
             Assert::IsTrue(first_client != INVALID_HANDLE_VALUE, L"the first client could not connect");
+            Assert::AreEqual(static_cast<DWORD>(WAIT_OBJECT_0), WaitForSingleObject(handler_start_attempted, 2'000),
+                             L"the injected handler-start failure was not consumed for the first client");
             CloseHandle(first_client);
             HANDLE second_client = ConnectPipeClient(input_pipe_name);
             Assert::IsTrue(second_client != INVALID_HANDLE_VALUE,
@@ -976,6 +981,8 @@ namespace UnitTestsCommonUtils
                              L"the replacement listener did not process the second client");
             CloseHandle(second_client);
             server.end();
+            two_way_pipe_message_ipc_test::SetHandlerThreadStartAttemptEvent(nullptr);
+            CloseHandle(handler_start_attempted);
             CloseHandle(dispatched);
         }
 

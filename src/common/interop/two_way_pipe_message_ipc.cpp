@@ -50,6 +50,7 @@ namespace
     std::atomic<HANDLE> after_replacement_listener_event{ nullptr };
     std::atomic<HANDLE> allow_after_replacement_listener_event{ nullptr };
     std::atomic_int handler_thread_start_failure_after{ -1 };
+    std::atomic<HANDLE> handler_thread_start_attempt_event{ nullptr };
     std::atomic<HANDLE> output_write_pending_event{ nullptr };
 
     void inject_thread_start_failure()
@@ -77,6 +78,10 @@ namespace
             {
                 if (handler_thread_start_failure_after.compare_exchange_weak(remaining, -1))
                 {
+                    if (const HANDLE attempt_event = handler_thread_start_attempt_event.load())
+                    {
+                        SetEvent(attempt_event);
+                    }
                     throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again));
                 }
                 continue;
@@ -124,6 +129,11 @@ namespace two_way_pipe_message_ipc_test
         handler_thread_start_failure_after.store(successful_starts);
     }
 
+    void SetHandlerThreadStartAttemptEvent(HANDLE event)
+    {
+        handler_thread_start_attempt_event.store(event);
+    }
+
     void SetOutputWritePendingEvent(HANDLE event)
     {
         output_write_pending_event.store(event);
@@ -140,6 +150,7 @@ namespace two_way_pipe_message_ipc_test
         after_replacement_listener_event.store(nullptr);
         allow_after_replacement_listener_event.store(nullptr);
         handler_thread_start_failure_after.store(-1);
+        handler_thread_start_attempt_event.store(nullptr);
         output_write_pending_event.store(nullptr);
     }
 }
