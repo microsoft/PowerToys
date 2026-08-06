@@ -1429,7 +1429,7 @@ opera.exe</value>
     <value>Update channel</value>
   </data>
   <data name="GeneralPage_UpdateChannelDescription.Text" xml:space="preserve">
-    <value>Choose which PowerToys releases you receive.</value>
+    <value>Choose which PowerToys releases you receive</value>
   </data>
   <data name="GeneralPage_UpdateChannelLearnMore.Content" xml:space="preserve">
     <value>Learn more</value>
