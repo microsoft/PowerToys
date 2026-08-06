@@ -91,6 +91,11 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// <returns>True when the running engine was signaled; otherwise false.</returns>
     public bool SetState()
     {
+        if (_isProcessElevated())
+        {
+            throw new UnauthorizedAccessException("Keyboard Manager profiles must be applied from a non-elevated process.");
+        }
+
         // Ensure the module settings exist so the engine can resolve the
         // active configuration; without it LoadSettings() bails out early.
         if (!_settingsUtils.SettingsExists(KeyboardManagerSettings.ModuleName))
