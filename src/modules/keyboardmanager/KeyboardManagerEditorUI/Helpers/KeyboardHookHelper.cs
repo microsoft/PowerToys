@@ -212,15 +212,10 @@ namespace KeyboardManagerEditorUI.Helpers
                 }
             }
 
-            // Sort modifier keys by the standard display order: Win(0) → Ctrl(1) → Alt(2) → Shift(3)
+            // Sort modifier keys by the standard display order: Win → Ctrl → Alt → Shift
             // This matches the old C++ GetKeyVector behavior where keys are always shown in
             // canonical order regardless of the order the user pressed them.
-            modifierKeys.Sort((a, b) =>
-            {
-                int typeA = KeyboardManagerInterop.GetKeyType((int)a);
-                int typeB = KeyboardManagerInterop.GetKeyType((int)b);
-                return typeA.CompareTo(typeB);
-            });
+            RemappingHelper.SortModifierKeys(modifierKeys);
 
             foreach (var key in modifierKeys)
             {
