@@ -90,14 +90,28 @@ if (($DesktopWidth -eq 0) -ne ($DesktopHeight -eq 0)) {
 
 Import-Module (Join-Path $PSScriptRoot 'LocalVmGuest.psm1') -Force
 
-if (-not $PlanOnly -and -not (Test-HyperVAccess)) {
-    throw (Get-HyperVAccessMessage)
-}
-
 $controllerName = 'Hyper-V local VM'
 if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
     $CredentialPath = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
 }
+
+# Hyper-V access, the guest credential, and the guest itself all need a human. Fail on the whole set
+# at once so the user gets one actionable instruction instead of three sequential surprises.
+if (-not $PlanOnly) {
+    $vmConfigPath = Join-Path $VmRoot 'vm.config.psd1'
+    $guestAdminUser = if (Test-Path $vmConfigPath -PathType Leaf) {
+        [string](Import-PowerShellDataFile $vmConfigPath).AdminUserName
+    }
+    else {
+        'PTAdmin'
+    }
+
+    $hostSetup = Test-LocalVmHostSetup -VmName $VmName -CredentialPath $CredentialPath -AdminUserName $guestAdminUser
+    if (-not $hostSetup.IsReady) {
+        throw (Get-LocalVmSetupMessage -Status $hostSetup -VmRoot $VmRoot)
+    }
+}
+
 $vmRootPath = [IO.Path]::GetFullPath($VmRoot)
 $exchangePath = [IO.Path]::GetFullPath($ExchangeRoot)
 $guestRunnerSourcePath = [IO.Path]::GetFullPath($GuestRunnerSource)

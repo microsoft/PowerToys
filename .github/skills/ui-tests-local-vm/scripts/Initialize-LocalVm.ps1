@@ -57,8 +57,10 @@ if ($PSCmdlet.ShouldProcess($destination, 'Scaffold the local Hyper-V UI-test VM
     VmRoot = $destination
     ConfigurationTemplate = (Join-Path $destination 'vm.config.example.psd1')
     NextSteps = @(
-        'Copy vm.config.example.psd1 to vm.config.psd1 and set the VM name, paths, and architecture.',
-        'Save the administrator PSCredential with Get-Credential | Export-Clixml as documented in references/setup.md.',
-        'From an elevated PowerShell 7 terminal, run New-UiTestVm.ps1 with -InstallMedia or -BaseVhdx.'
+        "Copy vm.config.example.psd1 to vm.config.psd1 and set the VM name, paths, and architecture.",
+        "Obtain media: pwsh $(Join-Path $PSScriptRoot 'Get-WindowsMedia.ps1') -Source Fido -Windows 11 -Architecture x64 -DestinationRoot $(Join-Path $destination 'media')",
+        "HUMAN-ONLY, elevated, once: pwsh $(Join-Path $PSScriptRoot 'Initialize-LocalVmHost.ps1') -VmRoot $destination -InstallMedia <windows.iso>",
+        "It joins Hyper-V Administrators, saves the DPAPI guest credential, and creates the guest - an agent cannot do any of these.",
+        "Agents: verify with -CheckOnly and stop until it reports IsReady=true."
     )
 } | ConvertTo-Json -Depth 4

@@ -226,10 +226,14 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0
 
 - **Do NOT delete or edit the legacy `[Module].UITests` project** in Scenario A. The `.Next` project
   lives alongside it; removing the old one is a separate, explicit decision for the maintainers.
-- **Do NOT touch product code.** This is a test-only migration. If a test needs a UIA hook that
-  doesn't exist (e.g. an `AutomationId` or a hidden automation-peer TextBlock), flag it for the user
-  rather than silently editing the module. (The ColorPicker example's `ColorHexAutomationPeer` hook
-  is a documented, pre-existing exception — see its class remarks.)
+- **Do NOT change product behaviour.** This is a test-only migration. The one sanctioned product edit
+  is adding **`AutomationProperties.AutomationId`** to a control that is otherwise unaddressable — an
+  icon-only button whose label lives in a tooltip has no UIA Name at all, and the alternative is a
+  brittle coordinate click. Use `AutomationProperties.AutomationId`, never `x:Name` (which also emits
+  a code-behind field); see [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)
+  Recipe 16. Anything larger — a hidden automation-peer TextBlock, a new property, a state string —
+  must be flagged for the user instead. (ColorPicker's `ColorHexAutomationPeer` hook is a documented,
+  pre-existing exception — see its class remarks.)
 - **Do NOT port the legacy plumbing literally.** No Selenium `Actions`, no `WindowsDriver`/`WindowsElement`,
   no `By.XPath`/`By.CssSelector`, no `:4723`. Map them to the winappcli idioms in
   [references/api-mapping.md](references/api-mapping.md).

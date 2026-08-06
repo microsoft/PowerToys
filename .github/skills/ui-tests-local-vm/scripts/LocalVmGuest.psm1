@@ -44,6 +44,119 @@ function Get-HyperVAccessMessage {
     return 'BLOCKED: Hyper-V is not accessible from this shell. Run from an elevated PowerShell 7 terminal, or add this account to the local "Hyper-V Administrators" group (a one-time elevated change that takes effect after signing out and back in).'
 }
 
+function Test-LocalVmHostSetup {
+    <#
+    .SYNOPSIS
+    Reports which of the human-only host prerequisites are in place.
+
+    .DESCRIPTION
+    Three things must exist before any agent-driven run can work, and none of them can be created by
+    an agent: Hyper-V access for this shell, the DPAPI guest-administrator credential, and the guest
+    itself. Initialize-LocalVmHost.ps1 performs all three; this function only observes them.
+    #>
+    [CmdletBinding()]
+    param(
+        [string]$VmName,
+        [string]$CredentialPath,
+        [string]$AdminUserName = 'PTAdmin'
+    )
+
+    if ([string]::IsNullOrWhiteSpace($CredentialPath)) {
+        $CredentialPath = Join-Path $env:LOCALAPPDATA 'PowerToysUiTestVm\admin.credential.xml'
+    }
+
+    $hyperVAccess = Test-HyperVAccess
+
+    $credentialDetail = 'ok'
+    $credentialReady = $false
+    if (-not (Test-Path $CredentialPath -PathType Leaf)) {
+        $credentialDetail = "missing: $CredentialPath"
+    }
+    else {
+        try {
+            $credential = Import-Clixml $CredentialPath
+            if ($credential -isnot [pscredential]) {
+                $credentialDetail = 'file does not contain a PSCredential'
+            }
+            else {
+                $credentialUser = $credential.UserName -replace '^.*\\', ''
+                if ($credentialUser -ne $AdminUserName) {
+                    $credentialDetail = "stored for '$credentialUser' but the configuration expects '$AdminUserName'"
+                }
+                else {
+                    $credentialReady = $true
+                }
+            }
+        }
+        catch {
+            # A credential saved by another Windows user or on another host cannot be decrypted here.
+            $credentialDetail = "unreadable ($($_.Exception.Message))"
+        }
+    }
+
+    $guestReady = $false
+    $guestDetail = 'not checked (no Hyper-V access)'
+    if ($hyperVAccess -and -not [string]::IsNullOrWhiteSpace($VmName)) {
+        $guest = Get-VM -Name $VmName -ErrorAction SilentlyContinue
+        if ($null -eq $guest) {
+            $guestDetail = "missing: no virtual machine named '$VmName'"
+        }
+        else {
+            $guestReady = $true
+            $guestDetail = "ok (State=$($guest.State))"
+        }
+    }
+    elseif ($hyperVAccess) {
+        $guestDetail = 'not checked (no VmName supplied)'
+        $guestReady = $true
+    }
+
+    $missing = @()
+    if (-not $hyperVAccess) { $missing += 'HyperVAccess' }
+    if (-not $credentialReady) { $missing += 'Credential' }
+    if (-not $guestReady) { $missing += 'Guest' }
+
+    return [pscustomobject]@{
+        HyperVAccess = $hyperVAccess
+        HyperVAccessDetail = if ($hyperVAccess) { 'ok' } else { 'missing: elevate, or join the local "Hyper-V Administrators" group and sign out/in' }
+        Credential = $credentialReady
+        CredentialDetail = $credentialDetail
+        CredentialPath = $CredentialPath
+        Guest = $guestReady
+        GuestDetail = $guestDetail
+        VmName = $VmName
+        Missing = $missing
+        IsReady = $missing.Count -eq 0
+    }
+}
+
+function Get-LocalVmSetupMessage {
+    <#
+    .SYNOPSIS
+    Builds the BLOCKED message naming the one command a human must run.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]$Status,
+        [string]$VmRoot = '<VmRoot>',
+        [string]$InstallMedia = '<windows.iso>'
+    )
+
+    $lines = @(
+        "BLOCKED: local-VM host setup is incomplete ($($Status.Missing -join ', ')).",
+        "  Hyper-V access : $($Status.HyperVAccessDetail)",
+        "  Credential     : $($Status.CredentialDetail)",
+        "  Guest          : $($Status.GuestDetail)",
+        '',
+        'These steps need a human: they require elevation (which no tool call can approve) and a',
+        'password (which must never be routed through a model). Ask the user to run, once:',
+        '',
+        "  pwsh -File <skill>\scripts\Initialize-LocalVmHost.ps1 -VmRoot $VmRoot -InstallMedia $InstallMedia",
+        '',
+        'Do not continue or work around this - re-check with -CheckOnly after they confirm.')
+    return ($lines -join [Environment]::NewLine)
+}
+
 function New-LocalVmContext {
     <#
     .SYNOPSIS
@@ -320,6 +433,7 @@ function Read-GuestJson {
 }
 
 Export-ModuleMember -Function `
-    Test-HyperVAccess, Get-HyperVAccessMessage, New-LocalVmContext, New-LocalVmSession, `
+    Test-HyperVAccess, Get-HyperVAccessMessage, Test-LocalVmHostSetup, Get-LocalVmSetupMessage, `
+    New-LocalVmContext, New-LocalVmSession, `
     Initialize-GuestExchange, Copy-ToGuest, Copy-FromGuest, Remove-GuestItem, Write-GuestText, `
     Read-GuestJson

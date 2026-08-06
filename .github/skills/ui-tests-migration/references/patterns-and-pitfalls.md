@@ -364,6 +364,48 @@ VisualAssert.AreEqual(TestContext, window, scenarioSubname: "image");
 bounded retries. Keep platform-specific embedded baselines. If a correctly rendered video disagrees
 with a screenshot, diagnose capture/z-order before touching the baseline or 95% threshold.
 
+## Recipe 16 — Give an unaddressable control a test hook
+
+An icon-only button whose label lives in a `ToolTipService.ToolTip` has **no** UIA Name: the
+automation peer builds the name from the content's plain text, and a `FontIcon` has none. There is
+nothing for `By.Name` to match and nothing for `By.AccessibilityId` to match either, so the only
+test-side option left is clicking raw coordinates derived from a neighbouring control — brittle,
+DPI-sensitive, and silently wrong when the layout changes.
+
+The fix is a **one-attribute product edit**: add `AutomationProperties.AutomationId`.
+
+```xml
+<Button
+    AutomationProperties.AutomationId="ReloadBtn"
+    Command="{Binding LoadProcessesCommand}"
+    Content="{ui:FontIcon Glyph=&#xe72c;, FontSize=16}"
+    Style="{StaticResource SubtleButtonStyle}">
+    <ToolTipService.ToolTip>
+        <TextBlock x:Uid="Reload" />
+    </ToolTipService.ToolTip>
+</Button>
+```
+
+```csharp
+ui.Find<Button>(By.AccessibilityId("ReloadBtn")).Click();
+```
+
+Rules for using it:
+
+- **`AutomationProperties.AutomationId`, not `x:Name`.** `x:Name` does yield an AutomationId, but it
+  also generates a code-behind field and turns a pure markup change into something a developer can
+  bind to and depend on. `AutomationProperties.AutomationId` is inert: no field, no codegen, no
+  visual, no localization, no behaviour, and it never appears in the accessible name a screen reader
+  reads.
+- **Only when the control is genuinely unaddressable.** Try `By.Name`, `By.AccessibilityId` on an
+  existing `x:Name`, and `GetValue()` (Recipe 8) first. Do not sprinkle ids over controls that already
+  resolve.
+- **Add the id, not the behaviour.** Anything beyond an id — a hidden automation-peer TextBlock like
+  ColorPicker's `ColorHexAutomationPeer`, a new property, a state string — is a real product change:
+  describe it and let the maintainers decide.
+- **Name it after the control, not the test**, and keep it stable; it is now part of the module's
+  automation contract.
+
 ---
 
 ## Pitfalls

@@ -124,6 +124,9 @@ flowchart LR
 Create and maintain this task list:
 
 ```markdown
+- [ ] 0. Verify host setup FIRST: `Initialize-LocalVmHost.ps1 -VmRoot <root> -CheckOnly`. If it reports
+        IsReady=false, STOP and ask the user to run the elevated command it prints - Hyper-V group
+        membership, the DPAPI credential, and guest creation all need a human. Never autopilot past it
 - [ ] 1. Read ui-tests-migration guidance for the target test surface
 - [ ] 1a. Read the target module's dev docs — `doc/devdocs/modules/<module>.md` (search `doc/devdocs/`,
         including `common/`, if the exact file is missing) — for development-cycle gotchas such as
@@ -146,7 +149,17 @@ Create and maintain this task list:
 
 ## Quick start
 
-Scaffold the VM directory outside the repository:
+Host setup is a one-time, **human-only** step: Hyper-V group membership, the DPAPI guest credential,
+and guest creation all need elevation or a password. Check it before anything else - this needs no
+elevation and changes nothing:
+
+```pwsh
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVmHost.ps1 -VmRoot X:\PowerToysUiTestVm -CheckOnly
+```
+
+If it reports `IsReady=false`, stop and ask the user to run the elevated command it prints (see
+[references/setup.md §0](references/setup.md#0-human-only-host-setup-one-command)). Otherwise scaffold
+the VM directory outside the repository:
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVm.ps1 `
@@ -181,9 +194,13 @@ waits for parseable `status.json`, summarizes TRX, and leaves the persistent VM 
 
 ## Non-negotiable rules
 
-- Run from a shell that can manage Hyper-V: elevated, or an account in the local Hyper-V
-  Administrators group. Creating a guest additionally requires elevation. Report `BLOCKED` rather
-  than substituting a weaker channel or asking for a password.
+- Complete host setup before anything else and **never autopilot around it**. Hyper-V group
+  membership, the DPAPI guest credential, and guest creation are human-only: two need elevation that
+  no tool call can approve, one needs a password that must never reach a model.
+  `Initialize-LocalVmHost.ps1` performs all three; agents run it `-CheckOnly`, and on
+  `IsReady=false` report `BLOCKED`, print the elevated command it emits, and wait. Do not ask for a
+  password, do not substitute a weaker channel, do not proceed on a partial setup.
+  `Invoke-LocalVmUiTest.ps1` enforces the same check.
 - Keep the guest's VHDX and VM configuration on NTFS. On this project's host, keeping them on a Dev
   Drive wedged the VM management service twice - `vmms` at 0% CPU, even `Get-VM` hanging, host reboot
   to recover - and moving to NTFS fixed it. This is an observation on one host, not a property of

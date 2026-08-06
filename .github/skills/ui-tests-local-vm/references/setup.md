@@ -24,14 +24,9 @@ What you get:
 ## Host requirements
 
 - Windows 10/11 Pro, Enterprise, or Education with the Hyper-V feature enabled, or Windows Server.
-- Permission to manage Hyper-V. The scripts probe the capability rather than the token shape:
-  - An **elevated** PowerShell 7 terminal always works and is required to *create* a guest, because
-    `New-UiTestVm.ps1` reads the installation image and creates the virtual disk.
-  - Membership in the local **Hyper-V Administrators** group is enough for the day-to-day
-    start/stop/reset and test-run path, including PowerShell Direct, without elevation. Add it once
-    from an elevated shell and sign out and back in:
-    `Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member <domain\user>`
-  - Without either, every script stops with `BLOCKED` instead of degrading the channel.
+- Permission to manage Hyper-V, granted once through [step 0](#0-grant-hyper-v-access-one-time-elevated).
+  The scripts probe the capability rather than the token shape, and stop with `BLOCKED` rather than
+  degrading the channel when neither route is available.
 - **Guest storage on an NTFS volume.** On the host this skill was built against, keeping the VHDX on
   a Dev Drive wedged the Hyper-V management service mid-operation: `vmms` and `vmwp` sat at 0% CPU,
   later management calls never returned - including read-only ones such as `Get-VM` - and recovery
@@ -55,6 +50,67 @@ What you get:
 
 > **ARM64 guests need ARM64 payloads.** An ARM64 guest needs ARM64 PowerToys, test, winappcli, .NET,
 > and WebView2 payloads, and it must be run with `-Platform ARM64` so visual baselines resolve.
+
+## 0. Human-only host setup (one command)
+
+Three prerequisites gate every agent-driven run, and **an agent can perform none of them**: two need
+elevation, which no tool call can approve, and one needs a password, which must never be routed
+through a model. `Initialize-LocalVmHost.ps1` does all three, reports what is already in place,
+performs only what is missing, and is safe to re-run.
+
+| # | Prerequisite | Why a human |
+|---|---|---|
+| 1 | Membership in the local **Hyper-V Administrators** group | Elevation; takes effect only after signing out and back in |
+| 2 | DPAPI **guest administrator credential** | A password typed straight into the prompt |
+| 3 | The **guest** itself (`New-UiTestVm.ps1`) | Elevation, to read the media and create the virtual disk |
+
+Scaffold ([step 1](#1-scaffold)) and obtain media ([step 3](#3-get-windows-media)) first, then run
+this once from an **elevated PowerShell 7** terminal:
+
+```pwsh
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVmHost.ps1 `
+  -VmRoot C:\PowerToysUiTestVm `
+  -InstallMedia C:\PowerToysUiTestVm\media\Win11_25H2_English_x64.iso
+```
+
+If the account was not yet in Hyper-V Administrators, the script adds it and stops: group membership
+is baked into the logon token, so it **signs out and back in, then re-runs** to finish steps 2 and 3.
+Everything after that is unattended.
+
+### Agents: check, then stop
+
+Run it with `-CheckOnly`. It needs no elevation, changes nothing, prints a status table, and exits
+non-zero when something is missing:
+
+```pwsh
+pwsh .github\skills\ui-tests-local-vm\scripts\Initialize-LocalVmHost.ps1 -VmRoot C:\PowerToysUiTestVm -CheckOnly
+```
+
+```text
+Local UI-test VM host setup - PowerToysUiTest-Win11
+  [ok]      Hyper-V access    ok
+  [missing] Guest credential  missing: ...\admin.credential.xml
+  [ok]      Guest             ok (State=Running)
+```
+
+When it reports `IsReady=false`, **stop and ask the user to run the elevated command it prints.** Do
+not autopilot around it, do not ask for a password, and do not substitute a weaker channel.
+`Invoke-LocalVmUiTest.ps1` enforces the same check and throws `BLOCKED` with the same instruction.
+
+Useful switches: `-CheckOnly`, `-SkipGroupMembership`, `-SkipCredential`, `-SkipGuestCreation`,
+`-Account` (defaults to the current user), `-Force`, `-AllowReFsVolume`.
+
+### Verifying by hand
+
+```pwsh
+whoami /groups | Select-String 'Hyper-V Administrators'   # must print the group
+Get-VM                                                    # must not throw a permission error
+```
+
+`Get-VM: You do not have the required permission to complete this task` means the membership is
+missing or the session predates it. Membership alone covers the whole run loop - scaffold, start and
+stop, checkpoint reset, PowerShell Direct, `Copy-VMFile`; only **creating** a guest additionally needs
+an elevated terminal.
 
 ## 1. Scaffold
 
@@ -80,6 +136,9 @@ Copy `vm.config.example.psd1` to `vm.config.psd1` and set the VM name, storage p
 `ProcessorArchitecture`. The configuration never contains a password.
 
 ## 2. Save the administrator credential first
+
+[Step 0](#0-human-only-host-setup-one-command) does this for you. The equivalent by hand, when you
+want to rotate the password or stage it separately:
 
 `New-UiTestVm.ps1` reads the guest administrator password from a DPAPI-protected file so it never
 appears in a command line, a configuration file, or a chat prompt. Type it directly into the prompt.
@@ -120,6 +179,9 @@ A prepared, generalized VHDX is not supported by this script: it always installs
 Setup owns the disk layout and the boot configuration.
 
 ## 4. Create the guest
+
+[Step 0](#0-human-only-host-setup-one-command) invokes this script for you. Call it directly when you
+want `-ListImages`, `-PlanOnly`, or to rebuild an existing guest with `-Force`.
 
 ```pwsh
 # Inspect what the media contains.

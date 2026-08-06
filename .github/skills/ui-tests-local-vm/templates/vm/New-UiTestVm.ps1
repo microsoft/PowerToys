@@ -497,22 +497,31 @@ $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
 $provisioning = $null
 $desktopUser = $null
 $lastConnectionError = $null
+$lastFailureStage = 'connect'
 $attempt = 0
 do {
     Start-Sleep -Seconds 20
     $attempt++
     try {
+        $lastFailureStage = 'connect'
         $session = New-PSSession -VMName $configuration.VmName -Credential $credential -ErrorAction Stop
+        $lastFailureStage = 'query'
         try {
             $guestState = Invoke-Command -Session $session -ScriptBlock {
                 param($InteractiveUser)
+                # PowerShell Direct lands on the guest's in-box PowerShell 5.1, whose parser rejects a
+                # multi-line statement as a hashtable value ("The hash literal was incomplete"). Build
+                # the values first so this scriptblock parses on 5.1 as well as 7.
+                $provisioningJson = $null
+                if (Test-Path C:\OEM\ProvisioningReady.json -PathType Leaf) {
+                    $provisioningJson = Get-Content C:\OEM\ProvisioningReady.json -Raw
+                }
+                $interactiveExplorer = @(Get-Process explorer -IncludeUserName -ErrorAction SilentlyContinue |
+                    Where-Object { $_.UserName -like "*\$InteractiveUser" } |
+                    Select-Object -First 1 -ExpandProperty UserName)
                 [pscustomobject]@{
-                    Provisioning = if (Test-Path C:\OEM\ProvisioningReady.json -PathType Leaf) {
-                        Get-Content C:\OEM\ProvisioningReady.json -Raw
-                    }
-                    DesktopUser = @(Get-Process explorer -IncludeUserName -ErrorAction SilentlyContinue |
-                        Where-Object { $_.UserName -like "*\$InteractiveUser" } |
-                        Select-Object -First 1 -ExpandProperty UserName)
+                    Provisioning = $provisioningJson
+                    DesktopUser = $interactiveExplorer
                 }
             } -ArgumentList $configuration.StandardUser
             $provisioning = $guestState.Provisioning
@@ -528,11 +537,14 @@ do {
     }
     # Surface why the guest is still not answering; silence here hides real failures for the whole timeout.
     if (($attempt % 6) -eq 0) {
-        $state = if ($null -ne $lastConnectionError) {
-            "not reachable: $lastConnectionError"
+        if ($null -ne $lastConnectionError) {
+            # A guest-side failure looks nothing like an unreachable guest: reporting both as
+            # "not reachable" hid a scriptblock parse error until the timeout expired.
+            $stagePrefix = if ($lastFailureStage -eq 'connect') { 'not reachable' } else { 'reachable, but the guest query failed' }
+            $state = "${stagePrefix}: $lastConnectionError"
         }
         else {
-            "reachable; provisioned=$(-not [string]::IsNullOrWhiteSpace($provisioning)) desktopUser='$desktopUser'"
+            $state = "reachable; provisioned=$(-not [string]::IsNullOrWhiteSpace($provisioning)) desktopUser='$desktopUser'"
         }
         Write-Host "  still waiting after $([int]($attempt * 20 / 60)) minute(s) - $state"
     }
@@ -542,7 +554,12 @@ do {
     }
     if ([DateTime]::UtcNow -ge $deadline) {
         $reason = if ($null -ne $lastConnectionError) {
-            "the guest never answered PowerShell Direct: $lastConnectionError"
+            if ($lastFailureStage -eq 'connect') {
+                "the guest never answered PowerShell Direct: $lastConnectionError"
+            }
+            else {
+                "PowerShell Direct connected but the readiness query failed: $lastConnectionError"
+            }
         }
         elseif ([string]::IsNullOrWhiteSpace($provisioning)) {
             'C:\OEM\ProvisioningReady.json was never written'
