@@ -404,10 +404,19 @@ public static class KbmProfileConverter
             from = new KbmShortcutParser.ParsedKeys(from.Keys, from.Keys[^1]);
         }
 
+        // Preserve the engine's exact process scope. It lower-cases stored app
+        // names but does not trim them, so exporting a whitespace-padded name
+        // as a trimmed name would activate the remap for a different process.
+        if (app != null && app != app.Trim())
+        {
+            warnings?.Add($"Skipping app-specific shortcut remap entry '{stored.OriginalKeys}' with surrounding whitespace in its target application");
+            return null;
+        }
+
         return new KbmShortcutRemapEntry
         {
             From = KbmShortcutParser.Format(KbmShortcutParser.Canonicalize(from)),
-            TargetApp = NormalizeTargetApp(app),
+            TargetApp = app?.ToLowerInvariant(),
             ExactMatch = stored.ExactMatch == true ? true : null,
         };
     }
