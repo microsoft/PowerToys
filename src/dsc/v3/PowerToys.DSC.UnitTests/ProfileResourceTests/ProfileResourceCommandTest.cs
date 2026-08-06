@@ -82,4 +82,20 @@ public sealed class ProfileResourceCommandTest : BaseDscTest
         Assert.AreEqual(DscMessageLevel.Error, messages[0].Level);
         Assert.AreEqual(GetResourceString("InputEmptyOrNullError"), messages[0].Message);
     }
+    [TestMethod]
+    public void SetState_ElevatedProcess_Throws()
+    {
+        var data = new PowerToys.DSC.Models.FunctionData.ProfileFunctionData(
+            """{"profile":{"keys":[],"shortcuts":[]}}""",
+            () => true);
+
+        try
+        {
+            data.SetState();
+            Assert.Fail("An elevated profile write must be rejected.");
+        }
+        catch (System.UnauthorizedAccessException)
+        {
+        }
+    }
 }
