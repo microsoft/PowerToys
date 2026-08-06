@@ -34,7 +34,10 @@ public static class KbmProfileConverter
 
     /// <summary>
     /// Validates the friendly model and returns the list of validation
-    /// errors; an empty list means the model is valid.
+    /// errors; an empty list means the model is valid. The messages are
+    /// intentionally not localized: they quote JSON property paths and key
+    /// names that must match the configuration document verbatim, and are
+    /// presented inside the localized InvalidProfileError message frame.
     /// </summary>
     /// <param name="model">The friendly model to validate.</param>
     /// <returns>The list of validation errors.</returns>
