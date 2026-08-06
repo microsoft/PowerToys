@@ -2130,6 +2130,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_MouseWithoutBorders.Description" xml:space="preserve">
     <value>Mouse Without Borders enables using the mouse pointer, keyboard, clipboard and drag and drop between machines in the same local network.</value>
+    <comment>For German, use "Drag &amp; Drop" with a literal ampersand character, not the text "&amp;amp;".</comment>
   </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
