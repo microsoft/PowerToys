@@ -187,7 +187,6 @@ public static class KbmProfileConverter
             var app = NormalizeTargetApp(entry.TargetApp);
             var stored = app != null ? new AppSpecificKeysDataModel { TargetApp = app } : new KeysDataModel();
             stored.OriginalKeys = from.ToVkString();
-            stored.SecondKeyOfChord = from.SecondKeyOfChord;
             stored.ExactMatch = entry.ExactMatch ?? false;
 
             var isText = false;
@@ -216,7 +215,12 @@ public static class KbmProfileConverter
             }
             else
             {
-                stored.NewRemapKeys = ParseTargetOrThrow(entry.To!).ToVkString();
+                var target = ParseTargetOrThrow(entry.To!);
+                stored.NewRemapKeys = target.ToVkString();
+                if (!target.IsSingleKey)
+                {
+                    stored.OperationType = OperationTypeRemapShortcut;
+                }
             }
 
             var section = isText ? profile.RemapShortcutsToText : profile.RemapShortcuts;
