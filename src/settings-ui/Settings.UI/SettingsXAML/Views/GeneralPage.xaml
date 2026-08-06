@@ -92,9 +92,6 @@
                                 Visibility="{x:Bind ViewModel.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_AutoDownloadAndInstallUpdates" IsChecked="{Binding Mode=TwoWay, Path=AutoDownloadUpdates}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsIncludePrereleaseUpdatesCardEnabled}">
-                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_IncludePrereleaseUpdates" IsChecked="{Binding Mode=TwoWay, Path=IncludePrereleaseUpdates}" />
-                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind Mode=OneWay, Path=ViewModel.IsShowNewUpdatesToastNotificationCardEnabled}">
                                 <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GeneralPage_ShowNewUpdatesToast" IsChecked="{Binding Mode=TwoWay, Path=ShowNewUpdatesToastNotification}" />
                             </tkcontrols:SettingsCard>
@@ -103,6 +100,62 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsIncludePrereleaseUpdatesGpoManaged, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander
+                            x:Uid="GeneralPage_UpdateChannel"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xF1AD;}"
+                            IsEnabled="{x:Bind ViewModel.IsIncludePrereleaseUpdatesCardEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.Description>
+                                <StackPanel Orientation="Vertical">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelDescription" Style="{StaticResource SecondaryTextStyle}" />
+                                    <HyperlinkButton
+                                        x:Uid="GeneralPage_UpdateChannelLearnMore"
+                                        Margin="0,2,0,0"
+                                        FontWeight="SemiBold"
+                                        NavigateUri="https://aka.ms/powertoys-insiders" />
+                                </StackPanel>
+                            </tkcontrols:SettingsExpander.Description>
+                            <tkcontrols:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=OneWay}">
+                                <tkcontrols:Case Value="True">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelInsiderStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </tkcontrols:Case>
+                                <tkcontrols:Case Value="False">
+                                    <ptcontrols:IsEnabledTextBlock x:Uid="GeneralPage_UpdateChannelStableStatus" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </tkcontrols:Case>
+                            </tkcontrols:SwitchPresenter>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard ContentAlignment="Left">
+                                    <StackPanel Orientation="Vertical" Spacing="12">
+                                        <RadioButton
+                                            AutomationProperties.AutomationId="StableUpdateChannelRadioButton"
+                                            GroupName="PowerToysUpdateChannel"
+                                            IsChecked="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}">
+                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                <TextBlock x:Uid="GeneralPage_UpdateChannelStableTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                <TextBlock
+                                                    x:Uid="GeneralPage_UpdateChannelStableDescription"
+                                                    Style="{StaticResource SecondaryTextStyle}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                        <RadioButton
+                                            AutomationProperties.AutomationId="InsiderUpdateChannelRadioButton"
+                                            GroupName="PowerToysUpdateChannel"
+                                            IsChecked="{x:Bind ViewModel.IncludePrereleaseUpdates, Mode=TwoWay}">
+                                            <StackPanel Orientation="Vertical" Spacing="4">
+                                                <TextBlock x:Uid="GeneralPage_UpdateChannelInsiderTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                <TextBlock
+                                                    x:Uid="GeneralPage_UpdateChannelInsiderDescription"
+                                                    Style="{StaticResource SecondaryTextStyle}"
+                                                    TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
+                    </controls:GPOInfoControl>
 
                     <StackPanel Orientation="Vertical">
                         <InfoBar
