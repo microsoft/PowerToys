@@ -96,7 +96,9 @@ public partial class DockItemViewModelTests
                 .GetInvocationList()
                 .Length ?? 0;
 
-        public void SetItem(IListItem item) => Volatile.Write(ref _items, [item]);
+        public void SetItem(IListItem item) => SetItems(item);
+
+        public void SetItems(params IListItem[] items) => Volatile.Write(ref _items, items);
 
         public void OnNextGetItems(Action callback) => Volatile.Write(ref _getItemsCallback, callback);
 
@@ -150,6 +152,34 @@ public partial class DockItemViewModelTests
 
             Assert.AreSame(original, fixture.Band.Items[0]);
             Assert.IsFalse(original.Initialized.HasFlag(InitializedState.CleanedUp));
+        }
+        finally
+        {
+            CleanupFixture(fixture);
+        }
+    }
+
+    [TestMethod]
+    public void DuplicateItems_ReuseSingleViewModel()
+    {
+        var fixture = CreateBandFixture();
+        try
+        {
+            var duplicate = CreateItem("Duplicate");
+            fixture.Page.SetItems(duplicate, duplicate);
+
+            fixture.Page.TriggerItemsChanged();
+            fixture.Scheduler.ExecuteUntil(() => fixture.Band.Items.Count == 2);
+
+            Assert.AreSame(fixture.Band.Items[0], fixture.Band.Items[1]);
+
+            var sharedViewModel = fixture.Band.Items[0];
+            fixture.Page.SetItem(duplicate);
+            fixture.Page.TriggerItemsChanged();
+            fixture.Scheduler.ExecuteUntil(() => fixture.Band.Items.Count == 1);
+
+            Assert.AreSame(sharedViewModel, fixture.Band.Items[0]);
+            Assert.IsFalse(sharedViewModel.Initialized.HasFlag(InitializedState.CleanedUp));
         }
         finally
         {
