@@ -284,7 +284,8 @@
   <data name="Performance_Monitor_Disabled_Body" xml:space="preserve">
     <value>Performance monitor was temporarily disabled after repeated crashes while initializing or reading performance counters.
 
-  Select **Re-enable now** to clear the crash guard and restore the Performance Monitor command and dock band in the current session.</value>
+  Select **Re-enable now** to clear the crash guard and restore the Performance Monitor command and Dock band in the current session.</value>
+    <comment>"Dock" is a product name for "Command Palette Dock" and should not be translated. A Dock band is a strip of Dock items, not a music band.</comment>
   </data>
   <data name="Performance_Monitor_Reenable_Title" xml:space="preserve">
     <value>Re-enable now</value>
