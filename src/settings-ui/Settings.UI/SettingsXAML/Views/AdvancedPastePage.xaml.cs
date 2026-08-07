@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using LanguageModelProvider;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -65,6 +66,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 ViewModel.OnPageLoaded();
                 UpdatePasteAIUIVisibility();
                 await UpdateFoundryLocalUIAsync();
+
+                if (ViewModel.IsWslMode)
+                {
+                    await ViewModel.RefreshWslDistrosAsync();
+                }
+
+                if (OpenScriptsFolderButton is not null)
+                {
+                    ToolTipService.SetToolTip(OpenScriptsFolderButton, ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_PythonScripts_OpenFolder"));
+                }
             };
 
             Unloaded += (_, _) =>
@@ -261,6 +272,86 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     ViewModel.PasteAIProviderDraft.ModelPath = selectedFile;
                 }
+            }
+        }
+
+        private void BrowsePythonExecutablePath_Click(object sender, RoutedEventArgs e)
+        {
+            string selectedFile = PickFileDialog(
+                "Python Executable\0python.exe;python3.exe\0All Executables\0*.exe\0",
+                "Select Python Executable");
+
+            if (!string.IsNullOrEmpty(selectedFile))
+            {
+                PythonExecutablePathTextBox.Text = selectedFile;
+                if (ViewModel is not null)
+                {
+                    ViewModel.PythonExecutablePath = selectedFile;
+                }
+            }
+        }
+
+        private void BrowseScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            IntPtr windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(App.GetSettingsWindow());
+            string selectedFolder = ShellGetFolder.GetFolderDialogWithFlags(
+                windowHandle,
+                ShellGetFolder.FolderDialogFlags._BIF_NEWDIALOGSTYLE);
+
+            if (!string.IsNullOrEmpty(selectedFolder))
+            {
+                ScriptsFolderTextBox.Text = selectedFolder;
+                if (ViewModel is not null)
+                {
+                    ViewModel.ScriptsFolder = selectedFolder;
+                }
+            }
+        }
+
+        private void OpenScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = ViewModel?.ScriptsFolder;
+            if (string.IsNullOrEmpty(folder))
+            {
+                return;
+            }
+
+            try
+            {
+                System.IO.Directory.CreateDirectory(folder);
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to open the Advanced Paste scripts folder: {folder}", ex);
+            }
+        }
+
+        private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.RefreshPythonScripts();
+            RefreshScriptsButton.Content = ResourceLoaderInstance.ResourceLoader.GetString("AdvancedPaste_PythonScript_RefreshScripts/Content");
+        }
+
+        private void OpenPythonScript_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: AdvancedPastePythonScriptAction action })
+            {
+                return;
+            }
+
+            if (System.IO.File.Exists(action.ScriptPath))
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo("notepad.exe")
+                {
+                    UseShellExecute = false,
+                };
+                startInfo.ArgumentList.Add(action.ScriptPath);
+                System.Diagnostics.Process.Start(startInfo);
             }
         }
 
