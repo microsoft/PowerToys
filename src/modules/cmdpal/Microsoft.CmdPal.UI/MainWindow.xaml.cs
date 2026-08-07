@@ -95,6 +95,7 @@ public sealed partial class MainWindow : WindowEx,
     private int _sessionErrorCount;
 
     private bool _isUpdatingBackdrop;
+    private bool _isBackdropUpdatePending;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
     // Tracks the chrome mode currently applied to the HWND. Nullable so the first
@@ -226,12 +227,39 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ThemeServiceOnThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        UpdateBackdrop();
+        ScheduleBackdropUpdate();
     }
 
     private void RootElement_ActualThemeChanged(FrameworkElement sender, object args)
     {
-        DispatcherQueue.TryEnqueue(UpdateBackdrop);
+        ScheduleBackdropUpdate();
+    }
+
+    private void ScheduleBackdropUpdate()
+    {
+        // A theme reload changes RequestedTheme several times to force WinUI to refresh
+        // its resources. Coalesce the resulting ThemeChanged / ActualThemeChanged events
+        // so the SystemBackdropElement is only updated once with the final theme.
+        if (_isBackdropUpdatePending)
+        {
+            return;
+        }
+
+        _isBackdropUpdatePending = true;
+        if (!DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                UpdateBackdrop();
+            }
+            finally
+            {
+                _isBackdropUpdatePending = false;
+            }
+        }))
+        {
+            _isBackdropUpdatePending = false;
+        }
     }
 
     private static void LocalKeyboardListener_OnKeyPressed(object? sender, LocalKeyboardListenerKeyPressedEventArgs e)
@@ -1142,9 +1170,10 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        // The backdrop controllers now live on the SystemBackdropElement inside
-        // CmdPalMainControl. Clearing its SystemBackdrop fires OnTargetDisconnected on the
-        // current backdrop, which removes targets and disposes the underlying controller.
+        // Backdrop resources are thread-affine. ClearBackdrop closes the active controller or
+        // brush on the XAML thread, but leaves SystemBackdrop assigned so its target stays rooted.
+        // Clearing it can let C#/WinRT finalize ContentExternalBackdropLink off-thread, which
+        // fail-fasts with RPC_E_WRONG_THREAD (0x8001010E).
         try
         {
             RootElement?.ClearBackdrop();
