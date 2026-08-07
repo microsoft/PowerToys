@@ -139,9 +139,11 @@
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
                 Visibility="Collapsed" />
-            <!--  Single-key remap condition (dual-key / tap-alone). Only meaningful for a single-key
-                  remap whose action is a key/shortcut; visibility is gated in code-behind
-                  (UpdateConditionVisibility) and it starts collapsed.  -->
+            <!--
+                Single-key remap condition (dual-key / tap-alone). Only meaningful for a single-key
+                remap whose action is a key/shortcut; visibility is gated in code-behind
+                (UpdateConditionVisibility) and it starts collapsed.
+            -->
             <ComboBox
                 x:Name="ConditionComboBox"
                 x:Uid="ConditionComboBox"
