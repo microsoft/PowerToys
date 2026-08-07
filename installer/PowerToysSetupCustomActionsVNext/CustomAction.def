@@ -36,5 +36,7 @@ EXPORTS
 	SetBundleInstallLocationCA
 	InstallPackageIdentityMSIXCA
 	UninstallPackageIdentityMSIXCA
+	InstallPTSettingsSvcCA
+	UnRegisterPTSettingsSvcCA
 	CreateWinAppSDKHardlinksCA
 	DeleteWinAppSDKHardlinksCA

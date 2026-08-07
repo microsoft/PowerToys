@@ -1,0 +1,56 @@
+// Copyright (c) Microsoft Corporation
+// Licensed under the MIT license.
+
+#pragma once
+
+#include <windows.h>
+#include <string>
+
+namespace PTSettingsSvc
+{
+    struct CallerBinding;  // Bindings.h
+
+    struct CallerIdentity
+    {
+        std::wstring        userSidString;   // S-1-5-21-...  (per-user data partition key)
+        std::wstring        imagePath;       // Canonicalised, reparse-points resolved
+        DWORD               processId{};
+        const CallerBinding* binding = nullptr;  // never freed (static table)
+    };
+
+    // Authenticates the client connected to the named-pipe handle.
+    //
+    // Successful authentication means ALL of the following hold:
+    //   * Caller token is a real interactive user (not SYSTEM / SERVICE /
+    //     ANONYMOUS), so we have a SID to scope the per-user data folder.
+    //   * Caller image is trusted by the BINARY-IDENTITY anchor: the image is
+    //     Microsoft-signed AND its file version EXACTLY equals the service's own
+    //     version.  This is the single load-bearing runtime check (per-user
+    //     callers live in a user-writable folder, so a path/DACL anchor is not a
+    //     substitute).  Install-folder DACL hardening still happens at install
+    //     time as defense-in-depth, but the service does not rely on it here.
+    //   * Caller image basename is in the CallerBinding allow-list — and the
+    //     matched binding is returned in outIdentity.binding so the dispatch
+    //     layer knows which namespace this caller may operate on.
+    //
+    // The function ImpersonateNamedPipeClient()s internally and reverts
+    // before returning, regardless of success.
+    //
+    // Returns:
+    //   S_OK                                     — all checks passed
+    //   E_ACCESSDENIED                           — auth-rejected (path, DACL, or basename)
+    //   HRESULT_FROM_WIN32(ERROR_NOT_FOUND)      — basename allow-listed but
+    //                                              binding lookup returned nullptr
+    //   any other HRESULT                        — Win32 failure (token read,
+    //                                              OpenProcess, etc.)
+    HRESULT AuthenticateCaller(HANDLE pipeHandle, CallerIdentity& outIdentity);
+
+    // Owner SID this service instance was registered to serve
+    // (PTSettingsSvc_<SID>).  Set once at startup
+    // from the service's SID argument (or, for console/dev runs, the current
+    // process user).  The auth pipeline rejects any caller whose token user SID
+    // != this owner SID, and the pipe is named/scoped to it.  Empty => not set
+    // (no owner-SID enforcement; dev/standalone only).
+    void SetServiceOwnerSid(const std::wstring& sidString);
+    std::wstring GetServiceOwnerSid();
+}

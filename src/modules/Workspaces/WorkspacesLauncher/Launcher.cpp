@@ -9,6 +9,7 @@
 
 #include <AppLauncher.h>
 #include <WorkspacesLib/AppUtils.h>
+#include <WorkspacesLib/JsonUtils.h>
 
 Launcher::Launcher(const WorkspacesData::WorkspacesProject& project, 
     std::vector<WorkspacesData::WorkspacesProject>& workspaces,
@@ -68,7 +69,7 @@ Launcher::~Launcher()
                 break;
             }
         }
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(m_workspaces));
+        JsonUtils::WriteWorkspacesToService(m_workspaces);
     }
 
     // telemetry

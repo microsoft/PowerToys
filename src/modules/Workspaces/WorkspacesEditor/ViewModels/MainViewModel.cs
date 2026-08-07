@@ -166,6 +166,33 @@ namespace WorkspacesEditor.ViewModels
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
         }
 
+        /// <summary>
+        /// True while the user is actively editing a project (edit page open) — used
+        /// to suppress the background provisioning reload so it never clobbers
+        /// in-progress edits.
+        /// </summary>
+        public bool IsEditInProgress => editedProject != null || editPage != null;
+
+        private bool _isProvisioning;
+
+        /// <summary>
+        /// True while first-run service provisioning (UAC + MSIX deploy) is running
+        /// in the background.  Bindable so the UI can show a "Setting up
+        /// protection…" affordance and (optionally) gate destructive actions.
+        /// </summary>
+        public bool IsProvisioning
+        {
+            get => _isProvisioning;
+            set
+            {
+                if (_isProvisioning != value)
+                {
+                    _isProvisioning = value;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsProvisioning)));
+                }
+            }
+        }
+
         public void SetEditedProject(Project editedProject)
         {
             this.editedProject = editedProject;

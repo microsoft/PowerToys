@@ -69,6 +69,21 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <!--
+        PowerToys Settings Service (PTSettingsSvc).
+        Per-machine: the MSI is elevated, so it registers the service and lays
+        down the protected store eagerly (PTSettingsServiceComponentGroup).
+        Per-user: the MSI is non-elevated and cannot register a service, so it
+        only stages the service payload (exe + hardening script); the service is
+        registered + the store hardened lazily via a one-time elevation the first
+        time protection is needed, driven by
+        SettingsBootstrapper / ServiceProvisioner in the managed code.
+      -->
+      <?if $(var.PerUser) != "true" ?>
+      <ComponentGroupRef Id="PTSettingsServiceComponentGroup" />
+      <?else?>
+      <ComponentGroupRef Id="PTSettingsServicePayloadComponentGroup" />
+      <?endif?>
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
@@ -117,6 +132,11 @@
       <Custom Action="SetApplyModulesRegistryChangeSetsParam" Before="ApplyModulesRegistryChangeSets" />
       <Custom Action="SetInstallPackageIdentityMSIXParam" Before="InstallPackageIdentityMSIX" />
 
+      <?if $(var.PerUser) != "true" ?>
+      <!-- Per-machine: provision the PTSettingsSvc MSIX for all users. -->
+      <Custom Action="SetInstallPTSettingsSvcParam" Before="InstallPTSettingsSvc" />
+      <?endif?>
+
       <?if $(var.PerUser) = "true" ?>
       <Custom Action="SetInstallDSCModuleParam" Before="InstallDSCModule" />
       <?endif?>
@@ -129,6 +149,9 @@
       <Custom Action="CreateWinAppSDKHardlinks" After="InstallFiles" Condition="NOT Installed OR WIX_UPGRADE_DETECTED OR REINSTALL" />
       <Custom Action="InstallCmdPalPackage" After="InstallFiles" Condition="NOT Installed" />
       <Custom Action="InstallPackageIdentityMSIX" After="InstallFiles" Condition="NOT Installed AND WINDOWSBUILDNUMBER &gt;= 22000" />
+      <?if $(var.PerUser) != "true" ?>
+      <Custom Action="InstallPTSettingsSvc" After="InstallFiles" Condition="NOT Installed" />
+      <?endif?>
       <Custom Action="override Wix4CloseApplications_$(sys.BUILDARCHSHORT)" Before="RemoveFiles" />
       <Custom Action="RemovePowerToysSchTasks" After="RemoveFiles" />
       <!-- TODO: Use to activate embedded MSIX -->
@@ -152,6 +175,12 @@
       <Custom Action="UninstallCommandNotFound" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UpgradeCommandNotFound" After="InstallFiles" Condition="WIX_UPGRADE_DETECTED" />
       <Custom Action="UninstallPackageIdentityMSIX" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+      <!-- PTSettingsSvc MSIX teardown.  Per-machine runs elevated
+           and removes the service package for all users; per-user is best-effort
+           (non-elevated uninstall cannot delete the service, mirroring
+           UninstallServicesTask) — the signed/immutable orphan is cleaned by a
+           later per-machine install or a manual elevated Remove-AppxPackage. -->
+      <Custom Action="UnRegisterPTSettingsSvc" Before="RemoveFiles" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="UninstallServicesTask" After="InstallFinalize" Condition="Installed AND (NOT UPGRADINGPRODUCTCODE) AND (REMOVE=&quot;ALL&quot;)" />
         <!-- TODO: Use to activate embedded MSIX -->
       <!--<Custom Action="UninstallEmbeddedMSIXTask" After="InstallFinalize">
@@ -217,6 +246,15 @@
     <CustomAction Id="InstallPackageIdentityMSIX" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallPackageIdentityMSIXCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="UninstallPackageIdentityMSIX" Return="ignore" Impersonate="yes" DllEntry="UninstallPackageIdentityMSIXCA" BinaryRef="PTCustomActions" />
+
+    <!-- PTSettingsSvc MSIX provisioning (per-machine).  Mirrors the
+         PackageIdentity CAs: deferred+impersonated install provisions for all
+         users; immediate uninstall deprovisions + removes for all users. -->
+    <CustomAction Id="SetInstallPTSettingsSvcParam" Property="InstallPTSettingsSvc" Value="[INSTALLFOLDER]" />
+
+    <CustomAction Id="InstallPTSettingsSvc" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallPTSettingsSvcCA" BinaryRef="PTCustomActions" />
+
+    <CustomAction Id="UnRegisterPTSettingsSvc" Return="ignore" Impersonate="yes" DllEntry="UnRegisterPTSettingsSvcCA" BinaryRef="PTCustomActions" />
 
     <CustomAction Id="InstallDSCModule" Return="ignore" Impersonate="yes" Execute="deferred" DllEntry="InstallDSCModuleCA" BinaryRef="PTCustomActions" />
 
