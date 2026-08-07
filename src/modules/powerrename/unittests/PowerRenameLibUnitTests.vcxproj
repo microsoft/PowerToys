@@ -77,13 +77,13 @@
   <ItemGroup>
     <None Include="packages.config" />
     <!-- Include all test data files for deployment -->
-    <None Include="testdata\exif_test.jpg">
+    <None Include="$(RepoRoot)src\TestData\ImageMetadata\exif_test.jpg">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="testdata\exif_test_2.jpg">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="testdata\xmp_test.jpg">
+    <None Include="$(RepoRoot)src\TestData\ImageMetadata\xmp_test.jpg">
       <DeploymentContent>true</DeploymentContent>
     </None>
     <None Include="testdata\xmp_test_2.jpg">
@@ -95,7 +95,7 @@
     <None Include="testdata\avif_test.avif">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="testdata\ATTRIBUTION.md">
+    <None Include="$(RepoRoot)src\TestData\ImageMetadata\ATTRIBUTION.md">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>
@@ -103,6 +103,7 @@
   <Target Name="CopyTestData" AfterTargets="Build">
     <ItemGroup>
       <TestDataFiles Include="$(ProjectDir)testdata\**\*.*" />
+      <TestDataFiles Include="$(RepoRoot)src\TestData\ImageMetadata\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(TestDataFiles)" DestinationFolder="$(OutDir)testdata\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
@@ -121,3 +122,4 @@
     <Error Condition="!Exists('$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\boost_regex-vc143.1.87.0\build\boost_regex-vc143.targets'))" />
   </Target>
 </Project>
+
