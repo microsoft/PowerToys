@@ -965,6 +965,7 @@ lng
 LOADFROMFILE
 LOBYTE
 localappdata
+localmdimages
 localpackage
 LOCALSYSTEM
 LOCATIONCHANGE
