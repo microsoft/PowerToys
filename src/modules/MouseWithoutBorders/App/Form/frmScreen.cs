@@ -1202,11 +1202,8 @@ namespace MouseWithoutBorders
         {
             Common.DoSomethingInTheInputCallbackThread(() =>
             {
-                if (Common.Hook != null)
-                {
-                    Common.Hook.Stop();
-                    Common.Hook = null;
-                }
+                Common.Hook?.Stop();
+                Common.Hook = null;
 
                 Common.InputCallbackForm.Close();
                 Common.InputCallbackForm = null;

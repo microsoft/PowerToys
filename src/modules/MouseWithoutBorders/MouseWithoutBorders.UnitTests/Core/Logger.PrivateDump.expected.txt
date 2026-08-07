@@ -123,6 +123,7 @@ LegalKeyDictionary = Concurrent.ConcurrentDictionary`2[System.String,System.Byte
 --_budget = ????????????
 --_growLockArray = True
 --_comparerIsDefaultForClasses = False
+--_initialCapacity = ????????????
 SymAlBlockSize = 16
 PW_LENGTH = 16
 [Event]
@@ -219,6 +220,7 @@ LogCounter = Concurrent.ConcurrentDictionary`2[System.String,32]
 --_budget = ????????????
 --_growLockArray = True
 --_comparerIsDefaultForClasses = False
+--_initialCapacity = ????????????
 AllLogsLock = Lock
 --_owningThreadId = 0
 --_state = 0
