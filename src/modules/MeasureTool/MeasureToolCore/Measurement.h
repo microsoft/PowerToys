@@ -5,26 +5,23 @@
 #include <windef.h>
 #include <iosfwd>
 
+#include "MeasurementLogic.h"
+
 struct Measurement
 {
-    enum Unit
-    {
-        Pixel = 1,
-        Inch = 2,
-        Centimetre = 4,
-        Millimetre = 8,
-    };
+    using Unit = MeasurementLogic::Unit;
 
     D2D1_RECT_F rect = {}; // corners are inclusive
 
     float px2mmRatio = 0;
-    static winrt::hstring abbreviations[4]; // Abbreviations of units.
+    float monitorDpi = MeasurementLogic::DefaultDpi;
+    static winrt::hstring abbreviations[5]; // Abbreviations of units.
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
 
-    explicit Measurement(D2D1_RECT_F d2dRect, float px2mmRatio);
-    explicit Measurement(RECT winRect, float px2mmRatio);
+    explicit Measurement(D2D1_RECT_F d2dRect, float px2mmRatio, float monitorDpi);
+    explicit Measurement(RECT winRect, float px2mmRatio, float monitorDpi);
 
     float Width(const Unit units) const;
     float Height(const Unit units) const;
@@ -36,7 +33,11 @@ struct Measurement
     };
 
     static void InitResources();
-    static Unit GetUnitFromIndex(int index);
+    static constexpr Unit GetUnitFromIndex(const int index) noexcept
+    {
+        return MeasurementLogic::GetUnitFromIndex(index);
+    }
+
     static const wchar_t* GetUnitAbbreviation(const Unit units);
 
     PrintResult Print(wchar_t* buf,
