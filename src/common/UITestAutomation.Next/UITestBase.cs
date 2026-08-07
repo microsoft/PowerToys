@@ -367,7 +367,7 @@ public class UITestBase : IDisposable
 
     // ----- Pipeline diagnostics (CI only) ---------------------------------------------------
 
-    /// <summary>Start the FFmpeg screen recording. Best-effort.</summary>
+    /// <summary>Start the screen recording. Best-effort.</summary>
     private void StartPipelineCapture()
     {
         try
@@ -379,17 +379,26 @@ public class UITestBase : IDisposable
             try
             {
                 screenRecording = new ScreenRecording(recordingDirectory);
-                if (screenRecording.IsAvailable)
+
+                // Say why there is no video: an empty recordings folder otherwise looks like a lost
+                // artifact, and the usual cause (no Visual C++ redistributable on a clean image) is
+                // invisible from the test output.
+                var unavailable = ScreenRecording.UnavailableReason;
+                if (unavailable is null)
                 {
                     _ = screenRecording.StartRecordingAsync();
                 }
                 else
                 {
+                    TestContext.WriteLine(
+                        $"Screen recording disabled - the native encoder could not load ({unavailable}). " +
+                        "Install the Visual C++ redistributable on this machine to capture video.");
                     screenRecording = null;
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                TestContext.WriteLine($"Screen recording could not start: {ex.Message}");
                 screenRecording = null;
             }
         }
