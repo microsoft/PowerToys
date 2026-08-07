@@ -18,6 +18,7 @@
                 <ResourceDictionary Source="/SettingsXAML/Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/Button.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Styles/InfoBadge.xaml" />
+                <ResourceDictionary Source="/SettingsXAML/Styles/ListView.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Colors.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Themes/Generic.xaml" />
                 <ResourceDictionary Source="/SettingsXAML/Controls/Timeline/TimelineStyles.xaml" />
