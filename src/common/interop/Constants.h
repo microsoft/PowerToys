@@ -81,6 +81,7 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring MWBReconnectEvent();
         static hstring OpenNewKeyboardManagerEvent();
         static hstring KeyboardManagerEngineInstanceMutex();
+        static hstring AdvancedPasteRichTextMessage();
     };
 }
 

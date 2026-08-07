@@ -6259,4 +6259,7 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
+  <data name="Oobe_AdvancedPasteRichText_HowToUse.Text" xml:space="preserve">
+    <value>to paste Markdown clipboard text as formatted rich text.</value>
+  </data>
 </root>
