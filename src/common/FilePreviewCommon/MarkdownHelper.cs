@@ -50,39 +50,48 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             MarkdownPipeline pipeline = pipelineBuilder.Build();
             string parsedMarkdown = Markdown.ToHtml(fileContent, pipeline);
 
-            if (allowLocalImages)
-            {
-                // Rewrite src attributes of raw HTML <img> tags with the same path validation as the
-                // Markdig AST layer. Markdown images were already rewritten there (to the virtual host
-                // URL or "#") and pass through unchanged; everything else is either validated and
-                // rewritten or blocked.
-                // Matches double-quoted, single-quoted and unquoted src values, so that every form
-                // an author can write is validated the same way. Unquoted values are re-emitted
-                // quoted, which is equivalent HTML.
-                parsedMarkdown = Regex.Replace(
-                    parsedMarkdown,
-                    @"(<img\b[^>]*?\ssrc\s*=\s*)(?:(""|')(.+?)\2|([^\s""'>]+))",
-                    m =>
+            // srcset supports multiple candidates and descriptors, none of which the src sanitizer
+            // below validates. Remove the attribute rather than let a candidate through unchecked.
+            parsedMarkdown = Regex.Replace(
+                parsedMarkdown,
+                @"(<img\b[^>]*?)\s+srcset\s*=\s*(?:""[^""]*""|'[^']*'|[^\s>]+)",
+                m =>
+                {
+                    imagesBlockedCallBack();
+                    return m.Groups[1].Value;
+                },
+                RegexOptions.IgnoreCase);
+
+            // Sanitize src on raw HTML <img> tags in both setting states. Markdown images were
+            // already handled by the Markdig AST layer (rewritten to the virtual host URL or "#")
+            // and pass through unchanged. When local images are disabled everything else is blocked;
+            // when enabled it is validated the same way as the AST layer. Matches double-quoted,
+            // single-quoted and unquoted values, so every form an author can write is covered.
+            parsedMarkdown = Regex.Replace(
+                parsedMarkdown,
+                @"(<img\b[^>]*?\ssrc\s*=\s*)(?:(""|')(.+?)\2|([^\s""'>]+))",
+                m =>
+                {
+                    bool isQuoted = m.Groups[2].Success;
+                    string quote = isQuoted ? m.Groups[2].Value : "\"";
+                    string src = isQuoted ? m.Groups[3].Value : m.Groups[4].Value;
+
+                    if (src == "#" ||
+                        (allowLocalImages && src.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase)))
                     {
-                        bool isQuoted = m.Groups[2].Success;
-                        string quote = isQuoted ? m.Groups[2].Value : "\"";
-                        string src = isQuoted ? m.Groups[3].Value : m.Groups[4].Value;
+                        return m.Value;
+                    }
 
-                        if (src == "#" || src.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return m.Value;
-                        }
+                    if (allowLocalImages &&
+                        HTMLParsingExtension.TryGetLocalImageVirtualUrl(src, extension.FilePath, extension.AllowedBasePath, out string? virtualUrl))
+                    {
+                        return m.Groups[1].Value + quote + virtualUrl + quote;
+                    }
 
-                        if (HTMLParsingExtension.TryGetLocalImageVirtualUrl(src, extension.FilePath, extension.AllowedBasePath, out string? virtualUrl))
-                        {
-                            return m.Groups[1].Value + quote + virtualUrl + quote;
-                        }
-
-                        imagesBlockedCallBack();
-                        return m.Groups[1].Value + quote + "#" + quote;
-                    },
-                    RegexOptions.IgnoreCase);
-            }
+                    imagesBlockedCallBack();
+                    return m.Groups[1].Value + quote + "#" + quote;
+                },
+                RegexOptions.IgnoreCase);
 
             string markdownHTML = $"{htmlHeader}{parsedMarkdown}{HtmlFooter}";
             return markdownHTML;

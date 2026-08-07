@@ -140,6 +140,8 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// <param name="allowedBasePath">Base path the resolved file must be contained in.</param>
         /// <param name="resolvedPath">The validated absolute file path on success.</param>
         /// <returns>True if the URL maps to a contained file path and <paramref name="resolvedPath"/> was set.</returns>
+        /// <remarks>Each path component is inspected for reparse points, so a path that does not
+        /// exist or cannot be read fails closed and returns false.</remarks>
         public static bool TryResolveVirtualUrl(string? requestUri, string? allowedBasePath, [NotNullWhen(true)] out string? resolvedPath)
         {
             resolvedPath = null;
@@ -175,6 +177,28 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     return false;
                 }
 
+                // The check above proves only lexical containment. A junction or symbolic link
+                // anywhere below the base path can still redirect the read outside it, so walk the
+                // resolved path back up to the base and reject any reparse point on the way. The
+                // base path itself is not checked: that is the document's own location.
+                string baseComparand = TrimTrailingSeparators(basePath);
+                string current = fullPath;
+                while (!string.Equals(TrimTrailingSeparators(current), baseComparand, StringComparison.OrdinalIgnoreCase))
+                {
+                    if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                    {
+                        return false;
+                    }
+
+                    string? parent = Path.GetDirectoryName(current);
+                    if (string.IsNullOrEmpty(parent) || parent.Length >= current.Length)
+                    {
+                        return false;
+                    }
+
+                    current = parent;
+                }
+
                 resolvedPath = fullPath;
                 return true;
             }
@@ -194,6 +218,22 @@ namespace Microsoft.PowerToys.FilePreviewCommon
             {
                 return false;
             }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+        }
+
+        private static string TrimTrailingSeparators(string path)
+        {
+            string trimmed = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+            // Keep the separator for roots such as "C:\", where trimming changes the meaning.
+            return trimmed.Length == 0 || trimmed.EndsWith(Path.VolumeSeparatorChar) ? path : trimmed;
         }
 
         /// <inheritdoc/>

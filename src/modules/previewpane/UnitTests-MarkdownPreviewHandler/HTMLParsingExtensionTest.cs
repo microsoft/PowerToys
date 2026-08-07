@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+
 using Markdig;
 using Microsoft.PowerToys.PreviewHandler.Markdown;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -134,16 +137,62 @@ namespace PreviewPaneUnitTests
             Assert.IsNull(virtualUrl);
         }
 
+        // Resolving checks each path component for reparse points, so these cases operate on real
+        // files rather than notional paths.
         [DataTestMethod]
-        [DataRow("https://localmdimages/images/test.png", @"C:\docs", @"C:\docs\images\test.png")]
-        [DataRow("https://localmdimages/sub/dir/images/test.png", @"\\server\share", @"\\server\share\sub\dir\images\test.png")]
-        [DataRow("https://localmdimages/my%20image.png", @"C:\docs", @"C:\docs\my image.png")]
-        public void TryResolveVirtualUrlAllowsContainedRequests(string requestUri, string basePath, string expectedPath)
+        [DataRow("images/test.png", "https://localmdimages/images/test.png")]
+        [DataRow("sub/dir/images/test.png", "https://localmdimages/sub/dir/images/test.png")]
+        [DataRow("my image.png", "https://localmdimages/my%20image.png")]
+        public void TryResolveVirtualUrlAllowsContainedRequests(string relativePath, string requestUri)
         {
-            bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, basePath, out string resolvedPath);
+            string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
+            string expectedPath = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(expectedPath));
+            File.WriteAllText(expectedPath, "not really an image");
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(expectedPath, resolvedPath);
+            try
+            {
+                bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(requestUri, root, out string resolvedPath);
+
+                Assert.IsTrue(result);
+                Assert.AreEqual(expectedPath, resolvedPath);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, true);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TryResolveVirtualUrlRejectsMissingFile()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(root);
+
+            try
+            {
+                bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
+                    "https://localmdimages/does-not-exist.png", root, out string resolvedPath);
+
+                Assert.IsFalse(result, "a path that cannot be inspected must fail closed");
+                Assert.IsNull(resolvedPath);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, true);
+                }
+                catch (IOException)
+                {
+                }
+            }
         }
 
         [DataTestMethod]
@@ -192,6 +241,81 @@ namespace PreviewPaneUnitTests
             Assert.IsFalse(html.Contains("example.com"), "remote source must not survive the rewrite");
             Assert.IsFalse(html.Contains("secret.png"), "traversal source must not survive the rewrite");
             Assert.IsFalse(html.Contains("base64"), "data URI must not survive the rewrite");
+        }
+
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void RawHtmlSrcsetIsRemovedInBothSettingStates(bool allowLocalImages)
+        {
+            int blockedCount = 0;
+            string mdString = "<img src=\"images/test.png\" srcset=\"data:image/png;base64,iVBORw0KGgo= 2x\" />";
+
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, allowLocalImages, @"C:\docs");
+
+            Assert.IsFalse(html.Contains("srcset"), "srcset must be removed so its candidates cannot bypass the src sanitizer");
+            Assert.IsFalse(html.Contains("base64"), "the srcset data URI must not survive");
+            Assert.AreNotEqual(0, blockedCount);
+        }
+
+        [DataTestMethod]
+        [DataRow("<img src=\"data:image/png;base64,iVBORw0KGgo=\" />", "base64")]
+        [DataRow("<img src=\"https://example.com/track.png\" />", "example.com")]
+        [DataRow("<img src=\"images/test.png\" />", "images/test.png")]
+        public void RawHtmlSrcIsSanitizedWhenLocalImagesDisabled(string mdString, string forbidden)
+        {
+            int blockedCount = 0;
+
+            string html = Microsoft.PowerToys.FilePreviewCommon.MarkdownHelper.MarkdownHtml(
+                mdString, "light", @"C:\docs\doc.md", () => { blockedCount++; }, false, @"C:\docs");
+
+            Assert.IsFalse(html.Contains(forbidden), "raw HTML img sources must be blocked while the setting is off");
+            StringAssert.Contains(html, "src=\"#\"");
+            Assert.AreNotEqual(0, blockedCount);
+        }
+
+        [TestMethod]
+        public void TryResolveVirtualUrlRejectsPathBehindDirectoryLink()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "ptmd-" + Guid.NewGuid().ToString("N"));
+            string allowed = Path.Combine(root, "allowed");
+            string outside = Path.Combine(root, "outside");
+            Directory.CreateDirectory(allowed);
+            Directory.CreateDirectory(outside);
+            File.WriteAllText(Path.Combine(outside, "secret.png"), "not really an image");
+
+            try
+            {
+                string link = Path.Combine(allowed, "link");
+                try
+                {
+                    Directory.CreateSymbolicLink(link, outside);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    Assert.Inconclusive("Creating a directory link requires privilege on this machine.");
+                    return;
+                }
+
+                // Lexically "link/secret.png" sits inside the allowed directory, but the read would
+                // follow the link outside it.
+                bool result = Microsoft.PowerToys.FilePreviewCommon.HTMLParsingExtension.TryResolveVirtualUrl(
+                    "https://localmdimages/link/secret.png", allowed, out string resolvedPath);
+
+                Assert.IsFalse(result, "a path traversing a reparse point must be rejected");
+                Assert.IsNull(resolvedPath);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, true);
+                }
+                catch (IOException)
+                {
+                }
+            }
         }
 
         [TestMethod]
