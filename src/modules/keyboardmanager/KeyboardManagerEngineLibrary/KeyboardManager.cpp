@@ -87,7 +87,7 @@ namespace
                name.find(L"WindowsForms10.EDIT") != std::wstring_view::npos;
     }
 
-    bool IsSafeNativeEdit(const HWND window)
+    bool IsWritableNativeEdit(const HWND window)
     {
         if (!IsKnownNativeEditClass(window) || !IsWindowEnabled(window) || !IsWindowVisible(window))
         {
@@ -95,18 +95,7 @@ namespace
         }
 
         const LONG_PTR style = GetWindowLongPtrW(window, GWL_STYLE);
-        if ((style & ES_READONLY) != 0 || (style & ES_PASSWORD) != 0)
-        {
-            return false;
-        }
-
-        DWORD_PTR passwordCharacter = 0;
-        if (!SendMessageTimeoutW(window, EM_GETPASSWORDCHAR, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 50, &passwordCharacter))
-        {
-            return false;
-        }
-
-        return passwordCharacter == 0;
+        return (style & ES_READONLY) == 0;
     }
 
     bool TryGetBoolProperty(IUIAutomationElement* element, const PROPERTYID propertyId, bool& value)
@@ -152,7 +141,7 @@ namespace
         return writable;
     }
 
-    bool IsWritableDocument(IUIAutomationElement* element)
+    bool IsWritableTextControl(IUIAutomationElement* element)
     {
         winrt::com_ptr<IUIAutomationTextPattern2> textPattern2;
         if (SUCCEEDED(element->GetCurrentPatternAs(UIA_TextPattern2Id, __uuidof(IUIAutomationTextPattern2), textPattern2.put_void())) && textPattern2)
@@ -187,7 +176,7 @@ namespace
         return SUCCEEDED(selections->GetElement(0, selection.put())) && IsWritableTextRange(selection.get());
     }
 
-    bool IsSafeAutomationEdit(IUIAutomation* automation, const HWND expectedWindow, const DWORD expectedProcessId)
+    bool IsWritableAutomationTextControl(IUIAutomation* automation, const HWND expectedWindow, const DWORD expectedProcessId)
     {
         if (!automation || !expectedWindow || !expectedProcessId)
         {
@@ -203,13 +192,11 @@ namespace
         bool hasKeyboardFocus = false;
         bool keyboardFocusable = false;
         bool enabled = false;
-        bool password = true;
         int processId = 0;
         int controlType = 0;
         if (!TryGetBoolProperty(element.get(), UIA_HasKeyboardFocusPropertyId, hasKeyboardFocus) || !hasKeyboardFocus ||
             !TryGetBoolProperty(element.get(), UIA_IsKeyboardFocusablePropertyId, keyboardFocusable) || !keyboardFocusable ||
             !TryGetBoolProperty(element.get(), UIA_IsEnabledPropertyId, enabled) || !enabled ||
-            !TryGetBoolProperty(element.get(), UIA_IsPasswordPropertyId, password) || password ||
             !TryGetIntProperty(element.get(), UIA_ProcessIdPropertyId, processId) || static_cast<DWORD>(processId) != expectedProcessId ||
             !TryGetIntProperty(element.get(), UIA_ControlTypePropertyId, controlType))
         {
@@ -229,10 +216,8 @@ namespace
             return TryGetBoolProperty(element.get(), UIA_IsTextEditPatternAvailablePropertyId, textEditPatternAvailable) && textEditPatternAvailable;
         }
 
-        // UIA Text controls include terminals, which do not expose whether the active
-        // prompt accepts a password. Keep them blocked so replacements cannot be
-        // injected into hidden terminal input.
-        return controlType == UIA_DocumentControlTypeId && IsWritableDocument(element.get());
+        return (controlType == UIA_DocumentControlTypeId || controlType == UIA_TextControlTypeId) &&
+               IsWritableTextControl(element.get());
     }
 }
 
@@ -592,10 +577,10 @@ void KeyboardManager::TextReplacementContextThreadProc()
         const uint64_t requestedEpoch = state.textReplacementContextEpoch.load(std::memory_order_acquire);
         const HWND focusedWindow = GetFocusedTextReplacementWindow();
         const DWORD processId = GetWindowProcessId(focusedWindow);
-        bool editable = IsSafeNativeEdit(focusedWindow);
+        bool editable = IsWritableNativeEdit(focusedWindow);
         if (!editable && SUCCEEDED(automationResult))
         {
-            editable = IsSafeAutomationEdit(automation.get(), focusedWindow, processId);
+            editable = IsWritableAutomationTextControl(automation.get(), focusedWindow, processId);
         }
 
         if (requestedEpoch == state.textReplacementContextEpoch.load(std::memory_order_acquire))

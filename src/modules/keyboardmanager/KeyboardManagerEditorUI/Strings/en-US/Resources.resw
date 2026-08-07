@@ -232,7 +232,7 @@
     <value>Enter the text to replace when typed</value>
   </data>
   <data name="TextTriggerBox.AutomationProperties.HelpText" xml:space="preserve">
-    <value>Replacements happen immediately. Input from IME, voice typing, handwriting, paste, and terminals is not supported.</value>
+    <value>Replacements happen immediately. Input from IME, voice typing, handwriting, and paste is not supported.</value>
   </data>
   <data name="TextTriggerBox.Description" xml:space="preserve">
     <value>Replacements happen immediately. Include a trailing space in both fields to require a word boundary.</value>
