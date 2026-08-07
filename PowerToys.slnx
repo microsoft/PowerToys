@@ -381,6 +381,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.UnitTests/Microsoft.CmdPal.UI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UI.ViewModels.UnitTests/Microsoft.CmdPal.UI.ViewModels.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
