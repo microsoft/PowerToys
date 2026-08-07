@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <AssemblyName>PowerToys.PowerOCR.Core.UnitTests</AssemblyName>
+    <RootNamespace>PowerOCR.Core.UnitTests</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerOCR.Core.UnitTests\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="System.Drawing.Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PowerOCR.Core\PowerOCR.Core.csproj" />
+  </ItemGroup>
+</Project>

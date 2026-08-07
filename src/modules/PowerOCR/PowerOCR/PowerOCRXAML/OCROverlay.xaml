@@ -1,0 +1,14 @@
+<winuiex:WindowEx
+    x:Class="PowerOCR.OCROverlay"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="using:PowerOCR.Views"
+    xmlns:winuiex="using:WinUIEx"
+    Title="Text Extractor"
+    IsAlwaysOnTop="True"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsShownInSwitchers="False">
+    <views:OverlayPage x:Name="OverlayContent" />
+</winuiex:WindowEx>
