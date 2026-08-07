@@ -107,9 +107,11 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <!--  "Add new remapping" is a list-level action, so it sits at the leading edge of the list
-                          toolbar (aligned with the list below). Kept outside the HasAnyData filter cluster so the
-                          first remapping can still be added from the empty state.  -->
+                    <!--
+                        "Add new remapping" is a list-level action, so it sits at the leading edge of the list
+                        toolbar (aligned with the list below). Kept outside the HasAnyData filter cluster so the
+                        first remapping can still be added from the empty state.
+                    -->
                     <Button
                         x:Name="NewRemappingBtn"
                         Grid.Column="0"
@@ -129,9 +131,9 @@
                         VerticalScrollMode="Disabled"
                         Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <StackPanel
+                            VerticalAlignment="Center"
                             Orientation="Horizontal"
-                            Spacing="8"
-                            VerticalAlignment="Center">
+                            Spacing="8">
                             <AutoSuggestBox
                                 x:Name="SearchBox"
                                 x:Uid="FilterSearchBox"
@@ -175,9 +177,9 @@
                     <StackPanel
                         Grid.Column="2"
                         Margin="8,0,0,0"
+                        VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="8"
-                        VerticalAlignment="Center"
                         Visibility="{x:Bind HasAnyData, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ToggleButton
                             x:Name="SelectionModeToggle"
