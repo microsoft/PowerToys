@@ -9,6 +9,7 @@
         <AssemblyName>PowerToys.MouseJump.WinUI3</AssemblyName>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <UseWinUI>true</UseWinUI>
+        <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
         <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
         <WindowsPackageType>None</WindowsPackageType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -20,6 +21,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Page Remove="MouseJumpXAML\App.xaml" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ApplicationDefinition Include="MouseJumpXAML\App.xaml" />
+    </ItemGroup>
 
     <ItemGroup>
         <Manifest Include="$(ApplicationManifest)" />
