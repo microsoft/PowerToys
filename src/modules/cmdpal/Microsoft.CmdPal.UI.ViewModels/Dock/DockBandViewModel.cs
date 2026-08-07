@@ -267,7 +267,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
             var items = list.GetItems();
             var currentCache = Volatile.Read(ref _viewModelCache);
-            var itemModels = new List<IListItem>(items.Length);
+            var nextCache = new Dictionary<IListItem, DockItemViewModel>(items.Length, ReferenceEqualityComparer.Instance);
             var newViewModels = new List<DockItemViewModel>(items.Length);
 
             foreach (var item in items)
@@ -277,18 +277,19 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
                     continue;
                 }
 
-                if (!currentCache.TryGetValue(item, out var itemViewModel))
+                if (!nextCache.TryGetValue(item, out var itemViewModel) &&
+                    !currentCache.TryGetValue(item, out itemViewModel))
                 {
                     itemViewModel = new DockItemViewModel(new(item), PageContext, _showTitles, _showSubtitles, _contextMenuFactory);
                     createdViewModels.Add(itemViewModel);
                     itemViewModel.SlowInitializeProperties();
                 }
 
-                itemModels.Add(item);
+                nextCache[item] = itemViewModel;
                 newViewModels.Add(itemViewModel);
             }
 
-            if (!TryDoOnUiThread(() => ApplyRefresh(list, itemModels, newViewModels, createdViewModels)))
+            if (!TryDoOnUiThread(() => ApplyRefresh(list, nextCache, newViewModels, createdViewModels)))
             {
                 QueueCleanup(createdViewModels);
                 CompleteRefresh(list);
@@ -304,7 +305,7 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
 
     private void ApplyRefresh(
         IListPage list,
-        IReadOnlyList<IListItem> itemModels,
+        Dictionary<IListItem, DockItemViewModel> nextCache,
         IReadOnlyList<DockItemViewModel> newViewModels,
         IReadOnlyList<DockItemViewModel> createdViewModels)
     {
@@ -323,13 +324,6 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             }
 
             ListHelpers.InPlaceUpdateList(Items, newViewModels, out removedItems);
-
-            var nextCache = new Dictionary<IListItem, DockItemViewModel>(itemModels.Count, ReferenceEqualityComparer.Instance);
-            for (var i = 0; i < itemModels.Count; i++)
-            {
-                nextCache[itemModels[i]] = Items[i];
-            }
-
             Volatile.Write(ref _viewModelCache, nextCache);
         }
         finally
