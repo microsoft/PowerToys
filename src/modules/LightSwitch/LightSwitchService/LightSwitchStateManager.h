@@ -49,6 +49,6 @@ private:
     void EvaluateAndApplyIfNeeded();
     bool CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon);
 
-    // Notify PowerDisplay module about theme change to apply display profiles
-    void NotifyPowerDisplay(bool isLight);
+    // Notify PowerDisplay that LightSwitch applied a new theme.
+    void NotifyPowerDisplayThemeChanged(bool isLight);
 };

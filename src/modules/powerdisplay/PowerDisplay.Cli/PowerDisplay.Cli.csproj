@@ -1,0 +1,59 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE file in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PowerDisplay.Cli</RootNamespace>
+    <ApplicationIcon>..\PowerDisplay\Assets\PowerDisplay\PowerDisplay.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AssemblyName>PowerToys.PowerDisplay.Cli</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+    <!-- Globalization is enabled (not invariant) so the human-readable text output can be localized
+         via satellite resources. The machine contract (JSON keys, error codes, status strings, exit
+         codes, VCP names) stays culture-independent because every parse/format site passes
+         CultureInfo.InvariantCulture explicitly. Set explicitly below (rather than relying on the
+         SDK default) so a future default flip — or copying the common AOT "set it true to shrink the
+         binary" guidance — cannot silently disable satellite-resource localization. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <!-- Native AOT Configuration -->
+  <PropertyGroup>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Hide build log files from Solution Explorer -->
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PowerDisplay.Cli.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Add WindowsDesktop.App framework reference to align System.CodeDom.dll version
+         (pulled in transitively via System.Management) with the other apps, which get it from
+         the WindowsDesktop runtime pack instead of the NuGet package. Without this, the deps.json
+         audit fails because this app ships the older package version of System.CodeDom.dll.
+         This does NOT enable WPF/WinForms, it only ensures consistent runtime DLL versions. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Contracts\PowerDisplay.Contracts.csproj" />
+  </ItemGroup>
+</Project>

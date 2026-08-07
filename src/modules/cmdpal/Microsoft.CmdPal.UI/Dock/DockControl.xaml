@@ -340,7 +340,8 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ContentGrid.Margin" Value="4,0,4,0" />
+                        <!--  Screen-edge side has no margin; the item insets its own chrome there  -->
+                        <Setter Target="ContentGrid.Margin" Value="4,0,4,2" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
@@ -348,7 +349,7 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Bottom" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ContentGrid.Margin" Value="4,4,4,0" />
+                        <Setter Target="ContentGrid.Margin" Value="4,2,4,0" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,1,0,0" />
                     </VisualState.Setters>
                 </VisualState>
@@ -358,8 +359,8 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="ContentGrid.Orientation" Value="Vertical" />
-                        <Setter Target="ContentGrid.Margin" Value="0,0,4,4" />
-                        <Setter Target="ContentGrid.Padding" Value="0,0,4,8" />
+                        <Setter Target="ContentGrid.Margin" Value="0,0,2,4" />
+                        <Setter Target="ContentGrid.Padding" Value="0,0,2,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="0,0,1,0" />
                         <Setter Target="StartListView.MinHeight" Value="48" />
                         <Setter Target="CenterListView.MinHeight" Value="48" />
@@ -375,8 +376,8 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Target="ContentGrid.Orientation" Value="Vertical" />
-                        <Setter Target="ContentGrid.Margin" Value="4,0,0,4" />
-                        <Setter Target="ContentGrid.Padding" Value="4,0,0,8" />
+                        <Setter Target="ContentGrid.Margin" Value="2,0,0,4" />
+                        <Setter Target="ContentGrid.Padding" Value="2,0,0,8" />
                         <Setter Target="RootGrid.BorderThickness" Value="1,0,0,0" />
                         <Setter Target="StartListView.MinHeight" Value="48" />
                         <Setter Target="CenterListView.MinHeight" Value="48" />

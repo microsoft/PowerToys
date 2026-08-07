@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -40,7 +41,7 @@ public partial class MainViewModel
             {
                 try
                 {
-                    UpdateMonitorList(monitors, isInitialLoad: true);
+                    UpdateMonitorList(monitors);
 
                     // Complete initialization asynchronously (restore settings if enabled)
                     // IsScanning remains true until restore completes
@@ -71,6 +72,13 @@ public partial class MainViewModel
     {
         try
         {
+            var discovered = Monitors
+                .Where(monitor => !string.IsNullOrEmpty(monitor.Id))
+                .Select(monitor => (monitor.Id, monitor.MonitorNumber))
+                .ToList();
+
+            await MigrateLegacySideFilesAsync(discovered, _cancellationTokenSource.Token);
+
             // Check if we should restore settings on startup
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             if (settings.Properties.RestoreSettingsOnStartup)
@@ -119,7 +127,7 @@ public partial class MainViewModel
 
             _dispatcherQueue.TryEnqueue(() =>
             {
-                UpdateMonitorList(monitors, isInitialLoad: false);
+                UpdateMonitorList(monitors);
                 IsScanning = false;
             });
         }
@@ -133,7 +141,7 @@ public partial class MainViewModel
         }
     }
 
-    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
+    private void UpdateMonitorList(IReadOnlyList<Monitor> monitors)
     {
         CancelPendingLinkedBrightnessCommit();
 
@@ -170,14 +178,6 @@ public partial class MainViewModel
         // Save monitor information to settings
         SaveMonitorsToSettings();
 
-        // First successful discovery after process start is the natural place to clean up
-        // any legacy "{Source}_{EdidId}_{N}" Ids still lingering in the side files that
-        // SaveMonitorsToSettings doesn't touch (profiles.json + monitor_state.json).
-        if (isInitialLoad)
-        {
-            MigrateLegacyMonitorIdsInSideFiles();
-        }
-
         // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
         // to ensure scanning state is maintained until restore completes
     }
@@ -191,4 +191,33 @@ public partial class MainViewModel
                 .Where(m => m.IsHidden)
                 .Select(m => m.Id),
             MonitorIdComparer.Instance);
+
+    /// <summary>
+    /// Returns the set of monitor IDs that are currently hidden in persisted settings.
+    /// Uses a case-insensitive comparer consistent with the rest of the settings layer.
+    /// Intended for IPC reads; does NOT trigger monitor hardware discovery.
+    /// </summary>
+    public IReadOnlySet<string> GetHiddenMonitorIds()
+    {
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        return GetHiddenMonitorIds(settings);
+    }
+
+    /// <summary>
+    /// Returns a point-in-time copy of the app's already-discovered monitor list for IPC reads.
+    /// Does NOT trigger hardware discovery. Hidden-monitor filtering is applied by the caller.
+    /// A materialized copy (rather than the live <c>_monitorManager.Monitors</c> view) is returned so
+    /// callers can iterate it safely even if a concurrent discovery rebuilds the underlying list.
+    /// </summary>
+    public IReadOnlyList<Monitor> SnapshotMonitors()
+        => _monitorManager.Monitors.ToList();
+
+    /// <summary>
+    /// The app's live monitor manager exposed through the <see cref="IMonitorManager"/> hardware-write
+    /// abstraction — used by the IPC set/apply-profile executors to perform hardware writes
+    /// (SetBrightnessAsync, SetContrastAsync, etc.) on the single hardware-owning instance. Returning
+    /// the interface (not the concrete <c>MonitorManager</c>) keeps the IPC path decoupled and fakeable,
+    /// which is the reason the interface exists.
+    /// </summary>
+    public IMonitorManager MonitorManager => _monitorManager;
 }

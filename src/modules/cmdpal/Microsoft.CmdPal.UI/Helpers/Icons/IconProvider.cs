@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,6 +61,11 @@ public static partial class IconProvider
                     args.Scale),
                 _ => null,
             };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to provide icon source", ex);
+            args.Value = null;
         }
         finally
         {

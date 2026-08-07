@@ -56,6 +56,24 @@ public static class WindowControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool fAttach);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool BringWindowToTop(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
+
     private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
     private const uint WM_CLOSE = 0x0010;
@@ -244,6 +262,63 @@ public static class WindowControl
     /// Bring the first window owned by <paramref name="appNameOrPid"/> to the foreground.
     /// If the window is minimized it's first restored. Tolerant.
     /// </summary>
+    /// <summary>
+    /// Bring <paramref name="hwnd"/> to the foreground RELIABLY, defeating the Win32 foreground lock.
+    /// A bare <c>SetForegroundWindow</c> from a process that isn't already the foreground is silently
+    /// refused (SPI_SETFOREGROUNDLOCKTIMEOUT) — which is exactly what leaves a freshly-shown overlay /
+    /// toolbar sitting BEHIND the window that held the foreground when it was triggered, so a coordinate
+    /// click then lands on the covering window instead of the target. Briefly attaching our input queue
+    /// to the current foreground thread lifts that restriction for the call. Best-effort; tolerant.
+    /// </summary>
+    public static bool TryBringToForeground(IntPtr hwnd)
+    {
+        try
+        {
+            if (hwnd == IntPtr.Zero || !IsWindow(hwnd))
+            {
+                return false;
+            }
+
+            var foreground = GetForegroundWindow();
+            if (foreground == hwnd)
+            {
+                // Already the foreground window — don't touch its show-state or the input queues.
+                return true;
+            }
+
+            var foregroundThread = foreground == IntPtr.Zero ? 0u : GetWindowThreadProcessId(foreground, out _);
+            var currentThread = GetCurrentThreadId();
+
+            // Only un-MINIMIZE. Do NOT SW_RESTORE a maximized window — that un-maximizes it, resizing the
+            // window and invalidating any element coordinates already resolved for the click (the cause of
+            // the arm64 "Settings got resized then the toggle click missed" flakiness).
+            if (IsIconic(hwnd))
+            {
+                ShowWindow(hwnd, SW_RESTORE);
+            }
+
+            var attached = foregroundThread != 0 && foregroundThread != currentThread;
+            if (attached)
+            {
+                AttachThreadInput(currentThread, foregroundThread, true);
+            }
+
+            BringWindowToTop(hwnd);
+            var ok = SetForegroundWindow(hwnd);
+
+            if (attached)
+            {
+                AttachThreadInput(currentThread, foregroundThread, false);
+            }
+
+            return ok;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public static bool TryFocusByApp(string appNameOrPid)
     {
         try
@@ -254,14 +329,7 @@ public static class WindowControl
                 return false;
             }
 
-            var hwnd = new IntPtr(w.Hwnd);
-            if (!IsWindow(hwnd))
-            {
-                return false;
-            }
-
-            ShowWindow(hwnd, SW_RESTORE);
-            return SetForegroundWindow(hwnd);
+            return TryBringToForeground(new IntPtr(w.Hwnd));
         }
         catch
         {

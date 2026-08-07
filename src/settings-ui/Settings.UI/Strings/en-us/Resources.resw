@@ -121,6 +121,66 @@
     <value>Inspired by Rooler</value>
     <comment>Rooler is a name of the tool.</comment>
   </data>
+  <data name="Attribution_ColorPicker.Text" xml:space="preserve">
+    <value>Martin Chrzan's Color Picker</value>
+    <comment>Martin Chrzan is a person's name and Color Picker is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ColorPicker_UXConcept.Text" xml:space="preserve">
+    <value>Niels Laute's UX concept</value>
+    <comment>Niels Laute is a person's name and UX is an acronym. Do not localize the name or acronym; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ImageResizer.Text" xml:space="preserve">
+    <value>Brice Lambson's ImageResizer</value>
+    <comment>Brice Lambson is a person's name and ImageResizer is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseUtils_FindMyMouse.Text" xml:space="preserve">
+    <value>Raymond Chen's Find My Mouse</value>
+    <comment>Raymond Chen is a person's name and Find My Mouse is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseUtils_MouseJump.Text" xml:space="preserve">
+    <value>Michael Clayton's Mouse Jump (FancyMouse)</value>
+    <comment>Michael Clayton is a person's name. Mouse Jump and FancyMouse are product names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_MouseWithoutBorders_OriginalContributors.Text" xml:space="preserve">
+    <value>Truong Do (Đỗ Đức Trường) and other original contributors</value>
+    <comment>Truong Do and Đỗ Đức Trường are forms of the same person's name. Do not localize either form; localize "and other original contributors".</comment>
+  </data>
+  <data name="Attribution_NewPlus.Text" xml:space="preserve">
+    <value>Based on Christian Gaardmark's New++ from the Productivity Plus Pack</value>
+    <comment>Christian Gaardmark is a person's name. New++ and Productivity Plus Pack are product names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerAccent.Text" xml:space="preserve">
+    <value>Damien Leroy's PowerAccent</value>
+    <comment>Damien Leroy is a person's name and PowerAccent is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerLauncher_WindowWalker.Text" xml:space="preserve">
+    <value>Beta Tadele's Window Walker</value>
+    <comment>Beta Tadele is a person's name and Window Walker is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerPreview_DeveloperFilePreview.Text" xml:space="preserve">
+    <value>Noraa Junker's work on developer file preview</value>
+    <comment>Noraa Junker is a person's name. Do not localize the name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_PowerPreview_FileFormats.Text" xml:space="preserve">
+    <value>Pedro Lamas's work on G-Code, Binary G-Code, STL, and QOI</value>
+    <comment>Pedro Lamas is a person's name. G-Code, Binary G-Code, STL, and QOI are file format names. Do not localize these names; localize the attribution wording, including "and".</comment>
+  </data>
+  <data name="Attribution_PowerRename.Text" xml:space="preserve">
+    <value>Chris Davis's SmartRenamer</value>
+    <comment>Chris Davis is a person's name and SmartRenamer is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ShortcutGuide.Text" xml:space="preserve">
+    <value>Noraa Junker's work on Shortcut Guide V2</value>
+    <comment>Noraa Junker is a person's name and Shortcut Guide V2 is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_TextExtractor.Text" xml:space="preserve">
+    <value>Based upon Joseph Finney's Text Grab</value>
+    <comment>Joseph Finney is a person's name and Text Grab is a product name. Do not localize either name; localize the attribution wording.</comment>
+  </data>
+  <data name="Attribution_ZoomIt.Text" xml:space="preserve">
+    <value>Sysinternals ZoomIt by Mark Russinovich, Alex Mihaiuc, John Stephens</value>
+    <comment>Sysinternals ZoomIt is a product name. Mark Russinovich, Alex Mihaiuc, and John Stephens are people's names. Do not localize these names; localize the attribution wording.</comment>
+  </data>
   <data name="Shell_MeasureTool.Content" xml:space="preserve">
     <value>Screen Ruler</value>
     <comment>Product name: Navigation view item name for Screen Ruler</comment>
@@ -1083,7 +1143,7 @@ opera.exe</value>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Header" xml:space="preserve">
     <value>Stereolithography</value>
-    <comment>{Locked}</comment>
+    <comment>Technical term for the full name of the STL file format.</comment>
   </data>
   <data name="FileExplorerPreview_ToggleSwitch_Thumbnail_STL.Description" xml:space="preserve">
     <value>.stl</value>
@@ -1224,9 +1284,6 @@ opera.exe</value>
   <data name="ImageResizer_Fit.Header" xml:space="preserve">
     <value>Fit</value>
   </data>
-  <data name="ImageResizer_Width.Header" xml:space="preserve">
-    <value>Width</value>
-  </data>
   <data name="ImageResizer_Height.Header" xml:space="preserve">
     <value>Height</value>
   </data>
@@ -1238,6 +1295,29 @@ opera.exe</value>
   </data>
   <data name="ImageResizer_AddSizeButton.Content" xml:space="preserve">
     <value>Add new size</value>
+  </data>
+  <data name="ImageResizer_EditSizeDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ImageResizer_EditSizeDialog_AddTitle" xml:space="preserve">
+    <value>Add new size</value>
+  </data>
+  <data name="ImageResizer_EditSizeDialog_EditTitle" xml:space="preserve">
+    <value>Edit size</value>
+  </data>
+  <data name="ImageResizer_EditSizeDialog_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ImageResizer_EditSizeDialog_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="ImageResizer_Dimensions_Width" xml:space="preserve">
+    <value>Width</value>
+    <comment>Header for the width input field in the Image Resizer edit size dialog</comment>
+  </data>
+  <data name="ImageResizer_Dimensions_Size" xml:space="preserve">
+    <value>Size</value>
+    <comment>Header shown instead of "Width" when a single value scales the whole image (e.g. percentage), in the Image Resizer edit size dialog</comment>
   </data>
   <data name="ImageResizer_Encoding.Header" xml:space="preserve">
     <value>JPEG quality level (%)</value>
@@ -1351,6 +1431,12 @@ opera.exe</value>
   <data name="GeneralPage_AutoDownloadAndInstallUpdates.Description" xml:space="preserve">
     <value>Except on metered connections</value>
   </data>
+  <data name="GeneralPage_IncludePrereleaseUpdates.Header" xml:space="preserve">
+    <value>Include prerelease updates</value>
+  </data>
+  <data name="GeneralPage_IncludePrereleaseUpdates.Description" xml:space="preserve">
+    <value>Allow update checks to include preview builds. You may stay ahead of stable until a later stable release is available.</value>
+  </data>
   <data name="GeneralSettings_AlwaysRunAsAdminText.Header" xml:space="preserve">
     <value>Always run as administrator</value>
   </data>
@@ -1368,7 +1454,8 @@ opera.exe</value>
     <comment>{Locked}</comment>
   </data>
   <data name="FileExplorerPreview.ModuleTitle" xml:space="preserve">
-    <value>File Explorer</value>
+    <value>File Explorer Add-ons</value>
+    <comment>Product name: Settings page title for File Explorer Add-ons. Keep this translation consistent with Shell_PowerPreview.Content.</comment>
   </data>
   <data name="ImageResizer.ModuleTitle" xml:space="preserve">
     <value>Image Resizer</value>
@@ -2049,6 +2136,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   </data>
   <data name="Oobe_MouseWithoutBorders.Description" xml:space="preserve">
     <value>Mouse Without Borders enables using the mouse pointer, keyboard, clipboard and drag and drop between machines in the same local network.</value>
+    <comment>For German, use "Drag &amp; Drop" with a literal ampersand character, not the text "&amp;amp;".</comment>
   </data>
   <data name="Oobe_PowerRename.Description" xml:space="preserve">
     <value>PowerRename enables you to perform simple bulk renaming, searching and replacing file names.</value>
@@ -2343,6 +2431,27 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_NewVersionAvailable.Title" xml:space="preserve">
     <value>An update is available:</value>
   </data>
+  <data name="General_UpdateAvailableTitle" xml:space="preserve">
+    <value>An update is available:</value>
+  </data>
+  <data name="General_PreviewUpdateAvailableTitle" xml:space="preserve">
+    <value>Preview update available:</value>
+  </data>
+  <data name="General_UpdateReadyToInstallTitle" xml:space="preserve">
+    <value>An update is ready to install:</value>
+  </data>
+  <data name="General_PreviewUpdateReadyToInstallTitle" xml:space="preserve">
+    <value>A Preview update is ready to install:</value>
+  </data>
+  <data name="General_PreviewBadge.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ScoobeReleaseGroup_Preview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ScoobeReleaseNotes_PreviewBadge" xml:space="preserve">
+    <value>Preview release</value>
+  </data>
   <data name="General_Downloading.Text" xml:space="preserve">
     <value>Downloading...</value>
   </data>
@@ -2364,15 +2473,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="General_DownloadAndInstall.Content" xml:space="preserve">
     <value>Download &amp; install</value>
   </data>
-  <data name="ImageResizer_Fit_Fill_ThirdPersonSingular" xml:space="preserve">
-    <value>Fills</value>
-  </data>
-  <data name="ImageResizer_Fit_Fit_ThirdPersonSingular" xml:space="preserve">
-    <value>Fits within</value>
-  </data>
-  <data name="ImageResizer_Fit_Stretch_ThirdPersonSingular" xml:space="preserve">
-    <value>Stretches to</value>
-  </data>
   <data name="ImageResizer_Unit_Centimeter" xml:space="preserve">
     <value>Centimeters</value>
   </data>
@@ -2385,28 +2485,15 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="ImageResizer_Unit_Pixel" xml:space="preserve">
     <value>Pixels</value>
   </data>
-  <data name="ImageResizer_EditButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Edit</value>
-  </data>
-  <data name="ImageResizer_EditSize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Edit size</value>
-  </data>
   <data name="ImageResizer_Presets.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>ImageResizer presets</value>
   </data>
   <data name="ImageResizer_AddSizeButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Add a new preset</value>
   </data>
-  <data name="ImageResizer_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
-    <value>Remove</value>
-  </data>
   <data name="ImageResizer_EditButton_Accessibility_Name" xml:space="preserve">
     <value>Edit the {0} preset</value>
     <comment>Expands to the AutomationProperties.Name value for the Edit button. Example: "Edit the Small preset".</comment>
-  </data>
-  <data name="ImageResizer_RemoveButton_Accessibility_Name" xml:space="preserve">
-    <value>Remove the {0} preset</value>
-    <comment>Expands to the AutomationProperties.Name value for the Remove button. Example: "Remove the Large preset".</comment>
   </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
@@ -2648,9 +2735,6 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="EditTooltip.Text" xml:space="preserve">
     <value>Edit</value>
   </data>
-  <data name="RemoveTooltip.Text" xml:space="preserve">
-    <value>Remove</value>
-  </data>
   <data name="Activation_Shortcut_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
@@ -2721,7 +2805,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationDoubleControlPress.Content" xml:space="preserve">
     <value>Press Left Control twice</value>
-    <comment>Left control is the physical key on the keyboard.</comment>
+    <comment>Left control is the physical key on the keyboard. In Chinese, keep the key label as "Ctrl" instead of translating it as "控制键" (Simplified) or "控制鍵" (Traditional).</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShakeMouse.Content" xml:space="preserve">
     <value>Shake mouse</value>
@@ -2909,7 +2993,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Gliding cursor</value>
   </data>
   <data name="MouseUtils_GlidingCursor.Description" xml:space="preserve">
-    <value>An accessibility feature that lets you control the mouse with a single button using guided horizontal and vertical lines</value>
+    <value>Position the cursor and click anywhere on the screen using only a keyboard shortcut</value>
   </data>
   <data name="MouseUtils_GlidingCursor_InitialSpeed.Header" xml:space="preserve">
     <value>Initial line speed</value>
@@ -3027,6 +3111,54 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Oobe_CropAndLock_HowToUse_Screenshot.Text" xml:space="preserve">
     <value>to crop an application's window into a screenshot window. The screenshot won't update with the original window's content.</value>
+  </data>
+  <data name="AltWindowCycle.ModuleDescription" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle.ModuleTitle" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_Activation_GroupSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="AltWindowCycle_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Enable Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the next window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_NextWindowShortcut.Header" xml:space="preserve">
+    <value>Next window</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Description" xml:space="preserve">
+    <value>Cycle to the previous window of the focused app</value>
+  </data>
+  <data name="AltWindowCycle_PreviousWindowShortcut.Header" xml:space="preserve">
+    <value>Previous window</value>
+  </data>
+  <data name="Shell_AltWindowCycle.Content" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Title" xml:space="preserve">
+    <value>Window Hopper</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle.Description" xml:space="preserve">
+    <value>Window Hopper lets you cycle between windows of the currently focused application.</value>
+    <comment>"Window Hopper" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Next.Text" xml:space="preserve">
+    <value>to cycle to the next window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_HowToUse_Previous.Text" xml:space="preserve">
+    <value>to cycle to the previous window of the focused app.</value>
+  </data>
+  <data name="Oobe_AltWindowCycle_TipsAndTricks.Text" xml:space="preserve">
+    <value>Use the next and previous shortcuts to move through only the windows that belong to your currently focused app.</value>
   </data>
   <data name="AlwaysOnTop.ModuleDescription" xml:space="preserve">
     <value>Always On Top is a quick and easy way to pin windows on top.</value>
@@ -4318,7 +4450,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationDoubleRightControlPress.Content" xml:space="preserve">
     <value>Press Right Control twice</value>
-    <comment>Right control is the physical key on the keyboard.</comment>
+    <comment>Right control is the physical key on the keyboard. In Chinese, keep the key label as "Ctrl" instead of translating it as "控制键" (Simplified) or "控制鍵" (Traditional).</comment>
   </data>
   <data name="MouseUtils_FindMyMouse_ActivationShortcut.Description" xml:space="preserve">
     <value>Customize the shortcut used to turn this mode on or off</value>
@@ -4854,6 +4986,27 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
     <value>Press **{0}** to record a specific window</value>
   </data>
+  <data name="ZoomIt_MirrorGroup.Header" xml:space="preserve">
+    <value>DemoMirror</value>
+  </data>
+  <data name="ZoomIt_MirrorGroup.Description" xml:space="preserve">
+    <value>Mirror the screen, a region of the screen, or a window, including the mouse pointer, onto a second monitor, on top of a slide show. Use ZoomIt zoom and draw to annotate the mirrored image.</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut.Header" xml:space="preserve">
+    <value>Mirror activation</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_FullScreen" xml:space="preserve">
+    <value>Press **{0}** to start or stop mirroring the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Crop" xml:space="preserve">
+    <value>Press **{0}** to mirror a portion of the screen</value>
+  </data>
+  <data name="ZoomIt_Mirror_Shortcut_Window" xml:space="preserve">
+    <value>Press **{0}** to mirror a specific window</value>
+  </data>
+  <data name="ZoomIt_Mirror_TrackWindow.Content" xml:space="preserve">
+    <value>Mirror windows by tracking their screen region, so zoom and draw show in place</value>
+  </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>
   </data>
@@ -4976,6 +5129,12 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_SnipSave_Shortcut.Header" xml:space="preserve">
     <value>Save snip to file</value>
+  </data>
+  <data name="ZoomIt_SnipCopyToClipboard.Header" xml:space="preserve">
+    <value>Copy to clipboard when saving</value>
+  </data>
+  <data name="ZoomIt_SnipCopyToClipboard.Description" xml:space="preserve">
+    <value>Also copy the snip to the clipboard whenever it is saved to a file</value>
   </data>
   <data name="ZoomIt_PanoramaSave_Shortcut.Header" xml:space="preserve">
     <value>Save scrolling screenshot to file</value>
@@ -5593,11 +5752,30 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Header" xml:space="preserve">
+    <value>Tray icon mouse wheel</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode.Description" xml:space="preserve">
+    <value>Choose which displays are adjusted when scrolling over the Power Display tray icon. While linked brightness is on, adjusting any display in the linked group moves the whole group.</value>
+    <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlModeComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Tray icon mouse wheel mode</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_Off.Content" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_PrimaryDisplay.Content" xml:space="preserve">
+    <value>Primary display</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelControlMode_AllDisplays.Content" xml:space="preserve">
+    <value>All displays</value>
+  </data>
   <data name="PowerDisplay_MouseWheelIncrement.Header" xml:space="preserve">
     <value>Mouse wheel increment</value>
   </data>
   <data name="PowerDisplay_MouseWheelIncrement.Description" xml:space="preserve">
-    <value>How much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
+    <value>How much brightness changes from tray scrolling, and how much brightness, contrast, and volume sliders change per mouse wheel notch.</value>
   </data>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>
