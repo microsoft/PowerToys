@@ -297,6 +297,9 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         }
         catch
         {
+            // Clear the gate directly rather than through CompleteRefresh: any pending _refreshRequested is dropped
+            // on purpose, because re-arming against a GetItems() that keeps throwing would spin a tight retry loop.
+            // The next ItemsChanged starts a fresh refresh.
             QueueCleanup(createdViewModels);
             _refreshInFlight.Clear();
             throw;
