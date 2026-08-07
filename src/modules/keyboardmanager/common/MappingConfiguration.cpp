@@ -17,33 +17,6 @@ namespace
         return prefix.size() <= value.size() && value.compare(0, prefix.size(), prefix) == 0;
     }
 
-    constexpr bool IsWellFormedUtf16(std::wstring_view value)
-    {
-        for (size_t index = 0; index < value.size(); ++index)
-        {
-            const auto codeUnit = static_cast<uint16_t>(value[index]);
-            if (codeUnit >= 0xD800 && codeUnit <= 0xDBFF)
-            {
-                if (++index >= value.size())
-                {
-                    return false;
-                }
-
-                const auto lowSurrogate = static_cast<uint16_t>(value[index]);
-                if (lowSurrogate < 0xDC00 || lowSurrogate > 0xDFFF)
-                {
-                    return false;
-                }
-            }
-            else if (codeUnit >= 0xDC00 && codeUnit <= 0xDFFF)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     bool IsValidTextReplacement(
         const TextReplacementTable& replacements,
         std::wstring_view trigger,
@@ -54,8 +27,6 @@ namespace
             text.empty() ||
             trigger.find(L'\0') != std::wstring_view::npos ||
             text.find(L'\0') != std::wstring_view::npos ||
-            !IsWellFormedUtf16(trigger) ||
-            !IsWellFormedUtf16(text) ||
             trigger.size() > KeyboardManagerConstants::MaxTextReplacementTriggerLength ||
             text.size() > KeyboardManagerConstants::MaxTextReplacementTextLength)
         {
@@ -63,12 +34,6 @@ namespace
         }
 
         const auto excludedReplacement = excludedTrigger.empty() ? replacements.end() : replacements.find(excludedTrigger);
-        const auto duplicateReplacement = replacements.find(trigger);
-        if (duplicateReplacement != replacements.end() && duplicateReplacement != excludedReplacement)
-        {
-            return false;
-        }
-
         for (auto replacement = replacements.begin(); replacement != replacements.end(); ++replacement)
         {
             if (replacement == excludedReplacement)
@@ -83,8 +48,7 @@ namespace
             }
         }
 
-        const auto replacementCount = replacements.size() - (excludedReplacement == replacements.end() ? 0 : 1);
-        return replacementCount < KeyboardManagerConstants::MaxTextReplacementCount;
+        return true;
     }
 
 }
@@ -369,19 +333,11 @@ bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData
         }
 
         auto inProcessTextReplacements = textReplacementsData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray{});
-        const auto configuredReplacementCount = static_cast<size_t>(inProcessTextReplacements.Size());
-        const auto replacementsToLoad = (std::min)(configuredReplacementCount, KeyboardManagerConstants::MaxTextReplacementCount);
-        if (configuredReplacementCount > replacementsToLoad)
-        {
-            Logger::error(L"Text replacement configuration exceeds the {} entry limit. Extra entries will be ignored.", KeyboardManagerConstants::MaxTextReplacementCount);
-            result = false;
-        }
-
-        for (size_t index = 0; index < replacementsToLoad; ++index)
+        for (uint32_t index = 0; index < inProcessTextReplacements.Size(); ++index)
         {
             try
             {
-                const auto replacement = inProcessTextReplacements.GetAt(static_cast<uint32_t>(index)).GetObjectW();
+                const auto replacement = inProcessTextReplacements.GetAt(index).GetObjectW();
                 const auto triggerValue = replacement.GetNamedString(KeyboardManagerConstants::TriggerTextSettingName);
                 const auto textValue = replacement.GetNamedString(KeyboardManagerConstants::NewTextSettingName);
                 const std::wstring trigger{ triggerValue.c_str(), triggerValue.size() };

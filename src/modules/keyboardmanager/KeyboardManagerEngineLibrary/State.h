@@ -40,7 +40,6 @@ public:
     HKL textReplacementDeadKeyLayout = nullptr;
     bool textReplacementCapsLockOn = false;
     bool textReplacementNumLockOn = false;
-    bool textReplacementToggleStateInitialized = false;
     uint64_t textReplacementObservedContextEpoch = 0;
 
     // Other threads only request invalidation. The hook thread observes these atomics

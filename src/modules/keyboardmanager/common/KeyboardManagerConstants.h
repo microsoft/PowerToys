@@ -107,5 +107,4 @@ namespace KeyboardManagerConstants
 
     inline constexpr std::size_t MaxTextReplacementTriggerLength = 256;
     inline constexpr std::size_t MaxTextReplacementTextLength = 256;
-    inline constexpr std::size_t MaxTextReplacementCount = 1000;
 }

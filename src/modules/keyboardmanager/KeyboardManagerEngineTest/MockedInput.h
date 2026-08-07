@@ -29,6 +29,9 @@ namespace KeyboardManagerInput
         // Records attempted SendVirtualInput batch sizes, including failed batches.
         std::vector<size_t> sendVirtualInputBatchSizes;
 
+        // Records successfully delivered KEYEVENTF_UNICODE key-down payloads.
+        std::wstring injectedUnicodeText;
+
         std::wstring currentProcess;
 
     public:
@@ -67,6 +70,9 @@ namespace KeyboardManagerInput
         // Functions to inspect attempted SendVirtualInput batching
         size_t GetSendVirtualInputBatchCount() const;
         size_t GetLargestSendVirtualInputBatchSize() const;
+
+        // Function to inspect successfully delivered Unicode text payloads
+        const std::wstring& GetInjectedUnicodeText() const;
 
         // Function to get the foreground process name
         void SetForegroundProcess(std::wstring process);

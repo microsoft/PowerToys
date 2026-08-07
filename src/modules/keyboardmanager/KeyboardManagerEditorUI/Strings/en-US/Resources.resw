@@ -471,12 +471,6 @@
   <data name="Validation_TargetTextTooLong_Message" xml:space="preserve">
     <value>Replacement text can contain at most 256 characters.</value>
   </data>
-  <data name="Validation_TextReplacementLimitReached_Title" xml:space="preserve">
-    <value>Text replacement limit reached</value>
-  </data>
-  <data name="Validation_TextReplacementLimitReached_Message" xml:space="preserve">
-    <value>Keyboard Manager supports up to 1,000 active text replacement rules.</value>
-  </data>
   <data name="Validation_TextTriggerPrefixConflict_Title" xml:space="preserve">
     <value>Conflicting text trigger</value>
   </data>

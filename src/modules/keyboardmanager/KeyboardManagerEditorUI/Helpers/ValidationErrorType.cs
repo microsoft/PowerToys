@@ -25,7 +25,6 @@ namespace KeyboardManagerEditorUI.Helpers
         EmptyTriggerText,
         TextTriggerTooLong,
         TargetTextTooLong,
-        TextReplacementLimitReached,
         TextTriggerPrefixConflict,
         EmptyUrl,
         EmptyProgramPath,

@@ -24,11 +24,6 @@ struct TextReplacementTriggerCompare
 
 using TextReplacementTable = std::map<std::wstring, std::wstring, TextReplacementTriggerCompare>;
 
-namespace RemappingUITests
-{
-    class LoadingAndSavingRemappingTests;
-}
-
 class MappingConfiguration
 {
 public:
@@ -104,8 +99,6 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
 private:
-    friend class RemappingUITests::LoadingAndSavingRemappingTests;
-
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadTextReplacements(const json::JsonObject& jsonData);

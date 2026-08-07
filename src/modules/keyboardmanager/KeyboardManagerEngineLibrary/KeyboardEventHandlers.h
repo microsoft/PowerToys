@@ -88,7 +88,7 @@ namespace KeyboardEventHandlers
     // Clears text replacement state that is tied to the current input context.
     void ResetTextReplacementRuntimeState(State& state) noexcept;
 
-    // Initializes and updates toggle keys independently from the hook thread keyboard queue.
+    // Refreshes and updates toggle keys independently from the hook thread keyboard queue.
     void InitializeTextReplacementToggleKeyState(State& state) noexcept;
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, bool eventSuppressed, State& state) noexcept;
 

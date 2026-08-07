@@ -326,7 +326,10 @@ void KeyboardManager::ReloadSettings()
     {
         Logger::error("Failed to load settings");
     }
-    RefreshLowlevelHooks();
+    if (HasRegisteredRemappings())
+    {
+        StartLowlevelKeyboardHook();
+    }
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
@@ -361,14 +364,11 @@ bool KeyboardManager::IsEditorRunning()
         return false;
     }
 
-    // Atomically participate in the same owning-mutex protocol as both editors.
-    // Creating a new marker proves that no editor can own it at this instant and
-    // avoids clearing an event that a concurrently starting editor just signaled.
+    // Participate in the owning-mutex protocol used by both editors. If the event
+    // remains signaled after its owner exits, the mutex is available or no longer exists.
     const HANDLE instanceMutex = CreateMutexW(nullptr, TRUE, editorInstanceMutexName);
     if (!instanceMutex)
     {
-        // Access-denied and other indeterminate cases fail closed: another integrity
-        // level may own the editor marker and must not receive remapped input.
         return true;
     }
 
@@ -453,14 +453,10 @@ void KeyboardManager::StartTextReplacementContextTracking()
 
     if (!textReplacementForegroundHook || !textReplacementFocusHook || !textReplacementDesktopHook)
     {
-        Logger::error(L"Failed to install all text replacement context WinEvent hooks. Text replacement is blocked for safety.");
-        state.textReplacementContextStatus.store(TextReplacementContextStatus::Blocked, std::memory_order_release);
-        state.textReplacementClassifiedContextEpoch.store(state.textReplacementContextEpoch.load(std::memory_order_acquire), std::memory_order_release);
-        return;
+        Logger::warn(L"Failed to install one or more text replacement context WinEvent hooks. Continuing with the available context tracking sources.");
     }
 
     textReplacementContextThread = std::thread([this] { TextReplacementContextThreadProc(); });
-    state.InvalidateTextReplacementContext();
 }
 
 void KeyboardManager::StopTextReplacementContextTracking() noexcept
@@ -624,6 +620,10 @@ void KeyboardManager::StartLowlevelKeyboardHook()
             auto errorMessage = get_last_error_message(errorCode);
             Trace::Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"StartLowlevelKeyboardHook::SetWindowsHookEx");
         }
+        else
+        {
+            KeyboardEventHandlers::InitializeTextReplacementToggleKeyState(state);
+        }
     }
 
     const bool hasTextReplacements = !state.textReplacements.empty();
@@ -649,14 +649,11 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     {
         StopTextReplacementContextTracking();
     }
-
-    KeyboardEventHandlers::InitializeTextReplacementToggleKeyState(state);
 }
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
     StopTextReplacementContextTracking();
-    state.textReplacementToggleStateInitialized = false;
 
     if (mouseHookHandle)
     {
@@ -672,24 +669,7 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     }
 }
 
-void KeyboardManager::RefreshLowlevelHooks()
-{
-    if (HasRegisteredRemappingsUnchecked())
-    {
-        StartLowlevelKeyboardHook();
-    }
-    else
-    {
-        StopLowlevelKeyboardHook();
-    }
-}
-
 bool KeyboardManager::HasRegisteredRemappings() const
-{
-    return HasRegisteredRemappingsUnchecked();
-}
-
-bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
     return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.singleKeyToTextReMap.empty() && state.textReplacements.empty());
 }

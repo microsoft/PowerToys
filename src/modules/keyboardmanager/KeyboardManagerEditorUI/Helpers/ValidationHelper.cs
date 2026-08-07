@@ -17,7 +17,6 @@ namespace KeyboardManagerEditorUI.Helpers
         // Keep these limits in sync with KeyboardManagerConstants.h.
         public const int MaxTextReplacementTriggerLength = 256;
         public const int MaxTextReplacementTargetLength = 256;
-        public const int MaxTextReplacementCount = 1000;
 
         public static readonly Dictionary<ValidationErrorType, (string Title, string Message)> ValidationMessages = new()
         {
@@ -33,7 +32,6 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.EmptyTriggerText, (ResourceHelper.GetString("Validation_EmptyTriggerText_Title"), ResourceHelper.GetString("Validation_EmptyTriggerText_Message")) },
             { ValidationErrorType.TextTriggerTooLong, (ResourceHelper.GetString("Validation_TextTriggerTooLong_Title"), ResourceHelper.GetString("Validation_TextTriggerTooLong_Message")) },
             { ValidationErrorType.TargetTextTooLong, (ResourceHelper.GetString("Validation_TargetTextTooLong_Title"), ResourceHelper.GetString("Validation_TargetTextTooLong_Message")) },
-            { ValidationErrorType.TextReplacementLimitReached, (ResourceHelper.GetString("Validation_TextReplacementLimitReached_Title"), ResourceHelper.GetString("Validation_TextReplacementLimitReached_Message")) },
             { ValidationErrorType.TextTriggerPrefixConflict, (ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Title"), ResourceHelper.GetString("Validation_TextTriggerPrefixConflict_Message")) },
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
@@ -206,14 +204,6 @@ namespace KeyboardManagerEditorUI.Helpers
                     settings.Shortcut.OperationType == ShortcutOperationType.RemapText &&
                     !string.IsNullOrEmpty(settings.Shortcut.TriggerText))
                 .ToList();
-
-            bool editingInactiveMapping = !string.IsNullOrEmpty(editingMappingId) &&
-                SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(editingMappingId, out ShortcutSettings? editingSettings) &&
-                !editingSettings.IsActive;
-            if (!editingInactiveMapping && existingTextReplacements.Count(settings => settings.IsActive) >= MaxTextReplacementCount)
-            {
-                return ValidationErrorType.TextReplacementLimitReached;
-            }
 
             if (existingTextReplacements.Any(settings => string.Equals(settings.Shortcut.TriggerText, triggerText, StringComparison.Ordinal)))
             {

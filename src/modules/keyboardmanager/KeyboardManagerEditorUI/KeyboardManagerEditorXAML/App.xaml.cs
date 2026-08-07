@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -36,7 +34,6 @@ namespace KeyboardManagerEditorUI
     public partial class App : Application
     {
         private EditorLifetime? _editorLifetime;
-        private Process? _parentProcess;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -90,7 +87,14 @@ namespace KeyboardManagerEditorUI
             });
 
             string[] commandLineArguments = Environment.GetCommandLineArgs();
-            MonitorParentProcess(commandLineArguments.Length > 1 ? commandLineArguments[1] : string.Empty);
+            if (commandLineArguments.Length > 1 &&
+                int.TryParse(commandLineArguments[1], out int parentProcessId) &&
+                parentProcessId > 0)
+            {
+                RunnerHelper.WaitForPowerToysRunner(
+                    parentProcessId,
+                    () => MainWindow.DispatcherQueue.TryEnqueue(() => MainWindow.Close()));
+            }
 
             Logger.LogInfo("keyboard-manager WinUI3 editor window is launched");
         }
@@ -105,66 +109,8 @@ namespace KeyboardManagerEditorUI
 
         internal void StopEditorLifetime()
         {
-            DetachParentProcess();
             EditorLifetime? editorLifetime = Interlocked.Exchange(ref _editorLifetime, null);
             editorLifetime?.Dispose();
-        }
-
-        private void MonitorParentProcess(string arguments)
-        {
-            if (string.IsNullOrWhiteSpace(arguments))
-            {
-                return;
-            }
-
-            if (!int.TryParse(arguments.Trim(), out int parentProcessId) || parentProcessId <= 0)
-            {
-                Logger.LogWarning($"Ignoring invalid Keyboard Manager editor parent process argument: {arguments}");
-                return;
-            }
-
-            try
-            {
-                _parentProcess = Process.GetProcessById(parentProcessId);
-                _parentProcess.Exited += ParentProcess_Exited;
-                _parentProcess.EnableRaisingEvents = true;
-            }
-            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
-            {
-                DetachParentProcess();
-                Logger.LogInfo($"Keyboard Manager editor parent process {parentProcessId} is unavailable: {ex.Message}");
-                CloseAfterParentExit();
-            }
-        }
-
-        private void ParentProcess_Exited(object? sender, EventArgs e)
-        {
-            CloseAfterParentExit();
-        }
-
-        private void CloseAfterParentExit()
-        {
-            if (!MainWindow.DispatcherQueue.TryEnqueue(() =>
-            {
-                Logger.LogInfo("Keyboard Manager editor parent process exited; closing the editor");
-                MainWindow.Close();
-            }))
-            {
-                Logger.LogWarning("Failed to queue Keyboard Manager editor shutdown after its parent process exited");
-                Environment.Exit(0);
-            }
-        }
-
-        private void DetachParentProcess()
-        {
-            Process? parentProcess = Interlocked.Exchange(ref _parentProcess, null);
-            if (parentProcess is null)
-            {
-                return;
-            }
-
-            parentProcess.Exited -= ParentProcess_Exited;
-            parentProcess.Dispose();
         }
 
         internal static MainWindow MainWindow { get; private set; } = null!;

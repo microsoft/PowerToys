@@ -77,18 +77,11 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     if (kbm.HasRegisteredRemappings())
         kbm.StartLowlevelKeyboardHook();
 
-    auto StartHookFunc = [&kbm]() {
-        kbm.StartLowlevelKeyboardHook();
-    };
-
     auto ReloadSettingsFunc = [&kbm]() {
         kbm.ReloadSettings();
     };
 
-    run_message_loop({}, {}, {
-                                     { KeyboardManager::StartHookMessageID, StartHookFunc },
-                                     { KeyboardManager::ReloadSettingsMessageID, ReloadSettingsFunc },
-                                 });
+    run_message_loop({}, {}, { { KeyboardManager::ReloadSettingsMessageID, ReloadSettingsFunc } });
 
     kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();

@@ -72,6 +72,13 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         // Set keyboard state if the hook does not suppress the input
         if (result == 0)
         {
+            if (input.type == INPUT_KEYBOARD &&
+                (input.ki.dwFlags & KEYEVENTF_UNICODE) != 0 &&
+                (input.ki.dwFlags & KEYEVENTF_KEYUP) == 0)
+            {
+                injectedUnicodeText.push_back(static_cast<wchar_t>(input.ki.wScan));
+            }
+
             // If key up flag is set, then set keyboard state to false
             keyboardState[input.ki.wVk] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
 
@@ -159,6 +166,7 @@ void MockedInput::ResetKeyboardState()
 {
     std::fill(keyboardState.begin(), keyboardState.end(), false);
     sendVirtualInputBatchSizes.clear();
+    injectedUnicodeText.clear();
 }
 
 // Function to set SendVirtualInput call count condition
@@ -195,6 +203,12 @@ size_t MockedInput::GetLargestSendVirtualInputBatchSize() const
     }
 
     return *std::max_element(sendVirtualInputBatchSizes.begin(), sendVirtualInputBatchSizes.end());
+}
+
+// Function to inspect successfully delivered Unicode text payloads
+const std::wstring& MockedInput::GetInjectedUnicodeText() const
+{
+    return injectedUnicodeText;
 }
 
 // Function to get the foreground process name

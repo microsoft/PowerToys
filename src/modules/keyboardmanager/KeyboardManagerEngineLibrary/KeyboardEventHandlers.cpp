@@ -338,9 +338,7 @@ namespace
         if (state.textReplacementDeadKeyPending &&
             (state.textReplacementDeadKeyThreadId != event.foregroundThreadId || state.textReplacementDeadKeyLayout != event.layout))
         {
-            // The kernel dead-key buffer can remain visible across foreground threads.
-            // Do not guess whether it migrated; fail open on the next printable key so
-            // the target consumes any pending composition without a stuck repeat.
+            // Do not carry a pending composition across input contexts.
             state.textReplacementDeadKeyMustPassThrough = true;
         }
 
@@ -469,22 +467,44 @@ namespace
     TextReplacementInputResult SendTextReplacementInput(KeyboardManagerInput::InputInterface& ii, const size_t backspaceCount, std::wstring_view preservedCurrentText, const std::wstring& replacement)
     {
         bool inputStreamMutated = false;
+        std::vector<DWORD> pressedShiftKeys;
         std::vector<INPUT> modifierInputs;
         modifierInputs.reserve(2);
 
         if (ii.GetVirtualKeyState(VK_LSHIFT))
         {
+            pressedShiftKeys.push_back(VK_LSHIFT);
             Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_LSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
         }
         if (ii.GetVirtualKeyState(VK_RSHIFT))
         {
+            pressedShiftKeys.push_back(VK_RSHIFT);
             Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_RSHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+        if (pressedShiftKeys.empty() && ii.GetVirtualKeyState(VK_SHIFT))
+        {
+            pressedShiftKeys.push_back(VK_SHIFT);
+            Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, VK_SHIFT, KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
         }
         TextReplacementInputResult batchResult = SendInputBatch(ii, modifierInputs, inputStreamMutated);
         if (batchResult != TextReplacementInputResult::Completed)
         {
             return batchResult;
         }
+
+        const auto restorePressedShiftKeys = [&]() {
+            modifierInputs.clear();
+            for (const DWORD shiftKey : pressedShiftKeys)
+            {
+                Helpers::SetKeyEvent(modifierInputs, INPUT_KEYBOARD, static_cast<WORD>(shiftKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+            return SendInputBatch(ii, modifierInputs, inputStreamMutated);
+        };
+
+        const auto finishWithShiftRestored = [&](const TextReplacementInputResult result) {
+            const TextReplacementInputResult restoreResult = restorePressedShiftKeys();
+            return result == TextReplacementInputResult::Completed ? restoreResult : result;
+        };
 
         constexpr size_t backspacesPerBatch = maximumTextReplacementInputsPerBatch / 2;
         for (size_t firstBackspace = 0; firstBackspace < backspaceCount; firstBackspace += backspacesPerBatch)
@@ -501,21 +521,22 @@ namespace
             batchResult = SendInputBatch(ii, backspaceInputs, inputStreamMutated);
             if (batchResult != TextReplacementInputResult::Completed)
             {
-                return batchResult;
+                return finishWithShiftRestored(batchResult);
             }
         }
 
         batchResult = SendTextInputInSmallBatches(ii, preservedCurrentText, inputStreamMutated);
         if (batchResult != TextReplacementInputResult::Completed)
         {
-            return batchResult;
+            return finishWithShiftRestored(batchResult);
         }
-        return SendTextInputInSmallBatches(ii, replacement, inputStreamMutated);
+        batchResult = SendTextInputInSmallBatches(ii, replacement, inputStreamMutated);
+        return finishWithShiftRestored(batchResult);
     }
 
     void CommitKeyboardTextEvent(const KeyboardTextEvent& event)
     {
-        if (!event.consumesPendingDeadKey || event.vkCode == VK_PACKET)
+        if (!event.consumesPendingDeadKey)
         {
             return;
         }
@@ -2412,10 +2433,6 @@ namespace KeyboardEventHandlers
             if (classifiedEpoch != authorizationEpoch || contextStatus == TextReplacementContextStatus::Pending)
             {
                 ClearTextReplacementBuffer(state);
-                if (const HANDLE refreshEvent = state.textReplacementContextRefreshEvent.load(std::memory_order_acquire))
-                {
-                    SetEvent(refreshEvent);
-                }
                 return 0;
             }
 
@@ -2566,14 +2583,8 @@ namespace KeyboardEventHandlers
 
     void InitializeTextReplacementToggleKeyState(State& state) noexcept
     {
-        if (state.textReplacementToggleStateInitialized)
-        {
-            return;
-        }
-
         state.textReplacementCapsLockOn = (GetKeyState(VK_CAPITAL) & 0x1) != 0;
         state.textReplacementNumLockOn = (GetKeyState(VK_NUMLOCK) & 0x1) != 0;
-        state.textReplacementToggleStateInitialized = true;
     }
 
     void UpdateTextReplacementToggleKeyState(const LowlevelKeyboardEvent* data, const bool eventSuppressed, State& state) noexcept

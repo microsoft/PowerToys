@@ -4,7 +4,6 @@
 #include <cstring>
 #include <vector>
 #include <string>
-#include <memory>
 
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
@@ -142,17 +141,8 @@ extern "C"
         auto it = mappingConfig->textReplacements.begin();
         std::advance(it, index);
 
-        try
-        {
-            std::unique_ptr<wchar_t[]> trigger{ AllocateAndCopyString(it->first) };
-            std::unique_ptr<wchar_t[]> targetText{ AllocateAndCopyString(it->second) };
-            mapping->trigger = trigger.release();
-            mapping->targetText = targetText.release();
-        }
-        catch (...)
-        {
-            return false;
-        }
+        mapping->trigger = AllocateAndCopyString(it->first);
+        mapping->targetText = AllocateAndCopyString(it->second);
 
         return true;
     }
@@ -561,14 +551,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             return false;
         }
 
-        try
-        {
-            return static_cast<MappingConfiguration*>(config)->AddTextReplacement(trigger, text);
-        }
-        catch (...)
-        {
-            return false;
-        }
+        return static_cast<MappingConfiguration*>(config)->AddTextReplacement(trigger, text);
     }
 
     bool UpdateTextReplacement(void* config, const wchar_t* oldTrigger, const wchar_t* newTrigger, const wchar_t* newText)
@@ -578,14 +561,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             return false;
         }
 
-        try
-        {
-            return static_cast<MappingConfiguration*>(config)->UpdateTextReplacement(oldTrigger, newTrigger, newText);
-        }
-        catch (...)
-        {
-            return false;
-        }
+        return static_cast<MappingConfiguration*>(config)->UpdateTextReplacement(oldTrigger, newTrigger, newText);
     }
 
     bool AddSingleKeyToShortcutRemap(void* config, int originalKey, const wchar_t* targetKeys)
@@ -764,14 +740,7 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             return false;
         }
 
-        try
-        {
-            return static_cast<MappingConfiguration*>(config)->DeleteTextReplacement(trigger);
-        }
-        catch (...)
-        {
-            return false;
-        }
+        return static_cast<MappingConfiguration*>(config)->DeleteTextReplacement(trigger);
     }
 
     // Function to delete a shortcut remapping

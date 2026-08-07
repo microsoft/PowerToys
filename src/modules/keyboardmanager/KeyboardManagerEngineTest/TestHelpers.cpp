@@ -28,7 +28,6 @@ namespace TestHelpers
         state.textReplacementDeadKeyLayout = nullptr;
         state.textReplacementCapsLockOn = false;
         state.textReplacementNumLockOn = false;
-        state.textReplacementToggleStateInitialized = false;
         state.textReplacementObservedContextEpoch = 0;
         state.textReplacementContextEpoch.store(1, std::memory_order_relaxed);
         state.textReplacementContextTrackingEnabled.store(false, std::memory_order_relaxed);
