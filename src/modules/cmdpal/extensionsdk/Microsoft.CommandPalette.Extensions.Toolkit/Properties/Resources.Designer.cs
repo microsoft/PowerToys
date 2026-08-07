@@ -115,7 +115,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Select a file.
+        ///   Looks up a localized string similar to Select file.
         /// </summary>
         internal static string FilePickerParameterRun_PlaceholderText {
             get {
